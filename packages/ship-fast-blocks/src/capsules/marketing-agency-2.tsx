@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * MarketingAgencyKimiPage2 — a complete, self-contained performance / growth
@@ -24,6 +42,11 @@ import { Image } from "#/lib/img.tsx"
  * closing CTA band with an inline email-capture audit form + reassurances, and a
  * rich DARK 5-column footer with social icons and contact details.
  *
+ * FULL-STACK FEATURES: Includes Lakebed-powered saved case studies drawer
+ * (bookmark icon on case cards), lead capture form with persisted submissions,
+ * and Google authentication with account menu. All state is reactive and persisted
+ * across sessions.
+ *
  * The block owns ALL layout, spacing, type hierarchy and color. Surfaces use
  * semantic theme tokens only (no palette colors, no theme-variant prefixes);
  * dark bands use the `primary`/`foreground` surfaces to preserve Kimi's contrast
@@ -35,7 +58,7 @@ import { Image } from "#/lib/img.tsx"
 export const MarketingAgencyKimiPage2 = defineCapsule({
   name: "MarketingAgencyKimiPage2",
   description:
-    "Complete performance / growth marketing-agency LANDING page with a bold, energetic, conversion-focused aesthetic: a hot brand-accent hue, an animated infinite client-logo marquee, rounded accent 'pill' eyebrow chips, and several high-contrast dark accent bands. This is the SECOND visually DISTINCT style sibling / alternative to MarketingAgencyKimiPage (which is the calmer, editorial, neutral variant) — pick this one when a punchier, results-bragging, agency-energy look is wanted. Includes a split hero (pulsing 'trusted by' status badge, headline with an underline-stroke highlight word, dual CTAs, trust checkmarks, a floating ROI/ROAS stat card and a floating expert-avatar-stack badge over a team photo), an animated 'trusted by industry leaders' logo marquee strip, an accent KPI/stats band (revenue, brands, leads, ROAS), a 6-up bordered services grid with rotating icon tiles and capability check bullets (paid advertising, SEO & content, CRO & analytics, email marketing, creative production, strategy & consulting), a connector-line 4-step process timeline, a high-contrast DARK case-study gallery with colored category chips and dual result metrics plus campaign dates, a 3-tier pricing table with a raised DARK 'Most Popular' plan and performance-fee notes, a 6-card star-rated testimonial grid with client avatars, an FAQ accordion with circular toggle buttons, an accent closing call-to-action band with an inline email-capture free-audit form and reassurance points, and a rich DARK 5-column footer with brand blurb, social icons, link columns, and contact address/email/phone. Use as the ROOT/home page for marketing agencies, growth agencies, performance-marketing / paid-ads / media-buying shops, SEO and CRO consultancies, demand-gen and lead-gen firms, or B2B SaaS and e-commerce growth partners when a credible, metric-heavy, social-proof-rich page with case studies, pricing, and a free-audit offer is wanted. Supply content only — brand, nav, hero, logos, stats, services, process, cases, pricing, testimonials, faq, cta, footer; the block owns all layout and styling.",
+    "Complete performance / growth marketing-agency LANDING page with a bold, energetic, conversion-focused aesthetic: a hot brand-accent hue, an animated infinite client-logo marquee, rounded accent 'pill' eyebrow chips, and several high-contrast dark accent bands. This is the SECOND visually DISTINCT style sibling / alternative to MarketingAgencyKimiPage (which is the calmer, editorial, neutral variant) — pick this one when a punchier, results-bragging, agency-energy look is wanted. Includes a split hero (pulsing 'trusted by' status badge, headline with an underline-stroke highlight word, dual CTAs, trust checkmarks, a floating ROI/ROAS stat card and a floating expert-avatar-stack badge over a team photo), an animated 'trusted by industry leaders' logo marquee strip, an accent KPI/stats band (revenue, brands, leads, ROAS), a 6-up bordered services grid with rotating icon tiles and capability check bullets (paid advertising, SEO & content, CRO & analytics, email marketing, creative production, strategy & consulting), a connector-line 4-step process timeline, a high-contrast DARK case-study gallery with colored category chips and dual result metrics plus campaign dates, a 3-tier pricing table with a raised DARK 'Most Popular' plan and performance-fee notes, a 6-card star-rated testimonial grid with client avatars, an FAQ accordion with circular toggle buttons, an accent closing call-to-action band with an inline email-capture free-audit form and reassurance points, and a rich DARK 5-column footer with brand blurb, social icons, link columns, and contact address/email/phone. FULL-STACK: Lakebed-powered saved case studies drawer (bookmark icon on case cards), lead capture form with persisted submissions, and Google authentication with account menu. Use as the ROOT/home page for marketing agencies, growth agencies, performance-marketing / paid-ads / media-buying shops, SEO and CRO consultancies, demand-gen and lead-gen firms, or B2B SaaS and e-commerce growth partners when a credible, metric-heavy, social-proof-rich page with case studies, pricing, and a free-audit offer is wanted. Supply content only — brand, nav, hero, logos, stats, services, process, cases, pricing, testimonials, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
     /** Agency / brand name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -207,10 +230,77 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      leads: table({
+        email: string(),
+        company: string(),
+        interest: string(),
+      }),
+      savedCases: table({
+        caseName: string(),
+      }),
+    },
+    queries: {
+      leads: ({ db }) => db.leads.orderBy('createdAt').all(),
+      savedCaseNames: ({ db }) =>
+        new Set(db.savedCases.all().map((saved) => saved.caseName)),
+    },
+    mutations: {
+      submitLead: ({ db }, email: string, company?: string, interest?: string) => {
+        db.leads.insert({ email, company: company ?? '', interest: interest ?? '' })
+        return db.leads.all()
+      },
+      toggleSavedCase: ({ db }, caseName: string) => {
+        const existingSaved = db.savedCases.where('caseName', caseName).all()[0]
+
+        if (existingSaved) {
+          db.savedCases.delete(existingSaved.id)
+          return false
+        }
+
+        db.savedCases.insert({ caseName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [savedDrawerOpen, setSavedDrawerOpen] = useState(false)
     const brand = props.brand ?? "GrowthLab"
+
+    // Lakebed queries and mutations
+    const savedCaseNames = lakebed.useQuery('savedCaseNames')
+    const submitLead = lakebed.useMutation('submitLead')
+    const toggleSavedCase = lakebed.useMutation('toggleSavedCase')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
     const nav = props.nav?.length
       ? props.nav
       : ["Services", "Case Studies", "Pricing", "Results", "FAQ", "Get Free Audit"]
@@ -630,6 +720,10 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
 
     const navCta = nav[nav.length - 1]
 
+    // Calculate saved cases count
+    const savedCasesCount = savedCaseNames?.size ?? 0
+    const savedCases = caseItems.filter((c) => savedCaseNames?.has(c.name))
+
     // Brand logo mark — lightning / growth glyph (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
@@ -684,6 +778,39 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
         aria-hidden="true"
       >
         <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
+      </svg>
+    )
+
+    const ChevronDown = ({ className }: { className?: string }) => (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+        aria-hidden="true"
+      >
+        <path d="M19 9l-7 7-7-7" />
+      </svg>
+    )
+
+    const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
       </svg>
     )
 
@@ -875,6 +1002,223 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
                 >
                   {footerPhone}
                 </button>
+                <Sheet open={savedDrawerOpen} onOpenChange={setSavedDrawerOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Saved case studies"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                      </svg>
+                      {savedCasesCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {savedCasesCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Saved Case Studies</SheetTitle>
+                      <SheetDescription>
+                        {savedCasesCount > 0
+                          ? `${savedCasesCount} case stud${savedCasesCount === 1 ? 'y' : 'ies'} saved.`
+                          : 'No case studies saved yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {savedCases.length ? (
+                        <div className="space-y-5">
+                          {savedCases.map((c) => (
+                            <div
+                              key={c.name}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                <Image
+                                  alt={`${c.name} ${c.tag} marketing case study`}
+                                  w={180}
+                                  h={180}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                  {c.tag}
+                                </p>
+                                <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                  {c.name}
+                                </h3>
+                                <div className="mt-2 grid grid-cols-2 gap-2">
+                                  <div>
+                                    <p className="text-lg font-bold text-primary">
+                                      {c.metricA}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {c.labelA}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-lg font-bold text-primary">
+                                      {c.metricB}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {c.labelB}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No saved case studies
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Click the bookmark icon on any case study to save it for later.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <Button
+                        type="button"
+                        className="w-full rounded-full"
+                        onClick={() => {
+                          setSavedDrawerOpen(false)
+                          go('Case Studies')
+                        }}
+                      >
+                        View All Case Studies
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown className="size-4" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight className="size-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Saved')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Saved Case Studies
+                          <ArrowRight className="size-4" />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => go(navCta)}
@@ -924,6 +1268,58 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -1181,53 +1577,78 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
                 <p className="text-lg text-background/70">{casesDesc}</p>
               </div>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-                {caseItems.map((c, i) => (
-                  <button
-                    key={c.name}
-                    type="button"
-                    onClick={() => go(c.name)}
-                    className="group block w-full overflow-hidden rounded-2xl bg-background/5 text-left ring-1 ring-background/10"
-                  >
-                    <div className="relative overflow-hidden">
-                      <Image
-                        alt={`${c.name} ${c.tag} marketing case study`}
-                        w={600}
-                        h={400}
-                        loading="lazy"
-                        className="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <span
-                        className={cn(
-                          "absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-semibold",
-                          tagTones[i % tagTones.length],
-                        )}
-                      >
-                        {c.tag}
-                      </span>
-                    </div>
-                    <div className="p-6">
-                      <h3 className="mb-2 text-xl font-bold">{c.name}</h3>
-                      <p className="mb-4 text-sm text-background/60">
-                        {c.summary}
-                      </p>
-                      <div className="mb-4 grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-2xl font-bold text-primary">
-                            {c.metricA}
-                          </p>
-                          <p className="text-xs text-background/50">{c.labelA}</p>
-                        </div>
-                        <div>
-                          <p className="text-2xl font-bold text-primary">
-                            {c.metricB}
-                          </p>
-                          <p className="text-xs text-background/50">{c.labelB}</p>
-                        </div>
+                {caseItems.map((c, i) => {
+                  const isSaved = savedCaseNames?.has(c.name) ?? false
+
+                  return (
+                    <button
+                      key={c.name}
+                      type="button"
+                      onClick={() => go(c.name)}
+                      className="group block w-full overflow-hidden rounded-2xl bg-background/5 text-left ring-1 ring-background/10"
+                    >
+                      <div className="relative overflow-hidden">
+                        <Image
+                          alt={`${c.name} ${c.tag} marketing case study`}
+                          w={600}
+                          h={400}
+                          loading="lazy"
+                          className="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <span
+                          className={cn(
+                            "absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-semibold",
+                            tagTones[i % tagTones.length],
+                          )}
+                        >
+                          {c.tag}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            void toggleSavedCase(c.name)
+                          }}
+                          aria-pressed={isSaved}
+                          aria-label={
+                            isSaved
+                              ? `Remove ${c.name} from saved`
+                              : `Save ${c.name} for later`
+                          }
+                          className={cn(
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                            isSaved
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                          )}
+                        >
+                          <BookmarkIcon active={isSaved} />
+                        </button>
                       </div>
-                      <p className="text-xs text-background/40">{c.when}</p>
-                    </div>
-                  </button>
-                ))}
+                      <div className="p-6">
+                        <h3 className="mb-2 text-xl font-bold">{c.name}</h3>
+                        <p className="mb-4 text-sm text-background/60">
+                          {c.summary}
+                        </p>
+                        <div className="mb-4 grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-2xl font-bold text-primary">
+                              {c.metricA}
+                            </p>
+                            <p className="text-xs text-background/50">{c.labelA}</p>
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-primary">
+                              {c.metricB}
+                            </p>
+                            <p className="text-xs text-background/50">{c.labelB}</p>
+                          </div>
+                        </div>
+                        <p className="text-xs text-background/40">{c.when}</p>
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
               <div className="mt-12 text-center">
                 <button
@@ -1470,12 +1891,18 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
                 className="mx-auto mb-8 max-w-lg"
                 onSubmit={(e) => {
                   e.preventDefault()
-                  go(ctaButton)
+                  const formData = new FormData(e.currentTarget)
+                  const email = formData.get('email') as string
+                  if (email) {
+                    void submitLead(email)
+                    go(ctaButton)
+                  }
                 }}
               >
                 <div className="flex flex-col gap-4 sm:flex-row">
                   <input
                     type="email"
+                    name="email"
                     required
                     placeholder={ctaPlaceholder}
                     aria-label={ctaPlaceholder}

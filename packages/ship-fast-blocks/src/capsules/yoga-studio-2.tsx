@@ -4,9 +4,27 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
- * YogaStudioKimiPage2 — a complete, self-contained yoga / wellness STUDIO landing page.
+ * YogaStudioKimiPage2 — a complete, self-contained yoga / wellness STUDIO landing page with full-stack booking functionality.
  *
  * Bold, vibrant, marketing-forward ALTERNATIVE / second style to YogaStudioKimiPage
  * (which is calm, light, editorial). This variant is energetic and conversion-driven:
@@ -15,14 +33,20 @@ import { Image } from "#/lib/img.tsx"
  * overlapping member-avatar social-proof stack + star rating, beside a tall rounded
  * photo card with floating "happy members" and "weekly classes" stat badges), a 6-up
  * icon-tile class grid (gradient cards, duration + intensity meta — Vinyasa, Hatha,
- * Restorative, Power, Yin, Meditation), a tabbed weekly schedule with 5-column class
- * rows (time / class+teacher / intensity badge / duration+studio), a 3-tier pricing
+ * Restorative, Power, Yin, Meditation), a tabbed weekly schedule with 6-column class
+ * rows (time / class+teacher / intensity badge / duration+studio / book button), a 3-tier pricing
  * grid with a highlighted "Most Popular" Unlimited plan plus a dark annual-membership
  * banner and student/senior note, a masonry 3-column studio gallery, a 4-up teacher
  * grid with portrait cards and credentials, a 4-stat metrics band, a 3-up star-rated
  * testimonial trio with member avatars, a 5-item plus/minus FAQ accordion, a gradient
  * CTA band with free-trial + phone CTAs, and a 4-column dark footer with quick links,
  * address, hours and socials.
+ *
+ * FULL-STACK FEATURES: Lakebed-powered class booking system with persisted bookings,
+ * favorite classes with heart toggle, Google authentication for member accounts,
+ * and a "My Bookings" drawer showing scheduled classes with cancel functionality.
+ * Classes can be favorited from the grid, and schedule rows include Book buttons
+ * that add to the bookings drawer. Auth state drives account menu with sign-in/sign-out.
  *
  * Use as the ROOT/home page for yoga, pilates, barre or meditation studios, heated /
  * hot yoga, wellness or fitness boutiques and mindfulness brands when a punchy,
@@ -35,7 +59,7 @@ import { Image } from "#/lib/img.tsx"
 export const YogaStudioKimiPage2 = defineCapsule({
   name: "YogaStudioKimiPage2",
   description:
-    "Complete yoga / meditation / wellness STUDIO landing page in a BOLD, vibrant, conversion-focused style — the energetic ALTERNATIVE / second style sibling to the calm editorial YogaStudioKimiPage. Heavy extrabold display headlines, teal/green token accents, soft token gradients and blurred radial blobs. Includes a two-column hero (status pill, huge split headline, dual CTAs, overlapping member-avatar social-proof stack with star rating, tall rounded photo card with floating happy-members and weekly-classes stat badges), a 6-up icon-tile class grid with gradient cards and duration + intensity meta (Vinyasa Flow, Hatha Basics, Restorative, Power Yoga, Yin, Guided Meditation), a tabbed weekly schedule with day pills and 5-column class rows showing time / class + teacher / intensity badge / duration + studio, a 3-tier membership pricing grid (Drop-In, 5-Class Pack, highlighted Most-Popular Unlimited Monthly) plus a dark annual-membership banner and a student/senior discount note, a masonry 3-column studio-space gallery, a 4-up teacher grid with portrait cards and credentials, a 4-stat metrics band (members / weekly classes / teachers / rating), a 3-up star-rated testimonial trio with member avatars, a 5-item plus/minus FAQ accordion, a gradient CTA band with free-trial and phone CTAs, and a 4-column dark footer with quick links, address, studio hours and social icons. Use as the ROOT/home page for yoga studios, hot/heated yoga, pilates or barre studios, meditation centers, wellness spas, fitness boutiques or mindfulness brands when a punchy, membership-and-free-trial-focused page is wanted rather than the serene first variant. Supply content only — brand, nav, hero, classes, schedule, pricing, gallery, teachers, stats, testimonials, faq, cta, footer; the block owns all layout and styling via semantic theme tokens.",
+    "Complete yoga / meditation / wellness STUDIO landing page in a BOLD, vibrant, conversion-focused style with full-stack booking functionality — the energetic ALTERNATIVE / second style sibling to the calm editorial YogaStudioKimiPage. Heavy extrabold display headlines, teal/green token accents, soft token gradients and blurred radial blobs. Includes a two-column hero (status pill, huge split headline, dual CTAs, overlapping member-avatar social-proof stack with star rating, tall rounded photo card with floating happy-members and weekly-classes stat badges), a 6-up icon-tile class grid with gradient cards and duration + intensity meta (Vinyasa Flow, Hatha Basics, Restorative, Power Yoga, Yin, Guided Meditation) with favorite toggles, a tabbed weekly schedule with day pills and 6-column class rows showing time / class + teacher / intensity badge / duration + studio / book button, a 3-tier membership pricing grid (Drop-In, 5-Class Pack, highlighted Most-Popular Unlimited Monthly) plus a dark annual-membership banner and a student/senior discount note, a masonry 3-column studio-space gallery, a 4-up teacher grid with portrait cards and credentials, a 4-stat metrics band (members / weekly classes / teachers / rating), a 3-up star-rated testimonial trio with member avatars, a 5-item plus/minus FAQ accordion, a gradient CTA band with free-trial and phone CTAs, and a 4-column dark footer with quick links, address, studio hours and social icons. FULL-STACK: Lakebed-powered class booking system with persisted bookings, favorite classes with heart toggle, Google authentication for member accounts, and a 'My Bookings' drawer showing scheduled classes with cancel functionality. Use as the ROOT/home page for yoga studios, hot/heated yoga, pilates or barre studios, meditation centers, wellness spas, fitness boutiques or mindfulness brands when a punchy, membership-and-free-trial-focused page is wanted rather than the serene first variant. Supply content only — brand, nav, hero, classes, schedule, pricing, gallery, teachers, stats, testimonials, faq, cta, footer; the block owns all layout and styling via semantic theme tokens.",
   props: z.object({
     /** Studio / brand name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -215,10 +239,93 @@ export const YogaStudioKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      classes: table({
+        title: string(),
+        description: string(),
+        duration: string(),
+        intensity: string(),
+      }),
+      bookings: table({
+        classTitle: string(),
+        date: string(),
+        time: string(),
+      }),
+      favorites: table({
+        className: string(),
+      }),
+    },
+    queries: {
+      classes: ({ db }) => db.classes.orderBy('createdAt').all(),
+      bookings: ({ db }) => db.bookings.orderBy('createdAt').all(),
+      favoriteClassNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.className)),
+    },
+    mutations: {
+      bookClass: ({ db }, classTitle: string, date: string, time: string) => {
+        db.bookings.insert({ classTitle, date, time })
+        return db.bookings.all()
+      },
+      cancelBooking: ({ db }, bookingId: string) => {
+        db.bookings.delete(bookingId)
+        return db.bookings.all()
+      },
+      toggleFavorite: ({ db }, className: string) => {
+        const existingFavorite = db.favorites
+          .where('className', className)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ className })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [bookingsOpen, setBookingsOpen] = useState(false)
     const brand = props.brand ?? "Serenity Flow"
+
+    const storedClasses = lakebed.useQuery('classes')
+    const bookings = lakebed.useQuery('bookings')
+    const favoriteClassNames = lakebed.useQuery('favoriteClassNames')
+    const auth = lakebed.useAuth()
+    const bookClass = lakebed.useMutation('bookClass')
+    const cancelBooking = lakebed.useMutation('cancelBooking')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
     const nav = props.nav?.length
       ? props.nav
       : ["Classes", "Schedule", "Pricing", "About", "Contact", "Start Free Trial"]
@@ -256,7 +363,7 @@ export const YogaStudioKimiPage2 = defineCapsule({
     const classesDesc =
       props.classes?.description ??
       "From gentle restorative sessions to powerful vinyasa flows, find the practice that speaks to your soul."
-    const classItems = props.classes?.items?.length
+    const staticClassItems = props.classes?.items?.length
       ? props.classes.items
       : [
           {
@@ -302,6 +409,13 @@ export const YogaStudioKimiPage2 = defineCapsule({
             intensity: "All Levels",
           },
         ]
+
+    const displayClasses =
+      storedClasses && storedClasses.length > 0
+        ? storedClasses
+        : staticClassItems
+    const safeBookings = bookings ?? []
+    const bookingCount = safeBookings.length
 
     const scheduleEyebrow = props.schedule?.eyebrow ?? "Weekly Schedule"
     const scheduleHeading =
@@ -636,18 +750,18 @@ export const YogaStudioKimiPage2 = defineCapsule({
       </svg>
     )
 
-    const HeartIcon = ({ className }: { className?: string }) => (
+    const HeartIcon = ({ className, active = false }: { className?: string; active?: boolean }) => (
       <svg
         className={cn("size-7", className)}
-        fill="none"
+        fill={active ? "currentColor" : "none"}
         stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         viewBox="0 0 24 24"
         aria-hidden="true"
       >
         <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.6"
           d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
         />
       </svg>
@@ -738,6 +852,39 @@ export const YogaStudioKimiPage2 = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const CalendarIcon = () => (
+      <svg
+        className="size-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+      </svg>
+    )
+
     const SocialIcon = ({ name }: { name: string }) => {
       const n = name.toLowerCase()
       if (n === "facebook")
@@ -820,7 +967,191 @@ export const YogaStudioKimiPage2 = defineCapsule({
                 ))}
               </nav>
 
-              <div className="hidden md:block">
+              <div className="hidden items-center gap-4 md:flex">
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Profile')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Profile
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={bookingsOpen} onOpenChange={setBookingsOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="My Bookings"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <CalendarIcon />
+                      {bookingCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {bookingCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">My Bookings</SheetTitle>
+                      <SheetDescription>
+                        {bookingCount > 0
+                          ? `${bookingCount} class${bookingCount === 1 ? '' : 'es'} scheduled.`
+                          : 'No classes booked yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeBookings.length ? (
+                        <div className="space-y-4">
+                          {safeBookings.map((booking) => (
+                            <div
+                              key={booking.id}
+                              className="rounded-xl border border-border bg-card p-4"
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-foreground">
+                                    {booking.classTitle}
+                                  </h3>
+                                  <p className="mt-1 text-sm text-muted-foreground">
+                                    {booking.date} at {booking.time}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    void cancelBooking(booking.id)
+                                  }
+                                  className="h-8 rounded-full"
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No bookings yet
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Book your first class from the schedule to get
+                            started.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(nav[nav.length - 1])}
@@ -874,6 +1205,58 @@ export const YogaStudioKimiPage2 = defineCapsule({
                   {label}
                 </button>
               ))}
+              <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                {isSignedIn ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar size="lg">
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-foreground">
+                          {authDisplayName}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {authEmail ?? 'Signed in'}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignOut()
+                      }}
+                      className="w-full rounded-full"
+                    >
+                      Sign out
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      handleSignIn()
+                    }}
+                    disabled={auth.isLoading}
+                    className="w-full rounded-full"
+                  >
+                    <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    {authLabel}
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </header>
@@ -962,7 +1345,7 @@ export const YogaStudioKimiPage2 = defineCapsule({
                   <div className="absolute -bottom-6 -left-6 rounded-2xl bg-card p-6 shadow-xl">
                     <div className="flex items-center gap-4">
                       <span className="flex size-14 items-center justify-center rounded-xl bg-accent text-primary">
-                        <HeartIcon />
+                        <HeartIcon active={false} />
                       </span>
                       <div>
                         <p className="text-3xl font-bold text-card-foreground">
@@ -997,35 +1380,59 @@ export const YogaStudioKimiPage2 = defineCapsule({
               </div>
 
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {classItems.map((item, i) => (
-                  <button
-                    key={item.title}
-                    type="button"
-                    onClick={() => go(item.title)}
-                    className={cn(
-                      "group rounded-3xl border border-border bg-gradient-to-br to-card p-8 text-left transition-all hover:border-primary/30 hover:shadow-xl",
-                      classGradients[i % classGradients.length],
-                    )}
-                  >
-                    <span className="mb-6 flex size-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground transition-transform group-hover:scale-110">
-                      <FlowerMark className="size-8" />
-                    </span>
-                    <h3 className="mb-3 text-2xl font-bold text-card-foreground">
-                      {item.title}
-                    </h3>
-                    <p className="mb-4 text-muted-foreground">
-                      {item.description}
-                    </p>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <ClockIcon /> {item.duration}
+                {displayClasses.map((item, i) => {
+                  const isFavorite =
+                    favoriteClassNames?.has(item.title) ?? false
+
+                  return (
+                    <button
+                      key={item.title}
+                      type="button"
+                      onClick={() => go(item.title)}
+                      className={cn(
+                        "group relative rounded-3xl border border-border bg-gradient-to-br to-card p-8 text-left transition-all hover:border-primary/30 hover:shadow-xl",
+                        classGradients[i % classGradients.length],
+                      )}
+                    >
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          void toggleFavorite(item.title)
+                        }}
+                        aria-pressed={isFavorite}
+                        aria-label={
+                          isFavorite
+                            ? `Remove ${item.title} from favorites`
+                            : `Add ${item.title} to favorites`
+                        }
+                        className="absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-background/90 text-muted-foreground shadow-sm transition-all hover:scale-105 group-hover:opacity-100"
+                      >
+                        <HeartIcon
+                          className="size-5"
+                          active={isFavorite}
+                        />
+                      </button>
+                      <span className="mb-6 flex size-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground transition-transform group-hover:scale-110">
+                        <FlowerMark className="size-8" />
                       </span>
-                      <span className="flex items-center gap-1">
-                        <FlameIcon /> {item.intensity}
-                      </span>
-                    </div>
-                  </button>
-                ))}
+                      <h3 className="mb-3 text-2xl font-bold text-card-foreground">
+                        {item.title}
+                      </h3>
+                      <p className="mb-4 text-muted-foreground">
+                        {item.description}
+                      </p>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <ClockIcon /> {item.duration}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <FlameIcon /> {item.intensity}
+                        </span>
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -1070,7 +1477,7 @@ export const YogaStudioKimiPage2 = defineCapsule({
                 {scheduleRows.map((row) => (
                   <div
                     key={`${row.time}-${row.title}`}
-                    className="grid items-center gap-4 border-b border-border p-6 transition-colors last:border-b-0 hover:bg-accent/40 md:grid-cols-5"
+                    className="grid items-center gap-4 border-b border-border p-6 transition-colors last:border-b-0 hover:bg-accent/40 md:grid-cols-6"
                   >
                     <div className="md:col-span-1">
                       <span className="text-2xl font-bold text-primary">
@@ -1092,6 +1499,19 @@ export const YogaStudioKimiPage2 = defineCapsule({
                       <span className="text-sm text-muted-foreground">
                         {row.meta}
                       </span>
+                    </div>
+                    <div className="md:col-span-1 md:text-right">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          void bookClass(row.title, 'Today', row.time)
+                          setBookingsOpen(true)
+                        }}
+                        className="rounded-full"
+                      >
+                        Book
+                      </Button>
                     </div>
                   </div>
                 ))}

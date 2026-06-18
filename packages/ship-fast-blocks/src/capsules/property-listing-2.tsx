@@ -1,9 +1,27 @@
-import { type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * PropertyListingKimiPage2 — dramatic, cinematic dark-hero luxury real-estate
@@ -22,6 +40,9 @@ import { Image } from "#/lib/img.tsx"
  * high-end estates, architectural masterpieces, off-market listings, or
  * broker showcase pages.
  *
+ * Full-stack features: Saved properties drawer with heart icon toggle, tour
+ * request form submission to Lakebed, Google auth for account menu with saved
+ * properties/tour requests navigation, and reactive query/mutation wiring.
  * Every nav item / CTA / footer link / social / form-submit routes via
  * `useNavigate` (never a dead "#"). All imagery uses the alt-driven <Image>
  * component. Rich defaults render the full page beautifully on zero args.
@@ -29,7 +50,7 @@ import { Image } from "#/lib/img.tsx"
 export const PropertyListingKimiPage2 = defineCapsule({
   name: "PropertyListingKimiPage2",
   description:
-    "A dramatic, cinematic dark-hero luxury real-estate single-property listing page with an immersive full-bleed hero, media publication logo strip, icon-driven feature grid, numbered dark-card process steps, a 7-image gallery with wide-span hero images, dual pricing cards (sale vs lease), statistics band, testimonial cards with headshot avatars, FAQ accordion, a dark email-capture CTA, and a multi-column footer. The second style sibling to PropertyListingKimiPage — use when you want a moodier, editorial, contrast-heavy layout with dark hero/steps/CTA bands and light content sections, versus the bright split-hero variant. Ideal for high-end estates, architectural masterpieces, off-market listings, or broker showcase pages. Supply content only — brand, nav, hero, logos, features, steps, gallery, pricing, stats, testimonials, faq, tour, footer; the block owns all layout and styling.",
+    "A dramatic, cinematic dark-hero luxury real-estate single-property listing page with an immersive full-bleed hero, media publication logo strip, icon-driven feature grid, numbered dark-card process steps, a 7-image gallery with wide-span hero images, dual pricing cards (sale vs lease), statistics band, testimonial cards with headshot avatars, FAQ accordion, a dark email-capture CTA, and a multi-column footer. Full-stack with Lakebed: saved properties drawer with heart toggle, tour request form submission, Google auth for account menu. The second style sibling to PropertyListingKimiPage — use when you want a moodier, editorial, contrast-heavy layout with dark hero/steps/CTA bands and light content sections, versus the bright split-hero variant. Ideal for high-end estates, architectural masterpieces, off-market listings, or broker showcase pages. Supply content only — brand, nav, hero, logos, features, steps, gallery, pricing, stats, testimonials, faq, tour, footer; the block owns all layout and styling.",
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -196,7 +217,45 @@ export const PropertyListingKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      savedProperties: table({
+        propertyTitle: string(),
+        propertyAddress: string(),
+        propertyPrice: string(),
+      }),
+      tourRequests: table({
+        email: string(),
+        propertyTitle: string(),
+        preferredDate: string(),
+        status: string(),
+      }),
+    },
+    queries: {
+      savedProperties: ({ db }) => db.savedProperties.orderBy('createdAt').all(),
+      tourRequests: ({ db }) => db.tourRequests.orderBy('createdAt').all(),
+    },
+    mutations: {
+      saveProperty: ({ db }, propertyTitle: string, propertyAddress: string, propertyPrice: string) => {
+        const existing = db.savedProperties.where('propertyTitle', propertyTitle).all()[0]
+        if (existing) {
+          db.savedProperties.delete(existing.id)
+          return false
+        }
+        db.savedProperties.insert({ propertyTitle, propertyAddress, propertyPrice })
+        return true
+      },
+      submitTourRequest: ({ db }, email: string, propertyTitle: string, preferredDate: string) => {
+        db.tourRequests.insert({ email, propertyTitle, preferredDate, status: 'pending' })
+        return db.tourRequests.all()
+      },
+      removeSavedProperty: ({ db }, id: string) => {
+        db.savedProperties.delete(id)
+        return db.savedProperties.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? "PAVILION"
     const nav = props.nav?.length
@@ -586,6 +645,86 @@ export const PropertyListingKimiPage2 = defineCapsule({
       </svg>
     )
 
+    const [savedOpen, setSavedOpen] = useState(false)
+    const [mobileOpen, setMobileOpen] = useState(false)
+
+    const savedProperties = lakebed.useQuery('savedProperties')
+    const tourRequests = lakebed.useQuery('tourRequests')
+    const saveProperty = lakebed.useMutation('saveProperty')
+    const submitTourRequest = lakebed.useMutation('submitTourRequest')
+    const removeSavedProperty = lakebed.useMutation('removeSavedProperty')
+    const auth = lakebed.useAuth()
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName = auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials = authDisplayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join('') || 'ME'
+    const authLabel = auth.isLoading ? 'Checking...' : isSignedIn ? authDisplayName : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const savedCount = savedProperties?.length ?? 0
+    const isPropertySaved = savedProperties?.some((p) => p.propertyTitle === hero.title) ?? false
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn('size-5', active ? 'text-primary-foreground' : 'text-foreground')}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     return (
       <div className={cn("min-h-svh bg-background font-sans text-foreground antialiased", props.className)}>
         {/* Navbar */}
@@ -608,6 +747,194 @@ export const PropertyListingKimiPage2 = defineCapsule({
               ))}
             </div>
             <div className="flex items-center gap-4">
+              <Sheet open={savedOpen} onOpenChange={setSavedOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Saved properties"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <HeartIcon active={isPropertySaved} />
+                    {savedCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {savedCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Saved Properties</SheetTitle>
+                    <SheetDescription>
+                      {savedCount > 0
+                        ? `${savedCount} property${savedCount === 1 ? '' : 'ies'} saved to your favorites.`
+                        : 'No saved properties yet.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {savedProperties && savedProperties.length > 0 ? (
+                      <div className="space-y-5">
+                        {savedProperties.map((property) => (
+                          <div
+                            key={property.id}
+                            className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                          >
+                            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                              <Image
+                                alt={property.propertyTitle}
+                                w={180}
+                                h={180}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                    {property.propertyAddress}
+                                  </p>
+                                  <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                    {property.propertyTitle}
+                                  </h3>
+                                </div>
+                                <p className="text-sm font-bold text-foreground">
+                                  {property.propertyPrice}
+                                </p>
+                              </div>
+                              <div className="mt-4 flex items-center justify-between">
+                                <button
+                                  type="button"
+                                  onClick={() => void removeSavedProperty(property.id)}
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  className="rounded-full"
+                                  onClick={() => {
+                                    setSavedOpen(false)
+                                    go('Tour')
+                                  }}
+                                >
+                                  Book Tour
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No saved properties
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Save properties to your favorites to view them here.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <SheetClose asChild>
+                      <Button type="button" variant="secondary" className="rounded-full">
+                        Continue
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar size="sm" className="ring-2 ring-background" aria-hidden="true">
+                        {authPicture ? (
+                          <AvatarImage src={authPicture} alt={authDisplayName} />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Saved Properties')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Saved Properties
+                        <ArrowRight />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Tour Requests')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Tour Requests
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => go("Tour")}
@@ -623,7 +950,98 @@ export const PropertyListingKimiPage2 = defineCapsule({
               >
                 <CalendarIcon />
               </button>
+              <button
+                type="button"
+                aria-label="Open menu"
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-menu"
+                onClick={() => setMobileOpen((v: boolean) => !v)}
+                className="p-2 text-muted-foreground hover:text-foreground lg:hidden"
+              >
+                <svg
+                  className="size-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              </button>
             </div>
+            {mobileOpen && (
+              <div
+                id="mobile-menu"
+                className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
+              >
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      go(label)
+                    }}
+                    className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                  >
+                    {label}
+                  </button>
+                ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
           </nav>
         </header>
 
@@ -653,6 +1071,20 @@ export const PropertyListingKimiPage2 = defineCapsule({
                     className="w-full sm:w-auto rounded-full bg-background/10 px-8 py-4 text-base font-bold text-background backdrop-blur-sm hover:bg-background/20 transition-colors border border-background/10"
                   >
                     {hero.secondaryCta}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void saveProperty(hero.title, hero.eyebrow, hero.stats[0]?.value || '')}
+                    aria-pressed={isPropertySaved}
+                    aria-label={isPropertySaved ? 'Remove from saved properties' : 'Save to properties'}
+                    className={cn(
+                      'w-full sm:w-auto rounded-full px-8 py-4 text-base font-bold backdrop-blur-sm transition-colors border',
+                      isPropertySaved
+                        ? 'bg-primary/20 text-primary border-primary/30'
+                        : 'bg-background/10 text-background border-background/10 hover:bg-background/20'
+                    )}
+                  >
+                    {isPropertySaved ? 'Saved' : 'Save Property'}
                   </button>
                 </div>
                 <dl className="mt-16 grid grid-cols-2 gap-8 border-t border-background/10 pt-8 sm:grid-cols-4 sm:gap-x-12">
@@ -774,6 +1206,20 @@ export const PropertyListingKimiPage2 = defineCapsule({
                   >
                     {pricing.sale.cta}
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => void saveProperty(hero.title, hero.eyebrow, pricing.sale.price)}
+                    aria-pressed={isPropertySaved}
+                    aria-label={isPropertySaved ? 'Remove from saved properties' : 'Save to properties'}
+                    className={cn(
+                      'mt-3 block w-full rounded-full px-6 py-3 text-center text-sm font-semibold transition-colors border',
+                      isPropertySaved
+                        ? 'bg-primary/20 text-primary border-primary/30'
+                        : 'bg-background/10 text-foreground border-border hover:bg-muted'
+                    )}
+                  >
+                    {isPropertySaved ? 'Saved' : 'Save Property'}
+                  </button>
                 </div>
                 {/* Lease */}
                 <div className="rounded-3xl bg-foreground p-10 shadow-lg flex flex-col justify-between">
@@ -798,6 +1244,20 @@ export const PropertyListingKimiPage2 = defineCapsule({
                     className="mt-10 block w-full rounded-full bg-primary px-6 py-4 text-center text-base font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
                   >
                     {pricing.lease.cta}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void saveProperty(hero.title, hero.eyebrow, pricing.lease.price)}
+                    aria-pressed={isPropertySaved}
+                    aria-label={isPropertySaved ? 'Remove from saved properties' : 'Save to properties'}
+                    className={cn(
+                      'mt-3 block w-full rounded-full px-6 py-3 text-center text-sm font-semibold transition-colors border',
+                      isPropertySaved
+                        ? 'bg-primary/20 text-primary-foreground border-primary/30'
+                        : 'bg-background/10 text-background border-background/10 hover:bg-background/20'
+                    )}
+                  >
+                    {isPropertySaved ? 'Saved' : 'Save Property'}
                   </button>
                 </div>
               </div>
@@ -877,6 +1337,8 @@ export const PropertyListingKimiPage2 = defineCapsule({
                   className="mt-10 space-y-4 sm:space-y-0 sm:flex sm:items-center sm:justify-center sm:gap-4"
                   onSubmit={(e) => {
                     e.preventDefault()
+                    const email = (e.currentTarget.elements.namedItem('tour-email') as HTMLInputElement).value
+                    void submitTourRequest(email, hero.title, new Date().toISOString())
                     go(tour.submitLabel)
                   }}
                 >

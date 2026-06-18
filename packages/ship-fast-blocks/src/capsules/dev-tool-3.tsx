@@ -1,9 +1,20 @@
-import { type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
+import { number, string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * DevToolKimiPage3 — a complete, self-contained developer-first API platform
@@ -175,8 +186,84 @@ export const DevToolKimiPage3 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      savedItems: table({
+        item: string(),
+        section: string(),
+        sort: number(),
+      }),
+    },
+    queries: {
+      savedItems: ({ db }) => db.savedItems.orderBy("sort").all(),
+    },
+    mutations: {
+      addSavedItem: ({ db }, item: string, section: string) => {
+        const normalizedItem = item.trim()
+        const normalizedSection = section.trim()
+        if (!normalizedItem || !normalizedSection) return db.savedItems.all()
+
+        const exists = db.savedItems
+          .where("section", normalizedSection)
+          .all()
+          .some((entry) => entry.item === normalizedItem)
+
+        if (exists) return db.savedItems.all()
+
+        db.savedItems.insert({
+          item: normalizedItem,
+          section: normalizedSection,
+          sort: Date.now(),
+        })
+
+        return db.savedItems.all()
+      },
+      removeSavedItem: ({ db }, id: string) => {
+        db.savedItems.delete(id)
+        return db.savedItems.all()
+      },
+      clearSavedItems: ({ db }) => {
+        for (const item of db.savedItems.all()) {
+          db.savedItems.delete(item.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [savedOpen, setSavedOpen] = useState(false)
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authActionLabel =
+      auth.isLoading ? "Checking..." : isSignedIn ? "Sign out" : "Sign in"
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const savedItems = lakebed.useQuery("savedItems")
+    const addSavedItem = lakebed.useMutation("addSavedItem")
+    const removeSavedItem = lakebed.useMutation("removeSavedItem")
+    const clearSavedItems = lakebed.useMutation("clearSavedItems")
+    const storedSavedItems = savedItems ?? []
+    const savedCount = storedSavedItems.length
+    const savedSectionCounts = storedSavedItems.reduce<Record<string, number>>(
+      (acc, row) => {
+        const section = row.section
+          .trim()
+          .toLowerCase()
+          .replace(/\b\w/g, (char) => char.toUpperCase())
+        acc[section] = (acc[section] ?? 0) + 1
+        return acc
+      },
+      {},
+    )
+    const savedSectionLabels = Object.entries(savedSectionCounts).sort(
+      (a, b) => b[1] - a[1],
+    )
     const brand = props.brand ?? "OrbitAPI"
     const nav = props.nav?.length
       ? props.nav
@@ -589,6 +676,37 @@ print(endpoint.url)
       </svg>
     )
 
+    const Bookmark = () => (
+      <svg
+        className="size-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+      </svg>
+    )
+
+    const XIcon = () => (
+      <svg
+        className="size-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    )
+
     const featureIcons: ReactNode[] = [
       <svg key="1" className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -710,11 +828,126 @@ print(endpoint.url)
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go("Sign in")}
+                  onClick={() => {
+                    if (isSignedIn) {
+                      handleSignOut()
+                    } else {
+                      handleSignIn()
+                    }
+                  }}
+                  disabled={auth.isLoading}
                   className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
                 >
-                  Sign in
+                  {authActionLabel}
                 </button>
+                <Sheet
+                  open={savedOpen}
+                  onOpenChange={setSavedOpen}
+                >
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open saved resources"
+                      className="relative flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm font-semibold text-foreground/90 transition-colors hover:bg-muted"
+                    >
+                      <Bookmark />
+                      <span className="hidden sm:inline">Saved</span>
+                      {savedCount > 0 ? (
+                        <span className="grid size-5 place-items-center rounded-full bg-primary px-1 text-[0.7rem] font-bold text-primary-foreground">
+                          {savedCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border px-6 py-4">
+                      <SheetTitle>Saved resources</SheetTitle>
+                      <SheetDescription>
+                        Save integrations and docs links to continue later.
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {storedSavedItems.length ? (
+                        <div className="space-y-4">
+                          {storedSavedItems.map((entry) => (
+                            <article
+                              key={entry.id}
+                              className="rounded-xl border border-border bg-card/50 p-4"
+                            >
+                              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                {entry.section}
+                              </p>
+                              <p className="mt-1 text-sm font-semibold text-foreground">
+                                {entry.item}
+                              </p>
+                              <div className="mt-3 flex flex-wrap items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSavedOpen(false)
+                                    go(entry.item)
+                                  }}
+                                  className="rounded-lg bg-foreground px-3 py-1.5 text-xs font-semibold text-background"
+                                >
+                                  Open
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void removeSavedItem(entry.id)}
+                                  className="inline-flex items-center gap-1 rounded-lg border border-border bg-muted/70 px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+                                  aria-label={`Remove ${entry.item}`}
+                                >
+                                  <XIcon />
+                                  Remove
+                                </button>
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-40 items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-4 text-center text-sm text-muted-foreground">
+                          <p>No saved resources yet.</p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border px-6 py-5">
+                      <div className="w-full space-y-4">
+                        <div className="space-y-1">
+                          {savedSectionLabels.map(([label, count]) => (
+                            <div
+                              key={label}
+                              className="flex justify-between text-sm text-muted-foreground"
+                            >
+                              <span>{label}</span>
+                              <span>{count}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => void clearSavedItems()}
+                            disabled={savedCount === 0}
+                            className="rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            Clear all
+                          </button>
+                          <SheetClose asChild>
+                            <button
+                              type="button"
+                              className="rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background"
+                            >
+                              Continue
+                            </button>
+                          </SheetClose>
+                        </div>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(heroPrimary)}
@@ -948,7 +1181,10 @@ print(endpoint.url)
                       <button
                         key={link.title}
                         type="button"
-                        onClick={() => go(link.title)}
+                        onClick={() => {
+                          void addSavedItem(link.title, "docs")
+                          go(link.title)
+                        }}
                         className="flex w-full items-center gap-3 rounded-lg border border-border bg-card/50 p-4 transition-colors hover:border-border hover:bg-card"
                       >
                         <div className="grid size-10 place-items-center rounded-lg bg-primary/10 text-primary">
@@ -1043,7 +1279,10 @@ print(endpoint.url)
                     <button
                       key={item.name}
                       type="button"
-                      onClick={() => go(item.name)}
+                      onClick={() => {
+                        void addSavedItem(item.name, "integration")
+                        go(item.name)
+                      }}
                       className="group flex flex-col items-center justify-center rounded-xl border border-border bg-card/50 p-6 transition-all hover:border-border hover:bg-card"
                     >
                       <div
@@ -1146,7 +1385,10 @@ print(endpoint.url)
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(tier.cta)}
+                      onClick={() => {
+                        void addSavedItem(tier.cta, "pricing")
+                        go(tier.cta)
+                      }}
                       className={cn(
                         "mt-8 block w-full rounded-lg py-3 text-center font-semibold transition-colors",
                         tier.featured

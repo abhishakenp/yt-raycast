@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * MobileAppKimiPage10 — complete mobile-app landing page, v10 sibling style.
@@ -185,10 +203,100 @@ export const MobileAppKimiPage10 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      subscriptions: table({
+        plan: string(),
+        email: string(),
+      }),
+      favorites: table({
+        featureName: string(),
+      }),
+      subscribers: table({
+        email: string(),
+      }),
+    },
+    queries: {
+      subscriptions: ({ db }) => db.subscriptions.orderBy('createdAt').all(),
+      favoriteFeatureNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.featureName)),
+      subscriberCount: ({ db }) => db.subscribers.all().length,
+    },
+    mutations: {
+      subscribeToPlan: ({ db }, plan: string, email: string) => {
+        db.subscriptions.insert({ plan, email })
+        return db.subscriptions.all()
+      },
+      toggleFavorite: ({ db }, featureName: string) => {
+        const existingFavorite = db.favorites
+          .where('featureName', featureName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ featureName })
+        return true
+      },
+      subscribeToNewsletter: ({ db }, email: string) => {
+        const existing = db.subscribers.where('email', email).all()[0]
+        if (!existing) {
+          db.subscribers.insert({ email })
+        }
+        return db.subscribers.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [subscriptionOpen, setSubscriptionOpen] = useState(false)
+    const [newsletterEmail, setNewsletterEmail] = useState("")
     const brand = props.brand ?? "HabitFlow"
+
+    const subscriptions = lakebed.useQuery('subscriptions')
+    const favoriteFeatureNames = lakebed.useQuery('favoriteFeatureNames')
+    const subscriberCount = lakebed.useQuery('subscriberCount')
+    const subscribeToPlan = lakebed.useMutation('subscribeToPlan')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const subscribeToNewsletter = lakebed.useMutation('subscribeToNewsletter')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const handleNewsletterSubmit = (e: React.FormEvent) => {
+      e.preventDefault()
+      if (newsletterEmail) {
+        void subscribeToNewsletter(newsletterEmail)
+        setNewsletterEmail('')
+      }
+    }
     const nav = props.nav?.length
       ? props.nav
       : ["Features", "How It Works", "Pricing", "Reviews", "Download App"]
@@ -606,6 +714,40 @@ export const MobileAppKimiPage10 = defineCapsule({
       </svg>
     )
 
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
     const SocialIcon = ({ name }: { name: string }) => {
       if (name === "Twitter") {
         return (
@@ -667,6 +809,106 @@ export const MobileAppKimiPage10 = defineCapsule({
               </div>
 
               <div className="flex items-center gap-4">
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDownIcon />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Settings')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Settings
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => go(nav[nav.length - 1])}
@@ -706,6 +948,58 @@ export const MobileAppKimiPage10 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -982,37 +1276,55 @@ export const MobileAppKimiPage10 = defineCapsule({
                   )
                 }
 
+                const isFavorite = favoriteFeatureNames?.has(item.title) ?? false
+
                 return (
                   <div
                     key={item.title}
                     className="group rounded-3xl border border-border bg-card p-6 shadow-lg shadow-foreground/5 transition-all hover:shadow-xl hover:shadow-foreground/10"
                   >
-                    <div className={cn(
-                      "mb-4 flex size-14 items-center justify-center rounded-2xl transition-transform group-hover:scale-110",
-                      i % 4 === 0 ? "bg-gradient-to-br from-primary/20 to-accent/20" :
-                      i % 4 === 1 ? "bg-gradient-to-br from-chart-2/20 to-chart-3/20" :
-                      i % 4 === 2 ? "bg-gradient-to-br from-chart-4/20 to-chart-5/20" :
-                      "bg-gradient-to-br from-secondary/20 to-muted"
-                    )}>
-                      {i === 1 ? (
-                        <span className="text-3xl">🔥</span>
-                      ) : (
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={cn(
-                          "size-7",
-                          i % 4 === 0 ? "text-primary" :
-                          i % 4 === 1 ? "text-chart-2" :
-                          i % 4 === 2 ? "text-chart-4" :
-                          "text-secondary"
-                        )} aria-hidden="true">
-                          {i === 2 ? (
-                            <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                          ) : i === 3 ? (
-                            <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                          ) : (
-                            <path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                          )}
-                        </svg>
-                      )}
+                    <div className="mb-4 flex items-start justify-between">
+                      <div className={cn(
+                        "flex size-14 items-center justify-center rounded-2xl transition-transform group-hover:scale-110",
+                        i % 4 === 0 ? "bg-gradient-to-br from-primary/20 to-accent/20" :
+                        i % 4 === 1 ? "bg-gradient-to-br from-chart-2/20 to-chart-3/20" :
+                        i % 4 === 2 ? "bg-gradient-to-br from-chart-4/20 to-chart-5/20" :
+                        "bg-gradient-to-br from-secondary/20 to-muted"
+                      )}>
+                        {i === 1 ? (
+                          <span className="text-3xl">🔥</span>
+                        ) : (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={cn(
+                            "size-7",
+                            i % 4 === 0 ? "text-primary" :
+                            i % 4 === 1 ? "text-chart-2" :
+                            i % 4 === 2 ? "text-chart-4" :
+                            "text-secondary"
+                          )} aria-hidden="true">
+                            {i === 2 ? (
+                              <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            ) : i === 3 ? (
+                              <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            ) : (
+                              <path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                            )}
+                          </svg>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void toggleFavorite(item.title)}
+                        aria-pressed={isFavorite}
+                        aria-label={`Save ${item.title} to favorites`}
+                        className={cn(
+                          'grid size-8 place-items-center rounded-full shadow-md transition-all hover:scale-105',
+                          isFavorite
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-background/90 text-muted-foreground hover:text-foreground',
+                        )}
+                      >
+                        <HeartIcon active={isFavorite} />
+                      </button>
                     </div>
                     <h3 className="mb-2 text-xl font-bold text-card-foreground">{item.title}</h3>
                     <p className="text-sm leading-relaxed text-muted-foreground">{item.description}</p>
@@ -1259,7 +1571,9 @@ export const MobileAppKimiPage10 = defineCapsule({
 
                   <button
                     type="button"
-                    onClick={() => go(tier.cta)}
+                    onClick={() => {
+                      setSubscriptionOpen(true)
+                    }}
                     className={cn(
                       "w-full rounded-xl py-3 px-6 font-semibold transition-colors",
                       tier.featured
@@ -1396,6 +1710,31 @@ export const MobileAppKimiPage10 = defineCapsule({
                 </div>
               </button>
             </div>
+            <form
+              className="mx-auto mb-6 flex max-w-md flex-col gap-3 sm:flex-row"
+              onSubmit={handleNewsletterSubmit}
+            >
+              <input
+                type="email"
+                placeholder="Enter your email"
+                aria-label="Email address for newsletter"
+                required
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                className="flex-1 rounded-full border border-background/20 bg-background/10 px-6 py-4 text-background placeholder:text-background/50 focus:outline-none focus:ring-2 focus:ring-background/30"
+              />
+              <button
+                type="submit"
+                className="whitespace-nowrap rounded-full bg-background px-8 py-4 font-semibold text-foreground transition-colors hover:bg-muted"
+              >
+                Subscribe
+              </button>
+            </form>
+            {subscriberCount !== undefined && subscriberCount > 0 && (
+              <p className="text-sm text-background/60">
+                Join {subscriberCount.toLocaleString()} subscribers
+              </p>
+            )}
             <p className="text-sm text-background/70">{ctaNote}</p>
           </div>
         </section>
@@ -1464,6 +1803,93 @@ export const MobileAppKimiPage10 = defineCapsule({
             </div>
           </div>
         </footer>
+
+        {/* ========== SUBSCRIPTION DRAWER ========== */}
+        <Sheet open={subscriptionOpen} onOpenChange={setSubscriptionOpen}>
+          <SheetContent
+            side="right"
+            className="w-full gap-0 p-0 sm:max-w-md"
+          >
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Subscribe to {brand}</SheetTitle>
+              <SheetDescription>
+                Choose a plan that works for you. Start your free trial today.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              <div className="space-y-4">
+                {pricingTiers.map((tier) => (
+                  <div
+                    key={tier.name}
+                    className={cn(
+                      "relative rounded-2xl p-6 border",
+                      tier.featured
+                        ? "border-primary bg-primary/5"
+                        : "border-border bg-card",
+                    )}
+                  >
+                    {tier.featured && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <span className="inline-block rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+                          Most Popular
+                        </span>
+                      </div>
+                    )}
+                    <div className="mb-4">
+                      <div className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                        {tier.name}
+                      </div>
+                      <div className="mt-2 flex items-baseline gap-1">
+                        <span className="text-3xl font-bold text-foreground">{tier.price}</span>
+                        <span className="text-muted-foreground">{tier.period}</span>
+                      </div>
+                      <p className="mt-2 text-sm text-muted-foreground">{tier.tagline}</p>
+                    </div>
+                    <ul className="mb-4 space-y-2">
+                      {tier.features?.map((f) => (
+                        <li key={f.label} className="flex items-center gap-2 text-sm">
+                          {f.included ? (
+                            <CheckMarkIcon className="size-4 text-primary" />
+                          ) : (
+                            <CrossIcon className="size-4 text-muted-foreground/40" />
+                          )}
+                          <span
+                            className={cn(
+                              f.included ? "text-foreground" : "text-muted-foreground/60",
+                            )}
+                          >
+                            {f.label}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Button
+                      type="button"
+                      className="w-full rounded-full"
+                      onClick={() => {
+                        if (isSignedIn && authEmail) {
+                          void subscribeToPlan(tier.name, authEmail)
+                          setSubscriptionOpen(false)
+                        } else {
+                          handleSignIn()
+                        }
+                      }}
+                    >
+                      {isSignedIn ? `Subscribe to ${tier.name}` : 'Sign in to Subscribe'}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <SheetClose asChild>
+                <Button type="button" variant="outline" className="w-full rounded-full">
+                  Continue Browsing
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

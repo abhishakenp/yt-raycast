@@ -1,9 +1,27 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * WeddingKimiPage — a complete, self-contained wedding-invitation / save-the-date
@@ -140,10 +158,146 @@ export const WeddingKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      rsvps: table({
+        firstName: string(),
+        lastName: string(),
+        email: string(),
+        attendance: string(),
+        guestCount: number(),
+        dietaryRestrictions: string(),
+        needsShuttle: string(),
+      }),
+    },
+    queries: {
+      rsvps: ({ db }) => db.rsvps.orderBy('createdAt').all(),
+      myRsvp: ({ db }, email: string) =>
+        db.rsvps.where('email', email).all()[0],
+    },
+    mutations: {
+      submitRsvp: (
+        { db },
+        firstName: string,
+        lastName: string,
+        email: string,
+        attendance: string,
+        guestCount: number,
+        dietaryRestrictions: string,
+        needsShuttle: string,
+      ) => {
+        const existing = db.rsvps.where('email', email).all()[0]
+        if (existing) {
+          db.rsvps.update(existing.id, {
+            firstName,
+            lastName,
+            attendance,
+            guestCount,
+            dietaryRestrictions,
+            needsShuttle,
+          })
+        } else {
+          db.rsvps.insert({
+            firstName,
+            lastName,
+            email,
+            attendance,
+            guestCount,
+            dietaryRestrictions,
+            needsShuttle,
+          })
+        }
+        return db.rsvps.where('email', email).all()[0]
+      },
+      deleteRsvp: ({ db }, email: string) => {
+        for (const rsvp of db.rsvps.where('email', email).all()) {
+          db.rsvps.delete(rsvp.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [rsvpDrawerOpen, setRsvpDrawerOpen] = useState(false)
+    const [rsvpForm, setRsvpForm] = useState({
+      firstName: '',
+      lastName: '',
+      email: '',
+      attendance: '',
+      guestCount: 1,
+      dietaryRestrictions: '',
+      needsShuttle: false,
+    })
     const brand = props.brand ?? "E & J"
+
+    const rsvps = lakebed.useQuery('rsvps')
+    const submitRsvp = lakebed.useMutation('submitRsvp')
+    const deleteRsvp = lakebed.useMutation('deleteRsvp')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const handleRsvpSubmit = (e: React.FormEvent) => {
+      e.preventDefault()
+      void submitRsvp(
+        rsvpForm.firstName,
+        rsvpForm.lastName,
+        rsvpForm.email,
+        rsvpForm.attendance,
+        rsvpForm.guestCount,
+        rsvpForm.dietaryRestrictions,
+        rsvpForm.needsShuttle ? 'yes' : 'no',
+      )
+      setRsvpDrawerOpen(true)
+    }
+
+    const myRsvp = authEmail
+      ? rsvps?.find((r) => r.email === authEmail)
+      : undefined
+
+    // Pre-fill form if user is signed in and has existing RSVP
+    useEffect(() => {
+      if (isSignedIn && authEmail && myRsvp && !rsvpForm.firstName) {
+        setRsvpForm({
+          firstName: myRsvp.firstName,
+          lastName: myRsvp.lastName,
+          email: myRsvp.email,
+          attendance: myRsvp.attendance,
+          guestCount: myRsvp.guestCount,
+          dietaryRestrictions: myRsvp.dietaryRestrictions,
+          needsShuttle: myRsvp.needsShuttle === 'yes',
+        })
+      } else if (isSignedIn && authEmail && !rsvpForm.email) {
+        setRsvpForm((prev) => ({ ...prev, email: authEmail }))
+      }
+    }, [isSignedIn, authEmail, myRsvp])
+
     const nav = props.nav?.length
       ? props.nav
       : ["Our Story", "Schedule", "Gallery", "Details", "RSVP"]
@@ -324,6 +478,37 @@ export const WeddingKimiPage = defineCapsule({
 
     const navCta = nav[nav.length - 1]
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     const detailIcons: Record<string, React.ReactNode> = {
       pin: (
         <svg
@@ -405,12 +590,103 @@ export const WeddingKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage src={authPicture} alt={authDisplayName} />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => setRsvpDrawerOpen(true)}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Your RSVP
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => go(navCta)}
-                  className="rounded-full bg-primary px-5 py-2.5 text-sm text-primary-foreground transition-colors hover:bg-primary/90"
+                  className="relative rounded-full bg-primary px-5 py-2.5 text-sm text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   {navCta}
+                  {myRsvp ? (
+                    <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-background text-[0.625rem] font-bold text-primary">
+                      ✓
+                    </span>
+                  ) : null}
                 </button>
               </div>
               <button
@@ -453,8 +729,73 @@ export const WeddingKimiPage = defineCapsule({
                     className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
                   >
                     {label}
+                    {label === navCta && myRsvp ? (
+                      <span className="ml-2 inline-flex size-5 items-center justify-center rounded-full bg-primary text-[0.625rem] font-bold text-primary-foreground">
+                        ✓
+                      </span>
+                    ) : null}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          setRsvpDrawerOpen(true)
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Your RSVP
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                        variant="outline"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -776,10 +1117,7 @@ export const WeddingKimiPage = defineCapsule({
 
               <form
                 className="space-y-6"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  go(rsvpSubmit)
-                }}
+                onSubmit={handleRsvpSubmit}
               >
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
@@ -794,6 +1132,10 @@ export const WeddingKimiPage = defineCapsule({
                       type="text"
                       required
                       placeholder="Enter your first name"
+                      value={rsvpForm.firstName}
+                      onChange={(e) =>
+                        setRsvpForm({ ...rsvpForm, firstName: e.target.value })
+                      }
                       className={inputCls}
                     />
                   </div>
@@ -809,6 +1151,10 @@ export const WeddingKimiPage = defineCapsule({
                       type="text"
                       required
                       placeholder="Enter your last name"
+                      value={rsvpForm.lastName}
+                      onChange={(e) =>
+                        setRsvpForm({ ...rsvpForm, lastName: e.target.value })
+                      }
                       className={inputCls}
                     />
                   </div>
@@ -826,6 +1172,10 @@ export const WeddingKimiPage = defineCapsule({
                     type="email"
                     required
                     placeholder="your@email.com"
+                    value={rsvpForm.email}
+                    onChange={(e) =>
+                      setRsvpForm({ ...rsvpForm, email: e.target.value })
+                    }
                     className={inputCls}
                   />
                 </div>
@@ -844,6 +1194,10 @@ export const WeddingKimiPage = defineCapsule({
                           type="radio"
                           name="attendance"
                           value={opt}
+                          checked={rsvpForm.attendance === opt}
+                          onChange={(e) =>
+                            setRsvpForm({ ...rsvpForm, attendance: e.target.value })
+                          }
                           className="size-4 accent-primary"
                         />
                         <span className="text-foreground">{opt}</span>
@@ -861,10 +1215,17 @@ export const WeddingKimiPage = defineCapsule({
                   </label>
                   <select
                     id="wedding-guests"
+                    value={rsvpForm.guestCount}
+                    onChange={(e) =>
+                      setRsvpForm({
+                        ...rsvpForm,
+                        guestCount: Number.parseInt(e.target.value, 10),
+                      })
+                    }
                     className={cn(inputCls, "appearance-none")}
                   >
-                    {guestOptions.map((opt) => (
-                      <option key={opt} className="bg-background">
+                    {guestOptions.map((opt, i) => (
+                      <option key={opt} value={i + 1} className="bg-background">
                         {opt}
                       </option>
                     ))}
@@ -882,6 +1243,13 @@ export const WeddingKimiPage = defineCapsule({
                     id="wedding-dietary"
                     rows={3}
                     placeholder="Please let us know of any allergies or dietary requirements"
+                    value={rsvpForm.dietaryRestrictions}
+                    onChange={(e) =>
+                      setRsvpForm({
+                        ...rsvpForm,
+                        dietaryRestrictions: e.target.value,
+                      })
+                    }
                     className={cn(inputCls, "resize-none")}
                   />
                 </div>
@@ -891,6 +1259,10 @@ export const WeddingKimiPage = defineCapsule({
                     <input
                       type="checkbox"
                       name="shuttle"
+                      checked={rsvpForm.needsShuttle}
+                      onChange={(e) =>
+                        setRsvpForm({ ...rsvpForm, needsShuttle: e.target.checked })
+                      }
                       className="mt-1 size-4 accent-primary"
                     />
                     <span className="text-sm text-muted-foreground">
@@ -922,6 +1294,110 @@ export const WeddingKimiPage = defineCapsule({
             </div>
           </section>
         </main>
+
+        {/* RSVP Drawer */}
+        <Sheet open={rsvpDrawerOpen} onOpenChange={setRsvpDrawerOpen}>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Your RSVP</SheetTitle>
+              <SheetDescription>
+                {myRsvp
+                  ? `You have ${myRsvp.attendance === 'Joyfully Accept' ? 'accepted' : 'declined'} the invitation.`
+                  : 'You have not submitted an RSVP yet.'}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {myRsvp ? (
+                <div className="space-y-6">
+                  <div className="rounded-lg bg-muted/40 p-4">
+                    <div className="mb-4 flex items-center justify-between">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Status
+                      </span>
+                      <span
+                        className={cn(
+                          'rounded-full px-3 py-1 text-xs font-semibold',
+                          myRsvp.attendance === 'Joyfully Accept'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted-foreground text-background',
+                        )}
+                      >
+                        {myRsvp.attendance}
+                      </span>
+                    </div>
+                    <div className="space-y-3 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Name:</span>{' '}
+                        <span className="font-medium text-foreground">
+                          {myRsvp.firstName} {myRsvp.lastName}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Email:</span>{' '}
+                        <span className="font-medium text-foreground">
+                          {myRsvp.email}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Guests:</span>{' '}
+                        <span className="font-medium text-foreground">
+                          {myRsvp.guestCount}
+                        </span>
+                      </div>
+                      {myRsvp.dietaryRestrictions ? (
+                        <div>
+                          <span className="text-muted-foreground">
+                            Dietary:
+                          </span>{' '}
+                          <span className="font-medium text-foreground">
+                            {myRsvp.dietaryRestrictions}
+                          </span>
+                        </div>
+                      ) : null}
+                      <div>
+                        <span className="text-muted-foreground">Shuttle:</span>{' '}
+                        <span className="font-medium text-foreground">
+                          {myRsvp.needsShuttle === 'yes' ? 'Yes' : 'No'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                  <p className="text-base font-semibold text-foreground">
+                    No RSVP submitted
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Fill out the RSVP form above to submit your response.
+                  </p>
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              {myRsvp ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full rounded-full"
+                  onClick={() => {
+                    if (myRsvp.email) {
+                      void deleteRsvp(myRsvp.email)
+                    }
+                  }}
+                >
+                  Delete RSVP
+                </Button>
+              ) : (
+                <SheetClose asChild>
+                  <Button type="button" className="w-full rounded-full">
+                    Close
+                  </Button>
+                </SheetClose>
+              )}
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
 
         {/* Footer */}
         <footer className="bg-foreground py-16 text-background/60">

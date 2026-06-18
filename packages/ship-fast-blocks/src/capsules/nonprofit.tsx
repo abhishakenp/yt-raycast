@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * NonprofitKimiPage — a complete, self-contained NONPROFIT / charity / NGO
@@ -184,10 +202,128 @@ export const NonprofitKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      donations: table({
+        amount: string(),
+        program: string(),
+        donorName: string(),
+        donorEmail: string(),
+      }),
+      volunteerSignups: table({
+        name: string(),
+        email: string(),
+        interest: string(),
+      }),
+      favoritePrograms: table({
+        programName: string(),
+      }),
+    },
+    queries: {
+      donations: ({ db }) => db.donations.orderBy('createdAt').all(),
+      volunteerSignups: ({ db }) => db.volunteerSignups.orderBy('createdAt').all(),
+      favoriteProgramNames: ({ db }) =>
+        new Set(db.favoritePrograms.all().map((favorite) => favorite.programName)),
+    },
+    mutations: {
+      addDonation: ({ db }, amount: string, program: string, donorName: string, donorEmail: string) => {
+        db.donations.insert({ amount, program, donorName, donorEmail })
+        return db.donations.all()
+      },
+      removeDonation: ({ db }, id: string) => {
+        db.donations.delete(id)
+        return db.donations.all()
+      },
+      clearDonations: ({ db }) => {
+        for (const item of db.donations.all()) {
+          db.donations.delete(item.id)
+        }
+        return []
+      },
+      addVolunteerSignup: ({ db }, name: string, email: string, interest: string) => {
+        db.volunteerSignups.insert({ name, email, interest })
+        return db.volunteerSignups.all()
+      },
+      toggleFavoriteProgram: ({ db }, programName: string) => {
+        const existingFavorite = db.favoritePrograms
+          .where('programName', programName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favoritePrograms.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favoritePrograms.insert({ programName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [donationDrawerOpen, setDonationDrawerOpen] = useState(false)
+    const [volunteerDrawerOpen, setVolunteerDrawerOpen] = useState(false)
     const brand = props.brand ?? "Roots of Hope"
+
+    // Lakebed queries and mutations
+    const donations = lakebed.useQuery('donations')
+    const volunteerSignups = lakebed.useQuery('volunteerSignups')
+    const favoriteProgramNames = lakebed.useQuery('favoriteProgramNames')
+    const auth = lakebed.useAuth()
+    const addDonation = lakebed.useMutation('addDonation')
+    const removeDonation = lakebed.useMutation('removeDonation')
+    const clearDonations = lakebed.useMutation('clearDonations')
+    const addVolunteerSignup = lakebed.useMutation('addVolunteerSignup')
+    const toggleFavoriteProgram = lakebed.useMutation('toggleFavoriteProgram')
+
+    // Auth state
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    // Helper functions
+    const priceAmount = (price: string) => {
+      const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ''))
+      return Number.isFinite(amount) ? amount : 0
+    }
+
+    const formatCurrency = (amount: number) =>
+      new Intl.NumberFormat('en-US', {
+        currency: 'USD',
+        style: 'currency',
+      }).format(amount)
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    // Safe arrays
+    const safeDonations = donations ?? []
+    const donationCount = safeDonations.length
+    const donationTotal = safeDonations.reduce(
+      (total, donation) => total + priceAmount(donation.amount),
+      0,
+    )
     const nav = props.nav?.length
       ? props.nav
       : ["Mission", "Impact", "Programs", "Stories", "Donate Now"]
@@ -553,6 +689,39 @@ export const NonprofitKimiPage = defineCapsule({
       </svg>
     )
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     // Mission icons (decorative, token-colored).
     const missionIcons: ReactNode[] = [
       // book
@@ -660,29 +829,276 @@ export const NonprofitKimiPage = defineCapsule({
                 </button>
               </div>
 
-              <button
-                type="button"
-                aria-label="Open menu"
-                aria-expanded={mobileOpen}
-                aria-controls="mobile-menu"
-                onClick={() => setMobileOpen((v: boolean) => !v)}
-                className="p-2 text-muted-foreground hover:text-foreground md:hidden"
-              >
-                <svg
-                  className="size-6"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
+              <div className="flex items-center gap-4">
+                {/* Volunteer button */}
+                <button
+                  type="button"
+                  onClick={() => setVolunteerDrawerOpen(true)}
+                  className="hidden items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:flex"
                 >
-                  <path
+                  <svg
+                    className="size-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 00-3-3.87" />
+                    <path d="M16 3.13a4 4 0 010 7.75" />
+                  </svg>
+                  Volunteer
+                </button>
+
+                {/* Donation drawer trigger */}
+                <Sheet open={donationDrawerOpen} onOpenChange={setDonationDrawerOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Donation history"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+                      </svg>
+                      {donationCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {donationCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Your Donations</SheetTitle>
+                      <SheetDescription>
+                        {donationCount > 0
+                          ? `${donationCount} donation${donationCount === 1 ? '' : 's'} totaling ${formatCurrency(donationTotal)}.`
+                          : 'No donations yet. Make a difference today!'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeDonations.length ? (
+                        <div className="space-y-4">
+                          {safeDonations.map((donation) => (
+                            <div
+                              key={donation.id}
+                              className="grid grid-cols-[1fr_auto] gap-4 border-b border-border pb-4 last:border-0"
+                            >
+                              <div>
+                                <p className="text-sm font-semibold text-foreground">
+                                  {donation.amount}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {donation.program}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {donation.donorName}
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => void removeDonation(donation.id)}
+                                className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No donations yet
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Your contributions make a real impact. Start by choosing a donation amount below.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>Total Donated</span>
+                          <span>{formatCurrency(donationTotal)}</span>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        disabled={!safeDonations.length}
+                        className="w-full rounded-full"
+                        onClick={() => go('Checkout')}
+                      >
+                        Complete Donation
+                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="rounded-full"
+                          onClick={() => void clearDonations()}
+                          disabled={!safeDonations.length}
+                        >
+                          Clear
+                        </Button>
+                        <SheetClose asChild>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="rounded-full"
+                          >
+                            Continue
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+
+                {/* Account menu with auth */}
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Donation History')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Donation History
+                          <ArrowRight className="size-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Volunteer Profile')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Volunteer Profile
+                          <ArrowRight className="size-4" />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+
+                {/* Mobile menu trigger */}
+                <button
+                  type="button"
+                  aria-label="Open menu"
+                  aria-expanded={mobileOpen}
+                  aria-controls="mobile-menu"
+                  onClick={() => setMobileOpen((v: boolean) => !v)}
+                  className="p-2 text-muted-foreground hover:text-foreground md:hidden"
+                >
+                  <svg
+                    className="size-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
             {mobileOpen && (
               <div
@@ -702,6 +1118,58 @@ export const NonprofitKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -884,64 +1352,86 @@ export const NonprofitKimiPage = defineCapsule({
               </div>
 
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {programItems.map((prog, i) => (
-                  <article
-                    key={prog.title}
-                    className="group overflow-hidden rounded-xl border border-border bg-card transition-shadow hover:shadow-lg"
-                  >
-                    <div className="aspect-[16/10] overflow-hidden bg-muted">
-                      <Image
-                        alt={prog.imageAlt}
-                        w={800}
-                        h={500}
-                        loading="lazy"
-                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="p-6">
-                      <div className="mb-3 flex items-center gap-2">
-                        <span
+                {programItems.map((prog, i) => {
+                  const isFavorite = favoriteProgramNames?.has(prog.title) ?? false
+
+                  return (
+                    <article
+                      key={prog.title}
+                      className="group overflow-hidden rounded-xl border border-border bg-card transition-shadow hover:shadow-lg"
+                    >
+                      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+                        <Image
+                          alt={prog.imageAlt}
+                          w={800}
+                          h={500}
+                          loading="lazy"
+                          className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavoriteProgram(prog.title)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${prog.title} from favorites`
+                              : `Add ${prog.title} to favorites`
+                          }
                           className={cn(
-                            "rounded-full px-2.5 py-1 text-xs font-medium",
-                            tagTones[i % tagTones.length],
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
                           )}
                         >
-                          {prog.tag}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {prog.since}
-                        </span>
+                          <HeartIcon active={isFavorite} />
+                        </button>
                       </div>
-                      <h3 className="mb-3 text-xl font-semibold text-card-foreground">
-                        {prog.title}
-                      </h3>
-                      <p className="mb-4 leading-relaxed text-muted-foreground">
-                        {prog.description}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => go(prog.title)}
-                        className="inline-flex items-center text-sm font-medium text-foreground transition-colors hover:text-primary"
-                      >
-                        {programsLearnMore}
-                        <svg
-                          className="ml-1 size-4"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          viewBox="0 0 24 24"
-                          aria-hidden="true"
+                      <div className="p-6">
+                        <div className="mb-3 flex items-center gap-2">
+                          <span
+                            className={cn(
+                              "rounded-full px-2.5 py-1 text-xs font-medium",
+                              tagTones[i % tagTones.length],
+                            )}
+                          >
+                            {prog.tag}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {prog.since}
+                          </span>
+                        </div>
+                        <h3 className="mb-3 text-xl font-semibold text-card-foreground">
+                          {prog.title}
+                        </h3>
+                        <p className="mb-4 leading-relaxed text-muted-foreground">
+                          {prog.description}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => go(prog.title)}
+                          className="inline-flex items-center text-sm font-medium text-foreground transition-colors hover:text-primary"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </article>
-                ))}
+                          {programsLearnMore}
+                          <svg
+                            className="ml-1 size-4"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M9 5l7 7-7 7"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -1044,7 +1534,12 @@ export const NonprofitKimiPage = defineCapsule({
                     <button
                       key={tier.amount}
                       type="button"
-                      onClick={() => go(`${donatePrimary} ${tier.amount}`)}
+                      onClick={() => {
+                        const donorName = isSignedIn ? authDisplayName : 'Anonymous'
+                        const donorEmail = isSignedIn ? (authEmail ?? '') : ''
+                        void addDonation(tier.amount, 'General Support', donorName, donorEmail)
+                        setDonationDrawerOpen(true)
+                      }}
                       className={cn(
                         "group relative rounded-xl px-6 py-5 text-left transition-colors",
                         tier.featured
@@ -1294,6 +1789,93 @@ export const NonprofitKimiPage = defineCapsule({
             </div>
           </div>
         </footer>
+
+        {/* Volunteer Drawer */}
+        <Sheet open={volunteerDrawerOpen} onOpenChange={setVolunteerDrawerOpen}>
+          <SheetContent
+            side="right"
+            className="w-full gap-0 p-0 sm:max-w-md"
+          >
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Volunteer With Us</SheetTitle>
+              <SheetDescription>
+                Join our community of volunteers making a difference around the world.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const form = e.currentTarget
+                  const name = (form.elements.namedItem('name') as HTMLInputElement).value
+                  const email = (form.elements.namedItem('email') as HTMLInputElement).value
+                  const interest = (form.elements.namedItem('interest') as HTMLInputElement).value
+                  if (name && email && interest) {
+                    void addVolunteerSignup(name, email, interest)
+                    setVolunteerDrawerOpen(false)
+                  }
+                }}
+              >
+                <div>
+                  <label htmlFor="name" className="mb-2 block text-sm font-medium text-foreground">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    required
+                    className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="Jane Doe"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    required
+                    className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="jane@example.com"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="interest" className="mb-2 block text-sm font-medium text-foreground">
+                    Area of Interest
+                  </label>
+                  <select
+                    id="interest"
+                    name="interest"
+                    required
+                    className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="">Select an area</option>
+                    <option value="Education">Education & Teaching</option>
+                    <option value="Healthcare">Healthcare Support</option>
+                    <option value="Construction">Construction & Infrastructure</option>
+                    <option value="Administration">Administrative Support</option>
+                    <option value="Fundraising">Fundraising & Events</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <Button type="submit" className="w-full rounded-full">
+                  Submit Application
+                </Button>
+              </form>
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <SheetClose asChild>
+                <Button variant="secondary" className="w-full rounded-full">
+                  Cancel
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

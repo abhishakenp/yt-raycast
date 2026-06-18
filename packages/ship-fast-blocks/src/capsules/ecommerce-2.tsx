@@ -4,6 +4,32 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "#/components/ui/command.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * EcommerceKimiPage2 — a bold, dark-hero ecommerce sneaker storefront page block (variant 2).
@@ -133,10 +159,117 @@ export const EcommerceKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      products: table({
+        alt: string(),
+        badge: string(),
+        brand: string(),
+        image: string(),
+        name: string(),
+        oldPrice: string(),
+        price: string(),
+        rating: number(),
+        reviews: string(),
+      }),
+      cartItems: table({
+        productId: string(),
+        quantity: number(),
+      }),
+      favorites: table({
+        productName: string(),
+      }),
+    },
+    queries: {
+      products: ({ db }) => db.products.orderBy('createdAt').all(),
+      cartLines: ({ db }) =>
+        db.cartItems.all().flatMap((item) => {
+          const product = db.products.get(item.productId)
+          return product ? [{ ...item, product }] : []
+        }),
+      favoriteProductNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.productName)),
+    },
+    mutations: {
+      addToCart: ({ db }, productName: string) => {
+        const product = db.products.where('name', productName).all()[0]
+        if (!product) return db.cartItems.all()
+
+        const existingItem = db.cartItems
+          .where('productId', product.id)
+          .all()[0]
+
+        if (existingItem) {
+          db.cartItems.update(existingItem.id, {
+            quantity: existingItem.quantity + 1,
+          })
+        } else {
+          db.cartItems.insert({
+            productId: product.id,
+            quantity: 1,
+          })
+        }
+
+        return db.cartItems.all()
+      },
+      updateCartQuantity: ({ db }, productId: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+
+        for (const item of db.cartItems.where('productId', productId).all()) {
+          if (nextQuantity) {
+            db.cartItems.update(item.id, { quantity: nextQuantity })
+          } else {
+            db.cartItems.delete(item.id)
+          }
+        }
+
+        return db.cartItems.all()
+      },
+      removeFromCart: ({ db }, productId: string) => {
+        for (const item of db.cartItems.where('productId', productId).all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return db.cartItems.all()
+      },
+      clearCart: ({ db }) => {
+        for (const item of db.cartItems.all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return []
+      },
+      toggleFavorite: ({ db }, productName: string) => {
+        const existingFavorite = db.favorites
+          .where('productName', productName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ productName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
+    const [cartOpen, setCartOpen] = useState(false)
     const brand = props.brand ?? "Marketplace"
+
+    const priceAmount = (price: string) => {
+      const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ''))
+      return Number.isFinite(amount) ? amount : 0
+    }
+    const formatCurrency = (amount: number) =>
+      new Intl.NumberFormat('en-US', {
+        currency: 'USD',
+        style: 'currency',
+      }).format(amount)
 
     const nav = props.nav?.length
       ? props.nav
@@ -275,6 +408,66 @@ export const EcommerceKimiPage2 = defineCapsule({
             reviews: "98",
           },
         ]
+    const normalizedProductItems = productItems.map((product) => ({
+      alt: product.alt,
+      badge: product.badge ?? '',
+      brand: product.brand ?? '',
+      image: product.image ?? '',
+      name: product.name,
+      oldPrice: product.oldPrice ?? '',
+      price: product.price,
+      rating: product.rating ?? 0,
+      reviews: product.reviews ?? '',
+    }))
+    const storedProducts = lakebed.useQuery('products')
+    const cartLines = lakebed.useQuery('cartLines')
+    const favoriteProductNames = lakebed.useQuery('favoriteProductNames')
+    const auth = lakebed.useAuth()
+    const addToCart = lakebed.useMutation('addToCart')
+    const updateCartQuantity = lakebed.useMutation('updateCartQuantity')
+    const removeFromCart = lakebed.useMutation('removeFromCart')
+    const clearCart = lakebed.useMutation('clearCart')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const displayProducts =
+      storedProducts && storedProducts.length > 0
+        ? storedProducts
+        : normalizedProductItems
+    const safeCartLines = cartLines ?? []
+    const cartItemCount = safeCartLines.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+    const cartSubtotal = safeCartLines.reduce(
+      (total, item) => total + priceAmount(item.product.price) * item.quantity,
+      0,
+    )
+    const shipping = cartSubtotal > 0 && cartSubtotal < 150 ? 12 : 0
+    const cartTotal = cartSubtotal + shipping
 
     const featuresHeading = props.features?.heading ?? "Why Shop With Us?"
     const featuresSub =
@@ -343,6 +536,24 @@ export const EcommerceKimiPage2 = defineCapsule({
       "Your trusted destination for authentic products since 2018. Discover something new."
     // --- shared icons ---
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
     const Star = ({ filled }: { filled: boolean }) => (
       <svg
         className={cn("size-4", filled ? "text-primary fill-current" : "text-muted-foreground fill-current")}
@@ -360,6 +571,37 @@ export const EcommerceKimiPage2 = defineCapsule({
         aria-hidden="true"
       >
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
       </svg>
     )
 
@@ -410,41 +652,286 @@ export const EcommerceKimiPage2 = defineCapsule({
             <div className="flex items-center gap-2 lg:gap-4">
               <button
                 type="button"
-                onClick={() => go("Search")}
+                onClick={() => setSearchOpen(true)}
                 aria-label="Search"
-                className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted"
+                className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground sm:flex"
               >
                 <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                   <circle cx="11" cy="11" r="8"/>
                   <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
               </button>
-              <button
-                type="button"
-                onClick={() => go("Account")}
-                aria-label="Account"
-                className="hidden rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted sm:flex"
-              >
-                <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
-                </svg>
-              </button>
-              <button
-                type="button"
-                onClick={() => go("Cart")}
-                aria-label="Cart"
-                className="relative flex items-center gap-2 rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted"
-              >
-                <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-                  <line x1="3" y1="6" x2="21" y2="6"/>
-                  <path d="M16 10a4 4 0 01-8 0"/>
-                </svg>
-                <span className="absolute -right-1 -top-1 grid size-5 place-items-center rounded-full bg-primary text-[0.625rem] font-bold text-primary-foreground">
-                  3
-                </span>
-              </button>
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Orders')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Orders
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={cartOpen} onOpenChange={setCartOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Shopping Cart"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+                      <line x1="3" y1="6" x2="21" y2="6"/>
+                      <path d="M16 10a4 4 0 01-8 0"/>
+                    </svg>
+                    {cartItemCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {cartItemCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Shopping cart</SheetTitle>
+                    <SheetDescription>
+                      {cartItemCount > 0
+                        ? `${cartItemCount} item${cartItemCount === 1 ? '' : 's'} ready for checkout.`
+                        : 'Your cart is empty.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {safeCartLines.length ? (
+                      <div className="space-y-5">
+                        {safeCartLines.map((item) => (
+                          <div
+                            key={item.id}
+                            className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                          >
+                            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                              <Image
+                                alt={item.product.alt}
+                                src={item.product.image || undefined}
+                                w={180}
+                                h={180}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                    {item.product.brand || brand}
+                                  </p>
+                                  <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                    {item.product.name}
+                                  </h3>
+                                </div>
+                                <p className="text-sm font-bold text-foreground">
+                                  {formatCurrency(
+                                    priceAmount(item.product.price) *
+                                      item.quantity,
+                                  )}
+                                </p>
+                              </div>
+                              <div className="mt-4 flex items-center justify-between">
+                                <div className="inline-flex h-9 items-center rounded-full border border-border bg-background">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void updateCartQuantity(
+                                        item.productId,
+                                        item.quantity - 1,
+                                      )
+                                    }
+                                    className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                    aria-label={`Decrease ${item.product.name} quantity`}
+                                  >
+                                    -
+                                  </button>
+                                  <span className="min-w-8 text-center text-sm font-semibold">
+                                    {item.quantity}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void updateCartQuantity(
+                                        item.productId,
+                                        item.quantity + 1,
+                                      )
+                                    }
+                                    className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                    aria-label={`Increase ${item.product.name} quantity`}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void removeFromCart(item.productId)
+                                  }
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No products in cart
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Add an item from New Arrivals to start a cart for this
+                          session.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Subtotal</span>
+                        <span>{formatCurrency(cartSubtotal)}</span>
+                      </div>
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Shipping</span>
+                        <span>
+                          {shipping ? formatCurrency(shipping) : 'Free'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between pt-2 text-base font-bold text-foreground">
+                        <span>Total</span>
+                        <span>{formatCurrency(cartTotal)}</span>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      disabled={!safeCartLines.length}
+                      className="w-full rounded-full"
+                      onClick={() => go('Checkout')}
+                    >
+                      Checkout
+                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full"
+                        onClick={() => void clearCart()}
+                        disabled={!safeCartLines.length}
+                      >
+                        Clear
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
               <button
                 type="button"
                 aria-label="Open menu"
@@ -478,10 +965,109 @@ export const EcommerceKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
         </header>
+
+        <CommandDialog
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          title="Search products"
+          description="Search the products seeded for this session."
+          className="max-w-xl"
+        >
+          <CommandInput placeholder={`Search ${brand} products...`} />
+          <CommandList className="max-h-[420px]">
+            <CommandEmpty>No products found.</CommandEmpty>
+            <CommandGroup heading="Products">
+              {displayProducts.map((product) => (
+                <CommandItem
+                  key={product.name}
+                  value={`${product.brand} ${product.name} ${product.price}`}
+                  onSelect={() => {
+                    setSearchOpen(false)
+                    go(product.name)
+                  }}
+                  className="gap-3 py-3"
+                >
+                  <div className="size-12 overflow-hidden rounded-md bg-muted">
+                    <Image
+                      alt={product.alt}
+                      src={product.image || undefined}
+                      w={120}
+                      h={120}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {product.name}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {product.brand || brand}
+                    </p>
+                  </div>
+                  <span className="text-sm font-bold text-foreground">
+                    {product.price}
+                  </span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
 
         {/* === Main === */}
         <main className="flex flex-1 flex-col">
@@ -649,68 +1235,84 @@ export const EcommerceKimiPage2 = defineCapsule({
 
               {/* Product Grid */}
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {productItems.map((product) => (
-                  <article key={product.name} className="group rounded-2xl bg-muted transition-all duration-300 hover:shadow-xl">
-                    <div className="relative aspect-square bg-background p-6 flex items-center justify-center">
-                      {product.badge ? (
-                        <span className={cn(
-                          "absolute left-3 top-3 rounded-full px-3 py-1 text-xs font-bold text-primary-foreground",
-                          product.badge === "-25%" || product.badge === "Hot" ? "bg-destructive" : "bg-primary"
-                        )}>
-                          {product.badge}
-                        </span>
-                      ) : null}
-                      <button
-                        type="button"
-                        onClick={() => go(`Save ${product.name}`)}
-                        aria-label={`Add ${product.name} to wishlist`}
-                        className="absolute right-3 top-3 grid size-10 place-items-center rounded-full bg-background/80 text-foreground opacity-0 shadow-md transition-all hover:bg-background group-hover:opacity-100"
-                      >
-                        <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                        </svg>
-                      </button>
-                      <Image
-                        alt={product.alt}
-                        src={product.image}
-                        w={400}
-                        h={400}
-                        loading="lazy"
-                        className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="p-5">
-                      <p className="mb-1 text-xs font-bold uppercase tracking-wider text-primary">
-                        {product.brand}
-                      </p>
-                      <h3 className="mb-2 font-bold text-foreground line-clamp-1">{product.name}</h3>
-                      <div className="mb-3 flex items-center gap-1">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} filled={i < (product.rating ?? 0)} />
-                        ))}
-                        <span className="ml-1 text-xs text-muted-foreground">({product.reviews})</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="text-lg font-black text-foreground">{product.price}</span>
-                          {product.oldPrice ? (
-                            <span className="ml-2 text-sm text-muted-foreground line-through">{product.oldPrice}</span>
-                          ) : null}
-                        </div>
+                {displayProducts.map((product) => {
+                  const isFavorite =
+                    favoriteProductNames?.has(product.name) ?? false
+
+                  return (
+                    <article key={product.name} className="group rounded-2xl bg-muted transition-all duration-300 hover:shadow-xl">
+                      <div className="relative aspect-square bg-background p-6 flex items-center justify-center">
+                        {product.badge ? (
+                          <span className={cn(
+                            "absolute left-3 top-3 rounded-full px-3 py-1 text-xs font-bold text-primary-foreground",
+                            product.badge === "-25%" || product.badge === "Hot" ? "bg-destructive" : "bg-primary"
+                          )}>
+                            {product.badge}
+                          </span>
+                        ) : null}
                         <button
                           type="button"
-                          onClick={() => go(`Add ${product.name}`)}
-                          aria-label={`Add ${product.name} to cart`}
-                          className="grid size-11 place-items-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
+                          onClick={() => void toggleFavorite(product.name)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${product.name} from favorites`
+                              : `Add ${product.name} to favorites`
+                          }
+                          className={cn(
+                            "absolute right-3 top-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100",
+                            isFavorite
+                              ? "bg-primary text-primary-foreground opacity-100"
+                              : "bg-background/80 text-foreground opacity-0 hover:bg-background",
+                          )}
                         >
-                          <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                          </svg>
+                          <HeartIcon active={isFavorite} />
                         </button>
+                        <Image
+                          alt={product.alt}
+                          src={product.image}
+                          w={400}
+                          h={400}
+                          loading="lazy"
+                          className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                        />
                       </div>
-                    </div>
-                  </article>
-                ))}
+                      <div className="p-5">
+                        <p className="mb-1 text-xs font-bold uppercase tracking-wider text-primary">
+                          {product.brand}
+                        </p>
+                        <h3 className="mb-2 font-bold text-foreground line-clamp-1">{product.name}</h3>
+                        <div className="mb-3 flex items-center gap-1">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} filled={i < (product.rating ?? 0)} />
+                          ))}
+                          <span className="ml-1 text-xs text-muted-foreground">({product.reviews})</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <span className="text-lg font-black text-foreground">{product.price}</span>
+                            {product.oldPrice ? (
+                              <span className="ml-2 text-sm text-muted-foreground line-through">{product.oldPrice}</span>
+                            ) : null}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              void addToCart(product.name)
+                              setCartOpen(true)
+                            }}
+                            aria-label={`Add ${product.name} to cart`}
+                            className="grid size-11 place-items-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
+                          >
+                            <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+                              <path d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -978,7 +1580,7 @@ export const EcommerceKimiPage2 = defineCapsule({
 
             <div className="flex flex-col items-center gap-4 border-t border-border pt-8 md:flex-row md:justify-between">
               <p className="text-sm text-muted-foreground">
-                &copy; 2024 {brand}. All rights reserved.
+                &copy; {new Date().getFullYear()} {brand}. All rights reserved.
               </p>
               <div className="flex gap-6 text-sm">
                 {["Privacy Policy", "Terms of Service", "Cookie Policy"].map((link) => (

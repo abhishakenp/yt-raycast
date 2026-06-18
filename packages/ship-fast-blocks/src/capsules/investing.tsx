@@ -1,9 +1,20 @@
-import { type ReactNode } from "react"
+import { type MouseEvent, type ReactNode, useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
+import { number, string, table } from "@ship-fast/lakebed/server"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * InvestingKimiPage — a complete, self-contained modern investing / fintech
@@ -207,8 +218,65 @@ export const InvestingKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      watchlist: table({
+        symbol: string(),
+        name: string(),
+        exchange: string(),
+        price: string(),
+        change: string(),
+        up: number(),
+      }),
+    },
+    queries: {
+      watchlist: ({ db }) => db.watchlist.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addToWatchlist: (
+        { db },
+        symbol: string,
+        name: string,
+        exchange: string,
+        price: string,
+        change: string,
+        up: number,
+      ) => {
+        const existing = db.watchlist.where("symbol", symbol).all()[0]
+        if (existing) return db.watchlist.all()
+
+        db.watchlist.insert({
+          symbol,
+          name,
+          exchange,
+          price,
+          change,
+          up,
+        })
+
+        return db.watchlist.all()
+      },
+      removeFromWatchlist: ({ db }, symbol: string) => {
+        for (const item of db.watchlist.where("symbol", symbol).all()) {
+          db.watchlist.delete(item.id)
+        }
+
+        return db.watchlist.all()
+      },
+      clearWatchlist: ({ db }) => {
+        for (const item of db.watchlist.all()) {
+          db.watchlist.delete(item.id)
+        }
+
+        return db.watchlist.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [watchlistOpen, setWatchlistOpen] = useState(false)
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const brand = props.brand ?? "Vestora"
     const nav = props.nav?.length
       ? props.nav
@@ -540,6 +608,63 @@ export const InvestingKimiPage = defineCapsule({
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
       : ["Twitter", "LinkedIn", "Instagram"]
+    const watchlist = lakebed.useQuery("watchlist") ?? []
+    const addToWatchlist = lakebed.useMutation("addToWatchlist")
+    const removeFromWatchlist = lakebed.useMutation("removeFromWatchlist")
+    const clearWatchlist = lakebed.useMutation("clearWatchlist")
+    const watchlistCount = watchlist.length
+    const authDisplayName =
+      auth.user?.displayName || auth.email || "Trader"
+    const authActionLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : heroSignIn
+    const watchlistActionLabel = isSignedIn ? "Track" : "Sign in to track"
+    const isWatchlisted = (symbol: string) =>
+      watchlist.some((item) => item.symbol === symbol)
+    const authSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const authSignOut = () => {
+      lakebed.signOut()
+    }
+    const trackFromQuotes = (
+      quote: {
+        symbol: string
+        name: string
+        exchange: string
+        price: string
+        change: string
+        up: boolean
+      },
+      event?: MouseEvent<HTMLButtonElement>,
+    ) => {
+      if (event) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+      if (!isSignedIn) {
+        authSignIn()
+        return
+      }
+
+      if (isWatchlisted(quote.symbol)) {
+        void removeFromWatchlist(quote.symbol)
+        return
+      }
+
+      void addToWatchlist(
+        quote.symbol,
+        quote.name,
+        quote.exchange,
+        quote.price,
+        quote.change,
+        quote.up ? 1 : 0,
+      )
+    }
 
     // Brand logo tile — the trend-line glyph from the source (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
@@ -701,10 +826,43 @@ export const InvestingKimiPage = defineCapsule({
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go(heroSignIn)}
+                  onClick={() => {
+                    if (auth.isLoading) return
+                    if (isSignedIn) {
+                      go("Account")
+                    } else {
+                      authSignIn()
+                    }
+                  }}
                   className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
+                  disabled={auth.isLoading}
                 >
-                  {heroSignIn}
+                  {authActionLabel}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWatchlistOpen(true)}
+                  className="relative inline-flex size-10 items-center justify-center rounded-lg border border-border bg-muted/50 text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground"
+                  aria-label="Open watchlist"
+                  aria-expanded={watchlistOpen}
+                >
+                  <svg
+                    className="size-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path d="M16 20h-8a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9l4 4v10a2 2 0 0 1-2 2h-1m-8 0h.01M8 10h8M8 14h8" />
+                  </svg>
+                  {watchlistCount > 0 ? (
+                    <span className="absolute -right-1.5 -top-1.5 grid size-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[0.65rem] font-semibold text-primary-foreground">
+                      {watchlistCount}
+                    </span>
+                  ) : null}
                 </button>
                 <button
                   type="button"
@@ -857,10 +1015,16 @@ export const InvestingKimiPage = defineCapsule({
               </div>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {quotes.map((q, i) => (
-                  <button
+                  <div
                     key={q.symbol}
-                    type="button"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => go(q.symbol)}
+                    onKeyDown={(event) => {
+                      if (event.key !== "Enter" && event.key !== " ") return
+                      event.preventDefault()
+                      go(q.symbol)
+                    }}
                     className="rounded-xl border border-border bg-muted/50 p-6 text-left transition-shadow hover:shadow-lg"
                   >
                     <div className="mb-4 flex items-center gap-3">
@@ -897,10 +1061,132 @@ export const InvestingKimiPage = defineCapsule({
                       >
                         <path fill="none" stroke="currentColor" strokeWidth="2" d={q.up ? trendUp : trendDown} />
                       </svg>
+                      <button
+                        type="button"
+                        onClick={(event) => trackFromQuotes(q, event)}
+                        className={cn(
+                          "ml-2 inline-flex min-w-16 items-center justify-center rounded-lg px-2 py-1 text-xs font-medium transition-colors",
+                          isWatchlisted(q.symbol)
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground hover:bg-accent",
+                        )}
+                      >
+                        {isWatchlisted(q.symbol) ? "Saved" : watchlistActionLabel}
+                      </button>
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
+
+              <Sheet open={watchlistOpen} onOpenChange={setWatchlistOpen}>
+                <SheetContent side="right" className="w-full p-0 sm:max-w-md">
+                  <SheetHeader className="border-b border-border px-6 py-5">
+                    <SheetTitle>Market watchlist</SheetTitle>
+                    <SheetDescription>
+                      Keep your top symbols organized and switch back to markets quickly.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
+                    {watchlist.length ? (
+                      <div className="space-y-4">
+                        {watchlist.map((line) => (
+                          <div
+                            key={line.id}
+                            className="grid grid-cols-[1fr_auto] items-start gap-3 rounded-lg border border-border bg-muted/40 p-3"
+                          >
+                            <div>
+                              <p className="font-semibold text-foreground">{line.symbol}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {line.name} · {line.exchange}
+                              </p>
+                              <p
+                                className={cn(
+                                  "text-sm font-medium",
+                                  line.up ? "text-chart-1" : "text-destructive",
+                                )}
+                              >
+                                {line.price} {line.change}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => void removeFromWatchlist(line.symbol)}
+                              className="rounded-lg bg-background px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="rounded-lg border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
+                        No symbols saved yet. Track a market symbol to start.
+                      </p>
+                    )}
+
+                    <div>
+                      <p className="mb-3 text-sm font-semibold text-muted-foreground">Available market symbols</p>
+                      <div className="space-y-3">
+                        {quotes.map((quote) => {
+                          const tracked = isWatchlisted(quote.symbol)
+                          return (
+                            <div
+                              key={`drawer-${quote.symbol}`}
+                              className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2"
+                            >
+                              <p className="text-sm font-semibold">
+                                {quote.symbol} — {quote.name}
+                              </p>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant={tracked ? "secondary" : "default"}
+                                onClick={(event) => {
+                                  if (!isSignedIn) {
+                                    authSignIn()
+                                    return
+                                  }
+                                  trackFromQuotes(quote, event)
+                                }}
+                              >
+                                {tracked ? "Saved" : "Track"}
+                              </Button>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                  <SheetFooter className="border-t border-border px-6 py-5">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Tracked symbols</span>
+                        <span className="font-semibold text-foreground">{watchlistCount}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={!watchlist.length}
+                          onClick={() => void clearWatchlist()}
+                        >
+                          Clear all
+                        </Button>
+                        <SheetClose asChild>
+                          <Button type="button" variant="secondary">
+                            Continue
+                          </Button>
+                        </SheetClose>
+                      </div>
+                      {isSignedIn ? (
+                        <Button type="button" variant="ghost" onClick={() => authSignOut()} className="w-full text-xs">
+                          Sign out {authDisplayName}
+                        </Button>
+                      ) : null}
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
 
               {/* Global indices band (dark) */}
               <div className="mt-8 overflow-hidden rounded-2xl bg-foreground p-6 text-background sm:p-8">

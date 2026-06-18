@@ -1,8 +1,18 @@
+import { useState } from "react"
 import { z } from "zod/v4"
+import { string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * DevToolKimiPage4 — a complete, self-contained developer-API / dev-tool platform
@@ -185,8 +195,76 @@ export const DevToolKimiPage4 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      interactions: table({
+        section: string(),
+        action: string(),
+        target: string(),
+        destination: string(),
+      }),
+    },
+    queries: {
+      interactions: ({ db }) => db.interactions.orderBy('createdAt').all(),
+    },
+    mutations: {
+      logInteraction: ({ db }, section: string, action: string, target: string, destination: string) => {
+        db.interactions.insert({
+          section,
+          action,
+          target,
+          destination,
+        })
+
+        return db.interactions.all()
+      },
+      clearInteractions: ({ db }) => {
+        for (const item of db.interactions.all()) {
+          db.interactions.delete(item.id)
+        }
+
+        return []
+      },
+      removeInteraction: ({ db }, interactionId: string) => {
+        db.interactions.delete(interactionId)
+        return db.interactions.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [activityOpen, setActivityOpen] = useState(false)
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName ||
+      auth.user?.displayName ||
+      authEmail ||
+      (isSignedIn ? 'Account' : 'Sign in')
+    const authLabel =
+      auth.isLoading
+        ? 'Checking...'
+        : isSignedIn
+          ? authDisplayName
+          : 'Sign in'
+    const trackedInteractions = lakebed.useQuery('interactions')
+    const logInteraction = lakebed.useMutation('logInteraction')
+    const clearInteractions = lakebed.useMutation('clearInteractions')
+    const removeInteraction = lakebed.useMutation('removeInteraction')
+    const activityItems = trackedInteractions ?? []
+    const activityCount = activityItems.length
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
     const brand = props.brand ?? "StreamForge"
     const nav = props.nav?.length
       ? props.nav
@@ -765,7 +843,10 @@ export const DevToolKimiPage4 = defineCapsule({
             <div className="flex h-16 items-center justify-between lg:h-20">
               <button
                 type="button"
-                onClick={() => go(nav[0])}
+                onClick={() => {
+                  void logInteraction('navigation', 'home', nav[0], nav[0])
+                  go(nav[0])
+                }}
                 className="flex items-center gap-3"
               >
                 <BrandMark className="size-8 text-primary" />
@@ -778,7 +859,10 @@ export const DevToolKimiPage4 = defineCapsule({
                   <button
                     key={label}
                     type="button"
-                    onClick={() => go(label)}
+                    onClick={() => {
+                      void logInteraction('navigation', 'top-nav', label, label)
+                      go(label)
+                    }}
                     className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {label}
@@ -788,22 +872,175 @@ export const DevToolKimiPage4 = defineCapsule({
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go("Sign in")}
+                  onClick={
+                    isSignedIn
+                      ? () => {
+                          void logInteraction(
+                            'auth',
+                            'account-action',
+                            'Sign out',
+                            'Account',
+                          )
+                          handleSignOut()
+                        }
+                      : handleSignIn
+                  }
+                  disabled={auth.isLoading}
                   className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
                 >
-                  Sign in
+                  {authLabel}
                 </button>
                 <button
                   type="button"
-                  onClick={() => go("Get API Key")}
-                  className="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  onClick={() => {
+                    void logInteraction(
+                      'toolbar',
+                      'open activity center',
+                      'Get API Key',
+                      'Get API Key',
+                    )
+                    setActivityOpen(true)
+                    go('Get API Key')
+                  }}
+                  className="relative inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
+                  {activityCount > 0 ? (
+                    <span className="absolute -right-1 -top-1 grid size-4 min-w-4 place-items-center rounded-full bg-primary-foreground px-1 text-[0.65rem] font-black leading-none text-primary">
+                      {activityCount}
+                    </span>
+                  ) : null}
                   Get API Key
                 </button>
               </div>
             </div>
           </div>
         </header>
+
+        <Sheet
+          open={activityOpen}
+          onOpenChange={setActivityOpen}
+        >
+          <SheetContent
+            side="right"
+            className="w-full max-w-md border-l border-border p-0"
+          >
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle>Developer Activity Center</SheetTitle>
+              <SheetDescription>
+                Track your recent interactions and quick actions from this
+                session.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+              {activityItems.length > 0 ? (
+                <div className="space-y-3">
+                  {activityItems
+                    .slice()
+                    .reverse()
+                    .map((item) => (
+                      <article
+                        key={item.id}
+                        className="rounded-lg border border-border bg-muted p-3"
+                      >
+                        <div className="mb-2 flex items-start justify-between gap-2">
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">
+                              {item.action}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {item.section} • {item.destination}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              void logInteraction(
+                                'activity-center',
+                                'remove-interaction',
+                                item.action,
+                                item.destination,
+                              )
+                              void removeInteraction(item.id)
+                            }}
+                            className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        {item.target ? (
+                          <p className="text-xs text-muted-foreground">
+                            {item.target}
+                          </p>
+                        ) : null}
+                      </article>
+                    ))}
+                </div>
+              ) : (
+                <div className="rounded-lg border border-dashed border-border bg-muted/30 p-6 text-center text-sm text-muted-foreground">
+                  No activity yet. Use this drawer to capture your key
+                  interactions while evaluating StreamForge.
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <div className="flex flex-col gap-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Total events: {activityCount}
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void logInteraction(
+                        'activity-center',
+                        'clear-interactions',
+                        'Clear history',
+                        'Get API Key',
+                      )
+                      void clearInteractions()
+                    }}
+                    className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                  >
+                    Clear history
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActivityOpen(false)}
+                    className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    Continue
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  onClick={() => {
+                    if (isSignedIn) {
+                      void logInteraction(
+                        'account',
+                        'auth',
+                        'Sign out',
+                        'Get API Key',
+                      )
+                      handleSignOut()
+                    } else {
+                      void logInteraction(
+                        'account',
+                        'auth',
+                        'Sign in',
+                        'Get API Key',
+                      )
+                      handleSignIn()
+                    }
+                    setActivityOpen(false)
+                  }}
+                >
+                  {isSignedIn ? 'Sign out from this session' : 'Sign in with Google'}
+                </button>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
 
         <main>
           {/* Hero */}
@@ -832,7 +1069,15 @@ export const DevToolKimiPage4 = defineCapsule({
                   <div className="flex flex-wrap gap-4">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() => {
+                        void logInteraction(
+                          'hero',
+                          'primary-cta',
+                          heroPrimary,
+                          heroPrimary,
+                        )
+                        go(heroPrimary)
+                      }}
                       className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-base font-medium text-primary-foreground shadow-lg transition-colors hover:bg-primary/90"
                     >
                       {heroPrimary}
@@ -840,7 +1085,15 @@ export const DevToolKimiPage4 = defineCapsule({
                     </button>
                     <button
                       type="button"
-                      onClick={() => go(heroSecondary)}
+                      onClick={() => {
+                        void logInteraction(
+                          'hero',
+                          'secondary-cta',
+                          heroSecondary,
+                          heroSecondary,
+                        )
+                        go(heroSecondary)
+                      }}
                       className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted"
                     >
                       <PlayCircle className="text-muted-foreground" />
@@ -976,7 +1229,15 @@ export const DevToolKimiPage4 = defineCapsule({
                   <button
                     key={company}
                     type="button"
-                    onClick={() => go(company)}
+                    onClick={() => {
+                      void logInteraction(
+                        'social-proof',
+                        'trusted-company',
+                        company,
+                        company,
+                      )
+                      go(company)
+                    }}
                     className="text-lg font-semibold text-muted-foreground/70 transition-opacity hover:opacity-100"
                   >
                     {company}
@@ -1095,7 +1356,15 @@ export const DevToolKimiPage4 = defineCapsule({
                   <button
                     key={item.title}
                     type="button"
-                    onClick={() => go(item.title)}
+                    onClick={() => {
+                      void logInteraction(
+                        'gallery',
+                        'open-item',
+                        item.title,
+                        item.title,
+                      )
+                      go(item.title)
+                    }}
                     className="group relative block overflow-hidden rounded-2xl bg-foreground aspect-[4/3]"
                   >
                     <Image
@@ -1189,7 +1458,15 @@ export const DevToolKimiPage4 = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(tier.cta)}
+                      onClick={() => {
+                        void logInteraction(
+                          'pricing',
+                          tier.featured ? 'choose-featured-plan' : 'choose-plan',
+                          tier.cta,
+                          tier.name,
+                        )
+                        go(tier.cta)
+                      }}
                       className={cn(
                         "block w-full rounded-lg px-4 py-3 text-center text-sm font-medium transition-colors",
                         tier.featured
@@ -1329,7 +1606,10 @@ export const DevToolKimiPage4 = defineCapsule({
               <div className="flex flex-wrap justify-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={() => {
+                    void logInteraction('cta', 'primary-cta', ctaPrimary, ctaPrimary)
+                    go(ctaPrimary)
+                  }}
                   className="inline-flex items-center gap-2 rounded-lg bg-background px-8 py-4 text-base font-medium text-foreground transition-colors hover:bg-background/90"
                 >
                   {ctaPrimary}
@@ -1337,7 +1617,15 @@ export const DevToolKimiPage4 = defineCapsule({
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(ctaSecondary)}
+                  onClick={() => {
+                    void logInteraction(
+                      'cta',
+                      'secondary-cta',
+                      ctaSecondary,
+                      ctaSecondary,
+                    )
+                    go(ctaSecondary)
+                  }}
                   className="inline-flex items-center gap-2 rounded-lg border border-background/30 px-8 py-4 text-base font-medium text-background transition-colors hover:bg-background/10"
                 >
                   <Calendar />
@@ -1358,7 +1646,15 @@ export const DevToolKimiPage4 = defineCapsule({
               <div className="md:col-span-2 lg:col-span-1">
                 <button
                   type="button"
-                  onClick={() => go(nav[0])}
+                  onClick={() => {
+                    void logInteraction(
+                      'navigation',
+                      'footer-brand',
+                      nav[0],
+                      nav[0],
+                    )
+                    go(nav[0])
+                  }}
                   className="mb-4 flex items-center gap-3"
                 >
                   <BrandMark className="size-8 text-primary" />
@@ -1372,13 +1668,21 @@ export const DevToolKimiPage4 = defineCapsule({
                 <div className="flex gap-4">
                   {(["Twitter", "GitHub", "Discord"] as const).map(
                     (social) => (
-                      <button
-                        key={social}
-                        type="button"
-                        aria-label={social}
-                        onClick={() => go(social)}
-                        className="grid size-10 place-items-center rounded-lg bg-background/10 text-background/70 transition-colors hover:bg-background/20 hover:text-background"
-                      >
+                    <button
+                      key={social}
+                      type="button"
+                      aria-label={social}
+                      onClick={() => {
+                        void logInteraction(
+                          'footer',
+                          'social-link',
+                          social,
+                          social,
+                        )
+                        go(social)
+                      }}
+                      className="grid size-10 place-items-center rounded-lg bg-background/10 text-background/70 transition-colors hover:bg-background/20 hover:text-background"
+                    >
                         {social === "Twitter" ? (
                           <svg
                             className="size-5"
@@ -1419,14 +1723,22 @@ export const DevToolKimiPage4 = defineCapsule({
                   </h4>
                   <ul className="space-y-3 text-sm">
                     {col.links.map((link) => (
-                      <li key={link}>
-                        <button
-                          type="button"
-                          onClick={() => go(link)}
-                          className="text-background/60 transition-colors hover:text-background"
-                        >
-                          {link}
-                        </button>
+                        <li key={link}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              void logInteraction(
+                                col.title.toLowerCase(),
+                                'footer-link',
+                                link,
+                                link,
+                              )
+                              go(link)
+                            }}
+                            className="text-background/60 transition-colors hover:text-background"
+                          >
+                            {link}
+                          </button>
                       </li>
                     ))}
                   </ul>
@@ -1442,7 +1754,10 @@ export const DevToolKimiPage4 = defineCapsule({
                   <button
                     key={link}
                     type="button"
-                    onClick={() => go(link)}
+                    onClick={() => {
+                      void logInteraction('footer', 'legal-link', link, link)
+                      go(link)
+                    }}
                     className="text-background/50 transition-colors hover:text-background"
                   >
                     {link}

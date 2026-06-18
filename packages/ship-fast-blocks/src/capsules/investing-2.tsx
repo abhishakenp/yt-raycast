@@ -1,9 +1,28 @@
+import { useState } from "react"
 import { type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * InvestingKimiPage2 — VARIANT 2 of the investing / brokerage landing page.
@@ -190,8 +209,95 @@ export const InvestingKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      watchlist: table({
+        symbol: string(),
+        name: string(),
+        price: string(),
+        change: string(),
+        up: string(),
+      }),
+      leads: table({
+        email: string(),
+      }),
+    },
+    queries: {
+      watchlist: ({ db }) => db.watchlist.orderBy("createdAt").all(),
+      leads: ({ db }) => db.leads.orderBy("createdAt").all(),
+      watchlistSymbols: ({ db }) =>
+        new Set(db.watchlist.all().map((w) => w.symbol)),
+    },
+    mutations: {
+      addToWatchlist: (
+        { db },
+        symbol: string,
+        name: string,
+        price: string,
+        change: string,
+        up: boolean,
+      ) => {
+        const existing = db.watchlist.where("symbol", symbol).all()[0]
+        if (!existing) {
+          db.watchlist.insert({ symbol, name, price, change, up: up ? "true" : "false" })
+        }
+        return db.watchlist.all()
+      },
+      removeFromWatchlist: ({ db }, symbol: string) => {
+        for (const item of db.watchlist.where("symbol", symbol).all()) {
+          db.watchlist.delete(item.id)
+        }
+        return db.watchlist.all()
+      },
+      clearWatchlist: ({ db }) => {
+        for (const item of db.watchlist.all()) {
+          db.watchlist.delete(item.id)
+        }
+        return []
+      },
+      subscribeLead: ({ db }, email: string) => {
+        const existing = db.leads.where("email", email).all()[0]
+        if (!existing) {
+          db.leads.insert({ email })
+        }
+        return db.leads.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [watchlistOpen, setWatchlistOpen] = useState(false)
+    const [emailInput, setEmailInput] = useState("")
+    const [subscribed, setSubscribed] = useState(false)
+
+    // Lakebed
+    const storedWatchlist = lakebed.useQuery("watchlist")
+    const watchlistSymbols = lakebed.useQuery("watchlistSymbols")
+    const addToWatchlist = lakebed.useMutation("addToWatchlist")
+    const removeFromWatchlist = lakebed.useMutation("removeFromWatchlist")
+    const clearWatchlist = lakebed.useMutation("clearWatchlist")
+    const subscribeLead = lakebed.useMutation("subscribeLead")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part: string) => part[0]?.toUpperCase())
+        .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign In"
+
+    const safeWatchlist = storedWatchlist ?? []
+    const watchlistCount = safeWatchlist.length
     const brand = props.brand ?? "TradeVault"
     const nav = props.nav?.length
       ? props.nav
@@ -577,13 +683,152 @@ export const InvestingKimiPage2 = defineCapsule({
                 ))}
               </div>
               <div className="flex items-center gap-3 lg:gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(heroSignIn)}
-                  className="hidden font-medium text-background/60 transition-colors hover:text-background sm:block"
-                >
-                  {heroSignIn}
-                </button>
+                {/* Watchlist drawer trigger */}
+                <Sheet open={watchlistOpen} onOpenChange={setWatchlistOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Watchlist"
+                      className="relative flex items-center gap-2 text-background/60 transition-colors hover:text-background"
+                    >
+                      <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      {watchlistCount > 0 && (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-chart-1 text-[0.625rem] font-bold text-background">
+                          {watchlistCount}
+                        </span>
+                      )}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Watchlist</SheetTitle>
+                      <SheetDescription>
+                        {watchlistCount > 0
+                          ? `${watchlistCount} stock${watchlistCount === 1 ? "" : "s"} on your watchlist.`
+                          : "Your watchlist is empty. Add stocks from the markets section."}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeWatchlist.length ? (
+                        <div className="space-y-3">
+                          {safeWatchlist.map((item) => (
+                            <div key={item.id} className="flex items-center justify-between rounded-xl bg-muted p-4">
+                              <div className="flex items-center gap-3">
+                                <div className="grid size-10 place-items-center rounded-lg bg-chart-1/15 text-sm font-bold text-chart-1">
+                                  {item.symbol.charAt(0)}
+                                </div>
+                                <div>
+                                  <p className="font-bold text-foreground">{item.symbol}</p>
+                                  <p className="text-xs text-muted-foreground">{item.name}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <div className="text-right">
+                                  <p className="font-bold text-foreground">{item.price}</p>
+                                  <p className={cn("text-xs", item.up === "true" ? "text-chart-1" : "text-destructive")}>{item.change}</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => void removeFromWatchlist(item.symbol)}
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                  aria-label={`Remove ${item.symbol} from watchlist`}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">No stocks in watchlist</p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Click the + button next to any trending stock to add it here.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <Button
+                        type="button"
+                        disabled={!safeWatchlist.length}
+                        className="w-full rounded-xl"
+                        onClick={() => { setWatchlistOpen(false); go("Markets") }}
+                      >
+                        Go to Markets
+                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="rounded-xl"
+                          onClick={() => void clearWatchlist()}
+                          disabled={!safeWatchlist.length}
+                        >
+                          Clear All
+                        </Button>
+                        <SheetClose asChild>
+                          <Button type="button" variant="secondary" className="rounded-xl">
+                            Close
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+
+                {/* Auth */}
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-background/20 bg-background/10 px-2 py-1 text-background shadow-sm transition hover:bg-background/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chart-1 sm:inline-flex"
+                      >
+                        <Avatar size="sm" className="ring-2 ring-foreground" aria-hidden="true">
+                          {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                          <AvatarFallback className="bg-chart-1 text-[0.65rem] font-bold text-background">{authInitials}</AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">{authDisplayName}</span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" sideOffset={10} className="w-64 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl">
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                            <AvatarFallback className="bg-chart-1 text-sm font-bold text-background">{authInitials}</AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">{authDisplayName}</p>
+                            <p className="truncate text-xs text-muted-foreground">{authEmail ?? "Signed in"}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={() => lakebed.signOut()}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => { if (!auth.isLoading) void lakebed.signInWithGoogle() }}
+                    disabled={auth.isLoading}
+                    className="hidden font-medium text-background/60 transition-colors hover:text-background disabled:opacity-60 sm:block"
+                  >
+                    {authLabel}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => go(heroGetStarted)}
@@ -677,23 +922,49 @@ export const InvestingKimiPage2 = defineCapsule({
                       </div>
                     </div>
                     <div className="space-y-3">
-                      {holdings.map((h) => (
-                        <div key={h.symbol} className="flex items-center justify-between rounded-xl bg-muted/50 p-3">
-                          <div className="flex items-center gap-3">
-                            <div className="grid size-10 place-items-center rounded-lg bg-chart-1/15 text-sm font-bold text-chart-1">
-                              {h.symbol}
+                      {holdings.map((h) => {
+                        const inWatchlist = watchlistSymbols?.has(h.symbol) ?? false
+                        return (
+                          <div key={h.symbol} className="flex items-center justify-between rounded-xl bg-muted/50 p-3">
+                            <div className="flex items-center gap-3">
+                              <div className="grid size-10 place-items-center rounded-lg bg-chart-1/15 text-sm font-bold text-chart-1">
+                                {h.symbol}
+                              </div>
+                              <div>
+                                <p className="font-semibold">{h.name}</p>
+                                <p className="text-xs text-muted-foreground">{h.shares}</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-semibold">{h.name}</p>
-                              <p className="text-xs text-muted-foreground">{h.shares}</p>
+                            <div className="flex items-center gap-2">
+                              <div className="text-right">
+                                <p className="font-semibold">{h.value}</p>
+                                <p className={cn("text-xs", h.up ? "text-chart-1" : "text-destructive")}>{h.change}</p>
+                              </div>
+                              <button
+                                type="button"
+                                aria-pressed={inWatchlist}
+                                aria-label={inWatchlist ? `Remove ${h.symbol} from watchlist` : `Add ${h.symbol} to watchlist`}
+                                onClick={() => {
+                                  if (inWatchlist) {
+                                    void removeFromWatchlist(h.symbol)
+                                  } else {
+                                    void addToWatchlist(h.symbol, h.name, h.value, h.change, h.up)
+                                    setWatchlistOpen(true)
+                                  }
+                                }}
+                                className={cn(
+                                  "grid size-7 place-items-center rounded-md text-xs font-bold transition-all",
+                                  inWatchlist
+                                    ? "bg-chart-1 text-background"
+                                    : "bg-card-foreground/10 text-card-foreground/60 hover:bg-chart-1/20 hover:text-chart-1",
+                                )}
+                              >
+                                {inWatchlist ? "✓" : "+"}
+                              </button>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <p className="font-semibold">{h.value}</p>
-                            <p className={cn("text-xs", h.up ? "text-chart-1" : "text-destructive")}>{h.change}</p>
-                          </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
 
@@ -794,36 +1065,64 @@ export const InvestingKimiPage2 = defineCapsule({
                     <span className="text-xs text-muted-foreground">{boardNote}</span>
                   </div>
                   <div className="space-y-3">
-                    {quotes.map((q) => (
-                      <button
-                        key={q.symbol}
-                        type="button"
-                        onClick={() => go(q.symbol)}
-                        className="flex w-full items-center justify-between rounded-xl bg-muted/50 p-4 text-left transition-colors hover:bg-muted"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="grid size-12 place-items-center rounded-xl bg-chart-1/15 font-bold text-chart-1">
-                            {q.symbol.charAt(0)}
-                          </div>
-                          <div>
-                            <p className="font-bold">{q.symbol}</p>
-                            <p className="text-sm text-muted-foreground">{q.name}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold">{q.price}</p>
-                          <p
-                            className={cn(
-                              "flex items-center justify-end gap-1 text-sm",
-                              q.up ? "text-chart-1" : "text-destructive",
-                            )}
+                    {quotes.map((q) => {
+                      const inWatchlist = watchlistSymbols?.has(q.symbol) ?? false
+                      return (
+                        <div
+                          key={q.symbol}
+                          className="flex w-full items-center justify-between rounded-xl bg-muted/50 p-4 transition-colors hover:bg-muted"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => go(q.symbol)}
+                            className="flex flex-1 items-center gap-4 text-left"
                           >
-                            {q.up ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
-                            {q.change}
-                          </p>
+                            <div className="grid size-12 place-items-center rounded-xl bg-chart-1/15 font-bold text-chart-1">
+                              {q.symbol.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="font-bold">{q.symbol}</p>
+                              <p className="text-sm text-muted-foreground">{q.name}</p>
+                            </div>
+                          </button>
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <p className="font-bold">{q.price}</p>
+                              <p
+                                className={cn(
+                                  "flex items-center justify-end gap-1 text-sm",
+                                  q.up ? "text-chart-1" : "text-destructive",
+                                )}
+                              >
+                                {q.up ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
+                                {q.change}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              aria-pressed={inWatchlist}
+                              aria-label={inWatchlist ? `Remove ${q.symbol} from watchlist` : `Add ${q.symbol} to watchlist`}
+                              onClick={() => {
+                                if (inWatchlist) {
+                                  void removeFromWatchlist(q.symbol)
+                                } else {
+                                  void addToWatchlist(q.symbol, q.name, q.price, q.change, q.up)
+                                  setWatchlistOpen(true)
+                                }
+                              }}
+                              className={cn(
+                                "grid size-8 place-items-center rounded-lg text-sm font-bold transition-all hover:scale-105",
+                                inWatchlist
+                                  ? "bg-chart-1 text-background"
+                                  : "bg-background/10 text-background/60 hover:bg-chart-1/20 hover:text-chart-1",
+                              )}
+                            >
+                              {inWatchlist ? "✓" : "+"}
+                            </button>
+                          </div>
                         </div>
-                      </button>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
               </div>
@@ -1027,6 +1326,39 @@ export const InvestingKimiPage2 = defineCapsule({
                   {ctaSecondary}
                 </button>
               </div>
+              {subscribed ? (
+                <p className="mt-8 rounded-2xl border border-chart-1/30 bg-chart-1/10 px-6 py-4 text-sm font-semibold text-chart-1">
+                  ✓ You're on the list! We'll notify you when your account is ready.
+                </p>
+              ) : (
+                <form
+                  className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row"
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    const val = emailInput.trim()
+                    if (!val) return
+                    void subscribeLead(val)
+                    setEmailInput("")
+                    setSubscribed(true)
+                  }}
+                >
+                  <input
+                    type="email"
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    placeholder="Enter your email for early access"
+                    aria-label="Email for early access"
+                    required
+                    className="flex-1 rounded-2xl border border-background/20 bg-background/10 px-6 py-4 text-background placeholder:text-background/40 focus:outline-none focus:ring-2 focus:ring-chart-1/50"
+                  />
+                  <button
+                    type="submit"
+                    className="whitespace-nowrap rounded-2xl border border-chart-1/40 bg-background/10 px-6 py-4 font-semibold text-background transition-all hover:bg-chart-1/20"
+                  >
+                    Notify Me
+                  </button>
+                </form>
+              )}
               <p className="mt-6 text-sm text-background/50">{ctaNote}</p>
             </div>
           </section>

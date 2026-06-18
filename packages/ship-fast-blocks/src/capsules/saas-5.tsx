@@ -1,13 +1,32 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 export const SaasKimiPage5 = defineCapsule({
   name: "SaasKimiPage5",
   description:
-    "A warm, energetic SaaS landing page — the fifth style sibling to SaasKimiPage — with a glassy sticky navbar, a split hero featuring a floating AI-dashboard mockup card (activity rows + avatar stack + notification toast), a 'trusted by' logo strip with inline brand glyphs, a 6-up colorful feature grid with gradient icon tiles, a 3-step how-it-works band with connector arrows, a bold gradient stats band, a 3-tier pricing table with a highlighted 'Most Popular' plan, a 3-up testimonial row with star ratings and review avatars, an interactive native FAQ accordion, a gradient CTA banner, and a light multi-column footer with social links. Use for AI scheduling, productivity SaaS, calendar assistants, or B2B startups when a friendly, conversion-focused page with playful color accents and rich social proof is desired. Every CTA and link routes through useNavigate; all images use the Image component with alt-driven Unsplash sourcing.",
+    "A warm, energetic full-stack SaaS landing page — the fifth style sibling to SaasKimiPage — with a glassy sticky navbar, a split hero featuring a floating AI-dashboard mockup card (activity rows + avatar stack + notification toast), a 'trusted by' logo strip with inline brand glyphs, a 6-up colorful feature grid with gradient icon tiles, a 3-step how-it-works band with connector arrows, a bold gradient stats band, a 3-tier pricing table with a highlighted 'Most Popular' plan, a 3-up testimonial row with star ratings and review avatars, an interactive native FAQ accordion, a gradient CTA banner with email subscription, and a light multi-column footer with social links. Full-stack features: Lakebed-powered notifications drawer with read/unread state, Google auth integration with account menu, and email subscription persistence. Use for AI scheduling, productivity SaaS, calendar assistants, or B2B startups when a friendly, conversion-focused page with playful color accents and rich social proof is desired. Every CTA and link routes through useNavigate; all images use the Image component with alt-driven Unsplash sourcing.",
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -130,8 +149,44 @@ export const SaasKimiPage5 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      notifications: table({
+        message: string(),
+        type: string(),
+        read: string(),
+      }),
+      subscribed: table({
+        email: string(),
+      }),
+    },
+    queries: {
+      notifications: ({ db }) =>
+        db.notifications.orderBy('createdAt').all(),
+      unreadCount: ({ db }) =>
+        db.notifications.where('read', 'false').all().length,
+    },
+    mutations: {
+      markAsRead: ({ db }, id: string) => {
+        db.notifications.update(id, { read: 'true' })
+        return db.notifications.all()
+      },
+      markAllAsRead: ({ db }) => {
+        for (const notification of db.notifications.all()) {
+          db.notifications.update(notification.id, { read: 'true' })
+        }
+        return db.notifications.all()
+      },
+      subscribe: ({ db }, email: string) => {
+        db.subscribed.insert({ email })
+        return db.subscribed.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [notificationsOpen, setNotificationsOpen] = useState(false)
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
     const brand = props.brand ?? "ChronoAI"
     const nav = props.nav?.length
@@ -440,6 +495,85 @@ export const SaasKimiPage5 = defineCapsule({
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
 
+    // Lakebed integration
+    const notifications = lakebed.useQuery('notifications')
+    const unreadCount = lakebed.useQuery('unreadCount')
+    const markAsRead = lakebed.useMutation('markAsRead')
+    const markAllAsRead = lakebed.useMutation('markAllAsRead')
+    const subscribe = lakebed.useMutation('subscribe')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    // Default notifications for demo
+    const defaultNotifications = [
+      { id: '1', message: 'Welcome to ChronoAI! Your calendar is now connected.', type: 'info', read: 'false' },
+      { id: '2', message: '3 meetings scheduled for today', type: 'success', read: 'false' },
+      { id: '3', message: 'New feature: AI-powered conflict resolution', type: 'update', read: 'true' },
+    ]
+
+    const displayNotifications = notifications && notifications.length > 0
+      ? notifications
+      : defaultNotifications
+
+    const displayUnreadCount = unreadCount ?? 0
+
+    // Shared sub-components
+    const ChevronDown = () => (
+      <svg
+        className="size-4 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     return (
       <div
         className={cn(
@@ -491,13 +625,254 @@ export const SaasKimiPage5 = defineCapsule({
             </ul>
 
             <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go("Log in")}
-                className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-              >
-                Log in
-              </button>
+              {/* Notifications bell */}
+              <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Notifications"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg>
+                    {displayUnreadCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-primary text-[0.625rem] font-bold text-primary-foreground">
+                        {displayUnreadCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Notifications</SheetTitle>
+                    <SheetDescription>
+                      {displayUnreadCount > 0
+                        ? `${displayUnreadCount} unread notification${displayUnreadCount === 1 ? '' : 's'}`
+                        : 'All caught up!'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {displayNotifications.length ? (
+                      <div className="space-y-4">
+                        {displayNotifications.map((notification) => (
+                          <div
+                            key={notification.id}
+                            className={cn(
+                              "flex items-start gap-3 rounded-lg border p-4 transition-colors",
+                              notification.read === 'true'
+                                ? "border-border/60 bg-muted/40"
+                                : "border-primary/40 bg-primary/5",
+                            )}
+                          >
+                            <span
+                              className={cn(
+                                "mt-0.5 grid size-8 shrink-0 place-items-center rounded-full",
+                                notification.type === 'success'
+                                  ? "bg-primary/10 text-primary"
+                                  : notification.type === 'update'
+                                    ? "bg-accent text-accent-foreground"
+                                    : "bg-muted text-muted-foreground",
+                              )}
+                            >
+                              {notification.type === 'success' ? (
+                                <svg
+                                  className="size-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                              ) : notification.type === 'update' ? (
+                                <svg
+                                  className="size-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                                </svg>
+                              ) : (
+                                <svg
+                                  className="size-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle cx="12" cy="12" r="10" />
+                                  <line x1="12" y1="16" x2="12" y2="12" />
+                                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                                </svg>
+                              )}
+                            </span>
+                            <div className="flex-1">
+                              <p className="text-sm text-foreground">{notification.message}</p>
+                            </div>
+                            {notification.read === 'false' ? (
+                              <button
+                                type="button"
+                                onClick={() => void markAsRead(notification.id)}
+                                className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                              >
+                                Mark read
+                              </button>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No notifications yet
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          We'll notify you about important updates here.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    {displayUnreadCount > 0 ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full rounded-full"
+                        onClick={() => void markAllAsRead()}
+                      >
+                        Mark all as read
+                      </Button>
+                    ) : (
+                      <SheetClose asChild>
+                        <Button type="button" className="w-full rounded-full">
+                          Close
+                        </Button>
+                      </SheetClose>
+                    )}
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+
+              {/* Auth */}
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Dashboard')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Dashboard
+                        <ArrowRight />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Settings')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Settings
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={() => go(heroPrimary)}
@@ -505,8 +880,106 @@ export const SaasKimiPage5 = defineCapsule({
               >
                 {heroPrimary}
               </button>
+
+              {/* Mobile menu button */}
+              <button
+                type="button"
+                aria-label="Open menu"
+                aria-expanded={mobileMenuOpen}
+                aria-controls="mobile-menu"
+                onClick={() => setMobileMenuOpen((v) => !v)}
+                className="p-2 text-muted-foreground hover:text-foreground lg:hidden"
+              >
+                <svg
+                  className="size-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              </button>
             </div>
           </nav>
+
+          {/* Mobile menu */}
+          {mobileMenuOpen && (
+            <div
+              id="mobile-menu"
+              className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
+            >
+              {nav.map((label) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    go(label)
+                  }}
+                  className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                >
+                  {label}
+                </button>
+              ))}
+              <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                {isSignedIn ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar size="lg">
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-foreground">
+                          {authDisplayName}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {authEmail ?? 'Signed in'}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false)
+                        handleSignOut()
+                      }}
+                      className="w-full rounded-full"
+                    >
+                      Sign out
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      handleSignIn()
+                    }}
+                    disabled={auth.isLoading}
+                    className="w-full rounded-full"
+                  >
+                    <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    {authLabel}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </header>
 
         <main className="flex flex-1 flex-col">
@@ -1028,6 +1501,36 @@ export const SaasKimiPage5 = defineCapsule({
                   {ctaSecondary}
                 </button>
               </div>
+              <form
+                className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const formData = new FormData(e.currentTarget)
+                  const email = formData.get('email') as string
+                  if (email) {
+                    void subscribe(email)
+                    e.currentTarget.reset()
+                  }
+                }}
+              >
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Enter your email"
+                  aria-label="Email address for newsletter"
+                  required
+                  className="flex-1 rounded-full border border-primary-foreground/20 bg-background/10 px-6 py-4 text-primary-foreground placeholder:text-primary-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary-foreground/30"
+                />
+                <button
+                  type="submit"
+                  className="whitespace-nowrap rounded-full bg-background px-8 py-4 font-semibold text-primary transition-colors hover:bg-primary-foreground/90"
+                >
+                  Subscribe
+                </button>
+              </form>
+              <p className="mt-4 text-sm text-primary-foreground/60">
+                By subscribing, you agree to our Privacy Policy. Unsubscribe anytime.
+              </p>
             </div>
           </section>
         </main>

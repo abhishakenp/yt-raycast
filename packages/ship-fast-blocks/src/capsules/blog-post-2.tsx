@@ -1,8 +1,27 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * BlogPostKimiPage2 — SECOND, visually distinct editorial BLOG POST / article
@@ -135,8 +154,86 @@ export const BlogPostKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      readingList: table({
+        articleTitle: string(),
+        articleCategory: string(),
+        articleDate: string(),
+        articleExcerpt: string(),
+        articleImageAlt: string(),
+      }),
+      comments: table({
+        articleTitle: string(),
+        authorName: string(),
+        authorEmail: string(),
+        content: string(),
+      }),
+      subscribers: table({
+        email: string(),
+      }),
+    },
+    queries: {
+      readingList: ({ db }) => db.readingList.orderBy('createdAt').all(),
+      comments: ({ db }) => db.comments.where('articleTitle', 'The Art of Resilient Design').all(),
+      isSubscribed: ({ db }, email: string) =>
+        db.subscribers.where('email', email).all().length > 0,
+    },
+    mutations: {
+      addToReadingList: ({ db }, articleData: {
+        title: string
+        category: string
+        date: string
+        excerpt: string
+        imageAlt: string
+      }) => {
+        const existing = db.readingList
+          .where('articleTitle', articleData.title)
+          .all()[0]
+        if (existing) return db.readingList.all()
+
+        db.readingList.insert({
+          articleTitle: articleData.title,
+          articleCategory: articleData.category,
+          articleDate: articleData.date,
+          articleExcerpt: articleData.excerpt,
+          articleImageAlt: articleData.imageAlt,
+        })
+        return db.readingList.all()
+      },
+      removeFromReadingList: ({ db }, articleTitle: string) => {
+        for (const item of db.readingList.where('articleTitle', articleTitle).all()) {
+          db.readingList.delete(item.id)
+        }
+        return db.readingList.all()
+      },
+      addComment: ({ db }, commentData: {
+        articleTitle: string
+        authorName: string
+        authorEmail: string
+        content: string
+      }) => {
+        db.comments.insert({
+          articleTitle: commentData.articleTitle,
+          authorName: commentData.authorName,
+          authorEmail: commentData.authorEmail,
+          content: commentData.content,
+        })
+        return db.comments.where('articleTitle', commentData.articleTitle).all()
+      },
+      subscribe: ({ db }, email: string) => {
+        const existing = db.subscribers.where('email', email).all()[0]
+        if (existing) return db.subscribers.all()
+
+        db.subscribers.insert({ email })
+        return db.subscribers.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [readingListOpen, setReadingListOpen] = useState(false)
+    const [commentOpen, setCommentOpen] = useState(false)
     const brand = props.brand ?? "Atlas"
     const nav = props.nav?.length
       ? props.nav
@@ -382,6 +479,93 @@ export const BlogPostKimiPage2 = defineCapsule({
       props.footer?.madeNote ??
       "Made with care in San Francisco and distributed worldwide."
 
+    // Lakebed integration
+    const readingList = lakebed.useQuery('readingList')
+    const comments = lakebed.useQuery('comments')
+    const auth = lakebed.useAuth()
+    const addToReadingList = lakebed.useMutation('addToReadingList')
+    const removeFromReadingList = lakebed.useMutation('removeFromReadingList')
+    const addComment = lakebed.useMutation('addComment')
+    const subscribe = lakebed.useMutation('subscribe')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const currentArticleTitle = `${title} ${titleAccent}`.trim()
+    const isInReadingList =
+      readingList?.some((item) => item.articleTitle === currentArticleTitle) ??
+      false
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
+    const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn('size-5', active ? 'text-primary-foreground' : 'text-foreground')}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+      </svg>
+    )
+
     return (
       <div
         className={cn(
@@ -438,6 +622,206 @@ export const BlogPostKimiPage2 = defineCapsule({
                 >
                   Search
                 </button>
+
+                {/* Reading list drawer trigger */}
+                <Sheet open={readingListOpen} onOpenChange={setReadingListOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Reading list"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <BookmarkIcon active={isInReadingList} />
+                      {readingList && readingList.length > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {readingList.length}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Reading list</SheetTitle>
+                      <SheetDescription>
+                        {readingList && readingList.length > 0
+                          ? `${readingList.length} article${readingList.length === 1 ? '' : 's'} saved.`
+                          : 'Your reading list is empty.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {readingList && readingList.length > 0 ? (
+                        <div className="space-y-5">
+                          {readingList.map((item) => (
+                            <div
+                              key={item.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                <Image
+                                  alt={item.articleImageAlt}
+                                  w={180}
+                                  h={180}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="mb-2 flex items-center gap-2">
+                                  <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-secondary-foreground">
+                                    {item.articleCategory}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {item.articleDate}
+                                  </span>
+                                </div>
+                                <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                  {item.articleTitle}
+                                </h3>
+                                <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">
+                                  {item.articleExcerpt}
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void removeFromReadingList(item.articleTitle)
+                                  }
+                                  className="mt-3 text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No articles saved
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Bookmark articles to read later by clicking the bookmark icon.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Continue reading
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+
+                {/* Account menu with auth */}
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Reading List')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Reading list
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Account Settings')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account settings
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+
                 <button
                   type="button"
                   onClick={() => go(navCta)}
@@ -498,6 +882,36 @@ export const BlogPostKimiPage2 = defineCapsule({
                     {authorRole}
                   </span>
                 </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (isInReadingList) {
+                    void removeFromReadingList(currentArticleTitle)
+                  } else {
+                    void addToReadingList({
+                      title: currentArticleTitle,
+                      category,
+                      date,
+                      excerpt: dek,
+                      imageAlt: coverAlt,
+                    })
+                  }
+                }}
+                aria-pressed={isInReadingList}
+                aria-label={
+                  isInReadingList
+                    ? `Remove ${currentArticleTitle} from reading list`
+                    : `Add ${currentArticleTitle} to reading list`
+                }
+                className={cn(
+                  'ml-4 grid size-12 place-items-center rounded-full border-2 transition-all hover:scale-105',
+                  isInReadingList
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-border bg-background text-foreground hover:border-primary/50',
+                )}
+              >
+                <BookmarkIcon active={isInReadingList} />
               </button>
             </div>
           </div>
@@ -659,39 +1073,77 @@ export const BlogPostKimiPage2 = defineCapsule({
               {relatedHeading}
             </h2>
             <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {relatedItems.map((post) => (
-                <article key={post.title} className="group">
-                  <button
-                    type="button"
-                    onClick={() => go(post.title)}
-                    className="block w-full text-left"
-                  >
-                    <figure className="mb-4 aspect-[16/10] overflow-hidden rounded-xl">
-                      <Image
-                        alt={post.imageAlt}
-                        w={800}
-                        h={500}
-                        loading="lazy"
-                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </figure>
-                    <div className="mb-3 flex items-center gap-2">
-                      <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold text-secondary-foreground">
-                        {post.category}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {post.date}
-                      </span>
+              {relatedItems.map((post) => {
+                const postInReadingList =
+                  readingList?.some((item) => item.articleTitle === post.title) ??
+                  false
+
+                return (
+                  <article key={post.title} className="group">
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => go(post.title)}
+                        className="block w-full text-left"
+                      >
+                        <figure className="mb-4 aspect-[16/10] overflow-hidden rounded-xl">
+                          <Image
+                            alt={post.imageAlt}
+                            w={800}
+                            h={500}
+                            loading="lazy"
+                            className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        </figure>
+                        <div className="mb-3 flex items-center gap-2">
+                          <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold text-secondary-foreground">
+                            {post.category}
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            {post.date}
+                          </span>
+                        </div>
+                        <h3 className="mb-2 font-serif text-xl font-bold leading-tight text-foreground transition-colors group-hover:text-primary">
+                          {post.title}
+                        </h3>
+                        <p className="text-sm leading-relaxed text-muted-foreground">
+                          {post.excerpt}
+                        </p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (postInReadingList) {
+                            void removeFromReadingList(post.title)
+                          } else {
+                            void addToReadingList({
+                              title: post.title,
+                              category: post.category,
+                              date: post.date,
+                              excerpt: post.excerpt,
+                              imageAlt: post.imageAlt,
+                            })
+                          }
+                        }}
+                        aria-pressed={postInReadingList}
+                        aria-label={
+                          postInReadingList
+                            ? `Remove ${post.title} from reading list`
+                            : `Add ${post.title} to reading list`
+                        }
+                        className={cn(
+                          'absolute right-2 top-2 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
+                          postInReadingList
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-background/90 text-foreground hover:bg-background',
+                        )}
+                      >
+                        <BookmarkIcon active={postInReadingList} />
+                      </button>
                     </div>
-                    <h3 className="mb-2 font-serif text-xl font-bold leading-tight text-foreground transition-colors group-hover:text-primary">
-                      {post.title}
-                    </h3>
-                    <p className="text-sm leading-relaxed text-muted-foreground">
-                      {post.excerpt}
-                    </p>
-                  </button>
-                </article>
-              ))}
+                  </article>
+                )
+              })}
             </div>
           </div>
         </section>
@@ -709,7 +1161,14 @@ export const BlogPostKimiPage2 = defineCapsule({
               className="mx-auto flex max-w-lg flex-col gap-3 sm:flex-row"
               onSubmit={(e) => {
                 e.preventDefault()
-                go(newsletterSubmit)
+                const form = e.currentTarget
+                const emailInput = form.querySelector(
+                  '#newsletter-email',
+                ) as HTMLInputElement
+                if (emailInput?.value) {
+                  void subscribe(emailInput.value)
+                  emailInput.value = ''
+                }
               }}
             >
               <label htmlFor="newsletter-email" className="sr-only">

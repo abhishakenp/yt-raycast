@@ -1,8 +1,36 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+
+const BookmarkIcon = () => (
+  <svg
+    className="size-4"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path d="M6 4h12a2 2 0 0 1 2 2v16l-8-4.5L4 22V6a2 2 0 0 1 2-2h0Z" />
+  </svg>
+)
 
 export const NewsKimiPage3 = defineCapsule({
   name: "NewsKimiPage3",
@@ -43,97 +71,189 @@ export const NewsKimiPage3 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      readingList: table({
+        title: string(),
+        section: string(),
+        excerpt: string(),
+        imageAlt: string(),
+        order: number(),
+      }),
+    },
+    queries: {
+      readingList: ({ db }) => db.readingList.orderBy("createdAt").all(),
+    },
+    mutations: {
+      toggleReadingItem: ({ db }, title: string, section: string, excerpt: string, imageAlt: string) => {
+        const existing = db.readingList.where("title", title).all()[0]
+        if (existing) {
+          db.readingList.delete(existing.id)
+          return db.readingList.all()
+        }
+
+        db.readingList.insert({
+          title,
+          section,
+          excerpt,
+          imageAlt,
+          order: db.readingList.all().length + 1,
+        })
+
+        return db.readingList.all()
+      },
+      removeReadingItem: ({ db }, id: string) => {
+        const existing = db.readingList.get(id)
+        if (existing) {
+          db.readingList.delete(existing.id)
+        }
+
+        return db.readingList.all()
+      },
+      clearReadingList: ({ db }) => {
+        for (const item of db.readingList.all()) {
+          db.readingList.delete(item.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [readingListOpen, setReadingListOpen] = useState(false)
     const brand = props.brand ?? "NOVA The Future of Journalism"
-    const nav = props.nav?.length ? props.nav : ["N NOVA", "Technology", "Science", "Business", "Culture", "Design"]
+    const nav = props.nav?.length
+      ? props.nav
+      : [
+          "N NOVA",
+          "Technology",
+          "Science",
+          "Business",
+          "Culture",
+          "Design",
+        ]
     const hero = {
       eyebrow: "News / Variant 3",
       title: "The Quantum Leap: IBM's New Chip Is Reshaping AI",
-      description: "NOVA The Future of Journalism N NOVA Technology Science Business Culture Design Subscribe Breaking The Quantum Leap: IBM's New Chip Is Reshaping AI At 2.3 nanometers, the Condor...",
+      description:
+        "NOVA The Future of Journalism N NOVA Technology Science Business Culture Design Subscribe Breaking The Quantum Leap: IBM's New Chip Is Reshaping AI At 2.3 nanometers, the Condor...",
       primaryCta: "Sign up",
       secondaryCta: "Subscribe free",
-      imageAlt: "professional headshot of a smiling woman with dark hair wearing a navy blazer",
+      imageAlt:
+        "professional headshot of a smiling woman with dark hair wearing a navy blazer",
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Latest Stories",
-    "body": "NOVA The Future of Journalism N NOVA Technology Science Business Culture Design Subscribe Breaking The Quantum Leap: IBM's New Chip Is Reshaping AI At 2.3 nanometers, the Condor...",
-    "items": [
-      "OpenAI's GPT-5 Rollout Leaves Enterprise Buyers Split on Pricing",
-      "CRISPR 3.0 Erases Hereditary Blindness in Phase-II Trial",
-      "Fed Holds Rates at 5.25% Despite Cooling Labor Market"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "Trending Now",
-    "body": "News page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Venice Biennale 2026: When Art Becomes Climate Infrastructure",
-      "Tokyo's Invisible Architecture Blends Timber and Augmented Light",
-      "EU Digital Passport Goes Live Across 27 Member States"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Get the full story, every morning.",
-    "body": "News page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Daily Briefing",
-      "Sections"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "OpenAI's GPT-5 Rollout Leaves Enterprise Buyers Split on Pricing",
-    "body": "News page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": []
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "Trending Now",
-    "alt": "professional headshot of a smiling woman with dark hair wearing a navy blazer",
-    "caption": "News generated page detail"
-  },
-  {
-    "title": "Get the full story, every morning.",
-    "alt": "close-up of a semiconductor chip with neon blue and violet lighting",
-    "caption": "News generated page detail"
-  },
-  {
-    "title": "OpenAI's GPT-5 Rollout Leaves Enterprise Buyers Split on Pricing",
-    "alt": "abstract neural network visualization with glowing nodes on a dark background",
-    "caption": "News generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          { value: "24/7", label: "Responsive service" },
+          { value: "98%", label: "Positive outcomes" },
+          { value: "4.9", label: "Average rating" },
+          { value: "12+", label: "Core capabilities" },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: "Overview",
+            title: "Latest Stories",
+            body: "NOVA The Future of Journalism N NOVA Technology Science Business Culture Design Subscribe Breaking The Quantum Leap: IBM's New Chip Is Reshaping AI At 2.3 nanometers, the Condor...",
+            items: [
+              "OpenAI's GPT-5 Rollout Leaves Enterprise Buyers Split on Pricing",
+              "CRISPR 3.0 Erases Hereditary Blindness in Phase-II Trial",
+              "Fed Holds Rates at 5.25% Despite Cooling Labor Market",
+            ],
+          },
+          {
+            eyebrow: "Experience",
+            title: "Trending Now",
+            body: "News page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              "Venice Biennale 2026: When Art Becomes Climate Infrastructure",
+              "Tokyo's Invisible Architecture Blends Timber and Augmented Light",
+              "EU Digital Passport Goes Live Across 27 Member States",
+            ],
+          },
+          {
+            eyebrow: "Proof",
+            title: "Get the full story, every morning.",
+            body: "News page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ["Daily Briefing", "Sections"],
+          },
+          {
+            eyebrow: "Next steps",
+            title: "OpenAI's GPT-5 Rollout Leaves Enterprise Buyers Split on Pricing",
+            body: "News page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: "Trending Now",
+            alt: "professional headshot of a smiling woman with dark hair wearing a navy blazer",
+            caption: "News generated page detail",
+          },
+          {
+            title: "Get the full story, every morning.",
+            alt: "close-up of a semiconductor chip with neon blue and violet lighting",
+            caption: "News generated page detail",
+          },
+          {
+            title: "OpenAI's GPT-5 Rollout Leaves Enterprise Buyers Split on Pricing",
+            alt: "abstract neural network visualization with glowing nodes on a dark background",
+            caption: "News generated page detail",
+          },
+        ]
+
+    const readingList = lakebed.useQuery("readingList")
+    const toggleReadingItem = lakebed.useMutation("toggleReadingItem")
+    const removeReadingItem = lakebed.useMutation("removeReadingItem")
+    const clearReadingList = lakebed.useMutation("clearReadingList")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const isLoadingAuth = auth.isLoading
+    const authLabel = isLoadingAuth
+      ? "Checking..."
+      : isSignedIn
+        ? "Signed in"
+        : "Sign in"
+
+    const readingItems = readingList ?? []
+    const readingCount = readingItems.length
+
+    const handleToggleReading = (
+      title: string,
+      sectionLabel: string,
+      body: string,
+      imageAlt: string,
+    ) => {
+      void toggleReadingItem(title, sectionLabel, body, imageAlt || hero.imageAlt)
+    }
+
+    const handleSignIn = () => {
+      if (isLoadingAuth) return
+
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn("min-h-screen bg-background text-foreground", props.className)}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go("Home")}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -148,13 +268,148 @@ export const NewsKimiPage3 = defineCapsule({
                 </button>
               ))}
             </nav>
-            <button
-              type="button"
-              onClick={() => go(hero.primaryCta)}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {hero.primaryCta}
-            </button>
+            <div className="flex items-center gap-2">
+              <Sheet open={readingListOpen} onOpenChange={setReadingListOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Open reading list"
+                    className="relative flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <BookmarkIcon />
+                    {readingCount ? (
+                      <span className="inline-flex min-w-5 justify-center rounded-full bg-foreground px-1.5 py-0.5 text-[0.65rem] font-semibold text-background">
+                        {readingCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Reading list</SheetTitle>
+                    <SheetDescription>
+                      {readingCount
+                        ? `${readingCount} item${readingCount === 1 ? "" : "s"} saved for later.`
+                        : "Your reading list is empty."}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {readingItems.length ? (
+                      <div className="space-y-5">
+                        {readingItems.map((item) => (
+                          <div
+                            key={item.id}
+                            className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                          >
+                            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                              <Image
+                                alt={item.imageAlt}
+                                w={180}
+                                h={180}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                {item.section}
+                              </p>
+                              <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                {item.title}
+                              </h3>
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {item.excerpt}
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => void removeReadingItem(item.id)}
+                                className="mt-3 text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <BookmarkIcon />
+                        <p className="mt-4 text-base font-semibold text-foreground">
+                          No saved stories
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Save a story from a section card to read it later.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <div className="w-full">
+                      <div className="mb-3 text-sm text-muted-foreground">
+                        {isSignedIn ? "Signed in session active." : "You are not signed in."}
+                      </div>
+                      <div className="mb-3 flex gap-2">
+                        {!isSignedIn ? (
+                          <Button
+                            type="button"
+                            onClick={handleSignIn}
+                            disabled={isLoadingAuth}
+                            className="w-full rounded-full"
+                          >
+                            {authLabel}
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full rounded-full"
+                            onClick={handleSignOut}
+                          >
+                            Sign out
+                          </Button>
+                        )}
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="rounded-full"
+                          onClick={() => go("Account")}
+                          disabled={!isSignedIn}
+                        >
+                          Account
+                        </Button>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full rounded-full"
+                          onClick={() => void clearReadingList()}
+                          disabled={!readingCount}
+                        >
+                          Clear all
+                        </Button>
+                        <SheetClose asChild>
+                          <Button
+                            type="button"
+                            className="w-full rounded-full"
+                            variant="secondary"
+                          >
+                            Continue
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+
+              <button
+                type="button"
+                onClick={() => go(hero.primaryCta)}
+                className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                {hero.primaryCta}
+              </button>
+            </div>
           </div>
         </header>
 
@@ -190,16 +445,28 @@ export const NewsKimiPage3 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -207,17 +474,34 @@ export const NewsKimiPage3 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
                         <button
                           key={item}
                           type="button"
-                          onClick={() => go(item)}
+                          onClick={() => {
+                            handleToggleReading(
+                              item,
+                              section.title,
+                              section.body,
+                              hero.imageAlt,
+                            )
+                            go(item)
+                          }}
                           className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                         >
                           <span>{item}</span>
@@ -234,8 +518,12 @@ export const NewsKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -247,11 +535,26 @@ export const NewsKimiPage3 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -262,9 +565,15 @@ export const NewsKimiPage3 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -280,10 +589,17 @@ export const NewsKimiPage3 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

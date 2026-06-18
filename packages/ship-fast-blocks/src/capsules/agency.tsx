@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * AgencyKimiPage — a complete, self-contained creative digital-agency LANDING page.
@@ -123,10 +141,85 @@ export const AgencyKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      inquiries: table({
+        name: string(),
+        email: string(),
+        projectType: string(),
+        message: string(),
+        status: string(),
+      }),
+      projects: table({
+        title: string(),
+        description: string(),
+        tag: string(),
+        client: string(),
+      }),
+    },
+    queries: {
+      inquiries: ({ db }) => db.inquiries.orderBy('createdAt').all(),
+      projects: ({ db }) => db.projects.orderBy('createdAt').all(),
+    },
+    mutations: {
+      submitInquiry: ({ db }, name: string, email: string, projectType: string, message: string) => {
+        db.inquiries.insert({
+          name,
+          email,
+          projectType,
+          message,
+          status: 'pending',
+        })
+        return db.inquiries.all()
+      },
+      addProject: ({ db }, title: string, description: string, tag: string, client: string) => {
+        db.projects.insert({
+          title,
+          description,
+          tag,
+          client,
+        })
+        return db.projects.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [portalOpen, setPortalOpen] = useState(false)
     const brand = props.brand ?? "Studio Rise"
+
+    const inquiries = lakebed.useQuery('inquiries')
+    const projects = lakebed.useQuery('projects')
+    const submitInquiry = lakebed.useMutation('submitInquiry')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Client Portal'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
     const nav = props.nav?.length
       ? props.nav
       : ["Services", "Work", "About", "Contact"]
@@ -222,6 +315,7 @@ export const AgencyKimiPage = defineCapsule({
             tag: "Real Estate",
           },
         ]
+    const displayProjects = projects && projects.length > 0 ? projects : workItems
 
     const statsHeading = props.stats?.heading ?? "Numbers that speak volumes."
     const statsDesc =
@@ -299,6 +393,21 @@ export const AgencyKimiPage = defineCapsule({
       >
         <line x1="5" y1="12" x2="19" y2="12" />
         <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
       </svg>
     )
 
@@ -459,6 +568,100 @@ export const AgencyKimiPage = defineCapsule({
                   {label}
                 </button>
               ))}
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPortalOpen(true)
+                        }}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Client Portal
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => go(nav[nav.length - 1])}
@@ -508,6 +711,69 @@ export const AgencyKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          setPortalOpen(true)
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Client Portal
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                        variant="outline"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -619,7 +885,7 @@ export const AgencyKimiPage = defineCapsule({
               </div>
 
               <div className="grid gap-8 md:grid-cols-2">
-                {workItems.map((proj) => (
+                {displayProjects.map((proj) => (
                   <button
                     key={proj.title}
                     type="button"
@@ -907,6 +1173,116 @@ export const AgencyKimiPage = defineCapsule({
             </div>
           </div>
         </footer>
+
+        <Sheet open={portalOpen} onOpenChange={setPortalOpen}>
+          <SheetTrigger asChild>
+            <Button
+              type="button"
+              className="sr-only"
+              aria-label="Open agency client portal"
+            >
+              Open client portal
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Client portal</SheetTitle>
+              <SheetDescription>
+                Start a project with {brand} and review the live inquiry queue.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 space-y-6 overflow-y-auto p-6">
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const form = new FormData(e.currentTarget)
+                  const name = String(form.get("name") ?? "").trim()
+                  const email = String(form.get("email") ?? "").trim()
+                  const projectType = String(form.get("projectType") ?? "").trim()
+                  const message = String(form.get("message") ?? "").trim()
+                  if (!name || !email || !projectType || !message) return
+                  void submitInquiry(name, email, projectType, message)
+                  e.currentTarget.reset()
+                }}
+              >
+                <input
+                  name="name"
+                  required
+                  placeholder="Name"
+                  className={inputCls}
+                />
+                <input
+                  name="email"
+                  type="email"
+                  required
+                  placeholder="Email"
+                  className={inputCls}
+                />
+                <select
+                  name="projectType"
+                  required
+                  defaultValue={projectTypes[0] ?? ""}
+                  className={cn(inputCls, "appearance-none")}
+                >
+                  {projectTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+                <textarea
+                  name="message"
+                  rows={4}
+                  required
+                  placeholder="Tell us what you want to build."
+                  className={cn(inputCls, "resize-none")}
+                />
+                <Button type="submit" className="w-full">
+                  Submit inquiry
+                </Button>
+              </form>
+
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <div className="text-2xl font-bold text-foreground">
+                    {inquiries?.length ?? 0}
+                  </div>
+                  <div className="text-muted-foreground">Inquiries</div>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <div className="text-2xl font-bold text-foreground">
+                    {displayProjects.length}
+                  </div>
+                  <div className="text-muted-foreground">Projects</div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {displayProjects.slice(0, 3).map((project) => (
+                  <div
+                    key={project.title}
+                    className="rounded-xl border border-border bg-muted/40 p-4"
+                  >
+                    <div className="font-semibold text-foreground">
+                      {project.title}
+                    </div>
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      {project.tag}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <SheetClose asChild>
+                <Button type="button" variant="outline" className="w-full">
+                  Close
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

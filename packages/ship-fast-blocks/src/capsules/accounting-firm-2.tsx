@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * AccountingFirmKimiPage2 — a SECOND, visually distinct accounting-firm /
@@ -218,9 +236,85 @@ export const AccountingFirmKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      inquiries: table({
+        firstName: string(),
+        lastName: string(),
+        email: string(),
+        phone: string(),
+        service: string(),
+        message: string(),
+      }),
+      bookings: table({
+        serviceName: string(),
+        tierName: string(),
+        firstName: string(),
+        lastName: string(),
+        email: string(),
+        date: string(),
+      }),
+    },
+    queries: {
+      inquiries: ({ db }) => db.inquiries.orderBy('createdAt').all(),
+      bookings: ({ db }) => db.bookings.orderBy('createdAt').all(),
+    },
+    mutations: {
+      submitInquiry: ({ db }, data: { firstName: string; lastName: string; email: string; phone: string; service: string; message: string }) => {
+        db.inquiries.insert(data)
+        return db.inquiries.all()
+      },
+      createBooking: ({ db }, data: { serviceName: string; tierName: string; firstName: string; lastName: string; email: string; date: string }) => {
+        db.bookings.insert(data)
+        return db.bookings.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [bookingOpen, setBookingOpen] = useState(false)
+    const [inquiryOpen, setInquiryOpen] = useState(false)
+    const [selectedTier, setSelectedTier] = useState<{ name: string; tagline: string } | null>(null)
+    const [inquiryForm, setInquiryForm] = useState({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      service: '',
+      message: '',
+    })
+    const [bookingForm, setBookingForm] = useState({
+      firstName: '',
+      lastName: '',
+      email: '',
+      date: '',
+    })
+
+    const inquiries = lakebed.useQuery('inquiries')
+    const bookings = lakebed.useQuery('bookings')
+    const submitInquiry = lakebed.useMutation('submitInquiry')
+    const createBooking = lakebed.useMutation('createBooking')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName = auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials = authDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('') || 'ME'
+    const authLabel = auth.isLoading ? 'Checking...' : isSignedIn ? authDisplayName : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const savedInquiries = inquiries ?? []
+    const savedBookings = bookings ?? []
+
     const brand = props.brand ?? "Stellar Financial"
     const nav = props.nav?.length
       ? props.nav
@@ -852,6 +946,37 @@ export const AccountingFirmKimiPage2 = defineCapsule({
     const inputCls =
       "w-full rounded-xl border border-input bg-muted px-4 py-3 text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-transparent focus:ring-2 focus:ring-ring"
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     return (
       <div
         className={cn(
@@ -890,9 +1015,109 @@ export const AccountingFirmKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Bookings')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Bookings
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={() => go(navCta)}
+                  onClick={() => setBookingOpen(true)}
                   className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
                 >
                   {navCta}
@@ -1784,6 +2009,153 @@ export const AccountingFirmKimiPage2 = defineCapsule({
             </div>
           </div>
         </footer>
+
+        <Sheet open={bookingOpen} onOpenChange={setBookingOpen}>
+          <SheetTrigger asChild>
+            <Button
+              type="button"
+              className="sr-only"
+              aria-label="Open financial consultation drawer"
+            >
+              Open consultation drawer
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">{navCta}</SheetTitle>
+              <SheetDescription>
+                Reserve a consultation and track booking requests for this page.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 space-y-6 overflow-y-auto p-6">
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const tierName =
+                    selectedTier?.name ?? pricingPlans[0]?.name ?? "Consultation"
+                  const serviceName =
+                    inquiryForm.service || contactServices[0] || "Advisory"
+                  if (!bookingForm.firstName || !bookingForm.email) return
+                  void createBooking({
+                    serviceName,
+                    tierName,
+                    firstName: bookingForm.firstName,
+                    lastName: bookingForm.lastName,
+                    email: bookingForm.email,
+                    date: bookingForm.date || "Next available",
+                  })
+                  setBookingForm({
+                    firstName: "",
+                    lastName: "",
+                    email: "",
+                    date: "",
+                  })
+                }}
+              >
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <input
+                    value={bookingForm.firstName}
+                    onChange={(e) =>
+                      setBookingForm((form) => ({
+                        ...form,
+                        firstName: e.currentTarget.value,
+                      }))
+                    }
+                    required
+                    placeholder="First name"
+                    className={inputCls}
+                  />
+                  <input
+                    value={bookingForm.lastName}
+                    onChange={(e) =>
+                      setBookingForm((form) => ({
+                        ...form,
+                        lastName: e.currentTarget.value,
+                      }))
+                    }
+                    placeholder="Last name"
+                    className={inputCls}
+                  />
+                </div>
+                <input
+                  type="email"
+                  value={bookingForm.email}
+                  onChange={(e) =>
+                    setBookingForm((form) => ({
+                      ...form,
+                      email: e.currentTarget.value,
+                    }))
+                  }
+                  required
+                  placeholder="Email address"
+                  className={inputCls}
+                />
+                <input
+                  type="date"
+                  value={bookingForm.date}
+                  onChange={(e) =>
+                    setBookingForm((form) => ({
+                      ...form,
+                      date: e.currentTarget.value,
+                    }))
+                  }
+                  className={inputCls}
+                />
+                <Button type="submit" className="w-full">
+                  Save booking
+                </Button>
+              </form>
+
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <div className="text-2xl font-bold text-foreground">
+                    {savedBookings.length}
+                  </div>
+                  <div className="text-muted-foreground">Bookings</div>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <div className="text-2xl font-bold text-foreground">
+                    {savedInquiries.length}
+                  </div>
+                  <div className="text-muted-foreground">Inquiries</div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {savedBookings.length > 0 ? (
+                  savedBookings.map((booking) => (
+                    <div
+                      key={booking.id}
+                      className="rounded-xl border border-border bg-muted/40 p-4"
+                    >
+                      <div className="font-semibold text-foreground">
+                        {booking.firstName} {booking.lastName}
+                      </div>
+                      <div className="mt-1 text-sm text-muted-foreground">
+                        {booking.tierName} · {booking.serviceName}
+                      </div>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {booking.date}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                    No consultations booked yet.
+                  </div>
+                )}
+              </div>
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <SheetClose asChild>
+                <Button type="button" variant="outline" className="w-full">
+                  Close
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

@@ -1,8 +1,35 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "#/components/ui/command.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * BlogKimiPage — a complete, self-contained editorial BLOG INDEX / homepage.
@@ -82,8 +109,67 @@ export const BlogKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      articles: table({
+        alt: string(),
+        author: string(),
+        date: string(),
+        excerpt: string(),
+        tag: string(),
+        title: string(),
+      }),
+      readingList: table({
+        articleTitle: string(),
+      }),
+      subscribers: table({
+        email: string(),
+      }),
+    },
+    queries: {
+      articles: ({ db }) => db.articles.orderBy('createdAt').all(),
+      readingListArticles: ({ db }) =>
+        db.readingList.all().flatMap((item) => {
+          const article = db.articles.where('title', item.articleTitle).all()[0]
+          return article ? [article] : []
+        }),
+      isSubscribed: ({ db }, email: string) =>
+        db.subscribers.where('email', email).all().length > 0,
+    },
+    mutations: {
+      addToReadingList: ({ db }, articleTitle: string) => {
+        const existing = db.readingList
+          .where('articleTitle', articleTitle)
+          .all()[0]
+
+        if (!existing) {
+          db.readingList.insert({ articleTitle })
+        }
+
+        return db.readingList.all()
+      },
+      removeFromReadingList: ({ db }, articleTitle: string) => {
+        for (const item of db.readingList.where('articleTitle', articleTitle).all()) {
+          db.readingList.delete(item.id)
+        }
+
+        return db.readingList.all()
+      },
+      subscribe: ({ db }, email: string) => {
+        const existing = db.subscribers.where('email', email).all()[0]
+
+        if (!existing) {
+          db.subscribers.insert({ email })
+        }
+
+        return db.subscribers.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [searchOpen, setSearchOpen] = useState(false)
+    const [readingListOpen, setReadingListOpen] = useState(false)
     const brand = props.brand ?? "Form & Function"
     const nav = props.nav?.length
       ? props.nav
@@ -166,6 +252,52 @@ export const BlogKimiPage = defineCapsule({
             alt: "Abstract geometric shapes in soft pastel colors",
           },
         ]
+    const normalizedPosts = posts.map((post) => ({
+      alt: post.alt,
+      author: post.author,
+      date: post.date,
+      excerpt: post.excerpt,
+      tag: post.tag,
+      title: post.title,
+    }))
+
+    const storedArticles = lakebed.useQuery('articles')
+    const readingListArticles = lakebed.useQuery('readingListArticles')
+    const auth = lakebed.useAuth()
+    const addToReadingList = lakebed.useMutation('addToReadingList')
+    const removeFromReadingList = lakebed.useMutation('removeFromReadingList')
+    const subscribe = lakebed.useMutation('subscribe')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const displayArticles =
+      storedArticles && storedArticles.length > 0
+        ? storedArticles
+        : normalizedPosts
+    const safeReadingList = readingListArticles ?? []
+    const readingListCount = safeReadingList.length
 
     const footerLinks = props.footer?.links?.length
       ? props.footer.links
@@ -217,6 +349,39 @@ export const BlogKimiPage = defineCapsule({
       </svg>
     )
 
+    const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     return (
       <div
         className={cn(
@@ -255,29 +420,284 @@ export const BlogKimiPage = defineCapsule({
                 </button>
               ))}
             </nav>
-            <button
-              type="button"
-              aria-label="Search"
-              onClick={() => go("Search")}
-              className="grid size-[2.375rem] place-items-center rounded-md border border-border bg-background text-muted-foreground transition-all hover:-translate-y-px hover:text-foreground hover:shadow-sm"
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setSearchOpen(true)}
+                aria-label="Search"
+                className="grid size-[2.375rem] place-items-center rounded-md border border-border bg-background text-muted-foreground transition-all hover:-translate-y-px hover:text-foreground hover:shadow-sm"
               >
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </button>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+              </button>
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <Arrow />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Settings')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Settings
+                        <Arrow />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={readingListOpen} onOpenChange={setReadingListOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Reading list"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                    </svg>
+                    {readingListCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {readingListCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Reading list</SheetTitle>
+                    <SheetDescription>
+                      {readingListCount > 0
+                        ? `${readingListCount} article${readingListCount === 1 ? '' : 's'} saved for later.`
+                        : 'Your reading list is empty.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {safeReadingList.length ? (
+                      <div className="space-y-5">
+                        {safeReadingList.map((article) => (
+                          <div
+                            key={article.title}
+                            className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                          >
+                            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                              <Image
+                                alt={article.alt}
+                                w={180}
+                                h={180}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                    {article.tag}
+                                  </p>
+                                  <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                    {article.title}
+                                  </h3>
+                                  <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                                    {article.excerpt}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="mt-4 flex items-center justify-between">
+                                <span className="text-xs text-muted-foreground">
+                                  {article.author} · {article.date}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void removeFromReadingList(article.title)
+                                  }
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No articles saved
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Bookmark articles from the grid to build your reading
+                          list for this session.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <SheetClose asChild>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full rounded-full"
+                      >
+                        Continue reading
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </header>
+
+        <CommandDialog
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          title="Search articles"
+          description="Search the articles seeded for this session."
+          className="max-w-xl"
+        >
+          <CommandInput placeholder={`Search ${brand} articles...`} />
+          <CommandList className="max-h-[420px]">
+            <CommandEmpty>No articles found.</CommandEmpty>
+            <CommandGroup heading="Articles">
+              {displayArticles.map((article) => (
+                <CommandItem
+                  key={article.title}
+                  value={`${article.tag} ${article.title} ${article.author}`}
+                  onSelect={() => {
+                    setSearchOpen(false)
+                    go(article.title)
+                  }}
+                  className="gap-3 py-3"
+                >
+                  <div className="size-12 overflow-hidden rounded-md bg-muted">
+                    <Image
+                      alt={article.alt}
+                      w={120}
+                      h={120}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {article.title}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {article.tag} · {article.author}
+                    </p>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
 
         <main className="flex flex-1 flex-col">
           {/* Featured post */}
@@ -353,49 +773,116 @@ export const BlogKimiPage = defineCapsule({
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {posts.map((post) => (
-                <button
-                  key={post.title}
-                  type="button"
-                  onClick={() => go("Blog post")}
-                  className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card text-left shadow-[0_4px_12px_rgba(0,0,0,0.04)] transition-all hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)]"
-                >
-                  <div className="relative h-[12.5rem] overflow-hidden bg-muted">
-                    <Image
-                      alt={post.alt}
-                      w={800}
-                      h={500}
-                      loading="lazy"
-                      className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                    />
-                    <span className="absolute left-3 top-3 rounded-full bg-background/90 px-2.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.06em] text-foreground shadow-sm backdrop-blur">
-                      {post.tag}
-                    </span>
-                  </div>
-                  <div className="flex flex-1 flex-col p-5">
-                    <h3 className="text-[1.05rem] font-bold leading-snug tracking-tight text-foreground">
-                      {post.title}
-                    </h3>
-                    <p className="mt-2 line-clamp-3 flex-1 text-[0.92rem] leading-relaxed text-muted-foreground">
-                      {post.excerpt}
-                    </p>
-                    <div className="mt-4 flex items-center justify-between border-t border-border pt-3.5">
-                      <span className="inline-flex items-center gap-2.5 text-[0.82rem] font-semibold text-foreground">
-                        <span className="grid size-7 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-[0.625rem] font-bold text-primary-foreground">
-                          {post.author.charAt(0)}
-                        </span>
-                        {post.author}
+              {displayArticles.map((article) => {
+                const isBookmarked = safeReadingList.some(
+                  (item) => item.title === article.title,
+                )
+
+                return (
+                  <article key={article.title} className="group">
+                    <div className="relative mb-4 aspect-[4/3] overflow-hidden rounded-xl bg-muted">
+                      <Image
+                        alt={article.alt}
+                        w={800}
+                        h={500}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                      />
+                      <span className="absolute left-3 top-3 rounded-full bg-background/90 px-2.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.06em] text-foreground shadow-sm backdrop-blur">
+                        {article.tag}
                       </span>
-                      <span className="text-[0.78rem] text-muted-foreground">
-                        {post.date}
-                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          void addToReadingList(article.title)
+                        }}
+                        aria-pressed={isBookmarked}
+                        aria-label={
+                          isBookmarked
+                            ? `Remove ${article.title} from reading list`
+                            : `Add ${article.title} to reading list`
+                        }
+                        className={cn(
+                          'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
+                          isBookmarked
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-background/90 text-foreground hover:bg-background',
+                        )}
+                      >
+                        <BookmarkIcon active={isBookmarked} />
+                      </button>
                     </div>
-                  </div>
-                </button>
-              ))}
+                    <div className="flex flex-1 flex-col p-5 rounded-xl border border-border bg-card shadow-[0_4px_12px_rgba(0,0,0,0.04)] transition-all hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)]">
+                      <h3 className="text-[1.05rem] font-bold leading-snug tracking-tight text-foreground">
+                        {article.title}
+                      </h3>
+                      <p className="mt-2 line-clamp-3 flex-1 text-[0.92rem] leading-relaxed text-muted-foreground">
+                        {article.excerpt}
+                      </p>
+                      <div className="mt-4 flex items-center justify-between border-t border-border pt-3.5">
+                        <span className="inline-flex items-center gap-2.5 text-[0.82rem] font-semibold text-foreground">
+                          <span className="grid size-7 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-[0.625rem] font-bold text-primary-foreground">
+                            {article.author.charAt(0)}
+                          </span>
+                          {article.author}
+                        </span>
+                        <span className="text-[0.78rem] text-muted-foreground">
+                          {article.date}
+                        </span>
+                      </div>
+                    </div>
+                  </article>
+                )
+              })}
             </div>
           </section>
         </main>
+
+        {/* Newsletter CTA */}
+        <section className="bg-muted py-16">
+          <div className="mx-auto max-w-4xl px-6 text-center">
+            <h2 className="mb-4 font-serif text-3xl font-bold text-foreground lg:text-4xl">
+              Stay in the loop
+            </h2>
+            <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
+              Get the latest articles, insights, and design inspiration delivered
+              straight to your inbox. No spam, just the good stuff.
+            </p>
+            <form
+              className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
+              onSubmit={(e) => {
+                e.preventDefault()
+                const form = e.currentTarget
+                const emailInput = form.querySelector(
+                  'input[type="email"]',
+                ) as HTMLInputElement
+                if (emailInput?.value) {
+                  void subscribe(emailInput.value)
+                  emailInput.value = ''
+                }
+              }}
+            >
+              <input
+                type="email"
+                placeholder="Enter your email"
+                aria-label="Email address for newsletter"
+                required
+                className="flex-1 rounded-full border border-border bg-background px-6 py-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <Button
+                type="submit"
+                className="rounded-full"
+              >
+                Subscribe
+              </Button>
+            </form>
+            <p className="mt-4 text-sm text-muted-foreground">
+              By subscribing, you agree to our Privacy Policy. Unsubscribe
+              anytime.
+            </p>
+          </div>
+        </section>
 
         {/* Footer */}
         <footer className="mt-auto border-t border-border py-10">

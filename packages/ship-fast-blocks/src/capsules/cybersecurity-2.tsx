@@ -1,9 +1,19 @@
-import { useState } from "react"
+import { type FormEvent, useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * CybersecurityKimiPage2 — TEMPLATE VARIANT 2 for the cybersecurity category.
@@ -189,7 +199,53 @@ export const CybersecurityKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      demoRequests: table({
+        name: string(),
+        email: string(),
+        company: string(),
+        plan: string(),
+        useCase: string(),
+        teamSize: number(),
+      }),
+    },
+    queries: {
+      demoRequests: ({ db }) => db.demoRequests.orderBy("createdAt").all(),
+    },
+    mutations: {
+      submitDemoRequest: (
+        { db },
+        name: string,
+        email: string,
+        company: string,
+        plan: string,
+        useCase: string,
+        teamSize: number,
+      ) => {
+        db.demoRequests.insert({
+          name,
+          email,
+          company,
+          plan,
+          useCase,
+          teamSize,
+        })
+        return db.demoRequests.all()
+      },
+      removeDemoRequest: ({ db }, id: string) => {
+        db.demoRequests.delete(id)
+        return db.demoRequests.all()
+      },
+      clearDemoRequests: ({ db }) => {
+        for (const request of db.demoRequests.all()) {
+          db.demoRequests.delete(request.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? "SentinelGuard"
     const nav = props.nav?.length
@@ -537,6 +593,76 @@ export const CybersecurityKimiPage2 = defineCapsule({
       : ["Twitter", "LinkedIn", "GitHub"]
 
     const [openFaq, setOpenFaq] = useState<number | null>(null)
+    const [demoDrawerOpen, setDemoDrawerOpen] = useState(false)
+    const [requestName, setRequestName] = useState("")
+    const [requestEmail, setRequestEmail] = useState("")
+    const [requestCompany, setRequestCompany] = useState("")
+    const [requestPlan, setRequestPlan] = useState("")
+    const [requestUseCase, setRequestUseCase] = useState("")
+    const [requestTeamSize, setRequestTeamSize] = useState("")
+    const storedRequests = lakebed.useQuery("demoRequests")
+    const submitDemoRequest = lakebed.useMutation("submitDemoRequest")
+    const removeDemoRequest = lakebed.useMutation("removeDemoRequest")
+    const clearDemoRequests = lakebed.useMutation("clearDemoRequests")
+    const auth = lakebed.useAuth()
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+    const demoRows = storedRequests ?? []
+    const demoCount = demoRows.length
+    const totalTeamSize = demoRows.reduce(
+      (sum, row) => sum + (Number(row.teamSize) || 0),
+      0,
+    )
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const openDemoDrawer = (useCase: string, plan = "General") => {
+      setRequestPlan(plan)
+      setRequestUseCase(useCase)
+      setDemoDrawerOpen(true)
+    }
+    const handleSubmitDemoRequest = (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+
+      const normalizedName = requestName.trim()
+      const normalizedEmail = requestEmail.trim()
+      const normalizedCompany = requestCompany.trim()
+      const normalizedPlan = requestPlan.trim()
+      const normalizedUseCase = requestUseCase.trim()
+      const normalizedTeamSize = Number.parseInt(requestTeamSize, 10)
+
+      if (!normalizedName || !normalizedEmail || !normalizedCompany) {
+        return
+      }
+
+      void submitDemoRequest(
+        normalizedName,
+        normalizedEmail,
+        normalizedCompany,
+        normalizedPlan || "General",
+        normalizedUseCase || "General security inquiry",
+        Number.isFinite(normalizedTeamSize) ? normalizedTeamSize : 0,
+      )
+
+      setRequestName("")
+      setRequestEmail("")
+      setRequestCompany("")
+      setRequestUseCase("")
+      setRequestPlan("")
+      setRequestTeamSize("")
+    }
 
     // Shield mark — brand logo glyph (decorative inline SVG, token-colored).
     const ShieldMark = ({ className }: { className?: string }) => (
@@ -669,6 +795,190 @@ export const CybersecurityKimiPage2 = defineCapsule({
           props.className,
         )}
       >
+        <Sheet
+          open={demoDrawerOpen}
+          onOpenChange={setDemoDrawerOpen}
+        >
+          <SheetContent
+            side="right"
+            className="w-full gap-0 border-l border-background/10 bg-foreground p-0 sm:max-w-md"
+          >
+            <SheetHeader className="border-b border-background/10 p-6">
+              <div className="flex items-center justify-between">
+                <SheetTitle>Demo requests</SheetTitle>
+                <span className="rounded-full border border-background/20 bg-background/10 px-3 py-1 text-xs font-semibold text-background">
+                  {demoCount} open
+                </span>
+              </div>
+              <SheetDescription>
+                Manage inbound security demo requests collected from this page.
+              </SheetDescription>
+            </SheetHeader>
+
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {demoRows.length ? (
+                <div className="space-y-4">
+                  {demoRows.map((item) => (
+                    <div
+                      key={item.id}
+                      className="rounded-xl border border-background/10 bg-background/5 p-4"
+                    >
+                      <div className="mb-2 flex items-start justify-between gap-2">
+                        <div>
+                          <p className="text-sm font-semibold">{item.name}</p>
+                          <p className="text-xs text-background/60">
+                            {item.company} • {item.email}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => void removeDemoRequest(item.id)}
+                          className="rounded-full px-3 py-1.5 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/10"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <div className="space-y-1 text-xs text-background/70">
+                        <p>Plan: {item.plan}</p>
+                        <p>Team size: {item.teamSize}</p>
+                        <p className="text-background/60">{item.useCase}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-background/20 p-6 text-sm text-background/60">
+                  No demo requests yet. Add one from a CTA to see it appear.
+                </div>
+              )}
+            </div>
+
+            <form
+              onSubmit={handleSubmitDemoRequest}
+              className="space-y-3 border-t border-background/10 px-6 py-5"
+            >
+              <label className="block text-sm">
+                <span className="mb-1 block text-xs text-background/60">
+                  Name
+                </span>
+                <input
+                  value={requestName}
+                  onChange={(event) => setRequestName(event.currentTarget.value)}
+                  required
+                  placeholder="Alex Morgan"
+                  aria-label="Request name"
+                  className="w-full rounded-lg border border-background/20 bg-background/5 px-3 py-2 text-sm text-background placeholder:text-background/40 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="mb-1 block text-xs text-background/60">
+                  Work email
+                </span>
+                <input
+                  type="email"
+                  value={requestEmail}
+                  onChange={(event) =>
+                    setRequestEmail(event.currentTarget.value)
+                  }
+                  required
+                  placeholder="alex@company.com"
+                  aria-label="Request email"
+                  className="w-full rounded-lg border border-background/20 bg-background/5 px-3 py-2 text-sm text-background placeholder:text-background/40 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="mb-1 block text-xs text-background/60">
+                  Company
+                </span>
+                <input
+                  value={requestCompany}
+                  onChange={(event) =>
+                    setRequestCompany(event.currentTarget.value)
+                  }
+                  required
+                  placeholder="Enterprise Corp"
+                  aria-label="Request company"
+                  className="w-full rounded-lg border border-background/20 bg-background/5 px-3 py-2 text-sm text-background placeholder:text-background/40 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="mb-1 block text-xs text-background/60">
+                  Plan
+                </span>
+                <input
+                  value={requestPlan}
+                  onChange={(event) => setRequestPlan(event.currentTarget.value)}
+                  placeholder="Starter / Professional / Enterprise"
+                  aria-label="Requested plan"
+                  className="w-full rounded-lg border border-background/20 bg-background/5 px-3 py-2 text-sm text-background placeholder:text-background/40 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="mb-1 block text-xs text-background/60">
+                  Team size
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  value={requestTeamSize}
+                  onChange={(event) =>
+                    setRequestTeamSize(event.currentTarget.value)
+                  }
+                  placeholder="50"
+                  aria-label="Estimated protected team size"
+                  className="w-full rounded-lg border border-background/20 bg-background/5 px-3 py-2 text-sm text-background placeholder:text-background/40 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="mb-1 block text-xs text-background/60">
+                  Use case
+                </span>
+                <input
+                  value={requestUseCase}
+                  onChange={(event) =>
+                    setRequestUseCase(event.currentTarget.value)
+                  }
+                  placeholder="SOC operations, endpoint audit, SIEM integration..."
+                  aria-label="Request use case"
+                  className="w-full rounded-lg border border-background/20 bg-background/5 px-3 py-2 text-sm text-background placeholder:text-background/40 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+              </label>
+              <button
+                type="submit"
+                className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
+              >
+                Save request
+              </button>
+            </form>
+
+            <SheetFooter className="border-t border-background/10 p-4">
+              <div className="mb-3 flex items-center justify-between text-sm text-background/70">
+                <span>Protected endpoints total</span>
+                <span className="font-semibold text-background">
+                  {totalTeamSize}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => void clearDemoRequests()}
+                  disabled={!demoRows.length}
+                  className="w-full rounded-lg border border-background/20 bg-background/10 px-4 py-2.5 text-sm font-semibold transition-all hover:bg-background/15 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Clear all
+                </button>
+                <SheetClose asChild>
+                  <button
+                    type="button"
+                    className="w-full rounded-lg bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-background/70"
+                  >
+                    Close
+                  </button>
+                </SheetClose>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
         {/* Navbar */}
         <header className="sticky top-0 z-50 border-b border-background/10 bg-foreground/80 backdrop-blur-xl">
           <nav
@@ -703,14 +1013,21 @@ export const CybersecurityKimiPage2 = defineCapsule({
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go("Sign In")}
+                  onClick={() => {
+                    if (isSignedIn) {
+                      handleSignOut()
+                    } else {
+                      handleSignIn()
+                    }
+                  }}
                   className="hidden text-sm text-background/70 transition-colors hover:text-background sm:block"
+                  disabled={auth.isLoading}
                 >
-                  Sign In
+                  {authLabel}
                 </button>
                 <button
                   type="button"
-                  onClick={() => go("Get Demo")}
+                  onClick={() => openDemoDrawer("Get Demo request", "Professional")}
                   className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-all hover:scale-105 hover:bg-primary/90 lg:px-6 lg:py-2.5"
                 >
                   Get Demo
@@ -752,14 +1069,18 @@ export const CybersecurityKimiPage2 = defineCapsule({
                   <div className="flex flex-col gap-4 sm:flex-row">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() =>
+                        openDemoDrawer("Primary hero request", heroPrimary)
+                      }
                       className="rounded-xl bg-primary px-8 py-4 text-center text-lg font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:bg-primary/90"
                     >
                       {heroPrimary}
                     </button>
                     <button
                       type="button"
-                      onClick={() => go(heroSecondary)}
+                      onClick={() =>
+                        openDemoDrawer("Watch demo request", heroSecondary)
+                      }
                       className="inline-flex items-center justify-center gap-2 rounded-xl border border-background/20 bg-background/5 px-8 py-4 text-center text-lg font-semibold text-background transition-all hover:bg-background/10"
                     >
                       <PlayIcon className="size-5" />
@@ -1130,7 +1451,12 @@ export const CybersecurityKimiPage2 = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(plan.cta)}
+                      onClick={() =>
+                        openDemoDrawer(
+                          `${plan.name} plan enquiry`,
+                          plan.cta || plan.name,
+                        )
+                      }
                       className={cn(
                         "block w-full rounded-xl px-6 py-3 text-center font-semibold transition-colors",
                         plan.featured
@@ -1267,14 +1593,18 @@ export const CybersecurityKimiPage2 = defineCapsule({
               <div className="mb-8 flex flex-col justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={() =>
+                    openDemoDrawer("Final call-to-action primary", "Professional")
+                  }
                   className="rounded-xl bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:bg-primary/90"
                 >
                   {ctaPrimary}
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(ctaSecondary)}
+                  onClick={() =>
+                    openDemoDrawer("Final call-to-action secondary", "Enterprise")
+                  }
                   className="rounded-xl border border-background/20 bg-background/5 px-8 py-4 text-lg font-semibold text-background transition-all hover:bg-background/10"
                 >
                   {ctaSecondary}

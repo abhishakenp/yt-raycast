@@ -1,8 +1,20 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * KnowledgeBaseKimiPage2 — a bold, gradient-forward help-center / knowledge-base
@@ -142,12 +154,107 @@ export const KnowledgeBaseKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      savedResources: table({
+        title: string(),
+        route: string(),
+        category: string(),
+      }),
+      searchHistory: table({
+        term: string(),
+      }),
+    },
+    queries: {
+      savedResources: ({ db }) => db.savedResources.orderBy("createdAt").all(),
+      searchHistory: ({ db }) => db.searchHistory.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addSavedResource: ({ db }, title: string, route: string, category: string) => {
+        const normalizedTitle = title.trim()
+        const normalizedRoute = route.trim()
+        if (!normalizedRoute) return db.savedResources.all()
+
+        const exists = db.savedResources.where("route", normalizedRoute).all()[0]
+        if (exists) return db.savedResources.all()
+
+        db.savedResources.insert({
+          title: normalizedTitle || normalizedRoute,
+          route: normalizedRoute,
+          category: category.trim() || "Resource",
+        })
+
+        return db.savedResources.all()
+      },
+      removeSavedResource: ({ db }, id: string) => {
+        db.savedResources.delete(id)
+        return db.savedResources.all()
+      },
+      clearSavedResources: ({ db }) => {
+        for (const item of db.savedResources.all()) {
+          db.savedResources.delete(item.id)
+        }
+        return []
+      },
+      addSearchHistory: ({ db }, term: string) => {
+        const normalizedTerm = term.trim()
+        if (!normalizedTerm) return db.searchHistory.all()
+
+        const exists = db.searchHistory.where("term", normalizedTerm).all()[0]
+        if (exists) return db.searchHistory.all()
+
+        db.searchHistory.insert({ term: normalizedTerm })
+        return db.searchHistory.all()
+      },
+      clearSearchHistory: ({ db }) => {
+        for (const query of db.searchHistory.all()) {
+          db.searchHistory.delete(query.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [searchValue, setSearchValue] = useState("")
+    const [supportDrawerOpen, setSupportDrawerOpen] = useState(false)
+
     const brand = props.brand ?? "StreamLine"
     const nav = props.nav?.length
       ? props.nav
       : ["Popular Topics", "Categories", "FAQ", "Contact"]
+
+    const savedResources = lakebed.useQuery("savedResources") ?? []
+    const searchHistory = lakebed.useQuery("searchHistory") ?? []
+    const addSavedResource = lakebed.useMutation("addSavedResource")
+    const removeSavedResource = lakebed.useMutation("removeSavedResource")
+    const clearSavedResources = lakebed.useMutation("clearSavedResources")
+    const addSearchHistory = lakebed.useMutation("addSearchHistory")
+    const clearSearchHistory = lakebed.useMutation("clearSearchHistory")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authLabel = auth.isLoading ? "Checking..." : isSignedIn ? "Sign out" : "Log in"
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const recentSearches = searchHistory.slice().reverse()
+    const savedCount = savedResources.length
+
+    const handleHeroSearchSubmit = (query: string) => {
+      const trimmedQuery = query.trim()
+      if (trimmedQuery) {
+        void addSearchHistory(trimmedQuery)
+      }
+    }
+
+    const handleOpenResource = (title: string, route: string, category: string) => {
+      void addSavedResource(title, route, category)
+      go(route)
+    }
 
     const heroBadge =
       props.hero?.badge ?? "New: Q2 2026 Performance Handbook is live"
@@ -543,6 +650,41 @@ export const KnowledgeBaseKimiPage2 = defineCapsule({
       return <LinkedInIcon />
     }
 
+    const BookmarkIcon = ({ className }: { className?: string }) => (
+      <svg
+        className={className}
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+      </svg>
+    )
+
+    const XIcon = ({ className }: { className?: string }) => (
+      <svg
+        className={className}
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    )
+
     return (
       <div
         className={cn(
@@ -583,12 +725,165 @@ export const KnowledgeBaseKimiPage2 = defineCapsule({
               ))}
             </nav>
             <div className="flex items-center gap-4">
+              <Sheet
+                open={supportDrawerOpen}
+                onOpenChange={setSupportDrawerOpen}
+              >
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted"
+                  >
+                    <BookmarkIcon className="h-4 w-4" />
+                    Saved
+                    <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/10 px-1.5 text-xs font-bold text-primary">
+                      {savedCount}
+                    </span>
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full p-0 sm:max-w-md">
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle>Reading list</SheetTitle>
+                    <SheetDescription>
+                      Your saved help-center resources and recent searches.
+                    </SheetDescription>
+                  </SheetHeader>
+
+                  <div className="flex-1 overflow-y-auto px-6 py-4">
+                    <div className="space-y-6">
+                      <section>
+                        <p className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">
+                          Saved resources
+                        </p>
+                        <div className="space-y-3">
+                          {savedResources.length ? (
+                            savedResources.map((item) => (
+                              <div
+                                key={item.id}
+                                className="rounded-xl border border-border p-3"
+                              >
+                                <div className="mb-2 flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                      {item.category}
+                                    </p>
+                                    <p className="text-sm font-semibold text-foreground">
+                                      {item.title}
+                                    </p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      void removeSavedResource(item.id)
+                                    }}
+                                    aria-label={`Remove ${item.title} from saved resources`}
+                                    className="inline-flex rounded-full p-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                  >
+                                    <XIcon className="h-4 w-4" />
+                                  </button>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    go(item.route)
+                                    setSupportDrawerOpen(false)
+                                  }}
+                                  className="inline-flex text-xs font-semibold text-primary transition-colors hover:text-primary/80"
+                                >
+                                  Open
+                                </button>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-sm text-muted-foreground">
+                              Save topics while browsing to build your reading list.
+                            </p>
+                          )}
+                        </div>
+                      </section>
+
+                      <section>
+                        <p className="mb-3 text-sm font-bold uppercase tracking-wide text-muted-foreground">
+                          Recent searches
+                        </p>
+                        <div className="space-y-2">
+                          {recentSearches.length ? (
+                            recentSearches.slice(0, 8).map((entry) => (
+                              <button
+                                key={entry.id}
+                                type="button"
+                                onClick={() => {
+                                  setSearchValue(entry.term)
+                                  setSupportDrawerOpen(false)
+                                  go("Search")
+                                }}
+                                className="block w-full rounded-xl border border-border px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted"
+                              >
+                                {entry.term}
+                              </button>
+                            ))
+                          ) : (
+                            <p className="text-sm text-muted-foreground">
+                              Search queries will appear here.
+                            </p>
+                          )}
+                        </div>
+                      </section>
+                    </div>
+                  </div>
+
+                  <SheetFooter className="flex flex-col gap-3 border-t border-border p-6">
+                    <div className="flex items-center justify-between rounded-xl bg-muted px-4 py-3 text-xs font-semibold text-muted-foreground">
+                      <span>Saved resources</span>
+                      <span>{savedResources.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl bg-muted px-4 py-3 text-xs font-semibold text-muted-foreground">
+                      <span>Saved searches</span>
+                      <span>{recentSearches.length}</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        disabled={!savedResources.length}
+                        onClick={() => void clearSavedResources()}
+                        className="inline-flex w-full items-center justify-center rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs font-bold text-destructive transition-colors hover:bg-destructive/20 disabled:pointer-events-none disabled:opacity-60"
+                      >
+                        Clear saved resources
+                      </button>
+                      <button
+                        type="button"
+                        disabled={!recentSearches.length}
+                        onClick={() => void clearSearchHistory()}
+                        className="inline-flex w-full items-center justify-center rounded-lg border border-border px-3 py-2 text-xs font-bold text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-60"
+                      >
+                        Clear searches
+                      </button>
+                    </div>
+                    <SheetClose asChild>
+                      <button
+                        type="button"
+                        className="inline-flex w-full items-center justify-center rounded-lg bg-foreground px-4 py-2 text-sm font-bold text-background"
+                      >
+                        Continue browsing
+                      </button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+
               <button
                 type="button"
-                onClick={() => go("Log in")}
+                onClick={() => {
+                  if (isSignedIn) {
+                    handleSignOut()
+                  } else {
+                    handleSignIn()
+                  }
+                }}
+                disabled={auth.isLoading}
                 className="hidden items-center rounded-lg px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted sm:inline-flex"
               >
-                Log in
+                {authLabel}
               </button>
               <button
                 type="button"
@@ -625,6 +920,7 @@ export const KnowledgeBaseKimiPage2 = defineCapsule({
                 className="mx-auto mt-10 max-w-2xl"
                 onSubmit={(e) => {
                   e.preventDefault()
+                  handleHeroSearchSubmit(searchValue)
                   go("Search")
                 }}
               >
@@ -638,6 +934,10 @@ export const KnowledgeBaseKimiPage2 = defineCapsule({
                   <input
                     id="hero-search"
                     type="search"
+                    value={searchValue}
+                    onChange={(e) => {
+                      setSearchValue(e.target.value)
+                    }}
                     placeholder={searchPlaceholder}
                     className="w-full rounded-2xl border-0 bg-background py-4 pl-12 pr-36 text-base text-foreground shadow-2xl ring-1 ring-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring md:text-lg"
                   />
@@ -661,7 +961,10 @@ export const KnowledgeBaseKimiPage2 = defineCapsule({
                   <button
                     key={topic}
                     type="button"
-                    onClick={() => go(topic)}
+                    onClick={() => {
+                      handleHeroSearchSubmit(topic)
+                      go(topic)
+                    }}
                     className="rounded-full bg-primary-foreground/10 px-3 py-1 transition-colors hover:bg-primary-foreground/20"
                   >
                     {topic}
@@ -716,7 +1019,9 @@ export const KnowledgeBaseKimiPage2 = defineCapsule({
                     <button
                       key={item.title}
                       type="button"
-                      onClick={() => go(item.title)}
+                      onClick={() =>
+                        handleOpenResource(item.title, item.title, "Topic")
+                      }
                       className="group relative flex flex-col rounded-2xl bg-card p-6 text-left shadow-sm ring-1 ring-border transition-shadow hover:shadow-md"
                     >
                       <div className="flex items-center gap-3">
@@ -765,7 +1070,9 @@ export const KnowledgeBaseKimiPage2 = defineCapsule({
                   <button
                     key={cat.title}
                     type="button"
-                    onClick={() => go(cat.title)}
+                    onClick={() =>
+                      handleOpenResource(cat.title, cat.title, "Category")
+                    }
                     className="group relative flex flex-col overflow-hidden rounded-2xl text-left shadow-sm ring-1 ring-border transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-ring"
                   >
                     <div className="relative h-40 overflow-hidden">

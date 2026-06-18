@@ -4,6 +4,16 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * CorporateKimiPage2 — a complete, self-contained ENTERPRISE / B2B SaaS
@@ -38,6 +48,58 @@ export const CorporateKimiPage2 = defineCapsule({
   name: "CorporateKimiPage2",
   description:
     "Second/alternative ENTERPRISE corporate B2B SaaS marketing homepage — a vibrant, modern, product-led indigo/violet aesthetic that is a visually distinct sibling to CorporateKimiPage (use this when the brand should feel colorful, energetic and startup-fast rather than buttoned-up neutral). Includes a split hero (animated live 'SOC 2 Type II Certified' pill, bold headline with a gradient-accent word, dual CTAs, no-credit-card / free-trial assurances, and a showcase product screenshot with floating glass 'Uptime SLA 99.999%' and 'Security Score A+' stat cards plus a 5-star reviewer overlay), a 6-brand client logo trust-bar, a colorful 6-up enterprise solutions grid with tinted icon tiles (cloud orchestration, zero-trust security, real-time analytics, AI/ML GPU workloads, team collaboration, 24/7 expert support), a dark 'deploy in minutes' 3-step onboarding section with a faux terminal CLI window, a 6-up product gallery with gradient caption overlays, a 3-tier Starter / Professional (featured 'Most Popular') / Enterprise pricing table, a vibrant primary KPI stats band with a secondary metrics row, a 5-up customer testimonial grid with star ratings and avatars, an 8-item accordion FAQ, a bold primary conversion CTA band, and a fat dark 4-column footer with social icons and legal links. Use as the ROOT/home page for cloud-infrastructure platforms, developer tooling and PaaS/IaaS vendors, AI/ML and analytics products, fintech/healthcare infrastructure, or any modern enterprise SaaS company. Supply content only; the block owns all layout and styling.",
+  lakebed: {
+    schema: {
+      leads: table({
+        name: string(),
+        email: string(),
+        company: string(),
+        source: string(),
+        message: string(),
+        priority: number(),
+      }),
+    },
+    queries: {
+      leads: ({ db }) => db.leads.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addLead: (
+        { db },
+        name: string,
+        email: string,
+        company: string,
+        source: string,
+        message: string,
+        priority: number,
+      ) => {
+        db.leads.insert({
+          name,
+          email,
+          company,
+          source,
+          message,
+          priority,
+        })
+
+        return db.leads.orderBy("createdAt").all()
+      },
+      removeLead: ({ db }, id: string) => {
+        const lead = db.leads.get(id)
+        if (lead) {
+          db.leads.delete(id)
+        }
+
+        return db.leads.orderBy("createdAt").all()
+      },
+      clearLeads: ({ db }) => {
+        for (const lead of db.leads.all()) {
+          db.leads.delete(lead.id)
+        }
+
+        return db.leads.all()
+      },
+    },
+  },
   props: z.object({
     /** Brand / company name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -203,9 +265,67 @@ export const CorporateKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [leadDrawerOpen, setLeadDrawerOpen] = useState(false)
+    const [leadName, setLeadName] = useState("")
+    const [leadEmail, setLeadEmail] = useState("")
+    const [leadCompany, setLeadCompany] = useState("")
+    const [leadMessage, setLeadMessage] = useState("")
+    const [leadSource, setLeadSource] = useState("Home")
+    const auth = lakebed.useAuth()
+    const storedLeads = lakebed.useQuery("leads")
+    const addLead = lakebed.useMutation("addLead")
+    const removeLead = lakebed.useMutation("removeLead")
+    const clearLeads = lakebed.useMutation("clearLeads")
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authDisplayName =
+      auth.user?.displayName || auth.email || auth.user?.email || "Account"
+
+    const leadRows = storedLeads ?? []
+    const leadCount = leadRows.length
+    const hasLeads = leadRows.length > 0
+
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+
+    const openLeadDrawer = (source: string) => {
+      setLeadSource(source)
+      setLeadDrawerOpen(true)
+    }
+
+    const submitLead = () => {
+      const email = leadEmail.trim()
+      if (!email) return
+
+      void addLead(
+        leadName.trim() || authDisplayName,
+        email,
+        leadCompany.trim() || "Enterprise",
+        leadSource,
+        leadMessage.trim() || "Interested in a platform demo.",
+        leadRows.length + 1,
+      )
+
+      setLeadName("")
+      setLeadEmail("")
+      setLeadCompany("")
+      setLeadMessage("")
+    }
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
     const brand = props.brand ?? "Nexus"
     const nav = props.nav?.length
       ? props.nav
@@ -847,17 +967,37 @@ export const CorporateKimiPage2 = defineCapsule({
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go(ctaSecondary)}
+                  onClick={() => {
+                    openLeadDrawer(ctaSecondary)
+                    go(ctaSecondary)
+                  }}
                   className="hidden items-center justify-center rounded-lg bg-primary/10 px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/20 sm:inline-flex"
                 >
                   Contact Sales
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(heroPrimary)}
+                  onClick={() => {
+                    openLeadDrawer(heroPrimary)
+                    go(heroPrimary)
+                  }}
                   className="inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-colors hover:bg-primary/90"
                 >
                   Get Demo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (auth.isLoading) return
+                    if (isSignedIn) {
+                      handleSignOut()
+                    } else {
+                      handleSignIn()
+                    }
+                  }}
+                  className="hidden items-center justify-center rounded-lg border border-border bg-background px-5 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:border-primary/30 hover:text-primary sm:inline-flex"
+                >
+                  {authLabel}
                 </button>
                 <button
                   type="button"
@@ -906,6 +1046,163 @@ export const CorporateKimiPage2 = defineCapsule({
           </nav>
         </header>
 
+        <Sheet open={leadDrawerOpen} onOpenChange={setLeadDrawerOpen}>
+          <SheetContent side="right" className="w-full sm:max-w-md">
+            <SheetHeader>
+              <SheetTitle>Lead Requests</SheetTitle>
+              <SheetDescription>
+                Capture and track inbound enterprise lead requests for faster follow-up.
+              </SheetDescription>
+              <div className="mt-2 inline-flex items-center gap-2 text-xs text-muted-foreground">
+                <span className="inline-flex items-center rounded-full bg-primary/15 px-3 py-1 text-primary">
+                  Live leads: {leadCount}
+                </span>
+              </div>
+            </SheetHeader>
+
+            <div className="mt-6 space-y-6">
+              <form
+                className="space-y-4 rounded-xl border border-border bg-muted/40 p-4"
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  submitLead()
+                }}
+              >
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-muted-foreground">
+                    Name
+                  </label>
+                  <input
+                    value={leadName}
+                    onChange={(event) => setLeadName(event.target.value)}
+                    placeholder="Your name"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-muted-foreground">
+                    Work email
+                  </label>
+                  <input
+                    value={leadEmail}
+                    onChange={(event) => setLeadEmail(event.target.value)}
+                    required
+                    type="email"
+                    placeholder="you@company.com"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-muted-foreground">
+                    Company
+                  </label>
+                  <input
+                    value={leadCompany}
+                    onChange={(event) => setLeadCompany(event.target.value)}
+                    placeholder="Your company"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-muted-foreground">
+                    Source
+                  </label>
+                  <input
+                    value={leadSource}
+                    onChange={(event) => setLeadSource(event.target.value)}
+                    placeholder="Referral source"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-muted-foreground">
+                    Message
+                  </label>
+                  <textarea
+                    value={leadMessage}
+                    onChange={(event) => setLeadMessage(event.target.value)}
+                    rows={3}
+                    placeholder="Tell us what you need"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  Save lead
+                </button>
+              </form>
+
+              <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+                <span>Total requests: {leadCount}</span>
+                <span>{hasLeads ? "Live inbound stack" : "No requests yet"}</span>
+              </div>
+
+              <div className="max-h-72 space-y-4 overflow-y-auto pr-1">
+                {hasLeads ? (
+                  leadRows
+                    .slice()
+                    .sort((a, b) => b.priority - a.priority)
+                    .map((lead) => (
+                      <div
+                        key={lead.id}
+                        className="rounded-lg border border-border bg-background p-4"
+                      >
+                        <div className="mb-2 flex items-start justify-between gap-3">
+                          <div>
+                            <p className="font-medium text-card-foreground">
+                              {lead.name}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {lead.email}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => void removeLead(lead.id)}
+                            className="text-xs font-semibold text-destructive transition-colors hover:text-destructive/80"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
+                          {lead.source}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {lead.message}
+                        </p>
+                      </div>
+                    ))
+                ) : (
+                  <p className="rounded-lg border border-dashed border-border bg-muted/30 p-4 text-center text-sm text-muted-foreground">
+                    No requests yet. Capture one with the forms above.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <SheetFooter className="mt-6 grid gap-2">
+              <button
+                type="button"
+                onClick={() => void clearLeads()}
+                disabled={!hasLeads}
+                className="inline-flex items-center justify-center rounded-lg bg-destructive px-4 py-3 text-sm font-semibold text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:pointer-events-none disabled:opacity-50"
+              >
+                Clear all
+              </button>
+              <SheetClose asChild>
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                >
+                  Continue browsing
+                </button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+
         <main>
           {/* Hero */}
           <section className="relative overflow-hidden">
@@ -936,7 +1233,10 @@ export const CorporateKimiPage2 = defineCapsule({
                   <div className="mb-10 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() => {
+                        openLeadDrawer(heroPrimary)
+                        go(heroPrimary)
+                      }}
                       className="inline-flex items-center justify-center rounded-xl bg-primary px-8 py-4 text-lg font-bold text-primary-foreground shadow-xl shadow-primary/30 transition-all hover:-translate-y-0.5 hover:bg-primary/90"
                     >
                       {heroPrimary}
@@ -944,7 +1244,10 @@ export const CorporateKimiPage2 = defineCapsule({
                     </button>
                     <button
                       type="button"
-                      onClick={() => go(heroSecondary)}
+                      onClick={() => {
+                        openLeadDrawer(heroSecondary)
+                        go(heroSecondary)
+                      }}
                       className="inline-flex items-center justify-center rounded-xl border-2 border-border bg-background px-8 py-4 text-lg font-bold text-foreground transition-all hover:border-primary/40 hover:text-primary"
                     >
                       <svg
@@ -1166,7 +1469,10 @@ export const CorporateKimiPage2 = defineCapsule({
                   <div className="mt-10 flex items-center gap-6">
                     <button
                       type="button"
-                      onClick={() => go(stepsCta)}
+                      onClick={() => {
+                        openLeadDrawer(stepsCta)
+                        go(stepsCta)
+                      }}
                       className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                     >
                       {stepsCta}
@@ -1351,7 +1657,10 @@ export const CorporateKimiPage2 = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(plan.cta)}
+                      onClick={() => {
+                        openLeadDrawer(plan.cta)
+                        go(plan.cta)
+                      }}
                       className={cn(
                         "block w-full rounded-lg py-3 text-center text-sm font-semibold transition-colors",
                         plan.featured
@@ -1501,7 +1810,10 @@ export const CorporateKimiPage2 = defineCapsule({
               <div className="mb-12 flex flex-col justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={() => {
+                    openLeadDrawer(ctaPrimary)
+                    go(ctaPrimary)
+                  }}
                   className="inline-flex items-center justify-center rounded-xl bg-background px-8 py-4 text-lg font-bold text-primary shadow-xl transition-colors hover:bg-muted"
                 >
                   {ctaPrimary}
@@ -1509,7 +1821,10 @@ export const CorporateKimiPage2 = defineCapsule({
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(ctaSecondary)}
+                  onClick={() => {
+                    openLeadDrawer(ctaSecondary)
+                    go(ctaSecondary)
+                  }}
                   className="inline-flex items-center justify-center rounded-xl border-2 border-primary-foreground/30 px-8 py-4 text-lg font-bold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
                 >
                   <svg

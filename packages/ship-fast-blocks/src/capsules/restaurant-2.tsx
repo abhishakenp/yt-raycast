@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { Image } from "#/lib/img.tsx"
 import { useNavigate } from "#/lib/use-navigate.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * RestaurantKimiPage2 — a dark, cinematic ramen restaurant HOME page (second style
@@ -225,10 +243,94 @@ export const RestaurantKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      reservations: table({
+        date: string(),
+        time: string(),
+        partySize: number(),
+        name: string(),
+        email: string(),
+        phone: string(),
+        notes: string(),
+      }),
+      favorites: table({
+        itemName: string(),
+      }),
+    },
+    queries: {
+      reservations: ({ db }) => db.reservations.orderBy('createdAt').all(),
+      favoriteItemNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.itemName)),
+    },
+    mutations: {
+      makeReservation: ({ db }, data: { date: string; time: string; partySize: number; name: string; email: string; phone: string; notes: string }) => {
+        db.reservations.insert(data)
+        return db.reservations.all()
+      },
+      cancelReservation: ({ db }, id: string) => {
+        db.reservations.delete(id)
+        return db.reservations.all()
+      },
+      toggleFavorite: ({ db }, itemName: string) => {
+        const existingFavorite = db.favorites
+          .where('itemName', itemName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ itemName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [reservationOpen, setReservationOpen] = useState(false)
+    const [reservationDate, setReservationDate] = useState("")
+    const [reservationTime, setReservationTime] = useState("")
+    const [reservationPartySize, setReservationPartySize] = useState("2")
+    const [reservationName, setReservationName] = useState("")
+    const [reservationEmail, setReservationEmail] = useState("")
+    const [reservationPhone, setReservationPhone] = useState("")
+    const [reservationNotes, setReservationNotes] = useState("")
     const brand = props.brand ?? "MENYA ICHIRAKU"
+
+    const reservations = lakebed.useQuery('reservations')
+    const favoriteItemNames = lakebed.useQuery('favoriteItemNames')
+    const auth = lakebed.useAuth()
+    const makeReservation = lakebed.useMutation('makeReservation')
+    const cancelReservation = lakebed.useMutation('cancelReservation')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
 
     const navLinks = props.nav?.length
       ? props.nav
@@ -528,6 +630,80 @@ export const RestaurantKimiPage2 = defineCapsule({
       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
     )
 
+    // Helper icons
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
+    const handleReservationSubmit = (e: React.FormEvent) => {
+      e.preventDefault()
+      if (!reservationDate || !reservationTime || !reservationName || !reservationEmail || !reservationPhone) return
+
+      void makeReservation({
+        date: reservationDate,
+        time: reservationTime,
+        partySize: Number.parseInt(reservationPartySize, 10) || 2,
+        name: reservationName,
+        email: reservationEmail,
+        phone: reservationPhone,
+        notes: reservationNotes,
+      })
+
+      setReservationDate("")
+      setReservationTime("")
+      setReservationPartySize("2")
+      setReservationName("")
+      setReservationEmail("")
+      setReservationPhone("")
+      setReservationNotes("")
+      setReservationOpen(false)
+    }
+
     return (
       <div className={cn("flex min-h-svh flex-col bg-background text-foreground antialiased", props.className)}>
         {/* ── NAVBAR ── */}
@@ -553,13 +729,291 @@ export const RestaurantKimiPage2 = defineCapsule({
                   {label}
                 </button>
               ))}
-              <button
-                type="button"
-                onClick={() => go(reserveLabel)}
-                className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {reserveLabel}
-              </button>
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-background/20 bg-background/10 px-2 py-1 text-background shadow-sm transition hover:border-background/40 hover:bg-background/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-foreground"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-background text-[0.65rem] font-bold text-foreground">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold text-background md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('My Reservations')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        My Reservations
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-background/10 px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-background/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={reservationOpen} onOpenChange={setReservationOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    className="relative rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    {reserveLabel}
+                    {reservations && reservations.length > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-background text-[0.625rem] font-bold text-primary">
+                        {reservations.length}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Reservations</SheetTitle>
+                    <SheetDescription>
+                      Secure your seat at the counter. We release reservations 14 days in advance.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {reservations && reservations.length > 0 ? (
+                      <div className="space-y-4 mb-6">
+                        <h3 className="font-semibold text-foreground">Your Reservations</h3>
+                        {reservations.map((reservation) => (
+                          <div
+                            key={reservation.id}
+                            className="rounded-lg bg-muted p-4 space-y-2"
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="font-semibold text-foreground">{reservation.name}</p>
+                                <p className="text-sm text-muted-foreground">{reservation.partySize} guest{reservation.partySize > 1 ? 's' : ''}</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => void cancelReservation(reservation.id)}
+                                className="text-xs font-semibold text-destructive hover:underline"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              <p>{reservation.date} at {reservation.time}</p>
+                              {reservation.notes && <p className="mt-1 italic">{reservation.notes}</p>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                    <h3 className="font-semibold text-foreground mb-4">New Reservation</h3>
+                    <form onSubmit={handleReservationSubmit} className="space-y-4">
+                      <div>
+                        <label htmlFor="date" className="block text-sm font-medium text-foreground mb-2">
+                          Date
+                        </label>
+                        <input
+                          id="date"
+                          type="date"
+                          value={reservationDate}
+                          onChange={(e) => setReservationDate(e.target.value)}
+                          required
+                          className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="time" className="block text-sm font-medium text-foreground mb-2">
+                          Time
+                        </label>
+                        <select
+                          id="time"
+                          value={reservationTime}
+                          onChange={(e) => setReservationTime(e.target.value)}
+                          required
+                          className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        >
+                          <option value="">Select a time</option>
+                          <option value="11:30">11:30 AM</option>
+                          <option value="12:00">12:00 PM</option>
+                          <option value="12:30">12:30 PM</option>
+                          <option value="13:00">1:00 PM</option>
+                          <option value="13:30">1:30 PM</option>
+                          <option value="14:00">2:00 PM</option>
+                          <option value="17:00">5:00 PM</option>
+                          <option value="17:30">5:30 PM</option>
+                          <option value="18:00">6:00 PM</option>
+                          <option value="18:30">6:30 PM</option>
+                          <option value="19:00">7:00 PM</option>
+                          <option value="19:30">7:30 PM</option>
+                          <option value="20:00">8:00 PM</option>
+                          <option value="20:30">8:30 PM</option>
+                          <option value="21:00">9:00 PM</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label htmlFor="partySize" className="block text-sm font-medium text-foreground mb-2">
+                          Party Size
+                        </label>
+                        <select
+                          id="partySize"
+                          value={reservationPartySize}
+                          onChange={(e) => setReservationPartySize(e.target.value)}
+                          className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        >
+                          <option value="1">1 guest</option>
+                          <option value="2">2 guests</option>
+                          <option value="3">3 guests</option>
+                          <option value="4">4 guests</option>
+                          <option value="5">5 guests</option>
+                          <option value="6">6 guests</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
+                          Name
+                        </label>
+                        <input
+                          id="name"
+                          type="text"
+                          value={reservationName}
+                          onChange={(e) => setReservationName(e.target.value)}
+                          required
+                          placeholder="Your full name"
+                          className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+                          Email
+                        </label>
+                        <input
+                          id="email"
+                          type="email"
+                          value={reservationEmail}
+                          onChange={(e) => setReservationEmail(e.target.value)}
+                          required
+                          placeholder="your@email.com"
+                          className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
+                          Phone
+                        </label>
+                        <input
+                          id="phone"
+                          type="tel"
+                          value={reservationPhone}
+                          onChange={(e) => setReservationPhone(e.target.value)}
+                          required
+                          placeholder="(206) 555-0187"
+                          className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="notes" className="block text-sm font-medium text-foreground mb-2">
+                          Special Requests (optional)
+                        </label>
+                        <textarea
+                          id="notes"
+                          value={reservationNotes}
+                          onChange={(e) => setReservationNotes(e.target.value)}
+                          placeholder="Allergies, celebrations, seating preferences..."
+                          rows={3}
+                          className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
+                      </div>
+                    </form>
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <Button
+                      type="button"
+                      className="w-full rounded-full"
+                      onClick={handleReservationSubmit}
+                    >
+                      Confirm Reservation
+                    </Button>
+                    <SheetClose asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full rounded-full"
+                      >
+                        Cancel
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
             </nav>
             <button
               type="button"
@@ -591,6 +1045,58 @@ export const RestaurantKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -635,7 +1141,7 @@ export const RestaurantKimiPage2 = defineCapsule({
                   </button>
                   <button
                     type="button"
-                    onClick={() => go(heroSecondary)}
+                    onClick={() => setReservationOpen(true)}
                     className="rounded-full border-2 border-background/30 px-8 py-4 text-center text-lg font-bold text-background transition-colors hover:border-background"
                   >
                     {heroSecondary}
@@ -748,7 +1254,7 @@ export const RestaurantKimiPage2 = defineCapsule({
                   </p>
                   <button
                     type="button"
-                    onClick={() => go(menuCta)}
+                    onClick={() => setReservationOpen(true)}
                     className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-4 text-lg font-bold text-primary-foreground transition-colors hover:bg-primary/90"
                   >
                     {menuCta} →
@@ -762,19 +1268,40 @@ export const RestaurantKimiPage2 = defineCapsule({
                       Signature Ramen
                     </h3>
                     <div className="space-y-4">
-                      {ramenItems.map((item) => (
-                        <div
-                          key={item.name}
-                          className="flex justify-between items-baseline gap-4 border-b border-border/60 pb-3"
-                        >
-                          <div>
-                            <p className="font-bold text-lg">{item.name}</p>
-                            <p className="text-muted-foreground text-sm">
-                              {item.description}
-                            </p>
+                      {ramenItems.map((item) => {
+                        const isFavorite = favoriteItemNames?.has(item.name) ?? false
+                        return (
+                          <div
+                            key={item.name}
+                            className="flex justify-between items-baseline gap-4 border-b border-border/60 pb-3"
+                          >
+                            <div className="flex-1">
+                              <p className="font-bold text-lg">{item.name}</p>
+                              <p className="text-muted-foreground text-sm">
+                                {item.description}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => void toggleFavorite(item.name)}
+                              aria-pressed={isFavorite}
+                              aria-label={
+                                isFavorite
+                                  ? `Remove ${item.name} from favorites`
+                                  : `Add ${item.name} to favorites`
+                              }
+                              className={cn(
+                                'grid size-8 place-items-center rounded-full transition-all hover:scale-105',
+                                isFavorite
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-muted text-foreground hover:bg-muted/80',
+                              )}
+                            >
+                              <HeartIcon active={isFavorite} />
+                            </button>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
                   {/* Sides */}
@@ -784,19 +1311,40 @@ export const RestaurantKimiPage2 = defineCapsule({
                       Izakaya Sides
                     </h3>
                     <div className="grid sm:grid-cols-2 gap-3">
-                      {sidesItems.map((item) => (
-                        <div
-                          key={item.name}
-                          className="border-b border-border/60 pb-2"
-                        >
-                          <p className="font-semibold">
-                            {item.name}{" "}
-                            <span className="text-muted-foreground font-normal">
-                              — {item.price}
-                            </span>
-                          </p>
-                        </div>
-                      ))}
+                      {sidesItems.map((item) => {
+                        const isFavorite = favoriteItemNames?.has(item.name) ?? false
+                        return (
+                          <div
+                            key={item.name}
+                            className="border-b border-border/60 pb-2 flex justify-between items-center"
+                          >
+                            <p className="font-semibold">
+                              {item.name}{" "}
+                              <span className="text-muted-foreground font-normal">
+                                — {item.price}
+                              </span>
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => void toggleFavorite(item.name)}
+                              aria-pressed={isFavorite}
+                              aria-label={
+                                isFavorite
+                                  ? `Remove ${item.name} from favorites`
+                                  : `Add ${item.name} to favorites`
+                              }
+                              className={cn(
+                                'grid size-6 place-items-center rounded-full transition-all hover:scale-105',
+                                isFavorite
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-muted text-foreground hover:bg-muted/80',
+                              )}
+                            >
+                              <HeartIcon active={isFavorite} />
+                            </button>
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                   {/* Drinks */}
@@ -806,19 +1354,40 @@ export const RestaurantKimiPage2 = defineCapsule({
                       Drinks
                     </h3>
                     <div className="grid sm:grid-cols-2 gap-3">
-                      {drinksItems.map((item) => (
-                        <div
-                          key={item.name}
-                          className="border-b border-border/60 pb-2"
-                        >
-                          <p className="font-semibold">
-                            {item.name}{" "}
-                            <span className="text-muted-foreground font-normal">
-                              — {item.price}
-                            </span>
-                          </p>
-                        </div>
-                      ))}
+                      {drinksItems.map((item) => {
+                        const isFavorite = favoriteItemNames?.has(item.name) ?? false
+                        return (
+                          <div
+                            key={item.name}
+                            className="border-b border-border/60 pb-2 flex justify-between items-center"
+                          >
+                            <p className="font-semibold">
+                              {item.name}{" "}
+                              <span className="text-muted-foreground font-normal">
+                                — {item.price}
+                              </span>
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => void toggleFavorite(item.name)}
+                              aria-pressed={isFavorite}
+                              aria-label={
+                                isFavorite
+                                  ? `Remove ${item.name} from favorites`
+                                  : `Add ${item.name} to favorites`
+                              }
+                              className={cn(
+                                'grid size-6 place-items-center rounded-full transition-all hover:scale-105',
+                                isFavorite
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-muted text-foreground hover:bg-muted/80',
+                              )}
+                            >
+                              <HeartIcon active={isFavorite} />
+                            </button>
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                 </div>
@@ -961,8 +1530,8 @@ export const RestaurantKimiPage2 = defineCapsule({
                   >
                     <summary className="flex items-center justify-between p-6 cursor-pointer select-none list-none font-semibold text-lg">
                       {faq.question}
-                      <span className="ml-4 text-primary text-2xl leading-none transition-transform group-open:rotate-45">
-                        +
+                      <span className="ml-4 flex size-5 flex-shrink-0 items-center justify-center">
+                        <ChevronDown />
                       </span>
                     </summary>
                     <div className="px-6 pb-6 text-muted-foreground leading-relaxed">
@@ -991,14 +1560,14 @@ export const RestaurantKimiPage2 = defineCapsule({
                   <div className="flex flex-col sm:flex-row gap-4">
                     <button
                       type="button"
-                      onClick={() => go(resPrimary)}
+                      onClick={() => setReservationOpen(true)}
                       className="rounded-full bg-primary px-8 py-4 text-center text-lg font-bold text-primary-foreground transition-colors hover:bg-primary/90"
                     >
                       {resPrimary}
                     </button>
                     <button
                       type="button"
-                      onClick={() => go(resSecondary)}
+                      onClick={() => setReservationOpen(true)}
                       className="rounded-full border-2 border-background/30 px-8 py-4 text-center text-lg font-bold text-background transition-colors hover:border-background"
                     >
                       {resSecondary}

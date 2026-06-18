@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * ArchitectureFirmKimiPage3 — a complete, self-contained architecture-studio
@@ -195,11 +213,115 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      projects: table({
+        title: string(),
+        category: string(),
+        location: string(),
+        year: string(),
+        imageAlt: string(),
+      }),
+      inquiries: table({
+        projectTitle: string(),
+        projectCategory: string(),
+        name: string(),
+        email: string(),
+        message: string(),
+      }),
+      favorites: table({
+        projectTitle: string(),
+      }),
+    },
+    queries: {
+      projects: ({ db }) => db.projects.orderBy('createdAt').all(),
+      inquiryCount: ({ db }) => db.inquiries.all().length,
+      favoriteProjectTitles: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.projectTitle)),
+    },
+    mutations: {
+      addInquiry: ({ db }, projectTitle: string, projectCategory: string, name: string, email: string, message: string) => {
+        db.inquiries.insert({
+          projectTitle,
+          projectCategory,
+          name,
+          email,
+          message,
+        })
+        return db.inquiries.all()
+      },
+      removeInquiry: ({ db }, id: string) => {
+        db.inquiries.delete(id)
+        return db.inquiries.all()
+      },
+      clearInquiries: ({ db }) => {
+        for (const item of db.inquiries.all()) {
+          db.inquiries.delete(item.id)
+        }
+        return []
+      },
+      toggleFavorite: ({ db }, projectTitle: string) => {
+        const existingFavorite = db.favorites
+          .where('projectTitle', projectTitle)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ projectTitle })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [inquiryOpen, setInquiryOpen] = useState(false)
+    const [inquiryForm, setInquiryForm] = useState({
+      name: '',
+      email: '',
+      message: '',
+    })
 
     const brand = props.brand ?? "Monolith"
+
+    // Lakebed hooks
+    const storedProjects = lakebed.useQuery('projects')
+    const inquiryCount = lakebed.useQuery('inquiryCount')
+    const favoriteProjectTitles = lakebed.useQuery('favoriteProjectTitles')
+    const auth = lakebed.useAuth()
+    const addInquiry = lakebed.useMutation('addInquiry')
+    const clearInquiries = lakebed.useMutation('clearInquiries')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
     const nav = props.nav?.length ? props.nav : ["Projects", "Philosophy", "Studio", "Contact"]
 
     // HERO
@@ -287,7 +409,7 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
       props.gallery?.description ??
       "A cross-section of residential, cultural, and commercial projects from the past five years."
     const galleryCta = props.gallery?.ctaLabel ?? "View Archive"
-    const galleryItems = props.gallery?.items?.length
+    const staticGalleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
           {
@@ -339,6 +461,10 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
               "Night view of a dense cluster of modern illuminated glass high-rise towers in central Tokyo",
           },
         ]
+    const displayGalleryItems =
+      storedProjects && storedProjects.length > 0
+        ? storedProjects
+        : staticGalleryItems
 
     // PRICING
     const pricingHeading = props.pricing?.heading ?? "Engagement Models"
@@ -530,6 +656,55 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
       </svg>
     )
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     return (
       <div
         className={cn(
@@ -562,6 +737,273 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Inquiries')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Inquiries
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={inquiryOpen} onOpenChange={setInquiryOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Project Inquiries"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                      </svg>
+                      {inquiryCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {inquiryCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Project Inquiries</SheetTitle>
+                      <SheetDescription>
+                        {inquiryCount > 0
+                          ? `${inquiryCount} inquiry${inquiryCount === 1 ? '' : 'ies'} submitted.`
+                          : 'Start a new project inquiry.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {inquiryCount > 0 ? (
+                        <div className="space-y-4">
+                          <p className="text-sm text-muted-foreground">
+                            Thank you for your interest. We'll review your inquiry and respond within two business days.
+                          </p>
+                          <div className="rounded-lg border border-border bg-muted/40 p-4">
+                            <p className="text-sm font-medium text-foreground">
+                              Latest Inquiry
+                            </p>
+                            <p className="mt-2 text-sm text-muted-foreground">
+                              {inquiryForm.message || 'Your message will appear here.'}
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <form
+                          className="space-y-4"
+                          onSubmit={(e) => {
+                            e.preventDefault()
+                            if (inquiryForm.name && inquiryForm.email && inquiryForm.message) {
+                              void addInquiry(
+                                'General Inquiry',
+                                'General',
+                                inquiryForm.name,
+                                inquiryForm.email,
+                                inquiryForm.message,
+                              )
+                              setInquiryForm({ name: '', email: '', message: '' })
+                            }
+                          }}
+                        >
+                          <div>
+                            <label
+                              htmlFor="inquiry-name"
+                              className="mb-2 block text-sm font-medium text-foreground"
+                            >
+                              Name
+                            </label>
+                            <input
+                              id="inquiry-name"
+                              type="text"
+                              value={inquiryForm.name}
+                              onChange={(e) =>
+                                setInquiryForm((prev) => ({
+                                  ...prev,
+                                  name: e.target.value,
+                                }))
+                              }
+                              className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                              placeholder="Your name"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label
+                              htmlFor="inquiry-email"
+                              className="mb-2 block text-sm font-medium text-foreground"
+                            >
+                              Email
+                            </label>
+                            <input
+                              id="inquiry-email"
+                              type="email"
+                              value={inquiryForm.email}
+                              onChange={(e) =>
+                                setInquiryForm((prev) => ({
+                                  ...prev,
+                                  email: e.target.value,
+                                }))
+                              }
+                              className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                              placeholder="your@email.com"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label
+                              htmlFor="inquiry-message"
+                              className="mb-2 block text-sm font-medium text-foreground"
+                            >
+                              Message
+                            </label>
+                            <textarea
+                              id="inquiry-message"
+                              value={inquiryForm.message}
+                              onChange={(e) =>
+                                setInquiryForm((prev) => ({
+                                  ...prev,
+                                  message: e.target.value,
+                                }))
+                              }
+                              className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 min-h-[120px] resize-none"
+                              placeholder="Tell us about your project..."
+                              required
+                            />
+                          </div>
+                          <Button
+                            type="submit"
+                            className="w-full rounded-full"
+                            disabled={!inquiryForm.name || !inquiryForm.email || !inquiryForm.message}
+                          >
+                            Submit Inquiry
+                          </Button>
+                        </form>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      {inquiryCount > 0 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full rounded-full"
+                          onClick={() => void clearInquiries()}
+                        >
+                          Clear All
+                        </Button>
+                      )}
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go("Start a Project")}
@@ -612,6 +1054,58 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -781,15 +1275,13 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
                 </button>
               </div>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {galleryItems.map((proj) => (
-                  <button
-                    key={proj.title}
-                    type="button"
-                    onClick={() => go(proj.title)}
-                    className="group block w-full text-left"
-                  >
-                    <figure className="overflow-hidden rounded-xl bg-card">
-                      <div className="aspect-[4/3] overflow-hidden">
+                {displayGalleryItems.map((proj) => {
+                  const isFavorite =
+                    favoriteProjectTitles?.has(proj.title) ?? false
+
+                  return (
+                    <article key={proj.title} className="group">
+                      <div className="relative mb-4 aspect-[4/3] overflow-hidden rounded-xl bg-card">
                         <Image
                           alt={proj.imageAlt}
                           w={800}
@@ -797,21 +1289,53 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
                           loading="lazy"
                           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavorite(proj.title)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${proj.title} from favorites`
+                              : `Add ${proj.title} to favorites`
+                          }
+                          className={cn(
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                          )}
+                        >
+                          <HeartIcon active={isFavorite} />
+                        </button>
                       </div>
-                      <figcaption className="p-6">
+                      <div className="space-y-2">
                         <span className="text-xs font-medium uppercase tracking-widest text-primary">
                           {proj.category}
                         </span>
-                        <h3 className="mt-1 text-xl font-semibold text-foreground">
+                        <h3 className="text-xl font-semibold text-foreground transition-colors group-hover:text-muted-foreground">
                           {proj.title}
                         </h3>
-                        <p className="mt-1 text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground">
                           {proj.location} — {proj.year}
                         </p>
-                      </figcaption>
-                    </figure>
-                  </button>
-                ))}
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="w-full rounded-full"
+                          onClick={() => {
+                            setInquiryForm((prev) => ({
+                              ...prev,
+                              message: `I'm interested in learning more about ${proj.title}.`,
+                            }))
+                            setInquiryOpen(true)
+                          }}
+                        >
+                          Inquire
+                        </Button>
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -954,15 +1478,19 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
                 {faqItems.map((item) => (
                   <details
                     key={item.question}
-                    className="rounded-xl border border-border bg-background p-6"
+                    className="group rounded-xl bg-muted"
                   >
-                    <summary className="flex cursor-pointer list-none items-center justify-between text-lg font-semibold text-foreground">
-                      {item.question}
-                      <ChevronIcon />
+                    <summary className="flex cursor-pointer items-center justify-between p-6">
+                      <h3 className="pr-4 font-semibold text-foreground">
+                        {item.question}
+                      </h3>
+                      <span className="flex size-5 flex-shrink-0 items-center justify-center">
+                        <ChevronDown />
+                      </span>
                     </summary>
-                    <p className="mt-4 leading-relaxed text-muted-foreground">
+                    <div className="px-6 pb-6 leading-relaxed text-muted-foreground">
                       {item.answer}
-                    </p>
+                    </div>
                   </details>
                 ))}
               </div>

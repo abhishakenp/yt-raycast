@@ -1,9 +1,21 @@
-import { useState, type ReactNode } from "react"
+import { useState, type FormEvent, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * CoworkingKimiPage — a complete, self-contained coworking-space / flexible-office
@@ -29,7 +41,7 @@ import { Image } from "#/lib/img.tsx"
 export const CoworkingKimiPage = defineCapsule({
   name: "CoworkingKimiPage",
   description:
-    "Complete coworking-space / flexible-office / shared-workspace marketing LANDING page with a clean, premium, editorial light aesthetic: neutral surfaces, near-black ink, big rounded photography and generous whitespace. Includes a split hero (eyebrow, large headline, dual CTAs, trust checks, and a floating 'members active this week' avatar-stack proof card), a trusted-by logo strip, a three-up Spaces grid (hot desks, dedicated desks, private offices) with feature checklists, an amenities split with icon list and an offset photo collage, a 3-step 'get started' timeline, a dark gallery wall with bento image layout, a transparent three-tier pricing section with a highlighted 'most popular' plan plus a private-office pricing band, a dark stats bar, a six-up member testimonials grid with star ratings and headshots, an FAQ accordion, a dark 'book a tour' CTA with a real inquiry form, and a rich five-column footer with social links and contact details. Use as the ROOT/home page for coworking spaces, shared offices, flex-office providers, hot-desk and private-office rentals, business centers, or workspace memberships when a trustworthy, conversion-focused tour-booking page with strong amenity and pricing detail is wanted. Supply content only — brand, nav, hero, spaces, amenities, steps, gallery, pricing, stats, testimonials, faq, tour CTA, footer; the block owns all layout and styling.",
+        "Complete coworking-space / flexible-office / shared-workspace marketing LANDING page with a clean, premium, editorial light aesthetic: neutral surfaces, near-black ink, big rounded photography and generous whitespace. Includes a split hero (eyebrow, large headline, dual CTAs, trust checks, and a floating 'members active this week' avatar-stack proof card), a trusted-by logo strip, a three-up Spaces grid (hot desks, dedicated desks, private offices) with feature checklists, an amenities split with icon list and an offset photo collage, a 3-step 'get started' timeline, a dark gallery wall with bento image layout, a transparent three-tier pricing section with a highlighted 'most popular' plan plus a private-office pricing band, a dark stats bar, a six-up member testimonials grid with star ratings and headshots, an FAQ accordion, a dark 'book a tour' CTA with a real inquiry form, and a rich five-column footer with social links and contact details. Use as the ROOT/home page for coworking spaces, shared offices, flex-office providers, hot-desk and private-office rentals, business centers, or workspace memberships when a trustworthy, conversion-focused tour-booking page with strong amenity and pricing detail is wanted. Supply content only — brand, nav, hero, spaces, amenities, steps, gallery, pricing, stats, testimonials, faq, tour CTA, footer; the block owns all layout and styling.",
   props: z.object({
     /** Brand / workspace name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -199,11 +211,105 @@ export const CoworkingKimiPage = defineCapsule({
         legal: z.array(z.string()).optional(),
       })
       .optional(),
-    className: z.string().optional(),
+        className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      tourLeads: table({
+        name: string(),
+        email: string(),
+        company: string(),
+        interest: string(),
+        submittedBy: string(),
+        source: string(),
+        status: string(),
+        interestIndex: number(),
+      }),
+    },
+    queries: {
+      tourLeads: ({ db }) => db.tourLeads.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addTourLead: (
+        { db },
+        name: string,
+        email: string,
+        company: string,
+        interest: string,
+        submittedBy: string,
+        source: string,
+        interestIndex: number,
+      ) => {
+        db.tourLeads.insert({
+          name: name.trim(),
+          email: email.trim(),
+          company: company.trim(),
+          interest,
+          submittedBy,
+          source,
+          status: "new",
+          interestIndex,
+        })
+
+        return db.tourLeads.orderBy("createdAt").all()
+      },
+      markTourLeadContacted: ({ db }, tourLeadId: string) => {
+        for (const lead of db.tourLeads.where("id", tourLeadId).all()) {
+          db.tourLeads.update(lead.id, { status: "contacted" })
+        }
+
+        return db.tourLeads.all()
+      },
+      removeTourLead: ({ db }, tourLeadId: string) => {
+        for (const lead of db.tourLeads.where("id", tourLeadId).all()) {
+          db.tourLeads.delete(lead.id)
+        }
+
+        return db.tourLeads.all()
+      },
+      clearTourLeads: ({ db }) => {
+        for (const lead of db.tourLeads.all()) {
+          db.tourLeads.delete(lead.id)
+        }
+
+        return db.tourLeads.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [tourDrawerOpen, setTourDrawerOpen] = useState(false)
+    const [tourFormName, setTourFormName] = useState("")
+    const [tourFormEmail, setTourFormEmail] = useState("")
+    const [tourFormCompany, setTourFormCompany] = useState("")
+    const [tourFormInterest, setTourFormInterest] = useState("")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authStatus = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const storedTourLeads = lakebed.useQuery("tourLeads")
+    const tourLeads = storedTourLeads ?? []
+    const addTourLead = lakebed.useMutation("addTourLead")
+    const markTourLeadContacted = lakebed.useMutation("markTourLeadContacted")
+    const removeTourLead = lakebed.useMutation("removeTourLead")
+    const clearTourLeads = lakebed.useMutation("clearTourLeads")
+    const newLeadCount = tourLeads.filter((lead) => lead.status === "new").length
+    const tourLeadCount = tourLeads.length
     const brand = props.brand ?? "Northside"
     const nav = props.nav?.length
       ? props.nav
@@ -584,6 +690,33 @@ export const CoworkingKimiPage = defineCapsule({
     const tourImageAlt =
       props.tour?.imageAlt ??
       "Welcoming reception area with modern design and friendly community manager"
+    const selectedTourInterest = tourFormInterest || tourInterests[0] || ""
+    const handleTourSubmit = (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+
+      const name = tourFormName.trim()
+      const email = tourFormEmail.trim()
+      const company = tourFormCompany.trim()
+      const interest = tourFormInterest || tourInterests[0] || ""
+
+      if (!name || !email || !interest) return
+
+      void addTourLead(
+        name,
+        email,
+        company,
+        interest,
+        isSignedIn ? authDisplayName : "Guest",
+        "tour-form",
+        tourInterests.indexOf(interest),
+      )
+
+      setTourFormName("")
+      setTourFormEmail("")
+      setTourFormCompany("")
+      setTourFormInterest("")
+      setTourDrawerOpen(true)
+    }
 
     const footerTagline =
       props.footer?.tagline ??
@@ -767,6 +900,164 @@ export const CoworkingKimiPage = defineCapsule({
                 >
                   Get Started
                 </button>
+                <Sheet open={tourDrawerOpen} onOpenChange={setTourDrawerOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      className="relative inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                      Tour requests
+                      <span
+                        className={cn(
+                          "grid size-5 place-items-center rounded-full text-xs font-bold",
+                          newLeadCount > 0
+                            ? "bg-foreground text-background"
+                            : "bg-muted text-muted-foreground",
+                        )}
+                      >
+                        {tourLeadCount}
+                      </span>
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle>Tour requests</SheetTitle>
+                      <SheetDescription>
+                        {tourLeadCount > 0
+                          ? `${tourLeadCount} request${tourLeadCount === 1 ? "" : "s"} saved for this page session.`
+                          : "No tour requests yet. Submit the inquiry form to start collecting leads."}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {tourLeads.length ? (
+                        <div className="space-y-4">
+                          {tourLeads.map((lead) => (
+                            <article
+                              key={lead.id}
+                              className="rounded-lg border border-border bg-muted p-4"
+                            >
+                              <div className="mb-3 flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <h3 className="text-sm font-semibold text-foreground">
+                                    {lead.name}
+                                  </h3>
+                                  <p className="text-xs text-muted-foreground">
+                                    {lead.email}
+                                  </p>
+                                  {lead.company ? (
+                                    <p className="text-xs text-muted-foreground">
+                                      {lead.company}
+                                    </p>
+                                  ) : null}
+                                </div>
+                                <span
+                                  className={cn(
+                                    "mt-0.5 rounded-full px-2 py-1 text-[0.65rem] font-semibold",
+                                    lead.status === "contacted"
+                                      ? "bg-accent text-accent-foreground/80"
+                                      : "bg-foreground text-background",
+                                  )}
+                                >
+                                  {lead.status === "contacted"
+                                    ? "Contacted"
+                                    : "New"}
+                                </span>
+                              </div>
+                              <p className="mb-1 text-sm text-foreground/90">
+                                {lead.interest}
+                              </p>
+                              <p className="mb-3 text-xs text-muted-foreground">
+                                {lead.source || "tour-form"}
+                              </p>
+                              <div className="flex items-center justify-end gap-2">
+                                {lead.status === "new" ? (
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() =>
+                                      void markTourLeadContacted(lead.id)
+                                    }
+                                  >
+                                    Mark contacted
+                                  </Button>
+                                ) : null}
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => void removeTourLead(lead.id)}
+                                >
+                                  Remove
+                                </Button>
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-4 text-center">
+                          <p className="text-sm font-medium text-foreground">
+                            No tour requests yet
+                          </p>
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            Fill out the tour form to start building your lead queue.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="mb-3 flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">New requests</span>
+                        <span className="font-semibold text-foreground">
+                          {newLeadCount}
+                        </span>
+                      </div>
+                      <div className="mb-4 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
+                        {isSignedIn
+                          ? `Signed in as ${authDisplayName}`
+                          : "Sign in to sync these requests across sessions."}
+                      </div>
+                      <div className="grid gap-2">
+                        {isSignedIn ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={handleSignOut}
+                          >
+                            Sign out
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={handleSignIn}
+                            disabled={auth.isLoading}
+                          >
+                            {authStatus}
+                          </Button>
+                        )}
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => void clearTourLeads()}
+                          disabled={tourLeadCount === 0}
+                        >
+                          Clear requests
+                        </Button>
+                        <SheetClose asChild>
+                          <Button type="button" size="sm">
+                            Continue
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   aria-label="Open menu"
@@ -799,6 +1090,29 @@ export const CoworkingKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    setTourDrawerOpen(true)
+                  }}
+                  className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                >
+                  Tour requests
+                  <span className="ml-2 text-muted-foreground">
+                    ({tourLeadCount})
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    isSignedIn ? handleSignOut() : handleSignIn()
+                  }}
+                  className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                >
+                  {authStatus}
+                </button>
               </div>
             )}
           </nav>
@@ -1310,10 +1624,7 @@ export const CoworkingKimiPage = defineCapsule({
 
                     <form
                       className="space-y-4"
-                      onSubmit={(e) => {
-                        e.preventDefault()
-                        go(tourSubmit)
-                      }}
+                      onSubmit={handleTourSubmit}
                     >
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div>
@@ -1328,6 +1639,10 @@ export const CoworkingKimiPage = defineCapsule({
                             type="text"
                             required
                             placeholder="Your name"
+                            value={tourFormName}
+                            onChange={(event) =>
+                              setTourFormName(event.target.value)
+                            }
                             className="w-full rounded-xl border border-border bg-background/10 px-4 py-3 text-background placeholder-background/40 focus:outline-none focus:ring-2 focus:ring-background/20"
                           />
                         </div>
@@ -1343,6 +1658,10 @@ export const CoworkingKimiPage = defineCapsule({
                             type="email"
                             required
                             placeholder="you@company.com"
+                            value={tourFormEmail}
+                            onChange={(event) =>
+                              setTourFormEmail(event.target.value)
+                            }
                             className="w-full rounded-xl border border-border bg-background/10 px-4 py-3 text-background placeholder-background/40 focus:outline-none focus:ring-2 focus:ring-background/20"
                           />
                         </div>
@@ -1358,6 +1677,10 @@ export const CoworkingKimiPage = defineCapsule({
                           id="coworking-company"
                           type="text"
                           placeholder="Your company"
+                          value={tourFormCompany}
+                          onChange={(event) =>
+                            setTourFormCompany(event.target.value)
+                          }
                           className="w-full rounded-xl border border-border bg-background/10 px-4 py-3 text-background placeholder-background/40 focus:outline-none focus:ring-2 focus:ring-background/20"
                         />
                       </div>
@@ -1370,14 +1693,20 @@ export const CoworkingKimiPage = defineCapsule({
                         </label>
                         <select
                           id="coworking-interest"
+                          required
+                          value={selectedTourInterest}
+                          onChange={(event) =>
+                            setTourFormInterest(event.target.value)
+                          }
                           className="w-full appearance-none rounded-xl border border-border bg-background/10 px-4 py-3 text-background focus:outline-none focus:ring-2 focus:ring-background/20"
                         >
-                          <option className="bg-background text-foreground">
+                          <option value="" className="bg-background text-foreground">
                             Select an option
                           </option>
                           {tourInterests.map((opt) => (
                             <option
                               key={opt}
+                              value={opt}
                               className="bg-background text-foreground"
                             >
                               {opt}

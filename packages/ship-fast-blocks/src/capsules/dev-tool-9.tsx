@@ -1,9 +1,23 @@
-import { type ReactNode } from "react"
+import { type FormEvent, type ReactNode, useState } from "react"
 import { z } from "zod/v4"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
 
 /**
  * DevToolKimiPage9 — a complete, self-contained developer-API / dev-tool platform
@@ -195,7 +209,54 @@ export const DevToolKimiPage9 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      apiRequests: table({
+        email: string(),
+        source: string(),
+        message: string(),
+      }),
+    },
+    queries: {
+      apiRequests: ({ db }) => db.apiRequests.orderBy("createdAt").all(),
+    },
+    mutations: {
+      submitApiRequest: (
+        { db },
+        email: string,
+        source: string,
+        message: string,
+      ) => {
+        const normalizedEmail = email.trim()
+        const normalizedSource = source.trim() || "Developer API access"
+        const normalizedMessage = message.trim()
+
+        if (!normalizedEmail) return db.apiRequests.all()
+
+        db.apiRequests.insert({
+          email: normalizedEmail,
+          source: normalizedSource,
+          message: normalizedMessage,
+        })
+
+        return db.apiRequests.all()
+      },
+      removeApiRequest: ({ db }, requestId: string) => {
+        if (!requestId) return db.apiRequests.all()
+
+        db.apiRequests.delete(requestId)
+        return db.apiRequests.all()
+      },
+      clearApiRequests: ({ db }) => {
+        for (const request of db.apiRequests.all()) {
+          db.apiRequests.delete(request.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? "Vertex"
     const nav = props.nav?.length
@@ -237,6 +298,63 @@ const response = await client.functions.deploy({
     const proofLabel = props.hero?.proofLabel ?? "Response Time"
     const proofValue = props.hero?.proofValue ?? "23ms"
     const proofSubvalue = props.hero?.proofSubvalue ?? "p99"
+    const [requestDrawerOpen, setRequestDrawerOpen] = useState(false)
+    const [requestEmail, setRequestEmail] = useState("")
+    const [requestMessage, setRequestMessage] = useState("")
+    const [requestSource, setRequestSource] = useState("")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials = authDisplayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "ME"
+    const storedApiRequests = lakebed.useQuery("apiRequests")
+    const submitApiRequest = lakebed.useMutation("submitApiRequest")
+    const removeApiRequest = lakebed.useMutation("removeApiRequest")
+    const clearApiRequests = lakebed.useMutation("clearApiRequests")
+    const requestItems = storedApiRequests ?? []
+    const requestCount = requestItems.length
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const openRequestDrawer = (source = "Get API Key") => {
+      setRequestSource(source)
+      setRequestEmail(isSignedIn ? authEmail ?? requestEmail : requestEmail)
+      setRequestDrawerOpen(true)
+    }
+    const handleRequestSubmit = (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      const normalizedEmail = requestEmail.trim()
+      const normalizedMessage = requestMessage.trim()
+
+      if (!normalizedEmail) return
+
+      void submitApiRequest(
+        normalizedEmail,
+        requestSource || "Get API Key",
+        normalizedMessage || "General API access request",
+      )
+
+      setRequestMessage("")
+      setRequestDrawerOpen(false)
+    }
+
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? "Account"
+        : "Sign in"
 
     const logosLabel =
       props.logos?.label ?? "Trusted by engineering teams at"
@@ -728,20 +846,275 @@ const response = await client.functions.deploy({
                 ))}
               </div>
               <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => go("Sign In")}
-                  className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-20 truncate text-xs font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? "Signed in to this session"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go("Account")}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go("Dashboard")}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          API Activity
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet
+                  open={requestDrawerOpen}
+                  onOpenChange={setRequestDrawerOpen}
                 >
-                  Sign In
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go("Get API Key")}
-                  className="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  Get API Key
-                </button>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => openRequestDrawer("Get API Key")}
+                      className="relative inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                    >
+                      {requestCount > 0 ? (
+                        <span className="absolute -right-2 -top-2 inline-grid size-5 place-items-center rounded-full bg-background text-[0.65rem] font-bold text-foreground">
+                          {requestCount}
+                        </span>
+                      ) : null}
+                      Get API Key
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle>API access requests</SheetTitle>
+                      <SheetDescription>
+                        Submit a request and our team will provision your starter
+                        API resources.
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      <form
+                        onSubmit={handleRequestSubmit}
+                        className="space-y-4"
+                      >
+                        <div className="space-y-2">
+                          <label
+                            htmlFor="api-request-email"
+                            className="block text-sm font-medium text-foreground"
+                          >
+                            Work email
+                          </label>
+                          <input
+                            id="api-request-email"
+                            type="email"
+                            required
+                            value={requestEmail}
+                            onChange={(event) =>
+                              setRequestEmail(event.target.value)
+                            }
+                            placeholder="you@company.com"
+                            className="w-full rounded-md border border-border bg-background px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label
+                            htmlFor="api-request-source"
+                            className="block text-sm font-medium text-foreground"
+                          >
+                            Source campaign
+                          </label>
+                          <input
+                            id="api-request-source"
+                            type="text"
+                            value={requestSource}
+                            onChange={(event) =>
+                              setRequestSource(event.target.value)
+                            }
+                            className="w-full rounded-md border border-border bg-background px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            placeholder={heroPrimary}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label
+                            htmlFor="api-request-message"
+                            className="block text-sm font-medium text-foreground"
+                          >
+                            Use case
+                          </label>
+                          <textarea
+                            id="api-request-message"
+                            rows={3}
+                            value={requestMessage}
+                            onChange={(event) =>
+                              setRequestMessage(event.target.value)
+                            }
+                            placeholder="Tell us what you plan to build"
+                            className="w-full rounded-md border border-border bg-background px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          />
+                        </div>
+                        <Button
+                          type="submit"
+                          className="w-full rounded-lg"
+                          disabled={auth.isLoading}
+                        >
+                          Submit request
+                        </Button>
+                      </form>
+                      <div className="mt-6">
+                        <div className="mb-3 flex items-center justify-between text-sm">
+                          <p className="font-medium text-muted-foreground">
+                            Recent requests
+                          </p>
+                          <p className="text-foreground">
+                            {requestCount}
+                          </p>
+                        </div>
+                        {requestItems.length ? (
+                          <ul className="space-y-3 max-h-56 overflow-y-auto pr-1">
+                            {requestItems.map((request) => (
+                              <li
+                                key={request.id}
+                                className="rounded-lg border border-border bg-background p-3"
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-sm font-semibold text-foreground">
+                                      {request.email}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {request.source}
+                                    </p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void removeApiRequest(request.id)
+                                    }
+                                    className="text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                                {request.message ? (
+                                  <p className="mt-2 text-xs text-muted-foreground">
+                                    {request.message}
+                                  </p>
+                                ) : null}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="rounded-lg border border-dashed border-border bg-muted/40 px-4 py-6 text-center text-sm text-muted-foreground">
+                            No API access requests yet.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="space-y-3">
+                        <p className="text-sm text-muted-foreground">
+                          {requestCount} request
+                          {requestCount === 1 ? "" : "s"} captured in your
+                          session.
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={!requestCount}
+                            onClick={() => void clearApiRequests()}
+                            className="rounded-lg"
+                          >
+                            Clear all
+                          </Button>
+                          <SheetClose asChild>
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              className="rounded-lg"
+                            >
+                              Done
+                            </Button>
+                          </SheetClose>
+                        </div>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
               </div>
             </div>
           </div>

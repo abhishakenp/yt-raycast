@@ -1,9 +1,33 @@
 import { useState } from "react"
 import { z } from "zod/v4"
+import { string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+
+const parsePriceAmount = (price: string) => {
+  const value = Number.parseFloat(price.replace(/[^0-9.]/g, ""))
+  return Number.isFinite(value) ? value : 0
+}
+
+const formatUSD = (amount: number) =>
+  new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    style: "currency",
+    maximumFractionDigits: 0,
+  }).format(amount)
 
 /**
  * RealEstateKimiPage2 — a complete, self-contained real-estate / property
@@ -200,9 +224,78 @@ export const RealEstateKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      favorites: table({
+        title: string(),
+        location: string(),
+        price: string(),
+        status: string(),
+        imageAlt: string(),
+      }),
+      inquiries: table({
+        email: string(),
+        source: string(),
+      }),
+    },
+    queries: {
+      favorites: ({ db }) => db.favorites.orderBy("createdAt").all(),
+      favoriteTitles: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.title)),
+    },
+    mutations: {
+      toggleFavorite: (
+        { db },
+        title: string,
+        location: string,
+        price: string,
+        status: string,
+        imageAlt: string,
+      ) => {
+        const existing = db.favorites.where("title", title).all()[0]
+
+        if (existing) {
+          db.favorites.delete(existing.id)
+          return db.favorites.all()
+        }
+
+        db.favorites.insert({
+          title,
+          location,
+          price,
+          status,
+          imageAlt,
+        })
+
+        return db.favorites.all()
+      },
+      removeFavorite: ({ db }, id: string) => {
+        db.favorites.delete(id)
+        return db.favorites.all()
+      },
+      clearFavorites: ({ db }) => {
+        for (const favorite of db.favorites.all()) {
+          db.favorites.delete(favorite.id)
+        }
+        return db.favorites.all()
+      },
+      submitInquiry: ({ db }, email: string, source: string) => {
+        const normalizedEmail = email.trim()
+        if (!normalizedEmail) return db.inquiries.all()
+
+        db.inquiries.insert({
+          email: normalizedEmail,
+          source,
+        })
+        return db.inquiries.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [savedOpen, setSavedOpen] = useState(false)
+    const [newsletterEmail, setNewsletterEmail] = useState("")
     const brand = props.brand ?? "Metro Nest"
     const nav = props.nav?.length
       ? props.nav
@@ -632,6 +725,38 @@ export const RealEstateKimiPage2 = defineCapsule({
       ? props.footer.legalLinks
       : ["Privacy Policy", "Terms of Service", "Cookie Policy"]
 
+    const storedFavorites = lakebed.useQuery("favorites")
+    const favoriteTitles = lakebed.useQuery("favoriteTitles")
+    const toggleFavorite = lakebed.useMutation("toggleFavorite")
+    const removeFavorite = lakebed.useMutation("removeFavorite")
+    const clearFavorites = lakebed.useMutation("clearFavorites")
+    const submitInquiry = lakebed.useMutation("submitInquiry")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const savedProperties = storedFavorites ?? []
+    const favoriteTitleSet = favoriteTitles ?? new Set<string>()
+    const savedCount = savedProperties.length
+    const savedTotal = savedProperties.reduce(
+      (total, item) => total + parsePriceAmount(item.price),
+      0,
+    )
+
     // --- Icons (decorative inline SVG, currentColor) ---
     const BuildingMark = ({ className }: { className?: string }) => (
       <svg
@@ -958,6 +1083,114 @@ export const RealEstateKimiPage2 = defineCapsule({
                 ))}
               </nav>
               <div className="hidden items-center gap-4 md:flex">
+                <Sheet open={savedOpen} onOpenChange={setSavedOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open saved properties"
+                      className="relative flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-primary"
+                    >
+                      <HeartIcon className="size-5" />
+                      {savedCount > 0 ? (
+                        <span className="absolute -right-2 -top-2 grid size-4 place-items-center rounded-full bg-primary text-[0.6rem] font-bold text-primary-foreground">
+                          {savedCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full sm:max-w-md">
+                    <SheetHeader className="border-b border-border pb-4">
+                      <SheetTitle>Saved Listings</SheetTitle>
+                      <SheetDescription>
+                        {savedCount
+                          ? `${savedCount} saved listing${
+                              savedCount === 1 ? "" : "s"
+                            } in your review list.`
+                          : "You have no saved listings yet."}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-1 py-5">
+                      {savedProperties.length ? (
+                        <div className="space-y-4">
+                          {savedProperties.map((item) => (
+                            <div
+                              key={item.id}
+                              className="flex items-start justify-between gap-3 rounded-xl border border-border p-3"
+                            >
+                              <div className="min-w-0">
+                                <p className="truncate font-semibold text-foreground">
+                                  {item.title}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {item.location}
+                                </p>
+                                <p className="mt-1 text-sm font-semibold text-foreground">
+                                  {item.price}
+                                </p>
+                                <span className="mt-2 inline-block rounded-full bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground">
+                                  {item.status}
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => void removeFavorite(item.id)}
+                                className="text-xs font-medium text-muted-foreground hover:text-destructive"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                          <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+                            <p className="font-semibold text-foreground">
+                              Saved Value
+                            </p>
+                            <p>{formatUSD(savedTotal)}</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="rounded-xl border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+                          Click the heart icon on any listing to save it for
+                          later.
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border pt-4">
+                      <div className="grid w-full grid-cols-1 gap-2">
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            setSavedOpen(false)
+                            go(contactPrimary)
+                          }}
+                          disabled={!savedProperties.length}
+                          className="w-full"
+                        >
+                          {contactPrimary}
+                        </Button>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => void clearFavorites()}
+                            disabled={!savedProperties.length}
+                            className="w-full"
+                          >
+                            Clear
+                          </Button>
+                          <SheetClose asChild>
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              className="w-full"
+                            >
+                              Continue browsing
+                            </Button>
+                          </SheetClose>
+                        </div>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(footerPhone)}
@@ -973,6 +1206,26 @@ export const RealEstateKimiPage2 = defineCapsule({
                 >
                   Get Started
                 </button>
+                {isSignedIn ? (
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-muted"
+                    aria-label="Sign out"
+                  >
+                    {authLabel}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    className="rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold transition-colors hover:bg-muted"
+                    aria-label="Sign in with Google"
+                  >
+                    {authLabel}
+                  </button>
+                )}
               </div>
               <button
                 type="button"
@@ -1016,6 +1269,40 @@ export const RealEstateKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    setSavedOpen(true)
+                  }}
+                  className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                >
+                  Saved Listings ({savedCount})
+                </button>
+                {isSignedIn ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      handleSignOut()
+                    }}
+                    className="rounded-lg border border-border px-3 py-2 text-left font-semibold text-foreground transition-colors hover:bg-muted"
+                  >
+                    {authLabel}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      handleSignIn()
+                    }}
+                    disabled={auth.isLoading}
+                    className="rounded-lg border border-border px-3 py-2 text-left font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-60"
+                  >
+                    {authLabel}
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -1177,11 +1464,13 @@ export const RealEstateKimiPage2 = defineCapsule({
               </div>
 
               <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {listingItems.map((p) => (
-                  <article
-                    key={p.title}
-                    className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
-                  >
+                {listingItems.map((p) => {
+                  const isSaved = favoriteTitleSet.has(p.title)
+                  return (
+                    <article
+                      key={p.title}
+                      className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                    >
                     <div className="relative aspect-[4/3] overflow-hidden">
                       <Image
                         alt={p.imageAlt}
@@ -1207,9 +1496,22 @@ export const RealEstateKimiPage2 = defineCapsule({
                       </div>
                       <button
                         type="button"
-                        aria-label={`Save ${p.title}`}
-                        onClick={() => go(`Save ${p.title}`)}
-                        className="absolute right-4 top-4 flex size-10 items-center justify-center rounded-full bg-background/90 text-muted-foreground backdrop-blur-sm transition-colors hover:text-primary"
+                        aria-label={isSaved ? `Unsave ${p.title}` : `Save ${p.title}`}
+                        onClick={() => {
+                          void toggleFavorite(
+                            p.title,
+                            p.location,
+                            p.price,
+                            p.status,
+                            p.imageAlt,
+                          )
+                        }}
+                        className={cn(
+                          "absolute right-4 top-4 flex size-10 items-center justify-center rounded-full bg-background/90 backdrop-blur-sm transition-colors",
+                          isSaved
+                            ? "text-primary"
+                            : "text-muted-foreground hover:text-primary",
+                        )}
                       >
                         <HeartIcon className="size-5" />
                       </button>
@@ -1279,8 +1581,9 @@ export const RealEstateKimiPage2 = defineCapsule({
                         </button>
                       </div>
                     </div>
-                  </article>
-                ))}
+                    </article>
+                  )
+                })}
               </div>
 
               <div className="mt-12 text-center">
@@ -1792,6 +2095,11 @@ export const RealEstateKimiPage2 = defineCapsule({
                     className="flex flex-col gap-4 sm:flex-row"
                     onSubmit={(e) => {
                       e.preventDefault()
+                      const email = newsletterEmail.trim()
+                      if (email) {
+                        void submitInquiry(email, "newsletter")
+                        setNewsletterEmail("")
+                      }
                       go(footerNewsSubmit)
                     }}
                   >
@@ -1799,6 +2107,8 @@ export const RealEstateKimiPage2 = defineCapsule({
                       type="email"
                       placeholder="Enter your email address"
                       aria-label="Email address"
+                      value={newsletterEmail}
+                      onChange={(e) => setNewsletterEmail(e.target.value)}
                       className="flex-1 rounded-xl border border-input bg-background/10 px-6 py-4 text-background placeholder-background/50 transition-colors focus:border-primary focus:outline-none"
                     />
                     <button

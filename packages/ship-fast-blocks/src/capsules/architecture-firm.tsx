@@ -1,9 +1,27 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * ArchitectureFirmKimiPage — a complete, self-contained architecture-studio
@@ -29,7 +47,7 @@ import { Image } from "#/lib/img.tsx"
  * make it render great with no props at all.
  */
 export const ArchitectureFirmKimiPage = defineCapsule({
-  name: "ArchitectureFirmKimiPage",
+  name: 'ArchitectureFirmKimiPage',
   description:
     "Complete architecture-firm / design-studio LANDING page with a calm, editorial, Scandinavian-minimalist aesthetic: warm light canvas, light type weights, wide letter-spaced eyebrow labels, generous whitespace and quiet monochrome contrast. Includes a split hero (eyebrow, serene headline, dual CTAs, full-height facade photo), a 'featured in' publication strip, a 6-up portrait project/portfolio gallery with image-zoom hover and location/year captions, a split philosophy/approach section (icon points plus a floating years-of-practice stat over a studio photo), an inverted dark statistics band, a 3-step numbered process, a 3-up client testimonials grid with portraits, a split studio/about section with founding partners, a FAQ list, a centered contact CTA and a four-column footer with address and social links. Use as the ROOT/home page for architecture firms, architecture studios, design practices, interior-design studios, urban planners, landscape architects, building/construction design or built-environment portfolio sites when an understated, premium, project-forward page with strong work showcase and social proof is wanted. Supply content only — brand, nav, hero, logos, gallery, philosophy, stats, process, testimonials, studio, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -172,262 +190,404 @@ export const ArchitectureFirmKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      favorites: table({
+        projectTitle: string(),
+        projectMeta: string(),
+        projectLocation: string(),
+        projectImageAlt: string(),
+      }),
+      inquiries: table({
+        name: string(),
+        email: string(),
+        projectType: string(),
+        message: string(),
+      }),
+      subscribers: table({
+        email: string(),
+      }),
+    },
+    queries: {
+      favoriteProjects: ({ db }) => db.favorites.all(),
+      inquiryCount: ({ db }) => db.inquiries.all().length,
+      subscriberCount: ({ db }) => db.subscribers.all().length,
+    },
+    mutations: {
+      toggleFavorite: (
+        { db },
+        projectTitle: string,
+        projectMeta: string,
+        projectLocation: string,
+        projectImageAlt: string,
+      ) => {
+        const existing = db.favorites
+          .where('projectTitle', projectTitle)
+          .all()[0]
+        if (existing) {
+          db.favorites.delete(existing.id)
+          return false
+        }
+        db.favorites.insert({
+          projectTitle,
+          projectMeta,
+          projectLocation,
+          projectImageAlt,
+        })
+        return true
+      },
+      submitInquiry: (
+        { db },
+        name: string,
+        email: string,
+        projectType: string,
+        message: string,
+      ) => {
+        db.inquiries.insert({ name, email, projectType, message })
+        return db.inquiries.all()
+      },
+      subscribe: ({ db }, email: string) => {
+        const existing = db.subscribers.where('email', email).all()[0]
+        if (existing) return false
+        db.subscribers.insert({ email })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
-    const brand = props.brand ?? "Atelier Móði"
+    const [contactOpen, setContactOpen] = useState(false)
+    const [inquiryName, setInquiryName] = useState('')
+    const [inquiryEmail, setInquiryEmail] = useState('')
+    const [inquiryProjectType, setInquiryProjectType] = useState('')
+    const [inquiryMessage, setInquiryMessage] = useState('')
+    const [newsletterEmail, setNewsletterEmail] = useState('')
+    const [newsletterSubmitted, setNewsletterSubmitted] = useState(false)
+    const [inquirySubmitted, setInquirySubmitted] = useState(false)
+
+    const brand = props.brand ?? 'Atelier Móði'
+
+    const favoriteProjects = lakebed.useQuery('favoriteProjects')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const submitInquiry = lakebed.useMutation('submitInquiry')
+    const subscribe = lakebed.useMutation('subscribe')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const favoriteProjectTitles = new Set(
+      favoriteProjects?.map((f) => f.projectTitle) ?? [],
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     const nav = props.nav?.length
       ? props.nav
-      : ["Work", "Philosophy", "Studio", "Contact"]
+      : ['Work', 'Philosophy', 'Studio', 'Contact']
 
     const heroEyebrow =
-      props.hero?.eyebrow ?? "Architecture Studio — Copenhagen"
-    const heroLine1 = props.hero?.headingLine1 ?? "Spaces that breathe,"
-    const heroLine2 = props.hero?.headingLine2 ?? "structures that endure"
+      props.hero?.eyebrow ?? 'Architecture Studio — Copenhagen'
+    const heroLine1 = props.hero?.headingLine1 ?? 'Spaces that breathe,'
+    const heroLine2 = props.hero?.headingLine2 ?? 'structures that endure'
     const heroSub =
       props.hero?.subheading ??
-      "Atelier Móði creates architecture rooted in place, informed by climate, and designed for the way people actually live. From intimate residential renovations to cultural institutions, we build with intention."
-    const heroPrimary = props.hero?.primaryCta ?? "View Projects"
-    const heroSecondary = props.hero?.secondaryCta ?? "Our Philosophy"
+      'Atelier Móði creates architecture rooted in place, informed by climate, and designed for the way people actually live. From intimate residential renovations to cultural institutions, we build with intention.'
+    const heroPrimary = props.hero?.primaryCta ?? 'View Projects'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Our Philosophy'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Minimalist modern building facade with clean geometric lines and natural stone cladding"
+      'Minimalist modern building facade with clean geometric lines and natural stone cladding'
 
-    const logosLabel = props.logos?.label ?? "Featured in"
+    const logosLabel = props.logos?.label ?? 'Featured in'
     const logosItems = props.logos?.items?.length
       ? props.logos.items
       : [
-          "Dezeen",
-          "ArchDaily",
-          "Dwell",
-          "Wallpaper*",
-          "Monocle",
-          "Architectural Digest",
+          'Dezeen',
+          'ArchDaily',
+          'Dwell',
+          'Wallpaper*',
+          'Monocle',
+          'Architectural Digest',
         ]
 
-    const galleryEyebrow = props.gallery?.eyebrow ?? "Selected Work"
-    const galleryHeading = props.gallery?.heading ?? "Projects"
+    const galleryEyebrow = props.gallery?.eyebrow ?? 'Selected Work'
+    const galleryHeading = props.gallery?.heading ?? 'Projects'
     const galleryDesc =
       props.gallery?.description ??
-      "A selection of completed and ongoing work spanning residential, commercial, and cultural typologies across Northern Europe."
+      'A selection of completed and ongoing work spanning residential, commercial, and cultural typologies across Northern Europe.'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
           {
-            title: "Villa Kyst",
-            meta: "Residential — 2023",
-            location: "Århus, DK",
+            title: 'Villa Kyst',
+            meta: 'Residential — 2023',
+            location: 'Århus, DK',
             imageAlt:
-              "Minimalist coastal villa with floor-to-ceiling glass windows overlooking the ocean at golden hour",
+              'Minimalist coastal villa with floor-to-ceiling glass windows overlooking the ocean at golden hour',
           },
           {
-            title: "Nordic Contemporary",
-            meta: "Cultural — 2022",
-            location: "Oslo, NO",
+            title: 'Nordic Contemporary',
+            meta: 'Cultural — 2022',
+            location: 'Oslo, NO',
             imageAlt:
-              "Contemporary art museum interior with dramatic spiral staircase and skylight illumination",
+              'Contemporary art museum interior with dramatic spiral staircase and skylight illumination',
           },
           {
-            title: "Tårnby Housing",
-            meta: "Multi-family — 2021",
-            location: "Copenhagen, DK",
+            title: 'Tårnby Housing',
+            meta: 'Multi-family — 2021',
+            location: 'Copenhagen, DK',
             imageAlt:
-              "Modern apartment complex with warm wood cladding and balconies integrated into the facade",
+              'Modern apartment complex with warm wood cladding and balconies integrated into the facade',
           },
           {
-            title: "Fjord Headquarters",
-            meta: "Commercial — 2023",
-            location: "Bergen, NO",
+            title: 'Fjord Headquarters',
+            meta: 'Commercial — 2023',
+            location: 'Bergen, NO',
             imageAlt:
-              "Minimalist office workspace with natural wood finishes and abundant daylight through large windows",
+              'Minimalist office workspace with natural wood finishes and abundant daylight through large windows',
           },
           {
-            title: "Pakhus 47",
-            meta: "Adaptive Reuse — 2020",
-            location: "Aalborg, DK",
+            title: 'Pakhus 47',
+            meta: 'Adaptive Reuse — 2020',
+            location: 'Aalborg, DK',
             imageAlt:
-              "Restored historic warehouse converted to residential lofts with preserved brickwork and modern interventions",
+              'Restored historic warehouse converted to residential lofts with preserved brickwork and modern interventions',
           },
           {
-            title: "Hotel Sanders",
-            meta: "Hospitality — 2019",
-            location: "Copenhagen, DK",
+            title: 'Hotel Sanders',
+            meta: 'Hospitality — 2019',
+            location: 'Copenhagen, DK',
             imageAlt:
-              "Elegant boutique hotel lobby with terrazzo floors and sculptural wooden reception desk",
+              'Elegant boutique hotel lobby with terrazzo floors and sculptural wooden reception desk',
           },
         ]
 
-    const philEyebrow = props.philosophy?.eyebrow ?? "Our Approach"
+    const philEyebrow = props.philosophy?.eyebrow ?? 'Our Approach'
     const philHeading =
       props.philosophy?.heading ??
-      "Architecture as a conversation between place and purpose"
+      'Architecture as a conversation between place and purpose'
     const philPoints = props.philosophy?.points?.length
       ? props.philosophy.points
       : [
           {
-            title: "Contextual Sensitivity",
+            title: 'Contextual Sensitivity',
             description:
               "Every site tells a story. We listen to the landscape, the neighborhood's rhythm, and the existing built environment before drawing a single line. Our buildings respond to their place rather than imposing upon it.",
           },
           {
-            title: "Daylight & Material",
+            title: 'Daylight & Material',
             description:
-              "Natural light is our primary material. We choreograph how daylight moves through spaces across seasons, pairing this with honest materials that age gracefully—stone, wood, steel, and glass selected for longevity.",
+              'Natural light is our primary material. We choreograph how daylight moves through spaces across seasons, pairing this with honest materials that age gracefully—stone, wood, steel, and glass selected for longevity.',
           },
           {
-            title: "Human-Centered Design",
+            title: 'Human-Centered Design',
             description:
-              "Buildings exist for people. We design for the subtle rituals of daily life—the quality of morning light in a kitchen, the acoustics of conversation, the threshold between public and private.",
+              'Buildings exist for people. We design for the subtle rituals of daily life—the quality of morning light in a kitchen, the acoustics of conversation, the threshold between public and private.',
           },
         ]
     const philImageAlt =
       props.philosophy?.imageAlt ??
-      "Architectural model on work table showing building massing study with natural lighting"
-    const philStatValue = props.philosophy?.statValue ?? "12"
-    const philStatLabel = props.philosophy?.statLabel ?? "Years of practice"
+      'Architectural model on work table showing building massing study with natural lighting'
+    const philStatValue = props.philosophy?.statValue ?? '12'
+    const philStatLabel = props.philosophy?.statLabel ?? 'Years of practice'
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "47", label: "Completed Projects" },
-          { value: "12", label: "Design Awards" },
-          { value: "8", label: "Countries" },
-          { value: "14", label: "Team Members" },
+          { value: '47', label: 'Completed Projects' },
+          { value: '12', label: 'Design Awards' },
+          { value: '8', label: 'Countries' },
+          { value: '14', label: 'Team Members' },
         ]
 
-    const processEyebrow = props.process?.eyebrow ?? "How We Work"
-    const processHeading = props.process?.heading ?? "Our Process"
+    const processEyebrow = props.process?.eyebrow ?? 'How We Work'
+    const processHeading = props.process?.heading ?? 'Our Process'
     const processSteps = props.process?.steps?.length
       ? props.process.steps
       : [
           {
-            title: "Discovery & Strategy",
+            title: 'Discovery & Strategy',
             description:
               "We begin with deep listening—understanding your needs, the site's constraints and opportunities, and the broader context. This phase includes site analysis, programming, and establishing project goals.",
           },
           {
-            title: "Design Development",
+            title: 'Design Development',
             description:
-              "Through iterative exploration, we develop concepts into refined solutions. Physical models, detailed drawings, and material studies help us perfect every detail before construction begins.",
+              'Through iterative exploration, we develop concepts into refined solutions. Physical models, detailed drawings, and material studies help us perfect every detail before construction begins.',
           },
           {
-            title: "Realization",
+            title: 'Realization',
             description:
-              "We maintain involvement through construction, conducting site reviews and collaborating closely with builders to ensure the built work matches the design intent.",
+              'We maintain involvement through construction, conducting site reviews and collaborating closely with builders to ensure the built work matches the design intent.',
           },
         ]
 
-    const testEyebrow = props.testimonials?.eyebrow ?? "Client Words"
-    const testHeading = props.testimonials?.heading ?? "Testimonials"
+    const testEyebrow = props.testimonials?.eyebrow ?? 'Client Words'
+    const testHeading = props.testimonials?.heading ?? 'Testimonials'
     const testItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "Atelier Móði transformed our brief into something beyond what we imagined. They understood not just what we asked for, but how we actually live. The light in our home changes beautifully throughout the day.",
-            name: "Elena Rasmussen",
-            role: "Homeowner, Villa Kyst",
+              'Atelier Móði transformed our brief into something beyond what we imagined. They understood not just what we asked for, but how we actually live. The light in our home changes beautifully throughout the day.',
+            name: 'Elena Rasmussen',
+            role: 'Homeowner, Villa Kyst',
             avatarAlt:
-              "Professional headshot of a smiling woman with shoulder-length brown hair",
+              'Professional headshot of a smiling woman with shoulder-length brown hair',
           },
           {
             quote:
-              "Working with Atelier Móði on our headquarters was exceptional. Their attention to acoustic detail and daylight created an office where people genuinely want to work. Productivity increased 23% after the move.",
-            name: "Magnus Lindström",
-            role: "CEO, Fjord Technologies",
+              'Working with Atelier Móði on our headquarters was exceptional. Their attention to acoustic detail and daylight created an office where people genuinely want to work. Productivity increased 23% after the move.',
+            name: 'Magnus Lindström',
+            role: 'CEO, Fjord Technologies',
             avatarAlt:
-              "Professional headshot of a man with short dark hair and a navy blazer",
+              'Professional headshot of a man with short dark hair and a navy blazer',
           },
           {
             quote:
               "The adaptive reuse of our warehouse exceeded every expectation. They preserved the building's soul while making it perfectly functional for modern living. Our tenants consistently mention the quality of space.",
-            name: "Johan Petersen",
-            role: "Developer, Pakhus 47",
+            name: 'Johan Petersen',
+            role: 'Developer, Pakhus 47',
             avatarAlt:
-              "Professional headshot of a man with gray hair and glasses wearing a dark sweater",
+              'Professional headshot of a man with gray hair and glasses wearing a dark sweater',
           },
         ]
 
-    const studioEyebrow = props.studio?.eyebrow ?? "The Studio"
+    const studioEyebrow = props.studio?.eyebrow ?? 'The Studio'
     const studioHeading =
-      props.studio?.heading ?? "A practice built on collaboration"
+      props.studio?.heading ?? 'A practice built on collaboration'
     const studioBody1 =
       props.studio?.body1 ??
       "Founded in 2012 by partners Solvej Madsen and Erik Bjørnsson, Atelier Móði began as a small workshop in Copenhagen's Nordhavn district. Today, we're a team of fourteen architects, interior designers, and model makers united by a commitment to craft."
     const studioBody2 =
       props.studio?.body2 ??
-      "Our studio operates as a collective—every project benefits from multiple perspectives. We build physical models for every design, believing that material and scale reveal truths that screens cannot."
+      'Our studio operates as a collective—every project benefits from multiple perspectives. We build physical models for every design, believing that material and scale reveal truths that screens cannot.'
     const studioImageAlt =
       props.studio?.imageAlt ??
-      "Bright architecture studio workspace with large desks, physical building models, and floor-to-ceiling windows"
+      'Bright architecture studio workspace with large desks, physical building models, and floor-to-ceiling windows'
     const studioPeople = props.studio?.people?.length
       ? props.studio.people
       : [
-          { name: "Solvej Madsen", role: "Founding Partner" },
-          { name: "Erik Bjørnsson", role: "Founding Partner" },
+          { name: 'Solvej Madsen', role: 'Founding Partner' },
+          { name: 'Erik Bjørnsson', role: 'Founding Partner' },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "Common Questions"
-    const faqHeading = props.faq?.heading ?? "FAQ"
+    const faqEyebrow = props.faq?.eyebrow ?? 'Common Questions'
+    const faqHeading = props.faq?.heading ?? 'FAQ'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "What types of projects do you take on?",
+            question: 'What types of projects do you take on?',
             answer:
               "We work across residential, commercial, cultural, and hospitality projects. Scale ranges from intimate interior renovations to multi-building developments. We're particularly drawn to projects where we can create meaningful, lasting impact—whether that's a family home or a public institution.",
           },
           {
-            question: "What is your typical project timeline?",
+            question: 'What is your typical project timeline?',
             answer:
-              "A single-family residence typically takes 12-18 months from initial concept to completion. Larger commercial or cultural projects may span 2-4 years. We provide detailed timelines during our initial consultation, tailored to your specific project scope.",
+              'A single-family residence typically takes 12-18 months from initial concept to completion. Larger commercial or cultural projects may span 2-4 years. We provide detailed timelines during our initial consultation, tailored to your specific project scope.',
           },
           {
-            question: "Do you work internationally?",
+            question: 'Do you work internationally?',
             answer:
               "While our studio is based in Copenhagen, we actively work across Northern Europe and occasionally beyond. We've completed projects in Norway, Sweden, Germany, and the UK. We're licensed to practice throughout the EU.",
           },
           {
-            question: "How do you approach sustainability?",
+            question: 'How do you approach sustainability?',
             answer:
-              "Sustainability is embedded in our process, not added on. We prioritize passive design strategies—orientation, natural ventilation, thermal mass—before adding technology. We specify materials with low embodied carbon and design for longevity, creating buildings that will last centuries, not decades.",
+              'Sustainability is embedded in our process, not added on. We prioritize passive design strategies—orientation, natural ventilation, thermal mass—before adding technology. We specify materials with low embodied carbon and design for longevity, creating buildings that will last centuries, not decades.',
           },
           {
-            question: "What are your fees?",
+            question: 'What are your fees?',
             answer:
               "Our fees are typically structured as a percentage of construction cost, ranging from 8-12% depending on project complexity. For smaller projects or specific design services, we can work on hourly rates or fixed fees. We're transparent about costs from our first meeting.",
           },
         ]
 
     const ctaHeading =
-      props.cta?.heading ?? "Ready to build something meaningful?"
+      props.cta?.heading ?? 'Ready to build something meaningful?'
     const ctaDesc =
       props.cta?.description ??
       "Whether you're envisioning a new home, transforming an existing space, or developing a larger project, we'd love to hear from you."
-    const ctaButton = props.cta?.button ?? "Start a Conversation"
+    const ctaButton = props.cta?.button ?? 'Start a Conversation'
 
     const footerAbout =
       props.footer?.about ??
-      "Creating thoughtful, sustainable architecture that honors context and human experience since 2012."
-    const footerContactLabel = props.footer?.contactLabel ?? "Contact"
+      'Creating thoughtful, sustainable architecture that honors context and human experience since 2012.'
+    const footerContactLabel = props.footer?.contactLabel ?? 'Contact'
     const footerAddress = props.footer?.address?.length
       ? props.footer.address
-      : ["Strandgade 27, 4th Floor", "1401 Copenhagen, Denmark"]
-    const footerEmail = props.footer?.email ?? "hello@atelier-modi.dk"
-    const footerPhone = props.footer?.phone ?? "+45 33 12 45 78"
-    const footerStudioLabel = props.footer?.studioLabel ?? "Studio"
+      : ['Strandgade 27, 4th Floor', '1401 Copenhagen, Denmark']
+    const footerEmail = props.footer?.email ?? 'hello@atelier-modi.dk'
+    const footerPhone = props.footer?.phone ?? '+45 33 12 45 78'
+    const footerStudioLabel = props.footer?.studioLabel ?? 'Studio'
     const footerStudioLinks = props.footer?.studioLinks?.length
       ? props.footer.studioLinks
-      : ["Projects", "Philosophy", "About", "Careers"]
-    const footerConnectLabel = props.footer?.connectLabel ?? "Connect"
+      : ['Projects', 'Philosophy', 'About', 'Careers']
+    const footerConnectLabel = props.footer?.connectLabel ?? 'Connect'
     const footerConnectLinks = props.footer?.connectLinks?.length
       ? props.footer.connectLinks
-      : ["Instagram", "LinkedIn", "Pinterest", "Newsletter"]
-    const footerCopyright =
-      props.footer?.copyright ?? "All rights reserved."
+      : ['Instagram', 'LinkedIn', 'Pinterest', 'Newsletter']
+    const footerCopyright = props.footer?.copyright ?? 'All rights reserved.'
     const footerLegalLinks = props.footer?.legalLinks?.length
       ? props.footer.legalLinks
-      : ["Privacy Policy", "Cookie Settings"]
+      : ['Privacy Policy', 'Cookie Settings']
 
     // Philosophy approach-point icons (decorative; tint via currentColor token).
     const philIcons: ReactNode[] = [
@@ -495,7 +655,7 @@ export const ArchitectureFirmKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -525,29 +685,294 @@ export const ArchitectureFirmKimiPage = defineCapsule({
                   </button>
                 ))}
               </div>
-              <button
-                type="button"
-                aria-label="Open menu"
-                aria-expanded={mobileOpen}
-                aria-controls="mobile-menu"
-                onClick={() => setMobileOpen((v) => !v)}
-                className="p-2 md:hidden"
-              >
-                <svg
-                  className="size-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
+              <div className="flex items-center gap-4">
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => setContactOpen(true)}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Contact
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={contactOpen} onOpenChange={setContactOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Contact"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                        <polyline points="22,6 12,13 2,6" />
+                      </svg>
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Contact Us</SheetTitle>
+                      <SheetDescription>
+                        {inquirySubmitted
+                          ? "Thank you for your inquiry. We'll be in touch soon."
+                          : "Tell us about your project and we'll get back to you."}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {inquirySubmitted ? (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            Inquiry submitted successfully
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            We'll review your project details and respond within
+                            1-2 business days.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div>
+                            <label
+                              htmlFor="inquiry-name"
+                              className="mb-2 block text-sm font-medium text-foreground"
+                            >
+                              Name
+                            </label>
+                            <input
+                              id="inquiry-name"
+                              type="text"
+                              value={inquiryName}
+                              onChange={(e) => setInquiryName(e.target.value)}
+                              className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                              placeholder="Your name"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label
+                              htmlFor="inquiry-email"
+                              className="mb-2 block text-sm font-medium text-foreground"
+                            >
+                              Email
+                            </label>
+                            <input
+                              id="inquiry-email"
+                              type="email"
+                              value={inquiryEmail}
+                              onChange={(e) => setInquiryEmail(e.target.value)}
+                              className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                              placeholder="your@email.com"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label
+                              htmlFor="inquiry-project-type"
+                              className="mb-2 block text-sm font-medium text-foreground"
+                            >
+                              Project Type
+                            </label>
+                            <select
+                              id="inquiry-project-type"
+                              value={inquiryProjectType}
+                              onChange={(e) =>
+                                setInquiryProjectType(e.target.value)
+                              }
+                              className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                              required
+                            >
+                              <option value="">Select project type</option>
+                              <option value="residential">Residential</option>
+                              <option value="commercial">Commercial</option>
+                              <option value="cultural">Cultural</option>
+                              <option value="hospitality">Hospitality</option>
+                              <option value="adaptive-reuse">
+                                Adaptive Reuse
+                              </option>
+                              <option value="other">Other</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label
+                              htmlFor="inquiry-message"
+                              className="mb-2 block text-sm font-medium text-foreground"
+                            >
+                              Message
+                            </label>
+                            <textarea
+                              id="inquiry-message"
+                              value={inquiryMessage}
+                              onChange={(e) =>
+                                setInquiryMessage(e.target.value)
+                              }
+                              rows={4}
+                              className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                              placeholder="Tell us about your project..."
+                              required
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      {!inquirySubmitted && (
+                        <Button
+                          type="button"
+                          className="w-full rounded-full"
+                          onClick={() => {
+                            if (
+                              inquiryName &&
+                              inquiryEmail &&
+                              inquiryProjectType &&
+                              inquiryMessage
+                            ) {
+                              void submitInquiry(
+                                inquiryName,
+                                inquiryEmail,
+                                inquiryProjectType,
+                                inquiryMessage,
+                              )
+                              setInquirySubmitted(true)
+                            }
+                          }}
+                          disabled={
+                            !inquiryName ||
+                            !inquiryEmail ||
+                            !inquiryProjectType ||
+                            !inquiryMessage
+                          }
+                        >
+                          Submit Inquiry
+                        </Button>
+                      )}
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                <button
+                  type="button"
+                  aria-label="Open menu"
+                  aria-expanded={mobileOpen}
+                  aria-controls="mobile-menu"
+                  onClick={() => setMobileOpen((v) => !v)}
+                  className="p-2 md:hidden"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    className="size-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1.5"
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
             {mobileOpen && (
               <div
@@ -567,6 +992,69 @@ export const ArchitectureFirmKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          setContactOpen(true)
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Contact
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                        variant="outline"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -646,10 +1134,7 @@ export const ArchitectureFirmKimiPage = defineCapsule({
           </section>
 
           {/* Gallery / Projects */}
-          <section
-            aria-labelledby="work-heading"
-            className="py-24 lg:py-32"
-          >
+          <section aria-labelledby="work-heading" className="py-24 lg:py-32">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="mb-16 flex flex-col md:flex-row md:items-end md:justify-between">
                 <div>
@@ -669,37 +1154,66 @@ export const ArchitectureFirmKimiPage = defineCapsule({
               </div>
 
               <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {galleryItems.map((proj) => (
-                  <button
-                    key={proj.title}
-                    type="button"
-                    onClick={() => go(proj.title)}
-                    className="group block w-full text-left"
-                  >
-                    <div className="mb-5 aspect-[4/5] overflow-hidden bg-muted">
-                      <Image
-                        alt={proj.imageAlt}
-                        w={800}
-                        h={1000}
-                        loading="lazy"
-                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="text-lg font-medium text-foreground">
-                          {proj.title}
-                        </h3>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {proj.meta}
-                        </p>
+                {galleryItems.map((proj) => {
+                  const isFavorite = favoriteProjectTitles.has(proj.title)
+                  return (
+                    <button
+                      key={proj.title}
+                      type="button"
+                      onClick={() => go(proj.title)}
+                      className="group block w-full text-left"
+                    >
+                      <div className="relative mb-5 aspect-[4/5] overflow-hidden bg-muted">
+                        <Image
+                          alt={proj.imageAlt}
+                          w={800}
+                          h={1000}
+                          loading="lazy"
+                          className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            void toggleFavorite(
+                              proj.title,
+                              proj.meta,
+                              proj.location,
+                              proj.imageAlt,
+                            )
+                          }}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${proj.title} from favorites`
+                              : `Add ${proj.title} to favorites`
+                          }
+                          className={cn(
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                          )}
+                        >
+                          <HeartIcon active={isFavorite} />
+                        </button>
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        {proj.location}
-                      </span>
-                    </div>
-                  </button>
-                ))}
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="text-lg font-medium text-foreground">
+                            {proj.title}
+                          </h3>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {proj.meta}
+                          </p>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {proj.location}
+                        </span>
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -782,10 +1296,7 @@ export const ArchitectureFirmKimiPage = defineCapsule({
           </section>
 
           {/* Process steps */}
-          <section
-            aria-labelledby="process-heading"
-            className="py-24 lg:py-32"
-          >
+          <section aria-labelledby="process-heading" className="py-24 lg:py-32">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="mx-auto mb-16 max-w-2xl text-center">
                 <p className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
@@ -803,7 +1314,7 @@ export const ArchitectureFirmKimiPage = defineCapsule({
                 {processSteps.map((step, i) => (
                   <div key={step.title} className="relative">
                     <span className="absolute -left-2 -top-4 select-none text-7xl font-light text-muted-foreground/30">
-                      {String(i + 1).padStart(2, "0")}
+                      {String(i + 1).padStart(2, '0')}
                     </span>
                     <div className="relative pt-8">
                       <h3 className="mb-3 text-lg font-medium text-foreground">
@@ -866,10 +1377,7 @@ export const ArchitectureFirmKimiPage = defineCapsule({
           </section>
 
           {/* Studio / About */}
-          <section
-            aria-labelledby="studio-heading"
-            className="py-24 lg:py-32"
-          >
+          <section aria-labelledby="studio-heading" className="py-24 lg:py-32">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
                 <div className="order-2 lg:order-1">
@@ -916,7 +1424,10 @@ export const ArchitectureFirmKimiPage = defineCapsule({
           </section>
 
           {/* FAQ */}
-          <section aria-labelledby="faq-heading" className="bg-card py-24 lg:py-32">
+          <section
+            aria-labelledby="faq-heading"
+            className="bg-card py-24 lg:py-32"
+          >
             <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
               <div className="mb-16 text-center">
                 <p className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
@@ -1042,6 +1553,42 @@ export const ArchitectureFirmKimiPage = defineCapsule({
                     </li>
                   ))}
                 </ul>
+                <div className="mt-6">
+                  <p className="mb-2 text-sm font-medium text-background/60">
+                    Newsletter
+                  </p>
+                  {newsletterSubmitted ? (
+                    <p className="text-sm text-background/70">
+                      Subscribed successfully!
+                    </p>
+                  ) : (
+                    <form
+                      className="flex gap-2"
+                      onSubmit={(e) => {
+                        e.preventDefault()
+                        if (newsletterEmail) {
+                          void subscribe(newsletterEmail)
+                          setNewsletterSubmitted(true)
+                        }
+                      }}
+                    >
+                      <input
+                        type="email"
+                        value={newsletterEmail}
+                        onChange={(e) => setNewsletterEmail(e.target.value)}
+                        placeholder="Your email"
+                        className="flex-1 rounded bg-background/10 px-3 py-2 text-sm text-background placeholder:text-background/40 focus:outline-none focus:ring-2 focus:ring-background/30"
+                        required
+                      />
+                      <button
+                        type="submit"
+                        className="rounded bg-background px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                      >
+                        Join
+                      </button>
+                    </form>
+                  )}
+                </div>
               </div>
             </div>
 

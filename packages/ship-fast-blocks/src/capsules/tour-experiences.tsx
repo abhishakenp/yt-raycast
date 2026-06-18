@@ -1,9 +1,35 @@
-import { type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "#/components/ui/command.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * TourExperiencesKimiPage — a complete, self-contained tour / travel-experiences
@@ -169,8 +195,105 @@ export const TourExperiencesKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      experiences: table({
+        category: string(),
+        duration: string(),
+        imageAlt: string(),
+        location: string(),
+        price: string(),
+        rating: string(),
+        reviews: string(),
+        title: string(),
+      }),
+      bookings: table({
+        experienceId: string(),
+        travelers: number(),
+      }),
+      favorites: table({
+        experienceTitle: string(),
+      }),
+    },
+    queries: {
+      experiences: ({ db }) => db.experiences.orderBy('createdAt').all(),
+      bookingLines: ({ db }) =>
+        db.bookings.all().flatMap((item) => {
+          const experience = db.experiences.get(item.experienceId)
+          return experience ? [{ ...item, experience }] : []
+        }),
+      favoriteExperienceTitles: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.experienceTitle)),
+    },
+    mutations: {
+      bookExperience: ({ db }, experienceTitle: string, travelers: number) => {
+        const experience = db.experiences.where('title', experienceTitle).all()[0]
+        if (!experience) return db.bookings.all()
+
+        const existingBooking = db.bookings
+          .where('experienceId', experience.id)
+          .all()[0]
+
+        if (existingBooking) {
+          db.bookings.update(existingBooking.id, {
+            travelers: existingBooking.travelers + travelers,
+          })
+        } else {
+          db.bookings.insert({
+            experienceId: experience.id,
+            travelers,
+          })
+        }
+
+        return db.bookings.all()
+      },
+      updateBookingTravelers: ({ db }, experienceId: string, travelers: number) => {
+        const nextTravelers = Math.max(1, Math.floor(travelers))
+
+        for (const item of db.bookings.where('experienceId', experienceId).all()) {
+          if (nextTravelers >= 1) {
+            db.bookings.update(item.id, { travelers: nextTravelers })
+          } else {
+            db.bookings.delete(item.id)
+          }
+        }
+
+        return db.bookings.all()
+      },
+      removeBooking: ({ db }, experienceId: string) => {
+        for (const item of db.bookings.where('experienceId', experienceId).all()) {
+          db.bookings.delete(item.id)
+        }
+
+        return db.bookings.all()
+      },
+      clearBookings: ({ db }) => {
+        for (const item of db.bookings.all()) {
+          db.bookings.delete(item.id)
+        }
+
+        return []
+      },
+      toggleFavorite: ({ db }, experienceTitle: string) => {
+        const existingFavorite = db.favorites
+          .where('experienceTitle', experienceTitle)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ experienceTitle })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [mobileOpen, setMobileOpen] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
+    const [bookingsOpen, setBookingsOpen] = useState(false)
     const brand = props.brand ?? "Wanderlocal"
     const nav = props.nav?.length
       ? props.nav
@@ -335,6 +458,63 @@ export const TourExperiencesKimiPage = defineCapsule({
             "Moroccan riad courtyard with intricate tile work and central fountain",
         },
       ]
+    const normalizedExpItems = expItems.map((exp) => ({
+      category: exp.category,
+      duration: exp.duration,
+      imageAlt: exp.imageAlt,
+      location: exp.location,
+      price: exp.price,
+      rating: exp.rating,
+      reviews: exp.reviews,
+      title: exp.title,
+    }))
+    const storedExperiences = lakebed.useQuery('experiences')
+    const bookingLines = lakebed.useQuery('bookingLines')
+    const favoriteExperienceTitles = lakebed.useQuery('favoriteExperienceTitles')
+    const auth = lakebed.useAuth()
+    const bookExperience = lakebed.useMutation('bookExperience')
+    const updateBookingTravelers = lakebed.useMutation('updateBookingTravelers')
+    const removeBooking = lakebed.useMutation('removeBooking')
+    const clearBookings = lakebed.useMutation('clearBookings')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const displayExperiences =
+      storedExperiences && storedExperiences.length > 0
+        ? storedExperiences
+        : normalizedExpItems
+    const safeBookingLines = bookingLines ?? []
+    const bookingCount = safeBookingLines.length
+    const bookingTotal = safeBookingLines.reduce(
+      (total, item) => {
+        const price = Number.parseFloat(item.experience.price.replace(/[^0-9.]+/g, ''))
+        return total + (Number.isFinite(price) ? price : 0) * item.travelers
+      },
+      0,
+    )
 
     const stepsHeading =
       props.steps?.heading ?? "Book in three simple steps"
@@ -585,6 +765,24 @@ export const TourExperiencesKimiPage = defineCapsule({
       </svg>
     )
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
     const featureIcons: ReactNode[] = [
       // shield-check (verified)
       <svg
@@ -684,7 +882,7 @@ export const TourExperiencesKimiPage = defineCapsule({
         )}
       >
         {/* Navbar */}
-        <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
+        <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
           <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:h-20 lg:px-8">
             <button
               type="button"
@@ -713,21 +911,422 @@ export const TourExperiencesKimiPage = defineCapsule({
             <div className="flex items-center gap-4">
               <button
                 type="button"
-                onClick={() => go(signIn)}
-                className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
+                onClick={() => setSearchOpen(true)}
+                aria-label="Search"
+                className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground sm:flex"
               >
-                {signIn}
+                <SearchIcon className="size-5" />
               </button>
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown className="size-4 text-muted-foreground" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('My Bookings')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        My Bookings
+                        <ArrowRight className="size-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight className="size-4" />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={bookingsOpen} onOpenChange={setBookingsOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Bookings"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    {bookingCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {bookingCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Your bookings</SheetTitle>
+                    <SheetDescription>
+                      {bookingCount > 0
+                        ? `${bookingCount} experience${bookingCount === 1 ? '' : 's'} booked.`
+                        : 'No experiences booked yet.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {safeBookingLines.length ? (
+                      <div className="space-y-5">
+                        {safeBookingLines.map((item) => (
+                          <div
+                            key={item.id}
+                            className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                          >
+                            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                              <Image
+                                alt={item.experience.imageAlt}
+                                w={180}
+                                h={180}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                    {item.experience.category}
+                                  </p>
+                                  <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                    {item.experience.title}
+                                  </h3>
+                                  <p className="text-xs text-muted-foreground">
+                                    {item.experience.location}
+                                  </p>
+                                </div>
+                                <p className="text-sm font-bold text-foreground">
+                                  {item.experience.price}
+                                </p>
+                              </div>
+                              <div className="mt-4 flex items-center justify-between">
+                                <div className="inline-flex h-9 items-center rounded-full border border-border bg-background">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void updateBookingTravelers(
+                                        item.experienceId,
+                                        item.travelers - 1,
+                                      )
+                                    }
+                                    className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                    aria-label={`Decrease travelers for ${item.experience.title}`}
+                                  >
+                                    -
+                                  </button>
+                                  <span className="min-w-8 text-center text-sm font-semibold">
+                                    {item.travelers}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void updateBookingTravelers(
+                                        item.experienceId,
+                                        item.travelers + 1,
+                                      )
+                                    }
+                                    className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                    aria-label={`Increase travelers for ${item.experience.title}`}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void removeBooking(item.experienceId)
+                                  }
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No experiences booked
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Add an experience from Trending experiences to start
+                          planning your trip.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between pt-2 text-base font-bold text-foreground">
+                        <span>Total</span>
+                        <span>${bookingTotal.toFixed(2)}</span>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      disabled={!safeBookingLines.length}
+                      className="w-full rounded-full"
+                      onClick={() => go('Checkout')}
+                    >
+                      Checkout
+                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full"
+                        onClick={() => void clearBookings()}
+                        disabled={!safeBookingLines.length}
+                      >
+                        Clear
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
               <button
                 type="button"
-                onClick={() => go(getStarted)}
-                className="rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                aria-label="Open menu"
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-menu"
+                onClick={() => setMobileOpen((v: boolean) => !v)}
+                className="p-2 text-muted-foreground hover:text-foreground lg:hidden"
               >
-                {getStarted}
+                <svg
+                  className="size-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
               </button>
             </div>
+            {mobileOpen && (
+              <div
+                id="mobile-menu"
+                className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
+              >
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      go(label)
+                    }}
+                    className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                  >
+                    {label}
+                  </button>
+                ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
           </nav>
         </header>
+
+        <CommandDialog
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          title="Search experiences"
+          description="Search the experiences seeded for this session."
+          className="max-w-xl"
+        >
+          <CommandInput placeholder={`Search ${brand} experiences...`} />
+          <CommandList className="max-h-[420px]">
+            <CommandEmpty>No experiences found.</CommandEmpty>
+            <CommandGroup heading="Experiences">
+              {displayExperiences.map((exp) => (
+                <CommandItem
+                  key={exp.title}
+                  value={`${exp.category} ${exp.title} ${exp.location} ${exp.price}`}
+                  onSelect={() => {
+                    setSearchOpen(false)
+                    go(exp.title)
+                  }}
+                  className="gap-3 py-3"
+                >
+                  <div className="size-12 overflow-hidden rounded-md bg-muted">
+                    <Image
+                      alt={exp.imageAlt}
+                      w={120}
+                      h={120}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {exp.title}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {exp.category} · {exp.location}
+                    </p>
+                  </div>
+                  <span className="text-sm font-bold text-foreground">
+                    {exp.price}
+                  </span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
 
         <main>
           {/* Hero */}
@@ -862,81 +1461,105 @@ export const TourExperiencesKimiPage = defineCapsule({
               </div>
 
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-                {expItems.map((exp) => (
-                  <article
-                    key={exp.title}
-                    className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-xl"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => go(exp.title)}
-                      className="block w-full text-left"
+                {displayExperiences.map((exp) => {
+                  const isFavorite =
+                    favoriteExperienceTitles?.has(exp.title) ?? false
+
+                  return (
+                    <article
+                      key={exp.title}
+                      className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-xl"
                     >
-                      <div className="relative aspect-[4/3] overflow-hidden">
-                        <Image
-                          alt={exp.imageAlt}
-                          w={800}
-                          h={600}
-                          loading="lazy"
-                          className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                        <span className="absolute left-4 top-4 rounded-full bg-card/95 px-3 py-1 text-xs font-semibold text-card-foreground backdrop-blur-sm">
-                          {exp.category}
-                        </span>
-                        <span className="absolute right-4 top-4 grid size-9 place-items-center rounded-full bg-card/95 text-muted-foreground backdrop-blur-sm transition-colors hover:text-destructive">
-                          <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="size-5"
-                            aria-hidden="true"
+                      <button
+                        type="button"
+                        onClick={() => go(exp.title)}
+                        className="block w-full text-left"
+                      >
+                        <div className="relative aspect-[4/3] overflow-hidden">
+                          <Image
+                            alt={exp.imageAlt}
+                            w={800}
+                            h={600}
+                            loading="lazy"
+                            className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                          <span className="absolute left-4 top-4 rounded-full bg-card/95 px-3 py-1 text-xs font-semibold text-card-foreground backdrop-blur-sm">
+                            {exp.category}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              void toggleFavorite(exp.title)
+                            }}
+                            aria-pressed={isFavorite}
+                            aria-label={
+                              isFavorite
+                                ? `Remove ${exp.title} from favorites`
+                                : `Add ${exp.title} to favorites`
+                            }
+                            className={cn(
+                              'absolute right-4 top-4 grid size-9 place-items-center rounded-full backdrop-blur-sm transition-all hover:scale-105 group-hover:opacity-100',
+                              isFavorite
+                                ? 'bg-primary text-primary-foreground opacity-100'
+                                : 'bg-card/95 text-muted-foreground opacity-0 hover:bg-card',
+                            )}
                           >
-                            <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                          </svg>
-                        </span>
-                      </div>
-                      <div className="p-6">
-                        <div className="mb-3 flex flex-wrap items-center gap-2">
-                          <span className="flex items-center gap-1">
-                            <Star className="size-4 text-primary" />
-                            <span className="text-sm font-semibold">
-                              {exp.rating}
-                            </span>
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            {exp.reviews}
-                          </span>
-                          <span className="text-muted-foreground/50">·</span>
-                          <span className="text-sm text-muted-foreground">
-                            {exp.location}
-                          </span>
+                            <HeartIcon active={isFavorite} />
+                          </button>
                         </div>
-                        <h3 className="mb-2 text-lg font-semibold transition-colors group-hover:text-muted-foreground">
-                          {exp.title}
-                        </h3>
-                        <div className="mt-4 flex items-center justify-between">
-                          <div>
-                            <span className="text-sm text-muted-foreground">
-                              From
-                            </span>
-                            <p className="text-xl font-bold">
-                              {exp.price}
-                              <span className="text-sm font-normal text-muted-foreground">
-                                /person
+                        <div className="p-6">
+                          <div className="mb-3 flex flex-wrap items-center gap-2">
+                            <span className="flex items-center gap-1">
+                              <Star className="size-4 text-primary" />
+                              <span className="text-sm font-semibold">
+                                {exp.rating}
                               </span>
-                            </p>
+                            </span>
+                            <span className="text-sm text-muted-foreground">
+                              {exp.reviews}
+                            </span>
+                            <span className="text-muted-foreground/50">·</span>
+                            <span className="text-sm text-muted-foreground">
+                              {exp.location}
+                            </span>
                           </div>
-                          <span className="text-sm text-muted-foreground">
-                            {exp.duration}
-                          </span>
+                          <h3 className="mb-2 text-lg font-semibold transition-colors group-hover:text-muted-foreground">
+                            {exp.title}
+                          </h3>
+                          <div className="mt-4 flex items-center justify-between">
+                            <div>
+                              <span className="text-sm text-muted-foreground">
+                                From
+                              </span>
+                              <p className="text-xl font-bold">
+                                {exp.price}
+                                <span className="text-sm font-normal text-muted-foreground">
+                                  /person
+                                </span>
+                              </p>
+                            </div>
+                            <span className="text-sm text-muted-foreground">
+                              {exp.duration}
+                            </span>
+                          </div>
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="mt-4 w-full rounded-full"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              void bookExperience(exp.title, 1)
+                              setBookingsOpen(true)
+                            }}
+                          >
+                            Book now
+                          </Button>
                         </div>
-                      </div>
-                    </button>
-                  </article>
-                ))}
+                      </button>
+                    </article>
+                  )
+                })}
               </div>
 
               <div className="mt-12 text-center">

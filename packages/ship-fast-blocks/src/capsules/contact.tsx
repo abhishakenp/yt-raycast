@@ -1,9 +1,21 @@
-import { useState, type ReactNode } from "react"
+import { useState, type FormEvent, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
 
 /**
  * ContactKimiPage — a complete, self-contained CONTACT page.
@@ -104,7 +116,53 @@ export const ContactKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      inquiries: table({
+        name: string(),
+        email: string(),
+        message: string(),
+        source: string(),
+        submittedBy: string(),
+      }),
+    },
+    queries: {
+      inquiries: ({ db }) => db.inquiries.orderBy("createdAt").all(),
+    },
+    mutations: {
+      submitInquiry: (
+        { db },
+        name: string,
+        email: string,
+        message: string,
+        source: string,
+        submittedBy: string,
+      ) => {
+        db.inquiries.insert({
+          name,
+          email,
+          message,
+          source,
+          submittedBy,
+        })
+
+        return db.inquiries.orderBy("createdAt").all()
+      },
+      removeInquiry: ({ db }, id: string) => {
+        db.inquiries.delete(id)
+
+        return db.inquiries.orderBy("createdAt").all()
+      },
+      clearInquiries: ({ db }) => {
+        for (const inquiry of db.inquiries.all()) {
+          db.inquiries.delete(inquiry.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? "Orbit Digital"
     const nav = props.nav?.length
@@ -217,7 +275,105 @@ export const ContactKimiPage = defineCapsule({
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
 
+    const storedInquiries = lakebed.useQuery("inquiries")
+    const submitInquiry = lakebed.useMutation("submitInquiry")
+    const removeInquiry = lakebed.useMutation("removeInquiry")
+    const clearInquiries = lakebed.useMutation("clearInquiries")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials = authDisplayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
     const [openFaq, setOpenFaq] = useState<number | null>(null)
+    const [showDrawer, setShowDrawer] = useState(false)
+    const [contactName, setContactName] = useState("")
+    const [contactEmail, setContactEmail] = useState("")
+    const [contactMessage, setContactMessage] = useState("")
+    const [submitting, setSubmitting] = useState(false)
+    const [submitMessage, setSubmitMessage] = useState("")
+    const [submitState, setSubmitState] = useState<
+      "idle" | "success" | "error"
+    >("idle")
+    const inquiryItems = storedInquiries ?? []
+    const inquiryCount = inquiryItems.length
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const formatInquiryTimestamp = (value: string | number | Date | undefined) => {
+      if (!value) return "Just now"
+
+      const parsed = new Date(value)
+
+      if (Number.isNaN(parsed.getTime())) {
+        return "Just now"
+      }
+
+      return parsed.toLocaleString()
+    }
+
+    const submitLabelText =
+      submitState === "success" ? "Message sent" : submitLabel
+
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+
+      const normalizedName = contactName.trim()
+      const normalizedEmail = contactEmail.trim()
+      const normalizedMessage = contactMessage.trim()
+
+      if (!normalizedName || !normalizedEmail || !normalizedMessage) {
+        setSubmitState("error")
+        setSubmitMessage("Please fill out all required fields.")
+        return
+      }
+
+      setSubmitting(true)
+      setSubmitState("idle")
+      setSubmitMessage("")
+
+      try {
+        await submitInquiry(
+          normalizedName,
+          normalizedEmail,
+          normalizedMessage,
+          "contact-form",
+          isSignedIn ? authDisplayName : "",
+        )
+
+        setContactName("")
+        setContactEmail("")
+        setContactMessage("")
+        setSubmitState("success")
+        setSubmitMessage(confirmation)
+        setShowDrawer(true)
+      } catch {
+        setSubmitState("error")
+        setSubmitMessage(
+          "Could not send your message. Please try again in a moment.",
+        )
+      } finally {
+        setSubmitting(false)
+      }
+    }
 
     // Decorative brand mark — indigo gradient tile + orbit glyph.
     const LogoMark = ({ className }: { className?: string }) => (
@@ -429,13 +585,150 @@ export const ContactKimiPage = defineCapsule({
                 </li>
               ))}
             </ul>
-            <button
-              type="button"
-              onClick={() => go("Contact")}
-              className="rounded-lg bg-primary px-5 py-2.5 text-[0.9375rem] font-semibold text-primary-foreground shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
-            >
-              Get Started
-            </button>
+            <div className="flex items-center gap-2.5">
+              <Sheet
+                open={showDrawer}
+                onOpenChange={setShowDrawer}
+              >
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label={`Open inquiry drawer ${inquiryCount > 0 ? `with ${inquiryCount} item${inquiryCount === 1 ? '' : 's'}` : ""}`}
+                    className="relative grid size-10 place-items-center rounded-full border border-border bg-background text-muted-foreground transition-all hover:border-primary hover:bg-primary hover:text-primary-foreground"
+                  >
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm0 0 8 7 8-7M4 6l8 7 8-7"/>
+                    </svg>
+                    {inquiryCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-primary text-[0.65rem] font-bold text-primary-foreground">
+                        {inquiryCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Inquiry inbox</SheetTitle>
+                    <SheetDescription>
+                      {inquiryCount > 0
+                        ? `${inquiryCount} message${inquiryCount === 1 ? "" : "s"}`
+                        : "No inquiries yet."}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {inquiryItems.length ? (
+                      <div className="space-y-4">
+                        {inquiryItems.map((inquiry) => (
+                          <article
+                            key={inquiry.id}
+                            className="rounded-lg border border-border bg-card p-4"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-semibold text-foreground">
+                                  {inquiry.name}
+                                </p>
+                                <p className="truncate text-[0.8rem] text-muted-foreground">
+                                  {inquiry.email}
+                                </p>
+                              </div>
+                              <p className="text-[0.72rem] text-muted-foreground">
+                                {formatInquiryTimestamp(inquiry.createdAt)}
+                              </p>
+                            </div>
+                            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                              {inquiry.message}
+                            </p>
+                            <div className="mt-3 flex items-center justify-between gap-3">
+                              <p className="truncate text-[0.7rem] text-muted-foreground">
+                                {inquiry.source || "contact-form"}
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => void removeInquiry(inquiry.id)}
+                                className="text-[0.72rem] font-semibold text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                            {inquiry.submittedBy ? (
+                              <p className="mt-2 text-[0.68rem] text-muted-foreground">
+                                Submitted by {inquiry.submittedBy}
+                              </p>
+                            ) : null}
+                          </article>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-56 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-sm font-medium text-foreground">
+                          No inquiries yet
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Submissions from the contact form will appear here.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <div className="space-y-2 text-sm text-muted-foreground">
+                      <div className="flex items-center justify-between">
+                        <span>Total entries</span>
+                        <span>{inquiryCount}</span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full"
+                        onClick={() => void clearInquiries()}
+                        disabled={!inquiryCount}
+                      >
+                        Clear inbox
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+              <button
+                type="button"
+                onClick={isSignedIn ? handleSignOut : handleSignIn}
+                disabled={auth.isLoading}
+                className="hidden h-10 items-center rounded-full border border-border bg-background px-3 text-xs font-semibold text-foreground transition-colors hover:border-foreground/20 hover:bg-muted disabled:opacity-60 sm:flex sm:text-sm"
+              >
+                {auth.isLoading ? "Checking..." : isSignedIn ? `Sign out ${authInitials}` : authLabel}
+              </button>
+              <button
+                type="button"
+                onClick={() => go("Contact")}
+                className="rounded-lg bg-primary px-5 py-2.5 text-[0.9375rem] font-semibold text-primary-foreground shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
+              >
+                Get Started
+              </button>
+            </div>
           </nav>
         </header>
 
@@ -462,12 +755,7 @@ export const ContactKimiPage = defineCapsule({
             {/* Contact form */}
             <div className="rounded-2xl border border-border bg-card p-9 shadow-[0_24px_64px_rgba(0,0,0,0.45)] transition-colors hover:border-border/60">
               <h2 className="sr-only">Contact form</h2>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  go("Contact")
-                }}
-              >
+              <form onSubmit={handleSubmit}>
                 <div className="mb-6">
                   <label
                     htmlFor="ck-name"
@@ -479,6 +767,9 @@ export const ContactKimiPage = defineCapsule({
                     type="text"
                     id="ck-name"
                     name="name"
+                    value={contactName}
+                    onChange={(event) => setContactName(event.target.value)}
+                    required
                     placeholder={namePlaceholder}
                     className="w-full rounded-lg border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
                   />
@@ -494,6 +785,9 @@ export const ContactKimiPage = defineCapsule({
                     type="email"
                     id="ck-email"
                     name="email"
+                    value={contactEmail}
+                    onChange={(event) => setContactEmail(event.target.value)}
+                    required
                     placeholder={emailPlaceholder}
                     className="w-full rounded-lg border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
                   />
@@ -508,16 +802,23 @@ export const ContactKimiPage = defineCapsule({
                   <textarea
                     id="ck-message"
                     name="message"
+                    value={contactMessage}
+                    onChange={(event) => setContactMessage(event.target.value)}
+                    required
                     placeholder={messagePlaceholder}
                     className="min-h-[140px] w-full resize-y rounded-lg border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
                   />
                 </div>
                 <p className="sr-only" aria-live="polite">
-                  {confirmation}
+                  {submitMessage || (submitState === "success" ? confirmation : "")}
                 </p>
                 <button
                   type="submit"
-                  className="flex w-full items-center justify-center gap-2.5 rounded-lg bg-primary px-7 py-4 text-[0.95rem] font-semibold text-primary-foreground transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] active:translate-y-0"
+                  disabled={submitting || auth.isLoading}
+                  className={cn(
+                    "flex w-full items-center justify-center gap-2.5 rounded-lg bg-primary px-7 py-4 text-[0.95rem] font-semibold text-primary-foreground transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] active:translate-y-0",
+                    "disabled:pointer-events-none disabled:opacity-60",
+                  )}
                 >
                   <svg
                     width="18"
@@ -533,7 +834,7 @@ export const ContactKimiPage = defineCapsule({
                     <path d="M22 2 11 13" />
                     <path d="M22 2 15 22l-4-9-9-4 20-7z" />
                   </svg>
-                  {submitLabel}
+                  {submitting ? "Sending..." : submitLabelText}
                 </button>
               </form>
             </div>

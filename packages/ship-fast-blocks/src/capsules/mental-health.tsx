@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * MentalHealthKimiPage — a complete, self-contained therapy / counseling practice
@@ -202,10 +220,97 @@ export const MentalHealthKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      appointments: table({
+        clinicianName: string(),
+        serviceType: string(),
+        date: string(),
+        time: string(),
+        price: string(),
+      }),
+      favoriteClinicians: table({
+        clinicianName: string(),
+      }),
+    },
+    queries: {
+      appointments: ({ db }) => db.appointments.orderBy('createdAt').all(),
+      favoriteClinicianNames: ({ db }) =>
+        new Set(db.favoriteClinicians.all().map((fav) => fav.clinicianName)),
+    },
+    mutations: {
+      bookAppointment: ({ db }, clinicianName: string, serviceType: string, date: string, time: string, price: string) => {
+        db.appointments.insert({
+          clinicianName,
+          serviceType,
+          date,
+          time,
+          price,
+        })
+        return db.appointments.all()
+      },
+      cancelAppointment: ({ db }, id: string) => {
+        db.appointments.delete(id)
+        return db.appointments.all()
+      },
+      toggleFavoriteClinician: ({ db }, clinicianName: string) => {
+        const existing = db.favoriteClinicians.where('clinicianName', clinicianName).all()[0]
+        if (existing) {
+          db.favoriteClinicians.delete(existing.id)
+          return false
+        }
+        db.favoriteClinicians.insert({ clinicianName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [appointmentsOpen, setAppointmentsOpen] = useState(false)
+    const [bookingOpen, setBookingOpen] = useState(false)
+    const [selectedClinician, setSelectedClinician] = useState<string | null>(null)
+    const [selectedService, setSelectedService] = useState<string | null>(null)
+    const [selectedDate, setSelectedDate] = useState<string | null>(null)
+    const [selectedTime, setSelectedTime] = useState<string | null>(null)
     const brand = props.brand ?? "Stillpoint"
+
+    // Lakebed queries and mutations
+    const appointments = lakebed.useQuery('appointments')
+    const favoriteClinicianNames = lakebed.useQuery('favoriteClinicianNames')
+    const bookAppointment = lakebed.useMutation('bookAppointment')
+    const cancelAppointment = lakebed.useMutation('cancelAppointment')
+    const toggleFavoriteClinician = lakebed.useMutation('toggleFavoriteClinician')
+    const auth = lakebed.useAuth()
+
+    // Auth state
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
     const nav = props.nav?.length
       ? props.nav
       : ["Services", "Approach", "Team", "Pricing", "FAQ", "Book Session"]
@@ -438,6 +543,31 @@ export const MentalHealthKimiPage = defineCapsule({
       props.pricing?.note ??
       "Sliding scale available: We reserve a limited number of reduced-rate slots for clients experiencing financial hardship. Contact us to inquire about availability."
 
+    // Helper to get price from service type
+    const getServicePrice = (serviceType: string) => {
+      const tier = pricingTiers.find((t) => t.name === serviceType)
+      return tier?.price || '$175'
+    }
+
+    // Helper to handle booking
+    const handleBookAppointment = () => {
+      if (!selectedClinician || !selectedService || !selectedDate || !selectedTime) return
+      const price = getServicePrice(selectedService)
+      void bookAppointment(selectedClinician, selectedService, selectedDate, selectedTime, price)
+      setBookingOpen(false)
+      setAppointmentsOpen(true)
+      setSelectedClinician(null)
+      setSelectedService(null)
+      setSelectedDate(null)
+      setSelectedTime(null)
+    }
+
+    // Helper to open booking drawer with service pre-selected
+    const openBookingForService = (serviceName: string) => {
+      setSelectedService(serviceName)
+      setBookingOpen(true)
+    }
+
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
@@ -626,6 +756,54 @@ export const MentalHealthKimiPage = defineCapsule({
       </svg>
     )
 
+    const Heart = ({ className, active = false }: { className?: string; active?: boolean }) => (
+      <svg
+        className={className}
+        fill={active ? "currentColor" : "none"}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = ({ className }: { className?: string }) => (
+      <svg
+        className={className}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const Calendar = ({ className }: { className?: string }) => (
+      <svg
+        className={className}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+      </svg>
+    )
+
     const serviceIcons: ReactNode[] = [
       // person (individual)
       <svg
@@ -759,35 +937,357 @@ export const MentalHealthKimiPage = defineCapsule({
                 ))}
                 <button
                   type="button"
-                  onClick={() => go(bookLabel)}
+                  onClick={() => setBookingOpen(true)}
                   className="rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   {bookLabel}
                 </button>
               </div>
-              <button
-                type="button"
-                aria-label="Open menu"
-                aria-expanded={mobileOpen}
-                aria-controls="mobile-menu"
-                onClick={() => setMobileOpen((v: boolean) => !v)}
-                className="p-2 text-muted-foreground md:hidden"
-              >
-                <svg
-                  className="size-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
+              <div className="flex items-center gap-4">
+                {/* Appointments drawer trigger */}
+                <Sheet open={appointmentsOpen} onOpenChange={setAppointmentsOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="My appointments"
+                      className="relative hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground md:flex"
+                    >
+                      <Calendar className="size-5" />
+                      {appointments && appointments.length > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {appointments.length}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">My Appointments</SheetTitle>
+                      <SheetDescription>
+                        {appointments && appointments.length > 0
+                          ? `${appointments.length} appointment${appointments.length === 1 ? '' : 's'} scheduled.`
+                          : 'No appointments scheduled yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {appointments && appointments.length > 0 ? (
+                        <div className="space-y-4">
+                          {appointments.map((apt) => (
+                            <div
+                              key={apt.id}
+                              className="rounded-xl border border-border bg-card p-4"
+                            >
+                              <div className="mb-3 flex items-start justify-between">
+                                <div>
+                                  <p className="text-sm font-semibold text-foreground">
+                                    {apt.clinicianName}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {apt.serviceType}
+                                  </p>
+                                </div>
+                                <p className="text-sm font-bold text-primary">
+                                  {apt.price}
+                                </p>
+                              </div>
+                              <div className="mb-4 flex items-center gap-4 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="size-4" />
+                                  <span>{apt.date}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <svg
+                                    className="size-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <circle cx="12" cy="12" r="10" />
+                                    <polyline points="12 6 12 12 16 14" />
+                                  </svg>
+                                  <span>{apt.time}</span>
+                                </div>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="w-full rounded-full"
+                                onClick={() => void cancelAppointment(apt.id)}
+                              >
+                                Cancel Appointment
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <Calendar className="mb-4 size-12 text-muted-foreground" />
+                          <p className="text-base font-semibold text-foreground">
+                            No appointments yet
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Book your first session to get started on your journey.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+
+                {/* Booking drawer */}
+                <Sheet open={bookingOpen} onOpenChange={setBookingOpen}>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Book Your Session</SheetTitle>
+                      <SheetDescription>
+                        Select a clinician, date, and time to schedule your appointment.
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      <div className="space-y-6">
+                        {/* Service selection */}
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-foreground">
+                            Service Type
+                          </label>
+                          <select
+                            value={selectedService || ''}
+                            onChange={(e) => setSelectedService(e.target.value)}
+                            className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          >
+                            <option value="">Select a service</option>
+                            {pricingTiers.map((tier) => (
+                              <option key={tier.name} value={tier.name}>
+                                {tier.name} - {tier.price}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Clinician selection */}
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-foreground">
+                            Clinician
+                          </label>
+                          <select
+                            value={selectedClinician || ''}
+                            onChange={(e) => setSelectedClinician(e.target.value)}
+                            className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          >
+                            <option value="">Select a clinician</option>
+                            {teamMembers.map((member) => (
+                              <option key={member.name} value={member.name}>
+                                {member.name} - {member.role}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Date selection */}
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-foreground">
+                            Preferred Date
+                          </label>
+                          <input
+                            type="date"
+                            value={selectedDate || ''}
+                            onChange={(e) => setSelectedDate(e.target.value)}
+                            min={new Date().toISOString().split('T')[0]}
+                            className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          />
+                        </div>
+
+                        {/* Time selection */}
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-foreground">
+                            Preferred Time
+                          </label>
+                          <select
+                            value={selectedTime || ''}
+                            onChange={(e) => setSelectedTime(e.target.value)}
+                            className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          >
+                            <option value="">Select a time</option>
+                            {['9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'].map((time) => (
+                              <option key={time} value={time}>
+                                {time}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Price summary */}
+                        {selectedService && (
+                          <div className="rounded-lg bg-muted p-4">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-muted-foreground">
+                                Session Price
+                              </span>
+                              <span className="text-lg font-bold text-foreground">
+                                {getServicePrice(selectedService)}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <Button
+                        type="button"
+                        disabled={!selectedClinician || !selectedService || !selectedDate || !selectedTime}
+                        className="w-full rounded-full"
+                        onClick={handleBookAppointment}
+                      >
+                        Confirm Booking
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full rounded-full"
+                        >
+                          Cancel
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+
+                {/* Auth button or account menu */}
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown className="size-4" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => setAppointmentsOpen(true)}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          My Appointments
+                          <ChevronDown className="size-4 rotate-[-90deg]" />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <Button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="w-full rounded-full"
+                        >
+                          Sign out
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    className="hidden h-10 rounded-full px-4 text-sm font-semibold md:inline-flex"
+                  >
+                    {authLabel}
+                  </Button>
+                )}
+
+                <button
+                  type="button"
+                  aria-label="Open menu"
+                  aria-expanded={mobileOpen}
+                  aria-controls="mobile-menu"
+                  onClick={() => setMobileOpen((v: boolean) => !v)}
+                  className="p-2 text-muted-foreground md:hidden"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    className="size-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
             {mobileOpen && (
               <div
@@ -807,6 +1307,66 @@ export const MentalHealthKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          setAppointmentsOpen(true)
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        My Appointments
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -833,7 +1393,7 @@ export const MentalHealthKimiPage = defineCapsule({
                   <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
                     <button
                       type="button"
-                      onClick={() => go(bookLabel)}
+                      onClick={() => setBookingOpen(true)}
                       className="rounded-full bg-primary px-8 py-4 text-center font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
                     >
                       {heroPrimary}
@@ -1008,7 +1568,7 @@ export const MentalHealthKimiPage = defineCapsule({
                     <div className="flex flex-col gap-4 sm:flex-row">
                       <button
                         type="button"
-                        onClick={() => go(bookLabel)}
+                        onClick={() => setBookingOpen(true)}
                         className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                       >
                         <Phone className="size-5" />
@@ -1016,7 +1576,7 @@ export const MentalHealthKimiPage = defineCapsule({
                       </button>
                       <button
                         type="button"
-                        onClick={() => go(bookLabel)}
+                        onClick={() => setBookingOpen(true)}
                         className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-background px-6 py-3 font-medium text-foreground transition-colors hover:bg-accent"
                       >
                         {helpCta}
@@ -1064,28 +1624,49 @@ export const MentalHealthKimiPage = defineCapsule({
               </div>
 
               <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-                {teamMembers.map((m) => (
-                  <div key={m.name} className="group">
-                    <div className="relative mb-4 overflow-hidden rounded-2xl">
-                      <Image
-                        alt={m.imageAlt}
-                        w={400}
-                        h={500}
-                        loading="lazy"
-                        className="h-80 w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
+                {teamMembers.map((m) => {
+                  const isFavorite = favoriteClinicianNames?.has(m.name) ?? false
+                  return (
+                    <div key={m.name} className="group">
+                      <div className="relative mb-4 overflow-hidden rounded-2xl">
+                        <Image
+                          alt={m.imageAlt}
+                          w={400}
+                          h={500}
+                          loading="lazy"
+                          className="h-80 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavoriteClinician(m.name)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${m.name} from favorites`
+                              : `Add ${m.name} to favorites`
+                          }
+                          className={cn(
+                            "absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100",
+                            isFavorite
+                              ? "bg-primary text-primary-foreground opacity-100"
+                              : "bg-background/90 text-foreground opacity-0 hover:bg-background",
+                          )}
+                        >
+                          <Heart active={isFavorite} className="size-5" />
+                        </button>
+                      </div>
+                      <h3 className="text-lg font-semibold text-foreground">
+                        {m.name}
+                      </h3>
+                      <p className="mb-2 text-sm font-medium text-primary">
+                        {m.role}
+                      </p>
+                      <p className="text-sm leading-relaxed text-muted-foreground">
+                        {m.bio}
+                      </p>
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground">
-                      {m.name}
-                    </h3>
-                    <p className="mb-2 text-sm font-medium text-primary">
-                      {m.role}
-                    </p>
-                    <p className="text-sm leading-relaxed text-muted-foreground">
-                      {m.bio}
-                    </p>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
 
               <div className="mt-12 rounded-2xl bg-muted p-8 text-center">
@@ -1097,7 +1678,7 @@ export const MentalHealthKimiPage = defineCapsule({
                 </p>
                 <button
                   type="button"
-                  onClick={() => go(bookLabel)}
+                  onClick={() => setBookingOpen(true)}
                   className="inline-flex items-center gap-2 font-medium text-primary transition-colors hover:text-primary/80"
                 >
                   {teamSpecialtyCta}
@@ -1173,7 +1754,7 @@ export const MentalHealthKimiPage = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(bookLabel)}
+                      onClick={() => openBookingForService(tier.name)}
                       className={cn(
                         "block w-full rounded-full px-6 py-3 text-center font-medium transition-colors",
                         tier.popular
@@ -1314,7 +1895,7 @@ export const MentalHealthKimiPage = defineCapsule({
                 <p className="mb-4 text-muted-foreground">{faqFooterNote}</p>
                 <button
                   type="button"
-                  onClick={() => go(bookLabel)}
+                  onClick={() => setBookingOpen(true)}
                   className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   <Phone className="size-5" />
@@ -1337,7 +1918,7 @@ export const MentalHealthKimiPage = defineCapsule({
               <div className="mb-12 flex flex-col justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(bookLabel)}
+                  onClick={() => setBookingOpen(true)}
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-background px-8 py-4 font-medium text-primary shadow-lg transition-colors hover:bg-accent"
                 >
                   <svg
@@ -1358,7 +1939,7 @@ export const MentalHealthKimiPage = defineCapsule({
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(bookLabel)}
+                  onClick={() => setBookingOpen(true)}
                   className="inline-flex items-center justify-center gap-2 rounded-full border border-primary-foreground/30 bg-primary/80 px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/70"
                 >
                   <Phone className="size-5" />
@@ -1479,7 +2060,7 @@ export const MentalHealthKimiPage = defineCapsule({
                     <Phone className="size-5 shrink-0 text-primary" />
                     <button
                       type="button"
-                      onClick={() => go(bookLabel)}
+                      onClick={() => setBookingOpen(true)}
                       className="transition-colors hover:text-background"
                     >
                       {footerPhone}
@@ -1502,7 +2083,7 @@ export const MentalHealthKimiPage = defineCapsule({
                     </svg>
                     <button
                       type="button"
-                      onClick={() => go(bookLabel)}
+                      onClick={() => setBookingOpen(true)}
                       className="transition-colors hover:text-background"
                     >
                       {footerEmail}

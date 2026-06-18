@@ -1,9 +1,28 @@
+import { useState } from "react"
 import { type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * MembershipClubKimiPage — a complete, self-contained PRIVATE MEMBERSHIP CLUB
@@ -173,8 +192,54 @@ export const MembershipClubKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      applications: table({
+        name: string(),
+        email: string(),
+        tier: string(),
+        status: string(),
+      }),
+      events: table({
+        title: string(),
+        date: string(),
+        location: string(),
+        registered: number(),
+      }),
+    },
+    queries: {
+      applications: ({ db }) => db.applications.orderBy('createdAt').all(),
+      eventRegistrations: ({ db }) =>
+        db.events.all().map((event) => ({
+          ...event,
+          registered: event.registered || 0,
+        })),
+    },
+    mutations: {
+      submitApplication: ({ db }, name: string, email: string, tier: string) => {
+        db.applications.insert({
+          name,
+          email,
+          tier,
+          status: 'pending',
+        })
+        return db.applications.all()
+      },
+      registerForEvent: ({ db }, eventId: string) => {
+        const event = db.events.get(eventId)
+        if (event) {
+          db.events.update(eventId, {
+            registered: (event.registered || 0) + 1,
+          })
+        }
+        return db.events.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [applicationOpen, setApplicationOpen] = useState(false)
+    const [selectedTier, setSelectedTier] = useState<string | null>(null)
     const brand = props.brand ?? "The Guild"
     const nav = props.nav?.length
       ? props.nav
@@ -488,6 +553,38 @@ export const MembershipClubKimiPage = defineCapsule({
       ? props.footer.legal
       : ["Privacy", "Terms", "Code of Conduct"]
 
+    const applications = lakebed.useQuery('applications')
+    const eventRegistrations = lakebed.useQuery('eventRegistrations')
+    const submitApplication = lakebed.useMutation('submitApplication')
+    const registerForEvent = lakebed.useMutation('registerForEvent')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const pendingApplications = applications?.filter((app) => app.status === 'pending').length || 0
+
     // Decorative club mark — concentric "compass" glyph mirroring the source SVG.
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
@@ -534,6 +631,37 @@ export const MembershipClubKimiPage = defineCapsule({
         aria-hidden="true"
       >
         <path d="M19 9l-7 7-7-7" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
       </svg>
     )
 
@@ -667,13 +795,283 @@ export const MembershipClubKimiPage = defineCapsule({
                   </button>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={() => go(heroPrimary)}
-                className="inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                Apply Now
-              </button>
+              <div className="flex items-center gap-4">
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => setApplicationOpen(true)}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          My Applications
+                          {pendingApplications > 0 && (
+                            <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[0.65rem] font-bold text-primary-foreground">
+                              {pendingApplications}
+                            </span>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={applicationOpen} onOpenChange={setApplicationOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => setApplicationOpen(true)}
+                      className="inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                    >
+                      Apply Now
+                      {pendingApplications > 0 && (
+                        <span className="ml-2 grid size-5 place-items-center rounded-full bg-background text-[0.65rem] font-bold text-primary">
+                          {pendingApplications}
+                        </span>
+                      )}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Apply for Membership</SheetTitle>
+                      <SheetDescription>
+                        Choose your membership tier and start your application.
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {applications && applications.length > 0 ? (
+                        <div className="space-y-4">
+                          <p className="text-sm font-medium text-foreground">
+                            Your Applications
+                          </p>
+                          {applications.map((app) => (
+                            <div
+                              key={app.id}
+                              className="rounded-lg border border-border bg-muted/40 p-4"
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-medium text-foreground">
+                                    {app.tier}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {app.name}
+                                  </p>
+                                </div>
+                                <span
+                                  className={cn(
+                                    'rounded-full px-2 py-1 text-xs font-medium',
+                                    app.status === 'pending'
+                                      ? 'bg-yellow-500/10 text-yellow-600'
+                                      : app.status === 'approved'
+                                        ? 'bg-green-500/10 text-green-600'
+                                        : 'bg-red-500/10 text-red-600',
+                                  )}
+                                >
+                                  {app.status}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <p className="text-sm text-muted-foreground">
+                            Select a membership tier to begin your application.
+                          </p>
+                          {pricingTiers.map((tier) => (
+                            <button
+                              key={tier.name}
+                              type="button"
+                              onClick={() => setSelectedTier(tier.name)}
+                              className={cn(
+                                'w-full rounded-lg border p-4 text-left transition-colors',
+                                selectedTier === tier.name
+                                  ? 'border-primary bg-primary/5'
+                                  : 'border-border bg-card hover:border-border/60',
+                              )}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-medium text-foreground">
+                                    {tier.name}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {tier.price}
+                                    {tier.period}
+                                  </p>
+                                </div>
+                                {tier.featured && (
+                                  <span className="rounded-full bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground">
+                                    {tier.badge}
+                                  </span>
+                                )}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      {selectedTier && (
+                        <form
+                          className="space-y-4 w-full"
+                          onSubmit={(e) => {
+                            e.preventDefault()
+                            const form = e.currentTarget
+                            const name = (
+                              form.elements.namedItem('name') as HTMLInputElement
+                            ).value
+                            const email = (
+                              form.elements.namedItem('email') as HTMLInputElement
+                            ).value
+                            if (name && email && selectedTier) {
+                              void submitApplication(name, email, selectedTier)
+                              setSelectedTier(null)
+                              form.reset()
+                            }
+                          }}
+                        >
+                          <div>
+                            <label
+                              htmlFor="name"
+                              className="mb-1 block text-sm font-medium text-foreground"
+                            >
+                              Full Name
+                            </label>
+                            <input
+                              type="text"
+                              name="name"
+                              id="name"
+                              required
+                              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                              placeholder="Your full name"
+                            />
+                          </div>
+                          <div>
+                            <label
+                              htmlFor="email"
+                              className="mb-1 block text-sm font-medium text-foreground"
+                            >
+                              Email
+                            </label>
+                            <input
+                              type="email"
+                              name="email"
+                              id="email"
+                              required
+                              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                              placeholder="your@email.com"
+                            />
+                          </div>
+                          <Button
+                            type="submit"
+                            className="w-full rounded-full"
+                          >
+                            Submit Application for {selectedTier}
+                          </Button>
+                        </form>
+                      )}
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+              </div>
             </div>
           </nav>
         </header>
@@ -701,7 +1099,7 @@ export const MembershipClubKimiPage = defineCapsule({
                   <div className="flex flex-col gap-4 pt-4 sm:flex-row">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() => setApplicationOpen(true)}
                       className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                     >
                       {heroPrimary}
@@ -966,7 +1364,10 @@ export const MembershipClubKimiPage = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(`${tier.name} ${tier.cta}`)}
+                      onClick={() => {
+                        setSelectedTier(tier.name)
+                        setApplicationOpen(true)
+                      }}
                       aria-label={`Apply for ${tier.name} membership`}
                       className={cn(
                         "w-full rounded-full px-6 py-3 text-sm font-medium transition-colors",
@@ -1147,7 +1548,7 @@ export const MembershipClubKimiPage = defineCapsule({
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={() => setApplicationOpen(true)}
                   className="inline-flex items-center justify-center rounded-full bg-background px-8 py-4 text-base font-medium text-foreground transition-colors hover:bg-muted"
                 >
                   {ctaPrimary}

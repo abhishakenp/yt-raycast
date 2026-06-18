@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 export const AgencyKimiPage3 = defineCapsule({
   name: "AgencyKimiPage3",
@@ -178,9 +196,83 @@ export const AgencyKimiPage3 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      savedProjects: table({
+        title: string(),
+        tag: string(),
+        metric: string(),
+        imageAlt: string(),
+      }),
+      inquiries: table({
+        name: string(),
+        email: string(),
+        company: string(),
+        message: string(),
+      }),
+    },
+    queries: {
+      savedProjects: ({ db }) => db.savedProjects.orderBy('createdAt').all(),
+      inquiries: ({ db }) => db.inquiries.orderBy('createdAt').all(),
+    },
+    mutations: {
+      saveProject: ({ db }, title: string, tag: string, metric: string, imageAlt: string) => {
+        const existing = db.savedProjects.where('title', title).all()[0]
+        if (existing) {
+          db.savedProjects.delete(existing.id)
+          return false
+        }
+        db.savedProjects.insert({ title, tag, metric, imageAlt })
+        return true
+      },
+      removeProject: ({ db }, title: string) => {
+        for (const item of db.savedProjects.where('title', title).all()) {
+          db.savedProjects.delete(item.id)
+        }
+        return db.savedProjects.all()
+      },
+      submitInquiry: ({ db }, name: string, email: string, company: string, message: string) => {
+        db.inquiries.insert({ name, email, company, message })
+        return db.inquiries.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [menuOpen, setMenuOpen] = useState(false)
+    const [inquiryOpen, setInquiryOpen] = useState(false)
+    const [savedProjectsOpen, setSavedProjectsOpen] = useState(false)
+
+    const savedProjects = lakebed.useQuery('savedProjects')
+    const inquiries = lakebed.useQuery('inquiries')
+    const saveProject = lakebed.useMutation('saveProject')
+    const removeProject = lakebed.useMutation('removeProject')
+    const submitInquiry = lakebed.useMutation('submitInquiry')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
 
     const brand = props.brand ?? "Luminary"
     const nav = props.nav?.length
@@ -601,6 +693,39 @@ export const AgencyKimiPage3 = defineCapsule({
       </svg>
     )
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'h-5 w-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="h-5 w-5 text-muted-foreground transition-transform group-open:rotate-180"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     const serviceIcons: ReactNode[] = [
       <svg
         key="brand"
@@ -694,9 +819,105 @@ export const AgencyKimiPage3 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSavedProjectsOpen(true)
+                          }}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Saved Projects
+                          <span className="ml-auto text-xs text-muted-foreground">
+                            {savedProjects?.length ?? 0}
+                          </span>
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={() => go(nav[nav.length - 1])}
+                  onClick={() => setInquiryOpen(true)}
                   className="inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 shadow-lg"
                 >
                   {navCta}
@@ -746,11 +967,73 @@ export const AgencyKimiPage3 = defineCapsule({
                   {label}
                 </button>
               ))}
+              <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                {isSignedIn ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar size="lg">
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-foreground">
+                          {authDisplayName}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {authEmail ?? 'Signed in'}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpen(false)
+                        setSavedProjectsOpen(true)
+                      }}
+                      className="w-full rounded-full"
+                    >
+                      Saved Projects ({savedProjects?.length ?? 0})
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpen(false)
+                        handleSignOut()
+                      }}
+                      className="w-full rounded-full"
+                    >
+                      Sign out
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false)
+                      handleSignIn()
+                    }}
+                    disabled={auth.isLoading}
+                    className="w-full rounded-full"
+                  >
+                    <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    {authLabel}
+                  </Button>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={() => {
                   setMenuOpen(false)
-                  go(nav[nav.length - 1])
+                  setInquiryOpen(true)
                 }}
                 className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 mt-2"
               >
@@ -1398,6 +1681,166 @@ export const AgencyKimiPage3 = defineCapsule({
             </div>
           </div>
         </footer>
+
+        <Sheet open={savedProjectsOpen} onOpenChange={setSavedProjectsOpen}>
+          <SheetTrigger asChild>
+            <Button
+              type="button"
+              className="sr-only"
+              aria-label="Open saved projects drawer"
+            >
+              Open saved projects
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Saved Projects</SheetTitle>
+              <SheetDescription>
+                Keep a shortlist of work references for your next {brand} brief.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 space-y-6 overflow-y-auto p-6">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  const project = workItems[0]
+                  if (!project) return
+                  void saveProject(
+                    project.title,
+                    project.tag,
+                    project.metric,
+                    project.imageAlt,
+                  )
+                }}
+              >
+                Save featured project
+              </Button>
+              <div className="space-y-3">
+                {savedProjects && savedProjects.length > 0 ? (
+                  savedProjects.map((project) => (
+                    <div
+                      key={project.id}
+                      className="rounded-xl border border-border bg-card p-4"
+                    >
+                      <div className="font-semibold text-foreground">
+                        {project.title}
+                      </div>
+                      <div className="mt-1 text-sm text-muted-foreground">
+                        {project.tag}
+                      </div>
+                      <div className="mt-2 text-xs text-muted-foreground">
+                        {project.metric}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="mt-3"
+                        onClick={() => void removeProject(project.title)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                    No saved projects yet.
+                  </div>
+                )}
+              </div>
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <SheetClose asChild>
+                <Button type="button" variant="outline" className="w-full">
+                  Close
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+
+        <Sheet open={inquiryOpen} onOpenChange={setInquiryOpen}>
+          <SheetTrigger asChild>
+            <Button
+              type="button"
+              className="sr-only"
+              aria-label="Open project inquiry drawer"
+            >
+              Open project inquiry
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">{navCta}</SheetTitle>
+              <SheetDescription>
+                Share a project brief and keep the conversation attached to this capsule session.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 space-y-6 overflow-y-auto p-6">
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const form = new FormData(e.currentTarget)
+                  const name = String(form.get("name") ?? "").trim()
+                  const email = String(form.get("email") ?? "").trim()
+                  const company = String(form.get("company") ?? "").trim()
+                  const message = String(form.get("message") ?? "").trim()
+                  if (!name || !email || !message) return
+                  void submitInquiry(name, email, company, message)
+                  e.currentTarget.reset()
+                }}
+              >
+                <input
+                  name="name"
+                  required
+                  placeholder="Name"
+                  className="w-full rounded-xl border border-input bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
+                />
+                <input
+                  name="email"
+                  type="email"
+                  required
+                  placeholder="Email"
+                  className="w-full rounded-xl border border-input bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
+                />
+                <input
+                  name="company"
+                  placeholder="Company"
+                  className="w-full rounded-xl border border-input bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
+                />
+                <textarea
+                  name="message"
+                  rows={4}
+                  required
+                  placeholder="What should we build together?"
+                  className="w-full resize-none rounded-xl border border-input bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
+                />
+                <Button type="submit" className="w-full rounded-full">
+                  Send project brief
+                </Button>
+              </form>
+
+              <div className="rounded-xl border border-border bg-muted/40 p-4">
+                <div className="text-2xl font-bold text-foreground">
+                  {inquiries?.length ?? 0}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Project inquiries in this session
+                </div>
+              </div>
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <SheetClose asChild>
+                <Button type="button" variant="outline" className="w-full">
+                  Close
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

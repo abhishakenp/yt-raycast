@@ -1,9 +1,30 @@
-import { type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
+import { string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
+
+const toPriceAmount = (price: string) => {
+  const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ""))
+  return Number.isFinite(amount) ? amount : 0
+}
+
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount)
 
 /**
  * CloudInfraKimiPage — a complete, self-contained cloud-infrastructure SaaS
@@ -33,6 +54,60 @@ export const CloudInfraKimiPage = defineCapsule({
   name: "CloudInfraKimiPage",
   description:
     "Complete cloud-infrastructure / developer-platform SaaS LANDING page with a clean, bright, engineering-focused aesthetic: light canvas, deep slate brand tone, emerald success accents, generous whitespace. Includes a two-column hero (status pill, headline, dual CTAs, no-credit-card trust row, floating deployment-time stat card over a global-network photo), a trusted-by logo wall, a 6-up product features grid (container registry, serverless functions, managed databases, edge security, object storage, observability) with icon tiles, a 3-step 'deploy in minutes' onboarding guide with a CLI code snippet, a developer-showcase image gallery with caption overlays, a 3-tier usage-based pricing table with a Most Popular middle tier plus an enterprise reserved-capacity panel, a split stats/trust band with big KPI tiles and SLA/SOC2 compliance badges, a 3-up star-rated testimonials grid with avatars, an accordion FAQ, a dark inverted final call-to-action band, and a fat multi-column footer with product/company/legal link groups and social icons. Use as the ROOT/home page for cloud hosting, IaaS/PaaS, serverless, container, hosting, DevOps, database, CDN, edge-compute or developer-tooling/platform startups when a credible, conversion-focused, feature-and-pricing-heavy page is wanted. Supply content only — brand, nav, hero, logos, features, steps, gallery, pricing, stats, testimonials, faq, finalCta, footer; the block owns all layout and styling.",
+  lakebed: {
+    schema: {
+      deploymentRequests: table({
+        plan: string(),
+        source: string(),
+        status: string(),
+        region: string(),
+        price: string(),
+        requestedBy: string(),
+      }),
+    },
+    queries: {
+      deploymentRequests: ({ db }) =>
+        db.deploymentRequests.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addDeploymentRequest: (
+        { db },
+        plan: string,
+        source: string,
+        status: string,
+        region: string,
+        price: string,
+        requestedBy: string,
+      ) => {
+        db.deploymentRequests.insert({
+          plan,
+          source,
+          status,
+          region,
+          price,
+          requestedBy,
+        })
+
+        return db.deploymentRequests.all()
+      },
+      removeDeploymentRequest: ({ db }, requestId: string) => {
+        const request = db.deploymentRequests.get(requestId)
+
+        if (request) {
+          db.deploymentRequests.delete(request.id)
+        }
+
+        return db.deploymentRequests.all()
+      },
+      clearDeploymentRequests: ({ db }) => {
+        for (const request of db.deploymentRequests.all()) {
+          db.deploymentRequests.delete(request.id)
+        }
+
+        return []
+      },
+    },
+  },
   props: z.object({
     /** Brand / product name shown in the navbar, CTA band and footer. */
     brand: z.string().optional(),
@@ -185,12 +260,51 @@ export const CloudInfraKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
+    const [requestDrawerOpen, setRequestDrawerOpen] = useState(false)
     const go = useNavigate()
     const brand = props.brand ?? "CloudShift"
     const nav = props.nav?.length
       ? props.nav
       : ["Features", "Pricing", "Showcase", "FAQ"]
+
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+
+    const deploymentRequests = lakebed.useQuery("deploymentRequests")
+    const addDeploymentRequest = lakebed.useMutation("addDeploymentRequest")
+    const removeDeploymentRequest = lakebed.useMutation("removeDeploymentRequest")
+    const clearDeploymentRequests = lakebed.useMutation("clearDeploymentRequests")
+    const requestRows = deploymentRequests ?? []
+    const requestCount = requestRows.length
+    const requestEstimate = requestRows.reduce(
+      (total, request) => total + toPriceAmount(request.price),
+      0,
+    )
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const addRequest = (plan: string, source: string, price = "$0") => {
+      void addDeploymentRequest(
+        plan,
+        source,
+        "Queued",
+        "Auto-managed",
+        price,
+        isSignedIn ? authDisplayName : "Guest",
+      )
+      setRequestDrawerOpen(true)
+    }
 
     const heroBadge = props.hero?.badge ?? "Now with GPU instances"
     const heroHeading =
@@ -375,6 +489,7 @@ export const CloudInfraKimiPage = defineCapsule({
     const enterpriseItems = props.pricing?.enterpriseItems?.length
       ? props.pricing.enterpriseItems
       : ["1-year: 15% discount", "2-year: 25% discount", "3-year: 40% discount"]
+    const heroQueuePlan = pricingTiers[0]?.name ?? "Starter"
 
     const statsHeading =
       props.stats?.heading ?? "Trusted by thousands of engineering teams"
@@ -736,6 +851,16 @@ export const CloudInfraKimiPage = defineCapsule({
       ),
     }
 
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+    const requestPriceForPlan = (planName: string) => {
+      const matchedPlan = pricingTiers.find((tier) => tier.name === planName)
+      return matchedPlan?.price ?? "$0"
+    }
+
     return (
       <div
         className={cn(
@@ -775,14 +900,53 @@ export const CloudInfraKimiPage = defineCapsule({
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go("Sign in")}
+                  onClick={() => {
+                    if (isSignedIn) {
+                      go("Account")
+                    } else {
+                      handleSignIn()
+                    }
+                  }}
+                  disabled={auth.isLoading}
                   className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
+                  aria-label={isSignedIn ? "Open account" : "Sign in"}
                 >
-                  Sign in
+                  {authLabel}
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(heroPrimary)}
+                  onClick={() => setRequestDrawerOpen(true)}
+                  aria-label="Open deployment request queue"
+                  className="relative hidden h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+                >
+                  <svg
+                    className="size-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                  {requestCount > 0 ? (
+                    <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-primary text-[0.625rem] font-bold text-primary-foreground">
+                      {requestCount}
+                    </span>
+                  ) : null}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    addRequest(
+                      heroQueuePlan,
+                      "Header",
+                      requestPriceForPlan(heroQueuePlan),
+                    )
+                    go(heroPrimary)
+                  }}
                   className="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   Get Started
@@ -791,6 +955,117 @@ export const CloudInfraKimiPage = defineCapsule({
             </div>
           </nav>
         </header>
+        <Sheet open={requestDrawerOpen} onOpenChange={setRequestDrawerOpen}>
+          <SheetContent side="right" className="w-full max-w-md p-0 sm:max-w-lg">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle>Deployment queue</SheetTitle>
+              <SheetDescription>
+                {requestCount > 0
+                  ? `${requestCount} plan request${requestCount === 1 ? "" : "s"} in queue`
+                  : "No deployment requests yet."}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {requestRows.length ? (
+                <div className="space-y-4">
+                  {requestRows.map((request) => (
+                    <div
+                      key={request.id}
+                      className="rounded-xl border border-border bg-card p-4"
+                    >
+                      <p className="text-sm font-semibold text-foreground">
+                        {request.plan}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {request.source} • {request.region}
+                      </p>
+                      <div className="mt-3 flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                            {request.requestedBy}
+                          </p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {request.price}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => void removeDeploymentRequest(request.id)}
+                          className="rounded-lg border border-border px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-border bg-muted/40 px-6 py-10 text-center text-sm text-muted-foreground">
+                  No active requests. Add a plan from a CTA to queue a
+                  deployment.
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <div className="flex justify-between">
+                  <span>Queued plans</span>
+                  <span>{requestCount}</span>
+                </div>
+                <div className="flex justify-between font-semibold text-foreground">
+                  <span>Estimated monthly baseline</span>
+                  <span>{formatCurrency(requestEstimate)}</span>
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRequestDrawerOpen(false)
+                    go("Pricing")
+                  }}
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  View pricing
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void clearDeploymentRequests()}
+                  disabled={!requestRows.length}
+                  className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+                >
+                  Clear queue
+                </button>
+              </div>
+              {isSignedIn ? (
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="mt-2 w-full rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-2 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/20"
+                >
+                  Sign out
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  className="mt-2 w-full rounded-lg border border-border px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground hover:border-foreground/20 disabled:pointer-events-none disabled:opacity-50"
+                >
+                  Sign in with Google
+                </button>
+              )}
+              <SheetClose asChild>
+                <button
+                  type="button"
+                  className="mt-2 w-full rounded-lg bg-muted px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted/90"
+                >
+                  Continue browsing
+                </button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
 
         <main>
           {/* Hero */}
@@ -814,7 +1089,14 @@ export const CloudInfraKimiPage = defineCapsule({
                   <div className="flex flex-wrap gap-4">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() => {
+                        addRequest(
+                          heroQueuePlan,
+                          "Hero Primary",
+                          requestPriceForPlan(heroQueuePlan),
+                        )
+                        go(heroPrimary)
+                      }}
                       className="inline-flex items-center rounded-lg bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                     >
                       {heroPrimary}
@@ -1081,6 +1363,15 @@ export const CloudInfraKimiPage = defineCapsule({
                         </li>
                       ))}
                     </ul>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        addRequest(tier.name, `Plan: ${tier.name}`, tier.price)
+                      }
+                      className="mt-6 inline-flex items-center rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                    >
+                      Add to queue
+                    </button>
                   </div>
                 ))}
               </div>
@@ -1246,7 +1537,14 @@ export const CloudInfraKimiPage = defineCapsule({
               <div className="mb-12 flex flex-wrap justify-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go(finalCtaPrimary)}
+                  onClick={() => {
+                    addRequest(
+                      heroQueuePlan,
+                      "Final CTA",
+                      requestPriceForPlan(heroQueuePlan),
+                    )
+                    go(finalCtaPrimary)
+                  }}
                   className="inline-flex items-center rounded-lg bg-background px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-background/90"
                 >
                   {finalCtaPrimary}

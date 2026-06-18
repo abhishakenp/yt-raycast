@@ -3,6 +3,24 @@ import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * SaasKimiPage — a complete, self-contained AI-product SaaS LANDING page.
@@ -178,10 +196,96 @@ export const SaasKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      subscribers: table({
+        email: string(),
+      }),
+      contacts: table({
+        name: string(),
+        email: string(),
+        message: string(),
+      }),
+    },
+    queries: {
+      subscribers: ({ db }) => db.subscribers.orderBy('createdAt').all(),
+      contacts: ({ db }) => db.contacts.orderBy('createdAt').all(),
+    },
+    mutations: {
+      addSubscriber: ({ db }, email: string) => {
+        const existing = db.subscribers.where('email', email).all()[0]
+        if (!existing) {
+          db.subscribers.insert({ email })
+        }
+        return db.subscribers.all()
+      },
+      addContact: ({ db }, name: string, email: string, message: string) => {
+        db.contacts.insert({ name, email, message })
+        return db.contacts.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [contactOpen, setContactOpen] = useState(false)
+    const [contactName, setContactName] = useState("")
+    const [contactEmail, setContactEmail] = useState("")
+    const [contactMessage, setContactMessage] = useState("")
     const brand = props.brand ?? "Chronos AI"
+
+    const subscribers = lakebed.useQuery("subscribers")
+    const contacts = lakebed.useQuery("contacts")
+    const addSubscriber = lakebed.useMutation("addSubscriber")
+    const addContact = lakebed.useMutation("addContact")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const handleContactSubmit = (e: React.FormEvent) => {
+      e.preventDefault()
+      if (contactName && contactEmail && contactMessage) {
+        void addContact(contactName, contactEmail, contactMessage)
+        setContactName("")
+        setContactEmail("")
+        setContactMessage("")
+        setContactOpen(false)
+      }
+    }
+
+    const handleNewsletterSubmit = (e: React.FormEvent) => {
+      e.preventDefault()
+      const form = e.target as HTMLFormElement
+      const emailInput = form.elements.namedItem("email") as HTMLInputElement
+      if (emailInput?.value) {
+        void addSubscriber(emailInput.value)
+        emailInput.value = ""
+      }
+    }
     const nav = props.nav?.length
       ? props.nav
       : ["Features", "How It Works", "Pricing", "Testimonials", "FAQ"]
@@ -528,6 +632,37 @@ export const SaasKimiPage = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     // Feature icon tints rotate through chart data-viz tokens + primary for a multi-color decorative set.
     const featureIconTints = [
       "bg-chart-1/10 text-chart-1",
@@ -671,13 +806,224 @@ export const SaasKimiPage = defineCapsule({
               ))}
             </ul>
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => go(heroPrimary)}
-                className="rounded-lg bg-gradient-to-br from-primary to-primary/80 px-5 py-2.5 text-[0.9375rem] font-semibold text-primary-foreground shadow-[0_1px_3px_rgba(79,70,229,0.3)] transition-all hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(79,70,229,0.35)]"
-              >
-                Get Started
-              </button>
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? "Signed in to this session"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go("Account")}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go("Settings")}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Settings
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={contactOpen} onOpenChange={setContactOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => go(heroPrimary)}
+                    className="rounded-lg bg-gradient-to-br from-primary to-primary/80 px-5 py-2.5 text-[0.9375rem] font-semibold text-primary-foreground shadow-[0_1px_3px_rgba(79,70,229,0.3)] transition-all hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(79,70,229,0.35)]"
+                  >
+                    Get Started
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Contact Sales</SheetTitle>
+                    <SheetDescription>
+                      Have questions? We'd love to hear from you. Send us a
+                      message and we'll respond as soon as possible.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    <form onSubmit={handleContactSubmit} className="space-y-4">
+                      <div>
+                        <label
+                          htmlFor="contact-name"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
+                          Name
+                        </label>
+                        <input
+                          id="contact-name"
+                          type="text"
+                          value={contactName}
+                          onChange={(e) => setContactName(e.target.value)}
+                          required
+                          className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          placeholder="Your name"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="contact-email"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
+                          Email
+                        </label>
+                        <input
+                          id="contact-email"
+                          type="email"
+                          value={contactEmail}
+                          onChange={(e) => setContactEmail(e.target.value)}
+                          required
+                          className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          placeholder="you@example.com"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="contact-message"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
+                          Message
+                        </label>
+                        <textarea
+                          id="contact-message"
+                          value={contactMessage}
+                          onChange={(e) => setContactMessage(e.target.value)}
+                          required
+                          rows={4}
+                          className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                          placeholder="How can we help you?"
+                        />
+                      </div>
+                    </form>
+                    {contacts && contacts.length > 0 && (
+                      <div className="mt-6 rounded-lg bg-muted/40 p-4">
+                        <p className="mb-2 text-sm font-medium text-foreground">
+                          Recent Inquiries ({contacts.length})
+                        </p>
+                        <div className="space-y-2">
+                          {contacts.slice(0, 3).map((contact) => (
+                            <div
+                              key={contact.id}
+                              className="rounded bg-background p-3 text-sm"
+                            >
+                              <p className="font-medium text-foreground">
+                                {contact.name}
+                              </p>
+                              <p className="text-muted-foreground">
+                                {contact.email}
+                              </p>
+                              <p className="mt-1 text-muted-foreground">
+                                {contact.message.slice(0, 60)}...
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-full"
+                      onClick={() => setContactOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      className="rounded-full"
+                      onClick={handleContactSubmit}
+                      disabled={!contactName || !contactEmail || !contactMessage}
+                    >
+                      Send Message
+                    </Button>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
               <button
                 type="button"
                 aria-label="Open menu"
@@ -720,6 +1066,58 @@ export const SaasKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? "Signed in"}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -1217,12 +1615,36 @@ export const SaasKimiPage = defineCapsule({
                     </button>
                     <button
                       type="button"
-                      onClick={() => go(ctaSecondary)}
+                      onClick={() => setContactOpen(true)}
                       className="inline-flex items-center justify-center rounded-xl border border-primary-foreground/30 px-8 py-3.5 text-base font-semibold text-primary-foreground transition-colors hover:border-primary-foreground/50 hover:bg-primary-foreground/10"
                     >
                       {ctaSecondary}
                     </button>
                   </div>
+                  <form
+                    className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row"
+                    onSubmit={handleNewsletterSubmit}
+                  >
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="Enter your email"
+                      aria-label="Email address for newsletter"
+                      required
+                      className="flex-1 rounded-full border border-primary-foreground/20 bg-background/10 px-6 py-4 text-primary-foreground placeholder:text-primary-foreground/60 focus:outline-none focus:ring-2 focus:ring-background/30"
+                    />
+                    <button
+                      type="submit"
+                      className="whitespace-nowrap rounded-full bg-background px-8 py-4 font-semibold text-primary transition-colors hover:bg-muted"
+                    >
+                      Subscribe
+                    </button>
+                  </form>
+                  {subscribers && subscribers.length > 0 && (
+                    <p className="mt-4 text-sm text-primary-foreground/70">
+                      {subscribers.length} subscriber{subscribers.length === 1 ? "" : "s"}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

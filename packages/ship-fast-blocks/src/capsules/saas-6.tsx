@@ -1,8 +1,35 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "#/components/ui/command.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * SaasKimiPage6 — a complete, self-contained AI-product SaaS LANDING page.
@@ -167,8 +194,52 @@ export const SaasKimiPage6 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      notifications: table({
+        message: string(),
+        type: string(),
+        timestamp: string(),
+      }),
+      leads: table({
+        email: string(),
+        plan: string(),
+        timestamp: string(),
+      }),
+    },
+    queries: {
+      notifications: ({ db }) =>
+        db.notifications.orderBy('createdAt').all(),
+      leads: ({ db }) => db.leads.orderBy('createdAt').all(),
+    },
+    mutations: {
+      addNotification: ({ db }, message: string, type: string) => {
+        db.notifications.insert({
+          message,
+          type,
+          timestamp: new Date().toISOString(),
+        })
+        return db.notifications.all()
+      },
+      dismissNotification: ({ db }, id: string) => {
+        db.notifications.delete(id)
+        return db.notifications.all()
+      },
+      submitLead: ({ db }, email: string, plan: string) => {
+        db.leads.insert({
+          email,
+          plan,
+          timestamp: new Date().toISOString(),
+        })
+        return db.leads.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [mobileOpen, setMobileOpen] = useState(false)
+    const [notificationsOpen, setNotificationsOpen] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
     const brand = props.brand ?? "Chronos AI"
     const nav = props.nav?.length
       ? props.nav
@@ -514,6 +585,40 @@ export const SaasKimiPage6 = defineCapsule({
     const footerCopyright =
       props.footer?.copyright ?? `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
 
+    // Lakebed hooks
+    const notifications = lakebed.useQuery('notifications')
+    const leads = lakebed.useQuery('leads')
+    const addNotification = lakebed.useMutation('addNotification')
+    const dismissNotification = lakebed.useMutation('dismissNotification')
+    const submitLead = lakebed.useMutation('submitLead')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const safeNotifications = notifications ?? []
+    const notificationCount = safeNotifications.length
+
     // Shared clock logo mark
     const LogoMark = ({ className }: { className?: string }) => (
       <span
@@ -575,6 +680,37 @@ export const SaasKimiPage6 = defineCapsule({
         aria-hidden="true"
       >
         <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
       </svg>
     )
 
@@ -656,11 +792,262 @@ export const SaasKimiPage6 = defineCapsule({
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => go("Log in")}
-                className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+                onClick={() => setSearchOpen(true)}
+                aria-label="Search"
+                className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground sm:flex"
               >
-                Log in
+                <svg
+                  className="size-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
               </button>
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Settings')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Settings
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Notifications"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg>
+                    {notificationCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {notificationCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Notifications</SheetTitle>
+                    <SheetDescription>
+                      {notificationCount > 0
+                        ? `${notificationCount} notification${notificationCount === 1 ? '' : 's'}`
+                        : 'No new notifications'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {safeNotifications.length ? (
+                      <div className="space-y-4">
+                        {safeNotifications.map((notification) => (
+                          <div
+                            key={notification.id}
+                            className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-4"
+                          >
+                            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                              {notification.type === 'success' ? (
+                                <svg
+                                  className="size-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                              ) : notification.type === 'info' ? (
+                                <svg
+                                  className="size-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle cx="12" cy="12" r="10" />
+                                  <line x1="12" y1="16" x2="12" y2="12" />
+                                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                                </svg>
+                              ) : (
+                                <svg
+                                  className="size-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle cx="12" cy="12" r="10" />
+                                  <line x1="12" y1="8" x2="12" y2="12" />
+                                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                                </svg>
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm text-foreground">
+                                {notification.message}
+                              </p>
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {new Date(notification.timestamp).toLocaleString()}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => void dismissNotification(notification.id)}
+                              className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+                              aria-label="Dismiss notification"
+                            >
+                              <svg
+                                className="size-4"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                viewBox="0 0 24 24"
+                              >
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No notifications
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          You're all caught up!
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <SheetClose asChild>
+                      <Button variant="secondary" className="w-full rounded-full">
+                        Close
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
               <button
                 type="button"
                 onClick={() => go("Get started")}
@@ -668,9 +1055,158 @@ export const SaasKimiPage6 = defineCapsule({
               >
                 Get started
               </button>
+              <button
+                type="button"
+                aria-label="Open menu"
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-menu"
+                onClick={() => setMobileOpen((v: boolean) => !v)}
+                className="p-2 text-muted-foreground hover:text-foreground lg:hidden"
+              >
+                <svg
+                  className="size-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              </button>
             </div>
+            {mobileOpen && (
+              <div
+                id="mobile-menu"
+                className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
+              >
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      go(label)
+                    }}
+                    className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                  >
+                    {label}
+                  </button>
+                ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </header>
+
+        <CommandDialog
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          title="Search"
+          description="Search the site."
+          className="max-w-xl"
+        >
+          <CommandInput placeholder="Search features, pricing, FAQ..." />
+          <CommandList className="max-h-[420px]">
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup heading="Navigation">
+              {nav.map((label) => (
+                <CommandItem
+                  key={label}
+                  value={label}
+                  onSelect={() => {
+                    setSearchOpen(false)
+                    go(label)
+                  }}
+                >
+                  {label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            <CommandGroup heading="Features">
+              {featureItems.map((item) => (
+                <CommandItem
+                  key={item.title}
+                  value={item.title}
+                  onSelect={() => {
+                    setSearchOpen(false)
+                    go(item.title)
+                  }}
+                >
+                  {item.title}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            <CommandGroup heading="Pricing">
+              {pricingPlans.map((plan) => (
+                <CommandItem
+                  key={plan.name}
+                  value={plan.name}
+                  onSelect={() => {
+                    setSearchOpen(false)
+                    go(plan.name)
+                  }}
+                >
+                  {plan.name} - {plan.price}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
 
         <main className="flex flex-1 flex-col">
           {/* Hero */}
@@ -695,14 +1231,21 @@ export const SaasKimiPage6 = defineCapsule({
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() => {
+                        void submitLead('user@example.com', 'Starter')
+                        void addNotification('Free trial started', 'success')
+                        go(heroPrimary)
+                      }}
                       className="inline-flex items-center justify-center rounded-xl bg-background px-6 py-3.5 text-base font-semibold text-foreground shadow-sm transition-colors hover:bg-accent"
                     >
                       {heroPrimary}
                     </button>
                     <button
                       type="button"
-                      onClick={() => go(heroSecondary)}
+                      onClick={() => {
+                        void addNotification('Demo request submitted', 'success')
+                        go(heroSecondary)
+                      }}
                       className="inline-flex items-center justify-center rounded-xl border border-background/40 px-6 py-3.5 text-base font-semibold text-background transition-colors hover:bg-background/10"
                     >
                       {heroSecondary}
@@ -940,7 +1483,15 @@ export const SaasKimiPage6 = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(plan.cta)}
+                      onClick={() => {
+                        if (plan.cta === 'Contact sales') {
+                          void addNotification('Sales request submitted for ' + plan.name, 'success')
+                        } else {
+                          void submitLead('user@example.com', plan.name)
+                          void addNotification('Trial started for ' + plan.name, 'success')
+                        }
+                        go(plan.cta)
+                      }}
                       className={cn(
                         "mt-8 block w-full rounded-xl py-3 text-center text-sm font-semibold transition-colors",
                         plan.popular
@@ -1062,14 +1613,21 @@ export const SaasKimiPage6 = defineCapsule({
                 <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
                   <button
                     type="button"
-                    onClick={() => go(ctaPrimary)}
+                    onClick={() => {
+                      void submitLead('user@example.com', 'Pro')
+                      void addNotification('Free trial started', 'success')
+                      go(ctaPrimary)
+                    }}
                     className="inline-flex items-center justify-center rounded-xl bg-background px-8 py-4 text-base font-bold text-foreground shadow-lg transition-colors hover:bg-accent"
                   >
                     {ctaPrimary}
                   </button>
                   <button
                     type="button"
-                    onClick={() => go(ctaSecondary)}
+                    onClick={() => {
+                      void addNotification('Sales contact requested', 'success')
+                      go(ctaSecondary)
+                    }}
                     className="inline-flex items-center justify-center rounded-xl border border-primary-foreground/30 px-8 py-4 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
                   >
                     {ctaSecondary}

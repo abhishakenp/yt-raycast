@@ -1,8 +1,27 @@
+import { useState } from 'react'
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const LinkInBioKimiPage2 = defineCapsule({
   name: "LinkInBioKimiPage2",
@@ -43,9 +62,68 @@ export const LinkInBioKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      inquiries: table({
+        name: string(),
+        email: string(),
+        message: string(),
+        topic: string(),
+      }),
+      leads: table({
+        email: string(),
+        source: string(),
+      }),
+    },
+    queries: {
+      inquiries: ({ db }) => db.inquiries.orderBy('createdAt').all(),
+      leadCount: ({ db }) => db.leads.all().length,
+    },
+    mutations: {
+      submitInquiry: ({ db }, name: string, email: string, message: string, topic: string) => {
+        db.inquiries.insert({ name, email, message, topic })
+        return db.inquiries.orderBy('createdAt').all()
+      },
+      addLead: ({ db }, email: string, source: string) => {
+        const existing = db.leads.where('email', email).all()[0]
+        if (!existing) {
+          db.leads.insert({ email, source })
+        }
+        return db.leads.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [inquiryOpen, setInquiryOpen] = useState(false)
+    const [inquiryForm, setInquiryForm] = useState({ name: '', email: '', message: '', topic: 'General' })
     const brand = props.brand ?? "Maya Chen Creative Director & Brand Strategist"
+    const inquiries = lakebed.useQuery('inquiries')
+    const leadCount = lakebed.useQuery('leadCount')
+    const submitInquiry = lakebed.useMutation('submitInquiry')
+    const addLead = lakebed.useMutation('addLead')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName = auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials = authDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('') || 'ME'
+    const authLabel = auth.isLoading ? 'Checking...' : isSignedIn ? authDisplayName : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const handleSubmitInquiry = (e: React.FormEvent) => {
+      e.preventDefault()
+      if (!inquiryForm.name || !inquiryForm.email || !inquiryForm.message) return
+      void submitInquiry(inquiryForm.name, inquiryForm.email, inquiryForm.message, inquiryForm.topic)
+      void addLead(inquiryForm.email, 'link-in-bio-contact')
+      setInquiryForm({ name: '', email: '', message: '', topic: 'General' })
+      setInquiryOpen(false)
+    }
     const nav = props.nav?.length ? props.nav : ["Maya Chen", "Pricing", "Book a Call"]
     const hero = {
       eyebrow: "Link In Bio / Variant 2",
@@ -134,6 +212,37 @@ export const LinkInBioKimiPage2 = defineCapsule({
   }
 ]
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     return (
       <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
@@ -153,13 +262,79 @@ export const LinkInBioKimiPage2 = defineCapsule({
                 </button>
               ))}
             </nav>
-            <button
-              type="button"
-              onClick={() => go(hero.primaryCta)}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {hero.primaryCta}
-            </button>
+            <div className="flex items-center gap-3">
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar size="sm" className="ring-2 ring-background" aria-hidden="true">
+                        {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">{authDisplayName}</span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" sideOffset={10} className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl">
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">{authInitials}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">{authDisplayName}</p>
+                          <p className="truncate text-xs text-muted-foreground">{authEmail ?? 'Signed in to this session'}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">G</span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setInquiryOpen(true)}
+                className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                {hero.primaryCta}
+              </button>
+            </div>
           </div>
         </header>
 
@@ -180,7 +355,7 @@ export const LinkInBioKimiPage2 = defineCapsule({
                 <div className="mt-8 flex flex-wrap gap-3">
                   <button
                     type="button"
-                    onClick={() => go(hero.primaryCta)}
+                    onClick={() => setInquiryOpen(true)}
                     className="rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                   >
                     {hero.primaryCta}
@@ -273,7 +448,7 @@ export const LinkInBioKimiPage2 = defineCapsule({
                 </div>
                 <button
                   type="button"
-                  onClick={() => go(hero.primaryCta)}
+                  onClick={() => setInquiryOpen(true)}
                   className="rounded-md bg-background px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
                 >
                   {hero.primaryCta}
@@ -282,6 +457,107 @@ export const LinkInBioKimiPage2 = defineCapsule({
             </div>
           </section>
         </main>
+
+        <Sheet open={inquiryOpen} onOpenChange={setInquiryOpen}>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Get in touch</SheetTitle>
+              <SheetDescription>
+                Send a message to {brand}. We'll get back to you within 24 hours.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              <form onSubmit={handleSubmitInquiry} className="space-y-4">
+                <div>
+                  <label htmlFor="inquiry-name" className="mb-2 block text-sm font-medium text-foreground">
+                    Name
+                  </label>
+                  <input
+                    id="inquiry-name"
+                    type="text"
+                    value={inquiryForm.name}
+                    onChange={(e) => setInquiryForm({ ...inquiryForm, name: e.target.value })}
+                    placeholder="Your name"
+                    required
+                    className="w-full rounded-md border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="inquiry-email" className="mb-2 block text-sm font-medium text-foreground">
+                    Email
+                  </label>
+                  <input
+                    id="inquiry-email"
+                    type="email"
+                    value={inquiryForm.email}
+                    onChange={(e) => setInquiryForm({ ...inquiryForm, email: e.target.value })}
+                    placeholder="your@email.com"
+                    required
+                    className="w-full rounded-md border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="inquiry-topic" className="mb-2 block text-sm font-medium text-foreground">
+                    Topic
+                  </label>
+                  <select
+                    id="inquiry-topic"
+                    value={inquiryForm.topic}
+                    onChange={(e) => setInquiryForm({ ...inquiryForm, topic: e.target.value })}
+                    className="w-full rounded-md border border-border bg-background px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="General">General inquiry</option>
+                    <option value="Pricing">Pricing</option>
+                    <option value="Project">Project inquiry</option>
+                    <option value="Collaboration">Collaboration</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="inquiry-message" className="mb-2 block text-sm font-medium text-foreground">
+                    Message
+                  </label>
+                  <textarea
+                    id="inquiry-message"
+                    value={inquiryForm.message}
+                    onChange={(e) => setInquiryForm({ ...inquiryForm, message: e.target.value })}
+                    placeholder="Tell us about your project or inquiry..."
+                    required
+                    rows={5}
+                    className="w-full rounded-md border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                  />
+                </div>
+              </form>
+              {inquiries && inquiries.length > 0 && (
+                <div className="mt-6 border-t border-border pt-6">
+                  <p className="mb-3 text-sm font-medium text-muted-foreground">Recent inquiries</p>
+                  <div className="space-y-3">
+                    {inquiries.slice(0, 3).map((inquiry) => (
+                      <div key={inquiry.id} className="rounded-lg bg-muted/40 p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="truncate text-sm font-semibold text-foreground">{inquiry.name}</p>
+                          <span className="text-xs text-muted-foreground">{new Date(inquiry.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <p className="mt-1 truncate text-xs text-muted-foreground">{inquiry.topic}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <div className="grid w-full grid-cols-2 gap-3">
+                <SheetClose asChild>
+                  <Button type="button" variant="outline" className="rounded-full">
+                    Cancel
+                  </Button>
+                </SheetClose>
+                <Button type="button" className="rounded-full" onClick={handleSubmitInquiry}>
+                  Send message
+                </Button>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">

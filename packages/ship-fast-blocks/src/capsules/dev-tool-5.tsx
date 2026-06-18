@@ -1,8 +1,20 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * DevToolKimiPage5 — a complete, self-contained developer-API / dev-tool platform
@@ -194,8 +206,62 @@ export const DevToolKimiPage5 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      featureBookmarks: table({
+        featureName: string(),
+      }),
+    },
+    queries: {
+      featureBookmarks: ({ db }) => db.featureBookmarks.orderBy("createdAt").all(),
+    },
+    mutations: {
+      toggleFeatureBookmark: ({ db }, featureName: string) => {
+        const existing = db.featureBookmarks
+          .where("featureName", featureName)
+          .all()[0]
+        if (existing) {
+          db.featureBookmarks.delete(existing.id)
+          return db.featureBookmarks.all()
+        }
+
+        db.featureBookmarks.insert({ featureName })
+        return db.featureBookmarks.all()
+      },
+      clearFeatureBookmarks: ({ db }) => {
+        for (const item of db.featureBookmarks.all()) {
+          db.featureBookmarks.delete(item.id)
+        }
+
+        return db.featureBookmarks.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [savedFeaturesOpen, setSavedFeaturesOpen] = useState(false)
+    const featureBookmarks = lakebed.useQuery("featureBookmarks")
+    const toggleFeatureBookmark = lakebed.useMutation("toggleFeatureBookmark")
+    const clearFeatureBookmarks = lakebed.useMutation("clearFeatureBookmarks")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authLabel = auth.isLoading ? "Checking..." : isSignedIn ? authName : "Sign in"
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const storedBookmarks = featureBookmarks ?? []
+    const savedFeatureNameSet = new Set(
+      storedBookmarks.map((bookmark) => bookmark.featureName),
+    )
+    const savedFeatureCount = storedBookmarks.length
 
     const brand = props.brand ?? "Pixi API"
     const nav = props.nav?.length
@@ -666,13 +732,137 @@ app.post('/webhook', async (req, res) => {
                 ))}
               </div>
               <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => go("Sign in")}
-                  className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-                >
-                  Sign in
-                </button>
+                <Sheet open={savedFeaturesOpen} onOpenChange={setSavedFeaturesOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      className="relative grid size-10 place-items-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:text-chart-1"
+                      aria-label="Open saved features"
+                    >
+                      <svg
+                        className="size-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M6 2a2 2 0 0 0-2 2v18l8-3 8 3V2a2 2 0 0 0-2-2H6z" />
+                      </svg>
+                      {savedFeatureCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-5 place-items-center rounded-full bg-destructive text-[0.65rem] font-bold text-background">
+                          {savedFeatureCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full max-w-sm gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle>Saved features</SheetTitle>
+                      <SheetDescription>
+                        Bookmark pages you want to revisit while planning your API
+                        stack.
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {storedBookmarks.length > 0 ? (
+                        <ul className="space-y-3">
+                          {storedBookmarks.map((item) => (
+                            <li
+                              key={item.id}
+                              className="rounded-xl border border-border bg-muted p-4"
+                            >
+                              <div className="flex items-center justify-between gap-3">
+                                <p className="font-medium text-foreground">
+                                  {item.featureName}
+                                </p>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => void toggleFeatureBookmark(item.featureName)}
+                                    className="text-sm font-medium text-destructive transition-colors hover:text-destructive/80"
+                                    aria-label={`Remove ${item.featureName}`}
+                                  >
+                                    Remove
+                                  </button>
+                                  <SheetClose asChild>
+                                    <button
+                                      type="button"
+                                      onClick={() => go(item.featureName)}
+                                      className="text-sm font-medium text-chart-1 transition-colors hover:text-chart-1/80"
+                                    >
+                                      Open
+                                    </button>
+                                  </SheetClose>
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/40 text-center">
+                          <p className="text-sm font-medium text-foreground">
+                            No saved features yet
+                          </p>
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            Click “{featuresLearnMore}” in feature cards to save items.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="w-full space-y-2 text-sm">
+                        <p className="text-muted-foreground">
+                          {savedFeatureCount} saved feature
+                          {savedFeatureCount === 1 ? "" : "s"}
+                        </p>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            disabled={!savedFeatureCount}
+                            onClick={() => void clearFeatureBookmarks()}
+                            className="inline-flex flex-1 items-center justify-center rounded-full bg-muted px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted/70 disabled:opacity-50"
+                          >
+                            Clear saved
+                          </button>
+                          <SheetClose asChild>
+                            <button
+                              type="button"
+                              className="inline-flex flex-1 items-center justify-center rounded-full bg-gradient-to-r from-destructive to-chart-4 px-4 py-2 text-sm font-semibold text-primary-foreground"
+                            >
+                              Close
+                            </button>
+                          </SheetClose>
+                        </div>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                {isSignedIn ? (
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
+                  >
+                    {authLabel}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void handleSignIn()
+                    }}
+                    disabled={auth.isLoading}
+                    className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block disabled:pointer-events-none disabled:opacity-60"
+                  >
+                    {authLabel}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => go(heroPrimary)}
@@ -849,10 +1039,19 @@ app.post('/webhook', async (req, res) => {
                   <p className="mb-4 text-muted-foreground">{item.description}</p>
                   <button
                     type="button"
-                    onClick={() => go(item.title)}
+                    onClick={() => {
+                      void toggleFeatureBookmark(item.title)
+                      go(item.title)
+                    }}
+                    aria-label={`${featuresLearnMore}: ${item.title}${
+                      savedFeatureNameSet.has(item.title) ? " (already saved)" : ""
+                    }`}
                     className="inline-flex items-center gap-2 text-sm font-medium text-chart-1 transition-colors hover:text-chart-1/80"
                   >
                     <span>{featuresLearnMore}</span>
+                    {savedFeatureNameSet.has(item.title) ? (
+                      <span className="text-xs text-chart-1/80">Saved</span>
+                    ) : null}
                     <ArrowRight className="size-4" />
                   </button>
                 </div>

@@ -1,8 +1,20 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * KidsEducationKimiPage2 — a bright, warm kids / family LEARNING platform landing page.
@@ -179,8 +191,116 @@ export const KidsEducationKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      savedItems: table({
+        name: string(),
+        category: string(),
+      }),
+      leadSignups: table({
+        email: string(),
+        source: string(),
+      }),
+    },
+    queries: {
+      savedItems: ({ db }) => db.savedItems.orderBy("createdAt").all(),
+      leadSignups: ({ db }) => db.leadSignups.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addSavedItem: ({ db }, name: string, category: string) => {
+        const existing = db.savedItems
+          .all()
+          .find((entry) => entry.name === name && entry.category === category)
+
+        if (!existing) {
+          db.savedItems.insert({ name, category })
+        }
+
+        return db.savedItems.orderBy("createdAt").all()
+      },
+      removeSavedItem: ({ db }, id: string) => {
+        const entry = db.savedItems.get(id)
+
+        if (entry) {
+          db.savedItems.delete(entry.id)
+        }
+
+        return db.savedItems.orderBy("createdAt").all()
+      },
+      clearSavedItems: ({ db }) => {
+        for (const entry of db.savedItems.all()) {
+          db.savedItems.delete(entry.id)
+        }
+
+        return []
+      },
+      addLeadSignup: ({ db }, email: string, source: string) => {
+        const normalizedEmail = email.trim().toLowerCase()
+
+        if (!normalizedEmail) {
+          return db.leadSignups.orderBy("createdAt").all()
+        }
+
+        const existing = db.leadSignups
+          .all()
+          .find((lead) => lead.email === normalizedEmail && lead.source === source)
+
+        if (!existing) {
+          db.leadSignups.insert({
+            email: normalizedEmail,
+            source,
+          })
+        }
+
+        return db.leadSignups.orderBy("createdAt").all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
+    const [savedDrawerOpen, setSavedDrawerOpen] = useState(false)
+    const [ctaEmail, setCtaEmail] = useState("")
+
     const go = useNavigate()
+
+    const storedSavedItems = lakebed.useQuery("savedItems") ?? []
+    const storedLeadSignups = lakebed.useQuery("leadSignups") ?? []
+    const addSavedItem = lakebed.useMutation("addSavedItem")
+    const removeSavedItem = lakebed.useMutation("removeSavedItem")
+    const clearSavedItems = lakebed.useMutation("clearSavedItems")
+    const addLeadSignup = lakebed.useMutation("addLeadSignup")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Family account"
+    const authInitials = authDisplayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "PA"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in with Google"
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const savedItemCount = storedSavedItems.length
+    const savedActivityCount = storedSavedItems.filter(
+      (item) => item.category === "Activity",
+    ).length
+    const savedPlanCount = storedSavedItems.filter(
+      (item) => item.category === "Plan",
+    ).length
+    const ctaSignupCount = storedLeadSignups.length
 
     const brand = props.brand ?? "Sprout & Play"
     const nav = props.nav?.length
@@ -650,6 +770,27 @@ export const KidsEducationKimiPage2 = defineCapsule({
       }
     }
 
+    const BookmarkIcon = ({
+      className,
+      filled = false,
+    }: {
+      className?: string
+      filled?: boolean
+    }) => (
+      <svg
+        className={className}
+        viewBox="0 0 24 24"
+        fill={filled ? "currentColor" : "none"}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M5 4a2 2 0 012-2h10a2 2 0 012 2v18l-7-4-7 4V4z" />
+      </svg>
+    )
+
     return (
       <div
         className={cn(
@@ -685,6 +826,114 @@ export const KidsEducationKimiPage2 = defineCapsule({
             </nav>
 
             <div className="flex items-center gap-3">
+              <Sheet
+                open={savedDrawerOpen}
+                onOpenChange={setSavedDrawerOpen}
+              >
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-bold text-card-foreground shadow-sm transition hover:bg-muted"
+                  >
+                    <BookmarkIcon className="size-4" />
+                    <span className="hidden sm:inline">Saved</span>
+                    <span
+                      className={cn(
+                        "grid size-5 place-items-center rounded-full bg-primary text-xs font-black text-primary-foreground",
+                        savedItemCount === 0 && "opacity-70",
+                      )}
+                    >
+                      {savedItemCount}
+                    </span>
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                  <SheetHeader className="border-b border-border px-6 py-5">
+                    <SheetTitle>Saved learning items</SheetTitle>
+                    <SheetDescription>
+                      Build a shortlist of activities and plans, then continue where
+                      you left off.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {savedItemCount ? (
+                      <ul className="space-y-3">
+                        {storedSavedItems.map((item) => (
+                          <li
+                            key={item.id}
+                            className="rounded-xl border border-border bg-card p-4"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-bold text-foreground">
+                                  {item.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {item.category}
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => void removeSavedItem(item.id)}
+                                className="text-xs font-semibold text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground">
+                        No saved items yet. Save an activity or plan to begin.
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border px-6 py-6">
+                    <div className="mb-4 text-sm">
+                      <p className="flex items-center justify-between text-foreground">
+                        <span>Total items</span>
+                        <span className="font-bold">{savedItemCount}</span>
+                      </p>
+                      <p className="mt-1 text-muted-foreground">
+                        {savedActivityCount} {savedActivityCount === 1 ? "Activity" : "Activities"} · {savedPlanCount} {savedPlanCount === 1 ? "Plan" : "Plans"}
+                      </p>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {ctaSignupCount} families joined from the CTA.
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <SheetClose asChild>
+                        <button
+                          type="button"
+                          onClick={() => go("Pricing")}
+                          className="w-full rounded-lg border border-border bg-card px-4 py-3 text-sm font-bold text-foreground transition hover:bg-muted"
+                        >
+                          Go to Pricing
+                        </button>
+                      </SheetClose>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void clearSavedItems()
+                        }}
+                        className="w-full rounded-lg bg-background px-4 py-3 text-xs font-semibold text-muted-foreground transition hover:text-foreground"
+                        disabled={savedItemCount === 0}
+                      >
+                        Clear saved items
+                      </button>
+                      <button
+                        type="button"
+                        onClick={isSignedIn ? handleSignOut : handleSignIn}
+                        disabled={auth.isLoading}
+                        className="w-full rounded-lg bg-foreground px-4 py-3 text-xs font-semibold text-background transition hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-60"
+                      >
+                        {isSignedIn ? `Sign out (${authInitials})` : authLabel}
+                      </button>
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
               <button
                 type="button"
                 onClick={() => go("Start Free Trial")}
@@ -869,6 +1118,16 @@ export const KidsEducationKimiPage2 = defineCapsule({
                         className="h-40 w-full object-cover transition duration-500 group-hover:scale-105"
                       />
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void addSavedItem(item.title, "Activity")
+                        setSavedDrawerOpen(true)
+                      }}
+                      className="mt-4 inline-flex w-full items-center justify-center rounded-xl border border-border bg-background px-4 py-3 text-sm font-bold text-foreground shadow-sm transition hover:bg-muted"
+                    >
+                      Save for later
+                    </button>
                   </div>
                 ))}
               </div>
@@ -1063,7 +1322,11 @@ export const KidsEducationKimiPage2 = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(plan.cta)}
+                      onClick={() => {
+                        void addSavedItem(`${plan.name} Plan`, "Plan")
+                        setSavedDrawerOpen(true)
+                        go(plan.cta)
+                      }}
                       className={cn(
                         "block w-full rounded-xl px-6 py-3 text-center text-sm font-bold transition",
                         plan.popular
@@ -1208,6 +1471,8 @@ export const KidsEducationKimiPage2 = defineCapsule({
                 className="mx-auto flex max-w-md flex-col items-center justify-center gap-3 sm:flex-row"
                 onSubmit={(e) => {
                   e.preventDefault()
+                  void addLeadSignup(ctaEmail, "cta")
+                  setCtaEmail("")
                   go(ctaPrimary)
                 }}
               >
@@ -1218,6 +1483,8 @@ export const KidsEducationKimiPage2 = defineCapsule({
                   id="cta-email"
                   type="email"
                   required
+                  value={ctaEmail}
+                  onChange={(event) => setCtaEmail(event.target.value)}
                   placeholder={ctaPlaceholder}
                   className="w-full rounded-xl bg-background px-5 py-4 text-sm font-semibold text-foreground shadow placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring sm:flex-1"
                 />

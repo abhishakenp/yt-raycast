@@ -1,8 +1,24 @@
+import { useState } from "react"
 import { z } from "zod/v4"
+import { number, string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
 
 /**
  * DevToolKimiPage8 — a monochrome + neon-green developer-infrastructure LANDING page.
@@ -179,8 +195,89 @@ export const DevToolKimiPage8 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      requestQueue: table({
+        label: string(),
+        source: string(),
+        count: number(),
+      }),
+    },
+    queries: {
+      requestQueue: ({ db }) => db.requestQueue.orderBy("createdAt").all(),
+    },
+    mutations: {
+      queueRequest: ({ db }, label: string, source: string) => {
+        const key = label.trim()
+        if (!key) return db.requestQueue.all()
+
+        const existing = db.requestQueue.where("label", key).all()[0]
+
+        if (existing) {
+          db.requestQueue.update(existing.id, {
+            count: existing.count + 1,
+            source,
+          })
+          return db.requestQueue.all()
+        }
+
+        db.requestQueue.insert({
+          label: key,
+          source,
+          count: 1,
+        })
+
+        return db.requestQueue.all()
+      },
+      removeRequest: ({ db }, requestId: string) => {
+        const request = db.requestQueue.get(requestId)
+
+        if (request) {
+          db.requestQueue.delete(request.id)
+        }
+
+        return db.requestQueue.all()
+      },
+      clearQueue: ({ db }) => {
+        for (const request of db.requestQueue.all()) {
+          db.requestQueue.delete(request.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [requestDrawerOpen, setRequestDrawerOpen] = useState(false)
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authLabel = auth.isLoading ? "Checking..." : "LOGIN"
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const requestQueue = lakebed.useQuery("requestQueue")
+    const queueRequest = lakebed.useMutation("queueRequest")
+    const removeRequest = lakebed.useMutation("removeRequest")
+    const clearQueue = lakebed.useMutation("clearQueue")
+    const queueRows = requestQueue ?? []
+    const queueTotal = queueRows.reduce((total, row) => total + row.count, 0)
+    const trackAction = (label: string, source: string) => {
+      void queueRequest(label, source)
+      setRequestDrawerOpen(true)
+    }
+    const trackAndGo = (label: string, source: string, destination = label) => {
+      trackAction(label, source)
+      go(destination)
+    }
 
     const brand = props.brand ?? "QUBIT_API"
     const nav = props.nav?.length
@@ -603,7 +700,7 @@ console.log(\`Deployed to \${deployment.url}\`);`
             <div className="flex h-16 items-center justify-between">
               <button
                 type="button"
-                onClick={() => go(nav[0])}
+                onClick={() => trackAndGo("Home", "navigation", nav[0])}
                 className="flex items-center gap-3"
               >
                 <BrandMark className="size-8" />
@@ -616,7 +713,7 @@ console.log(\`Deployed to \${deployment.url}\`);`
                   <button
                     key={label}
                     type="button"
-                    onClick={() => go(label)}
+                    onClick={() => trackAndGo(label, "navigation", label)}
                     className="font-mono text-sm text-background/80 transition-colors hover:text-primary"
                   >
                     {label}
@@ -626,14 +723,74 @@ console.log(\`Deployed to \${deployment.url}\`);`
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go("LOGIN")}
-                  className="hidden font-mono text-sm text-background/80 transition-colors hover:text-primary sm:block"
+                  aria-label="Open request queue"
+                  onClick={() => setRequestDrawerOpen((v: boolean) => !v)}
+                  className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-background/30 text-background/80 transition-colors hover:border-primary hover:text-primary"
                 >
-                  LOGIN
+                  <svg
+                    className="size-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <line x1="4" y1="12" x2="20" y2="12" />
+                    <polyline points="8 8 4 12 8 16" />
+                    <polyline points="16 8 20 12 16 16" />
+                  </svg>
+                  {queueTotal > 0 ? (
+                    <span className="absolute -right-1.5 -top-1.5 grid size-4 place-items-center rounded-full bg-primary text-[0.6rem] font-bold text-primary-foreground">
+                      {queueTotal}
+                    </span>
+                  ) : null}
                 </button>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden items-center rounded-full border border-background/30 px-3 py-2 text-xs font-semibold text-background/90 transition-colors hover:text-primary sm:inline-flex"
+                      >
+                        {authDisplayName}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      className="w-64 border-border bg-background p-4 text-sm"
+                    >
+                      <p className="mb-2 text-foreground">Account</p>
+                      <p className="mb-3 max-w-[16rem] truncate text-xs text-muted-foreground">
+                        {authEmail ?? "Signed in to this session"}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="w-full rounded-md border border-border bg-foreground px-3 py-2 font-semibold text-background transition-colors hover:bg-foreground/90"
+                      >
+                        Sign out
+                      </button>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    className="hidden font-mono text-sm text-background/80 transition-colors hover:text-primary sm:block"
+                  >
+                    {authLabel}
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={() => go("GET API KEY")}
+                  onClick={() => {
+                    trackAction("GET API KEY", "header")
+                    go("GET API KEY")
+                  }}
                   className="bg-primary px-4 py-2 font-mono text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   GET API KEY
@@ -682,14 +839,20 @@ console.log(\`Deployed to \${deployment.url}\`);`
                   <div className="mb-12 flex flex-wrap gap-4">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                    onClick={() => {
+                      trackAction(heroPrimary, "hero")
+                      go(heroPrimary)
+                    }}
                       className="bg-primary px-8 py-4 font-mono font-bold text-primary-foreground transition-colors hover:bg-primary/90"
                     >
                       {heroPrimary}
                     </button>
                     <button
                       type="button"
-                      onClick={() => go(heroSecondary)}
+                    onClick={() => {
+                      trackAction(heroSecondary, "hero")
+                      go(heroSecondary)
+                    }}
                       className="border-2 border-background/30 px-8 py-4 font-mono font-bold transition-colors hover:border-primary hover:text-primary"
                     >
                       {heroSecondary}
@@ -739,7 +902,7 @@ console.log(\`Deployed to \${deployment.url}\`);`
                   <button
                     key={company}
                     type="button"
-                    onClick={() => go(company)}
+                    onClick={() => trackAndGo(company, "trusted-by", company)}
                     className="font-mono text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {company}
@@ -965,7 +1128,7 @@ console.log(\`Deployed to \${deployment.url}\`);`
                   >
                     <button
                       type="button"
-                      onClick={() => go(item.title)}
+                    onClick={() => trackAndGo(item.title, "gallery", item.title)}
                       className="block w-full"
                     >
                       <Image
@@ -1096,7 +1259,10 @@ console.log(\`Deployed to \${deployment.url}\`);`
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(tier.cta)}
+                    onClick={() => {
+                      trackAction(tier.cta, "pricing")
+                      go(tier.cta)
+                    }}
                       className={cn(
                         "block w-full py-3 font-mono font-bold transition-colors",
                         tier.featured
@@ -1119,7 +1285,7 @@ console.log(\`Deployed to \${deployment.url}\`);`
                   </div>
                   <button
                     type="button"
-                    onClick={() => go(helpCta)}
+                    onClick={() => trackAndGo(helpCta, "pricing", helpCta)}
                     className="bg-foreground px-6 py-3 font-mono font-bold text-background transition-colors hover:bg-foreground/90"
                   >
                     {helpCta}
@@ -1154,7 +1320,7 @@ console.log(\`Deployed to \${deployment.url}\`);`
                   <button
                     key={fw}
                     type="button"
-                    onClick={() => go(fw)}
+                    onClick={() => trackAndGo(fw, "integrations", fw)}
                     className="flex h-24 items-center justify-center border-2 border-border bg-background p-4 font-mono font-bold transition-colors hover:border-primary"
                   >
                     {fw}
@@ -1274,14 +1440,20 @@ console.log(\`Deployed to \${deployment.url}\`);`
               <div className="flex flex-wrap justify-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={() => {
+                    trackAction(ctaPrimary, "cta")
+                    go(ctaPrimary)
+                  }}
                   className="bg-primary px-8 py-4 font-mono font-bold text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   {ctaPrimary}
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(ctaSecondary)}
+                  onClick={() => {
+                    trackAction(ctaSecondary, "cta")
+                    go(ctaSecondary)
+                  }}
                   className="border-2 border-background/30 px-8 py-4 font-mono font-bold transition-colors hover:border-primary hover:text-primary"
                 >
                   {ctaSecondary}
@@ -1294,6 +1466,87 @@ console.log(\`Deployed to \${deployment.url}\`);`
           </section>
         </main>
 
+        <Sheet open={requestDrawerOpen} onOpenChange={setRequestDrawerOpen}>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="font-mono text-lg text-foreground">
+                Action Queue
+              </SheetTitle>
+              <SheetDescription>
+                {queueTotal
+                  ? `${queueTotal} action${queueTotal === 1 ? "" : "s"} queued`
+                  : "No actions captured yet."}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 space-y-3 overflow-y-auto p-6">
+              {queueRows.length ? (
+                queueRows.map((row) => (
+                  <div
+                    key={row.id}
+                    className="border border-border p-4"
+                  >
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <p className="font-mono text-sm font-bold text-foreground">
+                        {row.label}
+                      </p>
+                      <span className="shrink-0 rounded-full bg-muted px-2 py-1 text-xs font-bold text-foreground">
+                        {row.count}x
+                      </span>
+                    </div>
+                    <p className="mb-3 text-xs text-muted-foreground">
+                      Source: {row.source}
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRequestDrawerOpen(false)
+                          go(row.label)
+                        }}
+                        className="rounded-md border border-border px-2 py-1 text-xs transition-colors hover:bg-muted"
+                      >
+                        Open
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void removeRequest(row.id)}
+                        className="rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1 text-xs text-destructive transition-colors hover:bg-destructive/20"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="flex min-h-48 items-center justify-center rounded-md border border-border bg-muted/40 px-4 text-center text-sm text-muted-foreground">
+                  Start by tracking a CTA above to begin building your session queue.
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <p className="mb-3 text-xs text-muted-foreground">
+                Total items tracked: {queueRows.length}
+              </p>
+              <button
+                type="button"
+                onClick={() => void clearQueue()}
+                disabled={!queueRows.length}
+                className="w-full rounded-md border border-border bg-foreground px-4 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-50"
+              >
+                Clear queue
+              </button>
+              <SheetClose asChild>
+                <button
+                  type="button"
+                  className="mt-2 w-full rounded-md border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                >
+                  Continue
+                </button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+
         {/* Footer */}
         <footer
           className="border-t-4 border-primary bg-foreground py-12 text-muted-foreground"
@@ -1304,7 +1557,7 @@ console.log(\`Deployed to \${deployment.url}\`);`
               <div className="lg:col-span-2">
                 <button
                   type="button"
-                  onClick={() => go(nav[0])}
+                  onClick={() => trackAndGo("Home", "footer", nav[0])}
                   className="mb-4 flex items-center gap-3"
                 >
                   <BrandMark className="size-8" />
@@ -1317,7 +1570,7 @@ console.log(\`Deployed to \${deployment.url}\`);`
                   {/* GitHub */}
                   <button
                     type="button"
-                    onClick={() => go("GitHub")}
+                    onClick={() => trackAndGo("GitHub", "social", "GitHub")}
                     className="text-muted-foreground transition-colors hover:text-primary"
                     aria-label="GitHub"
                   >
@@ -1332,7 +1585,7 @@ console.log(\`Deployed to \${deployment.url}\`);`
                   {/* Twitter */}
                   <button
                     type="button"
-                    onClick={() => go("Twitter")}
+                    onClick={() => trackAndGo("Twitter", "social", "Twitter")}
                     className="text-muted-foreground transition-colors hover:text-primary"
                     aria-label="Twitter"
                   >
@@ -1347,7 +1600,7 @@ console.log(\`Deployed to \${deployment.url}\`);`
                   {/* LinkedIn */}
                   <button
                     type="button"
-                    onClick={() => go("LinkedIn")}
+                    onClick={() => trackAndGo("LinkedIn", "social", "LinkedIn")}
                     className="text-muted-foreground transition-colors hover:text-primary"
                     aria-label="LinkedIn"
                   >
@@ -1371,7 +1624,7 @@ console.log(\`Deployed to \${deployment.url}\`);`
                       <li key={link}>
                         <button
                           type="button"
-                          onClick={() => go(link)}
+                          onClick={() => trackAndGo(link, "footer-links", link)}
                           className="text-muted-foreground transition-colors hover:text-primary"
                         >
                           {link}
@@ -1391,7 +1644,7 @@ console.log(\`Deployed to \${deployment.url}\`);`
                   <button
                     key={link}
                     type="button"
-                    onClick={() => go(link)}
+                    onClick={() => trackAndGo(link, "legal", link)}
                     className="text-muted-foreground transition-colors hover:text-primary"
                   >
                     {link}

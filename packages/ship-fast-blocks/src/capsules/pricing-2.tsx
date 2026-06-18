@@ -1,8 +1,27 @@
+import { useState } from 'react'
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const PricingKimiPage2 = defineCapsule({
   name: "PricingKimiPage2",
@@ -43,8 +62,49 @@ export const PricingKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      plans: table({
+        name: string(),
+        price: string(),
+        features: string(),
+        popular: string(),
+      }),
+      selectedPlans: table({
+        planName: string(),
+      }),
+    },
+    queries: {
+      plans: ({ db }) => db.plans.orderBy('createdAt').all(),
+      selectedPlanNames: ({ db }) =>
+        new Set(db.selectedPlans.all().map((selected) => selected.planName)),
+    },
+    mutations: {
+      selectPlan: ({ db }, planName: string) => {
+        const existingSelection = db.selectedPlans
+          .where('planName', planName)
+          .all()[0]
+
+        if (existingSelection) {
+          db.selectedPlans.delete(existingSelection.id)
+          return false
+        }
+
+        db.selectedPlans.insert({ planName })
+        return true
+      },
+      clearSelections: ({ db }) => {
+        for (const item of db.selectedPlans.all()) {
+          db.selectedPlans.delete(item.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [plansOpen, setPlansOpen] = useState(false)
+    const [mobileOpen, setMobileOpen] = useState(false)
     const brand = props.brand ?? "NebulaVault Pricing Cloud Storage That Scales With You"
     const nav = props.nav?.length ? props.nav : ["NebulaVault", "Features", "Pricing", "FAQ", "Docs", "Log in"]
     const hero = {
@@ -134,6 +194,90 @@ export const PricingKimiPage2 = defineCapsule({
   }
 ]
 
+    const staticPlans = [
+      {
+        name: 'Starter',
+        price: '$9/mo',
+        features: '5GB storage, 2 team members, Basic support',
+        popular: '',
+      },
+      {
+        name: 'Professional',
+        price: '$29/mo',
+        features: '50GB storage, 10 team members, Priority support',
+        popular: 'Popular',
+      },
+      {
+        name: 'Enterprise',
+        price: '$99/mo',
+        features: 'Unlimited storage, Unlimited team members, 24/7 support',
+        popular: '',
+      },
+    ]
+
+    const storedPlans = lakebed.useQuery('plans')
+    const selectedPlanNames = lakebed.useQuery('selectedPlanNames')
+    const selectPlan = lakebed.useMutation('selectPlan')
+    const clearSelections = lakebed.useMutation('clearSelections')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const displayPlans = storedPlans && storedPlans.length > 0 ? storedPlans : staticPlans
+    const selectedCount = selectedPlanNames?.size ?? 0
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const CheckIcon = () => (
+      <svg
+        className="size-5 text-primary"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    )
+
     return (
       <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
@@ -153,14 +297,297 @@ export const PricingKimiPage2 = defineCapsule({
                 </button>
               ))}
             </nav>
-            <button
-              type="button"
-              onClick={() => go(hero.primaryCta)}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {hero.primaryCta}
-            </button>
+            <div className="flex items-center gap-3">
+              <Sheet open={plansOpen} onOpenChange={setPlansOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                    {selectedCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {selectedCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Selected Plans</SheetTitle>
+                    <SheetDescription>
+                      {selectedCount > 0
+                        ? `${selectedCount} plan${selectedCount === 1 ? '' : 's'} selected for comparison.`
+                        : 'No plans selected yet.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {selectedCount > 0 ? (
+                      <div className="space-y-4">
+                        {displayPlans
+                          .filter((plan) => selectedPlanNames?.has(plan.name))
+                          .map((plan) => (
+                            <div
+                              key={plan.name}
+                              className="rounded-lg border border-border bg-card p-4"
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-card-foreground">{plan.name}</h3>
+                                  <p className="text-sm font-bold text-primary">{plan.price}</p>
+                                  <p className="mt-2 text-sm text-muted-foreground">{plan.features}</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => void selectPlan(plan.name)}
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No plans selected
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Select plans from the Features section to compare them side by side.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full rounded-full"
+                      onClick={() => void clearSelections()}
+                      disabled={!selectedCount}
+                    >
+                      Clear All
+                    </Button>
+                    <SheetClose asChild>
+                      <Button type="button" className="w-full rounded-full">
+                        Continue
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Billing')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Billing
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => go(hero.primaryCta)}
+                className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                {hero.primaryCta}
+              </button>
+              <button
+                type="button"
+                aria-label="Open menu"
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-menu"
+                onClick={() => setMobileOpen((v: boolean) => !v)}
+                className="p-2 text-muted-foreground hover:text-foreground lg:hidden"
+              >
+                <svg
+                  className="size-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              </button>
+            </div>
           </div>
+          {mobileOpen && (
+            <div
+              id="mobile-menu"
+              className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
+            >
+              {nav.map((label) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    go(label)
+                  }}
+                  className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                >
+                  {label}
+                </button>
+              ))}
+              <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                {isSignedIn ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar size="lg">
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-foreground">
+                          {authDisplayName}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {authEmail ?? 'Signed in'}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignOut()
+                      }}
+                      className="w-full rounded-full"
+                    >
+                      Sign out
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      handleSignIn()
+                    }}
+                    disabled={auth.isLoading}
+                    className="w-full rounded-full"
+                  >
+                    <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    {authLabel}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </header>
 
         <main>
@@ -207,6 +634,60 @@ export const PricingKimiPage2 = defineCapsule({
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
               </div>
             ))}
+          </section>
+
+          <section className="mx-auto max-w-7xl px-5 py-16">
+            <div className="mb-8 text-center">
+              <p className="text-sm font-medium text-primary">Pricing Plans</p>
+              <h2 className="mt-2 text-3xl font-semibold tracking-tight">Choose your plan</h2>
+            </div>
+            <div className="grid gap-6 md:grid-cols-3">
+              {displayPlans.map((plan) => {
+                const isSelected = selectedPlanNames?.has(plan.name) ?? false
+                return (
+                  <article
+                    key={plan.name}
+                    className={cn(
+                      'relative rounded-lg border border-border bg-card p-6 transition-shadow',
+                      plan.popular ? 'ring-2 ring-primary' : '',
+                      isSelected ? 'ring-2 ring-primary' : '',
+                    )}
+                  >
+                    {plan.popular ? (
+                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+                        {plan.popular}
+                      </span>
+                    ) : null}
+                    <h3 className="text-xl font-semibold text-card-foreground">{plan.name}</h3>
+                    <p className="mt-2 text-3xl font-bold text-primary">{plan.price}</p>
+                    <p className="mt-4 text-sm leading-6 text-muted-foreground">{plan.features}</p>
+                    <Button
+                      type="button"
+                      className={cn(
+                        'mt-6 w-full rounded-full',
+                        isSelected ? 'bg-primary' : '',
+                      )}
+                      variant={isSelected ? 'default' : 'outline'}
+                      onClick={() => {
+                        void selectPlan(plan.name)
+                        if (!isSelected) {
+                          setPlansOpen(true)
+                        }
+                      }}
+                    >
+                      {isSelected ? (
+                        <>
+                          <CheckIcon />
+                          <span className="ml-2">Selected</span>
+                        </>
+                      ) : (
+                        'Select Plan'
+                      )}
+                    </Button>
+                  </article>
+                )
+              })}
+            </div>
           </section>
 
           <section className="border-y border-border bg-muted/40">

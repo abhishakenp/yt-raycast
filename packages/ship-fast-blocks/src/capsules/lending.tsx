@@ -1,8 +1,62 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
+
+const parseCurrencyValue = (value: string) => {
+  const normalized = value.replace(/[^0-9.-]/g, "")
+  const numberValue = Number.parseFloat(normalized)
+  return Number.isFinite(numberValue) ? numberValue : 0
+}
+
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    style: "currency",
+  }).format(Math.max(0, value))
+
+const parseTermToMonths = (term: string) => {
+  const parsed = Number.parseInt(term.replace(/[^0-9]/g, ""), 10)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 36
+}
+
+const estimateApr = (scoreLabel: string) => {
+  if (scoreLabel.toLowerCase().includes("excellent")) return 6.99
+  if (scoreLabel.toLowerCase().includes("good")) return 8.99
+  if (scoreLabel.toLowerCase().includes("fair")) return 12.99
+  return 16.99
+}
+
+const estimateMonthlyPayment = (
+  amount: number,
+  apr: number,
+  months: number,
+) => {
+  const principal = Math.max(100, amount)
+  const rate = Math.max(0, apr) / 12 / 100
+  if (months <= 0) return 0
+  if (rate === 0) return principal / months
+
+  return (principal * rate) / (1 - Math.pow(1 + rate, -months))
+}
 
 /**
  * LendingKimiPage — a complete, self-contained personal-LENDING / loan marketing page.
@@ -26,6 +80,64 @@ export const LendingKimiPage = defineCapsule({
   name: "LendingKimiPage",
   description:
     "Complete personal-LENDING / loan marketing landing page with a calm, trustworthy fintech aesthetic: warm neutral canvas, clean white cards, a single near-ink brand color, and conversion-focused copy. Includes a split hero (transparent-rate headline, trust pills, dual CTAs) beside a live loan-calculator card (amount, credit score, term, est. APR & monthly payment), a press/'featured in' logos strip, a 6-up benefits grid (funds in 24h, no hidden fees, fixed rates, paperless, human support, soft credit check), a 3-step 'how it works' flow, an interactive personalized rate calculator with an estimated-offer summary, a transparent rates & fees band ($0 origination, $0 prepayment) with a sample APR payment-schedule table, a stats/about split with a photo and floating 5-star review card, a 3-up borrower-testimonials grid, an accordion FAQ, a dark 'ready to check your rate?' CTA band with security badges, and a multi-column footer with legal disclosures. Use as the ROOT/home page for personal-loan lenders, lending marketplaces, debt-consolidation services, fintech credit products, BNPL or financing brands, or any 'apply for a loan / check your rate' product when a clean, transparent, trust-building, APR-and-calculator-driven page is wanted. Supply content only — brand, nav, hero, calculator, logos, benefits, steps, rates, stats, testimonials, faq, cta, footer; the block owns all layout and styling.",
+  lakebed: {
+    schema: {
+      loanLeads: table({
+        source: string(),
+        borrowerName: string(),
+        email: string(),
+        amount: number(),
+        purpose: string(),
+        term: string(),
+        creditBand: string(),
+        estimatedApr: string(),
+        estimatedMonthlyPayment: string(),
+      }),
+    },
+    queries: {
+      loanLeads: ({ db }) => db.loanLeads.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addLoanLead: (
+        { db },
+        source: string,
+        borrowerName: string,
+        email: string,
+        amount: number,
+        purpose: string,
+        term: string,
+        creditBand: string,
+        estimatedApr: string,
+        estimatedMonthlyPayment: string,
+      ) => {
+        db.loanLeads.insert({
+          source,
+          borrowerName,
+          email,
+          amount,
+          purpose,
+          term,
+          creditBand,
+          estimatedApr,
+          estimatedMonthlyPayment,
+        })
+
+        return db.loanLeads.all()
+      },
+      removeLoanLead: ({ db }, id: string) => {
+        db.loanLeads.delete(id)
+
+        return db.loanLeads.all()
+      },
+      clearLoanLeads: ({ db }) => {
+        for (const lead of db.loanLeads.all()) {
+          db.loanLeads.delete(lead.id)
+        }
+
+        return []
+      },
+    },
+  },
   props: z.object({
     /** Brand / lender name shown in navbar, CTAs and footer. */
     brand: z.string().optional(),
@@ -208,8 +320,44 @@ export const LendingKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [leadDrawerOpen, setLeadDrawerOpen] = useState(false)
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email || ""
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Guest"
+    const authInitials = authDisplayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "ME"
+    const authPicture = auth.picture || auth.user?.picture
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+    const loanLeads = lakebed.useQuery("loanLeads")
+    const addLoanLead = lakebed.useMutation("addLoanLead")
+    const removeLoanLead = lakebed.useMutation("removeLoanLead")
+    const clearLoanLeads = lakebed.useMutation("clearLoanLeads")
+    const storedLeads = loanLeads ?? []
+    const leadCount = storedLeads.length
+    const leadSubtotal = storedLeads.reduce(
+      (total, lead) => total + (Number.isFinite(lead.amount) ? lead.amount : 0),
+      0,
+    )
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
     const brand = props.brand ?? "ClearLoan"
     const nav = props.nav?.length
       ? props.nav
@@ -245,10 +393,31 @@ export const LendingKimiPage = defineCapsule({
       ? props.hero.terms
       : ["36 mo", "48 mo", "60 mo"]
     const heroAprLabel = props.hero?.aprLabel ?? "Est. APR"
-    const heroAprValue = props.hero?.aprValue ?? "11.49%"
     const heroPaymentLabel = props.hero?.paymentLabel ?? "Monthly Payment"
-    const heroPaymentValue = props.hero?.paymentValue ?? "$389"
     const heroCardCta = props.hero?.cardCta ?? "Get My Personalized Rate"
+    const [heroAmount, setHeroAmount] = useState(
+      () => parseCurrencyValue(heroAmountValue) || 15000,
+    )
+    const [heroTerm, setHeroTerm] = useState(
+      heroTerms.includes("48 mo") ? "48 mo" : heroTerms[0] ?? "36 mo",
+    )
+    const [heroScore, setHeroScore] = useState(
+      heroScoreOptions[2] ?? heroScoreOptions[0] ?? "Average (600-649)",
+    )
+
+    const heroApr = Math.max(
+      0,
+      Number.parseFloat(estimateApr(heroScore).toFixed(2)),
+    )
+    const heroMonthlyPayment = estimateMonthlyPayment(
+      heroAmount,
+      heroApr,
+      parseTermToMonths(heroTerm),
+    )
+    const heroAprLabelValue = `${heroApr.toFixed(2)}%`
+    const heroPaymentLabelValue = `${formatCurrency(heroMonthlyPayment)}`
+
+    const heroLeadSource = `${heroPrimary} / Hero`
 
     const logosCaption =
       props.logos?.caption ?? "Featured in and trusted by over 250,000 borrowers"
@@ -333,6 +502,14 @@ export const LendingKimiPage = defineCapsule({
     const calcAmountValue = props.calculator?.amountValue ?? "20,000"
     const calcAmountMin = props.calculator?.amountMin ?? "$1,000"
     const calcAmountMax = props.calculator?.amountMax ?? "$50,000"
+    const calcAmountMinNumber = Math.max(
+      0,
+      Math.round(parseCurrencyValue(calcAmountMin)),
+    )
+    const calcAmountMaxNumber = Math.max(
+      calcAmountMinNumber,
+      Math.round(parseCurrencyValue(calcAmountMax)) || 50000,
+    )
     const calcPurposeLabel = props.calculator?.purposeLabel ?? "Loan Purpose"
     const calcPurposes = props.calculator?.purposes?.length
       ? props.calculator.purposes
@@ -364,7 +541,6 @@ export const LendingKimiPage = defineCapsule({
     const calcOfferTitle = props.calculator?.offerTitle ?? "Estimated Offer"
     const calcPaymentLabel =
       props.calculator?.paymentLabel ?? "Monthly Payment"
-    const calcPaymentValue = props.calculator?.paymentValue ?? "$478"
     const calcPaymentNote =
       props.calculator?.paymentNote ?? "per month for 48 months"
     const calcSummary = props.calculator?.summary?.length
@@ -378,6 +554,93 @@ export const LendingKimiPage = defineCapsule({
     const calcCta = props.calculator?.cta ?? "Get My Real Rate"
     const calcCtaNote =
       props.calculator?.ctaNote ?? "Checking won't affect your credit score"
+    const [calcAmount, setCalcAmount] = useState(
+      () => {
+        const initialAmount = parseCurrencyValue(calcAmountValue) || 20000
+        return Math.min(
+          Math.max(initialAmount, calcAmountMinNumber || 0),
+          calcAmountMaxNumber || 50000,
+        )
+      },
+    )
+    const [calcPurpose, setCalcPurpose] = useState(
+      calcPurposes[0] ?? "General financing",
+    )
+    const [calcTerm, setCalcTerm] = useState(
+      calcTerms.includes("48 mo")
+        ? "48 mo"
+        : (calcTermValue as string) ||
+            calcTerms[0] ||
+            "36 mo",
+    )
+    const [calcScoreIndex, setCalcScoreIndex] = useState(
+      Math.min(Math.max(calcScores.findIndex((item) => item.tier === "Excellent"), 0), 3),
+    )
+    const selectedCalcScore = calcScores[calcScoreIndex] ?? calcScores[0]
+    const calcApr = estimateApr(selectedCalcScore?.tier ?? "Average")
+    const calcTermMonths = parseTermToMonths(calcTerm)
+    const calcMonthlyPayment = estimateMonthlyPayment(
+      calcAmount,
+      calcApr,
+      calcTermMonths,
+    )
+    const calcSummaryRows = [
+      { label: calcSummary[0]?.label ?? "Loan Amount", value: formatCurrency(calcAmount) },
+      {
+        label: calcSummary[1]?.label ?? "Est. APR",
+        value: `${calcApr.toFixed(2)}%`,
+      },
+      { label: calcSummary[2]?.label ?? "Origination Fee", value: calcSummary[2]?.value ?? "$0" },
+      {
+        label: calcSummary[3]?.label ?? "Total Interest",
+        value: formatCurrency(calcMonthlyPayment * calcTermMonths - calcAmount),
+      },
+    ]
+    const calcPaymentValueDisplay = formatCurrency(calcMonthlyPayment)
+    const openLeadFromCalculator = (source: string) => {
+      void addLoanLead(
+        source,
+        authDisplayName,
+        authEmail,
+        calcAmount,
+        calcPurpose,
+        calcTerm,
+        `${selectedCalcScore?.tier ?? "Average"} (${selectedCalcScore?.range ?? "600-649"})`,
+        `${calcApr.toFixed(2)}%`,
+        calcPaymentValueDisplay,
+      )
+      setLeadDrawerOpen(true)
+    }
+    const openLeadFromHero = () => {
+      void addLoanLead(
+        heroLeadSource,
+        authDisplayName,
+        authEmail,
+        heroAmount,
+        calcPurpose,
+        heroTerm,
+        heroScore,
+        `${heroApr.toFixed(2)}%`,
+        heroPaymentLabelValue,
+      )
+      setLeadDrawerOpen(true)
+    }
+    const handlePrimaryLeadAction = () => {
+      openLeadFromHero()
+      go(heroPrimary)
+    }
+    const handleRateCardLeadAction = () => {
+      openLeadFromHero()
+      go(heroCardCta)
+    }
+    const handleCalcLeadAction = () => {
+      openLeadFromCalculator(calcCta)
+      go(calcCta)
+    }
+    const handleCallToActionLead = () => {
+      openLeadFromCalculator(ctaPrimary)
+      go(ctaPrimary)
+    }
 
     const ratesHeading = props.rates?.heading ?? "Transparent rates & terms"
     const ratesDesc =
@@ -691,24 +954,192 @@ export const LendingKimiPage = defineCapsule({
                 ))}
               </div>
               <div className="flex items-center gap-4">
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="hidden items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+                      >
+                        <Avatar size="sm" className="size-6" aria-hidden="true">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="max-w-24 truncate">{authDisplayName}</span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-64 rounded-xl border-border bg-background p-3 shadow-xl"
+                    >
+                      <p className="mb-3 text-xs text-muted-foreground">
+                        Signed in as
+                      </p>
+                      <p className="mb-4 truncate text-sm font-semibold text-foreground">
+                        {authDisplayName}
+                      </p>
+                      <div className="space-y-2">
+                        <button
+                          type="button"
+                          onClick={() => go("Account")}
+                          className="w-full rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-muted"
+                        >
+                          Account
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="w-full rounded-lg bg-foreground px-3 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
+                  >
+                    {authLabel}
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={() => go("Sign In")}
-                  className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
+                  onClick={handlePrimaryLeadAction}
+                  className="relative rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
-                  Sign In
+                  Apply Now
+                  {leadCount > 0 ? (
+                    <span className="absolute -right-2 -top-2 grid min-w-5 place-items-center rounded-full bg-background px-1.5 py-0.5 text-[0.65rem] font-bold text-foreground">
+                      {leadCount}
+                    </span>
+                  ) : null}
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(heroPrimary)}
-                  className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  aria-label="Open saved applications"
+                  onClick={() => setLeadDrawerOpen(true)}
+                  className="hidden h-9 w-9 items-center justify-center rounded-full border border-border text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:flex"
                 >
-                  Apply Now
+                  {leadCount || "0"}
                 </button>
               </div>
             </div>
           </nav>
         </header>
+
+        <Sheet open={leadDrawerOpen} onOpenChange={setLeadDrawerOpen}>
+          <SheetContent
+            side="right"
+            className="w-full gap-0 p-0 sm:max-w-md"
+          >
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-left">
+                Saved loan applications
+              </SheetTitle>
+              <SheetDescription>
+                Review your generated application drafts before continuing.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex flex-1 flex-col overflow-y-auto px-6 py-5">
+              {storedLeads.length ? (
+                <div className="space-y-4">
+                  {storedLeads.map((lead) => (
+                    <div
+                      key={lead.id}
+                      className="rounded-xl border border-border bg-muted p-4"
+                    >
+                      <div className="mb-2 flex items-start justify-between gap-4">
+                        <p className="text-sm font-semibold text-foreground">
+                          {lead.borrowerName || authDisplayName}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void removeLoanLead(lead.id)
+                          }}
+                          className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <p className="mb-3 text-sm text-muted-foreground">
+                        {lead.purpose} · {lead.term} · {lead.creditBand}
+                      </p>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {formatCurrency(
+                            Number.isFinite(lead.amount)
+                              ? lead.amount
+                              : parseCurrencyValue(`${lead.amount}`),
+                          )}
+                        </span>
+                        <span className="font-medium">{lead.estimatedMonthlyPayment}</span>
+                      </div>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        APR {lead.estimatedApr} · from {lead.source}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex min-h-40 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 p-6 text-center">
+                  <p className="text-sm font-semibold text-foreground">
+                    No saved applications yet
+                  </p>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Add a quick rate estimate from any calculator CTA.
+                  </p>
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Draft count</span>
+                  <span className="font-semibold text-foreground">
+                    {leadCount}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Total requested</span>
+                  <span className="font-semibold text-foreground">
+                    {formatCurrency(leadSubtotal)}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void clearLoanLeads()
+                  }}
+                  disabled={!storedLeads.length}
+                  className="w-full rounded-lg bg-foreground px-4 py-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-50"
+                >
+                  Clear all drafts
+                </button>
+                <SheetClose asChild>
+                  <button
+                    type="button"
+                    className="w-full rounded-lg bg-muted px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/70"
+                  >
+                    Continue browsing
+                  </button>
+                </SheetClose>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
 
         <main>
           {/* Hero */}
@@ -728,7 +1159,7 @@ export const LendingKimiPage = defineCapsule({
                   <div className="mt-8 flex flex-wrap items-center gap-4">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={handlePrimaryLeadAction}
                       className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                     >
                       {heroPrimary}
@@ -803,7 +1234,12 @@ export const LendingKimiPage = defineCapsule({
                           </span>
                           <input
                             type="number"
-                            defaultValue={heroAmountValue}
+                            value={heroAmount}
+                            onChange={(event) =>
+                              setHeroAmount(
+                                parseCurrencyValue(event.target.value) || 0,
+                              )
+                            }
                             className={cn(inputCls, "pl-8")}
                           />
                         </div>
@@ -813,7 +1249,8 @@ export const LendingKimiPage = defineCapsule({
                           {heroScoreLabel}
                         </label>
                         <select
-                          defaultValue={heroScoreOptions[2]}
+                          value={heroScore}
+                          onChange={(event) => setHeroScore(event.target.value)}
                           className={cn(inputCls, "appearance-none")}
                         >
                           {heroScoreOptions.map((opt) => (
@@ -832,10 +1269,13 @@ export const LendingKimiPage = defineCapsule({
                             <button
                               key={term}
                               type="button"
-                              onClick={() => go(`${heroTermLabel}: ${term}`)}
+                              onClick={() => {
+                                setHeroTerm(term)
+                                go(`${heroTermLabel}: ${term}`)
+                              }}
                               className={cn(
                                 "rounded-lg px-4 py-3 text-sm font-medium transition-colors",
-                                i === 1
+                                heroTerm === term
                                   ? "border-2 border-primary bg-muted text-foreground"
                                   : "border border-border text-muted-foreground hover:border-primary hover:text-foreground",
                               )}
@@ -851,7 +1291,7 @@ export const LendingKimiPage = defineCapsule({
                             {heroAprLabel}
                           </span>
                           <span className="text-lg font-semibold text-foreground">
-                            {heroAprValue}
+                            {heroAprLabelValue}
                           </span>
                         </div>
                         <div className="flex items-baseline justify-between">
@@ -859,13 +1299,13 @@ export const LendingKimiPage = defineCapsule({
                             {heroPaymentLabel}
                           </span>
                           <span className="text-3xl font-semibold text-foreground">
-                            {heroPaymentValue}
+                            {heroPaymentLabelValue}
                           </span>
                         </div>
                       </div>
                       <button
                         type="button"
-                        onClick={() => go(heroCardCta)}
+                        onClick={handleRateCardLeadAction}
                         className="w-full rounded-xl bg-primary py-4 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                       >
                         {heroCardCta}
@@ -1032,15 +1472,26 @@ export const LendingKimiPage = defineCapsule({
                           <div className="mb-3 flex justify-between text-sm font-medium text-foreground">
                             <span>{calcAmountLabel}</span>
                             <span className="font-semibold text-foreground">
-                              ${calcAmountValue}
+                              {formatCurrency(calcAmount)}
                             </span>
                           </div>
                           <input
                             type="range"
-                            min={1000}
-                            max={50000}
+                            min={calcAmountMinNumber}
+                            max={calcAmountMaxNumber}
                             step={500}
-                            defaultValue={20000}
+                            value={calcAmount}
+                            onChange={(event) =>
+                              setCalcAmount(
+                                Math.min(
+                                  calcAmountMaxNumber,
+                                  Math.max(
+                                    calcAmountMinNumber,
+                                    Number.parseInt(event.target.value, 10) || 0,
+                                  ),
+                                ),
+                              )
+                            }
                             aria-label={calcAmountLabel}
                             className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-muted accent-primary"
                           />
@@ -1054,6 +1505,8 @@ export const LendingKimiPage = defineCapsule({
                             {calcPurposeLabel}
                           </label>
                           <select
+                            value={calcPurpose}
+                            onChange={(event) => setCalcPurpose(event.target.value)}
                             className={cn(inputCls, "appearance-none font-normal")}
                           >
                             {calcPurposes.map((p) => (
@@ -1067,7 +1520,7 @@ export const LendingKimiPage = defineCapsule({
                           <div className="mb-3 flex justify-between text-sm font-medium text-foreground">
                             <span>{calcTermLabel}</span>
                             <span className="font-semibold text-foreground">
-                              {calcTermValue}
+                              {calcTerm}
                             </span>
                           </div>
                           <div className="grid grid-cols-3 gap-3">
@@ -1075,10 +1528,13 @@ export const LendingKimiPage = defineCapsule({
                               <button
                                 key={term}
                                 type="button"
-                                onClick={() => go(`${calcTermLabel}: ${term}`)}
+                                onClick={() => {
+                                  setCalcTerm(term)
+                                  go(`${calcTermLabel}: ${term}`)
+                                }}
                                 className={cn(
                                   "rounded-lg px-4 py-3 text-sm font-medium transition-colors",
-                                  i === 1
+                                  calcTerm === term
                                     ? "border-2 border-primary bg-muted text-foreground"
                                     : "border border-border text-muted-foreground hover:border-primary hover:text-foreground",
                                 )}
@@ -1097,10 +1553,13 @@ export const LendingKimiPage = defineCapsule({
                               <button
                                 key={s.tier}
                                 type="button"
-                                onClick={() => go(`Credit: ${s.tier}`)}
+                                onClick={() => {
+                                  setCalcScoreIndex(i)
+                                  go(`Credit: ${s.tier}`)
+                                }}
                                 className={cn(
                                   "rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors",
-                                  i === 0
+                                  calcScoreIndex === i
                                     ? "border-2 border-primary bg-muted text-foreground"
                                     : "border border-border text-muted-foreground hover:border-primary hover:text-foreground",
                                 )}
@@ -1125,19 +1584,19 @@ export const LendingKimiPage = defineCapsule({
                             {calcPaymentLabel}
                           </div>
                           <div className="text-4xl font-bold text-card-foreground">
-                            {calcPaymentValue}
+                            {calcPaymentValueDisplay}
                           </div>
                           <div className="mt-1 text-sm text-muted-foreground">
                             {calcPaymentNote}
                           </div>
                         </div>
                         <div className="space-y-3">
-                          {calcSummary.map((row, i) => (
+                          {calcSummaryRows.map((row, i) => (
                             <div
                               key={row.label}
                               className={cn(
                                 "flex justify-between py-2",
-                                i < calcSummary.length - 1 &&
+                                i < calcSummaryRows.length - 1 &&
                                   "border-b border-border",
                               )}
                             >
@@ -1160,7 +1619,7 @@ export const LendingKimiPage = defineCapsule({
                         <div className="pt-4">
                           <button
                             type="button"
-                            onClick={() => go(calcCta)}
+                            onClick={handleCalcLeadAction}
                             className="w-full rounded-xl bg-primary py-4 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                           >
                             {calcCta}
@@ -1443,7 +1902,7 @@ export const LendingKimiPage = defineCapsule({
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={handleCallToActionLead}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-background px-8 py-4 text-base font-medium text-foreground transition-colors hover:bg-background/90 sm:w-auto"
                 >
                   {ctaPrimary}

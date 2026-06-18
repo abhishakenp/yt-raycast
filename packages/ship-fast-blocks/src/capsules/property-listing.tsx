@@ -1,8 +1,27 @@
+import React, { useState, useRef } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * PropertyListingKimiPage — a complete, self-contained LUXURY REAL-ESTATE
@@ -144,8 +163,69 @@ export const PropertyListingKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      tourBookings: table({
+        firstName: string(),
+        lastName: string(),
+        email: string(),
+        phone: string(),
+        preferredDate: string(),
+        preferredTime: string(),
+        notes: string(),
+      }),
+      favorites: table({
+        propertyName: string(),
+      }),
+    },
+    queries: {
+      tourBookings: ({ db }) => db.tourBookings.orderBy('createdAt').all(),
+      favoritePropertyNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.propertyName)),
+    },
+    mutations: {
+      bookTour: ({ db }, booking: {
+        firstName: string
+        lastName: string
+        email: string
+        phone: string
+        preferredDate: string
+        preferredTime: string
+        notes: string
+      }) => {
+        db.tourBookings.insert(booking)
+        return db.tourBookings.all()
+      },
+      cancelTour: ({ db }, bookingId: string) => {
+        db.tourBookings.delete(bookingId)
+        return db.tourBookings.all()
+      },
+      toggleFavorite: ({ db }, propertyName: string) => {
+        const existingFavorite = db.favorites
+          .where('propertyName', propertyName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ propertyName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [favoritesOpen, setFavoritesOpen] = useState(false)
+    const [toursOpen, setToursOpen] = useState(false)
+    const firstNameRef = useRef<HTMLInputElement>(null)
+    const lastNameRef = useRef<HTMLInputElement>(null)
+    const emailRef = useRef<HTMLInputElement>(null)
+    const phoneRef = useRef<HTMLInputElement>(null)
+    const dateRef = useRef<HTMLInputElement>(null)
+    const timeRef = useRef<HTMLSelectElement>(null)
+    const notesRef = useRef<HTMLTextAreaElement>(null)
     const brand = props.brand ?? "The Glass House"
     const nav = props.nav?.length
       ? props.nav
@@ -389,6 +469,43 @@ export const PropertyListingKimiPage = defineCapsule({
       ? props.footer.legalLinks
       : ["Privacy Policy", "Terms of Service"]
 
+    // Lakebed hooks
+    const tourBookings = lakebed.useQuery('tourBookings')
+    const favoritePropertyNames = lakebed.useQuery('favoritePropertyNames')
+    const auth = lakebed.useAuth()
+    const bookTour = lakebed.useMutation('bookTour')
+    const cancelTour = lakebed.useMutation('cancelTour')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part: string) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const isFavorite = favoritePropertyNames?.has(heroTitle) ?? false
+    const safeTourBookings = tourBookings ?? []
+    const tourCount = safeTourBookings.length
+
     // Brand monogram tile (decorative brand asset).
     const Monogram = ({
       className,
@@ -424,6 +541,55 @@ export const PropertyListingKimiPage = defineCapsule({
         aria-hidden="true"
       >
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
       </svg>
     )
 
@@ -525,13 +691,304 @@ export const PropertyListingKimiPage = defineCapsule({
                   </button>
                 ))}
               </nav>
-              <button
-                type="button"
-                onClick={() => go(nav[nav.length - 1])}
-                className="bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                Schedule Tour
-              </button>
+              <div className="flex items-center gap-4">
+                {/* Favorites */}
+                <Sheet open={favoritesOpen} onOpenChange={setFavoritesOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Saved properties"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <HeartIcon active={isFavorite} />
+                      {isFavorite ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          1
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Saved Properties</SheetTitle>
+                      <SheetDescription>
+                        {isFavorite
+                          ? `You have 1 saved property.`
+                          : 'No saved properties yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {isFavorite ? (
+                        <div className="space-y-5">
+                          <div className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5">
+                            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                              <Image
+                                alt={heroImageAlt}
+                                w={180}
+                                h={180}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                {heroTitle}
+                              </h3>
+                              <p className="mt-1 text-sm text-muted-foreground">
+                                {heroLocation}
+                              </p>
+                              <p className="mt-2 font-serif text-lg text-foreground">
+                                {heroPrice}
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => void toggleFavorite(heroTitle)}
+                                className="mt-4 text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No saved properties
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Save properties to view them later.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+
+                {/* Tours */}
+                <Sheet open={toursOpen} onOpenChange={setToursOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Scheduled tours"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <path d="M16 10a4 4 0 0 1-8 0" />
+                      </svg>
+                      {tourCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {tourCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Scheduled Tours</SheetTitle>
+                      <SheetDescription>
+                        {tourCount > 0
+                          ? `${tourCount} tour${tourCount === 1 ? '' : 's'} scheduled.`
+                          : 'No tours scheduled yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeTourBookings.length ? (
+                        <div className="space-y-5">
+                          {safeTourBookings.map((booking) => (
+                            <div
+                              key={booking.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                <Image
+                                  alt={heroImageAlt}
+                                  w={180}
+                                  h={180}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                  {heroTitle}
+                                </h3>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                  {booking.preferredDate} · {booking.preferredTime}
+                                </p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                  {booking.firstName} {booking.lastName}
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={() => void cancelTour(booking.id)}
+                                  className="mt-4 text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Cancel Tour
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No tours scheduled
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Schedule a tour to visit this property.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+
+                {/* Auth */}
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Tours')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          My Tours
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => go(nav[nav.length - 1])}
+                  className="bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  Schedule Tour
+                </button>
+              </div>
             </div>
           </div>
         </header>
@@ -586,6 +1043,25 @@ export const PropertyListingKimiPage = defineCapsule({
                       className="border border-input px-8 py-4 text-center text-sm font-medium text-foreground transition-colors hover:border-ring"
                     >
                       {heroSecondary}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void toggleFavorite(heroTitle)}
+                      aria-pressed={isFavorite}
+                      aria-label={
+                        isFavorite
+                          ? `Remove ${heroTitle} from favorites`
+                          : `Add ${heroTitle} to favorites`
+                      }
+                      className={cn(
+                        'flex items-center justify-center gap-2 border border-input px-8 py-4 text-center text-sm font-medium transition-colors hover:border-ring',
+                        isFavorite
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'text-foreground hover:bg-muted',
+                      )}
+                    >
+                      <HeartIcon active={isFavorite} />
+                      {isFavorite ? 'Saved' : 'Save Property'}
                     </button>
                   </div>
                 </div>
@@ -782,7 +1258,28 @@ export const PropertyListingKimiPage = defineCapsule({
                     className="space-y-6"
                     onSubmit={(e) => {
                       e.preventDefault()
-                      go(tourSubmit)
+                      const firstName = firstNameRef.current?.value ?? ''
+                      const lastName = lastNameRef.current?.value ?? ''
+                      const email = emailRef.current?.value ?? ''
+                      const phone = phoneRef.current?.value ?? ''
+                      const preferredDate = dateRef.current?.value ?? ''
+                      const preferredTime = timeRef.current?.value ?? ''
+                      const notes = notesRef.current?.value ?? ''
+
+                      if (firstName && lastName && email && phone && preferredDate && preferredTime) {
+                        void bookTour({
+                          firstName,
+                          lastName,
+                          email,
+                          phone,
+                          preferredDate,
+                          preferredTime,
+                          notes,
+                        })
+                        setToursOpen(true)
+                      } else {
+                        go(tourSubmit)
+                      }
                     }}
                   >
                     <div className="grid gap-6 sm:grid-cols-2">
@@ -791,6 +1288,7 @@ export const PropertyListingKimiPage = defineCapsule({
                           First Name
                         </label>
                         <input
+                          ref={firstNameRef}
                           id="pl-first"
                           type="text"
                           placeholder="Enter first name"
@@ -802,6 +1300,7 @@ export const PropertyListingKimiPage = defineCapsule({
                           Last Name
                         </label>
                         <input
+                          ref={lastNameRef}
                           id="pl-last"
                           type="text"
                           placeholder="Enter last name"
@@ -815,6 +1314,7 @@ export const PropertyListingKimiPage = defineCapsule({
                         Email Address
                       </label>
                       <input
+                        ref={emailRef}
                         id="pl-email"
                         type="email"
                         placeholder="your@email.com"
@@ -827,6 +1327,7 @@ export const PropertyListingKimiPage = defineCapsule({
                         Phone Number
                       </label>
                       <input
+                        ref={phoneRef}
                         id="pl-phone"
                         type="tel"
                         placeholder="(555) 000-0000"
@@ -840,6 +1341,7 @@ export const PropertyListingKimiPage = defineCapsule({
                           Preferred Date
                         </label>
                         <input
+                          ref={dateRef}
                           id="pl-date"
                           type="date"
                           className={inputCls}
@@ -850,6 +1352,7 @@ export const PropertyListingKimiPage = defineCapsule({
                           Preferred Time
                         </label>
                         <select
+                          ref={timeRef}
                           id="pl-time"
                           className={cn(inputCls, "appearance-none")}
                           defaultValue=""
@@ -871,6 +1374,7 @@ export const PropertyListingKimiPage = defineCapsule({
                         Additional Notes
                       </label>
                       <textarea
+                        ref={notesRef}
                         id="pl-message"
                         rows={4}
                         placeholder="Tell us about your timeline, financing status, or specific interests..."
@@ -916,21 +1420,8 @@ export const PropertyListingKimiPage = defineCapsule({
                       <span className="font-medium text-foreground">
                         {item.question}
                       </span>
-                      <span className="transition-transform group-open:rotate-180">
-                        <svg
-                          className="size-5 text-muted-foreground"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          aria-hidden="true"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
+                      <span className="flex size-5 flex-shrink-0 items-center justify-center">
+                        <ChevronDown />
                       </span>
                     </summary>
                     <div className="px-6 pb-6 text-muted-foreground">

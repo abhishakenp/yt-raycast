@@ -1,9 +1,28 @@
-import { type ReactNode } from "react"
+import { type FormEvent, type ReactNode, useState } from "react"
 import { z } from "zod/v4"
+import { string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
+
+type ConsultationLeadForm = {
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  practiceArea: string
+  message: string
+}
 
 /**
  * LawFirmKimiPage2 — TEMPLATE VARIANT 2 for law firms / attorneys.
@@ -194,7 +213,58 @@ export const LawFirmKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      consultationLeads: table({
+        firstName: string(),
+        lastName: string(),
+        email: string(),
+        phone: string(),
+        practiceArea: string(),
+        message: string(),
+      }),
+    },
+    queries: {
+      consultationLeads: ({ db }) => db.consultationLeads.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addConsultationLead: (
+        { db },
+        firstName: string,
+        lastName: string,
+        email: string,
+        phone: string,
+        practiceArea: string,
+        message: string,
+      ) => {
+        db.consultationLeads.insert({
+          firstName,
+          lastName,
+          email,
+          phone,
+          practiceArea,
+          message,
+        })
+
+        return db.consultationLeads.all()
+      },
+      removeConsultationLead: ({ db }, leadId: string) => {
+        if (db.consultationLeads.get(leadId)) {
+          db.consultationLeads.delete(leadId)
+        }
+
+        return db.consultationLeads.all()
+      },
+      clearConsultationLeads: ({ db }) => {
+        for (const lead of db.consultationLeads.all()) {
+          db.consultationLeads.delete(lead.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? "Westbrook & Associates"
     const nav = props.nav?.length
@@ -491,6 +561,63 @@ export const LawFirmKimiPage2 = defineCapsule({
           "Real Estate",
           "Other",
         ]
+    const [leadDrawerOpen, setLeadDrawerOpen] = useState(false)
+    const defaultLead = {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      practiceArea: practiceOptions[0] ?? "General inquiry",
+      message: "",
+    }
+    const [leadForm, setLeadForm] = useState<ConsultationLeadForm>(defaultLead)
+    const auth = lakebed.useAuth()
+    const consultationLeads = lakebed.useQuery("consultationLeads")
+    const addConsultationLead = lakebed.useMutation("addConsultationLead")
+    const removeConsultationLead = lakebed.useMutation("removeConsultationLead")
+    const clearConsultationLeads = lakebed.useMutation("clearConsultationLeads")
+    const authName = auth.displayName || auth.user?.displayName
+    const authEmail = auth.email || auth.user?.email
+    const authInitials = (authName || authEmail || "Account")
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "A"
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authLabel = auth.isLoading ? "Checking..." : isSignedIn ? authName || authEmail || "Account" : "Sign in"
+    const storedLeads = consultationLeads ?? []
+    const consultationLeadCount = storedLeads.length
+    const setLeadField = (field: keyof ConsultationLeadForm, value: string) => {
+      setLeadForm((next) => ({ ...next, [field]: value }))
+    }
+    const resetLeadForm = () => setLeadForm(defaultLead)
+    const signIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const signOut = () => lakebed.signOut()
+    const submitLead = (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+
+      const firstName = leadForm.firstName.trim()
+      const lastName = leadForm.lastName.trim()
+      const email = leadForm.email.trim()
+      if (!firstName || !lastName || !email) return
+
+      void addConsultationLead(
+        firstName,
+        lastName,
+        email,
+        leadForm.phone.trim(),
+        leadForm.practiceArea || practiceOptions[0] || "General inquiry",
+        leadForm.message.trim(),
+      )
+
+      resetLeadForm()
+      go(ctaTarget)
+      setLeadDrawerOpen(true)
+    }
 
     const footerAbout =
       props.footer?.about ??
@@ -793,6 +920,18 @@ export const LawFirmKimiPage2 = defineCapsule({
                 >
                   <PhoneIcon className="size-4" />
                   {heroPhone}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLeadDrawerOpen(true)}
+                  className="hidden items-center gap-2 rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground hover:border-primary md:flex"
+                >
+                  Consultation Leads
+                  {consultationLeadCount > 0 ? (
+                    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">
+                      {consultationLeadCount}
+                    </span>
+                  ) : null}
                 </button>
                 <button
                   type="button"
@@ -1279,10 +1418,7 @@ export const LawFirmKimiPage2 = defineCapsule({
                   </h3>
                   <form
                     className="space-y-4"
-                    onSubmit={(e) => {
-                      e.preventDefault()
-                      go(ctaTarget)
-                    }}
+                    onSubmit={(event) => submitLead(event)}
                   >
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
@@ -1297,6 +1433,10 @@ export const LawFirmKimiPage2 = defineCapsule({
                           type="text"
                           required
                           placeholder="John"
+                          value={leadForm.firstName}
+                          onChange={(event) =>
+                            setLeadField("firstName", event.target.value)
+                          }
                           className={inputCls}
                         />
                       </div>
@@ -1312,6 +1452,10 @@ export const LawFirmKimiPage2 = defineCapsule({
                           type="text"
                           required
                           placeholder="Doe"
+                          value={leadForm.lastName}
+                          onChange={(event) =>
+                            setLeadField("lastName", event.target.value)
+                          }
                           className={inputCls}
                         />
                       </div>
@@ -1328,6 +1472,10 @@ export const LawFirmKimiPage2 = defineCapsule({
                         type="email"
                         required
                         placeholder="john@example.com"
+                        value={leadForm.email}
+                        onChange={(event) =>
+                          setLeadField("email", event.target.value)
+                        }
                         className={inputCls}
                       />
                     </div>
@@ -1342,6 +1490,10 @@ export const LawFirmKimiPage2 = defineCapsule({
                         id="lawfirm2-phone"
                         type="tel"
                         placeholder="(215) 555-0000"
+                        value={leadForm.phone}
+                        onChange={(event) =>
+                          setLeadField("phone", event.target.value)
+                        }
                         className={inputCls}
                       />
                     </div>
@@ -1354,6 +1506,10 @@ export const LawFirmKimiPage2 = defineCapsule({
                       </label>
                       <select
                         id="lawfirm2-practice"
+                        value={leadForm.practiceArea}
+                        onChange={(event) =>
+                          setLeadField("practiceArea", event.target.value)
+                        }
                         className={cn(inputCls, "cursor-pointer appearance-none")}
                       >
                         {practiceOptions.map((opt) => (
@@ -1374,6 +1530,10 @@ export const LawFirmKimiPage2 = defineCapsule({
                         id="lawfirm2-message"
                         rows={4}
                         placeholder="Brief description of your legal matter..."
+                        value={leadForm.message}
+                        onChange={(event) =>
+                          setLeadField("message", event.target.value)
+                        }
                         className={cn(inputCls, "resize-none")}
                       />
                     </div>
@@ -1550,6 +1710,114 @@ export const LawFirmKimiPage2 = defineCapsule({
             </div>
           </div>
         </footer>
+
+        <Sheet open={leadDrawerOpen} onOpenChange={setLeadDrawerOpen}>
+          <SheetContent side="right" className="w-full p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle>Consultation Leads</SheetTitle>
+              <SheetDescription>
+                {consultationLeadCount > 0
+                  ? `${consultationLeadCount} consultation request${
+                      consultationLeadCount === 1 ? '' : 's'
+                    } saved in this session.`
+                  : 'No consultation requests yet.'}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {storedLeads.length ? (
+                <div className="space-y-4">
+                  {storedLeads.map((lead) => (
+                    <div
+                      key={lead.id}
+                      className="rounded-xl border border-border bg-muted/50 p-4"
+                    >
+                      <div className="mb-3 flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-foreground">
+                            {lead.firstName} {lead.lastName}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {lead.email}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => void removeConsultationLead(lead.id)}
+                          className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <p className="mb-2 text-sm text-muted-foreground">
+                        {lead.practiceArea}
+                      </p>
+                      {lead.phone ? (
+                        <p className="text-xs text-muted-foreground">
+                          {lead.phone}
+                        </p>
+                      ) : null}
+                      {lead.message ? (
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          {lead.message}
+                        </p>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/40 px-6 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Fill the consultation form to capture your first inquiry.
+                  </p>
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <div className="mb-4 flex items-center justify-between text-sm">
+                <span className="font-medium text-muted-foreground">
+                  Total Inquiries
+                </span>
+                <span className="font-semibold text-foreground">
+                  {consultationLeadCount}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => void clearConsultationLeads()}
+                disabled={!consultationLeadCount}
+                className="w-full rounded-lg border border-border bg-background px-4 py-3 font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 hover:bg-muted"
+              >
+                Clear All
+              </button>
+              {isSignedIn ? (
+                <button
+                  type="button"
+                  onClick={signOut}
+                  className="mt-2 w-full rounded-lg bg-foreground px-4 py-3 font-semibold text-background transition-colors hover:bg-foreground/90"
+                >
+                  Sign out {authInitials}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={signIn}
+                  disabled={auth.isLoading}
+                  className="mt-2 w-full rounded-lg bg-foreground px-4 py-3 font-semibold text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {authLabel}
+                </button>
+              )}
+              <SheetClose asChild>
+                <button
+                  type="button"
+                  className="mt-2 w-full rounded-lg bg-primary px-4 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  Continue
+                </button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

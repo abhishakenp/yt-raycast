@@ -1,8 +1,31 @@
 import { z } from "zod/v4"
+import { useState } from "react"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+
+const priceAmount = (price: string) => {
+  const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ""))
+  return Number.isFinite(amount) ? amount : 0
+}
+
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    style: "currency",
+  }).format(amount)
 
 /**
  * JewelryStoreKimiPage — a complete, self-contained luxury fine-jewelry STORE / boutique landing page.
@@ -24,6 +47,92 @@ export const JewelryStoreKimiPage = defineCapsule({
   name: "JewelryStoreKimiPage",
   description:
     "Complete luxury fine-jewelry STORE / boutique landing page with an opulent, editorial, dark-couture aesthetic: near-black canvas, warm gold accent, elegant serif display headlines and wide letter-spaced uppercase eyebrows. Includes a full-bleed cinematic hero (heritage eyebrow, oversized serif headline, Explore/Private-Viewing CTAs, floating featured-piece price card), a press/awards logo strip (Vogue, Bazaar, Tatler), a 6-up curated collections grid with 4:5 image-zoom cards (Bridal, Daily Luxury, Statement, Heritage), a split craftsmanship band with icon value props (conflict-free guarantee, master artisans, lifetime warranty, bespoke design) and a staggered atelier photo collage, an 8-up featured-pieces product grid with New/Bestseller/Limited badges and prices, a 3-column lifestyle gallery, a 4-up heritage stats band (years, pieces crafted, artisans, boutiques), a 3-up client testimonials grid with 5-star ratings and avatars, an accordion FAQ (custom design, certifications, warranty, shipping, financing), a private-appointment CTA with boutique locations (Paris, New York, London), and a 5-column footer with collections/services/contact columns plus Instagram/Pinterest/Facebook social links. Use as the ROOT/home page for fine jewelers, diamond houses, engagement-ring boutiques, watch and high-jewelry maisons, bridal jewelry stores, or any premium luxury-retail brand wanting a sophisticated, conversion-focused storefront with strong product showcase, craftsmanship story, and social proof. Supply content only — brand, nav, hero, collections, craftsmanship, pieces, gallery, stats, testimonials, faq, appointment, footer; the block owns all layout and styling.",
+  lakebed: {
+    schema: {
+      pieces: table({
+        title: string(),
+        spec: string(),
+        price: string(),
+        badge: string(),
+        imageAlt: string(),
+      }),
+      inquiryItems: table({
+        pieceTitle: string(),
+        quantity: number(),
+      }),
+    },
+    queries: {
+      pieces: ({ db }) => db.pieces.orderBy("createdAt").all(),
+      inquiryLines: ({ db }) =>
+        db.inquiryItems.all().flatMap((item) => {
+          const piece = db.pieces.where("title", item.pieceTitle).all()[0]
+          return piece ? [{ ...item, piece }] : []
+        }),
+    },
+    mutations: {
+      addInquiryItem: (
+        { db },
+        title: string,
+        spec: string,
+        price: string,
+        imageAlt: string,
+        badge: string,
+      ) => {
+        if (!db.pieces.where("title", title).all()[0]) {
+          db.pieces.insert({
+            title,
+            spec,
+            price,
+            imageAlt,
+            badge,
+          })
+        }
+
+        const existingItem = db.inquiryItems
+          .where("pieceTitle", title)
+          .all()[0]
+
+        if (existingItem) {
+          db.inquiryItems.update(existingItem.id, {
+            quantity: existingItem.quantity + 1,
+          })
+        } else {
+          db.inquiryItems.insert({
+            pieceTitle: title,
+            quantity: 1,
+          })
+        }
+
+        return db.inquiryItems.all()
+      },
+      updateInquiryQuantity: ({ db }, pieceTitle: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+        for (const item of db.inquiryItems.where("pieceTitle", pieceTitle).all()) {
+          if (nextQuantity) {
+            db.inquiryItems.update(item.id, { quantity: nextQuantity })
+          } else {
+            db.inquiryItems.delete(item.id)
+          }
+        }
+
+        return db.inquiryItems.all()
+      },
+      removeInquiryItem: ({ db }, pieceTitle: string) => {
+        for (const item of db.inquiryItems.where("pieceTitle", pieceTitle).all()) {
+          db.inquiryItems.delete(item.id)
+        }
+
+        return db.inquiryItems.all()
+      },
+      clearInquiryItems: ({ db }) => {
+        for (const item of db.inquiryItems.all()) {
+          db.inquiryItems.delete(item.id)
+        }
+
+        return []
+      },
+    },
+  },
   props: z.object({
     /** Brand / maison name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -175,8 +284,32 @@ export const JewelryStoreKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [inquiryOpen, setInquiryOpen] = useState(false)
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials = authDisplayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
     const brand = props.brand ?? "Maison Noir"
     const nav = props.nav?.length
       ? props.nav
@@ -355,6 +488,24 @@ export const JewelryStoreKimiPage = defineCapsule({
               "eternity band ring with channel-set baguette diamonds",
           },
         ]
+
+    const storedPieces = lakebed.useQuery("pieces")
+    const inquiryLines = lakebed.useQuery("inquiryLines")
+    const addInquiryItem = lakebed.useMutation("addInquiryItem")
+    const updateInquiryQuantity = lakebed.useMutation("updateInquiryQuantity")
+    const removeInquiryItem = lakebed.useMutation("removeInquiryItem")
+    const clearInquiryItems = lakebed.useMutation("clearInquiryItems")
+    const displayPieces =
+      storedPieces && storedPieces.length > 0 ? storedPieces : pieceItems
+    const safeInquiryLines = inquiryLines ?? []
+    const inquiryCount = safeInquiryLines.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+    const inquirySubtotal = safeInquiryLines.reduce(
+      (total, item) => total + priceAmount(item.piece.price) * item.quantity,
+      0,
+    )
 
     const galleryEyebrow = props.gallery?.eyebrow ?? "The Maison Experience"
     const galleryHeading = props.gallery?.heading ?? "Moments of Brilliance"
@@ -619,85 +770,232 @@ export const JewelryStoreKimiPage = defineCapsule({
           props.className,
         )}
       >
-        {/* Navbar */}
-        <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
-          <div className="w-full px-6 lg:px-12 xl:px-20">
-            <div className="flex h-20 items-center justify-between">
+        <Sheet open={inquiryOpen} onOpenChange={setInquiryOpen}>
+          <SheetContent side="right" className="w-full p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border px-6 py-6">
+              <SheetTitle className="text-xl">Saved Pieces</SheetTitle>
+              <SheetDescription>
+                {inquiryCount > 0
+                  ? `${inquiryCount} piece${inquiryCount === 1 ? "" : "s"} in your consultation list.`
+                  : "Add pieces to request a private consultation."}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {safeInquiryLines.length ? (
+                <div className="space-y-6">
+                  {safeInquiryLines.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-start gap-4 border-b border-border pb-5 last:border-0"
+                    >
+                      <div className="relative h-20 w-20 shrink-0 overflow-hidden bg-muted">
+                        <Image
+                          alt={item.piece.imageAlt}
+                          w={120}
+                          h={120}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="mb-1 text-xs uppercase tracking-widest text-primary">
+                          {item.piece.title}
+                        </p>
+                        <p className="mb-2 text-sm text-muted-foreground">
+                          {item.piece.spec}
+                        </p>
+                        <p className="font-medium text-foreground">
+                          {formatCurrency(
+                            priceAmount(item.piece.price) * item.quantity,
+                          )}
+                        </p>
+                      </div>
+                      <div className="inline-flex shrink-0 rounded-full border border-border">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            void updateInquiryQuantity(
+                              item.pieceTitle,
+                              item.quantity - 1,
+                            )
+                          }
+                          className="grid h-8 w-8 place-items-center text-muted-foreground hover:text-foreground"
+                        >
+                          -
+                        </button>
+                        <span className="grid min-w-9 place-items-center text-sm font-semibold">
+                          {item.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            void updateInquiryQuantity(
+                              item.pieceTitle,
+                              item.quantity + 1,
+                            )
+                          }
+                          className="grid h-8 w-8 place-items-center text-muted-foreground hover:text-foreground"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void removeInquiryItem(item.pieceTitle)}
+                        className="text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex min-h-56 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                  <p className="text-base font-semibold text-foreground">
+                    Your consultation list is empty
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Add a piece from the featured collection to begin.
+                  </p>
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border px-6 py-6">
+              <div className="mb-4 flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Estimated total</span>
+                <span className="font-semibold text-foreground">
+                  {formatCurrency(inquirySubtotal)}
+                </span>
+              </div>
               <button
                 type="button"
-                onClick={() => go(nav[0])}
-                className="font-serif text-2xl tracking-wider text-primary"
+                onClick={() => {
+                  setInquiryOpen(false)
+                  go(apptPrimary)
+                }}
+                className="w-full rounded-full bg-primary py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                disabled={!safeInquiryLines.length}
               >
-                {brand}
+                Request Consultation
               </button>
-              <nav className="hidden items-center space-x-10 md:flex">
-                {nav.map((label) => (
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => void clearInquiryItems()}
+                  disabled={!safeInquiryLines.length}
+                  className="rounded-full border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Clear
+                </button>
+                <SheetClose asChild>
                   <button
-                    key={label}
                     type="button"
-                    onClick={() => go(label)}
-                    className="text-sm uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary"
+                    className="rounded-full border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
                   >
-                    {label}
+                    Continue Browsing
                   </button>
-                ))}
-              </nav>
-              <div className="flex items-center space-x-6">
+                </SheetClose>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+
+          {/* Navbar */}
+          <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
+            <div className="w-full px-6 lg:px-12 xl:px-20">
+              <div className="flex h-20 items-center justify-between">
                 <button
                   type="button"
-                  aria-label="Search"
                   onClick={() => go(nav[0])}
-                  className="text-muted-foreground transition-colors hover:text-primary"
+                  className="font-serif text-2xl tracking-wider text-primary"
                 >
-                  <svg
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
+                  {brand}
+                </button>
+                <nav className="hidden items-center space-x-10 md:flex">
+                  {nav.map((label) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => go(label)}
+                      className="text-sm uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </nav>
+                <div className="flex items-center space-x-6">
+                  <button
+                    type="button"
+                    aria-label="Search"
+                    onClick={() => go(nav[0])}
+                    className="text-muted-foreground transition-colors hover:text-primary"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="1.5"
-                      d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                    />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  aria-label="Wishlist"
-                  onClick={() => go(nav[1] ?? nav[0])}
-                  className="text-muted-foreground transition-colors hover:text-primary"
-                >
-                  <svg
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
+                    <svg
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="1.5"
+                        d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                      />
+                    </svg>
+                  </button>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Saved pieces"
+                      className="relative text-muted-foreground transition-colors hover:text-primary"
+                    >
+                      <svg
+                        className="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="1.5"
+                          d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+                        />
+                      </svg>
+                      {inquiryCount > 0 ? (
+                        <span className="absolute -right-2 -top-2 inline-grid size-4 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                          {inquiryCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <button
+                    type="button"
+                    onClick={isSignedIn ? handleSignOut : handleSignIn}
+                    className="hidden border-b border-primary pb-0.5 text-xs uppercase tracking-widest text-primary sm:block"
+                    disabled={auth.isLoading}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="1.5"
-                      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
-                    />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(apptPrimary)}
-                  className="hidden border-b border-primary pb-0.5 text-sm uppercase tracking-widest text-primary sm:block"
-                >
-                  Book Appointment
-                </button>
+                    {isSignedIn ? (
+                      <span className="mr-2 inline-grid size-5 place-items-center rounded-full bg-primary/10 text-[0.65rem] text-primary">
+                        {authInitials}
+                      </span>
+                    ) : null}
+                    {authLabel}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => go(apptPrimary)}
+                    className="hidden border-b border-primary pb-0.5 text-sm uppercase tracking-widest text-primary sm:block"
+                  >
+                    Book Appointment
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        <main className="pt-20">
+          <main className="pt-20">
           {/* Hero */}
           <section className="relative flex min-h-screen items-center">
             <div className="absolute inset-0 bg-muted">
@@ -920,42 +1218,62 @@ export const JewelryStoreKimiPage = defineCapsule({
                 </button>
               </div>
               <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-                {pieceItems.map((p) => (
-                  <button
+                {displayPieces.map((p) => (
+                  <article
                     key={p.title}
-                    type="button"
-                    onClick={() => go(p.title)}
                     className="group block w-full cursor-pointer text-left"
                   >
-                    <div className="relative mb-5 aspect-square overflow-hidden bg-muted">
-                      <Image
-                        alt={p.imageAlt}
-                        w={600}
-                        h={600}
-                        loading="lazy"
-                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                      {p.badge ? (
-                        <span
-                          className={cn(
-                            "absolute left-4 top-4 px-3 py-1 text-xs uppercase tracking-widest",
-                            p.badge === "New"
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-secondary text-secondary-foreground",
-                          )}
-                        >
-                          {p.badge}
-                        </span>
-                      ) : null}
-                    </div>
-                    <h3 className="mb-1 font-serif text-lg text-foreground">
-                      {p.title}
-                    </h3>
-                    <p className="mb-2 text-sm text-muted-foreground">
-                      {p.spec}
-                    </p>
-                    <p className="text-primary">{p.price}</p>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => go(p.title)}
+                      className="w-full text-left"
+                    >
+                      <div className="relative mb-5 aspect-square overflow-hidden bg-muted">
+                        <Image
+                          alt={p.imageAlt}
+                          w={600}
+                          h={600}
+                          loading="lazy"
+                          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                        {p.badge ? (
+                          <span
+                            className={cn(
+                              "absolute left-4 top-4 px-3 py-1 text-xs uppercase tracking-widest",
+                              p.badge === "New"
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-secondary text-secondary-foreground",
+                            )}
+                          >
+                            {p.badge}
+                          </span>
+                        ) : null}
+                      </div>
+                      <h3 className="mb-1 font-serif text-lg text-foreground">
+                        {p.title}
+                      </h3>
+                      <p className="mb-2 text-sm text-muted-foreground">
+                        {p.spec}
+                      </p>
+                      <p className="text-primary">{p.price}</p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void addInquiryItem(
+                          p.title,
+                          p.spec,
+                          p.price,
+                          p.imageAlt,
+                          p.badge ?? "",
+                        )
+                        setInquiryOpen(true)
+                      }}
+                      className="mt-4 inline-flex items-center border-b border-primary pb-0.5 text-xs uppercase tracking-widest text-foreground/90 transition-colors hover:text-primary"
+                    >
+                      Add to Consultation
+                    </button>
+                  </article>
                 ))}
               </div>
             </div>
@@ -1266,6 +1584,7 @@ export const JewelryStoreKimiPage = defineCapsule({
             </div>
           </div>
         </footer>
+        </Sheet>
       </div>
     )
   },

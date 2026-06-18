@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const AiProductKimiPage3 = defineCapsule({
   name: "AiProductKimiPage3",
@@ -181,10 +199,78 @@ export const AiProductKimiPage3 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      subscribers: table({
+        email: string(),
+        plan: string(),
+      }),
+      waitlist: table({
+        email: string(),
+        name: string(),
+      }),
+    },
+    queries: {
+      subscribers: ({ db }) => db.subscribers.orderBy('createdAt').all(),
+      waitlist: ({ db }) => db.waitlist.orderBy('createdAt').all(),
+    },
+    mutations: {
+      subscribe: ({ db }, email: string, plan: string) => {
+        const existing = db.subscribers.where('email', email).all()[0]
+        if (existing) {
+          db.subscribers.update(existing.id, { plan })
+        } else {
+          db.subscribers.insert({ email, plan })
+        }
+        return db.subscribers.all()
+      },
+      joinWaitlist: ({ db }, email: string, name: string) => {
+        const existing = db.waitlist.where('email', email).all()[0]
+        if (existing) {
+          db.waitlist.update(existing.id, { name })
+        } else {
+          db.waitlist.insert({ email, name })
+        }
+        return db.waitlist.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [menuOpen, setMenuOpen] = useState(false)
     const [yearly, setYearly] = useState(false)
+    const [subscriptionOpen, setSubscriptionOpen] = useState(false)
+    const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
+
+    const subscribers = lakebed.useQuery('subscribers')
+    const waitlist = lakebed.useQuery('waitlist')
+    const subscribe = lakebed.useMutation('subscribe')
+    const joinWaitlist = lakebed.useMutation('joinWaitlist')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
 
     const brand = props.brand ?? "ScriptForge"
     const nav = props.nav?.length
@@ -657,6 +743,21 @@ export const AiProductKimiPage3 = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     const Star = () => (
       <svg
         className="size-5 text-chart-4"
@@ -733,16 +834,109 @@ export const AiProductKimiPage3 = defineCapsule({
               ))}
             </div>
             <div className="hidden items-center gap-3 md:flex">
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight className="size-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Settings')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Settings
+                        <ArrowRight className="size-4" />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
               <button
                 type="button"
-                onClick={() => go("/")}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                onClick={() => go("/")}
+                onClick={() => setSubscriptionOpen(true)}
                 className="rounded-full bg-gradient-to-r from-primary to-accent px-5 py-2 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-transform hover:scale-105"
               >
                 {heroPrimary}
@@ -790,6 +984,58 @@ export const AiProductKimiPage3 = defineCapsule({
                     {item}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMenuOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -1141,7 +1387,10 @@ export const AiProductKimiPage3 = defineCapsule({
                   </div>
                   <button
                     type="button"
-                    onClick={() => go("/")}
+                    onClick={() => {
+                      setSelectedPlan(plan.name)
+                      setSubscriptionOpen(true)
+                    }}
                     className={cn(
                       "mt-6 rounded-full px-6 py-3 text-sm font-semibold transition-transform hover:scale-105",
                       plan.featured
@@ -1385,6 +1634,138 @@ export const AiProductKimiPage3 = defineCapsule({
             </div>
           </div>
         </footer>
+
+        {/* Subscription Drawer */}
+        <Sheet open={subscriptionOpen} onOpenChange={setSubscriptionOpen}>
+          <SheetContent
+            side="right"
+            className="w-full gap-0 p-0 sm:max-w-md"
+          >
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">
+                {selectedPlan ? `Subscribe to ${selectedPlan}` : 'Get Started'}
+              </SheetTitle>
+              <SheetDescription>
+                {selectedPlan
+                  ? `You're choosing the ${selectedPlan} plan. Complete your subscription to start writing faster.`
+                  : 'Choose a plan to get started with ScriptForge.'}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {selectedPlan ? (
+                <div className="space-y-6">
+                  <div className="rounded-xl border border-border bg-muted/40 p-4">
+                    <h3 className="font-semibold text-foreground">{selectedPlan}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {yearly ? 'Billed yearly (save 20%)' : 'Billed monthly'}
+                    </p>
+                  </div>
+                  <form
+                    className="space-y-4"
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      const form = e.currentTarget
+                      const email = (form.elements.namedItem('email') as HTMLInputElement).value
+                      void subscribe(email, selectedPlan)
+                      setSubscriptionOpen(false)
+                    }}
+                  >
+                    <div>
+                      <label
+                        htmlFor="email"
+                        className="mb-2 block text-sm font-medium text-foreground"
+                      >
+                        Email address
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="you@example.com"
+                        required
+                        className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full rounded-full"
+                    >
+                      Complete Subscription
+                    </Button>
+                  </form>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Select a plan from the pricing section to continue, or join our waitlist:
+                  </p>
+                  <form
+                    className="space-y-4"
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      const form = e.currentTarget
+                      const email = (form.elements.namedItem('waitlist-email') as HTMLInputElement).value
+                      const name = (form.elements.namedItem('waitlist-name') as HTMLInputElement).value
+                      void joinWaitlist(email, name)
+                      setSubscriptionOpen(false)
+                    }}
+                  >
+                    <div>
+                      <label
+                        htmlFor="waitlist-name"
+                        className="mb-2 block text-sm font-medium text-foreground"
+                      >
+                        Name
+                      </label>
+                      <input
+                        type="text"
+                        id="waitlist-name"
+                        name="waitlist-name"
+                        placeholder="Your name"
+                        required
+                        className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="waitlist-email"
+                        className="mb-2 block text-sm font-medium text-foreground"
+                      >
+                        Email address
+                      </label>
+                      <input
+                        type="email"
+                        id="waitlist-email"
+                        name="waitlist-email"
+                        placeholder="you@example.com"
+                        required
+                        className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      variant="outline"
+                      className="w-full rounded-full"
+                    >
+                      Join Waitlist
+                    </Button>
+                  </form>
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <SheetClose asChild>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full rounded-full"
+                >
+                  Continue Browsing
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

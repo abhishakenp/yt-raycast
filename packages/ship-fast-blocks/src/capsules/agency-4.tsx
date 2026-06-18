@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * AgencyKimiPage4 — a complete, self-contained creative digital-agency LANDING page.
@@ -177,10 +195,112 @@ export const AgencyKimiPage4 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      inquiries: table({
+        name: string(),
+        email: string(),
+        company: string(),
+        message: string(),
+        service: string(),
+      }),
+      favorites: table({
+        projectTitle: string(),
+      }),
+      subscribers: table({
+        email: string(),
+      }),
+    },
+    queries: {
+      inquiries: ({ db }) => db.inquiries.orderBy('createdAt').all(),
+      favoriteProjectTitles: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.projectTitle)),
+      subscribers: ({ db }) => db.subscribers.orderBy('createdAt').all(),
+    },
+    mutations: {
+      submitInquiry: ({ db }, data: { name: string; email: string; company: string; message: string; service: string }) => {
+        db.inquiries.insert(data)
+        return db.inquiries.all()
+      },
+      toggleFavorite: ({ db }, projectTitle: string) => {
+        const existingFavorite = db.favorites
+          .where('projectTitle', projectTitle)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ projectTitle })
+        return true
+      },
+      subscribe: ({ db }, email: string) => {
+        const existingSubscriber = db.subscribers
+          .where('email', email)
+          .all()[0]
+
+        if (existingSubscriber) {
+          return db.subscribers.all()
+        }
+
+        db.subscribers.insert({ email })
+        return db.subscribers.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [contactOpen, setContactOpen] = useState(false)
+    const [inquiryForm, setInquiryForm] = useState({ name: '', email: '', company: '', message: '', service: '' })
+    const [newsletterEmail, setNewsletterEmail] = useState('')
     const brand = props.brand ?? "Northwind"
+
+    const favoriteProjectTitles = lakebed.useQuery('favoriteProjectTitles')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const submitInquiry = lakebed.useMutation('submitInquiry')
+    const subscribe = lakebed.useMutation('subscribe')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const handleInquirySubmit = (e: React.FormEvent) => {
+      e.preventDefault()
+      void submitInquiry(inquiryForm)
+      setContactOpen(false)
+      setInquiryForm({ name: '', email: '', company: '', message: '', service: '' })
+    }
+
+    const handleNewsletterSubmit = (e: React.FormEvent) => {
+      e.preventDefault()
+      void subscribe(newsletterEmail)
+      setNewsletterEmail('')
+    }
     const nav = props.nav?.length
       ? props.nav
       : ["Services", "Work", "Process", "Pricing", "FAQ"]
@@ -581,6 +701,39 @@ export const AgencyKimiPage4 = defineCapsule({
       </svg>
     )
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     const serviceIcons: ReactNode[] = [
       <svg key="s1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.048 4.025a3 3 0 01-4.244-4.243M4.891 4.891A17.965 17.965 0 0112 3.475c4.142 0 7.895 1.46 10.89 3.869M2.109 19.891A17.965 17.965 0 0121 16.025m-4.244-4.243a3 3 0 014.243 4.243"/>
@@ -618,19 +771,232 @@ export const AgencyKimiPage4 = defineCapsule({
                   {label}
                 </button>
               ))}
-              <button
-                type="button"
-                onClick={() => go(nav[nav.length - 1])}
-                className="hidden sm:inline-flex items-center justify-center rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/80"
-              >
-                Start a project
+            </div>
+            <div className="flex items-center gap-4">
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRightIcon />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Inquiries')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        My Inquiries
+                        <ArrowRightIcon />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={contactOpen} onOpenChange={setContactOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => setContactOpen(true)}
+                    className="hidden sm:inline-flex items-center justify-center rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/80"
+                  >
+                    Start a project
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Start a project</SheetTitle>
+                    <SheetDescription>
+                      Tell us about your project and we'll get back to you within one business day.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    <form onSubmit={handleInquirySubmit} className="space-y-4">
+                      <div>
+                        <label htmlFor="name" className="mb-2 block text-sm font-medium text-foreground">
+                          Name
+                        </label>
+                        <input
+                          id="name"
+                          type="text"
+                          required
+                          value={inquiryForm.name}
+                          onChange={(e) => setInquiryForm({ ...inquiryForm, name: e.target.value })}
+                          className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          placeholder="Your name"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
+                          Email
+                        </label>
+                        <input
+                          id="email"
+                          type="email"
+                          required
+                          value={inquiryForm.email}
+                          onChange={(e) => setInquiryForm({ ...inquiryForm, email: e.target.value })}
+                          className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          placeholder="you@example.com"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="company" className="mb-2 block text-sm font-medium text-foreground">
+                          Company
+                        </label>
+                        <input
+                          id="company"
+                          type="text"
+                          value={inquiryForm.company}
+                          onChange={(e) => setInquiryForm({ ...inquiryForm, company: e.target.value })}
+                          className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          placeholder="Your company"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="service" className="mb-2 block text-sm font-medium text-foreground">
+                          Service needed
+                        </label>
+                        <select
+                          id="service"
+                          value={inquiryForm.service}
+                          onChange={(e) => setInquiryForm({ ...inquiryForm, service: e.target.value })}
+                          className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        >
+                          <option value="">Select a service</option>
+                          <option value="Brand Strategy">Brand Strategy</option>
+                          <option value="Web Design">Web Design</option>
+                          <option value="Product Design">Product Design</option>
+                          <option value="Motion & Content">Motion & Content</option>
+                          <option value="Conversion Optimization">Conversion Optimization</option>
+                          <option value="Design Systems">Design Systems</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label htmlFor="message" className="mb-2 block text-sm font-medium text-foreground">
+                          Message
+                        </label>
+                        <textarea
+                          id="message"
+                          required
+                          rows={4}
+                          value={inquiryForm.message}
+                          onChange={(e) => setInquiryForm({ ...inquiryForm, message: e.target.value })}
+                          className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          placeholder="Tell us about your project..."
+                        />
+                      </div>
+                    </form>
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <Button
+                      type="button"
+                      className="w-full rounded-full"
+                      onClick={handleInquirySubmit}
+                    >
+                      Submit inquiry
+                    </Button>
+                    <SheetClose asChild>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full rounded-full"
+                      >
+                        Cancel
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+              <button type="button" aria-label="Open menu" aria-expanded={mobileOpen} aria-controls="mobile-menu" onClick={() => setMobileOpen((v: boolean) => !v)} className="p-2 text-foreground md:hidden">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                  <path d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
               </button>
             </div>
-            <button type="button" aria-label="Open menu" aria-expanded={mobileOpen} aria-controls="mobile-menu" onClick={() => setMobileOpen((v: boolean) => !v)} className="p-2 text-foreground md:hidden">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
             {mobileOpen && (
               <div
                 id="mobile-menu"
@@ -649,6 +1015,58 @@ export const AgencyKimiPage4 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -782,16 +1200,40 @@ export const AgencyKimiPage4 = defineCapsule({
                 </button>
               </div>
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {work.items.map((proj) => (
-                  <button key={proj.title} type="button" onClick={() => go(proj.title)} className="group block w-full cursor-pointer text-left">
-                    <div className="relative mb-5 aspect-[4/3] overflow-hidden rounded-xl bg-muted">
-                      <Image alt={proj.imageAlt} w={800} h={600} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                      <span className="absolute top-4 left-4 rounded-full bg-background/90 px-3 py-1 text-xs font-semibold text-foreground">{proj.tag}</span>
-                    </div>
-                    <h3 className="mb-1 font-serif text-xl font-semibold text-foreground">{proj.title}</h3>
-                    <p className="text-sm leading-relaxed text-muted-foreground">{proj.description}</p>
-                  </button>
-                ))}
+                {work.items.map((proj) => {
+                  const isFavorite = favoriteProjectTitles?.has(proj.title) ?? false
+                  return (
+                    <button key={proj.title} type="button" onClick={() => go(proj.title)} className="group block w-full cursor-pointer text-left">
+                      <div className="relative mb-5 aspect-[4/3] overflow-hidden rounded-xl bg-muted">
+                        <Image alt={proj.imageAlt} w={800} h={600} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        <span className="absolute top-4 left-4 rounded-full bg-background/90 px-3 py-1 text-xs font-semibold text-foreground">{proj.tag}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            void toggleFavorite(proj.title)
+                          }}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${proj.title} from favorites`
+                              : `Add ${proj.title} to favorites`
+                          }
+                          className={cn(
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                          )}
+                        >
+                          <HeartIcon active={isFavorite} />
+                        </button>
+                      </div>
+                      <h3 className="mb-1 font-serif text-xl font-semibold text-foreground">{proj.title}</h3>
+                      <p className="text-sm leading-relaxed text-muted-foreground">{proj.description}</p>
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -907,7 +1349,7 @@ export const AgencyKimiPage4 = defineCapsule({
               <div className="flex flex-wrap items-center justify-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go(cta.email)}
+                  onClick={() => setContactOpen(true)}
                   className="inline-flex items-center justify-center rounded-full bg-background px-8 py-4 text-sm font-semibold text-foreground transition-colors hover:bg-background/80"
                 >
                   {cta.email}
@@ -926,6 +1368,29 @@ export const AgencyKimiPage4 = defineCapsule({
                   {cta.phone}
                 </button>
               </p>
+              <div className="mt-12 border-t border-background/20 pt-8">
+                <p className="mb-4 text-sm font-semibold text-background">Subscribe to our newsletter</p>
+                <form onSubmit={handleNewsletterSubmit} className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row">
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    aria-label="Email address for newsletter"
+                    required
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    className="flex-1 rounded-full border border-background/20 bg-background/10 px-6 py-4 text-background placeholder:text-background/40 focus:outline-none focus:ring-2 focus:ring-background/30"
+                  />
+                  <button
+                    type="submit"
+                    className="whitespace-nowrap rounded-full bg-background px-8 py-4 font-semibold text-foreground transition-colors hover:bg-muted"
+                  >
+                    Subscribe
+                  </button>
+                </form>
+                <p className="mt-4 text-xs text-background/40">
+                  By subscribing, you agree to our Privacy Policy. Unsubscribe anytime.
+                </p>
+              </div>
             </div>
           </section>
         </main>

@@ -1,8 +1,19 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * LendingKimiPage2 — a BOLD, high-energy alternative personal-LENDING / loan
@@ -161,12 +172,93 @@ export const LendingKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      applications: table({
+        name: string(),
+        email: string(),
+        phone: string(),
+        amount: string(),
+        term: string(),
+        score: string(),
+        apr: string(),
+        payment: string(),
+        source: string(),
+        status: string(),
+      }),
+    },
+    queries: {
+      applications: ({ db }) => db.applications.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addApplication: (
+        { db },
+        name: string,
+        email: string,
+        phone: string,
+        amount: string,
+        term: string,
+        score: string,
+        apr: string,
+        payment: string,
+        source: string,
+        status: string,
+      ) => {
+        db.applications.insert({
+          name,
+          email,
+          phone,
+          amount,
+          term,
+          score,
+          apr,
+          payment,
+          source,
+          status,
+        })
+        return db.applications.all()
+      },
+      removeApplication: ({ db }, id: string) => {
+        const existing = db.applications.get(id)
+        if (existing) {
+          db.applications.delete(existing.id)
+        }
+        return db.applications.all()
+      },
+      clearApplications: ({ db }) => {
+        for (const app of db.applications.all()) {
+          db.applications.delete(app.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? "FastLoan"
     const nav = props.nav?.length
       ? props.nav
       : ["How It Works", "Rates", "Reviews", "FAQ"]
+    const [applicationOpen, setApplicationOpen] = useState(false)
+    const [applicationName, setApplicationName] = useState("")
+    const [applicationEmail, setApplicationEmail] = useState("")
+    const [applicationPhone, setApplicationPhone] = useState("")
+    const [applicationAmount, setApplicationAmount] = useState("")
+    const [applicationTerm, setApplicationTerm] = useState("")
+    const [applicationScore, setApplicationScore] = useState("")
+    const [applicationSource, setApplicationSource] = useState("Landing")
+    const auth = lakebed.useAuth()
+    const storedApplications = lakebed.useQuery("applications")
+    const addApplication = lakebed.useMutation("addApplication")
+    const removeApplication = lakebed.useMutation("removeApplication")
+    const clearApplications = lakebed.useMutation("clearApplications")
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? "Account"
+        : "Sign In"
 
     const heroBadge = props.hero?.badge ?? "Over $2.4 billion funded"
     const heroLead = props.hero?.headingLead ?? "Get Your Loan in"
@@ -207,6 +299,76 @@ export const LendingKimiPage2 = defineCapsule({
     const heroCardNote =
       props.hero?.cardNote ??
       "Won't affect your credit score • Instant decision"
+    const parsedApplicationAmount = applicationAmount || heroAmountValue
+    const parsedApplicationTerm =
+      applicationTerm || heroTerms[2] || heroTerms[0] || "36 mo"
+    const parsedApplicationScore =
+      applicationScore ||
+      (heroScoreOptions.length ? heroScoreOptions[1] : "Good")
+    const amountFloor = Number.parseInt(heroAmountMin.replace(/[^0-9]/g, ""), 10)
+    const amountCeil = Number.parseInt(heroAmountMax.replace(/[^0-9]/g, ""), 10)
+    const clampAmount = Number.isFinite(amountFloor)
+      ? amountFloor
+      : 1000
+    const amountMax = Number.isFinite(amountCeil) ? amountCeil : 50000
+    const formatCurrency = (amount: number) =>
+      new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0,
+      }).format(amount)
+    const parseAmountToNumber = (amount: string) =>
+      Number.parseFloat(amount.replace(/[^0-9.]/g, "")) || 0
+    const applicationRows = storedApplications ?? []
+    const applicationTotal = applicationRows.reduce(
+      (total, app) => total + parseAmountToNumber(app.amount),
+      0,
+    )
+    const applicationCount = applicationRows.length
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const openApplicationDrawer = (source: string) => {
+      setApplicationSource(source)
+      setApplicationAmount(parsedApplicationAmount)
+      setApplicationTerm(parsedApplicationTerm)
+      setApplicationScore(parsedApplicationScore)
+      setApplicationOpen(true)
+    }
+    const submitApplication = () => {
+      const name = applicationName.trim()
+      const email = applicationEmail.trim()
+      const phone = applicationPhone.trim()
+      const hasContact = name && email && phone
+      const amountValue = parsedApplicationAmount
+      const termValue = applicationTerm || parsedApplicationTerm
+      const scoreValue = applicationScore || parsedApplicationScore
+
+      if (!hasContact) return
+      if (!/^\S+@\S+\.\S+$/.test(email)) return
+      if (!/^\+?[0-9\s-().]+$/.test(phone)) return
+
+      void addApplication(
+        name,
+        email,
+        phone,
+        amountValue,
+        termValue,
+        scoreValue,
+        heroAprValue,
+        heroPaymentValue,
+        applicationSource,
+        "In progress",
+      )
+
+      setApplicationName("")
+      setApplicationEmail("")
+      setApplicationPhone("")
+    }
 
     const logosCaption =
       props.logos?.caption ?? "Featured in & trusted by"

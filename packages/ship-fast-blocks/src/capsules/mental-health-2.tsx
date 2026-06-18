@@ -1,9 +1,19 @@
-import { useState, type ReactNode } from "react"
+import { type FormEvent, useState, type ReactNode } from "react"
 import { z } from "zod/v4"
+import { string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * MentalHealthKimiPage2 — a complete therapy / counseling / mental-health practice
@@ -136,7 +146,75 @@ export const MentalHealthKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      consultationRequests: table({
+        clientName: string(),
+        clientPhone: string(),
+        clientEmail: string(),
+        serviceName: string(),
+        preferredDate: string(),
+        notes: string(),
+        status: string(),
+      }),
+    },
+    queries: {
+      consultationRequests: ({ db }) =>
+        db.consultationRequests.orderBy('createdAt').all(),
+      openRequests: ({ db }) =>
+        db.consultationRequests.where('status', 'Open').all(),
+    },
+    mutations: {
+      addConsultationRequest: (
+        { db },
+        clientName: string,
+        clientPhone: string,
+        clientEmail: string,
+        serviceName: string,
+        preferredDate: string,
+        notes: string,
+      ) => {
+        db.consultationRequests.insert({
+          clientName: clientName.trim(),
+          clientPhone: clientPhone.trim(),
+          clientEmail: clientEmail.trim(),
+          serviceName: serviceName.trim(),
+          preferredDate: preferredDate.trim(),
+          notes: notes.trim(),
+          status: 'Open',
+        })
+
+        return db.consultationRequests.orderBy('createdAt').all()
+      },
+      setConsultationRequestStatus: (
+        { db },
+        requestId: string,
+        status: string,
+      ) => {
+        const request = db.consultationRequests.get(requestId)
+        if (!request) return db.consultationRequests.all()
+
+        db.consultationRequests.update(request.id, { status })
+
+        return db.consultationRequests.orderBy('createdAt').all()
+      },
+      removeConsultationRequest: ({ db }, requestId: string) => {
+        for (const request of db.consultationRequests.where('id', requestId).all()) {
+          db.consultationRequests.delete(request.id)
+        }
+
+        return db.consultationRequests.all()
+      },
+      clearConsultationRequests: ({ db }) => {
+        for (const request of db.consultationRequests.all()) {
+          db.consultationRequests.delete(request.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const brand = props.brand ?? "WholeMind"
@@ -231,6 +309,84 @@ export const MentalHealthKimiPage2 = defineCapsule({
             meta: "50 min • $150",
           },
         ]
+    const requestServiceOptions = serviceItems.map((service) => service.title)
+    const [consultationDrawerOpen, setConsultationDrawerOpen] =
+      useState(false)
+    const [consultationForm, setConsultationForm] = useState({
+      clientName: "",
+      clientPhone: "",
+      clientEmail: "",
+      serviceName: requestServiceOptions[0] ?? "General Consultation",
+      preferredDate: "",
+      notes: "",
+    })
+
+    const consultationRequests = lakebed.useQuery("consultationRequests") ?? []
+    const openConsultationRequests = lakebed.useQuery("openRequests") ?? []
+    const addConsultationRequest = lakebed.useMutation("addConsultationRequest")
+    const setConsultationRequestStatus = lakebed.useMutation(
+      "setConsultationRequestStatus",
+    )
+    const removeConsultationRequest = lakebed.useMutation(
+      "removeConsultationRequest",
+    )
+    const clearConsultationRequests = lakebed.useMutation("clearConsultationRequests")
+    const openConsultationsCount = openConsultationRequests.length
+    const totalConsultationsCount = consultationRequests.length
+
+    const resetConsultationForm = (serviceName?: string) => {
+      setConsultationForm({
+        clientName: "",
+        clientPhone: "",
+        clientEmail: "",
+        serviceName: serviceName || requestServiceOptions[0] || "General Consultation",
+        preferredDate: "",
+        notes: "",
+      })
+    }
+    const openConsultationDrawer = (serviceName?: string) => {
+      resetConsultationForm(serviceName)
+      setConsultationDrawerOpen(true)
+    }
+    const handleSubmitConsultation = (
+      event: FormEvent<HTMLFormElement>,
+    ) => {
+      event.preventDefault()
+
+      const payload = {
+        clientName: consultationForm.clientName.trim(),
+        clientPhone: consultationForm.clientPhone.trim(),
+        clientEmail: consultationForm.clientEmail.trim(),
+        serviceName: consultationForm.serviceName.trim(),
+        preferredDate: consultationForm.preferredDate.trim(),
+        notes: consultationForm.notes.trim(),
+      }
+
+      if (!payload.clientName || !payload.clientPhone) return
+
+      void addConsultationRequest(
+        payload.clientName,
+        payload.clientPhone,
+        payload.clientEmail,
+        payload.serviceName || "General Consultation",
+        payload.preferredDate,
+        payload.notes,
+      )
+
+      resetConsultationForm(payload.serviceName)
+    }
+
+    const setConsultationAsContacted = (requestId: string, status: string) => {
+      void setConsultationRequestStatus(requestId, status)
+    }
+
+    const removeConsultation = (requestId: string) => {
+      void removeConsultationRequest(requestId)
+    }
+
+    const clearConsultations = () => {
+      void clearConsultationRequests()
+    }
 
     const stepsEyebrow = props.steps?.eyebrow ?? "How It Works"
     const stepsHeading =
@@ -545,7 +701,7 @@ export const MentalHealthKimiPage2 = defineCapsule({
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go(bookLabel)}
+                  onClick={() => openConsultationDrawer()}
                   className="hidden items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary sm:flex"
                 >
                   <Phone className="size-4" />
@@ -553,10 +709,17 @@ export const MentalHealthKimiPage2 = defineCapsule({
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(bookLabel)}
+                  onClick={() => openConsultationDrawer()}
                   className="rounded-full bg-gradient-to-r from-primary to-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-shadow hover:shadow-lg hover:shadow-primary/25"
                 >
-                  {bookLabel}
+                  <span className="inline-flex items-center gap-2">
+                    {bookLabel}
+                    {openConsultationsCount > 0 ? (
+                      <span className="grid size-5 place-items-center rounded-full bg-primary-foreground/20 text-xs font-bold text-primary-foreground">
+                        {openConsultationsCount}
+                      </span>
+                    ) : null}
+                  </span>
                 </button>
                 <button
                   type="button"
@@ -593,6 +756,12 @@ export const MentalHealthKimiPage2 = defineCapsule({
                     key={label}
                     type="button"
                     onClick={() => {
+                      if (label === bookLabel) {
+                        openConsultationDrawer()
+                        setMobileOpen(false)
+                        return
+                      }
+
                       setMobileOpen(false)
                       go(label)
                     }}
@@ -605,6 +774,263 @@ export const MentalHealthKimiPage2 = defineCapsule({
             )}
           </nav>
         </header>
+
+        <Sheet
+          open={consultationDrawerOpen}
+          onOpenChange={setConsultationDrawerOpen}
+        >
+          <SheetContent
+            side="right"
+            className="flex w-full flex-col gap-0 p-0 sm:max-w-md"
+          >
+            <SheetHeader className="border-b border-border px-6 py-5">
+              <SheetTitle>Schedule a consultation</SheetTitle>
+              <SheetDescription>
+                Leave your details and the team will follow up quickly.
+              </SheetDescription>
+            </SheetHeader>
+
+            <div className="px-6 py-5">
+              <form
+                onSubmit={handleSubmitConsultation}
+                className="space-y-4 border-b border-border pb-6"
+              >
+                <label className="block space-y-2 text-sm">
+                  <span className="font-medium text-muted-foreground">
+                    Full name
+                  </span>
+                  <input
+                    value={consultationForm.clientName}
+                    onChange={(event) =>
+                      setConsultationForm((current) => ({
+                        ...current,
+                        clientName: event.target.value,
+                      }))
+                    }
+                    required
+                    placeholder="Your full name"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm"
+                  />
+                </label>
+                <label className="block space-y-2 text-sm">
+                  <span className="font-medium text-muted-foreground">
+                    Phone
+                  </span>
+                  <input
+                    value={consultationForm.clientPhone}
+                    onChange={(event) =>
+                      setConsultationForm((current) => ({
+                        ...current,
+                        clientPhone: event.target.value,
+                      }))
+                    }
+                    required
+                    inputMode="tel"
+                    placeholder="(555) 555-1212"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm"
+                  />
+                </label>
+                <label className="block space-y-2 text-sm">
+                  <span className="font-medium text-muted-foreground">
+                    Email
+                  </span>
+                  <input
+                    value={consultationForm.clientEmail}
+                    onChange={(event) =>
+                      setConsultationForm((current) => ({
+                        ...current,
+                        clientEmail: event.target.value,
+                      }))
+                    }
+                    type="email"
+                    placeholder="you@example.com"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm"
+                  />
+                </label>
+                <label className="block space-y-2 text-sm">
+                  <span className="font-medium text-muted-foreground">
+                    Service
+                  </span>
+                  <select
+                    value={consultationForm.serviceName}
+                    onChange={(event) =>
+                      setConsultationForm((current) => ({
+                        ...current,
+                        serviceName: event.target.value,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm"
+                  >
+                    {requestServiceOptions.length ? (
+                      requestServiceOptions.map((serviceName) => (
+                        <option key={serviceName} value={serviceName}>
+                          {serviceName}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="General Consultation">
+                        General Consultation
+                      </option>
+                    )}
+                  </select>
+                </label>
+                <label className="block space-y-2 text-sm">
+                  <span className="font-medium text-muted-foreground">
+                    Preferred date/time
+                  </span>
+                  <input
+                    value={consultationForm.preferredDate}
+                    onChange={(event) =>
+                      setConsultationForm((current) => ({
+                        ...current,
+                        preferredDate: event.target.value,
+                      }))
+                    }
+                    placeholder="Tomorrow 10:00 AM"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm"
+                  />
+                </label>
+                <label className="block space-y-2 text-sm">
+                  <span className="font-medium text-muted-foreground">
+                    Notes
+                  </span>
+                  <textarea
+                    value={consultationForm.notes}
+                    onChange={(event) =>
+                      setConsultationForm((current) => ({
+                        ...current,
+                        notes: event.target.value,
+                      }))
+                    }
+                    rows={3}
+                    placeholder="What would you like to focus on?"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  className="w-full rounded-full bg-gradient-to-r from-primary to-accent px-4 py-2.5 text-sm font-semibold text-primary-foreground"
+                >
+                  Request consultation
+                </button>
+              </form>
+            </div>
+
+            <div className="flex-1 overflow-auto px-6 py-4">
+              <p className="mb-3 text-sm font-semibold text-foreground">
+                Consultation requests
+              </p>
+              {consultationRequests.length ? (
+                <div className="space-y-4">
+                  {consultationRequests.map((request) => {
+                    const isOpen = request.status === "Open"
+
+                    return (
+                      <div
+                        key={request.id}
+                        className="rounded-xl border border-border bg-muted/40 p-4"
+                      >
+                        <div className="mb-3 flex items-start justify-between gap-4">
+                          <div>
+                            <p className="font-semibold text-foreground">
+                              {request.clientName}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {request.clientPhone}
+                            </p>
+                          </div>
+                          <span
+                            className={cn(
+                              "inline-flex rounded-full px-2 py-1 text-xs font-semibold",
+                              isOpen
+                                ? "bg-primary/15 text-primary"
+                                : "bg-muted text-muted-foreground",
+                            )}
+                          >
+                            {request.status || "Open"}
+                          </span>
+                        </div>
+                        <p className="mb-1 text-sm text-foreground/80">
+                          {request.serviceName || "General Consultation"}
+                        </p>
+                        {request.preferredDate ? (
+                          <p className="mb-1 text-xs text-muted-foreground">
+                            Preferred: {request.preferredDate}
+                          </p>
+                        ) : null}
+                        {request.clientEmail ? (
+                          <p className="mb-3 text-xs text-muted-foreground">
+                            {request.clientEmail}
+                          </p>
+                        ) : null}
+                        {request.notes ? (
+                          <p className="mb-3 text-xs text-muted-foreground">
+                            {request.notes}
+                          </p>
+                        ) : null}
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setConsultationAsContacted(
+                                request.id,
+                                isOpen ? "Contacted" : "Open",
+                              )
+                            }
+                            className="inline-flex rounded-full bg-foreground px-3 py-1.5 text-xs font-semibold text-background"
+                          >
+                            {isOpen ? "Mark contacted" : "Reopen"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeConsultation(request.id)}
+                            className="inline-flex rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-destructive hover:text-destructive"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <p className="rounded-xl border border-border bg-muted/40 px-4 py-6 text-center text-sm text-muted-foreground">
+                  No consultation requests yet.
+                </p>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border px-6 py-4">
+              <div className="space-y-3 text-sm text-foreground">
+                <div className="flex justify-between">
+                  <span>Open</span>
+                  <span>{openConsultationsCount}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Total</span>
+                  <span>{totalConsultationsCount}</span>
+                </div>
+                <div className="grid gap-2">
+                  <button
+                    type="button"
+                    onClick={clearConsultations}
+                    disabled={!totalConsultationsCount}
+                    className="w-full rounded-full border border-destructive/40 px-4 py-2 font-semibold text-destructive transition-colors disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
+                  >
+                    Clear requests
+                  </button>
+                  <SheetClose asChild>
+                    <button
+                      type="button"
+                      className="w-full rounded-full bg-foreground px-4 py-2 font-semibold text-background"
+                    >
+                      Close
+                    </button>
+                  </SheetClose>
+                </div>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
 
         <main>
           {/* Hero */}
@@ -647,7 +1073,11 @@ export const MentalHealthKimiPage2 = defineCapsule({
                   <div className="flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
                     <button
                       type="button"
-                      onClick={() => go(bookLabel)}
+                      onClick={() =>
+                        openConsultationDrawer(
+                          serviceItems[0]?.title || "General Consultation",
+                        )
+                      }
                       className="rounded-full bg-gradient-to-r from-primary to-accent px-8 py-4 text-center text-lg font-bold text-primary-foreground transition-shadow hover:shadow-xl hover:shadow-primary/30"
                     >
                       {heroPrimary}

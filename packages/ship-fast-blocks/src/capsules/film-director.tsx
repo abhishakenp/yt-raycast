@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * FilmDirectorKimiPage — a complete, self-contained portfolio LANDING page for a
@@ -16,23 +34,29 @@ import { Image } from "#/lib/img.tsx"
  * thin headline with one emphasized word + dual CTAs + a 3-up KPI strip beside a
  * tall 4:5 portrait), a "trusted by" brand-logo strip, a 6-up services grid with
  * icon tiles, a dark "Selected Work" reel grid (9 play-button project cards with
- * category tags + load-more), a split "How we work together" numbered process with
- * a 3:4 photo and a floating client pull-quote card, a stats band (4 metrics +
- * 3 award credits), a 6-up client-testimonial grid with avatars, a 3-tier pricing
- * "Investment" table (with a highlighted Most Popular plan on a dark card), a
- * 6-item FAQ accordion, a dark contact CTA (email + phone + studio/representation/
- * social details), and a slim footer.
+ * category tags + load-more + favorite toggle), a split "How we work together"
+ * numbered process with a 3:4 photo and a floating client pull-quote card, a stats
+ * band (4 metrics + 3 award credits), a 6-up client-testimonial grid with avatars,
+ * a 3-tier pricing "Investment" table (with a highlighted Most Popular plan on a
+ * dark card), a 6-item FAQ accordion, a dark contact CTA (inquiry drawer + phone +
+ * studio/representation/social details), and a slim footer.
  *
  * The block owns ALL layout, spacing, type hierarchy, and the light/dark band
  * rhythm. Every nav item / CTA / pricing button / FAQ / social / footer link
  * routes through `useNavigate` (never a dead "#"). All content imagery uses the
  * alt-driven <Image> component (never a raw src). Callers supply ONLY content
  * data; rich defaults make it render great with no props at all.
+ *
+ * FULL-STACK FEATURES:
+ * - Lakebed-powered inquiry submission via drawer form (name, email, project type, message)
+ * - Project favorites toggle with persistent state
+ * - Google auth with account menu (signed-in users see avatar, account/inquiries links, sign-out)
+ * - Reactive queries and mutations for inquiries and favorites
  */
 export const FilmDirectorKimiPage = defineCapsule({
   name: "FilmDirectorKimiPage",
   description:
-    "Complete film-director / cinematographer / director-of-photography PORTFOLIO landing page with a clean, editorial, light-canvas aesthetic, thin display typography, generous whitespace, and inverted near-black cinematic bands for the work reel, pricing, and contact. Includes a fixed navbar, a split hero (eyebrow label, thin headline with one emphasized word, Watch Reel + View Projects CTAs, a 3-up KPI strip, and a tall 4:5 portrait), a trusted-by brand-logo strip, a 6-up services grid with icon tiles (commercial direction, cinematography, creative development, documentary, music videos, post production), a dark Selected Work reel grid of project cards with play buttons and category tags plus a load-more button, a split numbered How-We-Work process with a 3:4 photo and a floating client quote card, a stats band (projects, awards, views, festival selections) with award credits (Cannes Lions, AICP, Sundance), a 6-up client-testimonial grid with avatars, a 3-tier Investment pricing table with a highlighted Most Popular dark plan, a 6-item FAQ accordion, a dark contact CTA (email, phone, studio address, representation, social), and a slim footer. Use as the ROOT/home page for filmmakers, directors, cinematographers, DPs, video production houses, commercial/narrative/documentary/music-video creatives, or motion/film portfolios when a premium, cinematic, conversion-focused page with strong reel showcase, social proof, and clear pricing is wanted. Supply content only — brand, nav, hero, logos, services, work, process, stats, testimonials, pricing, faq, contact, footer; the block owns all layout and styling.",
+    "Complete film-director / cinematographer / director-of-photography PORTFOLIO landing page with a clean, editorial, light-canvas aesthetic, thin display typography, generous whitespace, and inverted near-black cinematic bands for the work reel, pricing, and contact. Includes a fixed navbar with Google auth and account menu, a split hero (eyebrow label, thin headline with one emphasized word, Watch Reel + View Projects CTAs, a 3-up KPI strip, and a tall 4:5 portrait), a trusted-by brand-logo strip, a 6-up services grid with icon tiles (commercial direction, cinematography, creative development, documentary, music videos, post production), a dark Selected Work reel grid of project cards with play buttons, category tags, favorite toggles, and a load-more button, a split numbered How-We-Work process with a 3:4 photo and a floating client quote card, a stats band (projects, awards, views, festival selections) with award credits (Cannes Lions, AICP, Sundance), a 6-up client-testimonial grid with avatars, a 3-tier Investment pricing table with a highlighted Most Popular dark plan, a 6-item FAQ accordion, a dark contact CTA with an inquiry drawer form (name, email, project type, message) and phone/studio/representation/social details, and a slim footer. Full-stack features: Lakebed-powered inquiry submission, project favorites with persistent state, Google auth with account menu, reactive queries and mutations. Use as the ROOT/home page for filmmakers, directors, cinematographers, DPs, video production houses, commercial/narrative/documentary/music-video creatives, or motion/film portfolios when a premium, cinematic, conversion-focused page with strong reel showcase, social proof, clear pricing, and inquiry capture is wanted. Supply content only — brand, nav, hero, logos, services, work, process, stats, testimonials, pricing, faq, contact, footer; the block owns all layout and styling.",
   props: z.object({
     /** Director / studio name shown in the navbar. */
     brand: z.string().optional(),
@@ -188,13 +212,85 @@ export const FilmDirectorKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      inquiries: table({
+        name: string(),
+        email: string(),
+        projectType: string(),
+        message: string(),
+      }),
+      favorites: table({
+        projectTitle: string(),
+      }),
+    },
+    queries: {
+      inquiries: ({ db }) => db.inquiries.orderBy('createdAt').all(),
+      favoriteProjectTitles: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.projectTitle)),
+    },
+    mutations: {
+      submitInquiry: ({ db }, name: string, email: string, projectType: string, message: string) => {
+        db.inquiries.insert({ name, email, projectType, message })
+        return db.inquiries.all()
+      },
+      toggleFavorite: ({ db }, projectTitle: string) => {
+        const existingFavorite = db.favorites
+          .where('projectTitle', projectTitle)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ projectTitle })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [inquiryOpen, setInquiryOpen] = useState(false)
+    const [inquiryName, setInquiryName] = useState("")
+    const [inquiryEmail, setInquiryEmail] = useState("")
+    const [inquiryProjectType, setInquiryProjectType] = useState("")
+    const [inquiryMessage, setInquiryMessage] = useState("")
     const brand = props.brand ?? "Marcus Chen"
     const nav = props.nav?.length
       ? props.nav
       : ["Work", "Services", "About", "Get in Touch"]
+
+    const favoriteProjectTitles = lakebed.useQuery('favoriteProjectTitles')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const submitInquiry = lakebed.useMutation('submitInquiry')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
 
     const heroEyebrow = props.hero?.eyebrow ?? "Film Director & Cinematographer"
     const heroHeading = props.hero?.heading ?? "Visual stories that resonate"
@@ -611,6 +707,55 @@ export const FilmDirectorKimiPage = defineCapsule({
       </svg>
     )
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     const serviceIcons: ReactNode[] = [
       // film / video
       <svg
@@ -742,6 +887,106 @@ export const FilmDirectorKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Inquiries')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Inquiries
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => go(nav[nav.length - 1])}
@@ -750,27 +995,29 @@ export const FilmDirectorKimiPage = defineCapsule({
                   {nav[nav.length - 1]}
                 </button>
               </div>
-              <button
-                type="button"
-                aria-label="Menu"
-                aria-expanded={mobileOpen}
-                aria-controls="mobile-menu"
-                onClick={() => setMobileOpen((v: boolean) => !v)}
-                className="p-2 md:hidden"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="size-6"
-                  aria-hidden="true"
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  aria-label="Menu"
+                  aria-expanded={mobileOpen}
+                  aria-controls="mobile-menu"
+                  onClick={() => setMobileOpen((v: boolean) => !v)}
+                  className="p-2 md:hidden"
                 >
-                  <path d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="size-6"
+                    aria-hidden="true"
+                  >
+                    <path d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+              </div>
               {mobileOpen && (
                 <div
                   id="mobile-menu"
@@ -789,6 +1036,58 @@ export const FilmDirectorKimiPage = defineCapsule({
                       {label}
                     </button>
                   ))}
+                  <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                    {isSignedIn ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in'}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            setMobileOpen(false)
+                            handleSignOut()
+                          }}
+                          className="w-full rounded-full"
+                        >
+                          Sign out
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignIn()
+                        }}
+                        disabled={auth.isLoading}
+                        className="w-full rounded-full"
+                      >
+                        <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                          G
+                        </span>
+                        {authLabel}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -931,41 +1230,67 @@ export const FilmDirectorKimiPage = defineCapsule({
               </div>
 
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {workItems.map((proj) => (
-                  <button
-                    key={proj.title}
-                    type="button"
-                    onClick={() => go(proj.title)}
-                    className="group block w-full cursor-pointer text-left"
-                  >
-                    <div className="relative aspect-video overflow-hidden rounded-md bg-muted">
-                      <Image
-                        alt={proj.imageAlt}
-                        w={800}
-                        h={450}
-                        loading="lazy"
-                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-foreground/60 transition-colors group-hover:bg-foreground/40" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="grid size-16 place-items-center rounded-full bg-background/20 transition-colors group-hover:bg-background/30">
-                          <PlayIcon className="ml-1 size-8 text-background" />
+                {workItems.map((proj) => {
+                  const isFavorite =
+                    favoriteProjectTitles?.has(proj.title) ?? false
+
+                  return (
+                    <button
+                      key={proj.title}
+                      type="button"
+                      onClick={() => go(proj.title)}
+                      className="group block w-full cursor-pointer text-left"
+                    >
+                      <div className="relative aspect-video overflow-hidden rounded-md bg-muted">
+                        <Image
+                          alt={proj.imageAlt}
+                          w={800}
+                          h={450}
+                          loading="lazy"
+                          className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-foreground/60 transition-colors group-hover:bg-foreground/40" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="grid size-16 place-items-center rounded-full bg-background/20 transition-colors group-hover:bg-background/30">
+                            <PlayIcon className="ml-1 size-8 text-background" />
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            void toggleFavorite(proj.title)
+                          }}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${proj.title} from favorites`
+                              : `Add ${proj.title} to favorites`
+                          }
+                          className={cn(
+                            'absolute top-4 right-4 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-background/90 text-foreground',
+                          )}
+                        >
+                          <HeartIcon active={isFavorite} />
+                        </button>
+                        <div className="absolute inset-x-4 bottom-4">
+                          <span className="text-xs uppercase tracking-wider text-background/70">
+                            {proj.tag}
+                          </span>
+                          <h3 className="mt-1 text-lg font-medium text-background">
+                            {proj.title}
+                          </h3>
+                          <p className="mt-1 text-sm text-background/70">
+                            {proj.role}
+                          </p>
                         </div>
                       </div>
-                      <div className="absolute inset-x-4 bottom-4">
-                        <span className="text-xs uppercase tracking-wider text-background/70">
-                          {proj.tag}
-                        </span>
-                        <h3 className="mt-1 text-lg font-medium text-background">
-                          {proj.title}
-                        </h3>
-                        <p className="mt-1 text-sm text-background/70">
-                          {proj.role}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  )
+                })}
               </div>
 
               <div className="mt-12 text-center">
@@ -1208,18 +1533,9 @@ export const FilmDirectorKimiPage = defineCapsule({
                   >
                     <summary className="flex cursor-pointer items-center justify-between p-6">
                       <span className="font-medium">{item.question}</span>
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="size-5 transition-transform group-open:rotate-180"
-                        aria-hidden="true"
-                      >
-                        <path d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <span className="flex size-5 flex-shrink-0 items-center justify-center">
+                        <ChevronDown />
+                      </span>
                     </summary>
                     <div className="px-6 pb-6 text-sm leading-relaxed text-muted-foreground">
                       {item.answer}
@@ -1240,25 +1556,154 @@ export const FilmDirectorKimiPage = defineCapsule({
                 {contactDesc}
               </p>
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(contactEmail)}
-                  className="inline-flex items-center justify-center rounded-md bg-background px-8 py-4 text-foreground transition-colors hover:bg-background/90"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="mr-2 size-5"
-                    aria-hidden="true"
+                <Sheet open={inquiryOpen} onOpenChange={setInquiryOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      className="inline-flex items-center justify-center rounded-md bg-background px-8 py-4 text-foreground transition-colors hover:bg-background/90"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mr-2 size-5"
+                        aria-hidden="true"
+                      >
+                        <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      Send Inquiry
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
                   >
-                    <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  {contactEmail}
-                </button>
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Send Inquiry</SheetTitle>
+                      <SheetDescription>
+                        Tell us about your project and we'll get back to you within 24 hours.
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      <form
+                        className="space-y-4"
+                        onSubmit={(e) => {
+                          e.preventDefault()
+                          void submitInquiry(inquiryName, inquiryEmail, inquiryProjectType, inquiryMessage)
+                          setInquiryName("")
+                          setInquiryEmail("")
+                          setInquiryProjectType("")
+                          setInquiryMessage("")
+                          setInquiryOpen(false)
+                        }}
+                      >
+                        <div>
+                          <label
+                            htmlFor="inquiry-name"
+                            className="mb-2 block text-sm font-medium text-foreground"
+                          >
+                            Name
+                          </label>
+                          <input
+                            id="inquiry-name"
+                            type="text"
+                            value={inquiryName}
+                            onChange={(e) => setInquiryName(e.target.value)}
+                            required
+                            className="w-full rounded-md border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            placeholder="Your name"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="inquiry-email"
+                            className="mb-2 block text-sm font-medium text-foreground"
+                          >
+                            Email
+                          </label>
+                          <input
+                            id="inquiry-email"
+                            type="email"
+                            value={inquiryEmail}
+                            onChange={(e) => setInquiryEmail(e.target.value)}
+                            required
+                            className="w-full rounded-md border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            placeholder="your@email.com"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="inquiry-project-type"
+                            className="mb-2 block text-sm font-medium text-foreground"
+                          >
+                            Project Type
+                          </label>
+                          <select
+                            id="inquiry-project-type"
+                            value={inquiryProjectType}
+                            onChange={(e) => setInquiryProjectType(e.target.value)}
+                            required
+                            className="w-full rounded-md border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          >
+                            <option value="">Select a project type</option>
+                            <option value="Commercial">Commercial</option>
+                            <option value="Narrative">Narrative</option>
+                            <option value="Documentary">Documentary</option>
+                            <option value="Music Video">Music Video</option>
+                            <option value="Fashion Film">Fashion Film</option>
+                            <option value="Corporate">Corporate</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="inquiry-message"
+                            className="mb-2 block text-sm font-medium text-foreground"
+                          >
+                            Message
+                          </label>
+                          <textarea
+                            id="inquiry-message"
+                            value={inquiryMessage}
+                            onChange={(e) => setInquiryMessage(e.target.value)}
+                            required
+                            rows={6}
+                            className="w-full rounded-md border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                            placeholder="Tell us about your project, timeline, and budget..."
+                          />
+                        </div>
+                      </form>
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full"
+                        onClick={() => setInquiryOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        className="rounded-full"
+                        onClick={() => {
+                          void submitInquiry(inquiryName, inquiryEmail, inquiryProjectType, inquiryMessage)
+                          setInquiryName("")
+                          setInquiryEmail("")
+                          setInquiryProjectType("")
+                          setInquiryMessage("")
+                          setInquiryOpen(false)
+                        }}
+                        disabled={!inquiryName || !inquiryEmail || !inquiryProjectType || !inquiryMessage}
+                      >
+                        Send Inquiry
+                      </Button>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(contactPhone)}

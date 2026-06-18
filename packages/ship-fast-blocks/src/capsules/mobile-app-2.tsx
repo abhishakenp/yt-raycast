@@ -4,9 +4,27 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
- * MobileAppKimiPage2 — a complete, self-contained mobile-app LANDING / marketing page.
+ * MobileAppKimiPage2 — a complete, self-contained mobile-app LANDING / marketing page with full-stack Lakebed functionality.
  *
  * A faithful Tailwind v4 port of a Kimi-generated "HabitStack" habit-tracker app
  * site. This is the SECOND, visually DISTINCT style sibling to MobileAppKimiPage:
@@ -15,13 +33,19 @@ import { Image } from "#/lib/img.tsx"
  * carrying TWO overlay chips (a green streak badge + a community avatar stack),
  * App-Store / Google-Play store-badge buttons with star ratings, a publication
  * logo strip with inline brand glyphs, a 6-up feature grid of soft-tinted cards
- * with scale-on-hover icon tiles, a numbered 3-step "how it works" walkthrough
+ * with scale-on-hover icon tiles and save-to-favorites heart buttons, a numbered 3-step "how it works" walkthrough
  * with screenshots and trust pills, a horizontal-scrolling phone-screenshot gallery
  * with hover captions and dot indicators, a solid full-bleed stats band, a 3-tier
  * pricing table (Free / Pro / Teams) with a raised most-popular plan and billing
  * notes, an expandable FAQ accordion with a contact-support link, a vibrant
- * gradient-panel final download CTA with trust badges, and an inverted multi-column
+ * gradient-panel final download CTA with trust badges and newsletter subscription form, and an inverted multi-column
  * footer (Product / Company / Legal) with social icons.
+ *
+ * FULL-STACK FEATURES (Lakebed):
+ * - Saved Features drawer: users can save features they're interested in with heart icons, view them in a slide-out drawer, and clear all
+ * - Newsletter subscription: email capture form with persistence
+ * - Google Auth: sign-in/sign-out with account menu popover
+ * - All state persists across sessions via Lakebed database
  *
  * Use as the ROOT/home page for a consumer mobile app, habit tracker, fitness /
  * wellness / meditation app, productivity or to-do app, or any iOS/Android launch
@@ -33,7 +57,7 @@ import { Image } from "#/lib/img.tsx"
 export const MobileAppKimiPage2 = defineCapsule({
   name: "MobileAppKimiPage2",
   description:
-    "Complete mobile-app / SaaS-app marketing LANDING page in a bold, vibrant, energetic aesthetic — the second, visually DISTINCT style sibling to MobileAppKimiPage (which is the calmer, minimalist alternative). Includes a tinted gradient-glow hero with a floating animated phone mockup carrying two overlay chips (a streak badge + a community avatar stack), App Store + Google Play store-badge download buttons with star ratings and download count, a 'featured in' publication logo strip with inline brand glyphs, a 6-up feature grid of soft-tinted cards with scale-on-hover icon tiles (streak tracking, intelligent reminders, analytics, accountability groups, habit templates, health sync), a numbered 3-step 'how it works' walkthrough with screenshots and trust pills, a horizontal-scrolling phone-screenshot gallery with hover captions and dot indicators, a solid full-bleed big-number stats band, a 3-tier pricing table (Free / Pro / Teams) with a raised highlighted most-popular plan and billing notes, an expandable FAQ accordion with a contact-support link, a vibrant gradient-panel final download CTA with trust badges, and an inverted multi-column footer (Product / Company / Legal) with social icons. Use as the ROOT/home page for a consumer mobile app, habit tracker, fitness/wellness/meditation app, productivity or to-do app, iOS/Android app launch, or any App-Store-distributed product site when a punchy, colorful, conversion-focused page with download CTAs, app screenshots and social proof is wanted. Supply content only — brand, nav, hero, logos, features, steps, gallery, stats, testimonials, pricing, faq, cta, footer; the block owns all layout and styling.",
+    "Complete mobile-app / SaaS-app marketing LANDING page in a bold, vibrant, energetic aesthetic — the second, visually DISTINCT style sibling to MobileAppKimiPage (which is the calmer, minimalist alternative). Includes a tinted gradient-glow hero with a floating animated phone mockup carrying two overlay chips (a streak badge + a community avatar stack), App Store + Google Play store-badge download buttons with star ratings and download count, a 'featured in' publication logo strip with inline brand glyphs, a 6-up feature grid of soft-tinted cards with scale-on-hover icon tiles and save-to-favorites heart buttons (streak tracking, intelligent reminders, analytics, accountability groups, habit templates, health sync), a numbered 3-step 'how it works' walkthrough with screenshots and trust pills, a horizontal-scrolling phone-screenshot gallery with hover captions and dot indicators, a solid full-bleed big-number stats band, a 3-tier pricing table (Free / Pro / Teams) with a raised highlighted most-popular plan and billing notes, an expandable FAQ accordion with a contact-support link, a vibrant gradient-panel final download CTA with trust badges and newsletter subscription form, and an inverted multi-column footer (Product / Company / Legal) with social icons. FULL-STACK: saved features drawer with Lakebed persistence, newsletter subscription, Google auth with account menu. Use as the ROOT/home page for a consumer mobile app, habit tracker, fitness/wellness/meditation app, productivity or to-do app, iOS/Android app launch, or any App-Store-distributed product site when a punchy, colorful, conversion-focused page with download CTAs, app screenshots and social proof is wanted. Supply content only — brand, nav, hero, logos, features, steps, gallery, stats, testimonials, pricing, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
     /** Brand / app name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -192,10 +216,84 @@ export const MobileAppKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      savedFeatures: table({
+        featureTitle: string(),
+        featureDescription: string(),
+      }),
+      newsletterSubscribers: table({
+        email: string(),
+      }),
+    },
+    queries: {
+      savedFeatures: ({ db }) => db.savedFeatures.orderBy('createdAt').all(),
+      subscriberEmails: ({ db }) =>
+        new Set(db.newsletterSubscribers.all().map((sub) => sub.email)),
+    },
+    mutations: {
+      saveFeature: ({ db }, featureTitle: string, featureDescription: string) => {
+        const existing = db.savedFeatures
+          .where('featureTitle', featureTitle)
+          .all()[0]
+        if (existing) {
+          db.savedFeatures.delete(existing.id)
+          return false
+        }
+        db.savedFeatures.insert({ featureTitle, featureDescription })
+        return true
+      },
+      removeFeature: ({ db }, featureTitle: string) => {
+        for (const item of db.savedFeatures.where('featureTitle', featureTitle).all()) {
+          db.savedFeatures.delete(item.id)
+        }
+        return db.savedFeatures.all()
+      },
+      subscribeNewsletter: ({ db }, email: string) => {
+        const existing = db.newsletterSubscribers.where('email', email).all()[0]
+        if (existing) return false
+        db.newsletterSubscribers.insert({ email })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [savedOpen, setSavedOpen] = useState(false)
     const brand = props.brand ?? "HabitStack"
+
+    const savedFeatures = lakebed.useQuery('savedFeatures')
+    const subscriberEmails = lakebed.useQuery('subscriberEmails')
+    const saveFeature = lakebed.useMutation('saveFeature')
+    const removeFeature = lakebed.useMutation('removeFeature')
+    const subscribeNewsletter = lakebed.useMutation('subscribeNewsletter')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const savedCount = savedFeatures?.length ?? 0
     const nav = props.nav?.length
       ? props.nav
       : ["Features", "How It Works", "Pricing", "Reviews", "FAQ", "Get App"]
@@ -602,6 +700,55 @@ export const MobileAppKimiPage2 = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
     const featureIcons = [
       // flame / streak
       <svg key="flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-7" aria-hidden="true">
@@ -666,13 +813,211 @@ export const MobileAppKimiPage2 = defineCapsule({
                 ))}
               </div>
               <div className="flex items-center gap-3 lg:gap-4">
-                <button
-                  type="button"
-                  onClick={() => go("Sign In")}
-                  className="hidden font-medium text-muted-foreground transition-colors hover:text-primary sm:inline-flex"
-                >
-                  Sign In
-                </button>
+                <Sheet open={savedOpen} onOpenChange={setSavedOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Saved features"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                      </svg>
+                      {savedCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {savedCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Saved Features</SheetTitle>
+                      <SheetDescription>
+                        {savedCount > 0
+                          ? `${savedCount} feature${savedCount === 1 ? '' : 's'} saved for later.`
+                          : 'No features saved yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {savedFeatures && savedFeatures.length > 0 ? (
+                        <div className="space-y-4">
+                          {savedFeatures.map((item) => (
+                            <div
+                              key={item.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-4 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted flex items-center justify-center">
+                                <svg
+                                  className="size-8 text-primary"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                                </svg>
+                              </div>
+                              <div className="min-w-0">
+                                <h3 className="text-sm font-semibold text-foreground">
+                                  {item.featureTitle}
+                                </h3>
+                                <p className="text-sm text-muted-foreground line-clamp-2">
+                                  {item.featureDescription}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No saved features
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Click the heart icon on any feature to save it for later.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full rounded-full"
+                        onClick={() => {
+                          for (const item of savedFeatures ?? []) {
+                            void removeFeature(item.featureTitle)
+                          }
+                        }}
+                        disabled={!savedFeatures || savedFeatures.length === 0}
+                      >
+                        Clear All
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          className="w-full rounded-full"
+                        >
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Settings')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Settings
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => go(nav[nav.length - 1])}
@@ -712,6 +1057,58 @@ export const MobileAppKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -859,18 +1256,41 @@ export const MobileAppKimiPage2 = defineCapsule({
               </div>
 
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-                {featureItems.map((item, i) => (
-                  <div
-                    key={item.title}
-                    className="group rounded-2xl bg-muted/60 p-6 transition-colors hover:bg-primary/10 lg:p-8"
-                  >
-                    <div className="mb-6 grid size-14 place-items-center rounded-xl bg-primary text-primary-foreground transition-transform group-hover:scale-110">
-                      {featureIcons[i % featureIcons.length]}
+                {featureItems.map((item, i) => {
+                  const isSaved = savedFeatures?.some(
+                    (f) => f.featureTitle === item.title
+                  ) ?? false
+                  return (
+                    <div
+                      key={item.title}
+                      className="group relative rounded-2xl bg-muted/60 p-6 transition-colors hover:bg-primary/10 lg:p-8"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => void saveFeature(item.title, item.description)}
+                        aria-pressed={isSaved}
+                        aria-label={
+                          isSaved
+                            ? `Remove ${item.title} from saved features`
+                            : `Save ${item.title} to features`
+                        }
+                        className={cn(
+                          'absolute right-4 top-4 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
+                          isSaved
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-background/90 text-foreground hover:bg-background',
+                        )}
+                      >
+                        <HeartIcon active={isSaved} />
+                      </button>
+                      <div className="mb-6 grid size-14 place-items-center rounded-xl bg-primary text-primary-foreground transition-transform group-hover:scale-110">
+                        {featureIcons[i % featureIcons.length]}
+                      </div>
+                      <h3 className="mb-3 text-xl font-bold">{item.title}</h3>
+                      <p className="text-muted-foreground">{item.description}</p>
                     </div>
-                    <h3 className="mb-3 text-xl font-bold">{item.title}</h3>
-                    <p className="text-muted-foreground">{item.description}</p>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -1116,9 +1536,7 @@ export const MobileAppKimiPage2 = defineCapsule({
                       <summary className="flex cursor-pointer list-none items-center justify-between p-6">
                         <span className="text-lg font-semibold text-card-foreground">{item.question}</span>
                         <span className="ml-6 shrink-0">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-5 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true">
-                            <path d="M19 9l-7 7-7-7" />
-                          </svg>
+                          <ChevronDown />
                         </span>
                       </summary>
                       <div className="px-6 pb-6 text-muted-foreground">{item.answer}</div>
@@ -1133,10 +1551,8 @@ export const MobileAppKimiPage2 = defineCapsule({
                     onClick={() => go(faqContactCta)}
                     className="inline-flex items-center gap-2 font-semibold text-primary transition-colors hover:text-primary/80"
                   >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-5" aria-hidden="true">
-                      <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
                     {faqContactCta}
+                    <ArrowRight />
                   </button>
                 </div>
               </div>
@@ -1186,6 +1602,45 @@ export const MobileAppKimiPage2 = defineCapsule({
                     ))}
                   </div>
                 </div>
+              </div>
+
+              {/* Newsletter */}
+              <div className="mx-auto mt-16 max-w-4xl text-center">
+                <h3 className="mb-4 text-2xl font-bold text-foreground lg:text-3xl">
+                  Stay Updated
+                </h3>
+                <p className="mx-auto mb-8 max-w-2xl text-base text-muted-foreground lg:text-lg">
+                  Get the latest tips, features, and updates delivered to your inbox.
+                </p>
+                <form
+                  className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    const form = e.currentTarget
+                    const email = form.querySelector('input[type="email"]') as HTMLInputElement
+                    if (email.value) {
+                      void subscribeNewsletter(email.value)
+                      email.value = ''
+                    }
+                  }}
+                >
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    aria-label="Email address for newsletter"
+                    required
+                    className="flex-1 rounded-full border border-border bg-background px-6 py-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                  <button
+                    type="submit"
+                    className="whitespace-nowrap rounded-full bg-primary px-8 py-4 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    Subscribe
+                  </button>
+                </form>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  By subscribing, you agree to our Privacy Policy. Unsubscribe anytime.
+                </p>
               </div>
             </div>
           </section>

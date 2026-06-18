@@ -1,9 +1,19 @@
-import { type ReactNode } from "react"
+import { type FormEvent, type ReactNode, useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * InsuranceKimiPage — a complete, self-contained INSURANCE marketing / quote
@@ -178,7 +188,66 @@ export const InsuranceKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      quoteRequests: table({
+        name: string(),
+        email: string(),
+        coverageType: string(),
+        plan: string(),
+        source: string(),
+        notes: string(),
+        status: string(),
+      }),
+    },
+    queries: {
+      quoteRequests: ({ db }) => db.quoteRequests.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addQuoteRequest: (
+        { db },
+        name: string,
+        email: string,
+        coverageType: string,
+        plan: string,
+        source: string,
+        notes: string,
+      ) => {
+        db.quoteRequests.insert({
+          name,
+          email,
+          coverageType,
+          plan,
+          source,
+          notes,
+          status: "Open",
+        })
+
+        return db.quoteRequests.all()
+      },
+      setQuoteRequestStatus: ({ db }, id: string, status: string) => {
+        const request = db.quoteRequests.get(id)
+        if (!request) return db.quoteRequests.all()
+
+        db.quoteRequests.update(id, { status })
+
+        return db.quoteRequests.all()
+      },
+      removeQuoteRequest: ({ db }, id: string) => {
+        db.quoteRequests.delete(id)
+
+        return db.quoteRequests.all()
+      },
+      clearQuoteRequests: ({ db }) => {
+        for (const request of db.quoteRequests.all()) {
+          db.quoteRequests.delete(request.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? "SecureLife"
     const nav = props.nav?.length
@@ -518,6 +587,100 @@ export const InsuranceKimiPage = defineCapsule({
       ? props.footer.socials
       : ["Facebook", "Twitter", "LinkedIn"]
 
+    const defaultCoverageType = coverageItems[0]?.title ?? "Home Insurance"
+    const defaultPlan = plans[0]?.name ?? "Essential"
+    const [quoteDrawerOpen, setQuoteDrawerOpen] = useState(false)
+    const [quoteForm, setQuoteForm] = useState({
+      name: "",
+      email: "",
+      coverageType: defaultCoverageType,
+      plan: defaultPlan,
+      source: "Get your free quote",
+      notes: "",
+    })
+
+    const quoteRequests = lakebed.useQuery("quoteRequests") ?? []
+    const addQuoteRequest = lakebed.useMutation("addQuoteRequest")
+    const setQuoteRequestStatus = lakebed.useMutation("setQuoteRequestStatus")
+    const removeQuoteRequest = lakebed.useMutation("removeQuoteRequest")
+    const clearQuoteRequests = lakebed.useMutation("clearQuoteRequests")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+    const authInitials = authDisplayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "ME"
+    const quoteRequestCount = quoteRequests.length
+    const openQuoteRequestCount = quoteRequests.filter(
+      (request) => request.status === "Open",
+    ).length
+    const coverageTypeOptions = coverageItems.map((item) => item.title)
+    const planOptions = plans.map((item) => item.name)
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const openQuoteDrawer = (opts: {
+      source: string
+      coverageType?: string
+      plan?: string
+    }) => {
+      setQuoteForm((previous) => ({
+        ...previous,
+        source: opts.source,
+        coverageType:
+          opts.coverageType && coverageTypeOptions.includes(opts.coverageType)
+            ? opts.coverageType
+            : previous.coverageType,
+        plan:
+          opts.plan && planOptions.includes(opts.plan)
+            ? opts.plan
+            : previous.plan,
+      }))
+      setQuoteDrawerOpen(true)
+    }
+
+    const handleQuoteSubmit = (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+
+      const name = quoteForm.name.trim()
+      const email = quoteForm.email.trim()
+      if (!name || !email) return
+
+      void addQuoteRequest(
+        name,
+        email,
+        quoteForm.coverageType || defaultCoverageType,
+        quoteForm.plan || defaultPlan,
+        quoteForm.source || "Quick quote",
+        quoteForm.notes.trim(),
+      )
+
+      setQuoteForm((previous) => ({
+        ...previous,
+        name: "",
+        email: "",
+        notes: "",
+      }))
+    }
+
     // Shield brand mark (decorative brand asset).
     const Shield = ({ className }: { className?: string }) => (
       <span
@@ -735,10 +898,22 @@ export const InsuranceKimiPage = defineCapsule({
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(heroPrimary)}
+                  onClick={() => {
+                    openQuoteDrawer({
+                      source: "Header quote",
+                      plan: defaultPlan,
+                      coverageType: defaultCoverageType,
+                    })
+                    go(heroPrimary)
+                  }}
                   className="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   Get a Quote
+                  {quoteRequestCount > 0 ? (
+                    <span className="ml-2 grid size-5 place-items-center rounded-full bg-primary-foreground/20 text-[0.625rem] font-bold text-primary-foreground">
+                      {quoteRequestCount}
+                    </span>
+                  ) : null}
                 </button>
               </div>
             </div>
@@ -761,20 +936,34 @@ export const InsuranceKimiPage = defineCapsule({
                   <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
                     {heroSub}
                   </p>
-                  <div className="flex flex-col gap-4 sm:flex-row">
-                    <button
-                      type="button"
-                      onClick={() => go(heroPrimary)}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:bg-primary/90"
-                    >
-                      {heroPrimary}
-                      <ArrowRight />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => go(heroSecondary)}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-8 py-4 text-base font-semibold text-foreground transition-all hover:bg-muted"
-                    >
+                <div className="flex flex-col gap-4 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openQuoteDrawer({
+                        source: heroPrimary,
+                        coverageType: defaultCoverageType,
+                        plan: defaultPlan,
+                      })
+                      go(heroPrimary)
+                    }}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:bg-primary/90"
+                  >
+                    {heroPrimary}
+                    <ArrowRight />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openQuoteDrawer({
+                        source: heroSecondary,
+                        coverageType: defaultCoverageType,
+                        plan: defaultPlan,
+                      })
+                      go(heroSecondary)
+                    }}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-8 py-4 text-base font-semibold text-foreground transition-all hover:bg-muted"
+                  >
                       <svg
                         className="size-5 text-primary"
                         width="20"
@@ -1034,7 +1223,14 @@ export const InsuranceKimiPage = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(plan.cta)}
+                      onClick={() => {
+                        openQuoteDrawer({
+                          source: plan.cta,
+                          coverageType: defaultCoverageType,
+                          plan: plan.name,
+                        })
+                        go(plan.cta)
+                      }}
                       className={cn(
                         "w-full rounded-xl px-4 py-3 font-semibold transition-colors",
                         plan.popular
@@ -1148,12 +1344,19 @@ export const InsuranceKimiPage = defineCapsule({
                     {ctaDesc}
                   </p>
                   <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                    <button
-                      type="button"
-                      onClick={() => go(ctaPrimary)}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-background px-8 py-4 text-base font-semibold text-primary shadow-lg transition-colors hover:bg-muted"
-                    >
-                      {ctaPrimary}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openQuoteDrawer({
+                        source: ctaPrimary,
+                        coverageType: defaultCoverageType,
+                        plan: defaultPlan,
+                      })
+                      go(ctaPrimary)
+                    }}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-background px-8 py-4 text-base font-semibold text-primary shadow-lg transition-colors hover:bg-muted"
+                  >
+                    {ctaPrimary}
                       <ArrowRight />
                     </button>
                     <button
@@ -1304,6 +1507,272 @@ export const InsuranceKimiPage = defineCapsule({
             </div>
           </div>
         </footer>
+
+        <Sheet open={quoteDrawerOpen} onOpenChange={setQuoteDrawerOpen}>
+          <SheetContent side="right" className="w-full max-w-md p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border px-6 py-6">
+              <SheetTitle>Quote Requests</SheetTitle>
+              <SheetDescription>
+                Manage your insurance quote leads for this session.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              <div className="space-y-8">
+                {!auth.isLoading ? (
+                  isSignedIn ? (
+                    <div className="rounded-lg border border-border bg-muted px-4 py-3">
+                      <p className="text-sm text-foreground">
+                        Signed in as {authDisplayName} ({authInitials})
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="mt-2 w-full rounded-md bg-foreground px-3 py-2 text-xs font-semibold text-background transition-colors hover:bg-foreground/90"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleSignIn}
+                      className="w-full rounded-lg bg-foreground px-4 py-3 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                    >
+                      {authLabel}
+                    </button>
+                  )
+                ) : null}
+
+                <form className="space-y-4" onSubmit={handleQuoteSubmit}>
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Create a quote request
+                  </h3>
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-muted-foreground">
+                      Full name
+                    </label>
+                    <input
+                      value={quoteForm.name}
+                      onChange={(event) =>
+                        setQuoteForm((previous) => ({
+                          ...previous,
+                          name: event.target.value,
+                        }))
+                      }
+                      required
+                      placeholder="Jane Doe"
+                      aria-label="Full name"
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-muted-foreground">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={quoteForm.email}
+                      onChange={(event) =>
+                        setQuoteForm((previous) => ({
+                          ...previous,
+                          email: event.target.value,
+                        }))
+                      }
+                      required
+                      placeholder="you@email.com"
+                      aria-label="Email"
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    />
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-muted-foreground">
+                        Coverage
+                      </label>
+                      <select
+                        value={quoteForm.coverageType}
+                        onChange={(event) =>
+                          setQuoteForm((previous) => ({
+                            ...previous,
+                            coverageType: event.target.value,
+                          }))
+                        }
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        aria-label="Coverage type"
+                      >
+                        {coverageTypeOptions.map((coverageType) => (
+                          <option key={coverageType} value={coverageType}>
+                            {coverageType}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-muted-foreground">
+                        Plan
+                      </label>
+                      <select
+                        value={quoteForm.plan}
+                        onChange={(event) =>
+                          setQuoteForm((previous) => ({
+                            ...previous,
+                            plan: event.target.value,
+                          }))
+                        }
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        aria-label="Plan"
+                      >
+                        {planOptions.map((planName) => (
+                          <option key={planName} value={planName}>
+                            {planName}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-muted-foreground">
+                      Notes
+                    </label>
+                    <textarea
+                      value={quoteForm.notes}
+                      onChange={(event) =>
+                        setQuoteForm((previous) => ({
+                          ...previous,
+                          notes: event.target.value,
+                        }))
+                      }
+                      rows={3}
+                      placeholder="Tell us what you need covered."
+                      aria-label="Quote notes"
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    Save quote request
+                  </button>
+                </form>
+
+                <div>
+                  <div className="mb-3 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-foreground">
+                      Saved requests
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {openQuoteRequestCount} open · {quoteRequestCount} total
+                    </p>
+                  </div>
+                  {quoteRequests.length ? (
+                    <div className="space-y-3">
+                      {quoteRequests.map((request) => {
+                        const isOpen = request.status === "Open"
+
+                        return (
+                          <div
+                            key={request.id}
+                            className="rounded-xl border border-border bg-muted/20 p-4"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <p className="font-semibold text-foreground">
+                                  {request.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {request.email}
+                                </p>
+                              </div>
+                              <span
+                                className={cn(
+                                  "rounded-full px-2 py-0.5 text-[11px] font-semibold",
+                                  isOpen
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-muted text-foreground/70",
+                                )}
+                              >
+                                {request.status}
+                              </span>
+                            </div>
+                            <p className="mt-2 text-xs text-muted-foreground">
+                              {request.coverageType} · {request.plan}
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              Source: {request.source}
+                            </p>
+                            {request.notes ? (
+                              <p className="mt-3 text-xs text-foreground/85">
+                                {request.notes}
+                              </p>
+                            ) : null}
+                            <div className="mt-3 flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  void setQuoteRequestStatus(
+                                    request.id,
+                                    isOpen ? "Contacted" : "Open",
+                                  )
+                                }
+                                className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+                              >
+                                {isOpen ? "Mark contacted" : "Re-open"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void removeQuoteRequest(request.id)}
+                                className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-1.5 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/15"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <p className="rounded-xl border border-dashed border-border bg-muted/30 px-4 py-6 text-center text-sm text-muted-foreground">
+                      No requests yet. Add one using the form above.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+            <SheetFooter className="border-t border-border px-6 py-5">
+              <p className="mb-3 text-xs text-muted-foreground">
+                {quoteRequestCount > 0
+                  ? `${quoteRequestCount} request${quoteRequestCount === 1 ? "" : "s"} saved in this session.`
+                  : "No quote requests yet. Start by saving one."}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (quoteRequestCount > 0) {
+                      void clearQuoteRequests()
+                    }
+                  }}
+                  className="w-full rounded-lg border border-border bg-background px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-60"
+                  disabled={quoteRequestCount === 0}
+                >
+                  Clear requests
+                </button>
+                <SheetClose asChild>
+                  <button
+                    type="button"
+                    className="w-full rounded-lg bg-foreground px-4 py-2 text-xs font-semibold text-background transition-colors hover:bg-foreground/90"
+                  >
+                    Continue
+                  </button>
+                </SheetClose>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

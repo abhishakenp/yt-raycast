@@ -1,8 +1,20 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
 
 export const CoworkingKimiPage2 = defineCapsule({
   name: "CoworkingKimiPage2",
@@ -43,102 +55,217 @@ export const CoworkingKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      tourRequests: table({
+        fullName: string(),
+        email: string(),
+        phone: string(),
+        tourType: string(),
+        date: string(),
+        attendees: number(),
+        notes: string(),
+      }),
+    },
+    queries: {
+      tourRequests: ({ db }) => db.tourRequests.orderBy("createdAt").all(),
+    },
+    mutations: {
+      submitTourRequest: (
+        { db },
+        fullName: string,
+        email: string,
+        phone: string,
+        tourType: string,
+        date: string,
+        attendees: number,
+        notes: string,
+      ) => {
+        const normalizedAttendees = Math.max(1, Math.floor(attendees))
+
+        db.tourRequests.insert({
+          fullName,
+          email,
+          phone,
+          tourType,
+          date,
+          attendees: normalizedAttendees,
+          notes,
+        })
+
+        return db.tourRequests.all()
+      },
+      removeTourRequest: ({ db }, id: string) => {
+        db.tourRequests.delete(id)
+        return db.tourRequests.all()
+      },
+      clearTourRequests: ({ db }) => {
+        for (const request of db.tourRequests.all()) {
+          db.tourRequests.delete(request.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [tourDrawerOpen, setTourDrawerOpen] = useState(false)
+    const [tourForm, setTourForm] = useState({
+      fullName: "",
+      email: "",
+      phone: "",
+      tourType: "Coworking tour",
+      date: "",
+      attendees: "1",
+      notes: "",
+    })
+
     const brand = props.brand ?? "Forge &bull; Coworking Space in Downtown Austin"
-    const nav = props.nav?.length ? props.nav : ["Forge", "Spaces", "Amenities", "Pricing", "Community", "FAQ"]
+    const nav = props.nav?.length
+      ? props.nav
+      : ["Forge", "Spaces", "Amenities", "Pricing", "Community", "FAQ"]
     const hero = {
       eyebrow: "Coworking / Variant 2",
       title: "Work where ideas ignite.",
-      description: "Forge &bull; Coworking Space in Downtown Austin Forge Spaces Amenities Pricing Community FAQ Book a Tour Now Open in Downtown Austin Work where ideas ignite. Forge is a bold cow...",
+      description:
+        "Forge &bull; Coworking Space in Downtown Austin Forge Spaces Amenities Pricing Community FAQ Book a Tour Now Open in Downtown Austin Work where ideas ignite. Forge is a bold cow...",
       primaryCta: "Book a Tour",
       secondaryCta: "Forge",
-      imageAlt: "Modern coworking space interior with high ceilings, industrial lighting, and rows of wooden desks",
+      imageAlt:
+        "Modern coworking space interior with high ceilings, industrial lighting, and rows of wooden desks",
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Amenities",
-    "body": "Forge &bull; Coworking Space in Downtown Austin Forge Spaces Amenities Pricing Community FAQ Book a Tour Now Open in Downtown Austin Work where ideas ignite. Forge is a bold cow...",
-    "items": [
-      "What Members Say",
-      "Come see it for yourself.",
-      "Gigabit Fiber WiFi"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "How It Works",
-    "body": "Coworking page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "24/7 Access",
-      "Standing Desks",
-      "Podcast & Zoom Studios"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Our Spaces",
-    "body": "Coworking page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Complimentary Coffee",
-      "Downtown Location",
-      "Mail & Package Handling"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "What Members Say",
-    "body": "Coworking page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Monthly Member Events",
-      "Printing & Design Station",
-      "Book a Free Tour"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "How It Works",
-    "alt": "Modern coworking space interior with high ceilings, industrial lighting, and rows of wooden desks",
-    "caption": "Coworking generated page detail"
-  },
-  {
-    "title": "Our Spaces",
-    "alt": "Professional headshot of a smiling woman with curly hair",
-    "caption": "Coworking generated page detail"
-  },
-  {
-    "title": "Pricing",
-    "alt": "Professional headshot of a man with short beard smiling",
-    "caption": "Coworking generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: "24/7",
+            label: "Responsive service",
+          },
+          {
+            value: "98%",
+            label: "Positive outcomes",
+          },
+          {
+            value: "4.9",
+            label: "Average rating",
+          },
+          {
+            value: "12+",
+            label: "Core capabilities",
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: "Overview",
+            title: "Amenities",
+            body: "Forge &bull; Coworking Space in Downtown Austin Forge Spaces Amenities Pricing Community FAQ Book a Tour Now Open in Downtown Austin Work where ideas ignite. Forge is a bold cow...",
+            items: [
+              "What Members Say",
+              "Come see it for yourself.",
+              "Gigabit Fiber WiFi",
+            ],
+          },
+          {
+            eyebrow: "Experience",
+            title: "How It Works",
+            body: "Coworking page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              "24/7 Access",
+              "Standing Desks",
+              "Podcast & Zoom Studios",
+            ],
+          },
+          {
+            eyebrow: "Proof",
+            title: "Our Spaces",
+            body: "Coworking page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              "Complimentary Coffee",
+              "Downtown Location",
+              "Mail & Package Handling",
+            ],
+          },
+          {
+            eyebrow: "Next steps",
+            title: "What Members Say",
+            body: "Coworking page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              "Monthly Member Events",
+              "Printing & Design Station",
+              "Book a Free Tour",
+            ],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: "How It Works",
+            alt: "Modern coworking space interior with high ceilings, industrial lighting, and rows of wooden desks",
+            caption: "Coworking generated page detail",
+          },
+          {
+            title: "Our Spaces",
+            alt: "Professional headshot of a smiling woman with curly hair",
+            caption: "Coworking generated page detail",
+          },
+          {
+            title: "Pricing",
+            alt: "Professional headshot of a man with short beard smiling",
+            caption: "Coworking generated page detail",
+          },
+        ]
+
+    const tourRequests = lakebed.useQuery("tourRequests")
+    const submitTourRequest = lakebed.useMutation("submitTourRequest")
+    const removeTourRequest = lakebed.useMutation("removeTourRequest")
+    const clearTourRequests = lakebed.useMutation("clearTourRequests")
+    const auth = lakebed.useAuth()
+
+    const safeTourRequests = tourRequests ?? []
+    const requestCount = safeTourRequests.length
+    const totalAttendees = safeTourRequests.reduce(
+      (total, request) => total + request.attendees,
+      0,
+    )
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Guest"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+
+    const openTourDrawer = (tourType: string) => {
+      setTourForm((prev) => ({
+        ...prev,
+        tourType,
+        fullName: prev.fullName || (isSignedIn ? authDisplayName : ""),
+        email: prev.email || (isSignedIn ? authEmail || "" : ""),
+      }))
+      setTourDrawerOpen(true)
+    }
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
 
     return (
       <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button type="button" onClick={() => go("Home") } className="text-left text-lg font-semibold tracking-tight">
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -155,7 +282,7 @@ export const CoworkingKimiPage2 = defineCapsule({
             </nav>
             <button
               type="button"
-              onClick={() => go(hero.primaryCta)}
+              onClick={() => openTourDrawer(hero.primaryCta)}
               className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
             >
               {hero.primaryCta}
@@ -180,7 +307,7 @@ export const CoworkingKimiPage2 = defineCapsule({
                 <div className="mt-8 flex flex-wrap gap-3">
                   <button
                     type="button"
-                    onClick={() => go(hero.primaryCta)}
+                    onClick={() => openTourDrawer(hero.primaryCta)}
                     className="rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                   >
                     {hero.primaryCta}
@@ -222,7 +349,7 @@ export const CoworkingKimiPage2 = defineCapsule({
                         <button
                           key={item}
                           type="button"
-                          onClick={() => go(item)}
+                          onClick={() => openTourDrawer(item)}
                           className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                         >
                           <span>{item}</span>
@@ -273,7 +400,7 @@ export const CoworkingKimiPage2 = defineCapsule({
                 </div>
                 <button
                   type="button"
-                  onClick={() => go(hero.primaryCta)}
+                  onClick={() => openTourDrawer(hero.primaryCta)}
                   className="rounded-md bg-background px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
                 >
                   {hero.primaryCta}
@@ -295,6 +422,266 @@ export const CoworkingKimiPage2 = defineCapsule({
             </div>
           </div>
         </footer>
+
+        <Sheet open={tourDrawerOpen} onOpenChange={setTourDrawerOpen}>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Tour requests</SheetTitle>
+              <SheetDescription>
+                {isSignedIn
+                  ? `Hi ${authLabel}, your saved tour requests are persisted for this session.`
+                  : "Submit your tour request and it will be saved for this session."}
+              </SheetDescription>
+            </SheetHeader>
+
+            <div className="flex-1 space-y-6 overflow-y-auto px-6 py-5">
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault()
+
+                  if (!tourForm.fullName.trim() || !tourForm.email.trim()) return
+
+                  const attendees = Number.parseInt(tourForm.attendees, 10)
+                  const normalizedAttendees = Number.isNaN(attendees)
+                    ? 1
+                    : Math.max(1, attendees)
+
+                  void submitTourRequest(
+                    tourForm.fullName.trim(),
+                    tourForm.email.trim(),
+                    tourForm.phone.trim(),
+                    tourForm.tourType || hero.primaryCta,
+                    tourForm.date.trim() || "Flexible",
+                    normalizedAttendees,
+                    tourForm.notes.trim(),
+                  )
+
+                  setTourForm((prev) => ({
+                    ...prev,
+                    fullName: isSignedIn ? prev.fullName : "",
+                    email: isSignedIn ? prev.email : "",
+                    phone: "",
+                    date: "",
+                    attendees: "1",
+                    notes: "",
+                  }))
+                  setTourDrawerOpen(false)
+                }}
+                className="rounded-lg border border-border bg-muted/40 p-4"
+              >
+                <p className="mb-4 text-sm font-semibold text-foreground">
+                  New request
+                </p>
+                <div className="grid gap-3">
+                  <label className="grid gap-1 text-sm">
+                    <span className="text-muted-foreground">Full name</span>
+                    <input
+                      value={tourForm.fullName}
+                      onChange={(event) =>
+                        setTourForm((prev) => ({
+                          ...prev,
+                          fullName: event.target.value,
+                        }))
+                      }
+                      required
+                      className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    />
+                  </label>
+                  <label className="grid gap-1 text-sm">
+                    <span className="text-muted-foreground">Email</span>
+                    <input
+                      type="email"
+                      value={tourForm.email}
+                      onChange={(event) =>
+                        setTourForm((prev) => ({
+                          ...prev,
+                          email: event.target.value,
+                        }))
+                      }
+                      required
+                      className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    />
+                  </label>
+                  <label className="grid gap-1 text-sm">
+                    <span className="text-muted-foreground">Phone</span>
+                    <input
+                      type="tel"
+                      value={tourForm.phone}
+                      onChange={(event) =>
+                        setTourForm((prev) => ({
+                          ...prev,
+                          phone: event.target.value,
+                        }))
+                      }
+                      className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    />
+                  </label>
+                  <label className="grid gap-1 text-sm">
+                    <span className="text-muted-foreground">Preferred date</span>
+                    <input
+                      value={tourForm.date}
+                      onChange={(event) =>
+                        setTourForm((prev) => ({
+                          ...prev,
+                          date: event.target.value,
+                        }))
+                      }
+                      className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    />
+                  </label>
+                  <label className="grid gap-1 text-sm">
+                    <span className="text-muted-foreground">How many people</span>
+                    <input
+                      type="number"
+                      min="1"
+                      value={tourForm.attendees}
+                      onChange={(event) =>
+                        setTourForm((prev) => ({
+                          ...prev,
+                          attendees: event.target.value,
+                        }))
+                      }
+                      className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    />
+                  </label>
+                  <label className="grid gap-1 text-sm">
+                    <span className="text-muted-foreground">Tour interest</span>
+                    <input
+                      value={tourForm.tourType}
+                      onChange={(event) =>
+                        setTourForm((prev) => ({
+                          ...prev,
+                          tourType: event.target.value,
+                        }))
+                      }
+                      className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    />
+                  </label>
+                  <label className="grid gap-1 text-sm">
+                    <span className="text-muted-foreground">Notes</span>
+                    <textarea
+                      value={tourForm.notes}
+                      onChange={(event) =>
+                        setTourForm((prev) => ({
+                          ...prev,
+                          notes: event.target.value,
+                        }))
+                      }
+                      rows={3}
+                      className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    />
+                  </label>
+                </div>
+                <div className="mt-4">
+                  <Button type="submit" className="w-full rounded-full">
+                    Save request
+                  </Button>
+                </div>
+              </form>
+
+              <div className="space-y-3 rounded-lg border border-border bg-card p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-foreground">Saved requests</p>
+                  <span className="text-xs text-muted-foreground">
+                    {requestCount} request{requestCount === 1 ? "" : "s"}
+                  </span>
+                </div>
+                {safeTourRequests.length ? (
+                  <div className="grid gap-3">
+                    {safeTourRequests.map((request) => (
+                      <div
+                        key={request.id}
+                        className="rounded-md border border-border bg-background p-3"
+                      >
+                        <div className="mb-2 flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">
+                              {request.fullName}
+                            </p>
+                            <p className="text-xs text-muted-foreground">{request.email}</p>
+                          </div>
+                          <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
+                            {request.attendees} member{request.attendees === 1 ? "" : "s"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {request.tourType} · {request.date}
+                        </p>
+                        <div className="mt-3 flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            {request.phone || "No phone"}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => void removeTourRequest(request.id)}
+                            className="rounded-md px-2 py-1 text-xs font-semibold text-foreground underline-offset-4 transition-colors hover:text-primary hover:underline"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No tour requests yet.</p>
+                )}
+              </div>
+
+              <div className="rounded-lg border border-border bg-muted/40 p-4">
+                <p className="text-sm font-semibold text-foreground">Account</p>
+                <p className="mt-1 text-sm text-muted-foreground">{authLabel}</p>
+                {isSignedIn ? (
+                  <Button
+                    type="button"
+                    onClick={handleSignOut}
+                    variant="outline"
+                    className="mt-3 w-full rounded-full"
+                  >
+                    Sign out
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    className="mt-3 w-full rounded-full"
+                  >
+                    {auth.isLoading ? "Checking..." : "Sign in with Google"}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <SheetFooter className="border-t border-border p-6">
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span>Total requests</span>
+                  <span>{requestCount}</span>
+                </div>
+                <div className="flex items-center justify-between font-semibold text-foreground">
+                  <span>Total people</span>
+                  <span>{totalAttendees}</span>
+                </div>
+              </div>
+              <Button
+                type="button"
+                onClick={() => void clearTourRequests()}
+                disabled={!safeTourRequests.length}
+                variant="outline"
+                className="w-full rounded-full"
+              >
+                Clear all requests
+              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <SheetClose asChild>
+                  <Button type="button" variant="secondary" className="rounded-full">
+                    Close
+                  </Button>
+                </SheetClose>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

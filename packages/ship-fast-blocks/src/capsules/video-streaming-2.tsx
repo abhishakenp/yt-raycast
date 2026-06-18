@@ -1,9 +1,35 @@
-import { type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "#/components/ui/command.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * VideoStreamingKimiPage2 — a complete, self-contained video-streaming service
@@ -200,8 +226,49 @@ export const VideoStreamingKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      movies: table({
+        alt: string(),
+        badge: string(),
+        meta: string(),
+        title: string(),
+      }),
+      watchlist: table({
+        movieTitle: string(),
+      }),
+    },
+    queries: {
+      movies: ({ db }) => db.movies.orderBy('createdAt').all(),
+      watchlistMovieTitles: ({ db }) =>
+        new Set(db.watchlist.all().map((item) => item.movieTitle)),
+    },
+    mutations: {
+      addToWatchlist: ({ db }, movieTitle: string) => {
+        const existingItem = db.watchlist
+          .where('movieTitle', movieTitle)
+          .all()[0]
+
+        if (!existingItem) {
+          db.watchlist.insert({ movieTitle })
+        }
+
+        return db.watchlist.all()
+      },
+      removeFromWatchlist: ({ db }, movieTitle: string) => {
+        for (const item of db.watchlist.where('movieTitle', movieTitle).all()) {
+          db.watchlist.delete(item.id)
+        }
+
+        return db.watchlist.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [mobileOpen, setMobileOpen] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
+    const [watchlistOpen, setWatchlistOpen] = useState(false)
     const brand = props.brand ?? "StreamFlix"
     const nav = props.nav?.length
       ? props.nav
@@ -651,6 +718,52 @@ export const VideoStreamingKimiPage2 = defineCapsule({
       ? props.footer.legal
       : ["Privacy", "Terms", "Cookie Preferences", "Legal Notices"]
 
+    // Lakebed hooks
+    const normalizedGalleryItems = galleryRows.flatMap((row) =>
+      row.items.map((item) => ({
+        alt: item.alt,
+        badge: item.badge ?? '',
+        meta: item.meta,
+        title: item.title,
+      })),
+    )
+    const storedMovies = lakebed.useQuery('movies')
+    const watchlistMovieTitles = lakebed.useQuery('watchlistMovieTitles')
+    const auth = lakebed.useAuth()
+    const addToWatchlist = lakebed.useMutation('addToWatchlist')
+    const removeFromWatchlist = lakebed.useMutation('removeFromWatchlist')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const displayMovies =
+      storedMovies && storedMovies.length > 0
+        ? storedMovies
+        : normalizedGalleryItems
+    const safeWatchlistMovieTitles = watchlistMovieTitles ?? new Set<string>()
+    const watchlistCount = safeWatchlistMovieTitles.size
+
     // Brand logo mark — fixed decorative brand asset (play triangle).
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
@@ -734,6 +847,36 @@ export const VideoStreamingKimiPage2 = defineCapsule({
         aria-hidden="true"
       >
         <path d="M19 9l-7 7-7-7" />
+      </svg>
+    )
+
+    const PlusIcon = ({ className }: { className?: string }) => (
+      <svg
+        className={className}
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+    )
+
+    const CheckCircleIcon = ({ className }: { className?: string }) => (
+      <svg
+        className={className}
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     )
 
@@ -867,11 +1010,210 @@ export const VideoStreamingKimiPage2 = defineCapsule({
               <div className="flex items-center gap-3 lg:gap-4">
                 <button
                   type="button"
-                  onClick={() => go("Sign In")}
-                  className="hidden px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
+                  onClick={() => setSearchOpen(true)}
+                  aria-label="Search"
+                  className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground sm:flex"
                 >
-                  Sign In
+                  <svg
+                    className="size-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
                 </button>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown className="size-4" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('My List')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          My List
+                          <ArrowRight className="size-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight className="size-4" />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={watchlistOpen} onOpenChange={setWatchlistOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="My List"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 6v6h6" />
+                        <path d="M12 18v-6H6" />
+                        <path d="M6 6h12v12H6z" />
+                      </svg>
+                      {watchlistCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {watchlistCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">My List</SheetTitle>
+                      <SheetDescription>
+                        {watchlistCount > 0
+                          ? `${watchlistCount} movie${watchlistCount === 1 ? '' : 's'} saved to your list.`
+                          : 'Your list is empty. Add movies to watch later.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {watchlistCount > 0 ? (
+                        <div className="space-y-4">
+                          {Array.from(safeWatchlistMovieTitles).map((title) => (
+                            <div
+                              key={title}
+                              className="flex items-center justify-between rounded-lg border border-border bg-card p-4"
+                            >
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-semibold text-foreground">
+                                  {title}
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => void removeFromWatchlist(title)}
+                                className="ml-4 text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No movies in your list
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Browse the gallery and add movies to your watchlist.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Continue Browsing
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(heroPrimary)}
@@ -879,10 +1221,152 @@ export const VideoStreamingKimiPage2 = defineCapsule({
                 >
                   Start Free Trial
                 </button>
+                <button
+                  type="button"
+                  aria-label="Open menu"
+                  aria-expanded={mobileOpen}
+                  aria-controls="mobile-menu"
+                  onClick={() => setMobileOpen((v: boolean) => !v)}
+                  className="p-2 text-muted-foreground hover:text-foreground lg:hidden"
+                >
+                  <svg
+                    className="size-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                  >
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="18" x2="21" y2="18" />
+                  </svg>
+                </button>
               </div>
             </div>
+            {mobileOpen && (
+              <div
+                id="mobile-menu"
+                className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
+              >
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      go(label)
+                    }}
+                    className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                  >
+                    {label}
+                  </button>
+                ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
           </nav>
         </header>
+
+        <CommandDialog
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          title="Search movies"
+          description="Search the movies available in our library."
+          className="max-w-xl"
+        >
+          <CommandInput placeholder={`Search ${brand} movies...`} />
+          <CommandList className="max-h-[420px]">
+            <CommandEmpty>No movies found.</CommandEmpty>
+            <CommandGroup heading="Movies">
+              {displayMovies.map((movie) => (
+                <CommandItem
+                  key={movie.title}
+                  value={`${movie.title} ${movie.meta}`}
+                  onSelect={() => {
+                    setSearchOpen(false)
+                    go(movie.title)
+                  }}
+                  className="gap-3 py-3"
+                >
+                  <div className="size-12 overflow-hidden rounded-md bg-muted">
+                    <Image
+                      alt={movie.alt}
+                      w={120}
+                      h={120}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {movie.title}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {movie.meta}
+                    </p>
+                  </div>
+                  {movie.badge ? (
+                    <span className="rounded bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">
+                      {movie.badge}
+                    </span>
+                  ) : null}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
 
         <main>
           {/* Hero */}
@@ -1074,43 +1558,79 @@ export const VideoStreamingKimiPage2 = defineCapsule({
                       {row.label}
                     </h3>
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-                      {row.items.map((item) => (
-                        <button
-                          key={item.title}
-                          type="button"
-                          onClick={() => go(item.title)}
-                          className="group relative aspect-[2/3] cursor-pointer overflow-hidden rounded-lg text-left"
-                        >
-                          <Image
-                            alt={item.alt}
-                            w={300}
-                            h={450}
-                            loading="lazy"
-                            className="size-full object-cover transition-transform duration-300 group-hover:scale-110"
-                          />
-                          {item.badge ? (
-                            <span
+                      {row.items.map((item) => {
+                        const isInWatchlist = safeWatchlistMovieTitles.has(item.title)
+
+                        return (
+                          <div
+                            key={item.title}
+                            className="group relative aspect-[2/3] overflow-hidden rounded-lg"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => go(item.title)}
+                              className="size-full cursor-pointer text-left"
+                            >
+                              <Image
+                                alt={item.alt}
+                                w={300}
+                                h={450}
+                                loading="lazy"
+                                className="size-full object-cover transition-transform duration-300 group-hover:scale-110"
+                              />
+                              {item.badge ? (
+                                <span
+                                  className={cn(
+                                    "absolute top-2 rounded px-2 py-0.5 text-xs font-bold",
+                                    row.kind === "new"
+                                      ? "right-2 bg-destructive text-destructive-foreground"
+                                      : "left-2 bg-chart-4 text-background",
+                                  )}
+                                >
+                                  {item.badge}
+                                </span>
+                              ) : null}
+                              <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                              <div className="absolute inset-x-0 bottom-0 p-3 opacity-0 transition-opacity group-hover:opacity-100">
+                                <p className="text-sm font-semibold text-foreground">
+                                  {item.title}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {item.meta}
+                                </p>
+                              </div>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (isInWatchlist) {
+                                  void removeFromWatchlist(item.title)
+                                } else {
+                                  void addToWatchlist(item.title)
+                                }
+                              }}
+                              aria-pressed={isInWatchlist}
+                              aria-label={
+                                isInWatchlist
+                                  ? `Remove ${item.title} from My List`
+                                  : `Add ${item.title} to My List`
+                              }
                               className={cn(
-                                "absolute top-2 rounded px-2 py-0.5 text-xs font-bold",
-                                row.kind === "new"
-                                  ? "right-2 bg-destructive text-destructive-foreground"
-                                  : "left-2 bg-chart-4 text-background",
+                                "absolute top-2 right-2 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105",
+                                isInWatchlist
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-background/90 text-foreground opacity-0 group-hover:opacity-100",
                               )}
                             >
-                              {item.badge}
-                            </span>
-                          ) : null}
-                          <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                          <div className="absolute inset-x-0 bottom-0 p-3 opacity-0 transition-opacity group-hover:opacity-100">
-                            <p className="text-sm font-semibold text-foreground">
-                              {item.title}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {item.meta}
-                            </p>
+                              {isInWatchlist ? (
+                                <CheckCircleIcon className="size-5" />
+                              ) : (
+                                <PlusIcon className="size-5" />
+                              )}
+                            </button>
                           </div>
-                        </button>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
                 ))}

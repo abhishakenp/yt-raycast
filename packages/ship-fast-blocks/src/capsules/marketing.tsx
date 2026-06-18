@@ -4,6 +4,24 @@ import { defineCapsule } from './openui.ts'
 import { Image } from '#/lib/img.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * MarketingKimiPage — a complete, self-contained product-marketing LANDING page.
@@ -119,10 +137,79 @@ export const MarketingKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      subscribers: table({
+        email: string(),
+      }),
+      inquiries: table({
+        name: string(),
+        email: string(),
+        company: string(),
+        message: string(),
+      }),
+    },
+    queries: {
+      subscribers: ({ db }) => db.subscribers.orderBy('createdAt').all(),
+      inquiries: ({ db }) => db.inquiries.orderBy('createdAt').all(),
+    },
+    mutations: {
+      subscribe: ({ db }, email: string) => {
+        const existing = db.subscribers.where('email', email).all()[0]
+        if (!existing) {
+          db.subscribers.insert({ email })
+        }
+        return db.subscribers.all()
+      },
+      submitInquiry: ({ db }, name: string, email: string, company: string, message: string) => {
+        db.inquiries.insert({ name, email, company, message })
+        return db.inquiries.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [contactOpen, setContactOpen] = useState(false)
+    const [contactForm, setContactForm] = useState({
+      name: '',
+      email: '',
+      company: '',
+      message: '',
+    })
     const brand = props.brand ?? 'Flowstate'
+
+    const subscribers = lakebed.useQuery('subscribers')
+    const inquiries = lakebed.useQuery('inquiries')
+    const subscribe = lakebed.useMutation('subscribe')
+    const submitInquiry = lakebed.useMutation('submitInquiry')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
     const nav = props.nav?.length
       ? props.nav
       : ['Features', 'Pricing', 'Customers']
@@ -291,6 +378,37 @@ export const MarketingKimiPage = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     const featureIcons: ReactNode[] = [
       <svg
         key="boards"
@@ -422,13 +540,106 @@ export const MarketingKimiPage = defineCapsule({
               ))}
             </div>
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => go('Log in')}
-                className="hidden rounded-xl border border-border bg-muted/60 px-5 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted sm:inline-flex"
-              >
-                Log in
-              </button>
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Settings')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Settings
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => go(heroPrimary)}
@@ -479,6 +690,58 @@ export const MarketingKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -803,7 +1066,13 @@ export const MarketingKimiPage = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(plan.cta)}
+                      onClick={() => {
+                        if (plan.cta === 'Contact sales') {
+                          setContactOpen(true)
+                        } else {
+                          go(plan.cta)
+                        }
+                      }}
                       className={cn(
                         'w-full rounded-xl px-5 py-2.5 text-sm font-semibold transition-all',
                         plan.popular
@@ -826,21 +1095,32 @@ export const MarketingKimiPage = defineCapsule({
                 {ctaHeading}
               </h2>
               <p className="mt-3 text-lg text-background/70">{ctaSub}</p>
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+              <form
+                className="mt-8 flex flex-wrap items-center justify-center gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const email = (e.currentTarget.elements.namedItem('email') as HTMLInputElement).value
+                  if (email) {
+                    void subscribe(email)
+                    e.currentTarget.reset()
+                  }
+                }}
+              >
                 <input
                   type="email"
+                  name="email"
                   aria-label="Work email"
                   placeholder={ctaPlaceholder}
+                  required
                   className="min-w-[16rem] rounded-xl border border-background/20 bg-background/10 px-4 py-3.5 text-base text-background outline-none placeholder:text-background/50 focus:border-ring"
                 />
                 <button
-                  type="button"
-                  onClick={() => go(ctaAction)}
+                  type="submit"
                   className="rounded-xl bg-primary px-7 py-3.5 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   {ctaAction}
                 </button>
-              </div>
+              </form>
               <p className="mt-4 text-sm text-background/60">{ctaNote}</p>
             </div>
           </section>
@@ -872,6 +1152,114 @@ export const MarketingKimiPage = defineCapsule({
             <p className="text-sm text-muted-foreground">{footerCopyright}</p>
           </div>
         </footer>
+
+        {/* Contact Sales Drawer */}
+        <Sheet open={contactOpen} onOpenChange={setContactOpen}>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Contact Sales</SheetTitle>
+              <SheetDescription>
+                Tell us about your needs and we'll get back to you within 24 hours.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              <form
+                id="contact-form"
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const formData = new FormData(e.currentTarget)
+                  const name = formData.get('name') as string
+                  const email = formData.get('email') as string
+                  const company = formData.get('company') as string
+                  const message = formData.get('message') as string
+                  if (name && email && message) {
+                    void submitInquiry(name, email, company, message)
+                    setContactForm({ name: '', email: '', company: '', message: '' })
+                    setContactOpen(false)
+                  }
+                }}
+              >
+                <div className="space-y-2">
+                  <label htmlFor="contact-name" className="text-sm font-medium text-foreground">
+                    Name *
+                  </label>
+                  <input
+                    id="contact-name"
+                    name="name"
+                    type="text"
+                    required
+                    value={contactForm.name}
+                    onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring"
+                    placeholder="Your name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="contact-email" className="text-sm font-medium text-foreground">
+                    Work Email *
+                  </label>
+                  <input
+                    id="contact-email"
+                    name="email"
+                    type="email"
+                    required
+                    value={contactForm.email}
+                    onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring"
+                    placeholder="you@company.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="contact-company" className="text-sm font-medium text-foreground">
+                    Company
+                  </label>
+                  <input
+                    id="contact-company"
+                    name="company"
+                    type="text"
+                    value={contactForm.company}
+                    onChange={(e) => setContactForm({ ...contactForm, company: e.target.value })}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring"
+                    placeholder="Company name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="contact-message" className="text-sm font-medium text-foreground">
+                    Message *
+                  </label>
+                  <textarea
+                    id="contact-message"
+                    name="message"
+                    required
+                    rows={4}
+                    value={contactForm.message}
+                    onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring resize-none"
+                    placeholder="Tell us about your needs..."
+                  />
+                </div>
+              </form>
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-full"
+                onClick={() => setContactOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                form="contact-form"
+                className="rounded-full"
+              >
+                Send Message
+              </Button>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

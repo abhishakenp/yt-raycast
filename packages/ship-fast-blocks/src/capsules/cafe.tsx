@@ -1,9 +1,41 @@
 import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
+import { number, string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "#/components/ui/avatar.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+
+const parsePrice = (value: string): number => {
+  const amount = Number.parseFloat(value.replace(/[^0-9.]+/g, ""))
+  return Number.isFinite(amount) ? amount : 0
+}
+
+const formatCurrency = (amount: number): string =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount)
 
 /**
  * CafeKimiPage — a complete, self-contained neighborhood-cafe / coffee-shop LANDING page.
@@ -185,10 +217,114 @@ export const CafeKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      cartItems: table({
+        itemName: string(),
+        unitPrice: string(),
+        quantity: number(),
+      }),
+    },
+    queries: {
+      cartLines: ({ db }) => db.cartItems.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addToCart: ({ db }, itemName: string, unitPrice: string) => {
+        const existingItem = db.cartItems.where("itemName", itemName).all()[0]
+
+        if (existingItem) {
+          db.cartItems.update(existingItem.id, {
+            quantity: existingItem.quantity + 1,
+          })
+          return db.cartItems.all()
+        }
+
+        db.cartItems.insert({
+          itemName,
+          unitPrice,
+          quantity: 1,
+        })
+
+        return db.cartItems.all()
+      },
+      updateCartQuantity: ({ db }, itemId: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+
+        for (const item of db.cartItems.where("id", itemId).all()) {
+          if (nextQuantity) {
+            db.cartItems.update(item.id, { quantity: nextQuantity })
+          } else {
+            db.cartItems.delete(item.id)
+          }
+        }
+
+        return db.cartItems.all()
+      },
+      removeFromCart: ({ db }, itemId: string) => {
+        for (const item of db.cartItems.where("id", itemId).all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return db.cartItems.all()
+      },
+      clearCart: ({ db }) => {
+        for (const item of db.cartItems.all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [orderOpen, setOrderOpen] = useState(false)
     const brand = props.brand ?? "Little Owl Coffee"
+    const auth = lakebed.useAuth()
+    const cartLines = lakebed.useQuery("cartLines")
+    const addToCart = lakebed.useMutation("addToCart")
+    const updateCartQuantity = lakebed.useMutation("updateCartQuantity")
+    const removeFromCart = lakebed.useMutation("removeFromCart")
+    const clearCart = lakebed.useMutation("clearCart")
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+    const safeCartLines = cartLines ?? []
+    const orderLineCount = safeCartLines.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+    const orderSubtotal = safeCartLines.reduce(
+      (total, item) => total + parsePrice(item.unitPrice) * item.quantity,
+      0,
+    )
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const addMenuItemToOrder = (itemName: string, unitPrice: string) => {
+      void addToCart(itemName, unitPrice)
+      setOrderOpen(true)
+    }
     const nav = props.nav?.length
       ? props.nav
       : ["Menu", "Our Story", "Location", "Reviews"]
@@ -761,6 +897,160 @@ export const CafeKimiPage = defineCapsule({
               </div>
 
               <div className="flex items-center gap-4">
+                <Sheet open={orderOpen} onOpenChange={setOrderOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open order"
+                      className="relative inline-flex items-center gap-2 rounded-full border border-border bg-background/90 px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
+                    >
+                      <svg
+                        className="size-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        viewBox="0 0 24 24"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M6 2l-2 5h17l-2 10H8l-1-1-1 1H3" />
+                        <circle cx="8" cy="21" r="1.5" />
+                        <circle cx="17" cy="21" r="1.5" />
+                        <path d="M8 6h14.2" />
+                      </svg>
+                      <span>Order</span>
+                      {orderLineCount > 0 ? (
+                        <span className="grid size-5 place-items-center rounded-full bg-foreground text-[0.65rem] font-bold text-background">
+                          {orderLineCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle>Your Order</SheetTitle>
+                      <SheetDescription>
+                        {orderLineCount > 0
+                          ? `${orderLineCount} item${orderLineCount === 1 ? "" : "s"} ready for pickup.`
+                          : "Your order is empty."}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeCartLines.length ? (
+                        <div className="space-y-5">
+                          {safeCartLines.map((item) => (
+                            <div
+                              key={item.id}
+                              className="grid grid-cols-[1fr_auto] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div>
+                                <h3 className="text-sm font-semibold text-foreground">
+                                  {item.itemName}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {formatCurrency(parsePrice(item.unitPrice))}
+                                </p>
+                              </div>
+                              <div className="min-w-0 text-right">
+                                <div className="inline-flex items-center rounded-full border border-border bg-muted">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void updateCartQuantity(
+                                        item.id,
+                                        item.quantity - 1,
+                                      )
+                                    }
+                                    className="grid size-7 place-items-center text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
+                                    aria-label={`Decrease ${item.itemName} quantity`}
+                                  >
+                                    -
+                                  </button>
+                                  <span className="min-w-8 text-center text-sm font-semibold">
+                                    {item.quantity}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void updateCartQuantity(
+                                        item.id,
+                                        item.quantity + 1,
+                                      )
+                                    }
+                                    className="grid size-7 place-items-center text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
+                                    aria-label={`Increase ${item.itemName} quantity`}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              </div>
+                              <p className="col-span-2 text-sm font-semibold text-foreground">
+                                {formatCurrency(
+                                  parsePrice(item.unitPrice) * item.quantity,
+                                )}
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => void removeFromCart(item.id)}
+                                className="col-span-2 text-xs text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-56 items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 text-center px-4 text-muted-foreground">
+                          <p>No items yet</p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span>Subtotal</span>
+                          <span>{formatCurrency(orderSubtotal)}</span>
+                        </div>
+                        <div className="flex justify-between font-semibold text-foreground">
+                          <span>Total</span>
+                          <span>{formatCurrency(orderSubtotal)}</span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-60"
+                          onClick={() => {
+                            setOrderOpen(false)
+                            go("Checkout")
+                          }}
+                          disabled={!safeCartLines.length}
+                        >
+                          Checkout
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void clearCart()
+                          }}
+                          className="rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-60"
+                          disabled={!safeCartLines.length}
+                        >
+                          Clear
+                        </button>
+                      </div>
+                      <SheetClose asChild>
+                        <button
+                          type="button"
+                          className="mt-2 w-full rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/80"
+                        >
+                          Continue Browsing
+                        </button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go("Location")}
@@ -768,6 +1058,99 @@ export const CafeKimiPage = defineCapsule({
                 >
                   Visit Us
                 </button>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-40 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 transition hover:bg-muted sm:inline-flex"
+                      >
+                        <Avatar size="sm" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold text-foreground md:block">
+                          {authDisplayName}
+                        </span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? "Signed in to this session"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go("Account")}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                        >
+                          Account
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go("Orders")}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                        >
+                          Orders
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="w-full rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 sm:inline-flex disabled:pointer-events-none disabled:opacity-60"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   aria-label="Open menu"
@@ -793,7 +1176,7 @@ export const CafeKimiPage = defineCapsule({
                 </button>
               </div>
             </div>
-            {mobileOpen && (
+                {mobileOpen && (
               <div
                 id="mobile-menu"
                 className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
@@ -811,6 +1194,30 @@ export const CafeKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                {isSignedIn ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      handleSignOut()
+                    }}
+                    className="text-left text-base font-medium text-foreground/90 transition-colors hover:text-foreground"
+                  >
+                    Sign out
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      handleSignIn()
+                    }}
+                    disabled={auth.isLoading}
+                    className="text-left text-base font-medium text-foreground/90 transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-60"
+                  >
+                    Sign in
+                  </button>
+                )}
               </div>
             )}
           </nav>
@@ -968,8 +1375,11 @@ export const CafeKimiPage = defineCapsule({
                         <div key={item.name}>
                           <button
                             type="button"
-                            onClick={() => go(heroPrimary)}
+                            onClick={() =>
+                              addMenuItemToOrder(item.name, item.price)
+                            }
                             className="group flex w-full items-start justify-between gap-4 text-left"
+                            aria-label={`Add ${item.name} to order`}
                           >
                             <div>
                               <h4 className="font-medium text-foreground transition-colors group-hover:text-primary">
@@ -1000,9 +1410,12 @@ export const CafeKimiPage = defineCapsule({
                 </h3>
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                   {teas.map((tea) => (
-                    <div
+                    <button
                       key={tea.name}
+                      type="button"
+                      onClick={() => addMenuItemToOrder(tea.name, tea.price)}
                       className="rounded-xl bg-muted p-6 text-center"
+                      aria-label={`Add ${tea.name} to order`}
                     >
                       <h4 className="mb-1 font-medium text-foreground">
                         {tea.name}
@@ -1013,7 +1426,7 @@ export const CafeKimiPage = defineCapsule({
                       <span className="font-serif text-foreground">
                         {tea.price}
                       </span>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>

@@ -1,9 +1,41 @@
 import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
+import { number, string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "#/components/ui/avatar.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+
+const parsePrice = (price: string) => {
+  const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ""))
+  return Number.isFinite(amount) ? amount : 0
+}
+
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    style: "currency",
+  }).format(amount)
 
 /**
  * IllustratorKimiPage — a complete, self-contained illustrator / visual-artist
@@ -32,6 +64,90 @@ export const IllustratorKimiPage = defineCapsule({
   name: "IllustratorKimiPage",
   description:
     "Complete illustrator / visual-artist portfolio and art-shop LANDING page with a warm, editorial, gallery aesthetic: soft cream canvas, charcoal serif display headings, and rotating pastel accent tints (coral, sage, sky, lavender). Includes a split hero (eyebrow label, large serif headline with colored highlight phrases, dual CTAs, portrait photo with blurred accent orbs), a trusted-by publications logo strip, a 3-up 'what I create' services grid with tinted icon tiles (children's books, editorial illustration, art prints), a masonry-style selected-work project gallery with image-zoom hover, a 4-up art-print SHOP with product cards, prices and add-to-cart buttons, a 3-up client testimonials wall with avatars, a split about/bio band with a years-of-experience badge and awards/recognition list, a dark stats band, an FAQ list, a centered contact CTA with email and social links, and a multi-column footer. Use as the ROOT/home page for illustrators, visual artists, picture-book / children's-book illustrators, editorial illustrators, painters, surface/pattern designers, print sellers, or any independent creative selling art prints and offering commissions when a warm, hand-crafted, editorial portfolio with a built-in shop and strong social proof is wanted. Supply content only — brand, nav, hero, logos, services, work, shop, testimonials, about, stats, faq, contact, footer; the block owns all layout and styling.",
+  lakebed: {
+    schema: {
+      products: table({
+        title: string(),
+        meta: string(),
+        price: string(),
+        image: string(),
+      }),
+      cartItems: table({
+        productId: string(),
+        quantity: number(),
+      }),
+    },
+    queries: {
+      products: ({ db }) => db.products.orderBy("createdAt").all(),
+      cartLines: ({ db }) =>
+        db.cartItems.all().flatMap((item) => {
+          const product = db.products.get(item.productId)
+          return product ? [{ ...item, product }] : []
+        }),
+    },
+    mutations: {
+      addToCart: (
+        { db },
+        productTitle: string,
+        productMeta: string,
+        productPrice: string,
+        productImage: string,
+      ) => {
+        const matchedProduct = db.products.where("title", productTitle).all()[0]
+        const activeProductId = (() => {
+          if (matchedProduct) return matchedProduct.id
+
+          db.products.insert({
+            title: productTitle,
+            meta: productMeta,
+            price: productPrice,
+            image: productImage,
+          })
+
+          return db.products.where("title", productTitle).all()[0]?.id ?? ""
+        })()
+        if (!activeProductId) return db.cartItems.all()
+        const existingItem = db.cartItems
+          .where("productId", activeProductId)
+          .all()[0]
+        if (existingItem) {
+          db.cartItems.update(existingItem.id, {
+            quantity: existingItem.quantity + 1,
+          })
+        } else {
+          db.cartItems.insert({ productId: activeProductId, quantity: 1 })
+        }
+        return db.cartItems.all()
+      },
+      updateCartQuantity: ({ db }, cartItemId: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+
+        for (const item of db.cartItems.where("id", cartItemId).all()) {
+          if (nextQuantity) {
+            db.cartItems.update(item.id, { quantity: nextQuantity })
+          } else {
+            db.cartItems.delete(item.id)
+          }
+        }
+
+        return db.cartItems.all()
+      },
+      removeFromCart: ({ db }, cartItemId: string) => {
+        for (const item of db.cartItems.where("id", cartItemId).all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return db.cartItems.all()
+      },
+      clearCart: ({ db }) => {
+        for (const item of db.cartItems.all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return []
+      },
+    },
+  },
   props: z.object({
     /** Artist / brand name shown in the navbar, hero eyebrow and footer. */
     brand: z.string().optional(),
@@ -175,13 +291,35 @@ export const IllustratorKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [cartOpen, setCartOpen] = useState(false)
+    const auth = lakebed.useAuth()
     const brand = props.brand ?? "Mira Chen"
     const nav = props.nav?.length
       ? props.nav
       : ["Work", "Shop", "About", "Contact"]
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials = authDisplayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "ME"
+    const authLabel = auth.isLoading ? "Checking..." : isSignedIn ? authDisplayName : "Sign in"
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
 
     const heroEyebrow = props.hero?.eyebrow ?? "Illustrator & Visual Artist"
     const headingStart = props.hero?.headingStart ?? "Creating worlds through"
@@ -281,6 +419,33 @@ export const IllustratorKimiPage = defineCapsule({
             price: "$24",
           },
         ]
+    const baseShopProducts = shopItems.map((item) => ({
+      image: "",
+      meta: item.meta,
+      price: item.price,
+      title: item.title,
+    }))
+    const storedShopProducts = lakebed.useQuery("products")
+    const displayShopProducts =
+      storedShopProducts && storedShopProducts.length > 0
+        ? storedShopProducts
+        : baseShopProducts
+    const cartLines = lakebed.useQuery("cartLines")
+    const addToCart = lakebed.useMutation("addToCart")
+    const updateCartQuantity = lakebed.useMutation("updateCartQuantity")
+    const removeFromCart = lakebed.useMutation("removeFromCart")
+    const clearCart = lakebed.useMutation("clearCart")
+    const safeCartLines = cartLines ?? []
+    const cartItemCount = safeCartLines.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+    const cartSubtotal = safeCartLines.reduce(
+      (total, item) => total + parsePrice(item.product.price) * item.quantity,
+      0,
+    )
+    const shipping = cartSubtotal > 0 && cartSubtotal < 150 ? 12 : 0
+    const cartTotal = cartSubtotal + shipping
 
     const testimonialsEyebrow = props.testimonials?.eyebrow ?? "Kind Words"
     const testimonialsHeading =
@@ -533,6 +698,264 @@ export const IllustratorKimiPage = defineCapsule({
                 >
                   Visit Shop
                 </button>
+                <Sheet open={cartOpen} onOpenChange={setCartOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open cart"
+                      className="relative rounded-full bg-muted px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-foreground hover:text-background"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <path d="M16 10a4 4 0 0 1-8 0" />
+                      </svg>
+                      {cartItemCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {cartItemCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle>Shopping cart</SheetTitle>
+                      <SheetDescription>
+                        {cartItemCount > 0
+                          ? `${cartItemCount} item${cartItemCount === 1 ? "" : "s"} ready for checkout.`
+                          : "Your cart is empty."}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeCartLines.length ? (
+                        <div className="space-y-5">
+                          {safeCartLines.map((item) => (
+                            <div
+                              key={item.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                <Image
+                                  alt={item.product.title}
+                                  src={item.product.image || undefined}
+                                  w={180}
+                                  h={180}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                      {item.product.meta}
+                                    </p>
+                                    <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                      {item.product.title}
+                                    </h3>
+                                  </div>
+                                  <p className="text-sm font-bold text-foreground">
+                                    {formatCurrency(
+                                      parsePrice(item.product.price) * item.quantity,
+                                    )}
+                                  </p>
+                                </div>
+                                <div className="mt-4 flex items-center justify-between">
+                                  <div className="inline-flex h-9 items-center rounded-full border border-border bg-background">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void updateCartQuantity(
+                                          item.id,
+                                          item.quantity - 1,
+                                        )
+                                      }
+                                      className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                      aria-label={`Decrease ${item.product.title} quantity`}
+                                    >
+                                      -
+                                    </button>
+                                    <span className="min-w-8 text-center text-sm font-semibold">
+                                      {item.quantity}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void updateCartQuantity(
+                                          item.id,
+                                          item.quantity + 1,
+                                        )
+                                      }
+                                      className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                      aria-label={`Increase ${item.product.title} quantity`}
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => void removeFromCart(item.id)}
+                                    className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No products in cart
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Add an item from Art Shop to start a cart for this
+                            session.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>Subtotal</span>
+                          <span>{formatCurrency(cartSubtotal)}</span>
+                        </div>
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>Shipping</span>
+                          <span>
+                            {shipping ? formatCurrency(shipping) : "Free"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between pt-2 text-base font-bold text-foreground">
+                          <span>Total</span>
+                          <span>{formatCurrency(cartTotal)}</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={!safeCartLines.length}
+                        className="w-full rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-60"
+                        onClick={() => go("Checkout")}
+                      >
+                        Checkout
+                      </button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                          onClick={() => void clearCart()}
+                          disabled={!safeCartLines.length}
+                        >
+                          Clear
+                        </button>
+                        <SheetClose asChild>
+                          <button
+                            type="button"
+                            className="rounded-full bg-muted px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted/80"
+                          >
+                            Continue
+                          </button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-background px-2 py-1"
+                        aria-label="Open account menu"
+                      >
+                        <Avatar size="sm" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-xs font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="max-w-24 truncate text-sm font-semibold">
+                          {authDisplayName}
+                        </span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-60 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <p className="truncate text-sm font-semibold text-foreground">
+                          {authDisplayName}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {authEmail ?? "Signed in to this session"}
+                        </p>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go("Account")}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none"
+                        >
+                          Account
+                          <svg
+                            className="size-4"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                            <polyline points="12 5 19 12 12 19" />
+                          </svg>
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    className="hidden h-10 items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-sm font-semibold transition-colors hover:bg-muted md:inline-flex disabled:pointer-events-none disabled:opacity-60"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
               </div>
               <button
                 type="button"
@@ -576,6 +999,40 @@ export const IllustratorKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    setCartOpen(true)
+                  }}
+                  className="rounded-full bg-foreground px-5 py-2.5 text-sm text-background transition-colors hover:bg-muted-foreground text-left"
+                >
+                  Cart ({cartItemCount})
+                </button>
+                {isSignedIn ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      handleSignOut()
+                    }}
+                    className="rounded-full border border-foreground px-5 py-2.5 text-sm text-foreground transition-colors hover:bg-muted text-left"
+                  >
+                    Sign out
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      handleSignIn()
+                    }}
+                    className="rounded-full border border-foreground px-5 py-2.5 text-sm text-foreground transition-colors hover:bg-muted text-left"
+                    disabled={auth.isLoading}
+                  >
+                    {authLabel}
+                  </button>
+                )}
               </div>
             )}
           </nav>
@@ -779,7 +1236,7 @@ export const IllustratorKimiPage = defineCapsule({
                 <p className="text-lg text-muted-foreground">{shopDesc}</p>
               </div>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                {shopItems.map((item) => (
+                {displayShopProducts.map((item) => (
                   <article
                     key={item.title}
                     className="group overflow-hidden rounded-lg border border-border/60 bg-card transition-shadow hover:shadow-lg"
@@ -787,6 +1244,7 @@ export const IllustratorKimiPage = defineCapsule({
                     <div className="aspect-square overflow-hidden bg-muted">
                       <Image
                         alt={item.title}
+                        src={item.image || undefined}
                         w={500}
                         h={500}
                         loading="lazy"
@@ -806,7 +1264,15 @@ export const IllustratorKimiPage = defineCapsule({
                         </span>
                         <button
                           type="button"
-                          onClick={() => go(shopAddToCart)}
+                          onClick={() => {
+                            void addToCart(
+                              item.title,
+                              item.meta,
+                              item.price,
+                              item.image || "",
+                            )
+                            setCartOpen(true)
+                          }}
                           className="rounded-full bg-foreground px-4 py-2 text-sm text-background transition-colors hover:bg-muted-foreground"
                         >
                           {shopAddToCart}

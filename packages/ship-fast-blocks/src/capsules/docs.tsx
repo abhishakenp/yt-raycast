@@ -1,8 +1,19 @@
 import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
+import { number, string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * DocsKimiPage — a complete, self-contained developer DOCUMENTATION / API-reference page.
@@ -157,13 +168,139 @@ export const DocsKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      recentItems: table({
+        route: string(),
+        title: string(),
+      }),
+      savedTopics: table({
+        route: string(),
+        title: string(),
+      }),
+    },
+    queries: {
+      recentItems: ({ db }) => db.recentItems.orderBy("createdAt").all(),
+      savedTopics: ({ db }) => db.savedTopics.orderBy("createdAt").all(),
+    },
+    mutations: {
+      recordVisit: ({ db }, title: string) => {
+        const normalizedTitle = title.trim()
+        if (!normalizedTitle) return db.recentItems.all()
+
+        const existing = db.recentItems
+          .where("title", normalizedTitle)
+          .all()[0]
+
+        if (existing) {
+          db.recentItems.delete(existing.id)
+        }
+
+        db.recentItems.insert({
+          title: normalizedTitle,
+          route: normalizedTitle,
+        })
+
+        return db.recentItems.orderBy("createdAt").all()
+      },
+      removeRecentItem: ({ db }, id: string) => {
+        const item = db.recentItems.get(id)
+        if (item) {
+          db.recentItems.delete(id)
+        }
+
+        return db.recentItems.orderBy("createdAt").all()
+      },
+      clearRecentItems: ({ db }) => {
+        for (const item of db.recentItems.all()) {
+          db.recentItems.delete(item.id)
+        }
+
+        return []
+      },
+      saveTopic: ({ db }, title: string) => {
+        const normalizedTitle = title.trim()
+        if (!normalizedTitle) return db.savedTopics.all()
+
+        const exists = db.savedTopics.where("title", normalizedTitle).all()[0]
+        if (!exists) {
+          db.savedTopics.insert({
+            title: normalizedTitle,
+            route: normalizedTitle,
+          })
+        }
+
+        return db.savedTopics.orderBy("createdAt").all()
+      },
+      removeSavedTopic: ({ db }, id: string) => {
+        const topic = db.savedTopics.get(id)
+        if (topic) {
+          db.savedTopics.delete(id)
+        }
+
+        return db.savedTopics.orderBy("createdAt").all()
+      },
+      clearSavedTopics: ({ db }) => {
+        for (const topic of db.savedTopics.all()) {
+          db.savedTopics.delete(topic.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [activityOpen, setActivityOpen] = useState(false)
+    const goToBrand = nav[0]
     const brand = props.brand ?? "StackForge"
     const nav = props.nav?.length
       ? props.nav
       : ["Getting Started", "API Reference", "SDKs", "Changelog"]
+
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authDisplayName =
+      (isSignedIn &&
+        ((auth.user?.displayName || auth.email || auth.user?.sub || nav[0]).trim())) ||
+      "Docs"
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const authLabel = auth.isLoading ? "Checking..." : isSignedIn ? "Sign out" : "Sign in"
+    const authButtonLabel = isSignedIn ? `Signed in ${authDisplayName}` : "Sign in"
+
+    const recentItems = lakebed.useQuery("recentItems")
+    const savedTopics = lakebed.useQuery("savedTopics")
+    const recordVisit = lakebed.useMutation("recordVisit")
+    const saveTopic = lakebed.useMutation("saveTopic")
+    const removeSavedTopic = lakebed.useMutation("removeSavedTopic")
+    const clearSavedTopics = lakebed.useMutation("clearSavedTopics")
+    const removeRecentItem = lakebed.useMutation("removeRecentItem")
+    const clearRecentItems = lakebed.useMutation("clearRecentItems")
+
+    const safeRecentItems = recentItems ?? []
+    const safeSavedTopics = savedTopics ?? []
+
+    const trackAndGo = (destination: string) => {
+      if (destination.trim()) {
+        void recordVisit(destination)
+      }
+      go(destination)
+    }
+    const handleSaveAndGo = (destination: string) => {
+      if (destination.trim()) {
+        void saveTopic(destination)
+        void recordVisit(destination)
+      }
+      setActivityOpen(false)
+      go(destination)
+    }
 
     const searchPlaceholder =
       props.sidebar?.searchPlaceholder ?? "Search docs..."

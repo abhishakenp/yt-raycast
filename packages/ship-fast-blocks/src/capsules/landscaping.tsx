@@ -4,6 +4,28 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
+
+const quoteAmount = (value: string) => {
+  const amount = Number.parseFloat(value.replace(/[^0-9.]+/g, ""))
+
+  return Number.isFinite(amount) ? amount : 0
+}
+
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    style: "currency",
+  }).format(amount)
 
 /**
  * LandscapingKimiPage — a complete, self-contained landscaping / outdoor-design
@@ -124,9 +146,101 @@ export const LandscapingKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      quoteRequests: table({
+        estimatedCost: string(),
+        name: string(),
+        quantity: number(),
+        source: string(),
+      }),
+    },
+    queries: {
+      quoteRequests: ({ db }) => db.quoteRequests.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addQuoteRequest: ({ db }, name: string, source: string, estimatedCost = "") => {
+        const existing = db.quoteRequests
+          .all()
+          .find((item) => item.name === name && item.source === source)
+
+        if (existing) {
+          db.quoteRequests.update(existing.id, {
+            quantity: existing.quantity + 1,
+          })
+        } else {
+          db.quoteRequests.insert({
+            estimatedCost,
+            name,
+            quantity: 1,
+            source,
+          })
+        }
+
+        return db.quoteRequests.all()
+      },
+      updateQuoteQuantity: ({ db }, id: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+        const item = db.quoteRequests.get(id)
+
+        if (!item) {
+          return db.quoteRequests.all()
+        }
+
+        if (nextQuantity) {
+          db.quoteRequests.update(item.id, { quantity: nextQuantity })
+        } else {
+          db.quoteRequests.delete(item.id)
+        }
+
+        return db.quoteRequests.all()
+      },
+      removeQuoteRequest: ({ db }, id: string) => {
+        const item = db.quoteRequests.get(id)
+
+        if (item) {
+          db.quoteRequests.delete(item.id)
+        }
+
+        return db.quoteRequests.all()
+      },
+      clearQuoteRequests: ({ db }) => {
+        for (const item of db.quoteRequests.all()) {
+          db.quoteRequests.delete(item.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [quoteDrawerOpen, setQuoteDrawerOpen] = useState(false)
+
+    const storedQuoteRequests = lakebed.useQuery("quoteRequests")
+    const addQuoteRequest = lakebed.useMutation("addQuoteRequest")
+    const updateQuoteQuantity = lakebed.useMutation("updateQuoteQuantity")
+    const removeQuoteRequest = lakebed.useMutation("removeQuoteRequest")
+    const clearQuoteRequests = lakebed.useMutation("clearQuoteRequests")
+    const quoteRequests = storedQuoteRequests ?? []
+    const quoteItemCount = quoteRequests.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+    const quoteSubtotal = quoteRequests.reduce(
+      (total, item) => total + quoteAmount(item.estimatedCost) * item.quantity,
+      0,
+    )
+    const addToQuote = (
+      name: string,
+      source: string,
+      estimatedCost = "",
+    ) => {
+      void addQuoteRequest(name, source, estimatedCost)
+      setQuoteDrawerOpen(true)
+    }
+
     const brand = props.brand ?? "Earth & Edge"
     const nav = props.nav?.length
       ? props.nav
@@ -507,10 +621,19 @@ export const LandscapingKimiPage = defineCapsule({
                 ))}
                 <button
                   type="button"
-                  onClick={() => go(ctaLabel)}
+                  onClick={() => {
+                    void addQuoteRequest(ctaLabel, "Header quote CTA")
+                    setQuoteDrawerOpen(true)
+                    go(ctaLabel)
+                  }}
                   className="inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
-                  {ctaLabel}
+                  <span>{ctaLabel}</span>
+                  {quoteItemCount > 0 ? (
+                    <span className="ml-2 inline-grid size-5 place-items-center rounded-full bg-primary-foreground/20 text-[0.7rem] font-bold text-primary-foreground">
+                      {quoteItemCount}
+                    </span>
+                  ) : null}
                 </button>
               </div>
               <button
@@ -548,6 +671,8 @@ export const LandscapingKimiPage = defineCapsule({
                     type="button"
                     onClick={() => {
                       setMobileOpen(false)
+                      void addQuoteRequest(label, "Mobile menu")
+                      setQuoteDrawerOpen(label === ctaLabel)
                       go(label)
                     }}
                     className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
@@ -575,7 +700,10 @@ export const LandscapingKimiPage = defineCapsule({
                   <div className="flex flex-wrap gap-4">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() => {
+                        addToQuote(heroPrimary, "Hero primary CTA")
+                        go(heroPrimary)
+                      }}
                       className="inline-flex items-center rounded-full bg-primary px-8 py-4 text-base font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
                     >
                       {heroPrimary}
@@ -731,7 +859,14 @@ export const LandscapingKimiPage = defineCapsule({
                   <button
                     key={proj.title}
                     type="button"
-                    onClick={() => go(proj.title)}
+                    onClick={() => {
+                      addToQuote(
+                        `${proj.title} — ${proj.location}`,
+                        "Selected project",
+                        "",
+                      )
+                      go(proj.title)
+                    }}
                     className="group relative block w-full cursor-pointer overflow-hidden rounded-xl text-left"
                   >
                     <Image
@@ -757,7 +892,10 @@ export const LandscapingKimiPage = defineCapsule({
               <div className="mt-12 text-center">
                 <button
                   type="button"
-                  onClick={() => go(galleryCta)}
+                  onClick={() => {
+                    addToQuote(galleryCta, "Gallery CTA")
+                    go(galleryCta)
+                  }}
                   className="inline-flex items-center rounded-full border border-border bg-muted px-8 py-4 text-base font-medium text-primary transition-colors hover:bg-accent"
                 >
                   {galleryCta}
@@ -860,7 +998,10 @@ export const LandscapingKimiPage = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(plan.cta)}
+                      onClick={() => {
+                        addToQuote(plan.name, "Plan CTA", plan.price)
+                        go(plan.cta)
+                      }}
                       className={cn(
                         "block w-full rounded-lg px-6 py-3 text-center font-medium transition-colors",
                         plan.featured
@@ -914,6 +1055,131 @@ export const LandscapingKimiPage = defineCapsule({
             </div>
           </div>
         </footer>
+
+        <Sheet open={quoteDrawerOpen} onOpenChange={setQuoteDrawerOpen}>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle>Request quote</SheetTitle>
+              <SheetDescription>
+                {quoteItemCount > 0
+                  ? `${quoteItemCount} item${quoteItemCount === 1 ? '' : 's'} in your request basket.`
+                  : 'Review services and plans you want to request before contacting us.'}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {quoteRequests.length ? (
+                <div className="space-y-5">
+                  {quoteRequests.map((item) => (
+                    <div
+                      key={item.id}
+                      className="space-y-3 border-b border-border pb-5 last:border-0"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold leading-snug text-foreground">
+                            {item.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {item.source}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => void removeQuoteRequest(item.id)}
+                          className="text-xs font-semibold text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="inline-flex h-9 items-center rounded-full border border-border bg-background">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void updateQuoteQuantity(item.id, item.quantity - 1)
+                            }
+                            className="grid size-9 place-items-center text-muted-foreground transition-colors hover:text-foreground"
+                            aria-label={`Decrease ${item.name}`}
+                          >
+                            -
+                          </button>
+                          <span className="min-w-8 text-center text-sm font-semibold">
+                            {item.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void updateQuoteQuantity(item.id, item.quantity + 1)
+                            }
+                            className="grid size-9 place-items-center text-muted-foreground transition-colors hover:text-foreground"
+                            aria-label={`Increase ${item.name}`}
+                          >
+                            +
+                          </button>
+                        </div>
+                        <p className="text-sm font-bold text-foreground">
+                          {item.estimatedCost
+                            ? formatCurrency(quoteAmount(item.estimatedCost) * item.quantity)
+                            : "TBD"}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                  <p className="text-base font-semibold text-foreground">
+                    No quote items yet
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Tap a card, CTA, or plan to start building your request.
+                  </p>
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Total line items</span>
+                  <span>{quoteItemCount}</span>
+                </div>
+                <div className="flex justify-between pt-2 text-base font-bold text-foreground">
+                  <span>Estimated subtotal</span>
+                  <span>{formatCurrency(quoteSubtotal)}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setQuoteDrawerOpen(false)
+                  go(ctaLabel)
+                }}
+                disabled={quoteItemCount === 0}
+                className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                Continue with {ctaLabel}
+              </button>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => void clearQuoteRequests()}
+                  disabled={quoteItemCount === 0}
+                  className="rounded-full border border-border bg-background px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-60"
+                >
+                  Clear all
+                </button>
+                <SheetClose asChild>
+                  <button
+                    type="button"
+                    className="rounded-full border border-border bg-muted px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                  >
+                    Continue browsing
+                  </button>
+                </SheetClose>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

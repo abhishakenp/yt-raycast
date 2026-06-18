@@ -1,9 +1,19 @@
-import { useState, type ReactNode } from "react"
+import { useState, type FormEvent, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
+import { number, string, table } from "@ship-fast/lakebed/server"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * InteriorDesignKimiPage — a complete, self-contained interior-design STUDIO
@@ -188,13 +198,94 @@ export const InteriorDesignKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      inquiries: table({
+        budget: string(),
+        email: string(),
+        fullName: string(),
+        message: string(),
+        projectType: string(),
+        priority: number(),
+      }),
+    },
+    queries: {
+      inquiries: ({ db }) => db.inquiries.orderBy("createdAt").all(),
+    },
+    mutations: {
+      submitInquiry: (
+        { db },
+        fullName: string,
+        email: string,
+        projectType: string,
+        budget: string,
+        message: string,
+      ) => {
+        db.inquiries.insert({
+          fullName,
+          email,
+          projectType,
+          budget,
+          message,
+          priority: 1,
+        })
+
+        return db.inquiries.all()
+      },
+      removeInquiry: ({ db }, id: string) => {
+        db.inquiries.delete(id)
+
+        return db.inquiries.all()
+      },
+      clearInquiries: ({ db }) => {
+        for (const inquiry of db.inquiries.all()) {
+          db.inquiries.delete(inquiry.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [inquiryDrawerOpen, setInquiryDrawerOpen] = useState(false)
+    const [firstName, setFirstName] = useState("")
+    const [lastName, setLastName] = useState("")
+    const [email, setEmail] = useState("")
+    const [projectType, setProjectType] = useState("")
+    const [budget, setBudget] = useState("")
+    const [message, setMessage] = useState("")
+    const [inquiryFormError, setInquiryFormError] = useState<string | null>(
+      null,
+    )
     const brand = props.brand ?? "Atelier Studio"
     const nav = props.nav?.length
       ? props.nav
       : ["Projects", "Services", "Process", "About", "Contact"]
+    const storedInquiries = lakebed.useQuery("inquiries")
+    const submitInquiry = lakebed.useMutation("submitInquiry")
+    const removeInquiry = lakebed.useMutation("removeInquiry")
+    const clearInquiries = lakebed.useMutation("clearInquiries")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Client"
+    const inquiryRows = storedInquiries ?? []
+    const inquiryCount = inquiryRows.length
+    const inquiryPriorityTotal = inquiryRows.reduce(
+      (sum, inquiry) => sum + inquiry.priority,
+      0,
+    )
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
 
     const heroEyebrow = props.hero?.eyebrow ?? "Est. 2014 — San Francisco"
     const headingTop = props.hero?.headingTop ?? "Spaces that"
@@ -470,6 +561,31 @@ export const InteriorDesignKimiPage = defineCapsule({
           "$100,000 — $250,000",
           "$250,000+",
         ]
+    const handleSubmitInquiry = (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      const nextFirst = firstName.trim()
+      const nextLast = lastName.trim()
+      const nextFullName = `${nextFirst} ${nextLast}`.trim() || authDisplayName
+      const nextEmail = email.trim() || authEmail || ""
+      const nextProjectType = projectType || projectTypes[0] || ""
+      const nextBudget = budget || budgets[0] || ""
+      const nextMessage = message.trim()
+
+      if (!nextFullName || !nextEmail || !nextMessage) {
+        setInquiryFormError("Name, email, and message are required.")
+        return
+      }
+
+      setInquiryFormError(null)
+      void submitInquiry(nextFullName, nextEmail, nextProjectType, nextBudget, nextMessage)
+      setFirstName("")
+      setLastName("")
+      setEmail("")
+      setProjectType(projectTypes[0] || "")
+      setBudget(budgets[0] || "")
+      setMessage("")
+      setInquiryDrawerOpen(true)
+    }
 
     const footerAbout =
       props.footer?.about ??
@@ -567,12 +683,13 @@ export const InteriorDesignKimiPage = defineCapsule({
       "w-full rounded-sm border border-input bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
 
     return (
-      <div
-        className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
-          props.className,
-        )}
-      >
+      <Sheet open={inquiryDrawerOpen} onOpenChange={setInquiryDrawerOpen}>
+        <div
+          className={cn(
+            "min-h-svh bg-background text-foreground antialiased",
+            props.className,
+          )}
+        >
         {/* Navbar */}
         <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -1171,10 +1288,7 @@ export const InteriorDesignKimiPage = defineCapsule({
 
                 <form
                   className="space-y-6"
-                  onSubmit={(e) => {
-                    e.preventDefault()
-                    go(contactSubmit)
-                  }}
+                  onSubmit={handleSubmitInquiry}
                 >
                   <div className="grid gap-6 sm:grid-cols-2">
                     <div>
@@ -1188,6 +1302,10 @@ export const InteriorDesignKimiPage = defineCapsule({
                         id="id-first-name"
                         type="text"
                         required
+                        value={firstName}
+                        onChange={(event) => {
+                          setFirstName(event.target.value)
+                        }}
                         placeholder="Enter first name"
                         className={inputCls}
                       />
@@ -1203,6 +1321,10 @@ export const InteriorDesignKimiPage = defineCapsule({
                         id="id-last-name"
                         type="text"
                         required
+                        value={lastName}
+                        onChange={(event) => {
+                          setLastName(event.target.value)
+                        }}
                         placeholder="Enter last name"
                         className={inputCls}
                       />
@@ -1220,6 +1342,10 @@ export const InteriorDesignKimiPage = defineCapsule({
                       id="id-email"
                       type="email"
                       required
+                      value={email}
+                      onChange={(event) => {
+                        setEmail(event.target.value)
+                      }}
                       placeholder="you@example.com"
                       className={inputCls}
                     />
@@ -1234,6 +1360,10 @@ export const InteriorDesignKimiPage = defineCapsule({
                     </label>
                     <select
                       id="id-project-type"
+                      value={projectType || projectTypes[0] || ""}
+                      onChange={(event) => {
+                        setProjectType(event.target.value)
+                      }}
                       className={cn(inputCls, "appearance-none")}
                     >
                       {projectTypes.map((opt) => (
@@ -1253,6 +1383,10 @@ export const InteriorDesignKimiPage = defineCapsule({
                     </label>
                     <select
                       id="id-budget"
+                      value={budget || budgets[0] || ""}
+                      onChange={(event) => {
+                        setBudget(event.target.value)
+                      }}
                       className={cn(inputCls, "appearance-none")}
                     >
                       {budgets.map((opt) => (
@@ -1273,10 +1407,21 @@ export const InteriorDesignKimiPage = defineCapsule({
                     <textarea
                       id="id-message"
                       rows={4}
+                      required
+                      value={message}
+                      onChange={(event) => {
+                        setMessage(event.target.value)
+                      }}
                       placeholder="Describe your space, timeline, and any specific design goals..."
                       className={cn(inputCls, "resize-none")}
                     />
                   </div>
+
+                  {inquiryFormError ? (
+                    <p className="rounded-md bg-destructive/10 px-4 py-2.5 text-sm text-destructive">
+                      {inquiryFormError}
+                    </p>
+                  ) : null}
 
                   <button
                     type="submit"
@@ -1388,6 +1533,109 @@ export const InteriorDesignKimiPage = defineCapsule({
           </div>
         </footer>
       </div>
+      <SheetContent side="right" className="w-full sm:max-w-lg">
+        <SheetHeader>
+          <SheetTitle>Inquiry inbox</SheetTitle>
+          <SheetDescription>
+            Submitted consultation requests are persisted for this session and can be
+            managed here.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="flex h-full flex-col">
+          <div className="flex-1 overflow-y-auto px-6 py-5">
+            <div className="mb-4 space-y-4 rounded-lg border border-border bg-muted/40 p-4">
+              <p className="text-sm font-medium text-foreground">
+                Recent submissions ({inquiryCount})
+              </p>
+              {inquiryRows.length ? (
+                inquiryRows.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="rounded-lg border border-border bg-background p-3 text-xs text-muted-foreground"
+                  >
+                    <div className="mb-2 flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm text-foreground">
+                          {entry.fullName}
+                        </p>
+                        <p className="truncate text-xs">{entry.email}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void removeInquiry(entry.id)
+                        }}
+                        className="rounded px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                    <p className="mb-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+                      {entry.projectType} · {entry.budget}
+                    </p>
+                    <p className="leading-relaxed text-muted-foreground">
+                      {entry.message}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="rounded-lg border border-dashed border-border px-4 py-5 text-center text-xs text-muted-foreground">
+                  No submissions yet.
+                </p>
+              )}
+            </div>
+          </div>
+          <SheetFooter className="border-t border-border px-6 py-4">
+            <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
+              <span>Total submissions</span>
+              <span>{inquiryCount}</span>
+            </div>
+            <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
+              <span>Priority weight</span>
+              <span>{inquiryPriorityTotal}</span>
+            </div>
+            <div className="flex gap-2">
+              {isSignedIn ? (
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="inline-flex flex-1 items-center justify-center rounded-md border border-border bg-background px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                >
+                  Sign out
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  className="inline-flex flex-1 items-center justify-center rounded-md bg-foreground px-3 py-2 text-xs font-medium text-background transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Sign in with Google
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  void clearInquiries()
+                }}
+                disabled={inquiryCount === 0}
+                className="inline-flex flex-1 items-center justify-center rounded-md border border-border bg-background px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Clear all
+              </button>
+              <SheetClose asChild>
+                <button
+                  type="button"
+                  className="inline-flex flex-1 items-center justify-center rounded-md border border-border bg-muted px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-background"
+                >
+                  Close
+                </button>
+              </SheetClose>
+            </div>
+          </SheetFooter>
+        </div>
+      </SheetContent>
+      </Sheet>
     )
   },
 })

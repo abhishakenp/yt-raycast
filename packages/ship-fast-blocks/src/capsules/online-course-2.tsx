@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 export const OnlineCourseKimiPage2 = defineCapsule({
   name: "OnlineCourseKimiPage2",
@@ -179,9 +197,95 @@ export const OnlineCourseKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      courses: table({
+        category: string(),
+        description: string(),
+        enrolled: string(),
+        imageAlt: string(),
+        instructorImageAlt: string(),
+        instructorName: string(),
+        instructorRole: string(),
+        originalPrice: string(),
+        price: string(),
+        rating: string(),
+        reviews: string(),
+        title: string(),
+      }),
+      enrolledCourses: table({
+        courseId: string(),
+        progress: number(),
+      }),
+      wishlist: table({
+        courseTitle: string(),
+      }),
+    },
+    queries: {
+      courses: ({ db }) => db.courses.orderBy('createdAt').all(),
+      enrolledCourses: ({ db }) =>
+        db.enrolledCourses.all().flatMap((item) => {
+          const course = db.courses.get(item.courseId)
+          return course ? [{ ...item, course }] : []
+        }),
+      wishlistCourseTitles: ({ db }) =>
+        new Set(db.wishlist.all().map((item) => item.courseTitle)),
+    },
+    mutations: {
+      enrollInCourse: ({ db }, courseTitle: string) => {
+        const course = db.courses.where('title', courseTitle).all()[0]
+        if (!course) return db.enrolledCourses.all()
+
+        const existingEnrollment = db.enrolledCourses
+          .where('courseId', course.id)
+          .all()[0]
+
+        if (existingEnrollment) {
+          return db.enrolledCourses.all()
+        }
+
+        db.enrolledCourses.insert({
+          courseId: course.id,
+          progress: 0,
+        })
+
+        return db.enrolledCourses.all()
+      },
+      updateProgress: ({ db }, courseId: string, progress: number) => {
+        const nextProgress = Math.max(0, Math.min(100, Math.floor(progress)))
+
+        for (const item of db.enrolledCourses.where('courseId', courseId).all()) {
+          db.enrolledCourses.update(item.id, { progress: nextProgress })
+        }
+
+        return db.enrolledCourses.all()
+      },
+      removeFromEnrolled: ({ db }, courseId: string) => {
+        for (const item of db.enrolledCourses.where('courseId', courseId).all()) {
+          db.enrolledCourses.delete(item.id)
+        }
+
+        return db.enrolledCourses.all()
+      },
+      toggleWishlist: ({ db }, courseTitle: string) => {
+        const existingItem = db.wishlist
+          .where('courseTitle', courseTitle)
+          .all()[0]
+
+        if (existingItem) {
+          db.wishlist.delete(existingItem.id)
+          return false
+        }
+
+        db.wishlist.insert({ courseTitle })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [learningOpen, setLearningOpen] = useState(false)
     const brand = props.brand ?? "Nexus Academy"
     const nav = props.nav?.length
       ? props.nav
@@ -375,6 +479,59 @@ export const OnlineCourseKimiPage2 = defineCapsule({
             enrolled: "5,400 enrolled",
           },
         ]
+    const normalizedCourseItems = courseItems.map((course) => ({
+      category: course.category,
+      description: course.description,
+      enrolled: course.enrolled,
+      imageAlt: course.imageAlt,
+      instructorImageAlt: course.instructorImageAlt,
+      instructorName: course.instructorName,
+      instructorRole: course.instructorRole,
+      originalPrice: course.originalPrice,
+      price: course.price,
+      rating: course.rating,
+      reviews: course.reviews,
+      title: course.title,
+    }))
+    const storedCourses = lakebed.useQuery('courses')
+    const enrolledCourses = lakebed.useQuery('enrolledCourses')
+    const wishlistCourseTitles = lakebed.useQuery('wishlistCourseTitles')
+    const auth = lakebed.useAuth()
+    const enrollInCourse = lakebed.useMutation('enrollInCourse')
+    const updateProgress = lakebed.useMutation('updateProgress')
+    const removeFromEnrolled = lakebed.useMutation('removeFromEnrolled')
+    const toggleWishlist = lakebed.useMutation('toggleWishlist')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const displayCourses =
+      storedCourses && storedCourses.length > 0
+        ? storedCourses
+        : normalizedCourseItems
+    const safeEnrolledCourses = enrolledCourses ?? []
+    const enrolledCount = safeEnrolledCourses.length
 
     const instructorsHeading =
       props.instructors?.heading ?? "Meet Your Instructors"
@@ -779,6 +936,41 @@ export const OnlineCourseKimiPage2 = defineCapsule({
       </svg>
     )
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const BookOpenIcon = ({ className }: { className?: string }) => (
+      <svg
+        className={className}
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+      </svg>
+    )
+
     const featureIcons: ReactNode[] = [
       <svg
         key="video"
@@ -869,20 +1061,225 @@ export const OnlineCourseKimiPage2 = defineCapsule({
               ))}
             </nav>
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => go("/")}
-                className="hidden rounded-lg px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted sm:inline-flex"
-              >
-                Log in
-              </button>
-              <button
-                type="button"
-                onClick={() => go("/")}
-                className="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-              >
-                Get Started
-              </button>
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown className="size-4 text-muted-foreground" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('My Learning')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        My Learning
+                        <ArrowRight className="size-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Certificates')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Certificates
+                        <ArrowRight className="size-4" />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={learningOpen} onOpenChange={setLearningOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="My Learning"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <BookOpenIcon className="size-5" />
+                    {enrolledCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {enrolledCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">My Learning</SheetTitle>
+                    <SheetDescription>
+                      {enrolledCount > 0
+                        ? `${enrolledCount} course${enrolledCount === 1 ? '' : 's'} in progress.`
+                        : 'Start learning by enrolling in a course.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {safeEnrolledCourses.length ? (
+                      <div className="space-y-5">
+                        {safeEnrolledCourses.map((item) => (
+                          <div
+                            key={item.id}
+                            className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                          >
+                            <div className="aspect-video overflow-hidden rounded-lg bg-muted">
+                              <Image
+                                alt={item.course.imageAlt}
+                                w={180}
+                                h={100}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                {item.course.category}
+                              </p>
+                              <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                {item.course.title}
+                              </h3>
+                              <div className="mt-3">
+                                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                  <span>Progress</span>
+                                  <span>{item.progress}%</span>
+                                </div>
+                                <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-muted">
+                                  <div
+                                    className="h-full bg-primary transition-all"
+                                    style={{ width: `${item.progress}%` }}
+                                  />
+                                </div>
+                              </div>
+                              <div className="mt-3 flex items-center justify-between">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    void updateProgress(item.courseId, Math.min(100, item.progress + 10))
+                                  }}
+                                  className="text-xs font-semibold text-primary hover:opacity-80"
+                                >
+                                  Continue
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void removeFromEnrolled(item.courseId)}
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <BookOpenIcon className="size-12 text-muted-foreground/50" />
+                        <p className="mt-4 text-base font-semibold text-foreground">
+                          No courses yet
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Enroll in a course from the catalog to start your learning journey.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <Button
+                      type="button"
+                      className="w-full rounded-full"
+                      onClick={() => {
+                        setLearningOpen(false)
+                        go('Courses')
+                      }}
+                    >
+                      Browse Courses
+                    </Button>
+                    <SheetClose asChild>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full rounded-full"
+                      >
+                        Close
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
               <button
                 type="button"
                 onClick={() => setMobileOpen((v: boolean) => !v)}
@@ -910,6 +1307,58 @@ export const OnlineCourseKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -1065,72 +1514,105 @@ export const OnlineCourseKimiPage2 = defineCapsule({
             </button>
           </div>
           <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {courseItems.map((course) => (
-              <article
-                key={course.title}
-                className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
-              >
-                <div className="relative">
-                  <Image
-                    alt={course.imageAlt}
-                    w={640}
-                    h={360}
-                    loading="lazy"
-                    className="aspect-video w-full object-cover"
-                  />
-                  <span className="absolute left-4 top-4 rounded-full bg-background/90 px-3 py-1 text-xs font-semibold text-foreground">
-                    {course.category}
-                  </span>
-                </div>
-                <div className="flex flex-1 flex-col p-6">
-                  <div className="flex items-center gap-1.5 text-sm">
-                    <Star className="size-4 text-primary" />
-                    <span className="font-semibold text-card-foreground">
-                      {course.rating}
-                    </span>
-                    <span className="text-muted-foreground">
-                      ({course.reviews})
-                    </span>
-                  </div>
-                  <h3 className="mt-3 text-lg font-semibold text-card-foreground">
-                    {course.title}
-                  </h3>
-                  <p className="mt-2 flex-1 text-sm text-muted-foreground">
-                    {course.description}
-                  </p>
-                  <div className="mt-5 flex items-center gap-3 border-t border-border pt-5">
+            {displayCourses.map((course) => {
+              const isWishlisted =
+                wishlistCourseTitles?.has(course.title) ?? false
+
+              return (
+                <article
+                  key={course.title}
+                  className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
+                >
+                  <div className="relative">
                     <Image
-                      alt={course.instructorImageAlt}
-                      w={40}
-                      h={40}
+                      alt={course.imageAlt}
+                      w={640}
+                      h={360}
                       loading="lazy"
-                      className="size-10 rounded-full object-cover"
+                      className="aspect-video w-full object-cover"
                     />
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-card-foreground">
-                        {course.instructorName}
-                      </p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {course.instructorRole}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-5 flex items-center justify-between">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-xl font-bold text-card-foreground">
-                        {course.price}
-                      </span>
-                      <span className="text-sm text-muted-foreground line-through">
-                        {course.originalPrice}
-                      </span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {course.enrolled}
+                    <span className="absolute left-4 top-4 rounded-full bg-background/90 px-3 py-1 text-xs font-semibold text-foreground">
+                      {course.category}
                     </span>
+                    <button
+                      type="button"
+                      onClick={() => void toggleWishlist(course.title)}
+                      aria-pressed={isWishlisted}
+                      aria-label={
+                        isWishlisted
+                          ? `Remove ${course.title} from wishlist`
+                          : `Add ${course.title} to wishlist`
+                      }
+                      className={cn(
+                        'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
+                        isWishlisted
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-background/90 text-foreground',
+                      )}
+                    >
+                      <HeartIcon active={isWishlisted} />
+                    </button>
                   </div>
-                </div>
-              </article>
-            ))}
+                  <div className="flex flex-1 flex-col p-6">
+                    <div className="flex items-center gap-1.5 text-sm">
+                      <Star className="size-4 text-primary" />
+                      <span className="font-semibold text-card-foreground">
+                        {course.rating}
+                      </span>
+                      <span className="text-muted-foreground">
+                        ({course.reviews})
+                      </span>
+                    </div>
+                    <h3 className="mt-3 text-lg font-semibold text-card-foreground">
+                      {course.title}
+                    </h3>
+                    <p className="mt-2 flex-1 text-sm text-muted-foreground">
+                      {course.description}
+                    </p>
+                    <div className="mt-5 flex items-center gap-3 border-t border-border pt-5">
+                      <Image
+                        alt={course.instructorImageAlt}
+                        w={40}
+                        h={40}
+                        loading="lazy"
+                        className="size-10 rounded-full object-cover"
+                      />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-card-foreground">
+                          {course.instructorName}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {course.instructorRole}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-5 flex items-center justify-between">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xl font-bold text-card-foreground">
+                          {course.price}
+                        </span>
+                        <span className="text-sm text-muted-foreground line-through">
+                          {course.originalPrice}
+                        </span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {course.enrolled}
+                      </span>
+                    </div>
+                    <Button
+                      type="button"
+                      className="mt-5 w-full rounded-full"
+                      onClick={() => {
+                        void enrollInCourse(course.title)
+                        setLearningOpen(true)
+                      }}
+                    >
+                      Enroll Now
+                    </Button>
+                  </div>
+                </article>
+              )
+            })}
           </div>
         </section>
 

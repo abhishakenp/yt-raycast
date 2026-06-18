@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * TestimonialsKimiPage — a complete, self-contained CUSTOMER-PROOF / TESTIMONIALS page.
@@ -147,10 +165,90 @@ export const TestimonialsKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      testimonials: table({
+        quote: string(),
+        name: string(),
+        role: string(),
+        avatarAlt: string(),
+      }),
+      bookmarks: table({
+        testimonialName: string(),
+      }),
+    },
+    queries: {
+      testimonials: ({ db }) => db.testimonials.orderBy('createdAt').all(),
+      bookmarkedTestimonials: ({ db }) =>
+        db.bookmarks.all().flatMap((bookmark) => {
+          const testimonial = db.testimonials
+            .where('name', bookmark.testimonialName)
+            .all()[0]
+          return testimonial ? [testimonial] : []
+        }),
+      bookmarkedTestimonialNames: ({ db }) =>
+        new Set(db.bookmarks.all().map((bookmark) => bookmark.testimonialName)),
+    },
+    mutations: {
+      toggleBookmark: ({ db }, testimonialName: string) => {
+        const existingBookmark = db.bookmarks
+          .where('testimonialName', testimonialName)
+          .all()[0]
+
+        if (existingBookmark) {
+          db.bookmarks.delete(existingBookmark.id)
+          return false
+        }
+
+        db.bookmarks.insert({ testimonialName })
+        return true
+      },
+      removeBookmark: ({ db }, testimonialName: string) => {
+        for (const bookmark of db.bookmarks
+          .where('testimonialName', testimonialName)
+          .all()) {
+          db.bookmarks.delete(bookmark.id)
+        }
+        return db.bookmarks.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [savedOpen, setSavedOpen] = useState(false)
     const brand = props.brand ?? "FlowSync"
+    const storedTestimonials = lakebed.useQuery('testimonials')
+    const bookmarkedTestimonials = lakebed.useQuery('bookmarkedTestimonials')
+    const bookmarkedTestimonialNames = lakebed.useQuery('bookmarkedTestimonialNames')
+    const toggleBookmark = lakebed.useMutation('toggleBookmark')
+    const removeBookmark = lakebed.useMutation('removeBookmark')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
     const nav = props.nav?.length
       ? props.nav
       : ["Testimonials", "Case Studies", "Results", "Get Started"]
@@ -183,9 +281,7 @@ export const TestimonialsKimiPage = defineCapsule({
     const testimonialsDesc =
       props.testimonials?.description ??
       "Hear from the teams that transformed their workflows with FlowSync."
-    const testimonialItems = props.testimonials?.items?.length
-      ? props.testimonials.items
-      : [
+    const defaultTestimonialItems = [
           {
             quote:
               "FlowSync reduced our project handoff time by 62%. What used to take three days of back-and-forth emails now happens in real-time. Our client satisfaction scores jumped from 7.2 to 9.1.",
@@ -235,6 +331,12 @@ export const TestimonialsKimiPage = defineCapsule({
               "Professional headshot of David Park, CEO at Distributed Labs",
           },
         ]
+    const testimonialItems =
+      storedTestimonials && storedTestimonials.length > 0
+        ? storedTestimonials
+        : props.testimonials?.items?.length
+          ? props.testimonials.items
+          : defaultTestimonialItems
 
     const caseHeading = props.caseStudies?.heading ?? "In-depth case studies"
     const caseDesc =
@@ -445,6 +547,39 @@ export const TestimonialsKimiPage = defineCapsule({
       </svg>
     )
 
+    const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     // Industry tag accent classes — rotate semantic data tokens (no raw palette).
     const tagStyles = [
       "bg-chart-1/15 text-chart-1",
@@ -494,29 +629,234 @@ export const TestimonialsKimiPage = defineCapsule({
                   {nav[nav.length - 1]}
                 </button>
               </div>
-              <button
-                type="button"
-                aria-label="Open menu"
-                aria-expanded={mobileOpen}
-                aria-controls="mobile-menu"
-                onClick={() => setMobileOpen((v: boolean) => !v)}
-                className="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-              >
-                <svg
-                  className="size-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
+              <div className="flex items-center gap-4">
+                <Sheet open={savedOpen} onOpenChange={setSavedOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Saved testimonials"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <BookmarkIcon />
+                      {isSignedIn && bookmarkedTestimonialNames && bookmarkedTestimonialNames.size > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {bookmarkedTestimonialNames.size}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Saved testimonials</SheetTitle>
+                      <SheetDescription>
+                        {isSignedIn
+                          ? bookmarkedTestimonialNames && bookmarkedTestimonialNames.size > 0
+                            ? `${bookmarkedTestimonialNames.size} testimonial${bookmarkedTestimonialNames.size === 1 ? '' : 's'} saved.`
+                            : 'No saved testimonials yet.'
+                          : 'Sign in to save testimonials for later.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {isSignedIn ? (
+                        bookmarkedTestimonials && bookmarkedTestimonials.length > 0 ? (
+                          <div className="space-y-5">
+                            {bookmarkedTestimonials.map((t) => (
+                              <div
+                                key={t.name}
+                                className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                              >
+                                <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                  <Image
+                                    alt={t.avatarAlt}
+                                    w={100}
+                                    h={100}
+                                    className="h-full w-full object-cover"
+                                  />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="font-semibold text-foreground">
+                                    {t.name}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {t.role}
+                                  </p>
+                                  <p className="mt-2 line-clamp-2 text-sm text-muted-foreground/80">
+                                    "{t.quote}"
+                                  </p>
+                                  <button
+                                    type="button"
+                                    onClick={() => void removeBookmark(t.name)}
+                                    className="mt-3 text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                            <p className="text-base font-semibold text-foreground">
+                              No saved testimonials
+                            </p>
+                            <p className="mt-2 text-sm text-muted-foreground">
+                              Bookmark testimonials from the wall to save them for later.
+                            </p>
+                          </div>
+                        )
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            Sign in to save testimonials
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Create an account to bookmark your favorite testimonials.
+                          </p>
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              setSavedOpen(false)
+                              handleSignIn()
+                            }}
+                            className="mt-4 rounded-full"
+                          >
+                            Sign in with Google
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  aria-label="Open menu"
+                  aria-expanded={mobileOpen}
+                  aria-controls="mobile-menu"
+                  onClick={() => setMobileOpen((v: boolean) => !v)}
+                  className="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    className="size-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
             {mobileOpen && (
               <div
@@ -536,6 +876,58 @@ export const TestimonialsKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -628,32 +1020,55 @@ export const TestimonialsKimiPage = defineCapsule({
               </div>
 
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {testimonialItems.map((t) => (
-                  <article
-                    key={t.name}
-                    className="rounded-xl border border-border bg-muted/40 p-8"
-                  >
-                    <div className="mb-6">
-                      <Stars />
-                    </div>
-                    <blockquote className="mb-6 leading-relaxed text-foreground/80">
-                      &ldquo;{t.quote}&rdquo;
-                    </blockquote>
-                    <div className="flex items-center gap-4">
-                      <Image
-                        alt={t.avatarAlt}
-                        w={100}
-                        h={100}
-                        loading="lazy"
-                        className="size-12 rounded-full object-cover"
-                      />
-                      <div>
-                        <p className="font-semibold">{t.name}</p>
-                        <p className="text-sm text-muted-foreground">{t.role}</p>
+                {testimonialItems.map((t) => {
+                  const isBookmarked =
+                    bookmarkedTestimonialNames?.has(t.name) ?? false
+
+                  return (
+                    <article
+                      key={t.name}
+                      className="rounded-xl border border-border bg-muted/40 p-8"
+                    >
+                      <div className="mb-6 flex items-start justify-between">
+                        <Stars />
+                        <button
+                          type="button"
+                          onClick={() => void toggleBookmark(t.name)}
+                          aria-pressed={isBookmarked}
+                          aria-label={
+                            isBookmarked
+                              ? `Remove ${t.name} from saved testimonials`
+                              : `Save ${t.name} to testimonials`
+                          }
+                          className={cn(
+                            'grid size-8 place-items-center rounded-full shadow-sm transition-all hover:scale-105',
+                            isBookmarked
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-background/90 text-muted-foreground hover:text-foreground',
+                          )}
+                        >
+                          <BookmarkIcon active={isBookmarked} />
+                        </button>
                       </div>
-                    </div>
-                  </article>
-                ))}
+                      <blockquote className="mb-6 leading-relaxed text-foreground/80">
+                        &ldquo;{t.quote}&rdquo;
+                      </blockquote>
+                      <div className="flex items-center gap-4">
+                        <Image
+                          alt={t.avatarAlt}
+                          w={100}
+                          h={100}
+                          loading="lazy"
+                          className="size-12 rounded-full object-cover"
+                        />
+                        <div>
+                          <p className="font-semibold">{t.name}</p>
+                          <p className="text-sm text-muted-foreground">{t.role}</p>
+                        </div>
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
             </div>
           </section>

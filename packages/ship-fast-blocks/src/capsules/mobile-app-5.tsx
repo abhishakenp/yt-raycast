@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * MobileAppKimiPage5 — complete mobile-app / SaaS-app marketing LANDING page.
@@ -177,10 +195,93 @@ export const MobileAppKimiPage5 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      habits: table({
+        name: string(),
+        icon: string(),
+        target: string(),
+        frequency: string(),
+      }),
+      habitCompletions: table({
+        habitId: string(),
+        date: string(),
+        completed: string(),
+      }),
+    },
+    queries: {
+      habits: ({ db }) => db.habits.orderBy('createdAt').all(),
+      habitCompletions: ({ db }) => db.habitCompletions.all(),
+      todayCompletions: ({ db }) => {
+        const today = new Date().toISOString().split('T')[0]
+        return db.habitCompletions.where('date', today).where('completed', 'true').all()
+      },
+    },
+    mutations: {
+      addHabit: ({ db }, name: string, icon: string, target: string, frequency: string) => {
+        db.habits.insert({ name, icon, target, frequency })
+        return db.habits.all()
+      },
+      completeHabit: ({ db }, habitId: string, date: string) => {
+        const existing = db.habitCompletions.where('habitId', habitId).where('date', date).all()[0]
+        if (existing) {
+          db.habitCompletions.update(existing.id, { completed: 'true' })
+        } else {
+          db.habitCompletions.insert({ habitId, date, completed: 'true' })
+        }
+        return db.habitCompletions.all()
+      },
+      uncompleteHabit: ({ db }, habitId: string, date: string) => {
+        const existing = db.habitCompletions.where('habitId', habitId).where('date', date).all()[0]
+        if (existing) {
+          db.habitCompletions.delete(existing.id)
+        }
+        return db.habitCompletions.all()
+      },
+      deleteHabit: ({ db }, habitId: string) => {
+        for (const habit of db.habits.where('id', habitId).all()) {
+          db.habits.delete(habit.id)
+        }
+        for (const completion of db.habitCompletions.where('habitId', habitId).all()) {
+          db.habitCompletions.delete(completion.id)
+        }
+        return db.habits.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [habitsOpen, setHabitsOpen] = useState(false)
     const brand = props.brand ?? "HabitBud"
+    
+    const habits = lakebed.useQuery('habits')
+    const todayCompletions = lakebed.useQuery('todayCompletions')
+    const addHabit = lakebed.useMutation('addHabit')
+    const completeHabit = lakebed.useMutation('completeHabit')
+    const uncompleteHabit = lakebed.useMutation('uncompleteHabit')
+    const deleteHabit = lakebed.useMutation('deleteHabit')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName = auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials = authDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('') || 'ME'
+    const authLabel = auth.isLoading ? 'Checking...' : isSignedIn ? authDisplayName : 'Sign in'
+    
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    
+    const today = new Date().toISOString().split('T')[0]
+    const displayHabits = habits && habits.length > 0 ? habits : []
+    const completedHabitIds = new Set(todayCompletions?.map(c => c.habitId) || [])
+    const completedCount = completedHabitIds.size
+    const totalHabits = displayHabits.length
     const nav = props.nav?.length
       ? props.nav
       : ["Features", "How It Works", "Pricing", "Reviews", "Get Started Free"]
@@ -563,6 +664,12 @@ export const MobileAppKimiPage5 = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg className="size-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     const featureIcons = ["📊", "🔔", "🎯", "📈", "👥", "🏆", "🌙", "☁️", "🔒"]
     const stepIcons = ["✨", "📅", "🎉"]
     const bgRota = ["bg-primary", "bg-secondary", "bg-accent"]
@@ -606,6 +713,184 @@ export const MobileAppKimiPage5 = defineCapsule({
                 ))}
               </div>
               <div className="flex items-center gap-4">
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar size="sm" className="ring-2 ring-background" aria-hidden="true">
+                          {authPicture ? (
+                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" sideOffset={10} className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl">
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage src={authPicture} alt={authDisplayName} />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => setHabitsOpen(true)}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          My Habits
+                          <ArrowRightIcon />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRightIcon />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={habitsOpen} onOpenChange={setHabitsOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="My Habits"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                      </svg>
+                      {completedCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {completedCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Today's Habits</SheetTitle>
+                      <SheetDescription>
+                        {totalHabits > 0
+                          ? `${completedCount} of ${totalHabits} habit${totalHabits === 1 ? '' : 's'} completed today.`
+                          : 'No habits yet. Add your first habit to get started!'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {displayHabits.length ? (
+                        <div className="space-y-4">
+                          {displayHabits.map((habit) => {
+                            const isCompleted = completedHabitIds.has(habit.id)
+                            return (
+                              <div key={habit.id} className="flex items-center gap-4 rounded-xl border border-border bg-muted/40 p-4">
+                                <div className="grid size-12 place-items-center rounded-full bg-primary/10 text-2xl">
+                                  {habit.icon || '🎯'}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="font-semibold text-foreground truncate">{habit.name}</h3>
+                                  <p className="text-sm text-muted-foreground">{habit.target || 'Daily'}</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (isCompleted) {
+                                      void uncompleteHabit(habit.id, today)
+                                    } else {
+                                      void completeHabit(habit.id, today)
+                                    }
+                                  }}
+                                  aria-pressed={isCompleted}
+                                  className={cn(
+                                    "grid size-10 place-items-center rounded-full transition-all",
+                                    isCompleted
+                                      ? "bg-primary text-primary-foreground"
+                                      : "border-2 border-border hover:border-primary",
+                                  )}
+                                >
+                                  {isCompleted ? (
+                                    <CheckIcon className="size-5 text-primary-foreground" />
+                                  ) : null}
+                                </button>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No habits yet
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Sign in and add your first habit to start tracking your progress.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <Button
+                        type="button"
+                        className="w-full rounded-full"
+                        onClick={() => go('Pricing')}
+                      >
+                        Upgrade for Unlimited Habits
+                      </Button>
+                      <SheetClose asChild>
+                        <Button type="button" variant="secondary" className="rounded-full">
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(nav[nav.length - 1])}
@@ -645,6 +930,65 @@ export const MobileAppKimiPage5 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          setHabitsOpen(true)
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        My Habits
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -742,11 +1086,19 @@ export const MobileAppKimiPage5 = defineCapsule({
                           {/* Header */}
                           <div className="mb-4 flex items-center justify-between">
                             <div>
-                              <h2 className="text-lg font-bold text-foreground">Hello, Sarah! 👋</h2>
-                              <p className="text-xs text-muted-foreground">You have 3 habits today</p>
+                              <h2 className="text-lg font-bold text-foreground">
+                                {isSignedIn ? `Hello, ${authDisplayName.split(' ')[0]}! 👋` : 'Hello, Sarah! 👋'}
+                              </h2>
+                              <p className="text-xs text-muted-foreground">
+                                {totalHabits > 0 ? `You have ${totalHabits} habit${totalHabits === 1 ? '' : 's'} today` : 'You have 3 habits today'}
+                              </p>
                             </div>
                             <div className="size-10 overflow-hidden rounded-full bg-secondary/20">
-                              <Image alt="Smiling young woman with brown hair" w={100} h={100} className="size-full object-cover" />
+                              {isSignedIn && authPicture ? (
+                                <Image alt={authDisplayName} src={authPicture} w={100} h={100} className="size-full object-cover" />
+                              ) : (
+                                <Image alt="Smiling young woman with brown hair" w={100} h={100} className="size-full object-cover" />
+                              )}
                             </div>
                           </div>
 
@@ -764,32 +1116,72 @@ export const MobileAppKimiPage5 = defineCapsule({
                           {/* Today's Habits */}
                           <h3 className="mb-3 text-sm font-bold text-foreground">Today's Habits</h3>
                           <div className="space-y-2">
-                            <div className="flex items-center gap-3 rounded-xl border-2 border-primary/20 bg-primary/10 p-3">
-                              <div className="grid size-10 place-items-center rounded-full bg-primary/20 text-xl">💧</div>
-                              <div className="flex-1">
-                                <div className="text-sm font-semibold text-foreground">Drink Water</div>
-                                <div className="text-xs text-muted-foreground">6 / 8 glasses</div>
-                              </div>
-                              <div className="grid size-6 place-items-center rounded-full bg-primary">
-                                <CheckIcon className="size-4 text-background" />
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3 rounded-xl border-2 border-secondary/20 bg-secondary/10 p-3">
-                              <div className="grid size-10 place-items-center rounded-full bg-secondary/20 text-xl">📚</div>
-                              <div className="flex-1">
-                                <div className="text-sm font-semibold text-foreground">Read 30 mins</div>
-                                <div className="text-xs text-muted-foreground">0 / 1 sessions</div>
-                              </div>
-                              <div className="size-6 rounded-full border-2 border-secondary/30" />
-                            </div>
-                            <div className="flex items-center gap-3 rounded-xl border-2 border-accent/20 bg-accent/10 p-3">
-                              <div className="grid size-10 place-items-center rounded-full bg-accent/20 text-xl">🏃</div>
-                              <div className="flex-1">
-                                <div className="text-sm font-semibold text-foreground">Morning Run</div>
-                                <div className="text-xs text-muted-foreground">3.2 / 5 km</div>
-                              </div>
-                              <div className="size-6 rounded-full border-2 border-accent/30" />
-                            </div>
+                            {displayHabits.length > 0 ? (
+                              displayHabits.slice(0, 3).map((habit, i) => {
+                                const isCompleted = completedHabitIds.has(habit.id)
+                                const colorClasses = [
+                                  { border: 'border-primary/20', bg: 'bg-primary/10', iconBg: 'bg-primary/20', completed: 'bg-primary', incomplete: 'border-2 border-primary/30' },
+                                  { border: 'border-secondary/20', bg: 'bg-secondary/10', iconBg: 'bg-secondary/20', completed: 'bg-secondary', incomplete: 'border-2 border-secondary/30' },
+                                  { border: 'border-accent/20', bg: 'bg-accent/10', iconBg: 'bg-accent/20', completed: 'bg-accent', incomplete: 'border-2 border-accent/30' },
+                                ]
+                                const colors = colorClasses[i % 3]
+                                return (
+                                  <div key={habit.id} className={cn(
+                                    "flex items-center gap-3 rounded-xl border-2 p-3",
+                                    colors.border,
+                                    colors.bg,
+                                  )}>
+                                    <div className={cn(
+                                      "grid size-10 place-items-center rounded-full text-xl",
+                                      colors.iconBg,
+                                    )}>
+                                      {habit.icon || '🎯'}
+                                    </div>
+                                    <div className="flex-1">
+                                      <div className="text-sm font-semibold text-foreground">{habit.name}</div>
+                                      <div className="text-xs text-muted-foreground">{habit.target || 'Daily'}</div>
+                                    </div>
+                                    <div className={cn(
+                                      "grid size-6 place-items-center rounded-full",
+                                      isCompleted ? colors.completed : colors.incomplete,
+                                    )}>
+                                      {isCompleted ? (
+                                        <CheckIcon className="size-4 text-background" />
+                                      ) : null}
+                                    </div>
+                                  </div>
+                                )
+                              })
+                            ) : (
+                              <>
+                                <div className="flex items-center gap-3 rounded-xl border-2 border-primary/20 bg-primary/10 p-3">
+                                  <div className="grid size-10 place-items-center rounded-full bg-primary/20 text-xl">💧</div>
+                                  <div className="flex-1">
+                                    <div className="text-sm font-semibold text-foreground">Drink Water</div>
+                                    <div className="text-xs text-muted-foreground">6 / 8 glasses</div>
+                                  </div>
+                                  <div className="grid size-6 place-items-center rounded-full bg-primary">
+                                    <CheckIcon className="size-4 text-background" />
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3 rounded-xl border-2 border-secondary/20 bg-secondary/10 p-3">
+                                  <div className="grid size-10 place-items-center rounded-full bg-secondary/20 text-xl">📚</div>
+                                  <div className="flex-1">
+                                    <div className="text-sm font-semibold text-foreground">Read 30 mins</div>
+                                    <div className="text-xs text-muted-foreground">0 / 1 sessions</div>
+                                  </div>
+                                  <div className="size-6 rounded-full border-2 border-secondary/30" />
+                                </div>
+                                <div className="flex items-center gap-3 rounded-xl border-2 border-accent/20 bg-accent/10 p-3">
+                                  <div className="grid size-10 place-items-center rounded-full bg-accent/20 text-xl">🏃</div>
+                                  <div className="flex-1">
+                                    <div className="text-sm font-semibold text-foreground">Morning Run</div>
+                                    <div className="text-xs text-muted-foreground">3.2 / 5 km</div>
+                                  </div>
+                                  <div className="size-6 rounded-full border-2 border-accent/30" />
+                                </div>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>

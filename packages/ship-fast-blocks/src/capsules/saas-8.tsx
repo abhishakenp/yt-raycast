@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+import { Button } from "#/components/ui/button.tsx"
 
 /**
  * SaasKimiPage8 — a brutalist, high-contrast SaaS landing page (8th style
@@ -28,11 +46,18 @@ import { Image } from "#/lib/img.tsx"
  * "#"), and the navbar labels match the `nav` array so PageSwitch can swap
  * pages. Callers supply ONLY content data; rich defaults sourced from the
  * original HTML make it render great with no props at all.
+ *
+ * FULL-STACK CAPABILITIES:
+ * - Newsletter signup persistence via Lakebed
+ * - Demo request tracking for pricing plans
+ * - Google authentication with account menu
+ * - Session status drawer showing subscriber/demo counts
+ * - Auth-aware UI with sign-in/sign-out flows
  */
 export const SaasKimiPage8 = defineCapsule({
   name: "SaasKimiPage8",
   description:
-    "A brutalist, high-contrast SaaS landing page (8th style sibling to SaasKimiPage) with a monospace editorial aesthetic, heavy offset shadows, and bold red-accent borders. Features a sticky navbar with a compact logo mark, a split hero with a product-demo card and floating status overlay, an animated logo marquee, a 6-up feature grid with offset shadow cards, a dark 4-step how-it-works band with inline metrics, a 6-item product gallery, a 3-tier pricing table with a highlighted Most Popular plan, a bold red stats band, a 6-up testimonial grid with avatar headshots, an interactive FAQ accordion, a dark closing CTA with an email capture form, and a multi-column footer with social icons. Use for AI tools, productivity apps, scheduling SaaS, developer tools, or brutalist/retro-modern B2B startups when a striking, border-heavy, editorial layout with strong visual hierarchy is needed. Supply content only — brand, nav, hero, logos, features, steps, gallery, pricing, statsBand, testimonials, faq, cta, footer; the block owns all layout and styling.",
+    "A brutalist, high-contrast SaaS landing page (8th style sibling to SaasKimiPage) with a monospace editorial aesthetic, heavy offset shadows, and bold red-accent borders. Features a sticky navbar with a compact logo mark, a split hero with a product-demo card and floating status overlay, an animated logo marquee, a 6-up feature grid with offset shadow cards, a dark 4-step how-it-works band with inline metrics, a 6-item product gallery, a 3-tier pricing table with a highlighted Most Popular plan, a bold red stats band, a 6-up testimonial grid with avatar headshots, an interactive FAQ accordion, a dark closing CTA with an email capture form, and a multi-column footer with social icons. Full-stack features: newsletter signup persistence, demo request tracking, Google authentication with account menu, and a session status drawer. Use for AI tools, productivity apps, scheduling SaaS, developer tools, or brutalist/retro-modern B2B startups when a striking, border-heavy, editorial layout with strong visual hierarchy is needed. Supply content only — brand, nav, hero, logos, features, steps, gallery, pricing, statsBand, testimonials, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -198,7 +223,37 @@ export const SaasKimiPage8 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      newsletterSubscribers: table({
+        email: string(),
+      }),
+      demoRequests: table({
+        email: string(),
+        plan: string(),
+      }),
+    },
+    queries: {
+      subscriberCount: ({ db }) => db.newsletterSubscribers.all().length,
+      demoRequestCount: ({ db }) => db.demoRequests.all().length,
+    },
+    mutations: {
+      subscribeToNewsletter: ({ db }, email: string) => {
+        const existing = db.newsletterSubscribers
+          .where("email", email)
+          .all()[0]
+        if (!existing) {
+          db.newsletterSubscribers.insert({ email })
+        }
+        return db.newsletterSubscribers.all()
+      },
+      requestDemo: ({ db }, email: string, plan: string) => {
+        db.demoRequests.insert({ email, plan })
+        return db.demoRequests.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? "CHRONOSYNC"
     const nav = props.nav?.length
@@ -598,6 +653,40 @@ export const SaasKimiPage8 = defineCapsule({
     }
 
     const [openFaq, setOpenFaq] = useState<number | null>(null)
+    const [accountOpen, setAccountOpen] = useState(false)
+
+    const auth = lakebed.useAuth()
+    const subscriberCount = lakebed.useQuery("subscriberCount")
+    const demoRequestCount = lakebed.useQuery("demoRequestCount")
+    const subscribeToNewsletter = lakebed.useMutation("subscribeToNewsletter")
+    const requestDemo = lakebed.useMutation("requestDemo")
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
 
     const Check = ({ className }: { className?: string }) => (
       <svg
@@ -630,6 +719,21 @@ export const SaasKimiPage8 = defineCapsule({
     )
 
     const Star = () => <span className="text-primary">★</span>
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
 
     const featureIcons: ReactNode[] = [
       <svg
@@ -781,13 +885,199 @@ export const SaasKimiPage8 = defineCapsule({
                 ))}
               </div>
               <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => go("LOG IN")}
-                  className="hidden sm:block font-mono text-sm hover:text-primary transition-colors"
-                >
-                  LOG IN
-                </button>
+                <Sheet open={accountOpen} onOpenChange={setAccountOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open status drawer"
+                      className="hidden sm:flex items-center gap-2 font-mono text-sm hover:text-primary transition-colors"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      <span>Status</span>
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Session Status</SheetTitle>
+                      <SheetDescription>
+                        Your current session activity and subscription status.
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      <div className="space-y-6">
+                        <div className="rounded-lg bg-muted/40 p-4">
+                          <h3 className="font-mono font-bold text-sm mb-3">
+                            Newsletter Subscribers
+                          </h3>
+                          <p className="text-3xl font-bold text-foreground">
+                            {subscriberCount ?? 0}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Total subscribers this session
+                          </p>
+                        </div>
+                        <div className="rounded-lg bg-muted/40 p-4">
+                          <h3 className="font-mono font-bold text-sm mb-3">
+                            Demo Requests
+                          </h3>
+                          <p className="text-3xl font-bold text-foreground">
+                            {demoRequestCount ?? 0}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Demo requests submitted this session
+                          </p>
+                        </div>
+                        {isSignedIn ? (
+                          <div className="rounded-lg bg-muted/40 p-4">
+                            <h3 className="font-mono font-bold text-sm mb-3">
+                              Account Status
+                            </h3>
+                            <div className="flex items-center gap-3">
+                              <Avatar size="lg" className="ring-2 ring-background">
+                                {authPicture ? (
+                                  <AvatarImage
+                                    src={authPicture}
+                                    alt={authDisplayName}
+                                  />
+                                ) : null}
+                                <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                                  {authInitials}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-bold text-foreground">
+                                  {authDisplayName}
+                                </p>
+                                <p className="truncate text-xs text-muted-foreground">
+                                  {authEmail ?? "Signed in"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button variant="secondary" className="rounded-full">
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? "Signed in to this session"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go("Account")}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go("Settings")}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Settings
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => go("START FREE")}
@@ -1113,7 +1403,13 @@ export const SaasKimiPage8 = defineCapsule({
                       </ul>
                       <button
                         type="button"
-                        onClick={() => go(plan.cta)}
+                        onClick={() => {
+                          if (plan.cta === "CONTACT SALES") {
+                            void requestDemo("contact@example.com", plan.name)
+                          } else {
+                            go(plan.cta)
+                          }
+                        }}
                         className={cn(
                           "w-full py-3 font-mono font-bold transition-colors",
                           plan.popular
@@ -1281,6 +1577,14 @@ export const SaasKimiPage8 = defineCapsule({
               <form
                 onSubmit={(e) => {
                   e.preventDefault()
+                  const form = e.currentTarget
+                  const emailInput = form.querySelector(
+                    'input[type="email"]',
+                  ) as HTMLInputElement
+                  if (emailInput?.value) {
+                    void subscribeToNewsletter(emailInput.value)
+                    emailInput.value = ""
+                  }
                   go(cta.button)
                 }}
                 className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto mb-8"

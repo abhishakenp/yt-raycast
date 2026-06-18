@@ -1,8 +1,27 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 type SvgProps = Partial<React.ComponentPropsWithRef<"svg">>
 
@@ -81,6 +100,54 @@ const XIcon = (props: SvgProps) => (
     {...props}
   >
     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  </svg>
+)
+
+const ChevronDown = (props: SvgProps) => (
+  <svg
+    className={cn("size-5 text-muted-foreground group-open:rotate-180 transition-transform", props.className)}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    {...props}
+  >
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+)
+
+const ArrowRight = (props: SvgProps) => (
+  <svg
+    className={cn("size-4", props.className)}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    {...props}
+  >
+    <line x1="5" y1="12" x2="19" y2="12" />
+    <polyline points="12 5 19 12 12 19" />
+  </svg>
+)
+
+const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
+  <svg
+    className={cn("size-5", active ? "text-primary-foreground" : "text-foreground")}
+    fill={active ? "currentColor" : "none"}
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
   </svg>
 )
 
@@ -252,9 +319,115 @@ export const AboutKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
+  lakebed: {
+    schema: {
+      bookmarks: table({
+        itemName: string(),
+        itemType: string(),
+      }),
+      inquiries: table({
+        name: string(),
+        email: string(),
+        message: string(),
+      }),
+      subscribers: table({
+        email: string(),
+      }),
+    },
+    queries: {
+      bookmarkedItems: ({ db }) =>
+        new Set(db.bookmarks.all().map((bookmark) => bookmark.itemName)),
+      inquiryCount: ({ db }) => db.inquiries.all().length,
+      isSubscribed: ({ db }, email: string) =>
+        db.subscribers.where("email", email).all().length > 0,
+    },
+    mutations: {
+      toggleBookmark: ({ db }, itemName: string, itemType: string) => {
+        const existing = db.bookmarks
+          .where("itemName", itemName)
+          .all()[0]
 
-  component: ({ props }) => {
+        if (existing) {
+          db.bookmarks.delete(existing.id)
+          return false
+        }
+
+        db.bookmarks.insert({ itemName, itemType })
+        return true
+      },
+      submitInquiry: ({ db }, name: string, email: string, message: string) => {
+        db.inquiries.insert({ name, email, message })
+        return db.inquiries.all()
+      },
+      subscribe: ({ db }, email: string) => {
+        const existing = db.subscribers.where("email", email).all()[0]
+        if (!existing) {
+          db.subscribers.insert({ email })
+        }
+        return db.subscribers.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [contactOpen, setContactOpen] = useState(false)
+    const [newsletterEmail, setNewsletterEmail] = useState("")
+    const [inquiryForm, setInquiryForm] = useState({
+      name: "",
+      email: "",
+      message: "",
+    })
+
+    const bookmarkedItems = lakebed.useQuery("bookmarkedItems")
+    const inquiryCount = lakebed.useQuery("inquiryCount")
+    const toggleBookmark = lakebed.useMutation("toggleBookmark")
+    const submitInquiry = lakebed.useMutation("submitInquiry")
+    const subscribe = lakebed.useMutation("subscribe")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const handleSubscribe = (e: React.FormEvent) => {
+      e.preventDefault()
+      if (newsletterEmail.trim()) {
+        void subscribe(newsletterEmail.trim())
+        setNewsletterEmail("")
+      }
+    }
+
+    const handleSubmitInquiry = (e: React.FormEvent) => {
+      e.preventDefault()
+      if (inquiryForm.name.trim() && inquiryForm.email.trim() && inquiryForm.message.trim()) {
+        void submitInquiry(inquiryForm.name.trim(), inquiryForm.email.trim(), inquiryForm.message.trim())
+        setInquiryForm({ name: "", email: "", message: "" })
+        setContactOpen(false)
+      }
+    }
+
     const brand = props.brand ?? "Vertex Data"
     const nav = props.nav?.length
       ? props.nav
@@ -610,12 +783,112 @@ export const AboutKimiPage2 = defineCapsule({
                   {label}
                 </button>
               ))}
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? "Signed in to this session"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go("Account")}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go("Bookmarks")}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Bookmarks
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
               <button
                 type="button"
-                onClick={() => go("Start Free Trial")}
+                onClick={() => setContactOpen(true)}
                 className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
               >
-                Start Free Trial
+                Contact Us
               </button>
             </nav>
 
@@ -1177,6 +1450,126 @@ export const AboutKimiPage2 = defineCapsule({
             </div>
           </div>
         </footer>
+
+        <Sheet open={contactOpen} onOpenChange={setContactOpen}>
+          <SheetTrigger asChild>
+            <Button
+              type="button"
+              className="sr-only"
+              aria-label="Open sales inquiry drawer"
+            >
+              Open inquiry drawer
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Talk to {brand}</SheetTitle>
+              <SheetDescription>
+                Send a note to the team and review saved company highlights.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 space-y-6 overflow-y-auto p-6">
+              <form className="space-y-4" onSubmit={handleSubmitInquiry}>
+                <div>
+                  <label
+                    htmlFor="about2-inquiry-name"
+                    className="mb-2 block text-sm font-medium text-foreground"
+                  >
+                    Name
+                  </label>
+                  <input
+                    id="about2-inquiry-name"
+                    value={inquiryForm.name}
+                    onChange={(e) =>
+                      setInquiryForm((form) => ({
+                        ...form,
+                        name: e.currentTarget.value,
+                      }))
+                    }
+                    required
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="about2-inquiry-email"
+                    className="mb-2 block text-sm font-medium text-foreground"
+                  >
+                    Email
+                  </label>
+                  <input
+                    id="about2-inquiry-email"
+                    type="email"
+                    value={inquiryForm.email}
+                    onChange={(e) =>
+                      setInquiryForm((form) => ({
+                        ...form,
+                        email: e.currentTarget.value,
+                      }))
+                    }
+                    required
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="about2-inquiry-message"
+                    className="mb-2 block text-sm font-medium text-foreground"
+                  >
+                    Message
+                  </label>
+                  <textarea
+                    id="about2-inquiry-message"
+                    rows={4}
+                    value={inquiryForm.message}
+                    onChange={(e) =>
+                      setInquiryForm((form) => ({
+                        ...form,
+                        message: e.currentTarget.value,
+                      }))
+                    }
+                    required
+                    className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <Button type="submit" className="w-full">
+                  Send inquiry
+                </Button>
+              </form>
+
+              <div className="rounded-xl border border-border bg-muted/40 p-4">
+                <div className="text-sm font-semibold text-foreground">
+                  Session activity
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                  <div className="rounded-lg bg-background p-3">
+                    <div className="text-lg font-bold text-foreground">
+                      {bookmarkedItems?.size ?? 0}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Bookmarked highlights
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-background p-3">
+                    <div className="text-lg font-bold text-foreground">
+                      {inquiryCount ?? 0}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Inquiries sent
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <SheetClose asChild>
+                <Button type="button" variant="outline" className="w-full">
+                  Close
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * ResumeCvKimiPage — a complete, self-contained personal resume / CV / portfolio page.
@@ -165,10 +183,79 @@ export const ResumeCvKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      inquiries: table({
+        name: string(),
+        email: string(),
+        message: string(),
+      }),
+      favorites: table({
+        projectTitle: string(),
+      }),
+    },
+    queries: {
+      inquiries: ({ db }) => db.inquiries.orderBy('createdAt').all(),
+      favoriteProjectTitles: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.projectTitle)),
+    },
+    mutations: {
+      submitInquiry: ({ db }, name: string, email: string, message: string) => {
+        db.inquiries.insert({ name, email, message })
+        return db.inquiries.all()
+      },
+      toggleFavorite: ({ db }, projectTitle: string) => {
+        const existingFavorite = db.favorites
+          .where('projectTitle', projectTitle)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ projectTitle })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [inquiriesOpen, setInquiriesOpen] = useState(false)
     const brand = props.brand ?? "Sarah Chen"
+
+    const inquiries = lakebed.useQuery('inquiries')
+    const favoriteProjectTitles = lakebed.useQuery('favoriteProjectTitles')
+    const submitInquiry = lakebed.useMutation('submitInquiry')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
     const nav = props.nav?.length
       ? props.nav
       : ["About", "Experience", "Skills", "Projects", "Get in Touch"]
@@ -446,6 +533,39 @@ export const ResumeCvKimiPage = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
     const Star = () => (
       <svg
         width="20"
@@ -553,29 +673,221 @@ export const ResumeCvKimiPage = defineCapsule({
                 {nav[nav.length - 1]}
               </button>
             </div>
-            <button
-              type="button"
-              aria-label="Open menu"
-              aria-expanded={mobileOpen}
-              aria-controls="mobile-menu"
-              onClick={() => setMobileOpen((v: boolean) => !v)}
-              className="p-2 text-muted-foreground md:hidden"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                aria-hidden="true"
+            <div className="flex items-center gap-4">
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Inquiries')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Inquiries
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={inquiriesOpen} onOpenChange={setInquiriesOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="View inquiries"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                      <polyline points="22,6 12,13 2,6" />
+                    </svg>
+                    {inquiries && inquiries.length > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {inquiries.length}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Inquiries</SheetTitle>
+                    <SheetDescription>
+                      {inquiries && inquiries.length > 0
+                        ? `${inquiries.length} inquiry${inquiries.length === 1 ? '' : 'ies'} received.`
+                        : 'No inquiries yet.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {inquiries && inquiries.length ? (
+                      <div className="space-y-5">
+                        {inquiries.map((inquiry) => (
+                          <div
+                            key={inquiry.id}
+                            className="rounded-lg border border-border bg-muted/40 p-4"
+                          >
+                            <div className="mb-2 flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-semibold text-foreground">
+                                  {inquiry.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {inquiry.email}
+                                </p>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(inquiry.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {inquiry.message}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No inquiries yet
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          When visitors submit the contact form, their messages
+                          will appear here.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <SheetClose asChild>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full rounded-full"
+                      >
+                        Close
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+              <button
+                type="button"
+                aria-label="Open menu"
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-menu"
+                onClick={() => setMobileOpen((v: boolean) => !v)}
+                className="p-2 text-muted-foreground md:hidden"
               >
-                <line x1="4" y1="6" x2="20" y2="6" />
-                <line x1="4" y1="12" x2="20" y2="12" />
-                <line x1="4" y1="18" x2="20" y2="18" />
-              </svg>
-            </button>
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  aria-hidden="true"
+                >
+                  <line x1="4" y1="6" x2="20" y2="6" />
+                  <line x1="4" y1="12" x2="20" y2="12" />
+                  <line x1="4" y1="18" x2="20" y2="18" />
+                </svg>
+              </button>
+            </div>
             {mobileOpen && (
               <div
                 id="mobile-menu"
@@ -594,6 +906,58 @@ export const ResumeCvKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -833,13 +1197,15 @@ export const ResumeCvKimiPage = defineCapsule({
               <div className="space-y-16">
                 {projectItems.map((proj, i) => {
                   const imageFirst = i % 2 === 1
+                  const isFavorite =
+                    favoriteProjectTitles?.has(proj.title) ?? false
                   const ImageBlock = (
                     <div
                       className={cn(
                         imageFirst ? "order-1" : "order-1 md:order-2",
                       )}
                     >
-                      <div className="aspect-video overflow-hidden rounded-lg border border-border bg-muted">
+                      <div className="relative aspect-video overflow-hidden rounded-lg border border-border bg-muted">
                         <Image
                           alt={proj.imageAlt}
                           w={800}
@@ -847,6 +1213,24 @@ export const ResumeCvKimiPage = defineCapsule({
                           loading="lazy"
                           className="size-full object-cover"
                         />
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavorite(proj.title)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${proj.title} from favorites`
+                              : `Add ${proj.title} to favorites`
+                          }
+                          className={cn(
+                            'absolute top-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-background/90 text-foreground hover:bg-background',
+                          )}
+                        >
+                          <HeartIcon active={isFavorite} />
+                        </button>
                       </div>
                     </div>
                   )
@@ -980,7 +1364,20 @@ export const ResumeCvKimiPage = defineCapsule({
                     className="space-y-4"
                     onSubmit={(e) => {
                       e.preventDefault()
-                      go(nav[nav.length - 1])
+                      const form = e.currentTarget
+                      const name = (
+                        form.elements.namedItem('resume-name') as HTMLInputElement
+                      ).value
+                      const email = (
+                        form.elements.namedItem('resume-email') as HTMLInputElement
+                      ).value
+                      const message = (
+                        form.elements.namedItem('resume-message') as HTMLTextAreaElement
+                      ).value
+
+                      void submitInquiry(name, email, message)
+                      setInquiriesOpen(true)
+                      form.reset()
                     }}
                   >
                     <div>
@@ -992,6 +1389,7 @@ export const ResumeCvKimiPage = defineCapsule({
                       </label>
                       <input
                         id="resume-name"
+                        name="resume-name"
                         type="text"
                         required
                         placeholder="Your name"
@@ -1007,6 +1405,7 @@ export const ResumeCvKimiPage = defineCapsule({
                       </label>
                       <input
                         id="resume-email"
+                        name="resume-email"
                         type="email"
                         required
                         placeholder="you@example.com"
@@ -1022,6 +1421,7 @@ export const ResumeCvKimiPage = defineCapsule({
                       </label>
                       <textarea
                         id="resume-message"
+                        name="resume-message"
                         rows={4}
                         required
                         placeholder="Tell me about your project..."

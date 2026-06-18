@@ -4,6 +4,32 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "#/components/ui/command.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * LogisticsKimiPage — a complete, self-contained global-logistics / freight-forwarding
@@ -180,10 +206,164 @@ export const LogisticsKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      shipments: table({
+        trackingNumber: string(),
+        origin: string(),
+        destination: string(),
+        status: string(),
+        estimatedDelivery: string(),
+        weight: string(),
+        service: string(),
+      }),
+      quoteRequests: table({
+        origin: string(),
+        destination: string(),
+        weight: string(),
+        service: string(),
+        email: string(),
+      }),
+    },
+    queries: {
+      shipments: ({ db }) => db.shipments.orderBy('createdAt').all(),
+      quoteRequests: ({ db }) => db.quoteRequests.orderBy('createdAt').all(),
+    },
+    mutations: {
+      addShipment: ({ db }, trackingNumber: string, origin: string, destination: string, service: string, weight: string) => {
+        db.shipments.insert({
+          trackingNumber,
+          origin,
+          destination,
+          status: 'In Transit',
+          estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          weight,
+          service,
+        })
+        return db.shipments.all()
+      },
+      updateShipmentStatus: ({ db }, trackingNumber: string, status: string) => {
+        const shipment = db.shipments.where('trackingNumber', trackingNumber).all()[0]
+        if (shipment) {
+          db.shipments.update(shipment.id, { status })
+        }
+        return db.shipments.all()
+      },
+      removeShipment: ({ db }, trackingNumber: string) => {
+        const shipment = db.shipments.where('trackingNumber', trackingNumber).all()[0]
+        if (shipment) {
+          db.shipments.delete(shipment.id)
+        }
+        return db.shipments.all()
+      },
+      submitQuoteRequest: ({ db }, origin: string, destination: string, weight: string, service: string, email: string) => {
+        db.quoteRequests.insert({
+          origin,
+          destination,
+          weight,
+          service,
+          email,
+        })
+        return db.quoteRequests.all()
+      },
+      clearQuoteRequests: ({ db }) => {
+        for (const item of db.quoteRequests.all()) {
+          db.quoteRequests.delete(item.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [trackingOpen, setTrackingOpen] = useState(false)
+    const [quoteOpen, setQuoteOpen] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
+    const [trackingInput, setTrackingInput] = useState("")
+    const [quoteForm, setQuoteForm] = useState({
+      origin: "",
+      destination: "",
+      weight: "",
+      service: "Air Freight",
+      email: "",
+    })
     const brand = props.brand ?? "SwiftFreight"
+
+    const shipments = lakebed.useQuery("shipments")
+    const quoteRequests = lakebed.useQuery("quoteRequests")
+    const auth = lakebed.useAuth()
+    const addShipment = lakebed.useMutation("addShipment")
+    const updateShipmentStatus = lakebed.useMutation("updateShipmentStatus")
+    const removeShipment = lakebed.useMutation("removeShipment")
+    const submitQuoteRequest = lakebed.useMutation("submitQuoteRequest")
+    const clearQuoteRequests = lakebed.useMutation("clearQuoteRequests")
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const handleTrackSubmit = (e: React.FormEvent) => {
+      e.preventDefault()
+      if (trackingInput.trim()) {
+        void addShipment(
+          trackingInput.trim(),
+          "Shenzhen",
+          "Los Angeles",
+          "Air Freight",
+          "500kg",
+        )
+        setTrackingOpen(true)
+        setTrackingInput("")
+      }
+    }
+
+    const handleQuoteSubmit = (e: React.FormEvent) => {
+      e.preventDefault()
+      if (quoteForm.origin && quoteForm.destination && quoteForm.weight && quoteForm.email) {
+        void submitQuoteRequest(
+          quoteForm.origin,
+          quoteForm.destination,
+          quoteForm.weight,
+          quoteForm.service,
+          quoteForm.email,
+        )
+        setQuoteOpen(true)
+        setQuoteForm({
+          origin: "",
+          destination: "",
+          weight: "",
+          service: "Air Freight",
+          email: "",
+        })
+      }
+    }
+
+    const safeShipments = shipments ?? []
+    const safeQuoteRequests = quoteRequests ?? []
     const nav = props.nav?.length
       ? props.nav
       : ["Services", "Track", "About", "Pricing", "Contact"]
@@ -532,6 +712,37 @@ export const LogisticsKimiPage = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     // Per-service icons; tints rotate through tokens (never raw palette).
     const serviceIcons: ReactNode[] = [
       // plane / air
@@ -608,6 +819,127 @@ export const LogisticsKimiPage = defineCapsule({
               <div className="flex items-center gap-4">
                 <button
                   type="button"
+                  onClick={() => setSearchOpen(true)}
+                  className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground sm:flex"
+                >
+                  <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  <span className="text-sm font-medium">Search</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTrackingOpen(true)}
+                  className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground sm:flex"
+                >
+                  <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <span className="text-sm font-medium">Track</span>
+                </button>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? "Signed in to this session"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go("Shipments")}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Shipments
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go("Quotes")}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Quote Requests
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <button
+                  type="button"
                   onClick={() => go(heroPrimary)}
                   className="hidden items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
                 >
@@ -645,10 +977,112 @@ export const LogisticsKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? "Signed in"}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
         </header>
+
+        {/* Search Dialog */}
+        <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
+          <CommandInput placeholder={`Search ${brand} shipments...`} />
+          <CommandList className="max-h-[420px]">
+            <CommandEmpty>No shipments found.</CommandEmpty>
+            <CommandGroup heading="Shipments">
+              {safeShipments.map((shipment) => (
+                <CommandItem
+                  key={shipment.id}
+                  value={`${shipment.trackingNumber} ${shipment.origin} ${shipment.destination} ${shipment.service}`}
+                  onSelect={() => {
+                    setSearchOpen(false)
+                    setTrackingOpen(true)
+                  }}
+                  className="gap-3 py-3"
+                >
+                  <div className="size-12 overflow-hidden rounded-md bg-muted">
+                    <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                      <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                        <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {shipment.trackingNumber}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {shipment.origin} → {shipment.destination}
+                    </p>
+                  </div>
+                  <span
+                    className={cn(
+                      "rounded-full px-2 py-1 text-xs font-semibold",
+                      shipment.status === "Delivered"
+                        ? "bg-primary/10 text-primary"
+                        : shipment.status === "In Transit"
+                          ? "bg-chart-2/15 text-chart-2"
+                          : "bg-muted text-muted-foreground",
+                    )}
+                  >
+                    {shipment.status}
+                  </span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
 
         <main>
           {/* Hero */}
@@ -670,10 +1104,7 @@ export const LogisticsKimiPage = defineCapsule({
                   </div>
 
                   <form
-                    onSubmit={(e) => {
-                      e.preventDefault()
-                      go(nav.find((n) => /track/i.test(n)) ?? trackButton)
-                    }}
+                    onSubmit={handleTrackSubmit}
                     className="rounded-2xl border border-border bg-card p-6 shadow-sm"
                   >
                     <label
@@ -687,6 +1118,8 @@ export const LogisticsKimiPage = defineCapsule({
                         id="logistics-track"
                         type="text"
                         placeholder={trackPlaceholder}
+                        value={trackingInput}
+                        onChange={(e) => setTrackingInput(e.target.value)}
                         className="flex-1 rounded-xl border border-input bg-muted/50 px-4 py-3 text-foreground placeholder:text-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
                       />
                       <button
@@ -1088,18 +1521,9 @@ export const LogisticsKimiPage = defineCapsule({
                   >
                     <summary className="flex cursor-pointer list-none items-center justify-between p-6">
                       <span className="font-semibold">{item.q}</span>
-                      <svg
-                        className="size-5 text-muted-foreground transition-transform group-open:rotate-180"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <span className="flex size-5 flex-shrink-0 items-center justify-center">
+                        <ChevronDown />
+                      </span>
                     </summary>
                     <div className="px-6 pb-6 text-muted-foreground">
                       {item.a}
@@ -1132,7 +1556,7 @@ export const LogisticsKimiPage = defineCapsule({
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(ctaSecondary)}
+                  onClick={() => setQuoteOpen(true)}
                   className="inline-flex items-center rounded-xl border border-primary-foreground/40 px-8 py-4 font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
                 >
                   {ctaSecondary}
@@ -1142,6 +1566,255 @@ export const LogisticsKimiPage = defineCapsule({
             </div>
           </section>
         </main>
+
+        {/* Shipment Tracking Drawer */}
+        <Sheet open={trackingOpen} onOpenChange={setTrackingOpen}>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Track Shipments</SheetTitle>
+              <SheetDescription>
+                {safeShipments.length > 0
+                  ? `${safeShipments.length} shipment${safeShipments.length === 1 ? "" : "s"} tracked.`
+                  : "No shipments tracked yet."}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {safeShipments.length ? (
+                <div className="space-y-5">
+                  {safeShipments.map((shipment) => (
+                    <div
+                      key={shipment.id}
+                      className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                    >
+                      <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                        <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                          <svg className="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                            <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                              {shipment.service}
+                            </p>
+                            <h3 className="line-clamp-2 text-sm font-semibold text-card-foreground">
+                              {shipment.trackingNumber}
+                            </h3>
+                          </div>
+                          <span
+                            className={cn(
+                              "rounded-full px-2 py-1 text-xs font-semibold",
+                              shipment.status === "Delivered"
+                                ? "bg-primary/10 text-primary"
+                                : shipment.status === "In Transit"
+                                  ? "bg-chart-2/15 text-chart-2"
+                                  : "bg-muted text-muted-foreground",
+                            )}
+                          >
+                            {shipment.status}
+                          </span>
+                        </div>
+                        <div className="mt-4 space-y-1 text-xs text-muted-foreground">
+                          <p>From: {shipment.origin}</p>
+                          <p>To: {shipment.destination}</p>
+                          <p>Est. Delivery: {shipment.estimatedDelivery}</p>
+                          <p>Weight: {shipment.weight}</p>
+                        </div>
+                        <div className="mt-4 flex items-center justify-between">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void updateShipmentStatus(
+                                shipment.trackingNumber,
+                                shipment.status === "In Transit"
+                                  ? "Delivered"
+                                  : "In Transit",
+                              )
+                            }
+                            className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                          >
+                            Update Status
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void removeShipment(shipment.trackingNumber)
+                            }
+                            className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-destructive hover:underline"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                  <p className="text-base font-semibold text-foreground">
+                    No shipments tracked
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Enter a tracking number above to start tracking shipments.
+                  </p>
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <SheetClose asChild>
+                <Button type="button" variant="secondary" className="rounded-full">
+                  Close
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+
+        {/* Quote Request Drawer */}
+        <Sheet open={quoteOpen} onOpenChange={setQuoteOpen}>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Quote Requests</SheetTitle>
+              <SheetDescription>
+                {safeQuoteRequests.length > 0
+                  ? `${safeQuoteRequests.length} quote request${safeQuoteRequests.length === 1 ? "" : "s"} submitted.`
+                  : "No quote requests yet."}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              <form onSubmit={handleQuoteSubmit} className="mb-6 space-y-4">
+                <div>
+                  <label htmlFor="quote-origin" className="mb-2 block text-sm font-medium text-card-foreground">
+                    Origin
+                  </label>
+                  <input
+                    id="quote-origin"
+                    type="text"
+                    placeholder="e.g., Shenzhen"
+                    value={quoteForm.origin}
+                    onChange={(e) => setQuoteForm({ ...quoteForm, origin: e.target.value })}
+                    className="w-full rounded-xl border border-input bg-muted/50 px-4 py-3 text-foreground placeholder:text-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="quote-destination" className="mb-2 block text-sm font-medium text-card-foreground">
+                    Destination
+                  </label>
+                  <input
+                    id="quote-destination"
+                    type="text"
+                    placeholder="e.g., Los Angeles"
+                    value={quoteForm.destination}
+                    onChange={(e) => setQuoteForm({ ...quoteForm, destination: e.target.value })}
+                    className="w-full rounded-xl border border-input bg-muted/50 px-4 py-3 text-foreground placeholder:text-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="quote-weight" className="mb-2 block text-sm font-medium text-card-foreground">
+                    Weight
+                  </label>
+                  <input
+                    id="quote-weight"
+                    type="text"
+                    placeholder="e.g., 500kg"
+                    value={quoteForm.weight}
+                    onChange={(e) => setQuoteForm({ ...quoteForm, weight: e.target.value })}
+                    className="w-full rounded-xl border border-input bg-muted/50 px-4 py-3 text-foreground placeholder:text-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="quote-service" className="mb-2 block text-sm font-medium text-card-foreground">
+                    Service
+                  </label>
+                  <select
+                    id="quote-service"
+                    value={quoteForm.service}
+                    onChange={(e) => setQuoteForm({ ...quoteForm, service: e.target.value })}
+                    className="w-full rounded-xl border border-input bg-muted/50 px-4 py-3 text-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
+                  >
+                    <option value="Air Freight">Air Freight</option>
+                    <option value="Ocean Freight">Ocean Freight</option>
+                    <option value="Ground Transport">Ground Transport</option>
+                    <option value="Warehousing">Warehousing</option>
+                    <option value="Customs Brokerage">Customs Brokerage</option>
+                    <option value="Last-Mile Delivery">Last-Mile Delivery</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="quote-email" className="mb-2 block text-sm font-medium text-card-foreground">
+                    Email
+                  </label>
+                  <input
+                    id="quote-email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={quoteForm.email}
+                    onChange={(e) => setQuoteForm({ ...quoteForm, email: e.target.value })}
+                    className="w-full rounded-xl border border-input bg-muted/50 px-4 py-3 text-foreground placeholder:text-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full rounded-full">
+                  Submit Quote Request
+                </Button>
+              </form>
+
+              {safeQuoteRequests.length > 0 && (
+                <div className="space-y-5">
+                  <div className="border-t border-border pt-5">
+                    <h3 className="mb-4 text-sm font-semibold text-foreground">Recent Requests</h3>
+                  </div>
+                  {safeQuoteRequests.map((request) => (
+                    <div
+                      key={request.id}
+                      className="rounded-xl border border-border bg-card p-4"
+                    >
+                      <div className="mb-3 flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                            {request.service}
+                          </p>
+                          <h3 className="text-sm font-semibold text-card-foreground">
+                            {request.origin} → {request.destination}
+                          </h3>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {request.weight}
+                        </span>
+                      </div>
+                      <div className="space-y-1 text-xs text-muted-foreground">
+                        <p>Email: {request.email}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              {safeQuoteRequests.length > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={() => void clearQuoteRequests()}
+                >
+                  Clear All
+                </Button>
+              )}
+              <SheetClose asChild>
+                <Button type="button" variant="secondary" className="rounded-full">
+                  Close
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
 
         {/* Footer */}
         <footer className="border-t border-border py-16">

@@ -1,5 +1,22 @@
-import { type ReactNode } from "react"
+import { type ReactNode, useState } from "react"
 import { z } from "zod/v4"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
@@ -228,8 +245,48 @@ export const CryptoKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      watchlist: table({
+        name: string(),
+        kind: string(),
+      }),
+    },
+    queries: {
+      watchlist: ({ db }) => db.watchlist.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addWatchlistItem: ({ db }, name: string, kind: string) => {
+        const trimmedName = name.trim()
+        if (!trimmedName) return db.watchlist.all()
+
+        const exists = db.watchlist.where("name", trimmedName).all()[0]
+        if (!exists) {
+          db.watchlist.insert({ name: trimmedName, kind: kind.trim() || "general" })
+        }
+
+        return db.watchlist.all()
+      },
+      removeWatchlistItem: ({ db }, id: string) => {
+        const existing = db.watchlist.get(id)
+        if (existing) {
+          db.watchlist.delete(existing.id)
+        }
+
+        return db.watchlist.all()
+      },
+      clearWatchlist: ({ db }) => {
+        for (const item of db.watchlist.all()) {
+          db.watchlist.delete(item.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [watchlistOpen, setWatchlistOpen] = useState(false)
     const brand = props.brand ?? "NexusChain"
     const nav = props.nav?.length
       ? props.nav
@@ -640,6 +697,45 @@ export const CryptoKimiPage2 = defineCapsule({
     const ctaNote =
       props.cta?.note ?? "No credit card required • Free tier forever"
 
+    const defaultWatchlist = [
+      { id: "seed-starter", name: "Starter Plan", kind: "Pricing Plan" },
+      { id: "seed-developer", name: "Developer Plan", kind: "Pricing Plan" },
+      { id: "seed-launch", name: "Launch App", kind: "CTA Action" },
+    ]
+
+    const watchlistRows = lakebed.useQuery("watchlist")
+    const addWatchlistItem = lakebed.useMutation("addWatchlistItem")
+    const removeWatchlistItem = lakebed.useMutation("removeWatchlistItem")
+    const clearWatchlist = lakebed.useMutation("clearWatchlist")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials = authDisplayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "ME"
+    const authPicture = auth.picture || auth.user?.picture
+    const authLabel = auth.isLoading ? "Checking..." : isSignedIn ? authDisplayName : "Sign in"
+    const accountRows = watchlistRows ?? defaultWatchlist
+    const watchlistItemCount = (watchlistRows?.length ?? 0)
+    const watchlistPlanCount = (watchlistRows ?? []).filter((item) => item.kind === "Pricing Plan").length
+    const watchlistActionCount = (watchlistRows ?? []).filter((item) => item.kind === "CTA Action").length
+    const addToWatchlist = (name: string, kind: string) => {
+      void addWatchlistItem(name, kind)
+      setWatchlistOpen(true)
+    }
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
     const footerDesc =
       props.footer?.description ??
       "The high-performance Layer 2 blockchain powering the next generation of decentralized applications."
@@ -788,6 +884,21 @@ export const CryptoKimiPage2 = defineCapsule({
       </svg>,
     ]
 
+    const ChevronDown = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     // Status chip + node styling per roadmap status.
     const statusStyle = (status: "Completed" | "Live" | "Upcoming") => {
       if (status === "Completed")
@@ -843,13 +954,158 @@ export const CryptoKimiPage2 = defineCapsule({
                 ))}
               </div>
               <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(heroSecondary)}
-                  className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-                >
-                  Sign In
-                </button>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="hidden items-center gap-2 rounded-full border border-border bg-background/90 px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+                      >
+                        <Avatar size="sm" className="ring-2 ring-background" aria-hidden="true">
+                          {authPicture ? (
+                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate sm:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <p className="text-sm font-bold text-foreground">
+                          {authDisplayName}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {authEmail ?? "Signed in to this session"}
+                        </p>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go("Account")}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                        >
+                          Account
+                          <ArrowRight className="size-4" />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-60 sm:block"
+                  >
+                    {authLabel}
+                  </button>
+                )}
+                <Sheet open={watchlistOpen} onOpenChange={setWatchlistOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      className="relative inline-flex items-center gap-2 rounded-lg border border-border bg-muted px-4 py-2 text-sm font-semibold text-foreground transition-all hover:bg-accent hover:text-accent-foreground"
+                      aria-label="Open protocol watchlist"
+                    >
+                      Watchlist
+                      {watchlistItemCount > 0 ? (
+                        <span className="grid size-5 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                          {watchlistItemCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle>Protocol Watchlist</SheetTitle>
+                      <SheetDescription>
+                        Track plans, sections, and actions you care about while exploring
+                        this page.
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {accountRows.length ? (
+                        <div className="space-y-4">
+                          {accountRows.map((entry) => (
+                            <div
+                              key={entry.id}
+                              className="rounded-lg border border-border bg-card p-4"
+                            >
+                              <div className="mb-2 flex items-center justify-between gap-2">
+                                <p className="font-semibold text-foreground">{entry.name}</p>
+                                {watchlistRows?.length ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => void removeWatchlistItem(entry.id)}
+                                    className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                ) : null}
+                              </div>
+                              <p className="text-xs text-muted-foreground">{entry.kind}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="rounded-lg border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+                          Your watchlist is empty. Add pricing or CTA actions to save them.
+                        </p>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>Tracked items</span>
+                          <span>{watchlistItemCount}</span>
+                        </div>
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>Pricing plans tracked</span>
+                          <span>{watchlistPlanCount}</span>
+                        </div>
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>CTA actions tracked</span>
+                          <span>{watchlistActionCount}</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void clearWatchlist()}
+                        disabled={watchlistItemCount === 0}
+                        className="w-full rounded-xl border border-border bg-muted px-4 py-2 text-sm font-semibold text-foreground transition-all disabled:cursor-not-allowed disabled:opacity-50 hover:bg-accent hover:text-accent-foreground"
+                      >
+                        Clear watchlist
+                      </button>
+                      <SheetClose asChild>
+                        <button
+                          type="button"
+                          className="mt-2 w-full rounded-xl bg-foreground px-4 py-2 text-sm font-semibold text-background transition-all hover:bg-foreground/90"
+                        >
+                          Continue exploring
+                        </button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(heroPrimary)}
@@ -905,7 +1161,10 @@ export const CryptoKimiPage2 = defineCapsule({
                     </button>
                     <button
                       type="button"
-                      onClick={() => go(heroSecondary)}
+                      onClick={() => {
+                        addToWatchlist(heroSecondary, "CTA Action")
+                        go(heroSecondary)
+                      }}
                       className="flex items-center justify-center gap-2 rounded-xl border border-border bg-muted px-8 py-4 font-semibold text-foreground transition-all hover:bg-accent hover:text-accent-foreground"
                     >
                       <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -1398,7 +1657,10 @@ export const CryptoKimiPage2 = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(plan.cta)}
+                      onClick={() => {
+                        addToWatchlist(plan.name, "Pricing Plan")
+                        go(plan.cta)
+                      }}
                       className={cn(
                         "w-full rounded-xl py-3 font-semibold transition-all",
                         plan.featured
@@ -1526,7 +1788,10 @@ export const CryptoKimiPage2 = defineCapsule({
                     </button>
                     <button
                       type="button"
-                      onClick={() => go(ctaSecondary)}
+                      onClick={() => {
+                        addToWatchlist(ctaSecondary, "CTA Action")
+                        go(ctaSecondary)
+                      }}
                       className="rounded-xl border border-primary-foreground/20 bg-primary-foreground/10 px-8 py-4 font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/20"
                     >
                       {ctaSecondary}

@@ -4,6 +4,23 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * LogisticsKimiPage2 — TEMPLATE VARIANT 2 for logistics. A faithful Tailwind v4
@@ -191,10 +208,116 @@ export const LogisticsKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      shipments: table({
+        trackingNumber: string(),
+        origin: string(),
+        destination: string(),
+        status: string(),
+        estimatedDelivery: string(),
+      }),
+      quotes: table({
+        origin: string(),
+        destination: string(),
+        weight: string(),
+        serviceType: string(),
+        estimatedCost: string(),
+      }),
+      savedQuotes: table({
+        quoteId: string(),
+      }),
+    },
+    queries: {
+      shipments: ({ db }) => db.shipments.orderBy('createdAt').all(),
+      quotes: ({ db }) => db.quotes.orderBy('createdAt').all(),
+      savedQuoteIds: ({ db }) =>
+        new Set(db.savedQuotes.all().map((saved) => saved.quoteId)),
+    },
+    mutations: {
+      addShipment: ({ db }, trackingNumber: string, origin: string, destination: string) => {
+        db.shipments.insert({
+          trackingNumber,
+          origin,
+          destination,
+          status: 'In Transit',
+          estimatedDelivery: '2024-01-15',
+        })
+        return db.shipments.all()
+      },
+      addQuote: ({ db }, origin: string, destination: string, weight: string, serviceType: string) => {
+        const estimatedCost = Math.floor(Math.random() * 500 + 50).toString()
+        db.quotes.insert({
+          origin,
+          destination,
+          weight,
+          serviceType,
+          estimatedCost,
+        })
+        return db.quotes.all()
+      },
+      toggleSavedQuote: ({ db }, quoteId: string) => {
+        const existingSaved = db.savedQuotes.where('quoteId', quoteId).all()[0]
+        if (existingSaved) {
+          db.savedQuotes.delete(existingSaved.id)
+          return false
+        }
+        db.savedQuotes.insert({ quoteId })
+        return true
+      },
+      removeQuote: ({ db }, quoteId: string) => {
+        for (const quote of db.quotes.where('id', quoteId).all()) {
+          db.quotes.delete(quote.id)
+        }
+        return db.quotes.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [quotesOpen, setQuotesOpen] = useState(false)
     const brand = props.brand ?? "SwiftRoute"
+
+    // Lakebed queries and mutations
+    const storedShipments = lakebed.useQuery('shipments')
+    const storedQuotes = lakebed.useQuery('quotes')
+    const savedQuoteIds = lakebed.useQuery('savedQuoteIds')
+    const auth = lakebed.useAuth()
+    const addShipment = lakebed.useMutation('addShipment')
+    const addQuote = lakebed.useMutation('addQuote')
+    const toggleSavedQuote = lakebed.useMutation('toggleSavedQuote')
+    const removeQuote = lakebed.useMutation('removeQuote')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const safeQuotes = storedQuotes ?? []
+    const quoteCount = safeQuotes.length
     const nav = props.nav?.length
       ? props.nav
       : ["Services", "Track", "Solutions", "About", "Contact"]
@@ -621,6 +744,37 @@ export const LogisticsKimiPage2 = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     const serviceIcons: ReactNode[] = [
       // express / bolt
       <svg key="express" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -707,6 +861,234 @@ export const LogisticsKimiPage2 = defineCapsule({
                   </svg>
                   <span>{heroPhone}</span>
                 </button>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-2 py-1 text-primary-foreground shadow-sm transition hover:border-primary-foreground/40 hover:bg-primary-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-primary"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-primary-foreground text-[0.65rem] font-bold text-primary">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Shipments')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Shipments
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={quotesOpen} onOpenChange={setQuotesOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Saved Quotes"
+                      className="relative flex items-center gap-2 text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                      </svg>
+                      {quoteCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-background text-[0.625rem] font-bold text-primary">
+                          {quoteCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Saved Quotes</SheetTitle>
+                      <SheetDescription>
+                        {quoteCount > 0
+                          ? `${quoteCount} quote${quoteCount === 1 ? '' : 's'} saved for this session.`
+                          : 'No quotes saved yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeQuotes.length ? (
+                        <div className="space-y-5">
+                          {safeQuotes.map((quote) => {
+                            const isSaved = savedQuoteIds?.has(quote.id) ?? false
+                            return (
+                              <div
+                                key={quote.id}
+                                className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                              >
+                                <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                  <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-muted-foreground">
+                                    {quote.serviceType[0]}
+                                  </div>
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                        {quote.serviceType}
+                                      </p>
+                                      <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                        {quote.origin} → {quote.destination}
+                                      </h3>
+                                    </div>
+                                    <p className="text-sm font-bold text-foreground">
+                                      ${quote.estimatedCost}
+                                    </p>
+                                  </div>
+                                  <div className="mt-4 flex items-center justify-between">
+                                    <p className="text-xs text-muted-foreground">
+                                      {quote.weight}
+                                    </p>
+                                    <button
+                                      type="button"
+                                      onClick={() => void removeQuote(quote.id)}
+                                      className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No quotes saved
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Get a quote from the hero section to start building your shipping plan.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <button
+                        type="button"
+                        disabled={!safeQuotes.length}
+                        className="w-full rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-60"
+                        onClick={() => go('Checkout')}
+                      >
+                        Compare Quotes
+                      </button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            for (const quote of safeQuotes) {
+                              void removeQuote(quote.id)
+                            }
+                          }}
+                          disabled={!safeQuotes.length}
+                          className="rounded-full border-2 border-input px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary disabled:pointer-events-none disabled:opacity-60"
+                        >
+                          Clear All
+                        </button>
+                        <SheetClose asChild>
+                          <button
+                            type="button"
+                            className="rounded-full bg-secondary px-4 py-3 text-sm font-semibold text-secondary-foreground transition-colors hover:bg-secondary/80"
+                          >
+                            Continue
+                          </button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(heroPrimary)}
@@ -746,6 +1128,58 @@ export const LogisticsKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="flex w-full items-center justify-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-60"
+                    >
+                      <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      <span>{authLabel}</span>
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -783,7 +1217,10 @@ export const LogisticsKimiPage2 = defineCapsule({
                   <div className="flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() => {
+                        void addQuote('New York', 'Los Angeles', '10 lbs', 'Express')
+                        setQuotesOpen(true)
+                      }}
                       className="rounded-xl bg-background px-8 py-4 text-lg font-bold text-foreground shadow-lg transition-transform hover:scale-105"
                     >
                       {heroPrimary}
@@ -826,6 +1263,13 @@ export const LogisticsKimiPage2 = defineCapsule({
                   <form
                     onSubmit={(e) => {
                       e.preventDefault()
+                      const form = e.currentTarget
+                      const input = form.querySelector('input') as HTMLInputElement
+                      const trackingNumber = input.value.trim()
+                      if (trackingNumber) {
+                        void addShipment(trackingNumber, 'Origin', 'Destination')
+                        setQuotesOpen(true)
+                      }
                       go(nav.find((n) => /track/i.test(n)) ?? trackButton)
                     }}
                     className="space-y-4"
@@ -1119,7 +1563,10 @@ export const LogisticsKimiPage2 = defineCapsule({
                       </ul>
                       <button
                         type="button"
-                        onClick={() => go(tier.cta)}
+                        onClick={() => {
+                          void addQuote('Origin', 'Destination', 'Weight', tier.name)
+                          setQuotesOpen(true)
+                        }}
                         className={cn(
                           "w-full rounded-xl py-3 font-semibold transition-colors",
                           featured
@@ -1207,18 +1654,7 @@ export const LogisticsKimiPage2 = defineCapsule({
                     <summary className="flex cursor-pointer list-none items-center justify-between p-6">
                       <span className="font-bold">{item.q}</span>
                       <span className="ml-4 grid size-8 place-items-center rounded-full bg-muted transition-colors group-open:bg-primary/10">
-                        <svg
-                          className="size-5 text-muted-foreground transition-transform group-open:rotate-180 group-open:text-primary"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M19 9l-7 7-7-7" />
-                        </svg>
+                        <ChevronDown />
                       </span>
                     </summary>
                     <div className="px-6 pb-6 text-muted-foreground">
@@ -1242,7 +1678,10 @@ export const LogisticsKimiPage2 = defineCapsule({
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={() => {
+                    void addQuote('Origin', 'Destination', 'Weight', 'Standard')
+                    setQuotesOpen(true)
+                  }}
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-background px-10 py-4 text-lg font-bold text-foreground shadow-lg transition-transform hover:scale-105"
                 >
                   <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

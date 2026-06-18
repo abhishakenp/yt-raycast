@@ -1,8 +1,27 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * MobileAppKimiPage3 — a complete, self-contained mobile-app LANDING / marketing page.
@@ -175,9 +194,73 @@ export const MobileAppKimiPage3 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      waitlist: table({
+        email: string(),
+        plan: string(),
+      }),
+      downloads: table({
+        platform: string(),
+      }),
+    },
+    queries: {
+      waitlistEntries: ({ db }) => db.waitlist.orderBy("createdAt").all(),
+      downloadCounts: ({ db }) => db.downloads.all(),
+    },
+    mutations: {
+      joinWaitlist: ({ db }, email: string, plan: string) => {
+        const existing = db.waitlist.where("email", email).all()[0]
+        if (!existing) {
+          db.waitlist.insert({ email, plan })
+        }
+        return db.waitlist.all()
+      },
+      trackDownload: ({ db }, platform: string) => {
+        db.downloads.insert({ platform })
+        return db.downloads.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [waitlistOpen, setWaitlistOpen] = useState(false)
+    const [waitlistEmail, setWaitlistEmail] = useState("")
+    const [waitlistPlan, setWaitlistPlan] = useState("Free")
+    const [submitted, setSubmitted] = useState(false)
     const brand = props.brand ?? "Streak"
+
+    /* ── Lakebed runtime ── */
+    const waitlistEntries = lakebed.useQuery("waitlistEntries")
+    const joinWaitlist = lakebed.useMutation("joinWaitlist")
+    const trackDownload = lakebed.useMutation("trackDownload")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part: string) => part[0]?.toUpperCase())
+        .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+    const waitlistCount = (waitlistEntries ?? []).length
+
+    const handleWaitlistSubmit = (e: React.FormEvent) => {
+      e.preventDefault()
+      if (!waitlistEmail.trim()) return
+      void joinWaitlist(waitlistEmail.trim(), waitlistPlan)
+      setSubmitted(true)
+    }
+
     const nav = props.nav?.length
       ? props.nav
       : ["Features", "How It Works", "Pricing", "Reviews"]
@@ -617,20 +700,150 @@ export const MobileAppKimiPage3 = defineCapsule({
                 ))}
               </div>
               <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => go("Log In")}
-                  className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-                >
-                  Log in
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go("Get Started Free")}
-                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-accent px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:opacity-90"
-                >
-                  Get Started Free
-                </button>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar size="sm" className="ring-2 ring-background" aria-hidden="true">
+                          {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">{authInitials}</AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">{authDisplayName}</span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" sideOffset={10} className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl">
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">{authInitials}</AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">{authDisplayName}</p>
+                            <p className="truncate text-xs text-muted-foreground">{authEmail ?? "Signed in to this session"}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={() => auth.signOut()}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => !auth.isLoading && void lakebed.signInWithGoogle()}
+                    disabled={auth.isLoading}
+                    className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex disabled:opacity-60 disabled:pointer-events-none"
+                  >
+                    {authLabel}
+                  </button>
+                )}
+                <Sheet open={waitlistOpen} onOpenChange={setWaitlistOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-accent px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:opacity-90"
+                    >
+                      Get Started Free
+                      {waitlistCount > 0 && (
+                        <span className="grid size-5 place-items-center rounded-full bg-primary-foreground/20 text-[0.625rem] font-bold">
+                          {waitlistCount}
+                        </span>
+                      )}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Join {brand}</SheetTitle>
+                      <SheetDescription>
+                        {submitted
+                          ? "You're on the waitlist! We'll be in touch soon."
+                          : `${waitlistCount > 0 ? `${waitlistCount} people have joined. ` : ""}Enter your email to get early access.`}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {submitted ? (
+                        <div className="flex min-h-48 flex-col items-center justify-center gap-4 text-center">
+                          <div className="grid size-16 place-items-center rounded-full bg-primary/10 text-primary">
+                            <CheckIcon />
+                          </div>
+                          <p className="text-base font-semibold">Welcome aboard!</p>
+                          <p className="text-sm text-muted-foreground">We'll notify you at <span className="font-medium text-foreground">{waitlistEmail}</span> when we launch your plan.</p>
+                        </div>
+                      ) : (
+                        <form onSubmit={handleWaitlistSubmit} className="space-y-4">
+                          <div>
+                            <label htmlFor="waitlist-email" className="mb-1.5 block text-sm font-medium">Email address</label>
+                            <input
+                              id="waitlist-email"
+                              type="email"
+                              required
+                              value={waitlistEmail}
+                              onChange={(e) => setWaitlistEmail(e.target.value)}
+                              placeholder="you@example.com"
+                              className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                            />
+                          </div>
+                          <div>
+                            <label className="mb-1.5 block text-sm font-medium">Choose a plan</label>
+                            <div className="space-y-2">
+                              {(props.pricing?.tiers?.length ? props.pricing.tiers : pricingTiers).map((tier) => (
+                                <button
+                                  key={tier.name}
+                                  type="button"
+                                  onClick={() => setWaitlistPlan(tier.name)}
+                                  className={cn(
+                                    "flex w-full items-center justify-between rounded-xl border px-4 py-3 text-sm transition-all",
+                                    waitlistPlan === tier.name
+                                      ? "border-primary bg-primary/10 text-foreground"
+                                      : "border-border bg-muted/30 text-muted-foreground hover:border-primary/30",
+                                  )}
+                                >
+                                  <span className="font-medium">{tier.name}</span>
+                                  <span>{tier.price}{tier.period ? tier.period : ""}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <Button type="submit" className="w-full rounded-xl">
+                            Join Waitlist
+                          </Button>
+                        </form>
+                      )}
+                      {(waitlistEntries ?? []).length > 0 && (
+                        <div className="mt-6 rounded-xl border border-border bg-muted/30 p-4">
+                          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recent sign-ups</p>
+                          <div className="space-y-2">
+                            {(waitlistEntries ?? []).slice(-5).reverse().map((entry) => (
+                              <div key={entry.id} className="flex items-center justify-between text-sm">
+                                <span className="truncate text-foreground/80">{entry.email}</span>
+                                <span className="ml-2 shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">{entry.plan}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button type="button" variant="secondary" className="w-full rounded-xl">
+                          {submitted ? "Close" : "Maybe Later"}
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
               </div>
             </div>
           </nav>
@@ -664,7 +877,7 @@ export const MobileAppKimiPage3 = defineCapsule({
                   <div className="flex flex-col gap-4 sm:flex-row justify-center lg:justify-start">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() => { void trackDownload("ios"); setWaitlistOpen(true) }}
                       className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-accent px-6 py-3 text-base font-semibold text-primary-foreground shadow-xl shadow-primary/20 transition-all hover:opacity-90"
                     >
                       <AppleIcon />
@@ -672,7 +885,7 @@ export const MobileAppKimiPage3 = defineCapsule({
                     </button>
                     <button
                       type="button"
-                      onClick={() => go(heroSecondary)}
+                      onClick={() => { void trackDownload("android"); setWaitlistOpen(true) }}
                       className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-6 py-3 text-base font-semibold text-card-foreground transition-colors hover:bg-muted"
                     >
                       <PlayIcon />

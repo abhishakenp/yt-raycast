@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * MusicArtistKimiPage — a complete, self-contained music ARTIST / BAND landing page.
@@ -155,9 +173,71 @@ export const MusicArtistKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      tourReservations: table({
+        venue: string(),
+        city: string(),
+        month: string(),
+        day: string(),
+        price: string(),
+        quantity: number(),
+      }),
+      favoriteTracks: table({
+        trackTitle: string(),
+      }),
+      subscribers: table({
+        email: string(),
+      }),
+    },
+    queries: {
+      tourReservations: ({ db }) =>
+        db.tourReservations.orderBy('createdAt').all(),
+      favoriteTrackTitles: ({ db }) =>
+        new Set(db.favoriteTracks.all().map((favorite) => favorite.trackTitle)),
+    },
+    mutations: {
+      addReservation: ({ db }, venue: string, city: string, month: string, day: string, price: string, quantity: number) => {
+        db.tourReservations.insert({
+          venue,
+          city,
+          month,
+          day,
+          price,
+          quantity,
+        })
+        return db.tourReservations.all()
+      },
+      removeReservation: ({ db }, id: string) => {
+        db.tourReservations.delete(id)
+        return db.tourReservations.all()
+      },
+      toggleFavorite: ({ db }, trackTitle: string) => {
+        const existingFavorite = db.favoriteTracks
+          .where('trackTitle', trackTitle)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favoriteTracks.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favoriteTracks.insert({ trackTitle })
+        return true
+      },
+      subscribe: ({ db }, email: string) => {
+        db.subscribers.insert({ email })
+        return db.subscribers.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [reservationsOpen, setReservationsOpen] = useState(false)
+    const [ticketQuantity, setTicketQuantity] = useState(1)
+    const [selectedDate, setSelectedDate] = useState<{ venue: string; city: string; month: string; day: string; price: string } | null>(null)
+
     const brand = props.brand ?? "Velvet Echo"
     const nav = props.nav?.length
       ? props.nav
@@ -406,6 +486,48 @@ export const MusicArtistKimiPage = defineCapsule({
       ? props.footer.legal
       : ["Privacy Policy", "Terms of Use"]
 
+    // Lakebed integration
+    const tourReservations = lakebed.useQuery('tourReservations')
+    const favoriteTrackTitles = lakebed.useQuery('favoriteTrackTitles')
+    const auth = lakebed.useAuth()
+    const addReservation = lakebed.useMutation('addReservation')
+    const removeReservation = lakebed.useMutation('removeReservation')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const subscribe = lakebed.useMutation('subscribe')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const safeReservations = tourReservations ?? []
+    const reservationCount = safeReservations.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -424,6 +546,21 @@ export const MusicArtistKimiPage = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     const PlayIcon = () => (
       <svg
         className="size-4"
@@ -432,6 +569,24 @@ export const MusicArtistKimiPage = defineCapsule({
         aria-hidden="true"
       >
         <path d="M8 5v14l11-7z" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
       </svg>
     )
 
@@ -478,29 +633,290 @@ export const MusicArtistKimiPage = defineCapsule({
                 </button>
               ))}
             </div>
-            <button
-              type="button"
-              aria-label="Open menu"
-              aria-expanded={mobileOpen}
-              aria-controls="mobile-menu"
-              onClick={() => setMobileOpen((v: boolean) => !v)}
-              className="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
-            >
-              <svg
-                className="size-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
+            <div className="flex items-center gap-4">
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight className="size-4" />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={reservationsOpen} onOpenChange={setReservationsOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Tour Reservations"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                      <line x1="3" y1="6" x2="21" y2="6" />
+                      <path d="M16 10a4 4 0 0 1-8 0" />
+                    </svg>
+                    {reservationCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {reservationCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Tour Reservations</SheetTitle>
+                    <SheetDescription>
+                      {reservationCount > 0
+                        ? `${reservationCount} ticket${reservationCount === 1 ? '' : 's'} reserved.`
+                        : 'No reservations yet.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {safeReservations.length ? (
+                      <div className="space-y-5">
+                        {safeReservations.map((item) => (
+                          <div
+                            key={item.id}
+                            className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                          >
+                            <div className="flex aspect-square items-center justify-center rounded-lg bg-muted">
+                              <div className="text-center">
+                                <p className="text-xs uppercase text-muted-foreground">
+                                  {item.month}
+                                </p>
+                                <p className="text-2xl font-light text-foreground">
+                                  {item.day}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                    {item.venue}
+                                  </h3>
+                                  <p className="text-sm text-muted-foreground">
+                                    {item.city}
+                                  </p>
+                                </div>
+                                <p className="text-sm font-bold text-foreground">
+                                  {item.quantity} × {item.price}
+                                </p>
+                              </div>
+                              <div className="mt-4 flex items-center justify-between">
+                                <button
+                                  type="button"
+                                  onClick={() => void removeReservation(item.id)}
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No reservations
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Reserve tickets from the tour dates to start building your itinerary.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    {selectedDate && (
+                      <div className="mb-4 rounded-lg bg-muted p-4">
+                        <p className="text-sm font-medium text-foreground">
+                          Add tickets for {selectedDate.venue}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {selectedDate.city} · {selectedDate.month} {selectedDate.day}
+                        </p>
+                        <div className="mt-3 flex items-center gap-3">
+                          <div className="inline-flex h-9 items-center rounded-full border border-border bg-background">
+                            <button
+                              type="button"
+                              onClick={() => setTicketQuantity(Math.max(1, ticketQuantity - 1))}
+                              className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                              aria-label="Decrease ticket quantity"
+                            >
+                              -
+                            </button>
+                            <span className="min-w-8 text-center text-sm font-semibold">
+                              {ticketQuantity}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setTicketQuantity(ticketQuantity + 1)}
+                              className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                              aria-label="Increase ticket quantity"
+                            >
+                              +
+                            </button>
+                          </div>
+                          <Button
+                            type="button"
+                            className="flex-1 rounded-full"
+                            onClick={() => {
+                              void addReservation(
+                                selectedDate.venue,
+                                selectedDate.city,
+                                selectedDate.month,
+                                selectedDate.day,
+                                selectedDate.price,
+                                ticketQuantity,
+                              )
+                              setSelectedDate(null)
+                              setTicketQuantity(1)
+                            }}
+                          >
+                            Add {ticketQuantity} × {selectedDate.price}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    <Button
+                      type="button"
+                      disabled={!safeReservations.length}
+                      className="w-full rounded-full"
+                      onClick={() => go('Checkout')}
+                    >
+                      Checkout
+                    </Button>
+                    <SheetClose asChild>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="rounded-full"
+                      >
+                        Continue
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+              <button
+                type="button"
+                aria-label="Open menu"
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-menu"
+                onClick={() => setMobileOpen((v: boolean) => !v)}
+                className="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="1.5"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
+                <svg
+                  className="size-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.5"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              </button>
+            </div>
             {mobileOpen && (
               <div
                 id="mobile-menu"
@@ -519,6 +935,58 @@ export const MusicArtistKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -609,41 +1077,64 @@ export const MusicArtistKimiPage = defineCapsule({
               </div>
 
               <div className="mb-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {tracks.map((track) => (
-                  <div
-                    key={track.title}
-                    className="group rounded-sm border border-border bg-card p-6 transition-colors hover:border-muted-foreground/40"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="size-16 shrink-0 overflow-hidden rounded-sm bg-muted">
-                        <Image
-                          alt={track.imageAlt}
-                          w={100}
-                          h={100}
-                          loading="lazy"
-                          className="size-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="truncate font-medium text-card-foreground">
-                          {track.title}
-                        </h3>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {track.duration}
-                        </p>
-                        <button
-                          type="button"
-                          aria-label={`Play ${track.title}`}
-                          onClick={() => go(track.title)}
-                          className="mt-3 flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-                        >
-                          <PlayIcon />
-                          Listen
-                        </button>
+                {tracks.map((track) => {
+                  const isFavorite = favoriteTrackTitles?.has(track.title) ?? false
+                  return (
+                    <div
+                      key={track.title}
+                      className="group rounded-sm border border-border bg-card p-6 transition-colors hover:border-muted-foreground/40"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="size-16 shrink-0 overflow-hidden rounded-sm bg-muted">
+                          <Image
+                            alt={track.imageAlt}
+                            w={100}
+                            h={100}
+                            loading="lazy"
+                            className="size-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="truncate font-medium text-card-foreground">
+                            {track.title}
+                          </h3>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {track.duration}
+                          </p>
+                          <div className="mt-3 flex items-center gap-3">
+                            <button
+                              type="button"
+                              aria-label={`Play ${track.title}`}
+                              onClick={() => go(track.title)}
+                              className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                            >
+                              <PlayIcon />
+                              Listen
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void toggleFavorite(track.title)}
+                              aria-pressed={isFavorite}
+                              aria-label={
+                                isFavorite
+                                  ? `Remove ${track.title} from favorites`
+                                  : `Add ${track.title} to favorites`
+                              }
+                              className={cn(
+                                'grid size-5 place-items-center transition-all hover:scale-105',
+                                isFavorite
+                                  ? 'text-primary'
+                                  : 'text-muted-foreground hover:text-foreground',
+                              )}
+                            >
+                              <HeartIcon active={isFavorite} />
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
 
               <div className="text-center">
@@ -719,7 +1210,17 @@ export const MusicArtistKimiPage = defineCapsule({
                       ) : (
                         <button
                           type="button"
-                          onClick={() => go(`Tickets ${date.venue}`)}
+                          onClick={() => {
+                            setSelectedDate({
+                              venue: date.venue,
+                              city: date.city,
+                              month: date.month,
+                              day: date.day,
+                              price: date.price,
+                            })
+                            setTicketQuantity(1)
+                            setReservationsOpen(true)
+                          }}
                           className="rounded-full border border-muted-foreground/40 px-5 py-2 text-sm text-foreground/80 transition-colors hover:border-foreground hover:bg-primary hover:text-primary-foreground"
                         >
                           Get Tickets
@@ -897,7 +1398,12 @@ export const MusicArtistKimiPage = defineCapsule({
                 className="mx-auto flex max-w-md flex-col gap-4 sm:flex-row"
                 onSubmit={(e) => {
                   e.preventDefault()
-                  go(mailingSubmit)
+                  const form = e.currentTarget
+                  const emailInput = form.querySelector('input[type="email"]') as HTMLInputElement
+                  if (emailInput?.value) {
+                    void subscribe(emailInput.value)
+                    emailInput.value = ''
+                  }
                 }}
               >
                 <input

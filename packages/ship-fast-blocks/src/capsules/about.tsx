@@ -1,9 +1,27 @@
-import { type ReactNode } from "react"
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * AboutKimiPage — a complete, self-contained company / ABOUT page.
@@ -122,12 +140,125 @@ export const AboutKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      inquiries: table({
+        name: string(),
+        email: string(),
+        message: string(),
+      }),
+      favorites: table({
+        memberName: string(),
+      }),
+      subscribers: table({
+        email: string(),
+      }),
+    },
+    queries: {
+      inquiries: ({ db }) => db.inquiries.orderBy('createdAt').all(),
+      favoriteMemberNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.memberName)),
+      subscriberEmails: ({ db }) =>
+        new Set(db.subscribers.all().map((sub) => sub.email)),
+    },
+    mutations: {
+      submitInquiry: ({ db }, name: string, email: string, message: string) => {
+        db.inquiries.insert({ name, email, message })
+        return db.inquiries.all()
+      },
+      toggleFavorite: ({ db }, memberName: string) => {
+        const existingFavorite = db.favorites
+          .where('memberName', memberName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ memberName })
+        return true
+      },
+      subscribe: ({ db }, email: string) => {
+        const existing = db.subscribers.where('email', email).all()[0]
+        if (existing) return false
+
+        db.subscribers.insert({ email })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [contactOpen, setContactOpen] = useState(false)
+    const [inquiryName, setInquiryName] = useState("")
+    const [inquiryEmail, setInquiryEmail] = useState("")
+    const [inquiryMessage, setInquiryMessage] = useState("")
+    const [newsletterEmail, setNewsletterEmail] = useState("")
+    const [subscribed, setSubscribed] = useState(false)
+
     const brand = props.brand ?? "Kinetic Labs"
     const nav = props.nav?.length
       ? props.nav
       : ["Our Story", "Values", "Team", "Stats"]
+
+    // Lakebed hooks
+    const inquiries = lakebed.useQuery("inquiries")
+    const favoriteMemberNames = lakebed.useQuery("favoriteMemberNames")
+    const subscriberEmails = lakebed.useQuery("subscriberEmails")
+    const submitInquiry = lakebed.useMutation("submitInquiry")
+    const toggleFavorite = lakebed.useMutation("toggleFavorite")
+    const subscribe = lakebed.useMutation("subscribe")
+    const auth = lakebed.useAuth()
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const handleContactSubmit = (e: React.FormEvent) => {
+      e.preventDefault()
+      if (!inquiryName || !inquiryEmail || !inquiryMessage) return
+
+      void submitInquiry(inquiryName, inquiryEmail, inquiryMessage)
+      setInquiryName("")
+      setInquiryEmail("")
+      setInquiryMessage("")
+      setContactOpen(false)
+    }
+
+    const handleNewsletterSubmit = (e: React.FormEvent) => {
+      e.preventDefault()
+      if (!newsletterEmail) return
+
+      const success = subscribe(newsletterEmail)
+      if (success) {
+        setSubscribed(true)
+        setNewsletterEmail("")
+      }
+    }
 
     const heroEyebrow = props.hero?.eyebrow ?? `About ${brand}`
     const heroHeading = props.hero?.heading ?? "We build products that"
@@ -315,6 +446,39 @@ export const AboutKimiPage = defineCapsule({
       >
         <line x1="5" y1="12" x2="19" y2="12" />
         <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          "size-5",
+          active ? "text-primary-foreground" : "text-foreground",
+        )}
+        fill={active ? "currentColor" : "none"}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
       </svg>
     )
 
@@ -535,7 +699,7 @@ export const AboutKimiPage = defineCapsule({
             </ul>
             <button
               type="button"
-              onClick={() => go(heroSecondary)}
+              onClick={() => setContactOpen(true)}
               className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-semibold text-background shadow-sm transition-all hover:-translate-y-px hover:shadow-md"
             >
               <span className="hidden sm:inline">Work with us</span>
@@ -851,6 +1015,119 @@ export const AboutKimiPage = defineCapsule({
             </div>
           </div>
         </footer>
+
+        <Sheet open={contactOpen} onOpenChange={setContactOpen}>
+          <SheetTrigger asChild>
+            <Button
+              type="button"
+              className="sr-only"
+              aria-label="Open company inquiry drawer"
+            >
+              Open inquiry drawer
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Work with {brand}</SheetTitle>
+              <SheetDescription>
+                Send the team a project note and keep track of recent inquiries.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 space-y-6 overflow-y-auto p-6">
+              <form className="space-y-4" onSubmit={handleContactSubmit}>
+                <div>
+                  <label
+                    htmlFor="about-inquiry-name"
+                    className="mb-2 block text-sm font-medium text-foreground"
+                  >
+                    Name
+                  </label>
+                  <input
+                    id="about-inquiry-name"
+                    value={inquiryName}
+                    onChange={(e) => setInquiryName(e.currentTarget.value)}
+                    required
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="about-inquiry-email"
+                    className="mb-2 block text-sm font-medium text-foreground"
+                  >
+                    Email
+                  </label>
+                  <input
+                    id="about-inquiry-email"
+                    type="email"
+                    value={inquiryEmail}
+                    onChange={(e) => setInquiryEmail(e.currentTarget.value)}
+                    required
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="about-inquiry-message"
+                    className="mb-2 block text-sm font-medium text-foreground"
+                  >
+                    Project note
+                  </label>
+                  <textarea
+                    id="about-inquiry-message"
+                    rows={4}
+                    value={inquiryMessage}
+                    onChange={(e) => setInquiryMessage(e.currentTarget.value)}
+                    required
+                    className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <Button type="submit" className="w-full">
+                  Send inquiry
+                </Button>
+              </form>
+
+              <div className="rounded-xl border border-border bg-muted/40 p-4">
+                <div className="text-sm font-semibold text-foreground">
+                  Live workspace
+                </div>
+                <div className="mt-3 grid grid-cols-3 gap-3 text-center text-sm">
+                  <div className="rounded-lg bg-background p-3">
+                    <div className="text-lg font-bold text-foreground">
+                      {inquiries?.length ?? 0}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Inquiries
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-background p-3">
+                    <div className="text-lg font-bold text-foreground">
+                      {favoriteMemberNames?.size ?? 0}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Saved team
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-background p-3">
+                    <div className="text-lg font-bold text-foreground">
+                      {subscriberEmails?.size ?? 0}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Subscribers
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <SheetClose asChild>
+                <Button type="button" variant="outline" className="w-full">
+                  Close
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * NewsKimiPage2 — a complete, self-contained NEWS / EDITORIAL homepage in a
@@ -149,10 +167,107 @@ export const NewsKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      savedArticles: table({
+        articleTitle: string(),
+        articleCategory: string(),
+        articleImageAlt: string(),
+        articleExcerpt: string(),
+        articleAuthor: string(),
+        articleDate: string(),
+      }),
+      newsletterSubscribers: table({
+        email: string(),
+      }),
+      readArticles: table({
+        articleTitle: string(),
+      }),
+    },
+    queries: {
+      savedArticles: ({ db }) => db.savedArticles.orderBy('createdAt').all(),
+      savedArticleTitles: ({ db }) =>
+        new Set(db.savedArticles.all().map((saved) => saved.articleTitle)),
+      readArticleTitles: ({ db }) =>
+        new Set(db.readArticles.all().map((read) => read.articleTitle)),
+    },
+    mutations: {
+      saveArticle: ({ db }, articleTitle: string, articleCategory: string, articleImageAlt: string, articleExcerpt: string, articleAuthor: string, articleDate: string) => {
+        const existing = db.savedArticles.where('articleTitle', articleTitle).all()[0]
+        if (existing) {
+          db.savedArticles.delete(existing.id)
+          return false
+        }
+        db.savedArticles.insert({
+          articleTitle,
+          articleCategory,
+          articleImageAlt,
+          articleExcerpt,
+          articleAuthor,
+          articleDate,
+        })
+        return true
+      },
+      removeSavedArticle: ({ db }, articleTitle: string) => {
+        for (const item of db.savedArticles.where('articleTitle', articleTitle).all()) {
+          db.savedArticles.delete(item.id)
+        }
+        return db.savedArticles.all()
+      },
+      subscribeNewsletter: ({ db }, email: string) => {
+        const existing = db.newsletterSubscribers.where('email', email).all()[0]
+        if (existing) return false
+        db.newsletterSubscribers.insert({ email })
+        return true
+      },
+      markAsRead: ({ db }, articleTitle: string) => {
+        const existing = db.readArticles.where('articleTitle', articleTitle).all()[0]
+        if (existing) return false
+        db.readArticles.insert({ articleTitle })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [readingListOpen, setReadingListOpen] = useState(false)
     const brand = props.brand ?? "PULSE"
+
+    const savedArticles = lakebed.useQuery('savedArticles')
+    const savedArticleTitles = lakebed.useQuery('savedArticleTitles')
+    const readArticleTitles = lakebed.useQuery('readArticleTitles')
+    const saveArticle = lakebed.useMutation('saveArticle')
+    const removeSavedArticle = lakebed.useMutation('removeSavedArticle')
+    const subscribeNewsletter = lakebed.useMutation('subscribeNewsletter')
+    const markAsRead = lakebed.useMutation('markAsRead')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const safeSavedArticles = savedArticles ?? []
+    const savedCount = safeSavedArticles.length
     const nav = props.nav?.length
       ? props.nav
       : ["World", "Politics", "Business", "Tech", "Science", "Culture", "Sports"]
@@ -494,6 +609,52 @@ export const NewsKimiPage2 = defineCapsule({
       </svg>
     )
 
+    const BookmarkIcon = ({ className, active = false }: { className?: string; active?: boolean }) => (
+      <svg
+        viewBox="0 0 20 20"
+        fill={active ? "currentColor" : "none"}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+        aria-hidden="true"
+      >
+        <path d="M5 5a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 19V5z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     return (
       <div
         className={cn(
@@ -551,6 +712,218 @@ export const NewsKimiPage2 = defineCapsule({
                     <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </button>
+                <Sheet open={readingListOpen} onOpenChange={setReadingListOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Reading list"
+                      className="relative text-background/60 transition-colors hover:text-background"
+                    >
+                      <svg
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="size-5"
+                        aria-hidden="true"
+                      >
+                        <path d="M5 5a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 19V5z" />
+                      </svg>
+                      {savedCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-primary text-[0.625rem] font-bold text-primary-foreground">
+                          {savedCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Reading List</SheetTitle>
+                      <SheetDescription>
+                        {savedCount > 0
+                          ? `${savedCount} article${savedCount === 1 ? '' : 's'} saved for later.`
+                          : 'Your reading list is empty.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeSavedArticles.length ? (
+                        <div className="space-y-5">
+                          {safeSavedArticles.map((item) => (
+                            <div
+                              key={item.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                <Image
+                                  alt={item.articleImageAlt}
+                                  w={180}
+                                  h={180}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                      {item.articleCategory}
+                                    </p>
+                                    <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                      {item.articleTitle}
+                                    </h3>
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                      {item.articleAuthor}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="mt-4 flex items-center justify-between">
+                                  <button
+                                    type="button"
+                                    onClick={() => go(item.articleTitle)}
+                                    className="text-xs font-semibold text-primary hover:text-primary/80"
+                                  >
+                                    Read now
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => void removeSavedArticle(item.articleTitle)}
+                                    className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No articles saved
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Bookmark articles to read them later.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Continue reading
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Subscriptions')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Subscriptions
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => go("Subscribe")}
@@ -599,6 +972,58 @@ export const NewsKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -627,48 +1052,75 @@ export const NewsKimiPage2 = defineCapsule({
               <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
                 {/* Lead story */}
                 <article className="group lg:col-span-7 xl:col-span-8">
-                  <button
-                    type="button"
-                    onClick={() => go(featTitle)}
-                    className="block w-full text-left"
-                  >
-                    <div className="aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
-                      <Image
-                        alt={featImageAlt}
-                        w={1200}
-                        h={675}
-                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="mt-6">
-                      <div className="mb-3 flex flex-wrap items-center gap-3">
-                        <span className="rounded-full bg-primary px-3 py-1 text-xs font-black uppercase tracking-wider text-primary-foreground">
-                          {featCategory}
-                        </span>
-                        <span className="text-sm text-background/60">
-                          {featDate}
-                        </span>
-                        <span className="text-sm text-background/50">
-                          • {featReadTime}
-                        </span>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void markAsRead(featTitle)
+                        go(featTitle)
+                      }}
+                      className="block w-full text-left"
+                    >
+                      <div className="aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
+                        <Image
+                          alt={featImageAlt}
+                          w={1200}
+                          h={675}
+                          className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
                       </div>
-                      <h1 className="mb-4 text-3xl font-black leading-tight transition-colors group-hover:text-primary sm:text-4xl lg:text-5xl">
-                        {featTitle}
-                      </h1>
-                      <p className="max-w-3xl text-lg leading-relaxed text-background/70">
-                        {featExcerpt}
-                      </p>
-                    </div>
-                  </button>
+                      <div className="mt-6">
+                        <div className="mb-3 flex flex-wrap items-center gap-3">
+                          <span className="rounded-full bg-primary px-3 py-1 text-xs font-black uppercase tracking-wider text-primary-foreground">
+                            {featCategory}
+                          </span>
+                          <span className="text-sm text-background/60">
+                            {featDate}
+                          </span>
+                          <span className="text-sm text-background/50">
+                            • {featReadTime}
+                          </span>
+                          {readArticleTitles?.has(featTitle) && (
+                            <span className="text-xs font-semibold text-primary">
+                              Read
+                            </span>
+                          )}
+                        </div>
+                        <h1 className="mb-4 text-3xl font-black leading-tight transition-colors group-hover:text-primary sm:text-4xl lg:text-5xl">
+                          {featTitle}
+                        </h1>
+                        <p className="max-w-3xl text-lg leading-relaxed text-background/70">
+                          {featExcerpt}
+                        </p>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void saveArticle(featTitle, featCategory, featImageAlt, featExcerpt, 'Pulse Staff', featDate)}
+                      aria-pressed={savedArticleTitles?.has(featTitle) ?? false}
+                      aria-label="Save article to reading list"
+                      className={cn(
+                        "absolute top-4 right-4 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105",
+                        savedArticleTitles?.has(featTitle)
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-background/90 text-background hover:bg-background",
+                      )}
+                    >
+                      <BookmarkIcon active={savedArticleTitles?.has(featTitle) ?? false} className="size-5" />
+                    </button>
+                  </div>
                 </article>
 
                 {/* Secondary rail */}
                 <div className="space-y-6 lg:col-span-5 xl:col-span-4">
                   {secondary.map((story) => (
-                    <article key={story.title} className="group">
+                    <article key={story.title} className="group relative">
                       <button
                         type="button"
-                        onClick={() => go(story.title)}
+                        onClick={() => {
+                          void markAsRead(story.title)
+                          go(story.title)
+                        }}
                         className="flex w-full gap-4 text-left"
                       >
                         <div className="h-24 w-32 flex-shrink-0 overflow-hidden rounded-xl bg-muted sm:h-28 sm:w-40">
@@ -695,7 +1147,26 @@ export const NewsKimiPage2 = defineCapsule({
                           <span className="mt-2 block text-sm text-background/50">
                             {story.time}
                           </span>
+                          {readArticleTitles?.has(story.title) && (
+                            <span className="mt-1 block text-xs font-semibold text-primary">
+                              Read
+                            </span>
+                          )}
                         </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void saveArticle(story.title, story.category, story.imageAlt, '', 'Pulse Staff', story.time)}
+                        aria-pressed={savedArticleTitles?.has(story.title) ?? false}
+                        aria-label="Save article to reading list"
+                        className={cn(
+                          "absolute top-0 right-0 grid size-8 place-items-center rounded-full shadow-md transition-all hover:scale-105",
+                          savedArticleTitles?.has(story.title)
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-background/90 text-background hover:bg-background",
+                        )}
+                      >
+                        <BookmarkIcon active={savedArticleTitles?.has(story.title) ?? false} className="size-4" />
                       </button>
                     </article>
                   ))}
@@ -723,39 +1194,62 @@ export const NewsKimiPage2 = defineCapsule({
 
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {topicItems.map((item) => (
-                  <button
-                    key={item.title}
-                    type="button"
-                    onClick={() => go(item.title)}
-                    className="group block text-left"
-                  >
-                    <div className="mb-4 aspect-[4/3] overflow-hidden rounded-xl bg-muted">
-                      <Image
-                        alt={item.imageAlt}
-                        w={600}
-                        h={450}
-                        loading="lazy"
-                        className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
-                    <span
+                  <div key={item.title} className="group relative">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void markAsRead(item.title)
+                        go(item.title)
+                      }}
+                      className="block w-full text-left"
+                    >
+                      <div className="mb-4 aspect-[4/3] overflow-hidden rounded-xl bg-muted">
+                        <Image
+                          alt={item.imageAlt}
+                          w={600}
+                          h={450}
+                          loading="lazy"
+                          className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </div>
+                      <span
+                        className={cn(
+                          "text-xs font-black uppercase tracking-wider",
+                          toneFor(item.category),
+                        )}
+                      >
+                        {item.category}
+                      </span>
+                      <h3 className="mt-1 text-xl font-bold leading-snug transition-colors group-hover:text-primary">
+                        {item.title}
+                      </h3>
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                        {item.excerpt}
+                      </p>
+                      <span className="mt-3 block text-xs text-muted-foreground">
+                        {item.time}
+                      </span>
+                      {readArticleTitles?.has(item.title) && (
+                        <span className="mt-1 block text-xs font-semibold text-primary">
+                          Read
+                        </span>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void saveArticle(item.title, item.category, item.imageAlt, item.excerpt, 'Pulse Staff', item.time)}
+                      aria-pressed={savedArticleTitles?.has(item.title) ?? false}
+                      aria-label="Save article to reading list"
                       className={cn(
-                        "text-xs font-black uppercase tracking-wider",
-                        toneFor(item.category),
+                        "absolute top-4 right-4 grid size-8 place-items-center rounded-full shadow-md transition-all hover:scale-105",
+                        savedArticleTitles?.has(item.title)
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-background/90 text-background hover:bg-background",
                       )}
                     >
-                      {item.category}
-                    </span>
-                    <h3 className="mt-1 text-xl font-bold leading-snug transition-colors group-hover:text-primary">
-                      {item.title}
-                    </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      {item.excerpt}
-                    </p>
-                    <span className="mt-3 block text-xs text-muted-foreground">
-                      {item.time}
-                    </span>
-                  </button>
+                      <BookmarkIcon active={savedArticleTitles?.has(item.title) ?? false} className="size-4" />
+                    </button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -795,7 +1289,7 @@ export const NewsKimiPage2 = defineCapsule({
                     {latestStories.map((story) => (
                       <article
                         key={story.title}
-                        className="overflow-hidden rounded-2xl bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md"
+                        className="relative overflow-hidden rounded-2xl bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md"
                       >
                         <div className="sm:flex">
                           <button
@@ -824,10 +1318,18 @@ export const NewsKimiPage2 = defineCapsule({
                               <span className="text-sm text-muted-foreground">
                                 {story.date}
                               </span>
+                              {readArticleTitles?.has(story.title) && (
+                                <span className="text-xs font-semibold text-primary">
+                                  Read
+                                </span>
+                              )}
                             </div>
                             <button
                               type="button"
-                              onClick={() => go(story.title)}
+                              onClick={() => {
+                                void markAsRead(story.title)
+                                go(story.title)
+                              }}
                               className="text-left"
                             >
                               <h3 className="mb-3 text-xl font-bold transition-colors hover:text-primary sm:text-2xl">
@@ -855,6 +1357,20 @@ export const NewsKimiPage2 = defineCapsule({
                             </div>
                           </div>
                         </div>
+                        <button
+                          type="button"
+                          onClick={() => void saveArticle(story.title, story.category, story.imageAlt, story.excerpt, story.author, story.date)}
+                          aria-pressed={savedArticleTitles?.has(story.title) ?? false}
+                          aria-label="Save article to reading list"
+                          className={cn(
+                            "absolute top-4 right-4 grid size-8 place-items-center rounded-full shadow-md transition-all hover:scale-105",
+                            savedArticleTitles?.has(story.title)
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-background/90 text-background hover:bg-background",
+                          )}
+                        >
+                          <BookmarkIcon active={savedArticleTitles?.has(story.title) ?? false} className="size-4" />
+                        </button>
                       </article>
                     ))}
                   </div>
@@ -883,7 +1399,10 @@ export const NewsKimiPage2 = defineCapsule({
                         <button
                           key={item.title}
                           type="button"
-                          onClick={() => go(item.title)}
+                          onClick={() => {
+                            void markAsRead(item.title)
+                            go(item.title)
+                          }}
                           className="group flex w-full gap-4 text-left"
                         >
                           <span className="text-3xl font-black text-muted-foreground/40 transition-colors group-hover:text-primary/60">
@@ -896,6 +1415,11 @@ export const NewsKimiPage2 = defineCapsule({
                             <span className="mt-1 block text-xs text-muted-foreground">
                               {item.reads}
                             </span>
+                            {readArticleTitles?.has(item.title) && (
+                              <span className="mt-1 block text-xs font-semibold text-primary">
+                                Read
+                              </span>
+                            )}
                           </div>
                         </button>
                       ))}
@@ -912,7 +1436,12 @@ export const NewsKimiPage2 = defineCapsule({
                       className="space-y-3"
                       onSubmit={(e) => {
                         e.preventDefault()
-                        go(newsletterCta)
+                        const form = e.currentTarget
+                        const email = form.querySelector('input[type="email"]') as HTMLInputElement
+                        if (email?.value) {
+                          void subscribeNewsletter(email.value)
+                          email.value = ''
+                        }
                       }}
                     >
                       <input

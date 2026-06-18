@@ -1,8 +1,30 @@
+import { useState } from "react"
 import { z } from "zod/v4"
+import { number, string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
+
+const priceAmount = (price: string) => {
+  const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ""))
+  return Number.isFinite(amount) ? amount : 0
+}
+
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount)
 
 /**
  * CrowdfundingKimiPage — a complete, self-contained crowdfunding / campaign
@@ -191,7 +213,68 @@ export const CrowdfundingKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      pledges: table({
+        rewardName: string(),
+        rewardPrice: string(),
+        quantity: number(),
+      }),
+    },
+    queries: {
+      pledges: ({ db }) => db.pledges.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addPledge: ({ db }, rewardName: string, rewardPrice: string) => {
+        const existingPledge = db.pledges
+          .where("rewardName", rewardName)
+          .all()[0]
+        if (existingPledge) {
+          db.pledges.update(existingPledge.id, {
+            quantity: existingPledge.quantity + 1,
+            rewardPrice,
+          })
+          return db.pledges.all()
+        }
+
+        db.pledges.insert({
+          rewardName,
+          rewardPrice,
+          quantity: 1,
+        })
+        return db.pledges.all()
+      },
+      updatePledgeQuantity: ({ db }, id: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+        const existing = db.pledges.get(id)
+
+        if (!existing) {
+          return db.pledges.all()
+        }
+
+        if (nextQuantity === 0) {
+          db.pledges.delete(id)
+        } else {
+          db.pledges.update(id, { quantity: nextQuantity })
+        }
+
+        return db.pledges.all()
+      },
+      removePledge: ({ db }, id: string) => {
+        db.pledges.delete(id)
+        return db.pledges.all()
+      },
+      clearPledges: ({ db }) => {
+        for (const pledge of db.pledges.all()) {
+          db.pledges.delete(pledge.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
+    const [pledgeDrawerOpen, setPledgeDrawerOpen] = useState(false)
     const go = useNavigate()
     const brand = props.brand ?? "EcoBrush"
     const nav = props.nav?.length
@@ -530,6 +613,64 @@ export const CrowdfundingKimiPage = defineCapsule({
       ? props.footer.legal
       : ["Privacy Policy", "Terms of Service", "Cookie Policy"]
 
+    const storedPledges = lakebed.useQuery("pledges")
+    const addPledge = lakebed.useMutation("addPledge")
+    const updatePledgeQuantity = lakebed.useMutation("updatePledgeQuantity")
+    const removePledge = lakebed.useMutation("removePledge")
+    const clearPledges = lakebed.useMutation("clearPledges")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials = authDisplayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((piece) => piece[0]?.toUpperCase())
+      .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const safePledges = storedPledges ?? []
+    const pledgeCount = safePledges.reduce(
+      (total, pledge) => total + pledge.quantity,
+      0,
+    )
+    const pledgeTotal = safePledges.reduce(
+      (total, pledge) => total + priceAmount(pledge.rewardPrice) * pledge.quantity,
+      0,
+    )
+    const primaryRewardTier = rewardTiers[0]
+
+    const addPledgeAndOpen = (rewardName: string, rewardPrice: string) => {
+      void addPledge(rewardName, rewardPrice)
+      setPledgeDrawerOpen(true)
+    }
+    const incrementPledge = (
+      id: string,
+      currentQuantity: number,
+      delta: number,
+    ) => {
+      const nextQuantity = Math.max(0, currentQuantity + delta)
+      if (nextQuantity === 0) {
+        void removePledge(id)
+        return
+      }
+
+      void updatePledgeQuantity(id, nextQuantity)
+    }
+
     // Brand mark — decorative leaf/sparkle glyph in an emerald-token tile.
     const LeafMark = ({ className }: { className?: string }) => (
       <span
@@ -607,9 +748,9 @@ export const CrowdfundingKimiPage = defineCapsule({
         )}
       >
         {/* Navbar */}
-        <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
-          <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex h-16 items-center justify-between">
+        <Sheet open={pledgeDrawerOpen} onOpenChange={setPledgeDrawerOpen}>
+          <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
+            <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
               <button
                 type="button"
                 onClick={() => go(nav[0])}
@@ -632,16 +773,184 @@ export const CrowdfundingKimiPage = defineCapsule({
                   </button>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={() => go(nav[2] ?? "Rewards")}
-                className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                Back This Project
-              </button>
+              <div className="flex items-center gap-2">
+                {isSignedIn ? (
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="rounded-lg border border-border bg-background px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                    title={authEmail || "Signed in"}
+                  >
+                    {authInitials} {authDisplayName}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    className="rounded-lg border border-border bg-background px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-60"
+                  >
+                    {authLabel}
+                  </button>
+                )}
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (primaryRewardTier) {
+                        addPledgeAndOpen(
+                          primaryRewardTier.name,
+                          primaryRewardTier.price,
+                        )
+                      }
+                      go(nav[2] ?? "Rewards")
+                    }}
+                    className="relative rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    Back This Project
+                    {pledgeCount > 0 ? (
+                      <span className="absolute -right-2 -top-2 inline-flex min-w-5 items-center justify-center rounded-full bg-background px-1.5 py-0.5 text-xs font-bold text-foreground">
+                        {pledgeCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+              </div>
+            </nav>
+          </header>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle>Your Pledges</SheetTitle>
+              <SheetDescription>
+                {pledgeCount > 0
+                  ? `${pledgeCount} reward${pledgeCount === 1 ? "" : "s"} added`
+                  : "Add a reward tier to get started."}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {safePledges.length ? (
+                <div className="space-y-5">
+                  {safePledges.map((pledge) => (
+                    <article
+                      key={pledge.id}
+                      className="rounded-lg border border-border p-4"
+                    >
+                      <div className="mb-3 flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-medium text-foreground">
+                            {pledge.rewardName}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {pledge.rewardPrice} each
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => void removePledge(pledge.id)}
+                          className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="inline-flex h-9 items-center rounded-full border border-border bg-background">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              incrementPledge(pledge.id, pledge.quantity, -1)
+                            }
+                            className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                            aria-label={`Decrease ${pledge.rewardName} quantity`}
+                          >
+                            -
+                          </button>
+                          <span className="min-w-8 text-center text-sm font-semibold">
+                            {pledge.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              incrementPledge(pledge.id, pledge.quantity, 1)
+                            }
+                            className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                            aria-label={`Increase ${pledge.rewardName} quantity`}
+                          >
+                            +
+                          </button>
+                        </div>
+                        <p className="text-sm font-bold text-foreground">
+                          {formatCurrency(
+                            priceAmount(pledge.rewardPrice) * pledge.quantity,
+                          )}
+                        </p>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                  <p className="text-base font-semibold text-foreground">
+                    No pledges yet
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Choose a reward tier to begin backing this project.
+                  </p>
+                </div>
+              )}
             </div>
-          </nav>
-        </header>
+            <SheetFooter className="border-t border-border p-6">
+              <div className="mb-4 space-y-2 text-sm">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Total pledged</span>
+                  <span>{formatCurrency(pledgeTotal)}</span>
+                </div>
+              </div>
+              {isSignedIn ? (
+                <button
+                  type="button"
+                  disabled={!safePledges.length}
+                  onClick={() => {
+                    setPledgeDrawerOpen(false)
+                    go("Checkout")
+                  }}
+                  className="w-full rounded-lg bg-foreground py-3 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Continue to Checkout
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleSignIn()
+                    setPledgeDrawerOpen(false)
+                  }}
+                  className="w-full rounded-lg bg-foreground py-3 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={auth.isLoading}
+                >
+                  Sign in to Continue
+                </button>
+              )}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => void clearPledges()}
+                  disabled={!safePledges.length}
+                  className="w-full rounded-lg border border-border py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-60"
+                >
+                  Clear
+                </button>
+                <SheetClose asChild>
+                  <button
+                    type="button"
+                    className="w-full rounded-lg bg-secondary py-3 text-sm font-semibold text-secondary-foreground transition-colors hover:bg-secondary/90"
+                  >
+                    Continue
+                  </button>
+                </SheetClose>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
 
         <main>
           {/* Hero */}
@@ -758,7 +1067,15 @@ export const CrowdfundingKimiPage = defineCapsule({
 
                   <button
                     type="button"
-                    onClick={() => go(nav[2] ?? "Rewards")}
+                    onClick={() => {
+                      if (primaryRewardTier) {
+                        addPledgeAndOpen(
+                          primaryRewardTier.name,
+                          primaryRewardTier.price,
+                        )
+                      }
+                      go(nav[2] ?? "Rewards")
+                    }}
                     className="mb-4 block w-full rounded-xl bg-foreground py-4 text-center text-lg font-semibold text-background transition-colors hover:bg-foreground/90"
                   >
                     {heroPrimary}
@@ -992,7 +1309,11 @@ export const CrowdfundingKimiPage = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(tier.name)}
+                      onClick={() => {
+                        void addPledge(tier.name, tier.price)
+                        setPledgeDrawerOpen(true)
+                        go(tier.name)
+                      }}
                       className={cn(
                         "w-full rounded-lg py-3 font-medium transition-colors",
                         tier.featured
@@ -1160,7 +1481,15 @@ export const CrowdfundingKimiPage = defineCapsule({
               <div className="mb-8 flex flex-col justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(nav[2] ?? "Rewards")}
+                  onClick={() => {
+                    if (primaryRewardTier) {
+                      addPledgeAndOpen(
+                        primaryRewardTier.name,
+                        primaryRewardTier.price,
+                      )
+                    }
+                    go(nav[2] ?? "Rewards")
+                  }}
                   className="rounded-xl bg-background px-8 py-4 text-lg font-semibold text-foreground transition-colors hover:bg-background/90"
                 >
                   {ctaPrimary}

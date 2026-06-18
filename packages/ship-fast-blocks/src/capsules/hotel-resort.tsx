@@ -4,6 +4,28 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+
+const calculateStayNights = (checkIn: string, checkOut: string) => {
+  if (!checkIn || !checkOut) return 0
+
+  const start = new Date(`${checkIn}T12:00:00`)
+  const end = new Date(`${checkOut}T12:00:00`)
+  const diff = end.getTime() - start.getTime()
+  if (!Number.isFinite(diff) || diff <= 0) return 0
+  return Math.max(1, Math.round(diff / (1000 * 60 * 60 * 24)))
+}
 
 /**
  * HotelResortKimiPage — a complete, self-contained luxury HOTEL / RESORT &
@@ -22,7 +44,7 @@ import { Image } from "#/lib/img.tsx"
  * signup and social links.
  *
  * The block owns ALL layout, spacing, type hierarchy and the warm-neutral
- * surface treatment. Every nav item / CTA / room / FAQ link / social / form
+ * surface treatment. Every nav item / CTA / room / FAQ / social / form
  * submit routes through `useNavigate` (never a dead "#"), and the navbar
  * labels match the `nav` array so PageSwitch can swap pages. All content
  * imagery uses the alt-driven <Image> component (never a raw src). Callers
@@ -178,9 +200,110 @@ export const HotelResortKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      reservations: table({
+        checkIn: string(),
+        checkOut: string(),
+        guests: string(),
+        roomType: string(),
+        status: string(),
+      }),
+      newsletterSubscribers: table({
+        email: string(),
+        source: string(),
+      }),
+    },
+    queries: {
+      reservations: ({ db }) => db.reservations.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addReservation: (
+        { db },
+        checkIn: string,
+        checkOut: string,
+        guests: string,
+        roomType: string,
+      ) => {
+        const normalizedCheckIn = checkIn.trim()
+        const normalizedCheckOut = checkOut.trim()
+        const normalizedGuests = guests.trim()
+        const normalizedRoomType = roomType.trim()
+
+        if (
+          !normalizedCheckIn ||
+          !normalizedCheckOut ||
+          !normalizedGuests ||
+          !normalizedRoomType
+        ) {
+          return db.reservations.all()
+        }
+
+        db.reservations.insert({
+          checkIn: normalizedCheckIn,
+          checkOut: normalizedCheckOut,
+          guests: normalizedGuests,
+          roomType: normalizedRoomType,
+          status: "Pending",
+        })
+        return db.reservations.all()
+      },
+      cancelReservation: ({ db }, reservationId: string) => {
+        const reservation = db.reservations.get(reservationId)
+        if (reservation) {
+          db.reservations.delete(reservationId)
+        }
+        return db.reservations.all()
+      },
+      clearReservations: ({ db }) => {
+        for (const reservation of db.reservations.all()) {
+          db.reservations.delete(reservation.id)
+        }
+        return db.reservations.all()
+      },
+      subscribeNewsletter: ({ db }, email: string, source: string) => {
+        const normalizedEmail = email.trim().toLowerCase()
+        if (!normalizedEmail) return db.newsletterSubscribers.all()
+
+        const existing = db.newsletterSubscribers
+          .where("email", normalizedEmail)
+          .all()[0]
+
+        if (!existing) {
+          db.newsletterSubscribers.insert({
+            email: normalizedEmail,
+            source: source.trim() || "footer",
+          })
+        }
+
+        return db.newsletterSubscribers.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [reservationOpen, setReservationOpen] = useState(false)
+    const storedReservations = lakebed.useQuery("reservations")
+    const addReservation = lakebed.useMutation("addReservation")
+    const cancelReservation = lakebed.useMutation("cancelReservation")
+    const clearReservations = lakebed.useMutation("clearReservations")
+    const subscribeNewsletter = lakebed.useMutation("subscribeNewsletter")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? auth.displayName || auth.user?.displayName || auth.email || "Account"
+        : "Sign in"
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
     const brand = props.brand ?? "Azure Coast"
     const nav = props.nav?.length
       ? props.nav
@@ -355,7 +478,13 @@ export const HotelResortKimiPage = defineCapsule({
       "Best rate guarantee • Free cancellation up to 48 hours"
     const guestOptions = props.booking?.guestOptions?.length
       ? props.booking.guestOptions
-      : ["2 Adults", "2 Adults, 1 Child", "2 Adults, 2 Children", "3 Adults", "4 Adults"]
+      : [
+          "2 Adults",
+          "2 Adults, 1 Child",
+          "2 Adults, 2 Children",
+          "3 Adults",
+          "4 Adults",
+        ]
     const roomOptions = props.booking?.roomOptions?.length
       ? props.booking.roomOptions
       : ["All Room Types", "Coastal Suite", "Azure Suite", "Coastal Villa"]
@@ -464,14 +593,21 @@ export const HotelResortKimiPage = defineCapsule({
       props.footer?.newsletterText ??
       "Receive exclusive offers and resort updates."
     const footerNewsletterCta = props.footer?.newsletterCta ?? "Join"
-    const footerNote =
-      props.footer?.note ?? "All rights reserved."
+    const footerNote = props.footer?.note ?? "All rights reserved."
     const footerLegalLinks = props.footer?.legalLinks?.length
       ? props.footer.legalLinks
       : ["Privacy Policy", "Terms of Service", "Accessibility"]
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
       : ["Instagram", "Facebook", "Twitter"]
+
+    const reservationRows = storedReservations ?? []
+    const reservationCount = reservationRows.length
+    const totalNights = reservationRows.reduce(
+      (sum, reservation) =>
+        sum + calculateStayNights(reservation.checkIn, reservation.checkOut),
+      0,
+    )
 
     const StarIcon = ({ className }: { className?: string }) => (
       <svg
@@ -549,6 +685,154 @@ export const HotelResortKimiPage = defineCapsule({
                 >
                   Book Now
                 </button>
+                <Sheet open={reservationOpen} onOpenChange={setReservationOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open reservations"
+                      className="relative hidden rounded-full border border-border bg-background p-2 text-foreground lg:grid lg:size-10 lg:place-items-center"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path d="M8 7h8M8 11h8M8 15h6M4 5h16a2 2 0 0 1 2 2v10a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a2 2 0 0 1 2-2Z" />
+                        <path d="M7 3h10v4H7z" />
+                      </svg>
+                      {reservationCount > 0 ? (
+                        <span className="absolute -right-2 -top-2 grid size-5 min-w-5 place-items-center rounded-full bg-foreground text-[0.7rem] font-bold text-background">
+                          {reservationCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle>Your reservations</SheetTitle>
+                      <SheetDescription>
+                        {reservationCount
+                          ? `${reservationCount} booking request${reservationCount === 1 ? "" : "s"} saved.`
+                          : "No reservations yet."}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {reservationRows.length ? (
+                        <div className="space-y-4">
+                          {reservationRows.map((reservation) => {
+                            const nights = calculateStayNights(
+                              reservation.checkIn,
+                              reservation.checkOut,
+                            )
+                            return (
+                              <div
+                                key={reservation.id}
+                                className="rounded-md border border-border p-4"
+                              >
+                                <div className="mb-3 flex items-start justify-between gap-2">
+                                  <div>
+                                    <p className="text-sm font-medium text-foreground">
+                                      {reservation.roomType}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {reservation.guests}
+                                    </p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => void cancelReservation(reservation.id)}
+                                    className="text-xs font-semibold text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {reservation.checkIn} → {reservation.checkOut}
+                                </p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                  {nights > 0 ? `${nights} night${nights === 1 ? "" : "s"}` : "Dates not set"}
+                                </p>
+                                <p className="mt-2 text-xs font-medium text-foreground">
+                                  {reservation.status}
+                                </p>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-44 items-center justify-center rounded-md border border-dashed border-border bg-muted/50 px-4 text-center">
+                          <p className="text-sm text-muted-foreground">
+                            Start a reservation from the booking form to review it here.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="mb-4 flex items-center justify-between text-sm text-muted-foreground">
+                        <span>Estimated total nights</span>
+                        <span>{totalNights}</span>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          go("Reservations")
+                          setReservationOpen(false)
+                        }}
+                        className="w-full rounded-md"
+                      >
+                        Review reservations
+                      </Button>
+                      <div className="grid grid-cols-2 gap-2 pt-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full rounded-md"
+                          onClick={() => void clearReservations()}
+                          disabled={!reservationCount}
+                        >
+                          Clear
+                        </Button>
+                        <SheetClose asChild>
+                          <Button type="button" variant="secondary" className="w-full rounded-md">
+                            Continue
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                {isSignedIn ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => go("Profile")}
+                      className="hidden text-sm text-muted-foreground lg:block"
+                    >
+                      {authLabel}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      className="hidden text-sm text-muted-foreground lg:block"
+                    >
+                      Sign out
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    className="hidden rounded-md border border-foreground/20 px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted lg:block"
+                  >
+                    {authLabel}
+                  </button>
+                )}
                 <button
                   type="button"
                   aria-label="Open menu"
@@ -592,6 +876,40 @@ export const HotelResortKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    setReservationOpen(true)
+                  }}
+                  className="text-left text-base font-medium text-foreground/90 transition-colors hover:text-foreground"
+                >
+                  Reservations
+                </button>
+                {isSignedIn ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      handleSignOut()
+                    }}
+                    className="text-left text-base font-medium text-foreground/90 transition-colors hover:text-foreground"
+                  >
+                    Sign out
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      handleSignIn()
+                    }}
+                    className="text-left text-base font-medium text-foreground/90 transition-colors hover:text-foreground"
+                    disabled={auth.isLoading}
+                  >
+                    Sign in
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -845,7 +1163,7 @@ export const HotelResortKimiPage = defineCapsule({
           </section>
 
           {/* Booking — steps + form */}
-          <section className="bg-foreground py-24 text-background lg:py-32">
+          <section className="bg-foreground py-24 lg:py-32">
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
               <div className="mb-16 max-w-2xl">
                 <p className="mb-3 text-sm uppercase tracking-widest text-background/60">
@@ -884,6 +1202,18 @@ export const HotelResortKimiPage = defineCapsule({
                     className="space-y-5"
                     onSubmit={(e) => {
                       e.preventDefault()
+                      const formData = new FormData(e.currentTarget)
+                      const checkIn = String(formData.get("checkin") ?? "")
+                      const checkOut = String(formData.get("checkout") ?? "")
+                      const guests = String(formData.get("guests") ?? "")
+                      const roomType = String(formData.get("roomType") ?? "")
+                      void addReservation(
+                        checkIn,
+                        checkOut,
+                        guests,
+                        roomType,
+                      )
+                      setReservationOpen(true)
                       go(bookingSubmit)
                     }}
                   >
@@ -897,6 +1227,7 @@ export const HotelResortKimiPage = defineCapsule({
                         </label>
                         <input
                           id="hotel-checkin"
+                          name="checkin"
                           type="date"
                           className={inputCls}
                         />
@@ -910,6 +1241,7 @@ export const HotelResortKimiPage = defineCapsule({
                         </label>
                         <input
                           id="hotel-checkout"
+                          name="checkout"
                           type="date"
                           className={inputCls}
                         />
@@ -922,7 +1254,12 @@ export const HotelResortKimiPage = defineCapsule({
                       >
                         Guests
                       </label>
-                      <select id="hotel-guests" className={inputCls}>
+                      <select
+                        id="hotel-guests"
+                        name="guests"
+                        className={inputCls}
+                        defaultValue={guestOptions[0]}
+                      >
                         {guestOptions.map((opt) => (
                           <option key={opt} className="bg-background">
                             {opt}
@@ -937,7 +1274,12 @@ export const HotelResortKimiPage = defineCapsule({
                       >
                         Room Type
                       </label>
-                      <select id="hotel-roomtype" className={inputCls}>
+                      <select
+                        id="hotel-roomtype"
+                        name="roomType"
+                        className={inputCls}
+                        defaultValue={roomOptions[0]}
+                      >
                         {roomOptions.map((opt) => (
                           <option key={opt} className="bg-background">
                             {opt}
@@ -945,12 +1287,12 @@ export const HotelResortKimiPage = defineCapsule({
                         ))}
                       </select>
                     </div>
-                    <button
+                    <Button
                       type="submit"
                       className="w-full rounded-md bg-foreground py-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
                     >
                       {bookingSubmit}
-                    </button>
+                    </Button>
                   </form>
                   <p className="mt-4 text-center text-xs text-muted-foreground">
                     {bookingNote}
@@ -1172,11 +1514,15 @@ export const HotelResortKimiPage = defineCapsule({
                   className="flex gap-2"
                   onSubmit={(e) => {
                     e.preventDefault()
+                    const formData = new FormData(e.currentTarget)
+                    const email = String(formData.get("newsletter-email") ?? "")
+                    void subscribeNewsletter(email, "footer-newsletter")
                     go(footerNewsletterCta)
                   }}
                 >
                   <input
                     type="email"
+                    name="newsletter-email"
                     placeholder="Your email"
                     aria-label="Your email"
                     className="flex-1 rounded-md border border-background/20 bg-background/10 px-4 py-3 text-sm text-background placeholder:text-background/40 focus:border-background/40 focus:outline-none"

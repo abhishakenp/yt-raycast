@@ -1,8 +1,27 @@
+import { useState } from 'react'
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const PhotographyKimiPage3 = defineCapsule({
   name: "PhotographyKimiPage3",
@@ -43,8 +62,69 @@ export const PhotographyKimiPage3 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      bookings: table({
+        serviceName: string(),
+        date: string(),
+        status: string(),
+      }),
+      favorites: table({
+        galleryItemTitle: string(),
+      }),
+      inquiries: table({
+        name: string(),
+        email: string(),
+        message: string(),
+      }),
+    },
+    queries: {
+      bookings: ({ db }) => db.bookings.orderBy('createdAt').all(),
+      favoriteGalleryItemTitles: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.galleryItemTitle)),
+    },
+    mutations: {
+      addBooking: ({ db }, serviceName: string, date: string) => {
+        db.bookings.insert({
+          serviceName,
+          date,
+          status: 'pending',
+        })
+        return db.bookings.all()
+      },
+      removeBooking: ({ db }, bookingId: string) => {
+        db.bookings.delete(bookingId)
+        return db.bookings.all()
+      },
+      clearBookings: ({ db }) => {
+        for (const item of db.bookings.all()) {
+          db.bookings.delete(item.id)
+        }
+        return []
+      },
+      toggleFavorite: ({ db }, galleryItemTitle: string) => {
+        const existingFavorite = db.favorites
+          .where('galleryItemTitle', galleryItemTitle)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ galleryItemTitle })
+        return true
+      },
+      submitInquiry: ({ db }, name: string, email: string, message: string) => {
+        db.inquiries.insert({ name, email, message })
+        return db.inquiries.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [bookingsOpen, setBookingsOpen] = useState(false)
+    const [inquiryOpen, setInquiryOpen] = useState(false)
     const brand = props.brand ?? "Elena Voss Photography Portfolio"
     const nav = props.nav?.length ? props.nav : ["Elena Voss", "Gallery", "Services", "Testimonials", "FAQ", "Contact"]
     const hero = {
@@ -125,6 +205,97 @@ export const PhotographyKimiPage3 = defineCapsule({
     "caption": "Photography generated page detail"
   }
 ]
+
+    // Lakebed hooks
+    const bookings = lakebed.useQuery('bookings')
+    const favoriteGalleryItemTitles = lakebed.useQuery('favoriteGalleryItemTitles')
+    const auth = lakebed.useAuth()
+    const addBooking = lakebed.useMutation('addBooking')
+    const removeBooking = lakebed.useMutation('removeBooking')
+    const clearBookings = lakebed.useMutation('clearBookings')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const submitInquiry = lakebed.useMutation('submitInquiry')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const safeBookings = bookings ?? []
+    const bookingCount = safeBookings.length
+
+    // --- shared sub-components ---
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
 
     return (
       <div className={cn("min-h-screen bg-background text-foreground", props.className)}>

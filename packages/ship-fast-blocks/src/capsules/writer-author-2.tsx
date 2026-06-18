@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * WriterAuthorKimiPage2 — a complete, self-contained AUTHOR / BOOK landing page.
@@ -151,9 +169,107 @@ export const WriterAuthorKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      books: table({
+        title: string(),
+        author: string(),
+        format: string(),
+        price: string(),
+      }),
+      readingList: table({
+        bookTitle: string(),
+        format: string(),
+      }),
+      favorites: table({
+        bookTitle: string(),
+      }),
+      subscribers: table({
+        email: string(),
+      }),
+    },
+    queries: {
+      books: ({ db }) => db.books.orderBy('createdAt').all(),
+      readingListItems: ({ db }) => db.readingList.orderBy('createdAt').all(),
+      favoriteBookTitles: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.bookTitle)),
+      isSubscribed: ({ db }) => db.subscribers.all().length > 0,
+    },
+    mutations: {
+      addToReadingList: ({ db }, bookTitle: string, format: string) => {
+        const existing = db.readingList.where('bookTitle', bookTitle).all()[0]
+        if (!existing) {
+          db.readingList.insert({ bookTitle, format })
+        }
+        return db.readingList.all()
+      },
+      removeFromReadingList: ({ db }, bookTitle: string) => {
+        for (const item of db.readingList.where('bookTitle', bookTitle).all()) {
+          db.readingList.delete(item.id)
+        }
+        return db.readingList.all()
+      },
+      toggleFavorite: ({ db }, bookTitle: string) => {
+        const existingFavorite = db.favorites.where('bookTitle', bookTitle).all()[0]
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+        db.favorites.insert({ bookTitle })
+        return true
+      },
+      subscribeToNewsletter: ({ db }, email: string) => {
+        const existing = db.subscribers.where('email', email).all()[0]
+        if (!existing) {
+          db.subscribers.insert({ email })
+        }
+        return db.subscribers.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [readingListOpen, setReadingListOpen] = useState(false)
+
+    const auth = lakebed.useAuth()
+    const books = lakebed.useQuery('books')
+    const readingListItems = lakebed.useQuery('readingListItems')
+    const favoriteBookTitles = lakebed.useQuery('favoriteBookTitles')
+    const isSubscribed = lakebed.useQuery('isSubscribed')
+    void books
+    void isSubscribed
+    const addToReadingList = lakebed.useMutation('addToReadingList')
+    const removeFromReadingList = lakebed.useMutation('removeFromReadingList')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const subscribeToNewsletter = lakebed.useMutation('subscribeToNewsletter')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
 
     const brand = props.brand ?? "ELENA.VOSS"
     const nav = props.nav?.length
@@ -372,6 +488,55 @@ export const WriterAuthorKimiPage2 = defineCapsule({
       "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z",
     ]
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          "h-5 w-5",
+          active ? "text-primary-foreground" : "text-foreground",
+        )}
+        fill={active ? "currentColor" : "none"}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="h-5 w-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="h-4 w-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     return (
       <div
         className={cn(
@@ -380,8 +545,8 @@ export const WriterAuthorKimiPage2 = defineCapsule({
         )}
       >
         {/* Navbar */}
-        <nav className="fixed left-0 right-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <header className="fixed left-0 right-0 top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
+          <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 items-center justify-between lg:h-20">
               <button
                 type="button"
@@ -409,29 +574,209 @@ export const WriterAuthorKimiPage2 = defineCapsule({
                   {buyPill}
                 </button>
               </div>
-              <button
-                type="button"
-                aria-label="Open menu"
-                aria-expanded={mobileOpen}
-                aria-controls="mobile-menu"
-                onClick={() => setMobileOpen((v: boolean) => !v)}
-                className="p-2 text-muted-foreground hover:text-foreground md:hidden"
-              >
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  aria-hidden="true"
+              <div className="flex items-center gap-4">
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? "Signed in to this session"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go("Account")}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid h-5 w-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={readingListOpen} onOpenChange={setReadingListOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Reading List"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                      </svg>
+                      {readingListItems && readingListItems.length > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {readingListItems.length}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Reading List</SheetTitle>
+                      <SheetDescription>
+                        {readingListItems && readingListItems.length > 0
+                          ? `${readingListItems.length} book${readingListItems.length === 1 ? "" : "s"} in your list.`
+                          : "Your reading list is empty."}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {readingListItems && readingListItems.length ? (
+                        <div className="space-y-4">
+                          {readingListItems.map((item) => (
+                            <div
+                              key={item.id}
+                              className="flex items-center justify-between border-b border-border pb-4 last:border-0"
+                            >
+                              <div>
+                                <p className="font-semibold text-foreground">
+                                  {item.bookTitle}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {item.format}
+                                </p>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  void removeFromReadingList(item.bookTitle)
+                                }}
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-center text-muted-foreground">
+                          Add books to your reading list to track them here.
+                        </p>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                <button
+                  type="button"
+                  aria-label="Open menu"
+                  aria-expanded={mobileOpen}
+                  aria-controls="mobile-menu"
+                  onClick={() => setMobileOpen((v: boolean) => !v)}
+                  className="p-2 text-muted-foreground hover:text-foreground md:hidden"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
             {mobileOpen && (
               <div
@@ -451,10 +796,62 @@ export const WriterAuthorKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? "Signed in"}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid h-5 w-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
-          </div>
         </nav>
+      </header>
 
         <main className="pt-16 lg:pt-20">
           {/* Hero */}
@@ -749,35 +1146,70 @@ export const WriterAuthorKimiPage2 = defineCapsule({
                 <p className="text-lg text-muted-foreground">{buyDesc}</p>
               </div>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                {buyOptions.map((opt, i) => (
-                  <div
-                    key={opt.title}
-                    className="rounded-2xl border border-border bg-card p-6 text-center transition-colors hover:border-primary/50"
-                  >
-                    <h3 className="mb-2 text-lg font-bold text-card-foreground">
-                      {opt.title}
-                    </h3>
-                    <p className="mb-4 text-3xl font-black text-primary">
-                      {opt.price}
-                    </p>
-                    <ul className="mb-6 space-y-2 text-sm text-muted-foreground">
-                      {opt.perks.map((perk) => (
-                        <li key={perk}>{perk}</li>
-                      ))}
-                    </ul>
-                    <button
-                      type="button"
-                      onClick={() => go(`${opt.title} ${opt.cta}`)}
-                      className={
-                        i === 0
-                          ? "block w-full rounded-lg bg-primary py-3 font-bold text-primary-foreground transition-colors hover:bg-primary/90"
-                          : "block w-full rounded-lg border border-border bg-secondary py-3 font-bold text-secondary-foreground transition-colors hover:bg-secondary/80"
-                      }
+                {buyOptions.map((opt, i) => {
+                  const isFavorite = favoriteBookTitles?.has(opt.title) ?? false
+                  return (
+                    <div
+                      key={opt.title}
+                      className="rounded-2xl border border-border bg-card p-6 text-center transition-colors hover:border-primary/50"
                     >
-                      {opt.cta}
-                    </button>
-                  </div>
-                ))}
+                      <h3 className="mb-2 text-lg font-bold text-card-foreground">
+                        {opt.title}
+                      </h3>
+                      <p className="mb-4 text-3xl font-black text-primary">
+                        {opt.price}
+                      </p>
+                      <ul className="mb-6 space-y-2 text-sm text-muted-foreground">
+                        {opt.perks.map((perk) => (
+                          <li key={perk}>{perk}</li>
+                        ))}
+                      </ul>
+                      <div className="mb-4 flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void addToReadingList(opt.title, opt.title)
+                          }}
+                          className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground transition-colors hover:bg-secondary/80"
+                        >
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M12 5v14M5 12h14" />
+                          </svg>
+                          Add to List
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void toggleFavorite(opt.title)
+                          }}
+                          className="inline-flex items-center justify-center rounded-full border border-border bg-secondary p-2 text-secondary-foreground transition-colors hover:bg-secondary/80"
+                          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+                        >
+                          <HeartIcon active={isFavorite} />
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => go(`${opt.title} ${opt.cta}`)}
+                        className={
+                          i === 0
+                            ? "block w-full rounded-lg bg-primary py-3 font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+                            : "block w-full rounded-lg border border-border bg-secondary py-3 font-bold text-secondary-foreground transition-colors hover:bg-secondary/80"
+                        }
+                      >
+                        {opt.cta}
+                      </button>
+                    </div>
+                  )
+                })}
               </div>
               <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
                 <span>{retailerLabel}</span>
@@ -817,42 +1249,48 @@ export const WriterAuthorKimiPage2 = defineCapsule({
           <section className="py-20 lg:py-32">
             <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
               <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary/80 p-12 text-center lg:p-16">
-                <div className="relative">
-                  <h2 className="mb-4 text-3xl font-black tracking-tight text-primary-foreground sm:text-4xl lg:text-5xl">
-                    {newsletterHeading}
-                  </h2>
-                  <p className="mx-auto mb-8 max-w-2xl text-lg text-primary-foreground/90">
-                    {newsletterDesc}
-                  </p>
-                  <form
-                    className="mx-auto flex max-w-lg flex-col gap-4 sm:flex-row"
-                    onSubmit={(e) => {
-                      e.preventDefault()
-                      go(newsletterSubmit)
-                    }}
+                <h2 className="mb-4 text-3xl font-black tracking-tight text-primary-foreground sm:text-4xl lg:text-5xl">
+                  {newsletterHeading}
+                </h2>
+                <p className="mx-auto mb-8 max-w-2xl text-lg text-primary-foreground/90">
+                  {newsletterDesc}
+                </p>
+                <form
+                  className="mx-auto flex max-w-lg flex-col gap-4 sm:flex-row"
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    const form = e.currentTarget
+                    const emailInput = form.querySelector(
+                      'input[type="email"]',
+                    ) as HTMLInputElement
+                    if (emailInput?.value) {
+                      void subscribeToNewsletter(emailInput.value)
+                      emailInput.value = ""
+                    }
+                    go(newsletterSubmit)
+                  }}
+                >
+                  <label htmlFor="nl2-email" className="sr-only">
+                    Email address
+                  </label>
+                  <input
+                    id="nl2-email"
+                    type="email"
+                    name="email"
+                    required
+                    placeholder={newsletterPlaceholder}
+                    className="flex-1 rounded-full bg-background px-6 py-4 font-medium text-foreground focus:outline-none focus:ring-4 focus:ring-ring/30"
+                  />
+                  <button
+                    type="submit"
+                    className="rounded-full bg-foreground px-8 py-4 font-bold text-background transition-colors hover:bg-foreground/90"
                   >
-                    <label htmlFor="nl2-email" className="sr-only">
-                      Email address
-                    </label>
-                    <input
-                      id="nl2-email"
-                      type="email"
-                      name="email"
-                      required
-                      placeholder={newsletterPlaceholder}
-                      className="flex-1 rounded-full bg-background px-6 py-4 font-medium text-foreground focus:outline-none focus:ring-4 focus:ring-ring/30"
-                    />
-                    <button
-                      type="submit"
-                      className="rounded-full bg-foreground px-8 py-4 font-bold text-background transition-colors hover:bg-foreground/90"
-                    >
-                      {newsletterSubmit}
-                    </button>
-                  </form>
-                  <p className="mt-4 text-sm text-primary-foreground/70">
-                    {newsletterNote}
-                  </p>
-                </div>
+                    {newsletterSubmit}
+                  </button>
+                </form>
+                <p className="mt-4 text-sm text-primary-foreground/70">
+                  {newsletterNote}
+                </p>
               </div>
             </div>
           </section>

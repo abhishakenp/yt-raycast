@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * KnowledgeBaseKimiPage — a complete, self-contained help-center / knowledge-base
@@ -148,9 +166,89 @@ export const KnowledgeBaseKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      readingHistory: table({
+        title: string(),
+        source: string(),
+        visitCount: number(),
+      }),
+    },
+    queries: {
+      readingHistory: ({ db }) => db.readingHistory.orderBy('createdAt').all(),
+    },
+    mutations: {
+      trackArticleVisit: ({ db }, title: string, source: string) => {
+        const existing = db.readingHistory.where('title', title).all()[0]
+
+        if (existing) {
+          db.readingHistory.update(existing.id, {
+            source,
+            visitCount: existing.visitCount + 1,
+          })
+          return db.readingHistory.all()
+        }
+
+        db.readingHistory.insert({
+          title,
+          source,
+          visitCount: 1,
+        })
+        return db.readingHistory.all()
+      },
+      removeReadingHistoryItem: ({ db }, id: string) => {
+        db.readingHistory.delete(id)
+        return db.readingHistory.all()
+      },
+      clearReadingHistory: ({ db }) => {
+        for (const item of db.readingHistory.all()) {
+          db.readingHistory.delete(item.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [readingHistoryOpen, setReadingHistoryOpen] = useState(false)
+    const readingHistory = lakebed.useQuery('readingHistory')
+    const trackArticleVisit = lakebed.useMutation('trackArticleVisit')
+    const removeReadingHistoryItem = lakebed.useMutation('removeReadingHistoryItem')
+    const clearReadingHistory = lakebed.useMutation('clearReadingHistory')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const safeReadingHistory = readingHistory ?? []
+    const readingHistoryCount = safeReadingHistory.length
+    const handleGoWithTrack = (target: string, source: string) => {
+      void trackArticleVisit(target, source)
+      go(target)
+    }
     const brand = props.brand ?? "Help Center"
     const nav = props.nav?.length
       ? props.nav
@@ -591,6 +689,41 @@ export const KnowledgeBaseKimiPage = defineCapsule({
       </svg>
     )
 
+    const HistoryIcon = ({ className }: { className?: string }) => (
+      <svg
+        className={className}
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M12 7v5l4 2" />
+        <path d="M12 2a10 10 0 1 0 10 10" />
+      </svg>
+    )
+
+    const ChevronDownIcon = () => (
+      <svg
+        className="size-4 text-muted-foreground"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     // Category icons — rotate through token-colored line glyphs.
     const categoryIcons: ReactNode[] = [
       // bolt
@@ -660,7 +793,7 @@ export const KnowledgeBaseKimiPage = defineCapsule({
           >
             <button
               type="button"
-              onClick={() => go(nav[0])}
+              onClick={() => handleGoWithTrack(nav[0], "Brand home")}
               className="flex items-center gap-2"
               aria-label={`${brand} home`}
             >
@@ -674,7 +807,7 @@ export const KnowledgeBaseKimiPage = defineCapsule({
                 <button
                   key={label}
                   type="button"
-                  onClick={() => go(label)}
+                  onClick={() => handleGoWithTrack(label, "Main nav")}
                   className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                 >
                   {label}
@@ -684,7 +817,7 @@ export const KnowledgeBaseKimiPage = defineCapsule({
             <div className="flex items-center gap-4">
               <button
                 type="button"
-                onClick={() => go("Search")}
+                onClick={() => handleGoWithTrack("Search", "Search CTA")}
                 className="hidden items-center gap-2 rounded-md bg-muted px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent sm:flex"
                 aria-label="Search help articles"
               >
@@ -694,6 +827,215 @@ export const KnowledgeBaseKimiPage = defineCapsule({
                   ⌘K
                 </kbd>
               </button>
+              <Sheet
+                open={readingHistoryOpen}
+                onOpenChange={setReadingHistoryOpen}
+              >
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    className="hidden items-center gap-2 rounded-md bg-muted px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent sm:flex"
+                    aria-label="Open reading history"
+                  >
+                    <HistoryIcon className="size-4" />
+                    <span>Reading history</span>
+                    {readingHistoryCount > 0 ? (
+                      <span className="grid size-5 place-items-center rounded-full bg-foreground px-0 text-[0.625rem] font-bold text-background">
+                        {readingHistoryCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Reading history</SheetTitle>
+                    <SheetDescription>
+                      {safeReadingHistory.length > 0
+                        ? `${safeReadingHistory.length} saved item${
+                            safeReadingHistory.length === 1 ? '' : 's'
+                          } in your reading history.`
+                        : 'Your reading history is empty.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {safeReadingHistory.length ? (
+                      <div className="space-y-3">
+                        {safeReadingHistory.map((item) => (
+                          <div
+                            key={item.id}
+                            className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 p-4"
+                          >
+                            <div className="min-w-0">
+                              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                {item.source}
+                              </p>
+                              <p className="truncate text-sm font-semibold text-foreground">
+                                {item.title}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Opened {item.visitCount} time
+                                {item.visitCount === 1 ? '' : 's'}
+                              </p>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                              <Button
+                                type="button"
+                                size="sm"
+                                className="px-3 py-1.5"
+                                onClick={() => {
+                                  setReadingHistoryOpen(false)
+                                  handleGoWithTrack(item.title, item.source)
+                                }}
+                              >
+                                Open
+                              </Button>
+                              <button
+                                type="button"
+                                onClick={() => void removeReadingHistoryItem(item.id)}
+                                className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No items yet
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Start opening support articles to build your reading history.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Total views</span>
+                        <span>
+                          {safeReadingHistory.reduce(
+                            (total, item) => total + item.visitCount,
+                            0,
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        className="rounded-full"
+                        onClick={() => {
+                          setReadingHistoryOpen(false)
+                          handleGoWithTrack('Search', 'Reading history')
+                        }}
+                        disabled={!safeReadingHistory.length}
+                      >
+                        Open latest
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => void clearReadingHistory()}
+                        disabled={!safeReadingHistory.length}
+                      >
+                        Clear all
+                      </Button>
+                    </div>
+                    <SheetClose asChild>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="mt-2 w-full rounded-full"
+                      >
+                        Continue
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDownIcon />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <p className="text-sm font-bold text-foreground">
+                        {authDisplayName}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {authEmail || 'Signed in to this session'}
+                      </p>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => handleGoWithTrack('Account', 'Account menu')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ChevronDownIcon />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setMobileOpen((v: boolean) => !v)}
@@ -718,13 +1060,50 @@ export const KnowledgeBaseKimiPage = defineCapsule({
                     type="button"
                     onClick={() => {
                       setMobileOpen(false)
-                      go(label)
+                      handleGoWithTrack(label, 'Main nav')
                     }}
                     className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
                   >
                     {label}
                   </button>
                 ))}
+                {isSignedIn ? (
+                  <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                    <div className="mb-2">
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {authDisplayName}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {authEmail || 'Signed in'}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignOut()
+                      }}
+                      className="w-full rounded-full"
+                    >
+                      Sign out
+                    </Button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      handleSignIn()
+                    }}
+                    disabled={auth.isLoading}
+                    className="flex w-full items-center justify-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-60"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
               </div>
             )}
           </nav>
@@ -744,7 +1123,7 @@ export const KnowledgeBaseKimiPage = defineCapsule({
                 className="relative mx-auto max-w-2xl"
                 onSubmit={(e) => {
                   e.preventDefault()
-                  go("Search")
+                  handleGoWithTrack("Search", "Hero search")
                 }}
               >
                 <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-muted-foreground">
@@ -768,7 +1147,7 @@ export const KnowledgeBaseKimiPage = defineCapsule({
                   <button
                     key={topic}
                     type="button"
-                    onClick={() => go(topic)}
+                    onClick={() => handleGoWithTrack(topic, "Popular topic")}
                     className="rounded-full bg-muted px-3 py-1 text-secondary-foreground transition-colors hover:bg-accent"
                   >
                     {topic}
@@ -800,7 +1179,7 @@ export const KnowledgeBaseKimiPage = defineCapsule({
                   <button
                     key={cat.title}
                     type="button"
-                    onClick={() => go(cat.title)}
+                    onClick={() => handleGoWithTrack(cat.title, "Category")}
                     className="group rounded-xl border border-border bg-card p-6 text-left transition-all hover:border-primary/30 hover:shadow-md"
                     aria-label={`${cat.title} category, ${cat.count}`}
                   >
@@ -842,7 +1221,7 @@ export const KnowledgeBaseKimiPage = defineCapsule({
                       <button
                         key={art.title}
                         type="button"
-                        onClick={() => go(art.title)}
+                        onClick={() => handleGoWithTrack(art.title, "Popular article")}
                         className="group flex w-full items-start gap-4 rounded-lg p-4 text-left transition-colors hover:bg-muted"
                       >
                         <span className="grid size-10 flex-shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-accent">
@@ -870,7 +1249,7 @@ export const KnowledgeBaseKimiPage = defineCapsule({
                   <div className="mt-8">
                     <button
                       type="button"
-                      onClick={() => go(popularViewAll)}
+                      onClick={() => handleGoWithTrack(popularViewAll, "Popular heading")}
                       className="inline-flex items-center gap-2 text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
                     >
                       {popularViewAll}
@@ -892,7 +1271,7 @@ export const KnowledgeBaseKimiPage = defineCapsule({
                         <button
                           key={t.title}
                           type="button"
-                          onClick={() => go(t.title)}
+                          onClick={() => handleGoWithTrack(t.title, "Trending topic")}
                           className="group block w-full text-left"
                         >
                           <span className="block text-sm font-medium text-secondary-foreground transition-colors group-hover:text-foreground">
@@ -915,7 +1294,7 @@ export const KnowledgeBaseKimiPage = defineCapsule({
                         <li key={link}>
                           <button
                             type="button"
-                            onClick={() => go(link)}
+                            onClick={() => handleGoWithTrack(link, "Help link")}
                             className="flex items-center gap-3 text-sm text-secondary-foreground transition-colors hover:text-foreground"
                           >
                             <ChatIcon className="size-5 text-muted-foreground" />
@@ -948,7 +1327,7 @@ export const KnowledgeBaseKimiPage = defineCapsule({
                 </div>
                 <button
                   type="button"
-                  onClick={() => go(guidesViewAll)}
+                  onClick={() => handleGoWithTrack(guidesViewAll, "Featured guides")}
                   className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-muted"
                 >
                   {guidesViewAll}
@@ -960,7 +1339,7 @@ export const KnowledgeBaseKimiPage = defineCapsule({
                   <button
                     key={guide.title}
                     type="button"
-                    onClick={() => go(guide.title)}
+                    onClick={() => handleGoWithTrack(guide.title, "Featured guide")}
                     className="group block overflow-hidden rounded-xl border border-border bg-card text-left transition-all hover:shadow-lg"
                   >
                     <div className="relative aspect-video overflow-hidden bg-muted">
@@ -1084,7 +1463,7 @@ export const KnowledgeBaseKimiPage = defineCapsule({
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(supportPrimary)}
+                  onClick={() => handleGoWithTrack(supportPrimary, "Support CTA")}
                   className="inline-flex items-center gap-2 rounded-lg bg-primary-foreground px-6 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary-foreground/90"
                 >
                   <ChatIcon className="size-5" />
@@ -1092,7 +1471,7 @@ export const KnowledgeBaseKimiPage = defineCapsule({
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(supportSecondary)}
+                  onClick={() => handleGoWithTrack(supportSecondary, "Support CTA")}
                   className="inline-flex items-center gap-2 rounded-lg border border-primary-foreground/40 px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/10"
                 >
                   <MailIcon className="size-5" />
@@ -1115,7 +1494,7 @@ export const KnowledgeBaseKimiPage = defineCapsule({
               <div className="col-span-2 lg:col-span-2">
                 <button
                   type="button"
-                  onClick={() => go(nav[0])}
+                  onClick={() => handleGoWithTrack(nav[0], "Footer brand")}
                   className="mb-4 flex items-center gap-2"
                   aria-label={`${brand} home`}
                 >
@@ -1132,7 +1511,7 @@ export const KnowledgeBaseKimiPage = defineCapsule({
                     <button
                       key={social}
                       type="button"
-                      onClick={() => go(social)}
+                      onClick={() => handleGoWithTrack(social, "Footer social")}
                       aria-label={social}
                       className="text-muted-foreground transition-colors hover:text-foreground"
                     >
@@ -1151,7 +1530,7 @@ export const KnowledgeBaseKimiPage = defineCapsule({
                       <li key={link}>
                         <button
                           type="button"
-                          onClick={() => go(link)}
+                          onClick={() => handleGoWithTrack(link, `${col.title} footer link`)}
                           className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                         >
                           {link}
@@ -1172,7 +1551,7 @@ export const KnowledgeBaseKimiPage = defineCapsule({
                     <button
                       key={link}
                       type="button"
-                      onClick={() => go(link)}
+                      onClick={() => handleGoWithTrack(link, "Footer legal")}
                       className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                     >
                       {link}

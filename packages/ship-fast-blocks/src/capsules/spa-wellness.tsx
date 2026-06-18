@@ -1,10 +1,31 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
+import { string, table } from '@ship-fast/lakebed/server'
 import { z } from 'zod/v4'
 import { defineCapsule } from "./openui.ts"
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from '#/components/ui/avatar.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '#/components/ui/sheet.tsx'
 
 /**
  * SpaWellnessKimiPage — a complete, self-contained luxury spa & wellness-retreat
@@ -190,9 +211,118 @@ export const SpaWellnessKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      reservations: table({
+        name: string(),
+        email: string(),
+        phone: string(),
+        preferredDate: string(),
+        guests: string(),
+        packageName: string(),
+        requests: string(),
+        status: string(),
+      }),
+    },
+    queries: {
+      reservations: ({ db }) => db.reservations.orderBy('createdAt').all(),
+    },
+    mutations: {
+      addReservation: (
+        { db },
+        name: string,
+        email: string,
+        phone: string,
+        preferredDate: string,
+        guests: string,
+        packageName: string,
+        requests: string,
+      ) => {
+        return db.reservations.insert({
+          name,
+          email,
+          phone,
+          preferredDate,
+          guests,
+          packageName,
+          requests,
+          status: 'Requested',
+        })
+      },
+      removeReservation: ({ db }, reservationId: string) => {
+        db.reservations.delete(reservationId)
+        return db.reservations.all()
+      },
+      clearReservations: ({ db }) => {
+        for (const reservation of db.reservations.all()) {
+          db.reservations.delete(reservation.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [reservationDrawerOpen, setReservationDrawerOpen] = useState(false)
+    const [bookingName, setBookingName] = useState('')
+    const [bookingLastName, setBookingLastName] = useState('')
+    const [bookingEmail, setBookingEmail] = useState('')
+    const [bookingPhone, setBookingPhone] = useState('')
+    const [bookingDate, setBookingDate] = useState('')
+    const [bookingGuests, setBookingGuests] = useState('')
+    const [bookingPackage, setBookingPackage] = useState('')
+    const [bookingRequests, setBookingRequests] = useState('')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading ? 'Checking...' : isSignedIn ? 'Sign out' : 'Sign in'
+    const reservations = lakebed.useQuery('reservations')
+    const addReservation = lakebed.useMutation('addReservation')
+    const removeReservation = lakebed.useMutation('removeReservation')
+    const clearReservations = lakebed.useMutation('clearReservations')
+    const reservationCount = reservations?.length ?? 0
+    const reservationList = reservations ?? []
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const openReservationDrawer = (seedPackage?: string) => {
+      if (!bookingGuests) {
+        setBookingGuests(guestOptions[0] ?? '')
+      }
+      if (seedPackage) {
+        setBookingPackage(seedPackage)
+      } else {
+        setBookingPackage(packageOptions[0] ?? '')
+      }
+      setReservationDrawerOpen(true)
+    }
+    const clearBookingForm = () => {
+      setBookingName('')
+      setBookingLastName('')
+      setBookingEmail('')
+      setBookingPhone('')
+      setBookingDate('')
+      setBookingGuests(guestOptions[0] ?? '')
+      setBookingPackage(packageOptions[0] ?? '')
+      setBookingRequests('')
+    }
     const brand = props.brand ?? 'Serenity Springs'
     const nav = props.nav?.length
       ? props.nav
@@ -696,11 +826,73 @@ export const SpaWellnessKimiPage = defineCapsule({
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go(heroBook)}
-                  className="hidden items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
+                  onClick={() => {
+                    openReservationDrawer()
+                    go(heroBook)
+                  }}
+                  className="relative hidden items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
                 >
                   {heroBook}
+                  {reservationCount > 0 ? (
+                    <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-background px-1.5 text-xs font-semibold text-foreground">
+                      {reservationCount}
+                    </span>
+                  ) : null}
                 </button>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 items-center gap-2 rounded-full border border-border px-3 py-1 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
+                    >
+                      <Avatar size="sm" className="ring-1 ring-background">
+                        {isSignedIn && authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="max-w-24 truncate">
+                        {isSignedIn ? authDisplayName : 'Account'}
+                      </span>
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-72 rounded-xl border-border bg-background p-2">
+                    <div className="px-3 py-2 text-sm">
+                      <p className="truncate text-foreground">
+                        {isSignedIn ? authDisplayName : 'Not signed in'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {auth.isAuthenticated ? authEmail ?? 'Guest account' : 'Sign in to track bookings'}
+                      </p>
+                    </div>
+                    <div className="mt-2 border-t border-border pt-2">
+                      {isSignedIn ? (
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold transition-colors hover:bg-muted"
+                        >
+                          Sign out
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleSignIn}
+                          disabled={auth.isLoading}
+                          className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold transition-colors hover:bg-muted disabled:opacity-70"
+                        >
+                          {authLabel}
+                        </button>
+                      )}
+                    </div>
+                  </PopoverContent>
+                </Popover>
                 <button
                   type="button"
                   aria-label="Open menu"
@@ -744,10 +936,132 @@ export const SpaWellnessKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {authDisplayName}
+                      </p>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                        variant="outline"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
         </header>
+        <Sheet open={reservationDrawerOpen} onOpenChange={setReservationDrawerOpen}>
+          <SheetContent
+            side="right"
+            className="w-full p-0 sm:max-w-md"
+          >
+            <SheetHeader className="border-b border-border px-6 py-5">
+              <SheetTitle>Reservation requests</SheetTitle>
+              <SheetDescription>
+                {reservationCount > 0
+                  ? `${reservationCount} ${reservationCount === 1 ? 'request' : 'requests'} in your queue`
+                  : 'No reservation requests yet'}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {reservationList.length ? (
+                <div className="space-y-5">
+                  {reservationList.map((reservation) => (
+                    <div
+                      key={reservation.id}
+                      className="rounded-lg border border-border p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {reservation.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {reservation.packageName}
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-muted px-2.5 py-1 text-[0.65rem] uppercase tracking-wide text-muted-foreground">
+                          {reservation.status}
+                        </span>
+                      </div>
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        {reservation.email}
+                        {reservation.phone ? ` · ${reservation.phone}` : ''}
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {reservation.preferredDate} · {reservation.guests}
+                      </p>
+                      {reservation.requests ? (
+                        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                          {reservation.requests}
+                        </p>
+                      ) : null}
+                      <div className="mt-4 flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-8 rounded-full"
+                          onClick={() => void removeReservation(reservation.id)}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-border bg-muted/40 px-4 py-8 text-center text-sm text-muted-foreground">
+                  Use the booking form above to submit a request. Requests will
+                  appear here instantly and persist for this session.
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border px-6 py-5">
+              <div className="flex w-full gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 rounded-full"
+                  disabled={reservationCount === 0}
+                  onClick={() => void clearReservations()}
+                >
+                  Clear all
+                </Button>
+                <SheetClose asChild>
+                  <Button
+                    type="button"
+                    className="flex-1 rounded-full"
+                  >
+                    Close
+                  </Button>
+                </SheetClose>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
 
         <main>
           {/* Hero */}
@@ -782,7 +1096,10 @@ export const SpaWellnessKimiPage = defineCapsule({
                 <div className="flex flex-wrap gap-4">
                   <button
                     type="button"
-                    onClick={() => go(heroPrimary)}
+                    onClick={() => {
+                      openReservationDrawer()
+                      go(heroPrimary)
+                    }}
                     className="inline-flex items-center justify-center rounded-full bg-foreground px-8 py-3.5 text-sm font-semibold text-background shadow-sm transition-colors hover:bg-foreground/90"
                   >
                     {heroPrimary}
@@ -896,7 +1213,10 @@ export const SpaWellnessKimiPage = defineCapsule({
               <div className="mt-12 text-center">
                 <button
                   type="button"
-                  onClick={() => go(treatCta)}
+                  onClick={() => {
+                    openReservationDrawer(packageOptions[0])
+                    go(treatCta)
+                  }}
                   className="inline-flex items-center justify-center rounded-full border-2 border-primary px-8 py-3.5 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
                 >
                   {treatCta}
@@ -1087,7 +1407,11 @@ export const SpaWellnessKimiPage = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(pkg.cta)}
+                      onClick={() => {
+                        openReservationDrawer(pkg.name)
+                        setBookingPackage(pkg.name)
+                        go(pkg.cta)
+                      }}
                       className={cn(
                         'inline-flex w-full items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition-colors',
                         pkg.featured
@@ -1294,14 +1618,20 @@ export const SpaWellnessKimiPage = defineCapsule({
                   <div className="flex flex-wrap gap-4">
                     <button
                       type="button"
-                      onClick={() => go(bookPrimary)}
+                      onClick={() => {
+                        openReservationDrawer(bookingPackage || packageOptions[0])
+                        go(bookPrimary)
+                      }}
                       className="inline-flex items-center justify-center rounded-full bg-background px-8 py-3.5 text-sm font-semibold text-primary transition-colors hover:bg-muted"
                     >
                       {bookPrimary}
                     </button>
                     <button
                       type="button"
-                      onClick={() => go(bookSecondary)}
+                      onClick={() => {
+                        openReservationDrawer(packageOptions[1])
+                        go(bookSecondary)
+                      }}
                       className="inline-flex items-center justify-center rounded-full border-2 border-primary-foreground/40 px-8 py-3.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/10"
                     >
                       {bookSecondary}
@@ -1317,6 +1647,19 @@ export const SpaWellnessKimiPage = defineCapsule({
                     className="space-y-4"
                     onSubmit={(e) => {
                       e.preventDefault()
+                      if (!bookingName || !bookingEmail || !bookingDate) return
+
+                      void addReservation(
+                        `${bookingName.trim()} ${bookingLastName.trim()}`.trim(),
+                        bookingEmail.trim(),
+                        bookingPhone.trim(),
+                        bookingDate,
+                        bookingGuests || guestOptions[0] || '1 Guest',
+                        bookingPackage || packageOptions[0] || 'General inquiry',
+                        bookingRequests.trim(),
+                      )
+                      clearBookingForm()
+                      setReservationDrawerOpen(true)
                       go(bookSubmit)
                     }}
                   >
@@ -1329,6 +1672,8 @@ export const SpaWellnessKimiPage = defineCapsule({
                           id="spa-first"
                           type="text"
                           required
+                          value={bookingName}
+                          onChange={(e) => setBookingName(e.target.value)}
                           className={inputCls}
                         />
                       </div>
@@ -1340,6 +1685,8 @@ export const SpaWellnessKimiPage = defineCapsule({
                           id="spa-last"
                           type="text"
                           required
+                          value={bookingLastName}
+                          onChange={(e) => setBookingLastName(e.target.value)}
                           className={inputCls}
                         />
                       </div>
@@ -1352,6 +1699,8 @@ export const SpaWellnessKimiPage = defineCapsule({
                         id="spa-email"
                         type="email"
                         required
+                        value={bookingEmail}
+                        onChange={(e) => setBookingEmail(e.target.value)}
                         className={inputCls}
                       />
                     </div>
@@ -1359,7 +1708,13 @@ export const SpaWellnessKimiPage = defineCapsule({
                       <label htmlFor="spa-phone" className={labelCls}>
                         Phone
                       </label>
-                      <input id="spa-phone" type="tel" className={inputCls} />
+                      <input
+                        id="spa-phone"
+                        type="tel"
+                        value={bookingPhone}
+                        onChange={(e) => setBookingPhone(e.target.value)}
+                        className={inputCls}
+                      />
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
@@ -1370,6 +1725,8 @@ export const SpaWellnessKimiPage = defineCapsule({
                           id="spa-date"
                           type="date"
                           required
+                          value={bookingDate}
+                          onChange={(e) => setBookingDate(e.target.value)}
                           className={inputCls}
                         />
                       </div>
@@ -1377,7 +1734,12 @@ export const SpaWellnessKimiPage = defineCapsule({
                         <label htmlFor="spa-guests" className={labelCls}>
                           Guests
                         </label>
-                        <select id="spa-guests" className={inputCls}>
+                        <select
+                          id="spa-guests"
+                          className={inputCls}
+                          value={bookingGuests || guestOptions[0] || ''}
+                          onChange={(e) => setBookingGuests(e.target.value)}
+                        >
                           {guestOptions.map((g) => (
                             <option key={g} className="bg-background">
                               {g}
@@ -1390,7 +1752,12 @@ export const SpaWellnessKimiPage = defineCapsule({
                       <label htmlFor="spa-package" className={labelCls}>
                         Interested Package
                       </label>
-                      <select id="spa-package" className={inputCls}>
+                      <select
+                        id="spa-package"
+                        className={inputCls}
+                        value={bookingPackage || packageOptions[0] || ''}
+                        onChange={(e) => setBookingPackage(e.target.value)}
+                      >
                         {packageOptions.map((p) => (
                           <option key={p} className="bg-background">
                             {p}
@@ -1399,16 +1766,18 @@ export const SpaWellnessKimiPage = defineCapsule({
                       </select>
                     </div>
                     <div>
-                      <label htmlFor="spa-notes" className={labelCls}>
-                        Special Requests
-                      </label>
-                      <textarea
-                        id="spa-notes"
-                        rows={3}
-                        placeholder="Allergies, accessibility needs, occasion celebration..."
-                        className={cn(inputCls, 'resize-none')}
-                      />
-                    </div>
+                        <label htmlFor="spa-notes" className={labelCls}>
+                          Special Requests
+                        </label>
+                        <textarea
+                          id="spa-notes"
+                          rows={3}
+                          placeholder="Allergies, accessibility needs, occasion celebration..."
+                          value={bookingRequests}
+                          onChange={(e) => setBookingRequests(e.target.value)}
+                          className={cn(inputCls, 'resize-none')}
+                        />
+                      </div>
                     <button
                       type="submit"
                       className="inline-flex w-full items-center justify-center rounded-full bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"

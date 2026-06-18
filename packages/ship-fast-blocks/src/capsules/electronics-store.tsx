@@ -4,6 +4,32 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "#/components/ui/command.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * ElectronicsStoreKimiPage — a complete, self-contained premium electronics &
@@ -192,10 +218,148 @@ export const ElectronicsStoreKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      products: table({
+        alt: string(),
+        badge: string(),
+        image: string(),
+        price: string(),
+        rating: string(),
+        subtitle: string(),
+        title: string(),
+      }),
+      deals: table({
+        alt: string(),
+        discount: string(),
+        image: string(),
+        price: string(),
+        subtitle: string(),
+        title: string(),
+        was: string(),
+      }),
+      cartItems: table({
+        productId: string(),
+        quantity: number(),
+      }),
+      favorites: table({
+        productName: string(),
+      }),
+    },
+    queries: {
+      products: ({ db }) => db.products.orderBy('createdAt').all(),
+      deals: ({ db }) => db.deals.orderBy('createdAt').all(),
+      cartLines: ({ db }) =>
+        db.cartItems.all().flatMap((item) => {
+          const product = db.products.get(item.productId)
+          const deal = db.deals.get(item.productId)
+          const productOrDeal = product || deal
+          return productOrDeal ? [{ ...item, product: productOrDeal }] : []
+        }),
+      favoriteProductNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.productName)),
+    },
+    mutations: {
+      addToCart: ({ db }, productName: string) => {
+        const product = db.products.where('title', productName).all()[0]
+        if (!product) return db.cartItems.all()
+
+        const existingItem = db.cartItems
+          .where('productId', product.id)
+          .all()[0]
+
+        if (existingItem) {
+          db.cartItems.update(existingItem.id, {
+            quantity: existingItem.quantity + 1,
+          })
+        } else {
+          db.cartItems.insert({
+            productId: product.id,
+            quantity: 1,
+          })
+        }
+
+        return db.cartItems.all()
+      },
+      addDealToCart: ({ db }, dealName: string) => {
+        const deal = db.deals.where('title', dealName).all()[0]
+        if (!deal) return db.cartItems.all()
+
+        const existingItem = db.cartItems
+          .where('productId', deal.id)
+          .all()[0]
+
+        if (existingItem) {
+          db.cartItems.update(existingItem.id, {
+            quantity: existingItem.quantity + 1,
+          })
+        } else {
+          db.cartItems.insert({
+            productId: deal.id,
+            quantity: 1,
+          })
+        }
+
+        return db.cartItems.all()
+      },
+      updateCartQuantity: ({ db }, productId: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+
+        for (const item of db.cartItems.where('productId', productId).all()) {
+          if (nextQuantity) {
+            db.cartItems.update(item.id, { quantity: nextQuantity })
+          } else {
+            db.cartItems.delete(item.id)
+          }
+        }
+
+        return db.cartItems.all()
+      },
+      removeFromCart: ({ db }, productId: string) => {
+        for (const item of db.cartItems.where('productId', productId).all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return db.cartItems.all()
+      },
+      clearCart: ({ db }) => {
+        for (const item of db.cartItems.all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return []
+      },
+      toggleFavorite: ({ db }, productName: string) => {
+        const existingFavorite = db.favorites
+          .where('productName', productName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ productName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
+    const [cartOpen, setCartOpen] = useState(false)
     const brand = props.brand ?? "TechNova"
+
+    const priceAmount = (price: string) => {
+      const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ''))
+      return Number.isFinite(amount) ? amount : 0
+    }
+    const formatCurrency = (amount: number) =>
+      new Intl.NumberFormat('en-US', {
+        currency: 'USD',
+        style: 'currency',
+      }).format(amount)
     const nav = props.nav?.length
       ? props.nav
       : ["Products", "Deals", "Categories", "Support"]
@@ -426,6 +590,80 @@ export const ElectronicsStoreKimiPage = defineCapsule({
           },
         ]
 
+    const normalizedProductItems = productItems.map((product) => ({
+      alt: product.imageAlt,
+      badge: product.badge ?? '',
+      image: '',
+      price: product.price,
+      rating: product.rating,
+      subtitle: product.subtitle,
+      title: product.title,
+    }))
+    const normalizedDealItems = dealItems.map((deal) => ({
+      alt: deal.imageAlt,
+      discount: deal.discount,
+      image: '',
+      price: deal.price,
+      subtitle: deal.subtitle,
+      title: deal.title,
+      was: deal.was,
+    }))
+    const storedProducts = lakebed.useQuery('products')
+    const storedDeals = lakebed.useQuery('deals')
+    const cartLines = lakebed.useQuery('cartLines')
+    const favoriteProductNames = lakebed.useQuery('favoriteProductNames')
+    const auth = lakebed.useAuth()
+    const addToCart = lakebed.useMutation('addToCart')
+    const addDealToCart = lakebed.useMutation('addDealToCart')
+    const updateCartQuantity = lakebed.useMutation('updateCartQuantity')
+    const removeFromCart = lakebed.useMutation('removeFromCart')
+    const clearCart = lakebed.useMutation('clearCart')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const displayProducts =
+      storedProducts && storedProducts.length > 0
+        ? storedProducts
+        : normalizedProductItems
+    const displayDeals =
+      storedDeals && storedDeals.length > 0
+        ? storedDeals
+        : normalizedDealItems
+    const safeCartLines = cartLines ?? []
+    const cartItemCount = safeCartLines.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+    const cartSubtotal = safeCartLines.reduce(
+      (total, item) => total + priceAmount(item.product.price) * item.quantity,
+      0,
+    )
+    const shipping = cartSubtotal > 0 && cartSubtotal < 75 ? 12 : 0
+    const cartTotal = cartSubtotal + shipping
+
     const stats = props.stats?.length
       ? props.stats
       : [
@@ -619,6 +857,39 @@ export const ElectronicsStoreKimiPage = defineCapsule({
       </svg>
     )
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     const featureIcons = [
       // check
       <svg
@@ -716,45 +987,302 @@ export const ElectronicsStoreKimiPage = defineCapsule({
             <div className="flex items-center gap-4">
               <button
                 type="button"
+                onClick={() => setSearchOpen(true)}
                 aria-label="Search"
-                onClick={() => go(nav[0])}
-                className="p-2 text-muted-foreground transition-colors hover:text-foreground"
+                className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground sm:flex"
               >
                 <svg
                   className="size-5"
-                  viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                aria-label="Cart"
-                onClick={() => go(heroPrimary)}
-                className="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <svg
-                  className="size-5"
                   viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
                 >
-                  <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
-                <span className="absolute right-1 top-1 grid size-4 place-items-center rounded-full bg-foreground text-xs text-background">
-                  3
-                </span>
               </button>
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Orders')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Orders
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={cartOpen} onOpenChange={setCartOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Shopping Cart"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                      <line x1="3" y1="6" x2="21" y2="6" />
+                      <path d="M16 10a4 4 0 0 1-8 0" />
+                    </svg>
+                    {cartItemCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {cartItemCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Shopping cart</SheetTitle>
+                    <SheetDescription>
+                      {cartItemCount > 0
+                        ? `${cartItemCount} item${cartItemCount === 1 ? '' : 's'} ready for checkout.`
+                        : 'Your cart is empty.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {safeCartLines.length ? (
+                      <div className="space-y-5">
+                        {safeCartLines.map((item) => (
+                          <div
+                            key={item.id}
+                            className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                          >
+                            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                              <Image
+                                alt={item.product.alt}
+                                src={item.product.image || undefined}
+                                w={180}
+                                h={180}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                    {item.product.title}
+                                  </h3>
+                                  <p className="text-sm text-muted-foreground">
+                                    {item.product.subtitle}
+                                  </p>
+                                </div>
+                                <p className="text-sm font-bold text-foreground">
+                                  {formatCurrency(
+                                    priceAmount(item.product.price) *
+                                      item.quantity,
+                                  )}
+                                </p>
+                              </div>
+                              <div className="mt-4 flex items-center justify-between">
+                                <div className="inline-flex h-9 items-center rounded-full border border-border bg-background">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void updateCartQuantity(
+                                        item.productId,
+                                        item.quantity - 1,
+                                      )
+                                    }
+                                    className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                    aria-label={`Decrease ${item.product.title} quantity`}
+                                  >
+                                    -
+                                  </button>
+                                  <span className="min-w-8 text-center text-sm font-semibold">
+                                    {item.quantity}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void updateCartQuantity(
+                                        item.productId,
+                                        item.quantity + 1,
+                                      )
+                                    }
+                                    className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                    aria-label={`Increase ${item.product.title} quantity`}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void removeFromCart(item.productId)
+                                  }
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No products in cart
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Add an item from Trending Products to start a cart for this
+                          session.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Subtotal</span>
+                        <span>{formatCurrency(cartSubtotal)}</span>
+                      </div>
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Shipping</span>
+                        <span>
+                          {shipping ? formatCurrency(shipping) : 'Free'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between pt-2 text-base font-bold text-foreground">
+                        <span>Total</span>
+                        <span>{formatCurrency(cartTotal)}</span>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      disabled={!safeCartLines.length}
+                      className="w-full rounded-full"
+                      onClick={() => go('Checkout')}
+                    >
+                      Checkout
+                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full"
+                        onClick={() => void clearCart()}
+                        disabled={!safeCartLines.length}
+                      >
+                        Clear
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
               <button
                 type="button"
                 aria-label="Menu"
@@ -794,11 +1322,110 @@ export const ElectronicsStoreKimiPage = defineCapsule({
                       {label}
                     </button>
                   ))}
+                  <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                    {isSignedIn ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in'}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            setMobileOpen(false)
+                            handleSignOut()
+                          }}
+                          className="w-full rounded-full"
+                        >
+                          Sign out
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignIn()
+                        }}
+                        disabled={auth.isLoading}
+                        className="w-full rounded-full"
+                      >
+                        <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                          G
+                        </span>
+                        {authLabel}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
           </nav>
         </header>
+
+        <CommandDialog
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          title="Search products"
+          description="Search the products seeded for this session."
+          className="max-w-xl"
+        >
+          <CommandInput placeholder={`Search ${brand} products...`} />
+          <CommandList className="max-h-[420px]">
+            <CommandEmpty>No products found.</CommandEmpty>
+            <CommandGroup heading="Products">
+              {displayProducts.map((product) => (
+                <CommandItem
+                  key={product.title}
+                  value={`${product.title} ${product.subtitle} ${product.price}`}
+                  onSelect={() => {
+                    setSearchOpen(false)
+                    go(product.title)
+                  }}
+                  className="gap-3 py-3"
+                >
+                  <div className="size-12 overflow-hidden rounded-md bg-muted">
+                    <Image
+                      alt={product.alt}
+                      src={product.image || undefined}
+                      w={120}
+                      h={120}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {product.title}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {product.subtitle}
+                    </p>
+                  </div>
+                  <span className="text-sm font-bold text-foreground">
+                    {product.price}
+                  </span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
 
         <main>
           {/* Hero */}
@@ -942,16 +1569,20 @@ export const ElectronicsStoreKimiPage = defineCapsule({
               </div>
 
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                {dealItems.map((d) => (
+                {displayDeals.map((d) => (
                   <button
                     key={d.title}
                     type="button"
-                    onClick={() => go(d.title)}
+                    onClick={() => {
+                      void addDealToCart(d.title)
+                      setCartOpen(true)
+                    }}
                     className="group block overflow-hidden rounded-xl bg-card text-left text-card-foreground transition-shadow hover:shadow-xl"
                   >
                     <div className="relative aspect-square bg-muted">
                       <Image
-                        alt={d.imageAlt}
+                        alt={d.alt}
+                        src={d.image || undefined}
                         w={400}
                         h={400}
                         loading="lazy"
@@ -1045,72 +1676,85 @@ export const ElectronicsStoreKimiPage = defineCapsule({
               </div>
 
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                {productItems.map((p) => (
-                  <div
-                    key={p.title}
-                    className="group overflow-hidden rounded-xl bg-card text-card-foreground transition-shadow hover:shadow-lg"
-                  >
-                    <div className="relative aspect-square bg-muted">
-                      <Image
-                        alt={p.imageAlt}
-                        w={400}
-                        h={400}
-                        loading="lazy"
-                        className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                      {p.badge ? (
-                        <span
+                {displayProducts.map((product) => {
+                  const isFavorite =
+                    favoriteProductNames?.has(product.title) ?? false
+
+                  return (
+                    <article key={product.title} className="group">
+                      <div className="relative mb-4 aspect-square overflow-hidden rounded-xl bg-muted">
+                        <Image
+                          alt={product.alt}
+                          src={product.image || undefined}
+                          w={400}
+                          h={400}
+                          loading="lazy"
+                          className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        {product.badge ? (
+                          <span
+                            className={cn(
+                              'absolute left-3 top-3 rounded px-2 py-1 text-xs font-medium text-primary-foreground',
+                              product.badge === 'Best Seller'
+                                ? 'bg-primary'
+                                : 'bg-foreground',
+                            )}
+                          >
+                            {product.badge}
+                          </span>
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavorite(product.title)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${product.title} from favorites`
+                              : `Add ${product.title} to favorites`
+                          }
                           className={cn(
-                            "absolute left-3 top-3 rounded px-2 py-1 text-xs font-medium",
-                            p.badge === "Best Seller"
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-foreground text-background",
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-card text-card-foreground opacity-0 hover:bg-card',
                           )}
                         >
-                          {p.badge}
-                        </span>
-                      ) : null}
-                      <button
-                        type="button"
-                        aria-label={`Add ${p.title} to cart`}
-                        onClick={() => go(p.title)}
-                        className="absolute bottom-3 right-3 grid size-10 place-items-center rounded-full bg-card text-card-foreground shadow-md transition-colors hover:bg-foreground hover:text-background"
-                      >
-                        <svg
-                          className="size-5"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M12 4v16m8-8H4" />
-                        </svg>
-                      </button>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="mb-1 font-medium text-card-foreground">
-                        {p.title}
-                      </h3>
-                      <p className="mb-3 text-sm text-muted-foreground">
-                        {p.subtitle}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-semibold text-card-foreground">
-                          {p.price}
-                        </span>
-                        <div className="flex items-center gap-1">
-                          <Star className="text-chart-4" />
-                          <span className="text-sm text-muted-foreground">
-                            {p.rating}
-                          </span>
-                        </div>
+                          <HeartIcon active={isFavorite} />
+                        </button>
                       </div>
-                    </div>
-                  </div>
-                ))}
+                      <div className="space-y-3">
+                        <h3 className="font-medium text-card-foreground transition-colors group-hover:text-muted-foreground">
+                          {product.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {product.subtitle}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-lg font-semibold text-card-foreground">
+                            {product.price}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <Star className="text-chart-4" />
+                            <span className="text-sm text-muted-foreground">
+                              {product.rating}
+                            </span>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="w-full rounded-full"
+                          onClick={() => {
+                            void addToCart(product.title)
+                            setCartOpen(true)
+                          }}
+                        >
+                          Add to cart
+                        </Button>
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
 
               <div className="mt-12 text-center">
@@ -1239,18 +1883,9 @@ export const ElectronicsStoreKimiPage = defineCapsule({
                       <span className="font-medium text-foreground">
                         {item.q}
                       </span>
-                      <svg
-                        className="size-5 text-muted-foreground transition-transform group-open:rotate-180"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <span className="flex size-5 flex-shrink-0 items-center justify-center">
+                        <ChevronDown />
+                      </span>
                     </summary>
                     <div className="px-5 pb-5 text-muted-foreground">
                       {item.a}

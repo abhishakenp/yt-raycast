@@ -1,9 +1,11 @@
-import { type ReactNode } from "react"
+import { type ReactNode, useState } from "react"
 import { z } from "zod/v4"
+import { number, string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "#/components/ui/sheet.tsx"
 
 /**
  * NoCodeKimiPage2 — a complete, self-contained no-code / drag-and-drop VISUAL
@@ -178,8 +180,83 @@ export const NoCodeKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      templates: table({
+        description: string(),
+        imageAlt: string(),
+        priority: number(),
+        tag: string(),
+        title: string(),
+        uses: string(),
+      }),
+      savedTemplates: table({
+        templateImageAlt: string(),
+        templateTag: string(),
+        templateTitle: string(),
+      }),
+    },
+    queries: {
+      templates: ({ db }) => db.templates.orderBy("createdAt").all(),
+      savedTemplateNames: ({ db }) =>
+        new Set(
+          db.savedTemplates.all().map((savedTemplate) => savedTemplate.templateTitle),
+        ),
+      savedTemplates: ({ db }) => db.savedTemplates.orderBy("createdAt").all(),
+    },
+    mutations: {
+      saveTemplate: ({ db }, title: string, tag: string, imageAlt: string) => {
+        const existingSavedTemplate = db.savedTemplates
+          .where("templateTitle", title)
+          .all()[0]
+
+        if (!existingSavedTemplate) {
+          db.savedTemplates.insert({
+            templateImageAlt: imageAlt,
+            templateTag: tag,
+            templateTitle: title,
+          })
+        }
+
+        return db.savedTemplates.all()
+      },
+      removeSavedTemplate: ({ db }, title: string) => {
+        for (const savedTemplate of db.savedTemplates
+          .where("templateTitle", title)
+          .all()) {
+          db.savedTemplates.delete(savedTemplate.id)
+        }
+
+        return db.savedTemplates.all()
+      },
+      clearSavedTemplates: ({ db }) => {
+        for (const savedTemplate of db.savedTemplates.all()) {
+          db.savedTemplates.delete(savedTemplate.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [savedTemplatesOpen, setSavedTemplatesOpen] = useState(false)
+    const storedTemplates = lakebed.useQuery("templates")
+    const storedSavedTemplates = lakebed.useQuery("savedTemplates")
+    const savedTemplateNames = lakebed.useQuery("savedTemplateNames")
+    const saveTemplate = lakebed.useMutation("saveTemplate")
+    const removeSavedTemplate = lakebed.useMutation("removeSavedTemplate")
+    const clearSavedTemplates = lakebed.useMutation("clearSavedTemplates")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
     const brand = props.brand ?? "BuildFlow"
     const nav = props.nav?.length
       ? props.nav
@@ -333,6 +410,19 @@ export const NoCodeKimiPage2 = defineCapsule({
               "SaaS startup landing page template with feature highlights",
           },
         ]
+    const templateCatalog = storedTemplates?.length
+      ? storedTemplates.map((template) => ({
+          title: template.title,
+          tag: template.tag,
+          description: template.description,
+          uses: template.uses,
+          imageAlt: template.imageAlt,
+        }))
+      : templateItems
+    const safeTemplateCatalog = templateCatalog.length ? templateCatalog : templateItems
+    const safeSavedTemplates = storedSavedTemplates ?? []
+    const savedTemplateNameSet = savedTemplateNames ?? new Set<string>()
+    const savedTemplateCount = safeSavedTemplates.length
 
     const pricingEyebrow = props.pricing?.eyebrow ?? "Pricing"
     const pricingHeading =
@@ -498,6 +588,18 @@ export const NoCodeKimiPage2 = defineCapsule({
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
       : ["Privacy Policy", "Terms of Service", "Cookie Policy"]
+    const authEmail = auth.email || auth.user?.email
+    const authLabel = isSignedIn
+      ? auth.displayName ||
+        auth.user?.displayName ||
+        authEmail ||
+        "Account"
+      : "Sign in with Google"
+    const authButtonLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? "Account"
+        : "Sign in"
 
     // Brand mark — gradient-filled cube glyph tile (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
@@ -731,12 +833,153 @@ export const NoCodeKimiPage2 = defineCapsule({
               ))}
             </div>
             <div className="flex items-center gap-4">
+              <Sheet
+                open={savedTemplatesOpen}
+                onOpenChange={setSavedTemplatesOpen}
+              >
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    className="hidden items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm font-medium text-foreground transition-all hover:bg-accent hover:text-accent-foreground sm:flex"
+                  >
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+                    </svg>
+                    Saved Templates
+                    {savedTemplateCount > 0 ? (
+                      <span className="grid size-5 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                        {savedTemplateCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle>Saved Templates</SheetTitle>
+                    <SheetDescription>
+                      Save templates you want to revisit and deploy quickly.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {savedTemplateCount > 0 ? (
+                      <div className="space-y-4">
+                        {safeSavedTemplates.map((saved) => (
+                          <div
+                            key={saved.id}
+                            className="space-y-3 rounded-lg border border-border bg-card p-4"
+                          >
+                            <p className="font-semibold text-card-foreground">
+                              {saved.templateTitle}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {saved.templateTag}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => void removeSavedTemplate(saved.templateTitle)}
+                              className="text-sm font-semibold text-destructive transition-colors hover:text-destructive/80"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-40 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-4 text-center">
+                        <p className="text-sm font-semibold text-foreground">
+                          No templates saved yet
+                        </p>
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          Save up to 20 templates to quickly compare later.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="flex w-full flex-col gap-2 border-t border-border p-6">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                      <span>Total saved</span>
+                      <span className="font-semibold text-foreground">
+                        {savedTemplateCount}
+                      </span>
+                    </div>
+                    <div className="grid gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSavedTemplatesOpen(false)
+                          go(templatesViewAll)
+                        }}
+                        className="rounded-lg bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                      >
+                        Open Template Gallery
+                      </button>
+                      {isSignedIn ? (
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="rounded-lg bg-destructive px-4 py-2.5 text-sm font-semibold text-destructive-foreground transition-colors hover:bg-destructive/90"
+                        >
+                          Sign out from {authLabel}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleSignIn()
+                          }}
+                          className="rounded-lg bg-muted px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-accent"
+                          disabled={auth.isLoading}
+                        >
+                          {authButtonLabel}
+                        </button>
+                      )}
+                      <SheetClose asChild>
+                        <button
+                          type="button"
+                          className="rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                        >
+                          Continue Browsing
+                        </button>
+                      </SheetClose>
+                      {savedTemplateCount ? (
+                        <button
+                          type="button"
+                          onClick={() => void clearSavedTemplates()}
+                          className="text-sm font-semibold text-foreground underline decoration-dotted underline-offset-4 hover:text-destructive"
+                        >
+                          Clear all saved templates
+                        </button>
+                      ) : null}
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
               <button
                 type="button"
-                onClick={() => go("Sign In")}
+                onClick={() => {
+                  if (isSignedIn) {
+                    go("Account")
+                  } else {
+                    handleSignIn()
+                  }
+                }}
+                disabled={auth.isLoading}
                 className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
               >
-                Sign In
+                {auth.isLoading ? "Checking..." : authButtonLabel}
               </button>
               <button
                 type="button"
@@ -1072,7 +1315,7 @@ export const NoCodeKimiPage2 = defineCapsule({
               </div>
 
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {templateItems.map((tpl, i) => (
+                {safeTemplateCatalog.map((tpl, i) => (
                   <div
                     key={tpl.title}
                     className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
@@ -1104,17 +1347,43 @@ export const NoCodeKimiPage2 = defineCapsule({
                       <p className="mb-4 text-sm text-muted-foreground">
                         {tpl.description}
                       </p>
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
                         <span className="text-sm text-muted-foreground/70">
                           {tpl.uses}
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => go(tpl.title)}
-                          className="text-sm font-semibold text-primary transition-colors hover:text-primary/80"
-                        >
-                          Preview →
-                        </button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => go(tpl.title)}
+                            className="text-sm font-semibold text-primary transition-colors hover:text-primary/80"
+                          >
+                            Preview →
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const isSaved = savedTemplateNameSet.has(tpl.title)
+                              if (isSaved) {
+                                void removeSavedTemplate(tpl.title)
+                              } else {
+                                void saveTemplate(
+                                  tpl.title,
+                                  tpl.tag,
+                                  tpl.imageAlt,
+                                )
+                                setSavedTemplatesOpen(true)
+                              }
+                            }}
+                            className={cn(
+                              "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
+                              savedTemplateNameSet.has(tpl.title)
+                                ? "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                                : "bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground",
+                            )}
+                          >
+                            {savedTemplateNameSet.has(tpl.title) ? "Saved" : "Save"}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

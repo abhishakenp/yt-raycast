@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * PortfolioDevKimiPage2 — a complete, self-contained personal portfolio LANDING
@@ -197,9 +215,88 @@ export const PortfolioDevKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      projects: table({
+        title: string(),
+        description: string(),
+        imageAlt: string(),
+        tags: string(),
+        launched: string(),
+        metric: string(),
+      }),
+      favorites: table({
+        projectTitle: string(),
+      }),
+      inquiries: table({
+        name: string(),
+        email: string(),
+        message: string(),
+      }),
+    },
+    queries: {
+      projects: ({ db }) => db.projects.orderBy('createdAt').all(),
+      favoriteProjectTitles: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.projectTitle)),
+      inquiries: ({ db }) => db.inquiries.orderBy('createdAt').all(),
+    },
+    mutations: {
+      toggleFavorite: ({ db }, projectTitle: string) => {
+        const existingFavorite = db.favorites
+          .where('projectTitle', projectTitle)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ projectTitle })
+        return true
+      },
+      submitInquiry: ({ db }, name: string, email: string, message: string) => {
+        db.inquiries.insert({ name, email, message })
+        return db.inquiries.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [contactOpen, setContactOpen] = useState(false)
+    const [inquiryForm, setInquiryForm] = useState({ name: '', email: '', message: '' })
+
+    const storedProjects = lakebed.useQuery('projects')
+    const favoriteProjectTitles = lakebed.useQuery('favoriteProjectTitles')
+    const inquiries = lakebed.useQuery('inquiries')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const submitInquiry = lakebed.useMutation('submitInquiry')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
 
     const brand = props.brand ?? "alex"
     const brandSuffix = props.brandSuffix ?? ".dev"
@@ -328,6 +425,18 @@ export const PortfolioDevKimiPage2 = defineCapsule({
             metric: "4.8 App Store rating",
           },
         ]
+    const normalizedProjectItems = projectItems.map((project) => ({
+      title: project.title,
+      description: project.description,
+      imageAlt: project.imageAlt,
+      tags: project.tags.join(','),
+      launched: project.launched,
+      metric: project.metric,
+    }))
+    const displayProjects =
+      storedProjects && storedProjects.length > 0
+        ? storedProjects
+        : normalizedProjectItems
 
     const osHeading = props.openSource?.heading ?? "Open Source Contributions"
     const osDesc =
@@ -579,7 +688,7 @@ export const PortfolioDevKimiPage2 = defineCapsule({
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5", className)}
+        className={cn("size-4", className)}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -588,7 +697,26 @@ export const PortfolioDevKimiPage2 = defineCapsule({
         strokeLinejoin="round"
         aria-hidden="true"
       >
-        <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
       </svg>
     )
 
@@ -790,6 +918,106 @@ export const PortfolioDevKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown className="size-4 text-muted-foreground" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Projects')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Projects
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => go(nav[nav.length - 1])}
@@ -839,6 +1067,58 @@ export const PortfolioDevKimiPage2 = defineCapsule({
                   {label}
                 </button>
               ))}
+              <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                {isSignedIn ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar size="lg">
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-foreground">
+                          {authDisplayName}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {authEmail ?? 'Signed in'}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignOut()
+                      }}
+                      className="w-full rounded-full"
+                    >
+                      Sign out
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      handleSignIn()
+                    }}
+                    disabled={auth.isLoading}
+                    className="w-full rounded-full"
+                  >
+                    <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    {authLabel}
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </nav>
@@ -1027,53 +1307,77 @@ export const PortfolioDevKimiPage2 = defineCapsule({
               </div>
 
               <div className="grid gap-8 md:grid-cols-2">
-                {projectItems.map((proj) => (
-                  <article
-                    key={proj.title}
-                    className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/30"
-                  >
-                    <div className="aspect-video overflow-hidden">
-                      <Image
-                        alt={proj.imageAlt}
-                        w={800}
-                        h={450}
-                        loading="lazy"
-                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="p-6 lg:p-8">
-                      <div className="mb-4 flex flex-wrap gap-2">
-                        {proj.tags.map((tag, ti) => (
-                            <span
-                              key={tag}
-                              className={cn(
-                                "rounded-full px-3 py-1 text-xs font-medium",
-                                toneTile[ti % toneCount],
-                              )}
-                            >
-                              {tag}
-                            </span>
-                        ))}
+                {displayProjects.map((proj) => {
+                  const isFavorite =
+                    favoriteProjectTitles?.has(proj.title) ?? false
+                  const projTags = typeof proj.tags === 'string' ? proj.tags.split(',') : proj.tags
+
+                  return (
+                    <article
+                      key={proj.title}
+                      className="group relative overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/30"
+                    >
+                      <div className="aspect-video overflow-hidden">
+                        <Image
+                          alt={proj.imageAlt}
+                          w={800}
+                          h={450}
+                          loading="lazy"
+                          className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavorite(proj.title)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${proj.title} from favorites`
+                              : `Add ${proj.title} to favorites`
+                          }
+                          className={cn(
+                            'absolute top-4 right-4 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-background/90 text-foreground',
+                          )}
+                        >
+                          <HeartIcon active={isFavorite} />
+                        </button>
                       </div>
-                      <h3 className="mb-3 text-2xl font-bold text-card-foreground transition-colors group-hover:text-primary">
-                        {proj.title}
-                      </h3>
-                      <p className="mb-6 text-muted-foreground">
-                        {proj.description}
-                      </p>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <ClockIcon />
-                          {proj.launched}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <SparkIcon />
-                          {proj.metric}
-                        </span>
+                      <div className="p-6 lg:p-8">
+                        <div className="mb-4 flex flex-wrap gap-2">
+                          {projTags.map((tag, ti) => (
+                              <span
+                                key={tag}
+                                className={cn(
+                                  "rounded-full px-3 py-1 text-xs font-medium",
+                                  toneTile[ti % toneCount],
+                                )}
+                              >
+                                {tag}
+                              </span>
+                          ))}
+                        </div>
+                        <h3 className="mb-3 text-2xl font-bold text-card-foreground transition-colors group-hover:text-primary">
+                          {proj.title}
+                        </h3>
+                        <p className="mb-6 text-muted-foreground">
+                          {proj.description}
+                        </p>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <ClockIcon />
+                            {proj.launched}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <SparkIcon />
+                            {proj.metric}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </article>
-                ))}
+                    </article>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -1280,7 +1584,7 @@ export const PortfolioDevKimiPage2 = defineCapsule({
                   <div className="mb-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
                     <button
                       type="button"
-                      onClick={() => go(contactPrimary)}
+                      onClick={() => setContactOpen(true)}
                       className="inline-flex items-center rounded-full bg-background px-8 py-4 text-lg font-semibold text-primary shadow-xl transition-all hover:scale-105 hover:bg-background/90"
                     >
                       <MailIcon className="mr-3" />
@@ -1412,6 +1716,94 @@ export const PortfolioDevKimiPage2 = defineCapsule({
             </div>
           </div>
         </footer>
+
+        {/* Contact Inquiry Drawer */}
+        <Sheet open={contactOpen} onOpenChange={setContactOpen}>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Send a message</SheetTitle>
+              <SheetDescription>
+                Have a project in mind? Let's discuss how we can work together.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  void submitInquiry(inquiryForm.name, inquiryForm.email, inquiryForm.message)
+                  setInquiryForm({ name: '', email: '', message: '' })
+                  setContactOpen(false)
+                }}
+              >
+                <div>
+                  <label htmlFor="name" className="mb-2 block text-sm font-medium text-foreground">
+                    Name
+                  </label>
+                  <input
+                    id="name"
+                    type="text"
+                    required
+                    value={inquiryForm.name}
+                    onChange={(e) => setInquiryForm({ ...inquiryForm, name: e.target.value })}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="Your name"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    required
+                    value={inquiryForm.email}
+                    onChange={(e) => setInquiryForm({ ...inquiryForm, email: e.target.value })}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="your@email.com"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="message" className="mb-2 block text-sm font-medium text-foreground">
+                    Message
+                  </label>
+                  <textarea
+                    id="message"
+                    required
+                    rows={6}
+                    value={inquiryForm.message}
+                    onChange={(e) => setInquiryForm({ ...inquiryForm, message: e.target.value })}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                    placeholder="Tell me about your project..."
+                  />
+                </div>
+              </form>
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-full"
+                onClick={() => setContactOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                className="rounded-full"
+                onClick={() => {
+                  void submitInquiry(inquiryForm.name, inquiryForm.email, inquiryForm.message)
+                  setInquiryForm({ name: '', email: '', message: '' })
+                  setContactOpen(false)
+                }}
+                disabled={!inquiryForm.name || !inquiryForm.email || !inquiryForm.message}
+              >
+                Send Message
+              </Button>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

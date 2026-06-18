@@ -1,9 +1,20 @@
-import { type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * CleaningServiceKimiPage — a complete, self-contained home-cleaning-service
@@ -186,8 +197,124 @@ export const CleaningServiceKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      bookings: table({
+        serviceName: string(),
+        unitPrice: string(),
+        quantity: number(),
+      }),
+    },
+    queries: {
+      bookings: ({ db }) => db.bookings.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addBooking: ({ db }, serviceName: string, unitPrice: string) => {
+        const existingBooking = db.bookings
+          .where("serviceName", serviceName)
+          .all()[0]
+        const trimmedUnitPrice = unitPrice.trim()
+
+        if (existingBooking) {
+          db.bookings.update(existingBooking.id, {
+            quantity: existingBooking.quantity + 1,
+            unitPrice: trimmedUnitPrice,
+          })
+        } else {
+          db.bookings.insert({
+            serviceName,
+            unitPrice: trimmedUnitPrice,
+            quantity: 1,
+          })
+        }
+
+        return db.bookings.all()
+      },
+      updateBookingQuantity: ({ db }, bookingId: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+
+        for (const booking of db.bookings.where("id", bookingId).all()) {
+          if (nextQuantity > 0) {
+            db.bookings.update(booking.id, { quantity: nextQuantity })
+          } else {
+            db.bookings.delete(booking.id)
+          }
+        }
+
+        return db.bookings.all()
+      },
+      removeBooking: ({ db }, bookingId: string) => {
+        for (const booking of db.bookings.where("id", bookingId).all()) {
+          db.bookings.delete(booking.id)
+        }
+
+        return db.bookings.all()
+      },
+      clearBookings: ({ db }) => {
+        for (const booking of db.bookings.all()) {
+          db.bookings.delete(booking.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [bookingOpen, setBookingOpen] = useState(false)
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || auth.email || "Account"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const storedBookings = lakebed.useQuery("bookings")
+    const addBooking = lakebed.useMutation("addBooking")
+    const updateBookingQuantity = lakebed.useMutation("updateBookingQuantity")
+    const removeBooking = lakebed.useMutation("removeBooking")
+    const clearBookings = lakebed.useMutation("clearBookings")
+
+    const bookings = storedBookings ?? []
+    const bookingItemCount = bookings.reduce(
+      (count, booking) => count + booking.quantity,
+      0,
+    )
+
+    const parsePrice = (value: string) => {
+      const amount = Number.parseFloat(value.replace(/[^0-9.]+/g, ""))
+      return Number.isFinite(amount) ? amount : 0
+    }
+
+    const bookingSubtotal = bookings.reduce(
+      (total, booking) =>
+        total + parsePrice(booking.unitPrice) * booking.quantity,
+      0,
+    )
+    const bookingTotal = bookingSubtotal
+    const bookingTotalLabel =
+      bookingTotal > 0
+        ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+            bookingTotal,
+          )
+        : "$0.00"
+
+    const formatCurrency = (amount: number) =>
+      new Intl.NumberFormat("en-US", {
+        currency: "USD",
+        style: "currency",
+      }).format(amount)
+
     const brand = props.brand ?? "PureSpace"
     const nav = props.nav?.length
       ? props.nav
@@ -689,6 +816,18 @@ export const CleaningServiceKimiPage = defineCapsule({
       </svg>,
     ]
 
+    const quickBook = serviceItems?.[0]
+    const quickBookPlan = pricingPlans?.[0]
+    const bookingSummaryItem = (title: string, price: string) => {
+      void addBooking(title, price)
+      setBookingOpen(true)
+    }
+
+    const bookingServiceLabel = quickBook?.title ?? "Standard Cleaning"
+    const bookingServicePrice = quickBook?.price ?? "$129 per visit"
+    const bookingPlanLabel = quickBookPlan?.name ?? "Studio / 1 Bedroom"
+    const bookingPlanPrice = quickBookPlan?.price ?? "$129"
+
     return (
       <div
         className={cn(
@@ -731,13 +870,197 @@ export const CleaningServiceKimiPage = defineCapsule({
                   <PhoneIcon className="size-4" />
                   {heroPhone}
                 </button>
+                <Sheet open={bookingOpen} onOpenChange={setBookingOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open booking request list"
+                      className="relative inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                    >
+                      Booking List
+                      {bookingItemCount > 0 ? (
+                        <span className="absolute -right-2 -top-2 grid size-5 place-items-center rounded-full bg-primary text-[0.65rem] font-bold text-primary-foreground">
+                          {bookingItemCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle>Booking list</SheetTitle>
+                      <SheetDescription>
+                        Confirm your selected services before scheduling.
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {bookings.length ? (
+                        <div className="space-y-6">
+                          {bookings.map((booking) => {
+                            const lineTotal = formatCurrency(
+                              parsePrice(booking.unitPrice) * booking.quantity,
+                            )
+
+                            return (
+                              <div
+                                key={booking.id}
+                                className="rounded-lg border border-border bg-muted/40 p-4"
+                              >
+                                <div className="space-y-3">
+                                  <h4 className="font-semibold text-foreground">
+                                    {booking.serviceName}
+                                  </h4>
+                                  <p className="text-sm text-muted-foreground">
+                                    {booking.unitPrice}
+                                  </p>
+                                  <p className="text-sm font-semibold text-foreground">
+                                    {lineTotal}
+                                  </p>
+                                </div>
+                                <div className="mt-4 flex items-center justify-between">
+                                  <div className="inline-flex h-9 items-center rounded-full border border-border bg-background">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void updateBookingQuantity(
+                                          booking.id,
+                                          booking.quantity - 1,
+                                        )
+                                      }
+                                      className="grid w-9 place-items-center text-muted-foreground hover:text-foreground"
+                                      aria-label={`Decrease ${booking.serviceName} quantity`}
+                                    >
+                                      -
+                                    </button>
+                                    <span className="min-w-8 text-center text-sm font-semibold">
+                                      {booking.quantity}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void updateBookingQuantity(
+                                          booking.id,
+                                          booking.quantity + 1,
+                                        )
+                                      }
+                                      className="grid w-9 place-items-center text-muted-foreground hover:text-foreground"
+                                      aria-label={`Increase ${booking.serviceName} quantity`}
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => void removeBooking(booking.id)}
+                                    className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-sm font-semibold text-foreground">
+                            No services added
+                          </p>
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            Add a plan from Pricing or start from the hero booking
+                            button.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>Estimated subtotal</span>
+                          <span>{bookingTotalLabel}</span>
+                        </div>
+                        <div className="flex justify-between font-semibold text-foreground">
+                          <span>Estimated total</span>
+                          <span>{bookingTotalLabel}</span>
+                        </div>
+                      </div>
+                      <div className="mt-4 space-y-2">
+                        <button
+                          type="button"
+                          disabled={bookings.length === 0}
+                          onClick={() => {
+                            setBookingOpen(false)
+                            go("Book Now")
+                          }}
+                          className="w-full rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-60"
+                        >
+                          Continue to booking
+                        </button>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            disabled={bookings.length === 0}
+                            onClick={() => void clearBookings()}
+                            className="rounded-full border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-60"
+                          >
+                            Clear
+                          </button>
+                          <SheetClose asChild>
+                            <button
+                              type="button"
+                              className="rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground"
+                            >
+                              Continue
+                            </button>
+                          </SheetClose>
+                        </div>
+                        {isSignedIn ? (
+                          <button
+                            type="button"
+                            onClick={handleSignOut}
+                            className="w-full rounded-full border border-border bg-muted px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-muted/70"
+                          >
+                            Sign out
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled={auth.isLoading}
+                            onClick={handleSignIn}
+                            className="w-full rounded-full border border-border bg-muted px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-muted/70 disabled:opacity-60"
+                          >
+                            {authLabel}
+                          </button>
+                        )}
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
-                  onClick={() => go(heroPrimary)}
+                  onClick={() => {
+                    bookingSummaryItem(bookingPlanLabel, bookingPlanPrice)
+                    go(heroPrimary)
+                  }}
                   className="inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
                 >
-                  Book Cleaning
+                  {heroPrimary}
                 </button>
+                {!auth.isLoading ? (
+                  <button
+                    type="button"
+                    onClick={
+                      isSignedIn
+                        ? () => go("Account")
+                        : () => void handleSignIn()
+                    }
+                    className="inline-flex h-9 items-center rounded-full border border-border bg-background px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-60"
+                  >
+                    {isSignedIn ? authDisplayName : authLabel}
+                  </button>
+                ) : null}
               </div>
             </div>
           </div>
@@ -764,7 +1087,10 @@ export const CleaningServiceKimiPage = defineCapsule({
                   <div className="flex flex-col gap-4 sm:flex-row">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() => {
+                        bookingSummaryItem(bookingPlanLabel, bookingPlanPrice)
+                        go(heroPrimary)
+                      }}
                       className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
                     >
                       {heroPrimary}
@@ -1039,13 +1365,16 @@ export const CleaningServiceKimiPage = defineCapsule({
                           </li>
                         ))}
                       </ul>
-                      <button
-                        type="button"
-                        onClick={() => go(plan.cta)}
-                        className="w-full rounded-full bg-primary-foreground px-6 py-3 font-semibold text-primary shadow-lg transition-colors hover:bg-primary-foreground/90"
-                      >
-                        {plan.cta}
-                      </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        bookingSummaryItem(plan.name, plan.price)
+                        go(plan.cta)
+                      }}
+                      className="w-full rounded-full bg-primary-foreground px-6 py-3 font-semibold text-primary shadow-lg transition-colors hover:bg-primary-foreground/90"
+                    >
+                      {plan.cta}
+                    </button>
                     </div>
                   ) : (
                     <div
@@ -1076,13 +1405,16 @@ export const CleaningServiceKimiPage = defineCapsule({
                           </li>
                         ))}
                       </ul>
-                      <button
-                        type="button"
-                        onClick={() => go(plan.cta)}
-                        className="w-full rounded-full bg-secondary px-6 py-3 font-semibold text-secondary-foreground transition-colors hover:bg-secondary/80"
-                      >
-                        {plan.cta}
-                      </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        bookingSummaryItem(plan.name, plan.price)
+                        go(plan.cta)
+                      }}
+                      className="w-full rounded-full bg-secondary px-6 py-3 font-semibold text-secondary-foreground transition-colors hover:bg-secondary/80"
+                    >
+                      {plan.cta}
+                    </button>
                     </div>
                   ),
                 )}
@@ -1243,7 +1575,10 @@ export const CleaningServiceKimiPage = defineCapsule({
                   <div className="flex flex-col justify-center gap-4 sm:flex-row">
                     <button
                       type="button"
-                      onClick={() => go(ctaPrimary)}
+                      onClick={() => {
+                        bookingSummaryItem(bookingServiceLabel, bookingServicePrice)
+                        go(ctaPrimary)
+                      }}
                       className="inline-flex items-center justify-center rounded-full bg-primary-foreground px-8 py-4 text-base font-semibold text-primary shadow-lg transition-colors hover:bg-primary-foreground/90"
                     >
                       {ctaPrimary}

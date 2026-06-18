@@ -1,9 +1,27 @@
-import { type ReactNode } from "react"
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * BootcampKimiPage2 — VARIANT 2 / sibling alternative to BootcampKimiPage.
@@ -205,12 +223,109 @@ export const BootcampKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      applications: table({
+        name: string(),
+        email: string(),
+        status: string(),
+        cohort: string(),
+        plan: string(),
+      }),
+      savedModules: table({
+        moduleName: string(),
+      }),
+    },
+    queries: {
+      applications: ({ db }) => db.applications.orderBy('createdAt').all(),
+      savedModuleNames: ({ db }) =>
+        new Set(db.savedModules.all().map((saved) => saved.moduleName)),
+    },
+    mutations: {
+      submitApplication: ({ db }, name: string, email: string, plan: string) => {
+        const existingApp = db.applications.where('email', email).all()[0]
+        if (existingApp) {
+          db.applications.update(existingApp.id, {
+            status: 'submitted',
+            plan,
+          })
+        } else {
+          db.applications.insert({
+            name,
+            email,
+            status: 'submitted',
+            cohort: 'Fall 2025',
+            plan,
+          })
+        }
+        return db.applications.all()
+      },
+      updateApplicationStatus: ({ db }, applicationId: string, status: string) => {
+        const app = db.applications.get(applicationId)
+        if (app) {
+          db.applications.update(applicationId, { status })
+        }
+        return db.applications.all()
+      },
+      toggleSavedModule: ({ db }, moduleName: string) => {
+        const existingSaved = db.savedModules
+          .where('moduleName', moduleName)
+          .all()[0]
+
+        if (existingSaved) {
+          db.savedModules.delete(existingSaved.id)
+          return false
+        }
+
+        db.savedModules.insert({ moduleName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [mobileOpen, setMobileOpen] = useState(false)
+    const [applicationOpen, setApplicationOpen] = useState(false)
     const brand = props.brand ?? "CodeForge"
     const nav = props.nav?.length
       ? props.nav
       : ["Curriculum", "Outcomes", "Tuition", "FAQ"]
+
+    const applications = lakebed.useQuery('applications')
+    const savedModuleNames = lakebed.useQuery('savedModuleNames')
+    const auth = lakebed.useAuth()
+    const submitApplication = lakebed.useMutation('submitApplication')
+    const updateApplicationStatus = lakebed.useMutation('updateApplicationStatus')
+    const toggleSavedModule = lakebed.useMutation('toggleSavedModule')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const safeApplications = applications ?? []
+    const hasPendingApplication = safeApplications.some(
+      (app) => app.status === 'submitted',
+    )
 
     const heroBadge = props.hero?.badge ?? "Fall 2025 Cohort Now Enrolling"
     const heroHeadingTop = props.hero?.headingTop ?? "Become a"
@@ -606,6 +721,37 @@ export const BootcampKimiPage2 = defineCapsule({
       .slice(0, 2)
       .toUpperCase()
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     const Arrow = () => (
       <svg
         className="ml-2 size-5"
@@ -805,13 +951,336 @@ export const BootcampKimiPage2 = defineCapsule({
                 </button>
               ))}
             </div>
-            <button
-              type="button"
-              onClick={() => go(heroPrimary)}
-              className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:scale-105"
-            >
-              Apply Now
-            </button>
+            <div className="flex items-center gap-4">
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Application Status')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Application Status
+                        <ArrowRight />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Profile')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Profile
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={applicationOpen} onOpenChange={setApplicationOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Application Status"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    {hasPendingApplication ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        !
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Application Status</SheetTitle>
+                    <SheetDescription>
+                      {hasPendingApplication
+                        ? 'Your application is under review.'
+                        : 'Start your application to join the next cohort.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {safeApplications.length ? (
+                      <div className="space-y-5">
+                        {safeApplications.map((app) => (
+                          <div
+                            key={app.id}
+                            className="rounded-xl border border-border bg-card p-4"
+                          >
+                            <div className="mb-3 flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+                                  {app.cohort}
+                                </p>
+                                <h3 className="text-lg font-semibold text-foreground">
+                                  {app.name}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {app.email}
+                                </p>
+                              </div>
+                              <span
+                                className={cn(
+                                  'rounded-full px-3 py-1 text-xs font-semibold',
+                                  app.status === 'submitted'
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-muted text-muted-foreground',
+                                )}
+                              >
+                                {app.status}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between border-t border-border pt-3">
+                              <p className="text-sm text-muted-foreground">
+                                Plan: {app.plan}
+                              </p>
+                              {app.status === 'submitted' && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void updateApplicationStatus(
+                                      app.id,
+                                      'approved',
+                                    )
+                                  }
+                                  className="text-xs font-semibold text-primary underline-offset-4 hover:underline"
+                                >
+                                  Mark as approved
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No application yet
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Start your application to track your progress through
+                          the admissions process.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <Button
+                      type="button"
+                      className="w-full rounded-full"
+                      onClick={() => {
+                        setApplicationOpen(false)
+                        go(heroPrimary)
+                      }}
+                    >
+                      {hasPendingApplication
+                        ? 'View Application Details'
+                        : 'Start Application'}
+                    </Button>
+                    <SheetClose asChild>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full rounded-full"
+                      >
+                        Close
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+              <button
+                type="button"
+                onClick={() => go(heroPrimary)}
+                className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:scale-105"
+              >
+                Apply Now
+              </button>
+              <button
+                type="button"
+                aria-label="Open menu"
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-menu"
+                onClick={() => setMobileOpen((v: boolean) => !v)}
+                className="p-2 text-muted-foreground hover:text-foreground lg:hidden"
+              >
+                <svg
+                  className="size-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              </button>
+            </div>
+            {mobileOpen && (
+              <div
+                id="mobile-menu"
+                className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
+              >
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      go(label)
+                    }}
+                    className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                  >
+                    {label}
+                  </button>
+                ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
           </nav>
         </header>
 

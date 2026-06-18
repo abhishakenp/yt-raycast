@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * PhotographyKimiPage — a complete, self-contained fine-art / wedding
@@ -205,10 +223,106 @@ export const PhotographyKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      inquiries: table({
+        names: string(),
+        email: string(),
+        date: string(),
+        location: string(),
+        package: string(),
+        message: string(),
+        newsletter: string(),
+      }),
+      favorites: table({
+        galleryTitle: string(),
+      }),
+    },
+    queries: {
+      inquiries: ({ db }) => db.inquiries.orderBy('createdAt').all(),
+      favoriteGalleryTitles: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.galleryTitle)),
+    },
+    mutations: {
+      submitInquiry: ({ db }, data: any) => {
+        db.inquiries.insert(data)
+        return db.inquiries.all()
+      },
+      removeInquiry: ({ db }, id: string) => {
+        db.inquiries.delete(id)
+        return db.inquiries.all()
+      },
+      clearInquiries: ({ db }) => {
+        for (const item of db.inquiries.all()) {
+          db.inquiries.delete(item.id)
+        }
+        return []
+      },
+      toggleFavorite: ({ db }, galleryTitle: string) => {
+        const existingFavorite = db.favorites
+          .where('galleryTitle', galleryTitle)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ galleryTitle })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [inquiriesOpen, setInquiriesOpen] = useState(false)
+    const [formData, setFormData] = useState({
+      names: '',
+      email: '',
+      date: '',
+      location: '',
+      package: '',
+      message: '',
+      newsletter: false,
+    })
     const brand = props.brand ?? "Elena Vossen"
+
+    const inquiries = lakebed.useQuery('inquiries')
+    const favoriteGalleryTitles = lakebed.useQuery('favoriteGalleryTitles')
+    const submitInquiry = lakebed.useMutation('submitInquiry')
+    const removeInquiry = lakebed.useMutation('removeInquiry')
+    const clearInquiries = lakebed.useMutation('clearInquiries')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const safeInquiries = inquiries ?? []
+    const inquiryCount = safeInquiries.length
     const nav = props.nav?.length
       ? props.nav
       : ["Work", "Services", "About", "Testimonials", "Contact"]
@@ -658,6 +772,39 @@ export const PhotographyKimiPage = defineCapsule({
       </svg>
     )
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     const socialIcons: Record<string, ReactNode> = {
       Instagram: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -717,28 +864,257 @@ export const PhotographyKimiPage = defineCapsule({
                   </button>
                 ))}
               </div>
-              <button
-                type="button"
-                aria-label="Open menu"
-                aria-expanded={mobileOpen}
-                aria-controls="mobile-menu"
-                onClick={() => setMobileOpen((v: boolean) => !v)}
-                className="p-2 text-muted-foreground hover:text-foreground md:hidden"
-              >
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
+              <div className="flex items-center gap-4">
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Inquiries')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          My Inquiries
+                          <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[0.65rem] font-bold text-primary-foreground">
+                            {inquiryCount}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Favorites')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Favorites
+                          <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[0.65rem] font-bold text-primary-foreground">
+                            {favoriteGalleryTitles?.size ?? 0}
+                          </span>
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={inquiriesOpen} onOpenChange={setInquiriesOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="View inquiries"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                        <polyline points="22,6 12,13 2,6" />
+                      </svg>
+                      {inquiryCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {inquiryCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Your Inquiries</SheetTitle>
+                      <SheetDescription>
+                        {inquiryCount > 0
+                          ? `${inquiryCount} inquiry${inquiryCount === 1 ? '' : 'ies'} submitted.`
+                          : 'No inquiries submitted yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeInquiries.length ? (
+                        <div className="space-y-5">
+                          {safeInquiries.map((item) => (
+                            <div
+                              key={item.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted flex items-center justify-center">
+                                <svg
+                                  className="size-8 text-muted-foreground"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="1.5"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 24 24"
+                                  aria-hidden="true"
+                                >
+                                  <path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                </svg>
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                      {item.names}
+                                    </p>
+                                    <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                      {item.package}
+                                    </h3>
+                                  </div>
+                                  <p className="text-sm font-bold text-foreground">
+                                    {item.date || 'TBD'}
+                                  </p>
+                                </div>
+                                <div className="mt-4 flex items-center justify-between">
+                                  <p className="text-xs text-muted-foreground line-clamp-1">
+                                    {item.location || 'Location TBD'}
+                                  </p>
+                                  <button
+                                    type="button"
+                                    onClick={() => void removeInquiry(item.id)}
+                                    className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No inquiries yet
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Submit an inquiry from the Contact section to get started.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full rounded-full"
+                        onClick={() => void clearInquiries()}
+                        disabled={!safeInquiries.length}
+                      >
+                        Clear All
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          className="w-full rounded-full"
+                        >
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                <button
+                  type="button"
+                  aria-label="Open menu"
+                  aria-expanded={mobileOpen}
+                  aria-controls="mobile-menu"
+                  onClick={() => setMobileOpen((v: boolean) => !v)}
+                  className="p-2 text-muted-foreground hover:text-foreground md:hidden"
                 >
-                  <path d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+              </div>
             </div>
             {mobileOpen && (
               <div
@@ -758,6 +1134,58 @@ export const PhotographyKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -919,30 +1347,55 @@ export const PhotographyKimiPage = defineCapsule({
               </div>
 
               <div className="columns-1 gap-6 space-y-6 md:columns-2 lg:columns-3">
-                {galleryItems.map((item) => (
-                  <div key={item.title} className="break-inside-avoid">
-                    <button
-                      type="button"
-                      onClick={() => go(item.title)}
-                      className="group relative block w-full overflow-hidden text-left"
-                    >
-                      <Image
-                        alt={item.imageAlt}
-                        w={800}
-                        h={1000}
-                        loading="lazy"
-                        className="h-auto w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-foreground/0 transition-colors duration-500 group-hover:bg-foreground/40" />
-                      <div className="absolute inset-x-0 bottom-0 translate-y-full p-6 transition-transform duration-500 group-hover:translate-y-0">
-                        <p className="font-medium text-background">{item.title}</p>
-                        <p className="text-sm text-background/70">
-                          {item.location}
-                        </p>
+                {galleryItems.map((item) => {
+                  const isFavorite =
+                    favoriteGalleryTitles?.has(item.title) ?? false
+
+                  return (
+                    <div key={item.title} className="break-inside-avoid">
+                      <div className="group relative block w-full overflow-hidden text-left">
+                        <button
+                          type="button"
+                          onClick={() => go(item.title)}
+                          className="relative w-full"
+                        >
+                          <Image
+                            alt={item.imageAlt}
+                            w={800}
+                            h={1000}
+                            loading="lazy"
+                            className="h-auto w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-foreground/0 transition-colors duration-500 group-hover:bg-foreground/40" />
+                          <div className="absolute inset-x-0 bottom-0 translate-y-full p-6 transition-transform duration-500 group-hover:translate-y-0">
+                            <p className="font-medium text-background">{item.title}</p>
+                            <p className="text-sm text-background/70">
+                              {item.location}
+                            </p>
+                          </div>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavorite(item.title)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${item.title} from favorites`
+                              : `Add ${item.title} to favorites`
+                          }
+                          className={cn(
+                            'absolute top-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-background/90 text-foreground opacity-0 group-hover:opacity-100 hover:bg-background',
+                          )}
+                        >
+                          <HeartIcon active={isFavorite} />
+                        </button>
                       </div>
-                    </button>
-                  </div>
-                ))}
+                    </div>
+                  )
+                })}
               </div>
 
               <div className="mt-16 text-center">
@@ -1469,7 +1922,25 @@ export const PhotographyKimiPage = defineCapsule({
                   aria-label="Contact form"
                   onSubmit={(e) => {
                     e.preventDefault()
-                    go(contactCta)
+                    void submitInquiry({
+                      names: formData.names,
+                      email: formData.email,
+                      date: formData.date,
+                      location: formData.location,
+                      package: formData.package,
+                      message: formData.message,
+                      newsletter: formData.newsletter ? 'Yes' : 'No',
+                    })
+                    setInquiriesOpen(true)
+                    setFormData({
+                      names: '',
+                      email: '',
+                      date: '',
+                      location: '',
+                      package: '',
+                      message: '',
+                      newsletter: false,
+                    })
                   }}
                 >
                   <div className="grid gap-6 sm:grid-cols-2">
@@ -1485,6 +1956,8 @@ export const PhotographyKimiPage = defineCapsule({
                         type="text"
                         required
                         placeholder="Jordan & Casey"
+                        value={formData.names}
+                        onChange={(e) => setFormData({ ...formData, names: e.target.value })}
                         className={inputCls}
                       />
                     </div>
@@ -1500,6 +1973,8 @@ export const PhotographyKimiPage = defineCapsule({
                         type="email"
                         required
                         placeholder="you@example.com"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         className={inputCls}
                       />
                     </div>
@@ -1513,7 +1988,13 @@ export const PhotographyKimiPage = defineCapsule({
                       >
                         Event Date
                       </label>
-                      <input id="photo-date" type="date" className={inputCls} />
+                      <input
+                        id="photo-date"
+                        type="date"
+                        value={formData.date}
+                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        className={inputCls}
+                      />
                     </div>
                     <div>
                       <label
@@ -1526,6 +2007,8 @@ export const PhotographyKimiPage = defineCapsule({
                         id="photo-location"
                         type="text"
                         placeholder="Ceremony location"
+                        value={formData.location}
+                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                         className={inputCls}
                       />
                     </div>
@@ -1540,6 +2023,8 @@ export const PhotographyKimiPage = defineCapsule({
                     </label>
                     <select
                       id="photo-package"
+                      value={formData.package}
+                      onChange={(e) => setFormData({ ...formData, package: e.target.value })}
                       className={cn(inputCls, "appearance-none")}
                     >
                       {packageOptions.map((opt) => (
@@ -1561,6 +2046,8 @@ export const PhotographyKimiPage = defineCapsule({
                       id="photo-message"
                       rows={5}
                       placeholder="Share your vision, what's most important to you, and any questions you have..."
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       className={cn(inputCls, "resize-none")}
                     />
                   </div>
@@ -1569,6 +2056,8 @@ export const PhotographyKimiPage = defineCapsule({
                     <input
                       id="photo-newsletter"
                       type="checkbox"
+                      checked={formData.newsletter}
+                      onChange={(e) => setFormData({ ...formData, newsletter: e.target.checked })}
                       className="mt-1 size-4 rounded border-input accent-primary"
                     />
                     <label

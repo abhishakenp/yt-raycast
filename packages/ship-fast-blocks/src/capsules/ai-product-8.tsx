@@ -1,8 +1,27 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * AiProductKimiPage8 — a complete, self-contained AI SaaS PRODUCT landing page.
@@ -191,8 +210,45 @@ export const AiProductKimiPage8 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      savedContent: table({
+        title: string(),
+        category: string(),
+        categoryColor: string(),
+        imageAlt: string(),
+      }),
+    },
+    queries: {
+      savedContent: ({ db }) => db.savedContent.orderBy('createdAt').all(),
+    },
+    mutations: {
+      saveContent: ({ db }, title: string, category: string, categoryColor: string, imageAlt: string) => {
+        const existing = db.savedContent.where('title', title).all()[0]
+        if (existing) {
+          db.savedContent.delete(existing.id)
+          return false
+        }
+        db.savedContent.insert({ title, category, categoryColor, imageAlt })
+        return true
+      },
+      removeContent: ({ db }, title: string) => {
+        for (const item of db.savedContent.where('title', title).all()) {
+          db.savedContent.delete(item.id)
+        }
+        return db.savedContent.all()
+      },
+      clearSaved: ({ db }) => {
+        for (const item of db.savedContent.all()) {
+          db.savedContent.delete(item.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [savedOpen, setSavedOpen] = useState(false)
     const brand = props.brand ?? "WRITR"
     const nav = props.nav?.length
       ? props.nav
@@ -555,6 +611,87 @@ export const AiProductKimiPage8 = defineCapsule({
     const footerCopyright =
       props.footer?.copyright ?? `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
 
+    // Lakebed integration
+    const savedContent = lakebed.useQuery('savedContent')
+    const saveContent = lakebed.useMutation('saveContent')
+    const removeContent = lakebed.useMutation('removeContent')
+    const clearSaved = lakebed.useMutation('clearSaved')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const savedCount = savedContent?.length ?? 0
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
+    const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+      </svg>
+    )
+
     const featureSvgs = [
       <svg key="f0" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
       <svg key="f1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
@@ -643,13 +780,204 @@ export const AiProductKimiPage8 = defineCapsule({
             </div>
 
             <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go("Log In")}
-                className="hidden font-mono text-sm text-muted-foreground transition-colors hover:text-background sm:block"
-              >
-                Log In
-              </button>
+              <Sheet open={savedOpen} onOpenChange={setSavedOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Saved content"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-background"
+                  >
+                    <BookmarkIcon />
+                    {savedCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-primary text-[0.625rem] font-bold text-background">
+                        {savedCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Saved Content</SheetTitle>
+                    <SheetDescription>
+                      {savedCount > 0
+                        ? `${savedCount} item${savedCount === 1 ? '' : 's'} saved for later.`
+                        : 'No saved content yet.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {savedContent && savedContent.length > 0 ? (
+                      <div className="space-y-4">
+                        {savedContent.map((item) => (
+                          <div
+                            key={item.id}
+                            className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-4 last:border-0"
+                          >
+                            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                              <Image
+                                alt={item.imageAlt}
+                                w={180}
+                                h={180}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <span
+                                className={cn(
+                                  "mb-1 block font-mono text-xs uppercase tracking-widest",
+                                  `text-${item.categoryColor}`,
+                                )}
+                              >
+                                {item.category}
+                              </span>
+                              <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                {item.title}
+                              </h3>
+                              <button
+                                type="button"
+                                onClick={() => void removeContent(item.title)}
+                                className="mt-2 text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No saved content
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Click the bookmark icon on gallery items to save them for later.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full rounded-full"
+                      onClick={() => void clearSaved()}
+                      disabled={!savedContent || savedContent.length === 0}
+                    >
+                      Clear All
+                    </Button>
+                    <SheetClose asChild>
+                      <Button
+                        type="button"
+                        className="w-full rounded-full"
+                      >
+                        Continue
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Settings')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Settings
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-background px-4 text-sm font-semibold text-foreground shadow-sm transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-foreground text-xs font-black text-background">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => go(heroPrimary)}
@@ -935,35 +1263,59 @@ export const AiProductKimiPage8 = defineCapsule({
               </div>
 
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {galleryItems.map((item) => (
-                  <button
-                    key={item.title}
-                    type="button"
-                    onClick={() => go(item.title)}
-                    className="group relative overflow-hidden border-2 border-foreground"
-                  >
-                    <Image
-                      alt={item.imageAlt}
-                      w={600}
-                      h={400}
-                      loading="lazy"
-                      className="h-64 w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 flex flex-col justify-end bg-foreground/80 p-6 opacity-0 transition-opacity group-hover:opacity-100">
-                      <span
+                {galleryItems.map((item) => {
+                  const isSaved = savedContent?.some((saved) => saved.title === item.title) ?? false
+                  return (
+                    <button
+                      key={item.title}
+                      type="button"
+                      onClick={() => go(item.title)}
+                      className="group relative overflow-hidden border-2 border-foreground"
+                    >
+                      <Image
+                        alt={item.imageAlt}
+                        w={600}
+                        h={400}
+                        loading="lazy"
+                        className="h-64 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          void saveContent(item.title, item.category, item.categoryColor ?? 'primary', item.imageAlt)
+                        }}
+                        aria-pressed={isSaved}
+                        aria-label={
+                          isSaved
+                            ? `Remove ${item.title} from saved`
+                            : `Save ${item.title} for later`
+                        }
                         className={cn(
-                          "mb-2 font-mono text-xs uppercase tracking-widest",
-                          `text-${item.categoryColor}`,
+                          'absolute top-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
+                          isSaved
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-background/90 text-foreground opacity-0 group-hover:opacity-100',
                         )}
                       >
-                        {item.category}
-                      </span>
-                      <h3 className="text-lg font-bold text-background">
-                        {item.title}
-                      </h3>
-                    </div>
-                  </button>
-                ))}
+                        <BookmarkIcon active={isSaved} />
+                      </button>
+                      <div className="absolute inset-0 flex flex-col justify-end bg-foreground/80 p-6 opacity-0 transition-opacity group-hover:opacity-100">
+                        <span
+                          className={cn(
+                            "mb-2 font-mono text-xs uppercase tracking-widest",
+                            `text-${item.categoryColor}`,
+                          )}
+                        >
+                          {item.category}
+                        </span>
+                        <h3 className="text-lg font-bold text-background">
+                          {item.title}
+                        </h3>
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </section>

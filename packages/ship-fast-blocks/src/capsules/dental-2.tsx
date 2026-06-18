@@ -1,9 +1,19 @@
 import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
+import { number, string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * DentalKimiPage2 — SECOND, visually DISTINCT dental-practice template (an
@@ -202,13 +212,147 @@ export const DentalKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      appointments: table({
+        firstName: string(),
+        lastName: string(),
+        email: string(),
+        phone: string(),
+        service: string(),
+        preferredDate: string(),
+        message: string(),
+        statusCode: number(),
+      }),
+    },
+    queries: {
+      appointments: ({ db }) => db.appointments.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addAppointment: (
+        { db },
+        firstName: string,
+        lastName: string,
+        email: string,
+        phone: string,
+        service: string,
+        preferredDate: string,
+        message: string,
+      ) => {
+        db.appointments.insert({
+          firstName,
+          lastName,
+          email,
+          phone,
+          service,
+          preferredDate,
+          message,
+          statusCode: 1,
+        })
+
+        return db.appointments.all()
+      },
+      removeAppointment: ({ db }, id: string) => {
+        db.appointments.delete(id)
+
+        return db.appointments.all()
+      },
+      clearAppointments: ({ db }) => {
+        for (const item of db.appointments.all()) {
+          db.appointments.delete(item.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [requestFormMessage, setRequestFormMessage] = useState<string | null>(
+      null,
+    )
+    const [requestDrawerOpen, setRequestDrawerOpen] = useState(false)
     const brand = props.brand ?? "BrightSmile"
     const nav = props.nav?.length
       ? props.nav
       : ["Services", "Our Team", "Reviews", "FAQ", "Book Appointment"]
+    const appointments = lakebed.useQuery("appointments") ?? []
+    const addAppointment = lakebed.useMutation("addAppointment")
+    const removeAppointment = lakebed.useMutation("removeAppointment")
+    const clearAppointments = lakebed.useMutation("clearAppointments")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authDisplayName =
+      auth.displayName ||
+      auth.user?.displayName ||
+      auth.email ||
+      auth.user?.email ||
+      "Account"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+    const appointmentCount = appointments.length
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const handleAppointmentSubmit = (
+      event: React.FormEvent<HTMLFormElement>,
+    ) => {
+      event.preventDefault()
+      const form = event.currentTarget
+      const firstName = (
+        form.elements.namedItem("bs2-first") as HTMLInputElement | null
+      )?.value.trim()
+      const lastName = (
+        form.elements.namedItem("bs2-last") as HTMLInputElement | null
+      )?.value.trim()
+      const email = (
+        form.elements.namedItem("bs2-email") as HTMLInputElement | null
+      )?.value.trim()
+      const phone = (
+        form.elements.namedItem("bs2-phone") as HTMLInputElement | null
+      )?.value.trim()
+      const service = (
+        form.elements.namedItem("bs2-service") as HTMLSelectElement | null
+      )?.value
+      const preferredDate =
+        (
+          form.elements.namedItem("bs2-date") as HTMLInputElement | null
+        )?.value || "TBD"
+      const message =
+        (
+          form.elements.namedItem("bs2-message") as HTMLTextAreaElement | null
+        )?.value.trim() || ""
+
+      if (!firstName || !lastName || !email || !phone || !service) return
+
+      void addAppointment(
+        firstName,
+        lastName,
+        email,
+        phone,
+        service,
+        preferredDate,
+        message,
+      )
+
+      setRequestFormMessage(
+        "Your appointment request has been submitted. We’ll confirm it within 2 hours.",
+      )
+      setRequestDrawerOpen(true)
+      form.reset()
+      setTimeout(() => {
+        setRequestFormMessage(null)
+      }, 4000)
+    }
 
     const heroBadge = props.hero?.badge ?? "Now Accepting New Patients"
     const heroPre = props.hero?.headingPre ?? "Your Smile,"
@@ -837,78 +981,258 @@ export const DentalKimiPage2 = defineCapsule({
           props.className,
         )}
       >
-        {/* Navbar */}
-        <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
-          <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-            <button
-              type="button"
-              onClick={() => go(nav[0])}
-              className="flex items-center gap-3 text-left"
-            >
-              <LogoBadge className="size-10" />
-              <span className="text-2xl font-bold text-primary">{brand}</span>
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.slice(0, -1).map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="font-medium text-muted-foreground transition-colors hover:text-primary"
-                >
-                  {label}
-                </button>
-              ))}
+        <Sheet open={requestDrawerOpen} onOpenChange={setRequestDrawerOpen}>
+          {/* Navbar */}
+          <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
+            <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
               <button
                 type="button"
-                onClick={() => go(nav[nav.length - 1])}
-                className="rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground transition-all hover:scale-105 hover:bg-primary/90"
+                onClick={() => go(nav[0])}
+                className="flex items-center gap-3 text-left"
               >
-                {nav[nav.length - 1]}
+                <LogoBadge className="size-10" />
+                <span className="text-2xl font-bold text-primary">
+                  {brand}
+                </span>
               </button>
-            </div>
-            <button
-              type="button"
-              aria-label="Open menu"
-              aria-expanded={mobileOpen}
-              aria-controls="mobile-menu"
-              onClick={() => setMobileOpen((v: boolean) => !v)}
-              className="p-2 text-muted-foreground md:hidden"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                className="size-6"
-                aria-hidden="true"
-              >
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            {mobileOpen && (
-              <div
-                id="mobile-menu"
-                className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
-              >
-                {nav.map((label) => (
+              <div className="hidden items-center gap-4 md:flex">
+                {nav.slice(0, -1).map((label) => (
                   <button
                     key={label}
                     type="button"
-                    onClick={() => {
-                      setMobileOpen(false)
-                      go(label)
-                    }}
-                    className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                    onClick={() => go(label)}
+                    className="font-medium text-muted-foreground transition-colors hover:text-primary"
                   >
                     {label}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  onClick={() => setRequestDrawerOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-primary"
+                >
+                  Appointment Requests
+                  {appointmentCount > 0 ? (
+                    <span className="grid min-w-6 place-items-center rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">
+                      {appointmentCount}
+                    </span>
+                  ) : null}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => go(nav[nav.length - 1])}
+                  className="rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground transition-all hover:scale-105 hover:bg-primary/90"
+                >
+                  {nav[nav.length - 1]}
+                </button>
               </div>
-            )}
-          </nav>
-        </header>
+              {isSignedIn ? (
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="ml-3 hidden rounded-full border border-border px-4 py-2 text-sm font-semibold transition-colors hover:bg-muted md:inline-flex"
+                >
+                  {authDisplayName}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  className="ml-3 hidden rounded-full border border-border px-4 py-2 text-sm font-semibold transition-colors hover:bg-muted md:inline-flex disabled:pointer-events-none disabled:opacity-60"
+                >
+                  {authLabel}
+                </button>
+              )}
+              <button
+                type="button"
+                aria-label="Open menu"
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-menu"
+                onClick={() => setMobileOpen((v: boolean) => !v)}
+                className="p-2 text-muted-foreground md:hidden"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  className="size-6"
+                  aria-hidden="true"
+                >
+                  <path d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              {mobileOpen && (
+                <div
+                  id="mobile-menu"
+                  className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
+                >
+                  {nav.map((label) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        go(label)
+                      }}
+                      className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      setRequestDrawerOpen(true)
+                    }}
+                    className="inline-flex items-center gap-2 text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                  >
+                    Appointment Requests
+                    {appointmentCount > 0 ? (
+                      <span className="grid min-w-6 place-items-center rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">
+                        {appointmentCount}
+                      </span>
+                    ) : null}
+                  </button>
+                  <div className="rounded-xl border border-border bg-muted/50 p-3">
+                    {isSignedIn ? (
+                      <>
+                        <p className="mb-2 px-2 text-sm text-muted-foreground">
+                          {authLabel}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMobileOpen(false)
+                            handleSignOut()
+                          }}
+                          className="w-full rounded-full bg-foreground px-4 py-3 text-sm font-semibold text-background"
+                        >
+                          Sign out
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={auth.isLoading}
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignIn()
+                        }}
+                        className="w-full rounded-full bg-foreground px-4 py-3 text-sm font-semibold text-background disabled:pointer-events-none disabled:opacity-60"
+                      >
+                        {authLabel}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </nav>
+          </header>
+
+          <SheetContent
+            side="right"
+            className="w-full gap-0 p-0 sm:max-w-md"
+          >
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle>Appointment Requests</SheetTitle>
+              <SheetDescription>
+                {appointmentCount > 0
+                  ? `${appointmentCount} request${appointmentCount === 1 ? "" : "s"} from patients this session.`
+                  : "No requests yet. Use the form below to create one."}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {appointments.length ? (
+                <div className="space-y-4">
+                  {appointments.map((request) => (
+                    <div
+                      key={request.id}
+                      className="rounded-xl border border-border p-4"
+                    >
+                      <div className="mb-2 flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {request.firstName} {request.lastName}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {request.service}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => void removeAppointment(request.id)}
+                          className="shrink-0 rounded-full border border-border px-3 py-1 text-xs font-semibold transition-colors hover:bg-destructive hover:text-destructive-foreground"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {request.email}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {request.phone}
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Preferred: {request.preferredDate || "TBD"}
+                      </p>
+                      {request.message ? (
+                        <p className="mt-2 text-sm text-foreground">
+                          {request.message}
+                        </p>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                  <p className="text-base font-semibold text-foreground">
+                    No appointment requests yet
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Submissions from the form below will appear here.
+                  </p>
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <div className="mb-3 flex items-center justify-between text-sm text-muted-foreground">
+                <span>
+                  {appointmentCount} total appointment
+                  {appointmentCount === 1 ? "" : "s"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setRequestDrawerOpen(false)}
+                  className="text-xs font-semibold text-foreground"
+                >
+                  Keep browsing
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => void clearAppointments()}
+                  disabled={appointments.length === 0}
+                  className="rounded-full border border-border px-4 py-2 text-sm font-semibold transition-colors disabled:pointer-events-none disabled:opacity-60"
+                >
+                  Clear all requests
+                </button>
+                <SheetClose asChild>
+                  <button
+                    type="button"
+                    className="rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background transition-all hover:bg-foreground/90"
+                  >
+                    Continue
+                  </button>
+                </SheetClose>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
 
         <main>
           {/* Hero */}
@@ -1541,10 +1865,7 @@ export const DentalKimiPage2 = defineCapsule({
                   </h3>
                   <form
                     className="space-y-4"
-                    onSubmit={(e) => {
-                      e.preventDefault()
-                      go(contactSubmit)
-                    }}
+                    onSubmit={handleAppointmentSubmit}
                   >
                     <div className="grid gap-4 md:grid-cols-2">
                       <div>
@@ -1657,6 +1978,11 @@ export const DentalKimiPage2 = defineCapsule({
                     >
                       {contactSubmit}
                     </button>
+                    {requestFormMessage ? (
+                      <p className="text-center text-sm font-medium text-primary">
+                        {requestFormMessage}
+                      </p>
+                    ) : null}
                     <p className="text-center text-sm text-muted-foreground">
                       {contactFormNote}
                     </p>

@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * InsuranceKimiPage2 — TEMPLATE VARIANT 2 for the INSURANCE category, a
@@ -171,9 +189,68 @@ export const InsuranceKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      leads: table({
+        email: string(),
+        zip: string(),
+        product: string(),
+      }),
+    },
+    queries: {
+      leads: ({ db }) => db.leads.orderBy("createdAt").all(),
+    },
+    mutations: {
+      submitLead: ({ db }, email: string, zip: string, product: string) => {
+        db.leads.insert({ email, zip, product })
+        return db.leads.orderBy("createdAt").all()
+      },
+      removeLead: ({ db }, id: string) => {
+        db.leads.delete(id)
+        return db.leads.orderBy("createdAt").all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [leadsOpen, setLeadsOpen] = useState(false)
+    const [leadEmail, setLeadEmail] = useState("")
+    const [selectedProduct, setSelectedProduct] = useState(0)
+    const [zipValue, setZipValue] = useState("")
+
+    // Lakebed
+    const storedLeads = lakebed.useQuery("leads")
+    const submitLead = lakebed.useMutation("submitLead")
+    const removeLead = lakebed.useMutation("removeLead")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part: string) => part[0]?.toUpperCase())
+        .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const safeLeads = storedLeads ?? []
+    const leadsCount = safeLeads.length
     const brand = props.brand ?? "ShieldCover"
     const nav = props.nav?.length
       ? props.nav
@@ -758,13 +835,124 @@ export const InsuranceKimiPage2 = defineCapsule({
                   <Phone className="size-4 text-primary" />
                   {phone}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => go(heroPrimary)}
-                  className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-accent-foreground shadow-lg shadow-accent/30 transition-all hover:scale-105 hover:bg-accent/90"
-                >
-                  Get My Quote
-                </button>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar size="sm" className="ring-2 ring-background" aria-hidden="true">
+                          {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" sideOffset={10} className="w-64 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl">
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">{authDisplayName}</p>
+                            <p className="truncate text-xs text-muted-foreground">{authEmail ?? "Signed in"}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full border border-border bg-background px-4 text-sm font-semibold text-foreground shadow-sm transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-foreground text-xs font-black text-background">G</span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                {/* Leads drawer trigger */}
+                <Sheet open={leadsOpen} onOpenChange={setLeadsOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="View quote requests"
+                      className="relative rounded-full bg-accent px-6 py-3 text-sm font-bold text-accent-foreground shadow-lg shadow-accent/30 transition-all hover:scale-105 hover:bg-accent/90"
+                    >
+                      Get My Quote
+                      {leadsCount > 0 && (
+                        <span className="absolute -right-1 -top-1 grid size-5 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {leadsCount}
+                        </span>
+                      )}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Quote Requests</SheetTitle>
+                      <SheetDescription>
+                        {leadsCount > 0
+                          ? `${leadsCount} quote request${leadsCount === 1 ? "" : "s"} submitted this session.`
+                          : "No quote requests yet. Fill in the form to get started."}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeLeads.length > 0 ? (
+                        <div className="space-y-4">
+                          {safeLeads.map((lead) => (
+                            <div key={lead.id} className="flex items-start justify-between gap-4 rounded-xl border border-border bg-muted p-4">
+                              <div className="min-w-0">
+                                <p className="font-semibold text-foreground">{lead.product} Insurance</p>
+                                <p className="text-sm text-muted-foreground">{lead.email || "No email provided"}</p>
+                                <p className="text-sm text-muted-foreground">ZIP: {lead.zip || "—"}</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => void removeLead(lead.id)}
+                                className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">No quote requests</p>
+                          <p className="mt-2 text-sm text-muted-foreground">Submit a quote request using the form on this page.</p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button type="button" variant="secondary" className="w-full rounded-full">
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
               </div>
               <button
                 type="button"
@@ -807,6 +995,41 @@ export const InsuranceKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">{authDisplayName}</p>
+                          <p className="truncate text-xs text-muted-foreground">{authEmail ?? "Signed in"}</p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => { setMobileOpen(false); handleSignOut() }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => { setMobileOpen(false); handleSignIn() }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">G</span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -891,7 +1114,10 @@ export const InsuranceKimiPage2 = defineCapsule({
                       className="space-y-4"
                       onSubmit={(e) => {
                         e.preventDefault()
-                        go(formSubmit)
+                        void submitLead(leadEmail, zipValue, formProducts[selectedProduct] ?? formProducts[0] ?? "Home")
+                        setLeadsOpen(true)
+                        setLeadEmail("")
+                        setZipValue("")
                       }}
                     >
                       <div className="grid grid-cols-2 gap-4">
@@ -899,10 +1125,10 @@ export const InsuranceKimiPage2 = defineCapsule({
                           <button
                             key={product}
                             type="button"
-                            onClick={() => go(product)}
+                            onClick={() => setSelectedProduct(i)}
                             className={cn(
                               "flex flex-col items-center gap-2 rounded-xl border-2 p-4 font-semibold transition-all",
-                              i === 0
+                              i === selectedProduct
                                 ? "border-primary bg-primary/5 text-primary"
                                 : "border-border text-muted-foreground hover:border-primary hover:text-primary",
                             )}
@@ -915,6 +1141,16 @@ export const InsuranceKimiPage2 = defineCapsule({
                         type="text"
                         placeholder={formZipPlaceholder}
                         aria-label={formZipPlaceholder}
+                        value={zipValue}
+                        onChange={(e) => setZipValue(e.target.value)}
+                        className="w-full rounded-xl border border-input bg-background px-4 py-3 text-center text-lg text-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
+                      <input
+                        type="email"
+                        placeholder="Your email (optional)"
+                        aria-label="Email address"
+                        value={leadEmail}
+                        onChange={(e) => setLeadEmail(e.target.value)}
                         className="w-full rounded-xl border border-input bg-background px-4 py-3 text-center text-lg text-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
                       />
                       <button

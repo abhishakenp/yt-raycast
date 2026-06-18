@@ -1,9 +1,20 @@
-import { type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import { defineCapsule } from "./openui.ts"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * DirectoryKimiPage — a complete, self-contained local-business DIRECTORY /
@@ -168,8 +179,95 @@ export const DirectoryKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      featuredBusinesses: table({
+        address: string(),
+        category: string(),
+        hours: string(),
+        imageAlt: string(),
+        name: string(),
+        rating: string(),
+        reviews: string(),
+        reviewCount: number(),
+      }),
+      savedBusinesses: table({
+        address: string(),
+        category: string(),
+        hours: string(),
+        imageAlt: string(),
+        name: string(),
+        rating: string(),
+        reviewCount: number(),
+        reviews: string(),
+      }),
+    },
+    queries: {
+      featuredBusinesses: ({ db }) => db.featuredBusinesses.orderBy("createdAt").all(),
+      savedBusinessNames: ({ db }) =>
+        new Set(db.savedBusinesses.all().map((business) => business.name)),
+      savedBusinesses: ({ db }) => db.savedBusinesses.orderBy("createdAt").all(),
+    },
+    mutations: {
+      toggleSavedBusiness: (
+        { db },
+        name: string,
+        category: string,
+        rating: string,
+        address: string,
+        hours: string,
+        reviews: string,
+        imageAlt: string,
+        reviewCount: number,
+      ) => {
+        const existing = db.savedBusinesses.where("name", name).all()[0]
+
+        if (existing) {
+          db.savedBusinesses.delete(existing.id)
+          return db.savedBusinesses.all()
+        }
+
+        db.savedBusinesses.insert({
+          name,
+          category,
+          rating,
+          address,
+          hours,
+          reviews,
+          imageAlt,
+          reviewCount,
+        })
+
+        return db.savedBusinesses.all()
+      },
+      removeSavedBusiness: ({ db }, businessName: string) => {
+        const matches = db.savedBusinesses.where("name", businessName).all()
+
+        for (const match of matches) {
+          db.savedBusinesses.delete(match.id)
+        }
+
+        return db.savedBusinesses.all()
+      },
+      clearSavedBusinesses: ({ db }) => {
+        for (const row of db.savedBusinesses.all()) {
+          db.savedBusinesses.delete(row.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [savedDrawerOpen, setSavedDrawerOpen] = useState(false)
+    const [searchTerm, setSearchTerm] = useState("")
+
+    const extractReviewCount = (value: string) => {
+      const match = value.match(/(\d+)/)
+      return match ? Number.parseInt(match[1], 10) : 0
+    }
+
     const brand = props.brand ?? "LocalFindr"
     const nav = props.nav?.length
       ? props.nav
@@ -185,7 +283,7 @@ export const DirectoryKimiPage = defineCapsule({
     const searchCta = props.hero?.searchCta ?? "Search"
     const popularLabel = props.hero?.popularLabel ?? "Popular:"
     const popular = props.hero?.popular?.length
-      ? props.hero.popular
+      ? props.hero?.popular
       : ["Coffee Shops", "Hair Salons", "Electricians", "Yoga Studios"]
     const signIn = props.hero?.signIn ?? "Sign In"
     const listCta = props.hero?.listCta ?? "List Your Business"
@@ -217,72 +315,118 @@ export const DirectoryKimiPage = defineCapsule({
           { title: "Retail", count: "2,100 listings" },
         ]
 
+    const featureDefaults = [
+      {
+        name: "Brew & Bloom Café",
+        category: "Coffee Shop",
+        rating: "4.9",
+        address: "142 Oak Street, Downtown",
+        hours: "Open 7am - 8pm",
+        reviews: "287 reviews",
+        imageAlt:
+          "Modern minimalist coffee shop interior with exposed brick walls",
+      },
+      {
+        name: "Shear Perfection Studio",
+        category: "Hair Salon",
+        rating: "4.8",
+        address: "385 Main Avenue, Westside",
+        hours: "Open 9am - 7pm",
+        reviews: "156 reviews",
+        imageAlt:
+          "Upscale hair salon with modern styling stations and mirrors",
+      },
+      {
+        name: "Zenith Yoga Collective",
+        category: "Yoga Studio",
+        rating: "5.0",
+        address: "78 Wellness Lane, North Hills",
+        hours: "Open 6am - 9pm",
+        reviews: "203 reviews",
+        imageAlt:
+          "Professional yoga studio with wooden floors and natural lighting",
+      },
+      {
+        name: "Rapid Flow Plumbing",
+        category: "Plumbing",
+        rating: "4.7",
+        address: "Serving Metro Area · 24/7",
+        hours: "Always Open",
+        reviews: "412 reviews",
+        imageAlt: "Modern plumbing service van with company branding",
+      },
+      {
+        name: "Hive Workspace",
+        category: "Office Space",
+        rating: "4.6",
+        address: "220 Innovation Drive, Tech District",
+        hours: "Open 8am - 8pm",
+        reviews: "89 reviews",
+        imageAlt: "Contemporary co-working office space with modern desks",
+      },
+      {
+        name: "Bright Smile Dental",
+        category: "Dentist",
+        rating: "4.9",
+        address: "56 Medical Plaza, Suite 200",
+        hours: "Mon-Fri 8am - 6pm",
+        reviews: "324 reviews",
+        imageAlt: "Modern dental clinic with state-of-the-art equipment",
+      },
+    ]
+
     const featuredHeading = props.featured?.heading ?? "Featured Businesses"
     const featuredDesc =
       props.featured?.description ??
       "Top-rated local favorites handpicked by our team"
     const featuredViewAll = props.featured?.viewAll ?? "View All"
-    const featuredItems = props.featured?.items?.length
+    const featuredSource = props.featured?.items?.length
       ? props.featured.items
-      : [
-          {
-            name: "Brew & Bloom Café",
-            category: "Coffee Shop",
-            rating: "4.9",
-            address: "142 Oak Street, Downtown",
-            hours: "Open 7am - 8pm",
-            reviews: "287 reviews",
-            imageAlt:
-              "Modern minimalist coffee shop interior with exposed brick walls",
-          },
-          {
-            name: "Shear Perfection Studio",
-            category: "Hair Salon",
-            rating: "4.8",
-            address: "385 Main Avenue, Westside",
-            hours: "Open 9am - 7pm",
-            reviews: "156 reviews",
-            imageAlt:
-              "Upscale hair salon with modern styling stations and mirrors",
-          },
-          {
-            name: "Zenith Yoga Collective",
-            category: "Yoga Studio",
-            rating: "5.0",
-            address: "78 Wellness Lane, North Hills",
-            hours: "Open 6am - 9pm",
-            reviews: "203 reviews",
-            imageAlt:
-              "Professional yoga studio with wooden floors and natural lighting",
-          },
-          {
-            name: "Rapid Flow Plumbing",
-            category: "Plumbing",
-            rating: "4.7",
-            address: "Serving Metro Area · 24/7",
-            hours: "Always Open",
-            reviews: "412 reviews",
-            imageAlt: "Modern plumbing service van with company branding",
-          },
-          {
-            name: "Hive Workspace",
-            category: "Office Space",
-            rating: "4.6",
-            address: "220 Innovation Drive, Tech District",
-            hours: "Open 8am - 8pm",
-            reviews: "89 reviews",
-            imageAlt: "Contemporary co-working office space with modern desks",
-          },
-          {
-            name: "Bright Smile Dental",
-            category: "Dentist",
-            rating: "4.9",
-            address: "56 Medical Plaza, Suite 200",
-            hours: "Mon-Fri 8am - 6pm",
-            reviews: "324 reviews",
-            imageAlt: "Modern dental clinic with state-of-the-art equipment",
-          },
-        ]
+      : featureDefaults
+    const featuredDefaults = featuredSource.map((business) => ({
+      ...business,
+      reviewCount: extractReviewCount(business.reviews),
+    }))
+
+    const storedFeatured = lakebed.useQuery("featuredBusinesses")
+    const savedBusinesses = lakebed.useQuery("savedBusinesses")
+    const savedBusinessNames = lakebed.useQuery("savedBusinessNames")
+    const toggleSavedBusiness = lakebed.useMutation("toggleSavedBusiness")
+    const removeSavedBusiness = lakebed.useMutation("removeSavedBusiness")
+    const clearSavedBusinesses = lakebed.useMutation("clearSavedBusinesses")
+
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? "Sign out"
+        : signIn
+
+    const handleAuthAction = () => {
+      if (auth.isLoading) {
+        return
+      }
+
+      if (isSignedIn) {
+        lakebed.signOut()
+        return
+      }
+
+      void lakebed.signInWithGoogle()
+    }
+
+    const featuredItems =
+      storedFeatured && storedFeatured.length
+        ? storedFeatured
+        : featuredDefaults
+
+    const safeSavedBusinesses = savedBusinesses ?? []
+    const safeSavedNames = savedBusinessNames ?? new Set<string>()
+    const savedCount = safeSavedBusinesses.length
 
     const stepsHeading = props.steps?.heading ?? "How It Works"
     const stepsDesc =
@@ -563,6 +707,38 @@ export const DirectoryKimiPage = defineCapsule({
       </svg>
     )
 
+    const Bookmark = ({ className, active }: { className?: string; active: boolean }) => (
+      <svg
+        className={className}
+        fill={active ? "currentColor" : "none"}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+      </svg>
+    )
+
+    const UserCircle = ({ className }: { className?: string }) => (
+      <svg
+        className={className}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20 21a8 8 0 10-16 0" />
+        <circle cx="12" cy="9" r="3" />
+        <circle cx="12" cy="12" r="10" />
+      </svg>
+    )
+
     // Category icon glyphs (rotated, paired with rotating token tints below).
     const categoryIcons: ReactNode[] = [
       // book / restaurants (menu)
@@ -576,7 +752,8 @@ export const DirectoryKimiPage = defineCapsule({
         viewBox="0 0 24 24"
         aria-hidden="true"
       >
-        <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+        />
       </svg>,
       // bolt / home services
       <svg
@@ -722,14 +899,143 @@ export const DirectoryKimiPage = defineCapsule({
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go(signIn)}
+                  onClick={() => {
+                    void handleAuthAction()
+                  }}
+                  disabled={auth.isLoading}
                   className="hidden text-muted-foreground transition-colors hover:text-foreground sm:block"
                 >
-                  {signIn}
+                  {isSignedIn ? (
+                    <span className="inline-flex items-center gap-2">
+                      <UserCircle className="size-4" />
+                      {authDisplayName}
+                    </span>
+                  ) : (
+                    authLabel
+                  )}
                 </button>
+                <Sheet
+                  open={savedDrawerOpen}
+                  onOpenChange={setSavedDrawerOpen}
+                >
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      className="relative rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted"
+                    >
+                      Saved
+                      {savedCount > 0 ? (
+                        <span className="ml-2 inline-flex size-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                          {savedCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle>Your Saved Businesses</SheetTitle>
+                      <SheetDescription>
+                        {savedCount > 0
+                          ? `${savedCount} saved ${savedCount === 1 ? "business" : "businesses"} ready to revisit.`
+                          : "No saved businesses yet."
+                        }
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeSavedBusinesses.length ? (
+                        <div className="space-y-5">
+                          {safeSavedBusinesses.map((entry) => (
+                            <div
+                              key={entry.id ?? `${entry.name}-${entry.reviews}`}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                <Image
+                                  alt={entry.imageAlt}
+                                  w={180}
+                                  h={180}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <h3 className="line-clamp-1 text-sm font-semibold text-foreground">
+                                      {entry.name}
+                                    </h3>
+                                    {entry.category ? (
+                                      <p className="text-xs text-muted-foreground">
+                                        {entry.category}
+                                      </p>
+                                    ) : null}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      void removeSavedBusiness(entry.name)
+                                    }}
+                                    className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                                <p className="mt-2 text-xs text-muted-foreground">
+                                  {entry.address}
+                                </p>
+                                <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                                  <span>{entry.hours}</span>
+                                  {entry.reviews ? <span>·</span> : null}
+                                  <span>{entry.reviews}</span>
+                                </div>
+                                <p className="mt-1 text-xs text-foreground">
+                                  {entry.rating} rating
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="rounded-lg border border-dashed border-border bg-muted/40 p-8 text-center">
+                          <p className="text-sm text-muted-foreground">
+                            Mark businesses as saved from featured cards to build
+                            your shortlist.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>Saved count</span>
+                          <span>{savedCount}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void clearSavedBusinesses()
+                          }}
+                          disabled={!savedCount}
+                          className="w-full rounded-lg border border-input px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Clear saved businesses
+                        </button>
+                        <SheetClose asChild>
+                          <button
+                            type="button"
+                            className="w-full rounded-lg bg-foreground px-4 py-2 font-semibold text-background transition-colors hover:bg-foreground/90"
+                          >
+                            Continue browsing
+                          </button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
-                  onClick={() => go(listCta)}
+                  onClick={() => {
+                    go(listCta)
+                  }}
                   className="rounded-lg bg-primary px-4 py-2 text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   {listCta}
@@ -775,6 +1081,8 @@ export const DirectoryKimiPage = defineCapsule({
                   type="search"
                   placeholder={searchPlaceholder}
                   aria-label="Search businesses"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
                   className="w-full rounded-xl border border-input bg-muted py-4 pl-12 pr-32 text-foreground placeholder-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
                 />
                 <button
@@ -891,47 +1199,87 @@ export const DirectoryKimiPage = defineCapsule({
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {featuredItems.map((biz) => (
-                <button
-                  key={biz.name}
-                  type="button"
-                  onClick={() => go(biz.name)}
-                  className="group block overflow-hidden rounded-xl border border-border bg-card text-left transition-shadow hover:shadow-md"
-                >
-                  <div className="relative aspect-[4/3] bg-muted">
-                    <Image
-                      alt={biz.imageAlt}
-                      w={600}
-                      h={450}
-                      loading="lazy"
-                      className="size-full object-cover"
-                    />
-                    <span className="absolute left-3 top-3 rounded bg-card px-2 py-1 text-xs font-medium text-card-foreground">
-                      {biz.category}
-                    </span>
-                    <span className="absolute right-3 top-3 flex items-center gap-1 rounded bg-primary px-2 py-1 text-xs font-medium text-primary-foreground">
-                      <Star className="size-3" />
-                      {biz.rating}
-                    </span>
-                  </div>
-                  <div className="p-5">
-                    <h3 className="mb-1 text-lg font-semibold text-card-foreground">
-                      {biz.name}
-                    </h3>
-                    <p className="mb-3 text-sm text-muted-foreground">
-                      {biz.address}
-                    </p>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Clock className="size-4" />
-                        {biz.hours}
+              {featuredItems.map((biz) => {
+                const isSaved = safeSavedNames.has(biz.name)
+
+                return (
+                  <article
+                    key={biz.name}
+                    tabIndex={0}
+                    role="button"
+                    onClick={() => go(biz.name)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault()
+                        go(biz.name)
+                      }
+                    }}
+                    className="group block cursor-pointer overflow-hidden rounded-xl border border-border bg-card text-left transition-shadow hover:shadow-md"
+                  >
+                    <div className="relative aspect-[4/3] bg-muted">
+                      <Image
+                        alt={biz.imageAlt}
+                        w={600}
+                        h={450}
+                        loading="lazy"
+                        className="size-full object-cover"
+                      />
+                      <span className="absolute left-3 top-3 rounded bg-card px-2 py-1 text-xs font-medium text-card-foreground">
+                        {biz.category}
                       </span>
-                      <span>·</span>
-                      <span>{biz.reviews}</span>
+                      <span className="absolute right-3 top-3 flex items-center gap-1 rounded bg-primary px-2 py-1 text-xs font-medium text-primary-foreground">
+                        <Star className="size-3" />
+                        {biz.rating}
+                      </span>
                     </div>
-                  </div>
-                </button>
-              ))}
+                    <div className="p-5">
+                      <h3 className="mb-1 text-lg font-semibold text-card-foreground">
+                        {biz.name}
+                      </h3>
+                      <p className="mb-3 text-sm text-muted-foreground">
+                        {biz.address}
+                      </p>
+                      <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Clock className="size-4" />
+                          {biz.hours}
+                        </span>
+                        <span>·</span>
+                        <span>{biz.reviews}</span>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            void toggleSavedBusiness(
+                              biz.name,
+                              biz.category,
+                              biz.rating,
+                              biz.address,
+                              biz.hours,
+                              biz.reviews,
+                              biz.imageAlt,
+                              biz.reviewCount,
+                            )
+                          }}
+                          aria-pressed={isSaved}
+                          className={cn(
+                            "inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition-colors",
+                            isSaved
+                              ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                              : "bg-muted text-muted-foreground hover:bg-muted/80",
+                          )}
+                        >
+                          <Bookmark
+                            className="size-3"
+                            active={isSaved}
+                          />
+                          {isSaved ? "Saved" : "Save"}
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                )
+              })}
             </div>
           </div>
         </section>
@@ -1111,7 +1459,9 @@ export const DirectoryKimiPage = defineCapsule({
                   </ul>
                   <button
                     type="button"
-                    onClick={() => go(plan.cta)}
+                    onClick={() => {
+                      go(plan.cta)
+                    }}
                     className={cn(
                       "w-full rounded-lg py-3 font-medium transition-colors",
                       plan.featured

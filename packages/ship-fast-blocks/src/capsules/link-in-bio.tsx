@@ -1,9 +1,27 @@
-import { type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * LinkInBioKimiPage — a complete, self-contained "link in bio" / link-hub page.
@@ -83,8 +101,42 @@ export const LinkInBioKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      savedLinks: table({
+        linkTitle: string(),
+        linkSubtitle: string(),
+        icon: string(),
+      }),
+      contactInquiries: table({
+        name: string(),
+        email: string(),
+        message: string(),
+      }),
+    },
+    queries: {
+      savedLinks: ({ db }) => db.savedLinks.orderBy('createdAt').all(),
+      contactInquiries: ({ db }) => db.contactInquiries.orderBy('createdAt').all(),
+    },
+    mutations: {
+      saveLink: ({ db }, linkTitle: string, linkSubtitle: string, icon: string) => {
+        db.savedLinks.insert({ linkTitle, linkSubtitle, icon })
+        return db.savedLinks.all()
+      },
+      removeSavedLink: ({ db }, id: string) => {
+        db.savedLinks.delete(id)
+        return db.savedLinks.all()
+      },
+      submitInquiry: ({ db }, name: string, email: string, message: string) => {
+        db.contactInquiries.insert({ name, email, message })
+        return db.contactInquiries.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [savedLinksOpen, setSavedLinksOpen] = useState(false)
+    const [contactOpen, setContactOpen] = useState(false)
     const brand = props.brand ?? "Sarah Chen"
     const nav = props.nav?.length
       ? props.nav
@@ -144,6 +196,38 @@ export const LinkInBioKimiPage = defineCapsule({
       "Design system, motion, and landing experience"
 
     const footerNote = props.footer?.note ?? "All rights reserved."
+
+    const savedLinks = lakebed.useQuery('savedLinks')
+    const contactInquiries = lakebed.useQuery('contactInquiries')
+    const saveLink = lakebed.useMutation('saveLink')
+    const removeSavedLink = lakebed.useMutation('removeSavedLink')
+    const submitInquiry = lakebed.useMutation('submitInquiry')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
 
     const linkIcons: Record<string, ReactNode> = {
       globe: (
@@ -283,6 +367,52 @@ export const LinkInBioKimiPage = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
+    const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn('size-5', active ? 'text-primary' : 'text-muted-foreground')}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+      </svg>
+    )
+
     return (
       <div
         className={cn(
@@ -290,6 +420,178 @@ export const LinkInBioKimiPage = defineCapsule({
           props.className,
         )}
       >
+        {/* Header with auth and saved links */}
+        <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
+          <div className="mx-auto flex h-14 max-w-md items-center justify-between px-6">
+            <span className="text-sm font-semibold text-foreground">{brand}</span>
+            <div className="flex items-center gap-2">
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="flex h-9 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage src={authPicture} alt={authDisplayName} />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="max-w-16 truncate text-xs font-semibold">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-64 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="md" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-xs font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="flex h-9 items-center gap-2 rounded-full bg-foreground px-3 text-xs font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60"
+                >
+                  <span className="grid size-4 place-items-center rounded-full bg-background text-[0.6rem] font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={savedLinksOpen} onOpenChange={setSavedLinksOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Saved links"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <BookmarkIcon />
+                    {savedLinks && savedLinks.length > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {savedLinks.length}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-sm">
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Saved Links</SheetTitle>
+                    <SheetDescription>
+                      {savedLinks && savedLinks.length > 0
+                        ? `${savedLinks.length} link${savedLinks.length === 1 ? '' : 's'} saved.`
+                        : 'No saved links yet.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {savedLinks && savedLinks.length > 0 ? (
+                      <div className="space-y-3">
+                        {savedLinks.map((item) => (
+                          <div
+                            key={item.id}
+                            className="flex items-center justify-between rounded-lg border border-border bg-card p-4"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="grid size-8 place-items-center rounded-lg bg-muted text-muted-foreground">
+                                {linkIcons[item.icon] || linkIcons.globe}
+                              </span>
+                              <div>
+                                <p className="text-sm font-semibold text-card-foreground">
+                                  {item.linkTitle}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {item.linkSubtitle}
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => void removeSavedLink(item.id)}
+                              aria-label={`Remove ${item.linkTitle} from saved`}
+                              className="text-muted-foreground transition-colors hover:text-destructive"
+                            >
+                              <svg
+                                className="size-4"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M18 6L6 18M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-48 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <BookmarkIcon />
+                        <p className="mt-3 text-sm font-semibold text-foreground">
+                          No saved links
+                        </p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Bookmark links to save them for later.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <SheetClose asChild>
+                      <Button type="button" variant="outline" className="w-full rounded-full">
+                        Close
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+            </div>
+          </div>
+        </header>
+
         {/* SECTION:profile + links + socials + featured */}
         <main className="mx-auto max-w-md px-6 py-16 sm:py-20 lg:py-24">
           {/* Avatar & identity */}
@@ -320,37 +622,76 @@ export const LinkInBioKimiPage = defineCapsule({
 
           {/* Primary links */}
           <nav aria-label="Primary links" className="mb-10 space-y-3">
-            {links.map((link, i) => (
-              <button
-                key={link.title}
-                type="button"
-                onClick={() => go(nav[i] ?? link.title)}
-                className="group flex w-full items-center justify-between rounded-xl border border-border/60 bg-card px-5 py-4 text-left shadow-sm transition-all duration-200 hover:border-border hover:shadow-md"
-              >
-                <span className="flex items-center gap-3">
-                  <span className="grid size-10 place-items-center rounded-lg bg-muted text-muted-foreground">
-                    {linkIcons[link.icon]}
-                  </span>
-                  <span className="text-left">
-                    <span className="block font-medium text-card-foreground">
-                      {link.title}
+            {links.map((link, i) => {
+              const isSaved =
+                savedLinks?.some(
+                  (saved) =>
+                    saved.linkTitle === link.title &&
+                    saved.linkSubtitle === link.subtitle,
+                ) ?? false
+
+              return (
+                <button
+                  key={link.title}
+                  type="button"
+                  onClick={() => go(nav[i] ?? link.title)}
+                  className="group flex w-full items-center justify-between rounded-xl border border-border/60 bg-card px-5 py-4 text-left shadow-sm transition-all duration-200 hover:border-border hover:shadow-md"
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="grid size-10 place-items-center rounded-lg bg-muted text-muted-foreground">
+                      {linkIcons[link.icon]}
                     </span>
-                    <span className="block text-xs text-muted-foreground">
-                      {link.subtitle}
+                    <span className="text-left">
+                      <span className="block font-medium text-card-foreground">
+                        {link.title}
+                      </span>
+                      <span className="block text-xs text-muted-foreground">
+                        {link.subtitle}
+                      </span>
                     </span>
                   </span>
-                </span>
-                {link.badge ? (
-                  <span className="rounded-full bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground">
-                    {link.badge}
-                  </span>
-                ) : (
-                  <span className="text-muted-foreground transition-colors group-hover:text-foreground">
-                    <ExternalArrow />
-                  </span>
-                )}
-              </button>
-            ))}
+                  <div className="flex items-center gap-2">
+                    {isSignedIn && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (isSaved) {
+                            const savedItem = savedLinks?.find(
+                              (saved) =>
+                                saved.linkTitle === link.title &&
+                                saved.linkSubtitle === link.subtitle,
+                            )
+                            if (savedItem) {
+                              void removeSavedLink(savedItem.id)
+                            }
+                          } else {
+                            void saveLink(link.title, link.subtitle, link.icon)
+                          }
+                        }}
+                        aria-label={
+                          isSaved
+                            ? `Remove ${link.title} from saved`
+                            : `Save ${link.title}`
+                        }
+                        className="text-muted-foreground transition-colors hover:text-primary"
+                      >
+                        <BookmarkIcon active={isSaved} />
+                      </button>
+                    )}
+                    {link.badge ? (
+                      <span className="rounded-full bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground">
+                        {link.badge}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground transition-colors group-hover:text-foreground">
+                        <ExternalArrow />
+                      </span>
+                    )}
+                  </div>
+                </button>
+              )
+            })}
           </nav>
 
           {/* Socials */}
@@ -366,6 +707,125 @@ export const LinkInBioKimiPage = defineCapsule({
                 {socialIcons[social.icon]}
               </button>
             ))}
+          </div>
+
+          {/* Contact CTA */}
+          <div className="mb-12">
+            <Sheet open={contactOpen} onOpenChange={setContactOpen}>
+              <SheetTrigger asChild>
+                <button
+                  type="button"
+                  className="w-full rounded-xl border border-border/60 bg-card px-5 py-4 text-left shadow-sm transition-all duration-200 hover:border-border hover:shadow-md"
+                >
+                  <span className="flex items-center justify-center gap-3">
+                    <svg
+                      className="size-5 text-muted-foreground"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span className="font-medium text-card-foreground">
+                      Contact Me
+                    </span>
+                  </span>
+                </button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                <SheetHeader className="border-b border-border p-6">
+                  <SheetTitle className="text-xl">Get in Touch</SheetTitle>
+                  <SheetDescription>
+                    Send me a message and I'll get back to you soon.
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="flex-1 overflow-y-auto px-6 py-5">
+                  <form
+                    id="contact-form"
+                    className="space-y-4"
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      const form = e.currentTarget
+                      const name = form.name.value
+                      const email = form.email.value
+                      const message = form.message.value
+                      if (name && email && message) {
+                        void submitInquiry(name, email, message)
+                        form.reset()
+                        setContactOpen(false)
+                      }
+                    }}
+                  >
+                    <div>
+                      <label
+                        htmlFor="name"
+                        className="mb-2 block text-sm font-medium text-foreground"
+                      >
+                        Name
+                      </label>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        required
+                        className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        placeholder="Your name"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="email"
+                        className="mb-2 block text-sm font-medium text-foreground"
+                      >
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        required
+                        className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        placeholder="your@email.com"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="message"
+                        className="mb-2 block text-sm font-medium text-foreground"
+                      >
+                        Message
+                      </label>
+                      <textarea
+                        id="message"
+                        name="message"
+                        required
+                        rows={4}
+                        className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                        placeholder="How can I help you?"
+                      />
+                    </div>
+                  </form>
+                </div>
+                <SheetFooter className="border-t border-border p-6">
+                  <Button
+                    type="submit"
+                    form="contact-form"
+                    className="w-full rounded-full"
+                  >
+                    Send Message
+                  </Button>
+                  <SheetClose asChild>
+                    <Button type="button" variant="outline" className="w-full rounded-full">
+                      Cancel
+                    </Button>
+                  </SheetClose>
+                </SheetFooter>
+              </SheetContent>
+            </Sheet>
           </div>
 
           {/* Featured work */}

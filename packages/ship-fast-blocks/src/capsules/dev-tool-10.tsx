@@ -1,9 +1,18 @@
-import { type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * DevToolKimiPage10 — a complete, self-contained developer-API / dev-tool platform
@@ -163,10 +172,69 @@ export const DevToolKimiPage10 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      requests: table({
+        email: string(),
+        plan: string(),
+        project: string(),
+        notes: string(),
+      }),
+    },
+    queries: {
+      requests: ({ db }) => db.requests.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addRequest: ({ db }, email: string, plan: string, project: string, notes: string) => {
+        db.requests.insert({ email, plan, project, notes })
+        return db.requests.all()
+      },
+      removeRequest: ({ db }, id: string) => {
+        const request = db.requests.get(id)
+        if (request) {
+          db.requests.delete(request.id)
+        }
+        return db.requests.all()
+      },
+      clearRequests: ({ db }) => {
+        for (const request of db.requests.all()) {
+          db.requests.delete(request.id)
+        }
+        return db.requests.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [requestDrawerOpen, setRequestDrawerOpen] = useState(false)
+    const [requestEmail, setRequestEmail] = useState("")
+    const [requestProject, setRequestProject] = useState("")
+    const [requestNotes, setRequestNotes] = useState("")
+    const [requestPlan, setRequestPlan] = useState("Starter")
     const brand = props.brand ?? "CloudVerse"
+    const requestRows = lakebed.useQuery("requests")
+    const addRequest = lakebed.useMutation("addRequest")
+    const removeRequest = lakebed.useMutation("removeRequest")
+    const clearRequests = lakebed.useMutation("clearRequests")
+    const auth = lakebed.useAuth()
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
     const nav = props.nav?.length
       ? props.nav
       : ["Features", "Pricing", "Documentation", "Changelog"]
@@ -470,6 +538,40 @@ export const DevToolKimiPage10 = defineCapsule({
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
 
+    const storedRequests = requestRows ?? []
+    const requestCount = storedRequests.length
+    const defaultRequestPlan =
+      pricingTiers.find((tier) => tier.featured)?.name ??
+      pricingTiers[0]?.name ??
+      "Starter"
+    const requestSummaryText =
+      requestCount > 0
+        ? `${requestCount} request${requestCount === 1 ? "" : "s"} in queue`
+        : "No open request in queue"
+
+    const openRequestDrawer = (plan = defaultRequestPlan) => {
+      setRequestPlan(plan)
+      if (!requestEmail && authEmail) {
+        setRequestEmail(authEmail)
+      }
+      setRequestDrawerOpen(true)
+    }
+
+    const submitRequest = () => {
+      const email = requestEmail.trim()
+      if (!email) return
+      void addRequest(
+        email,
+        requestPlan || defaultRequestPlan,
+        requestProject.trim(),
+        requestNotes.trim(),
+      )
+      setRequestEmail(authEmail || "")
+      setRequestProject("")
+      setRequestNotes("")
+      setRequestDrawerOpen(false)
+    }
+
     // ── Icons ──
     const BoltMark = ({ className }: { className?: string }) => (
       <span
@@ -644,22 +746,171 @@ export const DevToolKimiPage10 = defineCapsule({
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go("Sign in")}
+                  onClick={isSignedIn ? () => go("Account") : handleSignIn}
+                  disabled={auth.isLoading}
                   className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
                 >
-                  Sign in
+                  {authLabel}
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(heroPrimary)}
-                  className="inline-flex items-center rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                  onClick={() => openRequestDrawer(defaultRequestPlan)}
+                  className="relative inline-flex items-center rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
                 >
                   Get API Key
+                  {requestCount > 0 ? (
+                    <span className="ml-2 flex size-5 items-center justify-center rounded-full bg-background/20 text-[0.625rem] font-semibold text-background">
+                      {requestCount}
+                    </span>
+                  ) : null}
                 </button>
               </div>
             </div>
           </div>
         </header>
+
+        <Sheet open={requestDrawerOpen} onOpenChange={setRequestDrawerOpen}>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">
+                {`API Access ${requestPlan}`}
+              </SheetTitle>
+              <SheetDescription>
+                {requestSummaryText}. Add a request to get updates and onboarding
+                support from the product team.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              <form
+                className="space-y-4"
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  submitRequest()
+                }}
+              >
+                <label className="block space-y-2">
+                  <span className="text-sm font-medium text-foreground">Email</span>
+                  <input
+                    type="email"
+                    value={requestEmail}
+                    onChange={(event) => setRequestEmail(event.target.value)}
+                    required
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="you@company.com"
+                  />
+                </label>
+                <label className="block space-y-2">
+                  <span className="text-sm font-medium text-foreground">Plan</span>
+                  <select
+                    value={requestPlan}
+                    onChange={(event) => setRequestPlan(event.target.value)}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    {pricingTiers.map((tier) => (
+                      <option key={tier.name} value={tier.name}>
+                        {tier.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block space-y-2">
+                  <span className="text-sm font-medium text-foreground">Project</span>
+                  <input
+                    type="text"
+                    value={requestProject}
+                    onChange={(event) => setRequestProject(event.target.value)}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="Optional project name"
+                  />
+                </label>
+                <label className="block space-y-2">
+                  <span className="text-sm font-medium text-foreground">Notes</span>
+                  <textarea
+                    rows={4}
+                    value={requestNotes}
+                    onChange={(event) => setRequestNotes(event.target.value)}
+                    className="min-h-24 w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="Tell us what you plan to build"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  className="w-full rounded-lg bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                  disabled={!requestEmail.trim()}
+                >
+                  Create API request
+                </button>
+              </form>
+
+              {storedRequests.length ? (
+                <div className="mt-6 space-y-3">
+                  <p className="text-sm font-medium text-foreground">Recent requests</p>
+                  {storedRequests.map((request) => (
+                    <article
+                      key={request.id}
+                      className="rounded-lg border border-border bg-muted/40 p-3"
+                    >
+                      <div className="mb-2 flex items-start justify-between gap-2">
+                        <p className="text-sm font-medium text-foreground">
+                          {request.email}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => void removeRequest(request.id)}
+                          className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {request.plan}
+                        {formatProjectLine(request.project)}
+                      </p>
+                      {request.notes ? (
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          {request.notes}
+                        </p>
+                      ) : null}
+                    </article>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <div className="flex flex-col gap-3">
+                <p className="text-sm text-muted-foreground">
+                  {requestSummaryText}
+                </p>
+                <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                  {isSignedIn ? (
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      className="rounded-lg border border-border bg-muted px-4 py-2 text-sm font-semibold transition-colors hover:bg-muted/80"
+                    >
+                      Sign out
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => void clearRequests()}
+                    disabled={requestCount === 0}
+                    className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/20 disabled:pointer-events-none disabled:opacity-60"
+                  >
+                    Clear requests
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRequestDrawerOpen(false)}
+                    className="rounded-lg border border-border bg-muted px-4 py-2 text-sm font-semibold transition-colors hover:bg-muted/80"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
 
         <main>
           {/* Hero */}
@@ -683,7 +934,7 @@ export const DevToolKimiPage10 = defineCapsule({
                   <div className="mb-10 flex flex-col gap-4 sm:flex-row">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() => openRequestDrawer(pricingTiers[0]?.name ?? defaultRequestPlan)}
                       className="rounded-xl bg-foreground px-6 py-3 text-center font-semibold text-background shadow-lg transition-all hover:bg-foreground/90"
                     >
                       {heroPrimary}
@@ -1016,7 +1267,7 @@ export const DevToolKimiPage10 = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(tier.cta)}
+                      onClick={() => openRequestDrawer(tier.name)}
                       className={cn(
                         "block w-full rounded-xl px-4 py-3 text-center font-semibold transition-all",
                         tier.featured
@@ -1116,14 +1367,14 @@ export const DevToolKimiPage10 = defineCapsule({
                   <div className="flex flex-col justify-center gap-4 sm:flex-row">
                     <button
                       type="button"
-                      onClick={() => go(ctaPrimary)}
+                      onClick={() => openRequestDrawer(pricingTiers[0]?.name ?? defaultRequestPlan)}
                       className="rounded-xl bg-background px-8 py-4 font-semibold text-foreground shadow-lg transition-colors hover:bg-muted"
                     >
                       {ctaPrimary}
                     </button>
                     <button
                       type="button"
-                      onClick={() => go(ctaSecondary)}
+                      onClick={() => openRequestDrawer(defaultRequestPlan)}
                       className="rounded-xl border border-background/30 bg-background/10 px-8 py-4 font-semibold text-background transition-colors hover:bg-background/20"
                     >
                       {ctaSecondary}

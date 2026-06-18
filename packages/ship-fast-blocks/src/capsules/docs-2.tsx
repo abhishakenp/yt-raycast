@@ -1,9 +1,21 @@
 import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
+import { number, string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * DocsKimiPage2 — ALTERNATIVE / SECOND-STYLE developer documentation home, a sibling
@@ -37,6 +49,63 @@ export const DocsKimiPage2 = defineCapsule({
   name: "DocsKimiPage2",
   description:
     "ALTERNATIVE / second-style developer DOCUMENTATION / docs-home / developer-portal page — a visually DISTINCT sibling to DocsKimiPage. A bold, dark, marketing-flavoured documentation landing for a workflow-automation / API platform: sticky blurred top navbar with an inline search field (⌘K hint), GitHub link and a live version pill; a persistent grouped left sidebar (Getting Started / Core Features / API Reference / Deployment / Resources); and a wide reading column that OPENS with a confident gradient-title hero (version badge, Start Building + Watch Demo CTAs and a four-up stats row — unlike the no-hero sibling). Then a colorful getting-started quickstart card grid (CLI Quickstart / Docker Compose / Cloud Platform / SDK Integration / API Reference / Templates Gallery with rotating accent icon tiles and inline shell snippets), a framed code-example panel with traffic-light window chrome, filename tab, a syntax-highlighted TypeScript workflow snippet, line/size footer and language tabs, a two-column core-features list (event-driven, error handling, encryption, observability, integrations, branching), a three-up developer testimonials grid (five-star ratings + author headshots), a full-bleed gradient call-to-action band with trust chips, and a four-column footer with social links. Use as a docs home, getting-started, developer portal, SDK/quickstart guide, knowledge base or technical-documentation index when a punchier, darker, code-and-marketing docs landing is wanted (pick this over DocsKimiPage for a bolder, hero-led second style). Supply content only — brand, nav, sidebar, hero, quickstart, codeExample, features, testimonials, cta, footer; the block owns all layout and styling.",
+  lakebed: {
+    schema: {
+      searchHistory: table({
+        term: string(),
+        count: number(),
+        updatedAt: number(),
+      }),
+    },
+    queries: {
+      searchHistory: ({ db }) => db.searchHistory.orderBy("updatedAt").all(),
+    },
+    mutations: {
+      saveSearchTerm: ({ db }, term: string) => {
+        const normalized = term.trim().toLowerCase()
+
+        if (!normalized) {
+          return db.searchHistory.all()
+        }
+
+        const existing = db.searchHistory.where("term", normalized).all()[0]
+        const now = Date.now()
+
+        if (existing) {
+          db.searchHistory.update(existing.id, {
+            count: existing.count + 1,
+            updatedAt: now,
+          })
+          return db.searchHistory.all()
+        }
+
+        db.searchHistory.insert({
+          term: normalized,
+          count: 1,
+          updatedAt: now,
+        })
+
+        return db.searchHistory.all()
+      },
+      removeSearchTerm: ({ db }, term: string) => {
+        const normalized = term.trim().toLowerCase()
+        if (!normalized) return db.searchHistory.all()
+
+        for (const item of db.searchHistory.where("term", normalized).all()) {
+          db.searchHistory.delete(item.id)
+        }
+
+        return db.searchHistory.all()
+      },
+      clearSearchHistory: ({ db }) => {
+        for (const item of db.searchHistory.all()) {
+          db.searchHistory.delete(item.id)
+        }
+
+        return []
+      },
+    },
+  },
   props: z.object({
     /** Brand / product name shown in the navbar, sidebar context and footer. */
     brand: z.string().optional(),
@@ -165,9 +234,11 @@ export const DocsKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
+    const [searchTerm, setSearchTerm] = useState("")
     const brand = props.brand ?? "FlowStack"
     const nav = props.nav?.length
       ? props.nav
@@ -499,6 +570,38 @@ export default orderWorkflow;`
       ? props.footer.socials
       : ["GitHub", "Twitter", "Discord", "YouTube"]
 
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? auth.displayName || auth.user?.displayName || auth.email || "Account"
+        : "Sign in"
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const storedSearchHistory = lakebed.useQuery("searchHistory")
+    const saveSearchTerm = lakebed.useMutation("saveSearchTerm")
+    const removeSearchTerm = lakebed.useMutation("removeSearchTerm")
+    const clearSearchHistory = lakebed.useMutation("clearSearchHistory")
+
+    const searchHistory = (storedSearchHistory ?? []).slice().sort(
+      (a, b) => b.updatedAt - a.updatedAt,
+    )
+    const recentSearchCount = searchHistory.length
+    const totalSearchCount = searchHistory.reduce(
+      (total, entry) => total + entry.count,
+      0,
+    )
+
     // Brand logo tile — rose→sky gradient square with a bolt glyph (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
@@ -819,6 +922,14 @@ export default orderWorkflow;`
                 className="mx-8 hidden max-w-xl flex-1 md:flex lg:mx-12"
                 onSubmit={(e) => {
                   e.preventDefault()
+                  const normalizedSearchTerm = searchTerm.trim()
+
+                  if (normalizedSearchTerm) {
+                    void saveSearchTerm(normalizedSearchTerm)
+                    setSearchTerm("")
+                    setSearchOpen(true)
+                  }
+
                   go(nav[0])
                 }}
               >
@@ -830,6 +941,10 @@ export default orderWorkflow;`
                     type="search"
                     id="docs2-nav-search"
                     placeholder={searchPlaceholder}
+                    value={searchTerm}
+                    onChange={(event) =>
+                      setSearchTerm(event.currentTarget.value)
+                    }
                     className="w-full rounded-lg border border-input bg-muted py-2.5 pl-11 pr-20 text-sm text-foreground placeholder-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/50"
                   />
                   <SearchIcon className="pointer-events-none absolute left-4 top-3 size-5 text-muted-foreground" />
@@ -874,6 +989,119 @@ export default orderWorkflow;`
                 >
                   {topCta}
                   <ArrowRight className="size-4" />
+                </button>
+                <Sheet open={searchOpen} onOpenChange={setSearchOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open saved searches"
+                      className="relative hidden items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+                    >
+                      <SearchIcon className="size-4" />
+                      {recentSearchCount > 0 ? (
+                        <span className="inline-flex size-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                          {recentSearchCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle>Search history</SheetTitle>
+                      <SheetDescription>
+                        {recentSearchCount > 0
+                          ? `${recentSearchCount} saved searches`
+                          : "No recent searches yet."}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {searchHistory.length ? (
+                        <div className="space-y-4">
+                          {searchHistory.map((entry) => (
+                            <div
+                              key={entry.id}
+                              className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 p-4 text-left transition-colors hover:bg-muted"
+                            >
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSearchOpen(false)
+                                  go(entry.term)
+                                }}
+                                className="flex-1 text-left"
+                              >
+                                <p className="text-sm font-medium text-foreground">
+                                  {entry.term}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {entry.count} search
+                                  {entry.count === 1 ? "" : "es"}
+                                </p>
+                                <span className="sr-only">
+                                  Open {entry.term}
+                                </span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void removeSearchTerm(entry.term)}
+                                className="rounded border border-border bg-background px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="rounded-lg border border-dashed border-border bg-muted/40 px-6 py-12 text-center">
+                          <p className="text-sm font-medium text-foreground">
+                            No searches yet
+                          </p>
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            Run a search to build your history.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="flex justify-between rounded-lg bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
+                        <span>Total queries: {totalSearchCount}</span>
+                        <span>Unique terms: {recentSearchCount}</span>
+                      </div>
+                      <div className="mt-4 grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => void clearSearchHistory()}
+                          disabled={!recentSearchCount}
+                        >
+                          Clear all
+                        </Button>
+                        <SheetClose asChild>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            className="w-full"
+                          >
+                            Close
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                <button
+                  type="button"
+                  onClick={isSignedIn ? handleSignOut : handleSignIn}
+                  disabled={auth.isLoading}
+                  className="hidden items-center gap-2 rounded-lg bg-foreground px-3 py-2 text-xs font-semibold text-background transition-colors hover:bg-foreground/90 sm:inline-flex disabled:pointer-events-none disabled:opacity-60"
+                >
+                  {authLabel}
                 </button>
                 <button
                   type="button"

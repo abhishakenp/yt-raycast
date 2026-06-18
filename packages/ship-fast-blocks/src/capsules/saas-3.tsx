@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * SaasKimiPage3 — a visually distinct third-style sibling to SaasKimiPage.
@@ -177,12 +195,93 @@ export const SaasKimiPage3 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      leads: table({
+        email: string(),
+        name: string(),
+        plan: string(),
+      }),
+      subscribers: table({
+        email: string(),
+      }),
+    },
+    queries: {
+      leads: ({ db }) => db.leads.orderBy('createdAt').all(),
+      subscribers: ({ db }) => db.subscribers.orderBy('createdAt').all(),
+    },
+    mutations: {
+      addLead: ({ db }, email: string, name: string, plan: string) => {
+        db.leads.insert({ email, name, plan })
+        return db.leads.all()
+      },
+      addSubscriber: ({ db }, email: string) => {
+        db.subscribers.insert({ email })
+        return db.subscribers.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [leadDrawerOpen, setLeadDrawerOpen] = useState(false)
+    const [leadEmail, setLeadEmail] = useState('')
+    const [leadName, setLeadName] = useState('')
+    const [leadPlan, setLeadPlan] = useState('Pro')
+    const [newsletterEmail, setNewsletterEmail] = useState('')
+
     const brand = props.brand ?? "Chronos AI"
     const nav = props.nav?.length
       ? props.nav
       : ["Features", "Pricing", "Reviews", "FAQ"]
+
+    const leads = lakebed.useQuery('leads')
+    const subscribers = lakebed.useQuery('subscribers')
+    const addLead = lakebed.useMutation('addLead')
+    const addSubscriber = lakebed.useMutation('addSubscriber')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const handleLeadSubmit = (e: React.FormEvent) => {
+      e.preventDefault()
+      if (!leadEmail || !leadName) return
+      void addLead(leadEmail, leadName, leadPlan)
+      setLeadDrawerOpen(false)
+      setLeadEmail('')
+      setLeadName('')
+      setLeadPlan('Pro')
+    }
+
+    const handleNewsletterSubmit = (e: React.FormEvent) => {
+      e.preventDefault()
+      if (!newsletterEmail) return
+      void addSubscriber(newsletterEmail)
+      setNewsletterEmail('')
+    }
 
     const heroBadge =
       props.hero?.badge ?? "New: AI Smart Conflict Resolution"
@@ -626,6 +725,21 @@ export const SaasKimiPage3 = defineCapsule({
       </svg>
     )
 
+    const AccountChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     return (
       <div
         className={cn(
@@ -660,16 +774,109 @@ export const SaasKimiPage3 = defineCapsule({
               ))}
             </ul>
             <div className="flex items-center gap-4">
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <AccountChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Settings')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Settings
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
               <button
                 type="button"
-                onClick={() => go("Sign in")}
-                className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-              >
-                Sign in
-              </button>
-              <button
-                type="button"
-                onClick={() => go(heroPrimary)}
+                onClick={() => setLeadDrawerOpen(true)}
                 className="inline-flex items-center justify-center rounded-lg bg-background px-4 py-2 text-sm font-semibold text-foreground shadow-sm ring-1 ring-border transition-colors hover:bg-accent hover:text-accent-foreground"
               >
                 Get Started
@@ -724,7 +931,7 @@ export const SaasKimiPage3 = defineCapsule({
                 <div className="mb-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
                   <button
                     type="button"
-                    onClick={() => go(heroPrimary)}
+                    onClick={() => setLeadDrawerOpen(true)}
                     className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-accent px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:opacity-90"
                   >
                     {heroPrimary}
@@ -1275,7 +1482,10 @@ export const SaasKimiPage3 = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(plan.cta)}
+                      onClick={() => {
+                        setLeadPlan(plan.name)
+                        setLeadDrawerOpen(true)
+                      }}
                       className={cn(
                         "w-full rounded-xl px-4 py-3 text-sm font-semibold transition-all",
                         plan.popular
@@ -1475,7 +1685,7 @@ export const SaasKimiPage3 = defineCapsule({
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={() => setLeadDrawerOpen(true)}
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-background px-8 py-4 text-base font-semibold text-foreground shadow-xl transition-colors hover:bg-accent hover:text-accent-foreground"
                 >
                   {ctaPrimary}
@@ -1512,7 +1722,7 @@ export const SaasKimiPage3 = defineCapsule({
         {/* Footer */}
         <footer className="border-t border-border/50 bg-muted/30 py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-5">
+            <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-6">
               {/* Brand */}
               <div className="lg:col-span-2">
                 <button
@@ -1572,9 +1782,42 @@ export const SaasKimiPage3 = defineCapsule({
                 </div>
               </div>
 
+              {/* Newsletter */}
+              <div className="lg:col-span-1">
+                <h4 className="mb-4 font-semibold text-foreground">
+                  Stay Updated
+                </h4>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  Get productivity tips and product updates delivered to your inbox.
+                </p>
+                <form onSubmit={handleNewsletterSubmit} className="space-y-2">
+                  <input
+                    type="email"
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    required
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                  <Button
+                    type="submit"
+                    size="sm"
+                    className="w-full rounded-full"
+                    disabled={!newsletterEmail}
+                  >
+                    Subscribe
+                  </Button>
+                </form>
+                {subscribers && subscribers.length > 0 && (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {subscribers.length} {subscribers.length === 1 ? 'subscriber' : 'subscribers'}
+                  </p>
+                )}
+              </div>
+
               {/* Footer columns */}
               {footerColumns.map((col) => (
-                <div key={col.title}>
+                <div key={col.title} className="lg:col-span-1">
                   <h4 className="mb-4 font-semibold text-foreground">
                     {col.title}
                   </h4>
@@ -1616,6 +1859,102 @@ export const SaasKimiPage3 = defineCapsule({
             </div>
           </div>
         </footer>
+
+        {/* Lead Capture Drawer */}
+        <Sheet open={leadDrawerOpen} onOpenChange={setLeadDrawerOpen}>
+          <SheetContent
+            side="right"
+            className="w-full gap-0 p-0 sm:max-w-md"
+          >
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Start Your Free Trial</SheetTitle>
+              <SheetDescription>
+                Get started with {brand} in under 2 minutes. No credit card required.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              <form onSubmit={handleLeadSubmit} className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="lead-name"
+                    className="mb-2 block text-sm font-medium text-foreground"
+                  >
+                    Full Name
+                  </label>
+                  <input
+                    id="lead-name"
+                    type="text"
+                    value={leadName}
+                    onChange={(e) => setLeadName(e.target.value)}
+                    placeholder="John Doe"
+                    required
+                    className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="lead-email"
+                    className="mb-2 block text-sm font-medium text-foreground"
+                  >
+                    Work Email
+                  </label>
+                  <input
+                    id="lead-email"
+                    type="email"
+                    value={leadEmail}
+                    onChange={(e) => setLeadEmail(e.target.value)}
+                    placeholder="john@company.com"
+                    required
+                    className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="lead-plan"
+                    className="mb-2 block text-sm font-medium text-foreground"
+                  >
+                    Plan
+                  </label>
+                  <select
+                    id="lead-plan"
+                    value={leadPlan}
+                    onChange={(e) => setLeadPlan(e.target.value)}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="Starter">Starter (Free)</option>
+                    <option value="Pro">Pro ($12/month)</option>
+                    <option value="Enterprise">Enterprise ($49/user/month)</option>
+                  </select>
+                </div>
+                <div className="rounded-lg bg-muted/40 p-4">
+                  <p className="text-sm text-muted-foreground">
+                    {leads && leads.length > 0
+                      ? `${leads.length} ${leads.length === 1 ? 'person has' : 'people have'} started their trial today.`
+                      : 'Be the first to start your trial today!'}
+                  </p>
+                </div>
+              </form>
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full rounded-full"
+                onClick={() => setLeadDrawerOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                className="w-full rounded-full"
+                onClick={handleLeadSubmit}
+                disabled={!leadEmail || !leadName}
+              >
+                Start Free Trial
+              </Button>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

@@ -1,9 +1,27 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * BarNightclubKimiPage — a complete, self-contained cocktail BAR & NIGHTCLUB
@@ -33,7 +51,7 @@ import { Image } from "#/lib/img.tsx"
  * defaults make it render great with no props at all.
  */
 export const BarNightclubKimiPage = defineCapsule({
-  name: "BarNightclubKimiPage",
+  name: 'BarNightclubKimiPage',
   description:
     "Complete cocktail BAR & NIGHTCLUB landing + reservations page with a moody, upscale, monochrome after-dark aesthetic: near-black canvas, wide letter-spaced uppercase eyebrows, hairline section dividers, and editorial light-weight headlines. Includes a full-bleed atmospheric hero (ambient bar photo, established-year line, dual reserve/menu CTAs, scroll cue), a 3-up features strip (craft cocktails, live DJ sets, late night), a stacked weekly EVENTS list with DJ photos and ticket buttons, a two-column drinks MENU (house signature + classic cocktails with prices), a masonry photo GALLERY, a 4-step 'how to book' flow, three VIP bottle-service PRICING packages (bronze/silver-featured/gold), guest reviews with star ratings and headshots, a venue STATS strip, an FAQ accordion-style list, and a split RESERVATIONS section with phone/address/hours plus a real booking form (name, email, date, guests, package, requests). Use as the ROOT/home page for cocktail bars, nightclubs, lounges, speakeasies, late-night venues, live-music or DJ bars, and clubs offering bottle service / VIP tables / private events when a dark, premium, nightlife-driven reservations page is wanted. Supply content only — brand, nav, hero, features, events, menu, gallery, steps, packages, reviews, stats, faq, reservations, footer; the block owns all layout and styling.",
   props: z.object({
@@ -206,401 +224,526 @@ export const BarNightclubKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      reservations: table({
+        name: string(),
+        email: string(),
+        date: string(),
+        guests: string(),
+        package: string(),
+        requests: string(),
+      }),
+      events: table({
+        day: string(),
+        date: string(),
+        title: string(),
+        description: string(),
+        cta: string(),
+        imageAlt: string(),
+      }),
+      favorites: table({
+        eventTitle: string(),
+      }),
+    },
+    queries: {
+      reservations: ({ db }) => db.reservations.orderBy('createdAt').all(),
+      events: ({ db }) => db.events.orderBy('createdAt').all(),
+      favoriteEventTitles: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.eventTitle)),
+    },
+    mutations: {
+      addReservation: (
+        { db },
+        name: string,
+        email: string,
+        date: string,
+        guests: string,
+        packageName: string,
+        requests: string,
+      ) => {
+        db.reservations.insert({
+          name,
+          email,
+          date,
+          guests,
+          package: packageName,
+          requests,
+        })
+        return db.reservations.all()
+      },
+      removeReservation: ({ db }, id: string) => {
+        for (const item of db.reservations.where('id', id).all()) {
+          db.reservations.delete(item.id)
+        }
+        return db.reservations.all()
+      },
+      clearReservations: ({ db }) => {
+        for (const item of db.reservations.all()) {
+          db.reservations.delete(item.id)
+        }
+        return []
+      },
+      toggleFavorite: ({ db }, eventTitle: string) => {
+        const existingFavorite = db.favorites
+          .where('eventTitle', eventTitle)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ eventTitle })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
-    const brand = props.brand ?? "NOIR"
+    const [reservationsOpen, setReservationsOpen] = useState(false)
+    const brand = props.brand ?? 'NOIR'
+
+    // Lakebed queries and mutations
+    const storedReservations = lakebed.useQuery('reservations')
+    const storedEvents = lakebed.useQuery('events')
+    const favoriteEventTitles = lakebed.useQuery('favoriteEventTitles')
+    const addReservation = lakebed.useMutation('addReservation')
+    const removeReservation = lakebed.useMutation('removeReservation')
+    const clearReservations = lakebed.useMutation('clearReservations')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const auth = lakebed.useAuth()
+
+    // Auth state
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
     const nav = props.nav?.length
       ? props.nav
-      : ["Events", "Menu", "Gallery", "Reservations"]
+      : ['Events', 'Menu', 'Gallery', 'Reservations']
 
-    const heroEyebrow = props.hero?.eyebrow ?? "Est. 2019 — Downtown Chicago"
-    const heroTop = props.hero?.headingTop ?? "Where Night"
-    const heroBottom = props.hero?.headingBottom ?? "Comes Alive"
+    const heroEyebrow = props.hero?.eyebrow ?? 'Est. 2019 — Downtown Chicago'
+    const heroTop = props.hero?.headingTop ?? 'Where Night'
+    const heroBottom = props.hero?.headingBottom ?? 'Comes Alive'
     const heroSub =
       props.hero?.subheading ??
-      "Craft cocktails, world-class DJs, and intimate vibes. NOIR is your destination for unforgettable evenings."
-    const heroPrimary = props.hero?.primaryCta ?? "Reserve a Table"
-    const heroSecondary = props.hero?.secondaryCta ?? "View Menu"
+      'Craft cocktails, world-class DJs, and intimate vibes. NOIR is your destination for unforgettable evenings.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Reserve a Table'
+    const heroSecondary = props.hero?.secondaryCta ?? 'View Menu'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Elegant bar interior with ambient lighting and bottles on shelves"
-    const heroScroll = props.hero?.scroll ?? "Scroll"
+      'Elegant bar interior with ambient lighting and bottles on shelves'
+    const heroScroll = props.hero?.scroll ?? 'Scroll'
 
     const features = props.features?.length
       ? props.features
       : [
           {
-            title: "Craft Cocktails",
+            title: 'Craft Cocktails',
             description:
-              "Award-winning mixologists creating signature drinks with house-made syrups, rare spirits, and precision technique.",
+              'Award-winning mixologists creating signature drinks with house-made syrups, rare spirits, and precision technique.',
           },
           {
-            title: "Live DJ Sets",
+            title: 'Live DJ Sets',
             description:
-              "Resident and guest DJs spinning deep house, techno, and disco every Thursday through Saturday until 4 AM.",
+              'Resident and guest DJs spinning deep house, techno, and disco every Thursday through Saturday until 4 AM.',
           },
           {
-            title: "Late Night",
+            title: 'Late Night',
             description:
-              "Open until 4 AM on weekends. Private booths, VIP sections, and bottle service available all night.",
+              'Open until 4 AM on weekends. Private booths, VIP sections, and bottle service available all night.',
           },
         ]
 
-    const eventsEyebrow = props.events?.eyebrow ?? "Upcoming Events"
-    const eventsHeading = props.events?.heading ?? "This Week at NOIR"
+    const eventsEyebrow = props.events?.eyebrow ?? 'Upcoming Events'
+    const eventsHeading = props.events?.heading ?? 'This Week at NOIR'
     const eventsDesc =
       props.events?.description ??
-      "Curated nights featuring resident DJs, live performances, and special themed events. Advance tickets recommended."
-    const eventItems = props.events?.items?.length
-      ? props.events.items
-      : [
-          {
-            day: "Thursday",
-            date: "June 4, 2026",
-            title: "Deep House Thursdays",
-            description:
-              "Resident DJ Marcus Chen spins vinyl-only deep house classics. 10 PM — 4 AM.",
-            cta: "Get Tickets",
-            imageAlt: "DJ performing with turntables and mixing equipment",
-          },
-          {
-            day: "Friday",
-            date: "June 5, 2026",
-            title: "NOIR Presents: Maya Rodriguez",
-            description:
-              "Underground techno sensation from Berlin. Limited capacity — advance tickets only. 11 PM — 5 AM.",
-            cta: "Get Tickets",
-            imageAlt: "Techno DJ with headphones performing at underground club",
-          },
-          {
-            day: "Saturday",
-            date: "June 6, 2026",
-            title: "Disco Inferno",
-            description:
-              "All-night disco and funk with DJ Collective Soul. Dress code: sequins encouraged. 10 PM — 4 AM.",
-            cta: "Get Tickets",
-            imageAlt: "Crowd dancing under disco ball with colorful lights",
-          },
-          {
-            day: "Sunday",
-            date: "June 7, 2026",
-            title: "Jazz & Cocktails",
-            description:
-              "Live jazz quartet with vocalist Sarah Mitchell. Sophisticated evening, no cover. 7 PM — 11 PM.",
-            cta: "Reserve Table",
-            imageAlt: "Jazz quartet performing on stage with saxophone and piano",
-          },
-        ]
+      'Curated nights featuring resident DJs, live performances, and special themed events. Advance tickets recommended.'
 
-    const menuEyebrow = props.menu?.eyebrow ?? "Drinks Menu"
-    const menuHeading = props.menu?.heading ?? "Signature Cocktails"
+    // Use stored events if available, otherwise fall back to static defaults
+    const displayEvents =
+      storedEvents && storedEvents.length > 0
+        ? storedEvents
+        : props.events?.items?.length
+          ? props.events.items
+          : [
+              {
+                day: 'Thursday',
+                date: 'June 4, 2026',
+                title: 'Deep House Thursdays',
+                description:
+                  'Resident DJ Marcus Chen spins vinyl-only deep house classics. 10 PM — 4 AM.',
+                cta: 'Get Tickets',
+                imageAlt: 'DJ performing with turntables and mixing equipment',
+              },
+              {
+                day: 'Friday',
+                date: 'June 5, 2026',
+                title: 'NOIR Presents: Maya Rodriguez',
+                description:
+                  'Underground techno sensation from Berlin. Limited capacity — advance tickets only. 11 PM — 5 AM.',
+                cta: 'Get Tickets',
+                imageAlt:
+                  'Techno DJ with headphones performing at underground club',
+              },
+              {
+                day: 'Saturday',
+                date: 'June 6, 2026',
+                title: 'Disco Inferno',
+                description:
+                  'All-night disco and funk with DJ Collective Soul. Dress code: sequins encouraged. 10 PM — 4 AM.',
+                cta: 'Get Tickets',
+                imageAlt: 'Crowd dancing under disco ball with colorful lights',
+              },
+              {
+                day: 'Sunday',
+                date: 'June 7, 2026',
+                title: 'Jazz & Cocktails',
+                description:
+                  'Live jazz quartet with vocalist Sarah Mitchell. Sophisticated evening, no cover. 7 PM — 11 PM.',
+                cta: 'Reserve Table',
+                imageAlt:
+                  'Jazz quartet performing on stage with saxophone and piano',
+              },
+            ]
+
+    const menuEyebrow = props.menu?.eyebrow ?? 'Drinks Menu'
+    const menuHeading = props.menu?.heading ?? 'Signature Cocktails'
     const menuDesc =
       props.menu?.description ??
-      "Handcrafted by our award-winning mixologists. All cocktails available as non-alcoholic upon request."
+      'Handcrafted by our award-winning mixologists. All cocktails available as non-alcoholic upon request.'
     const menuColumns = props.menu?.columns?.length
       ? props.menu.columns
       : [
           {
-            title: "House Signatures",
+            title: 'House Signatures',
             items: [
               {
-                name: "Midnight in Paris",
+                name: 'Midnight in Paris',
                 description:
                   "Hendrick's Gin, St-Germain, blackberries, lemon, champagne float",
-                price: "$18",
+                price: '$18',
               },
               {
-                name: "Smoke & Mirrors",
+                name: 'Smoke & Mirrors',
                 description:
-                  "Mezcal, Aperol, smoked honey, grapefruit, habanero bitters",
-                price: "$19",
+                  'Mezcal, Aperol, smoked honey, grapefruit, habanero bitters',
+                price: '$19',
               },
               {
-                name: "Velvet Underground",
+                name: 'Velvet Underground',
                 description:
-                  "Bourbon, Amaro Nonino, velvet falernum, aromatic bitters",
-                price: "$17",
+                  'Bourbon, Amaro Nonino, velvet falernum, aromatic bitters',
+                price: '$17',
               },
               {
-                name: "Neon Nights",
-                description: "Vodka, blue curaçao, coconut, lime, activated charcoal",
-                price: "$16",
-              },
-              {
-                name: "The Nocturnal",
-                description: "Rye whiskey, coffee liqueur, cold brew, orange peel",
-                price: "$18",
-              },
-              {
-                name: "Golden Hour",
+                name: 'Neon Nights',
                 description:
-                  "Tequila reposado, passion fruit, turmeric, ginger beer",
-                price: "$17",
+                  'Vodka, blue curaçao, coconut, lime, activated charcoal',
+                price: '$16',
+              },
+              {
+                name: 'The Nocturnal',
+                description:
+                  'Rye whiskey, coffee liqueur, cold brew, orange peel',
+                price: '$18',
+              },
+              {
+                name: 'Golden Hour',
+                description:
+                  'Tequila reposado, passion fruit, turmeric, ginger beer',
+                price: '$17',
               },
             ],
           },
           {
-            title: "Classics & Premium",
+            title: 'Classics & Premium',
             items: [
               {
-                name: "NOIR Old Fashioned",
+                name: 'NOIR Old Fashioned',
                 description:
-                  "Woodford Reserve, house bitters, demerara, expressed orange",
-                price: "$16",
+                  'Woodford Reserve, house bitters, demerara, expressed orange',
+                price: '$16',
               },
               {
-                name: "Perfect Manhattan",
+                name: 'Perfect Manhattan',
                 description:
-                  "Rittenhouse Rye, Carpano Antica, Dolin Dry, Luxardo cherry",
-                price: "$17",
+                  'Rittenhouse Rye, Carpano Antica, Dolin Dry, Luxardo cherry',
+                price: '$17',
               },
               {
-                name: "French 75",
-                description: "Plymouth Gin, lemon, simple syrup, Champagne",
-                price: "$15",
+                name: 'French 75',
+                description: 'Plymouth Gin, lemon, simple syrup, Champagne',
+                price: '$15',
               },
               {
-                name: "Negroni Sbagliato",
-                description: "Campari, sweet vermouth, Prosecco (bubbly Negroni)",
-                price: "$15",
+                name: 'Negroni Sbagliato',
+                description:
+                  'Campari, sweet vermouth, Prosecco (bubbly Negroni)',
+                price: '$15',
               },
               {
-                name: "Premium Whiskey Flight",
+                name: 'Premium Whiskey Flight',
                 description:
                   "1oz pours: Yamazaki 12, Macallan 18, Blanton's Single Barrel",
-                price: "$45",
+                price: '$45',
               },
               {
-                name: "Champagne by the Glass",
+                name: 'Champagne by the Glass',
                 description:
-                  "Dom Pérignon 2013, Krug Grande Cuvée, Veuve Clicquot",
-                price: "$28-85",
+                  'Dom Pérignon 2013, Krug Grande Cuvée, Veuve Clicquot',
+                price: '$28-85',
               },
             ],
           },
         ]
     const menuFootnote =
       props.menu?.footnote ??
-      "Full menu includes beer, wine, and non-alcoholic options"
-    const menuFootnoteCta = props.menu?.footnoteCta ?? "Download Full Menu (PDF)"
+      'Full menu includes beer, wine, and non-alcoholic options'
+    const menuFootnoteCta =
+      props.menu?.footnoteCta ?? 'Download Full Menu (PDF)'
 
-    const galleryEyebrow = props.gallery?.eyebrow ?? "Gallery"
-    const galleryHeading = props.gallery?.heading ?? "Inside NOIR"
+    const galleryEyebrow = props.gallery?.eyebrow ?? 'Gallery'
+    const galleryHeading = props.gallery?.heading ?? 'Inside NOIR'
     const galleryDesc =
       props.gallery?.description ??
-      "Intimate booths, ambient lighting, and a carefully curated atmosphere designed for conversation and celebration."
+      'Intimate booths, ambient lighting, and a carefully curated atmosphere designed for conversation and celebration.'
     const galleryImages = props.gallery?.images?.length
       ? props.gallery.images
       : [
-          "Bartender crafting cocktail at marble bar counter with warm lighting",
-          "Elegant lounge seating area with velvet booths and ambient lighting",
-          "Close-up of craft cocktail in crystal glass with garnish",
-          "Nightclub dance floor with people dancing under colorful lights",
-          "Backlit bar shelves with premium liquor bottles glowing in amber light",
+          'Bartender crafting cocktail at marble bar counter with warm lighting',
+          'Elegant lounge seating area with velvet booths and ambient lighting',
+          'Close-up of craft cocktail in crystal glass with garnish',
+          'Nightclub dance floor with people dancing under colorful lights',
+          'Backlit bar shelves with premium liquor bottles glowing in amber light',
         ]
 
-    const stepsEyebrow = props.steps?.eyebrow ?? "Reservations"
-    const stepsHeading = props.steps?.heading ?? "How to Book"
+    const stepsEyebrow = props.steps?.eyebrow ?? 'Reservations'
+    const stepsHeading = props.steps?.heading ?? 'How to Book'
     const stepsDesc =
       props.steps?.description ??
-      "Reserve your table in minutes. VIP and bottle service available for groups of 6 or more."
+      'Reserve your table in minutes. VIP and bottle service available for groups of 6 or more.'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Choose Your Night",
-            description: "Select from upcoming events or general admission",
+            title: 'Choose Your Night',
+            description: 'Select from upcoming events or general admission',
           },
           {
-            title: "Pick Your Table",
-            description: "Booth, bar seating, or VIP section",
+            title: 'Pick Your Table',
+            description: 'Booth, bar seating, or VIP section',
           },
           {
-            title: "Add Bottle Service",
-            description: "Optional: reserve premium spirits and mixers",
+            title: 'Add Bottle Service',
+            description: 'Optional: reserve premium spirits and mixers',
           },
           {
-            title: "Confirm & Arrive",
-            description: "Receive QR code entry via email",
+            title: 'Confirm & Arrive',
+            description: 'Receive QR code entry via email',
           },
         ]
 
-    const packagesEyebrow = props.packages?.eyebrow ?? "Bottle Service"
-    const packagesHeading = props.packages?.heading ?? "VIP Packages"
+    const packagesEyebrow = props.packages?.eyebrow ?? 'Bottle Service'
+    const packagesHeading = props.packages?.heading ?? 'VIP Packages'
     const packagesDesc =
       props.packages?.description ??
-      "Elevate your evening with reserved seating and premium bottle service. All packages include mixers, priority entry, and dedicated server."
+      'Elevate your evening with reserved seating and premium bottle service. All packages include mixers, priority entry, and dedicated server.'
     const packageItems = props.packages?.items?.length
       ? props.packages.items
       : [
           {
-            name: "Bronze",
-            price: "$350",
-            priceNote: "+ tax & gratuity",
+            name: 'Bronze',
+            price: '$350',
+            priceNote: '+ tax & gratuity',
             featured: false,
             features: [
-              "Seating for up to 4 guests",
-              "1 Premium bottle (750ml)",
-              "Standard mixers",
-              "Priority entry",
+              'Seating for up to 4 guests',
+              '1 Premium bottle (750ml)',
+              'Standard mixers',
+              'Priority entry',
             ],
-            cta: "Reserve",
+            cta: 'Reserve',
           },
           {
-            name: "Silver",
-            price: "$650",
-            priceNote: "+ tax & gratuity",
+            name: 'Silver',
+            price: '$650',
+            priceNote: '+ tax & gratuity',
             featured: true,
-            featuredLabel: "Most Popular",
+            featuredLabel: 'Most Popular',
             features: [
-              "Seating for up to 6 guests",
-              "2 Premium bottles (750ml)",
-              "Premium mixers & garnishes",
-              "Skip-the-line entry",
-              "Complimentary appetizer platter",
+              'Seating for up to 6 guests',
+              '2 Premium bottles (750ml)',
+              'Premium mixers & garnishes',
+              'Skip-the-line entry',
+              'Complimentary appetizer platter',
             ],
-            cta: "Reserve",
+            cta: 'Reserve',
           },
           {
-            name: "Gold",
-            price: "$1,200",
-            priceNote: "+ tax & gratuity",
+            name: 'Gold',
+            price: '$1,200',
+            priceNote: '+ tax & gratuity',
             featured: false,
             features: [
-              "Seating for up to 10 guests",
-              "3 Premium or champagne bottles",
-              "Private VIP section",
-              "Complimentary champagne toast",
-              "Personal host & security",
+              'Seating for up to 10 guests',
+              '3 Premium or champagne bottles',
+              'Private VIP section',
+              'Complimentary champagne toast',
+              'Personal host & security',
             ],
-            cta: "Reserve",
+            cta: 'Reserve',
           },
         ]
     const packagesFootnote =
       props.packages?.footnote ??
-      "Bottle selection: Grey Goose, Casamigos, Hennessy VSOP, Moët & Chandon. Upgrades available upon request."
+      'Bottle selection: Grey Goose, Casamigos, Hennessy VSOP, Moët & Chandon. Upgrades available upon request.'
 
-    const reviewsEyebrow = props.reviews?.eyebrow ?? "Reviews"
-    const reviewsHeading = props.reviews?.heading ?? "What Guests Say"
+    const reviewsEyebrow = props.reviews?.eyebrow ?? 'Reviews'
+    const reviewsHeading = props.reviews?.heading ?? 'What Guests Say'
     const reviewItems = props.reviews?.items?.length
       ? props.reviews.items
       : [
           {
             quote:
-              "Best cocktail bar in Chicago, hands down. The Midnight in Paris is incredible and the atmosphere is exactly what you want for a night out. Already booked our next visit.",
-            name: "Sarah Chen",
-            role: "Marketing Director",
+              'Best cocktail bar in Chicago, hands down. The Midnight in Paris is incredible and the atmosphere is exactly what you want for a night out. Already booked our next visit.',
+            name: 'Sarah Chen',
+            role: 'Marketing Director',
             avatarAlt:
-              "Professional headshot of a smiling woman with shoulder-length brown hair",
+              'Professional headshot of a smiling woman with shoulder-length brown hair',
           },
           {
             quote:
-              "We booked the Silver package for my birthday and it exceeded all expectations. The VIP section was perfect, our server was attentive, and the music was on point all night.",
-            name: "Marcus Thompson",
-            role: "Software Engineer",
+              'We booked the Silver package for my birthday and it exceeded all expectations. The VIP section was perfect, our server was attentive, and the music was on point all night.',
+            name: 'Marcus Thompson',
+            role: 'Software Engineer',
             avatarAlt:
-              "Professional headshot of a smiling man with short dark hair and beard",
+              'Professional headshot of a smiling man with short dark hair and beard',
           },
           {
             quote:
-              "The Sunday jazz nights are my weekly ritual. Intimate setting, incredible musicians, and the bartenders remember your name. This place has soul — a rare find in the city.",
-            name: "Elena Rodriguez",
-            role: "Architect",
+              'The Sunday jazz nights are my weekly ritual. Intimate setting, incredible musicians, and the bartenders remember your name. This place has soul — a rare find in the city.',
+            name: 'Elena Rodriguez',
+            role: 'Architect',
             avatarAlt:
-              "Professional headshot of a smiling woman with curly hair and glasses",
+              'Professional headshot of a smiling woman with curly hair and glasses',
           },
         ]
 
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "2019", label: "Est. in Chicago" },
-          { value: "50+", label: "Signature Cocktails" },
-          { value: "4 AM", label: "Weekend Closing" },
-          { value: "4.9", label: "Google Rating" },
+          { value: '2019', label: 'Est. in Chicago' },
+          { value: '50+', label: 'Signature Cocktails' },
+          { value: '4 AM', label: 'Weekend Closing' },
+          { value: '4.9', label: 'Google Rating' },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Common Questions"
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Common Questions'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "What is the dress code?",
+            question: 'What is the dress code?',
             answer:
-              "Smart casual to cocktail attire. We ask guests to avoid athletic wear, flip-flops, and overly casual attire. Themed nights may have specific dress codes — check the event details when booking.",
+              'Smart casual to cocktail attire. We ask guests to avoid athletic wear, flip-flops, and overly casual attire. Themed nights may have specific dress codes — check the event details when booking.',
           },
           {
-            question: "Do you take walk-ins?",
+            question: 'Do you take walk-ins?',
             answer:
-              "We do accept walk-ins for the bar area, but tables and booths are reservation-only Thursday through Saturday. Reservations are strongly recommended to guarantee entry, especially on event nights.",
+              'We do accept walk-ins for the bar area, but tables and booths are reservation-only Thursday through Saturday. Reservations are strongly recommended to guarantee entry, especially on event nights.',
           },
           {
-            question: "Is there a cover charge?",
+            question: 'Is there a cover charge?',
             answer:
-              "General admission is free Sunday through Wednesday. Thursday has a $10 cover, and Friday/Saturday events range from $15-25 depending on the DJ or performer. VIP packages include entry for all guests.",
+              'General admission is free Sunday through Wednesday. Thursday has a $10 cover, and Friday/Saturday events range from $15-25 depending on the DJ or performer. VIP packages include entry for all guests.',
           },
           {
-            question: "Can I book a private event?",
+            question: 'Can I book a private event?',
             answer:
-              "Absolutely. We host private parties, corporate events, and celebrations. The entire venue can be reserved Sundays and Mondays, or our private lounge accommodates up to 40 guests any night. Contact us for custom packages.",
+              'Absolutely. We host private parties, corporate events, and celebrations. The entire venue can be reserved Sundays and Mondays, or our private lounge accommodates up to 40 guests any night. Contact us for custom packages.',
           },
           {
-            question: "Do you serve food?",
+            question: 'Do you serve food?',
             answer:
-              "We offer a curated small plates menu featuring artisanal cheeses, charcuterie, and shareable bites. VIP packages include complimentary appetizer platters. Outside food is not permitted except for pre-approved celebration cakes.",
+              'We offer a curated small plates menu featuring artisanal cheeses, charcuterie, and shareable bites. VIP packages include complimentary appetizer platters. Outside food is not permitted except for pre-approved celebration cakes.',
           },
         ]
 
-    const resEyebrow = props.reservations?.eyebrow ?? "Reservations"
-    const resHeading = props.reservations?.heading ?? "Book Your Table"
+    const resEyebrow = props.reservations?.eyebrow ?? 'Reservations'
+    const resHeading = props.reservations?.heading ?? 'Book Your Table'
     const resDesc =
       props.reservations?.description ??
-      "Reserve your spot for an upcoming event or general admission. For groups over 10 or private events, please call us directly."
-    const resPhone = props.reservations?.phone ?? "(312) 555-NOIR"
+      'Reserve your spot for an upcoming event or general admission. For groups over 10 or private events, please call us directly.'
+    const resPhone = props.reservations?.phone ?? '(312) 555-NOIR'
     const resAddress =
-      props.reservations?.address ?? "742 N Wells St, Chicago, IL 60654"
+      props.reservations?.address ?? '742 N Wells St, Chicago, IL 60654'
     const resHours =
-      props.reservations?.hours ?? "Wed–Sun: 7 PM – 4 AM | Mon–Tue: Closed"
+      props.reservations?.hours ?? 'Wed–Sun: 7 PM – 4 AM | Mon–Tue: Closed'
     const guestOptions = props.reservations?.guestOptions?.length
       ? props.reservations.guestOptions
       : [
-          "Select number",
-          "2 guests",
-          "3 guests",
-          "4 guests",
-          "5 guests",
-          "6 guests",
-          "7+ guests (VIP)",
+          'Select number',
+          '2 guests',
+          '3 guests',
+          '4 guests',
+          '5 guests',
+          '6 guests',
+          '7+ guests (VIP)',
         ]
     const packageOptions = props.reservations?.packageOptions?.length
       ? props.reservations.packageOptions
       : [
-          "General admission / Bar seating",
-          "Bronze Package — $350",
-          "Silver Package — $650",
-          "Gold Package — $1,200",
-          "Private Event Inquiry",
+          'General admission / Bar seating',
+          'Bronze Package — $350',
+          'Silver Package — $650',
+          'Gold Package — $1,200',
+          'Private Event Inquiry',
         ]
-    const resSubmit = props.reservations?.submit ?? "Request Reservation"
+    const resSubmit = props.reservations?.submit ?? 'Request Reservation'
     const resFinePrint =
       props.reservations?.finePrint ??
-      "Reservations are held for 15 minutes. Cancellations must be made 24 hours in advance."
+      'Reservations are held for 15 minutes. Cancellations must be made 24 hours in advance.'
 
     const footerAbout =
       props.footer?.about ??
-      "A sophisticated cocktail bar and nightclub in the heart of Chicago. Craft cocktails, world-class DJs, and unforgettable nights since 2019."
-    const footerNavHeading = props.footer?.navigateHeading ?? "Navigate"
-    const footerConnectHeading = props.footer?.connectHeading ?? "Connect"
+      'A sophisticated cocktail bar and nightclub in the heart of Chicago. Craft cocktails, world-class DJs, and unforgettable nights since 2019.'
+    const footerNavHeading = props.footer?.navigateHeading ?? 'Navigate'
+    const footerConnectHeading = props.footer?.connectHeading ?? 'Connect'
     const footerConnect = props.footer?.connect?.length
       ? props.footer.connect
-      : ["Instagram", "Facebook", "Resy", "Contact"]
+      : ['Instagram', 'Facebook', 'Resy', 'Contact']
     const footerCopyright =
-      props.footer?.copyright ?? "NOIR Chicago. All rights reserved."
+      props.footer?.copyright ?? 'NOIR Chicago. All rights reserved.'
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy", "Terms", "Accessibility"]
+      : ['Privacy', 'Terms', 'Accessibility']
 
     // Reusable decorative icons.
     const Check = () => (
@@ -681,16 +824,70 @@ export const BarNightclubKimiPage = defineCapsule({
     ]
 
     const inputCls =
-      "w-full bg-card border border-border px-4 py-3 text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring"
-    const labelCls = "block text-sm text-muted-foreground mb-2"
+      'w-full bg-card border border-border px-4 py-3 text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring'
+    const labelCls = 'block text-sm text-muted-foreground mb-2'
 
     const ghostBtn =
-      "inline-flex items-center justify-center px-6 py-3 border border-foreground text-sm tracking-wide text-foreground transition-colors hover:bg-foreground hover:text-background"
+      'inline-flex items-center justify-center px-6 py-3 border border-foreground text-sm tracking-wide text-foreground transition-colors hover:bg-foreground hover:text-background'
+
+    // Helper icons
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    // Safe reservations data
+    const safeReservations = storedReservations ?? []
+    const reservationCount = safeReservations.length
 
     return (
       <div
         className={cn(
-          "min-h-svh overflow-x-hidden bg-background text-foreground antialiased",
+          'min-h-svh overflow-x-hidden bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -717,13 +914,235 @@ export const BarNightclubKimiPage = defineCapsule({
                   </button>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={() => go(nav[nav.length - 1])}
-                className="hidden items-center border border-foreground px-6 py-2 text-sm tracking-wide text-foreground transition-colors hover:bg-foreground hover:text-background md:inline-flex"
-              >
-                Book a Table
-              </button>
+              <div className="flex items-center gap-4">
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Reservations')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          My Reservations
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet
+                  open={reservationsOpen}
+                  onOpenChange={setReservationsOpen}
+                >
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="View reservations"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      {reservationCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {reservationCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">
+                        My Reservations
+                      </SheetTitle>
+                      <SheetDescription>
+                        {reservationCount > 0
+                          ? `${reservationCount} reservation${reservationCount === 1 ? '' : 's'} confirmed.`
+                          : 'No reservations yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeReservations.length ? (
+                        <div className="space-y-5">
+                          {safeReservations.map((reservation) => (
+                            <div
+                              key={reservation.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted flex items-center justify-center">
+                                <svg
+                                  className="size-8 text-muted-foreground"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="1.5"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                      {reservation.package ||
+                                        'General Admission'}
+                                    </p>
+                                    <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                      {reservation.name}
+                                    </h3>
+                                    <p className="text-xs text-muted-foreground">
+                                      {reservation.date} · {reservation.guests}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="mt-4 flex items-center justify-between">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void removeReservation(reservation.id)
+                                    }
+                                    className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No reservations
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Book a table to see your reservations here.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="rounded-full"
+                          onClick={() => void clearReservations()}
+                          disabled={!safeReservations.length}
+                        >
+                          Clear All
+                        </Button>
+                        <SheetClose asChild>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="rounded-full"
+                          >
+                            Close
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                <button
+                  type="button"
+                  onClick={() => go(nav[nav.length - 1])}
+                  className="hidden items-center border border-foreground px-6 py-2 text-sm tracking-wide text-foreground transition-colors hover:bg-foreground hover:text-background md:inline-flex"
+                >
+                  Book a Table
+                </button>
+              </div>
               <button
                 type="button"
                 aria-label="Open menu"
@@ -766,6 +1185,58 @@ export const BarNightclubKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -868,37 +1339,62 @@ export const BarNightclubKimiPage = defineCapsule({
               </div>
 
               <div className="space-y-6">
-                {eventItems.map((ev) => (
-                  <div
-                    key={ev.title}
-                    className="flex flex-col gap-6 border border-border p-6 transition-colors hover:border-foreground/40 lg:flex-row lg:items-center lg:gap-12 lg:p-8"
-                  >
-                    <div className="shrink-0 lg:w-48">
-                      <p className="text-3xl font-light">{ev.day}</p>
-                      <p className="text-muted-foreground">{ev.date}</p>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="mb-2 text-xl font-medium">{ev.title}</h3>
-                      <p className="text-muted-foreground">{ev.description}</p>
-                    </div>
-                    <div className="shrink-0 lg:w-64">
-                      <Image
-                        alt={ev.imageAlt}
-                        w={400}
-                        h={300}
-                        loading="lazy"
-                        className="h-32 w-full rounded-sm object-cover"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => go(ev.cta)}
-                      className={cn(ghostBtn, "lg:w-40")}
+                {displayEvents.map((ev) => {
+                  const isFavorite = favoriteEventTitles?.has(ev.title) ?? false
+                  return (
+                    <div
+                      key={ev.title}
+                      className="flex flex-col gap-6 border border-border p-6 transition-colors hover:border-foreground/40 lg:flex-row lg:items-center lg:gap-12 lg:p-8"
                     >
-                      {ev.cta}
-                    </button>
-                  </div>
-                ))}
+                      <div className="shrink-0 lg:w-48">
+                        <p className="text-3xl font-light">{ev.day}</p>
+                        <p className="text-muted-foreground">{ev.date}</p>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="mb-2 text-xl font-medium">{ev.title}</h3>
+                        <p className="text-muted-foreground">
+                          {ev.description}
+                        </p>
+                      </div>
+                      <div className="shrink-0 lg:w-64">
+                        <Image
+                          alt={ev.imageAlt}
+                          w={400}
+                          h={300}
+                          loading="lazy"
+                          className="h-32 w-full rounded-sm object-cover"
+                        />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavorite(ev.title)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${ev.title} from favorites`
+                              : `Add ${ev.title} to favorites`
+                          }
+                          className={cn(
+                            'grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-background/90 text-foreground hover:bg-background',
+                          )}
+                        >
+                          <HeartIcon active={isFavorite} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go(ev.cta)}
+                          className={cn(ghostBtn, 'lg:w-40')}
+                        >
+                          {ev.cta}
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -980,7 +1476,7 @@ export const BarNightclubKimiPage = defineCapsule({
                 {galleryImages.map((alt, i) => (
                   <div
                     key={alt}
-                    className={cn(i === 0 && "lg:col-span-2 lg:row-span-2")}
+                    className={cn(i === 0 && 'lg:col-span-2 lg:row-span-2')}
                   >
                     <Image
                       alt={alt}
@@ -988,10 +1484,10 @@ export const BarNightclubKimiPage = defineCapsule({
                       h={i === 0 ? 800 : 300}
                       loading="lazy"
                       className={cn(
-                        "w-full rounded-sm object-cover",
+                        'w-full rounded-sm object-cover',
                         i === 0
-                          ? "min-h-[300px] lg:h-full lg:min-h-full"
-                          : "h-48 lg:h-64",
+                          ? 'min-h-[300px] lg:h-full lg:min-h-full'
+                          : 'h-48 lg:h-64',
                       )}
                     />
                   </div>
@@ -1051,15 +1547,15 @@ export const BarNightclubKimiPage = defineCapsule({
                   <div
                     key={pkg.name}
                     className={cn(
-                      "relative p-8",
+                      'relative p-8',
                       pkg.featured
-                        ? "border border-foreground"
-                        : "border border-border",
+                        ? 'border border-foreground'
+                        : 'border border-border',
                     )}
                   >
                     {pkg.featured && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-foreground px-4 py-1 text-xs uppercase tracking-widest text-background">
-                        {pkg.featuredLabel ?? "Most Popular"}
+                        {pkg.featuredLabel ?? 'Most Popular'}
                       </div>
                     )}
                     <p className="mb-4 text-sm uppercase tracking-widest text-muted-foreground">
@@ -1075,8 +1571,8 @@ export const BarNightclubKimiPage = defineCapsule({
                           <span
                             className={
                               pkg.featured
-                                ? "text-foreground"
-                                : "text-muted-foreground"
+                                ? 'text-foreground'
+                                : 'text-muted-foreground'
                             }
                           >
                             <Check />
@@ -1089,10 +1585,10 @@ export const BarNightclubKimiPage = defineCapsule({
                       type="button"
                       onClick={() => go(`${pkg.name} ${pkg.cta}`)}
                       className={cn(
-                        "block w-full py-3 text-center text-sm tracking-wide transition-colors",
+                        'block w-full py-3 text-center text-sm tracking-wide transition-colors',
                         pkg.featured
-                          ? "bg-foreground text-background hover:bg-foreground/90"
-                          : "border border-border hover:border-foreground hover:bg-foreground hover:text-background",
+                          ? 'bg-foreground text-background hover:bg-foreground/90'
+                          : 'border border-border hover:border-foreground hover:bg-foreground hover:text-background',
                       )}
                     >
                       {pkg.cta}
@@ -1282,7 +1778,42 @@ export const BarNightclubKimiPage = defineCapsule({
                   className="space-y-6 border border-border p-8"
                   onSubmit={(e) => {
                     e.preventDefault()
-                    go(resSubmit)
+                    const form = e.currentTarget
+                    const name = (
+                      form.elements.namedItem('noir-name') as HTMLInputElement
+                    ).value
+                    const email = (
+                      form.elements.namedItem('noir-email') as HTMLInputElement
+                    ).value
+                    const date = (
+                      form.elements.namedItem('noir-date') as HTMLInputElement
+                    ).value
+                    const guests = (
+                      form.elements.namedItem(
+                        'noir-guests',
+                      ) as HTMLSelectElement
+                    ).value
+                    const packageVal = (
+                      form.elements.namedItem(
+                        'noir-package',
+                      ) as HTMLSelectElement
+                    ).value
+                    const requests = (
+                      form.elements.namedItem(
+                        'noir-notes',
+                      ) as HTMLTextAreaElement
+                    ).value
+
+                    void addReservation(
+                      name,
+                      email,
+                      date,
+                      guests,
+                      packageVal,
+                      requests,
+                    )
+                    setReservationsOpen(true)
+                    form.reset()
                   }}
                 >
                   <div className="grid gap-6 sm:grid-cols-2">
@@ -1324,7 +1855,7 @@ export const BarNightclubKimiPage = defineCapsule({
                       </label>
                       <select
                         id="noir-guests"
-                        className={cn(inputCls, "appearance-none")}
+                        className={cn(inputCls, 'appearance-none')}
                       >
                         {guestOptions.map((opt) => (
                           <option key={opt} className="bg-card">
@@ -1340,7 +1871,7 @@ export const BarNightclubKimiPage = defineCapsule({
                     </label>
                     <select
                       id="noir-package"
-                      className={cn(inputCls, "appearance-none")}
+                      className={cn(inputCls, 'appearance-none')}
                     >
                       {packageOptions.map((opt) => (
                         <option key={opt} className="bg-card">
@@ -1357,7 +1888,7 @@ export const BarNightclubKimiPage = defineCapsule({
                       id="noir-notes"
                       rows={3}
                       placeholder="Birthday celebration, dietary restrictions, preferred seating area..."
-                      className={cn(inputCls, "resize-none")}
+                      className={cn(inputCls, 'resize-none')}
                     />
                   </div>
                   <button

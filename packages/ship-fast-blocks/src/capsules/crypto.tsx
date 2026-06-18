@@ -1,9 +1,20 @@
-import { type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * CryptoKimiPage — a complete, self-contained crypto / DeFi-infrastructure
@@ -176,7 +187,53 @@ export const CryptoKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      watchlist: table({
+        symbol: string(),
+        network: string(),
+        notes: string(),
+      }),
+    },
+    queries: {
+      watchlist: ({ db }) => db.watchlist.orderBy("createdAt").all(),
+    },
+    mutations: {
+      upsertWatchlistItem: ({ db }, symbol: string, network: string) => {
+        const normalizedSymbol = symbol.trim()
+        if (!normalizedSymbol) return db.watchlist.all()
+
+        const normalizedNetwork = network.trim() || "Mainnet"
+
+        const existing = db.watchlist.where("symbol", normalizedSymbol).all()
+        if (existing.length) {
+          return db.watchlist.all()
+        }
+
+        db.watchlist.insert({
+          symbol: normalizedSymbol,
+          network: normalizedNetwork,
+          notes:
+            normalizedNetwork === "Mainnet"
+              ? "Added from hero token card"
+              : "Added from watchlist panel",
+        })
+
+        return db.watchlist.all()
+      },
+      removeWatchlistItem: ({ db }, id: string) => {
+        db.watchlist.delete(id)
+        return db.watchlist.all()
+      },
+      clearWatchlist: ({ db }) => {
+        for (const item of db.watchlist.all()) {
+          db.watchlist.delete(item.id)
+        }
+        return db.watchlist.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? "NexusChain"
     const nav = props.nav?.length
@@ -204,6 +261,49 @@ export const CryptoKimiPage = defineCapsule({
         "Abstract data visualization showing upward trending financial chart with gradient glow",
       volume: "24h Volume: $48.2M",
       supply: "Circulating: 200M NEX",
+    }
+    const heroTokenSymbol = token.name.split(" ")[0] ?? "NEX"
+
+    const [watchlistOpen, setWatchlistOpen] = useState(false)
+    const [watchlistSymbol, setWatchlistSymbol] = useState(heroTokenSymbol)
+    const [watchlistNetwork, setWatchlistNetwork] = useState(token.kind)
+
+    const storedWatchlist = lakebed.useQuery("watchlist")
+    const upsertWatchlistItem = lakebed.useMutation("upsertWatchlistItem")
+    const removeWatchlistItem = lakebed.useMutation("removeWatchlistItem")
+    const clearWatchlist = lakebed.useMutation("clearWatchlist")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authDisplayName =
+      auth.displayName || auth.email || auth.user?.email || auth.user?.displayName
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName || "Account"
+        : "Sign in"
+
+    const watchlistItems = storedWatchlist ?? []
+    const watchlistCount = watchlistItems.length
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const handleAddWatchlistItem = () => {
+      const symbol = watchlistSymbol.trim()
+      const network = watchlistNetwork.trim() || token.kind
+      if (!symbol) return
+
+      void upsertWatchlistItem(symbol, network)
+      if (symbol !== heroTokenSymbol) {
+        setWatchlistSymbol(symbol)
+      }
+      setWatchlistNetwork(network)
     }
 
     const logosHeading =
@@ -710,6 +810,159 @@ export const CryptoKimiPage = defineCapsule({
                 ))}
               </div>
               <div className="flex items-center gap-4">
+                <Sheet
+                  open={watchlistOpen}
+                  onOpenChange={setWatchlistOpen}
+                >
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      className="relative hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
+                    >
+                      Watchlist
+                      {watchlistCount > 0 ? (
+                        <span className="ml-2 inline-flex size-5 items-center justify-center rounded-full bg-foreground text-xs font-semibold text-background">
+                          {watchlistCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent className="w-full gap-0 p-0 sm:max-w-md">
+                    <SheetHeader className="px-6 pb-6 pt-6">
+                      <SheetTitle>Network Watchlist</SheetTitle>
+                      <SheetDescription>
+                        Add, inspect, and pin monitored chains for quick access.
+                      </SheetDescription>
+                    </SheetHeader>
+
+                    <div className="border-t border-border px-6 py-5">
+                      <div className="space-y-4">
+                        <form
+                          className="space-y-3"
+                          onSubmit={(event) => {
+                            event.preventDefault()
+                            handleAddWatchlistItem()
+                          }}
+                        >
+                          <label
+                            htmlFor="watchlist-symbol"
+                            className="block text-sm font-medium text-muted-foreground"
+                          >
+                            Asset symbol
+                          </label>
+                          <input
+                            id="watchlist-symbol"
+                            value={watchlistSymbol}
+                            onChange={(event) =>
+                              setWatchlistSymbol(event.target.value)
+                            }
+                            type="text"
+                            className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none ring-0 transition focus:border-primary"
+                            placeholder="NEX"
+                          />
+                          <label
+                            htmlFor="watchlist-network"
+                            className="block text-sm font-medium text-muted-foreground"
+                          >
+                            Network
+                          </label>
+                          <input
+                            id="watchlist-network"
+                            value={watchlistNetwork}
+                            onChange={(event) =>
+                              setWatchlistNetwork(event.target.value)
+                            }
+                            type="text"
+                            className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none ring-0 transition focus:border-primary"
+                            placeholder="Mainnet"
+                          />
+                          <button
+                            type="submit"
+                            className="w-full rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-60"
+                            disabled={
+                              watchlistSymbol.trim().length === 0 ||
+                              watchlistNetwork.trim().length === 0
+                            }
+                          >
+                            Add to watchlist
+                          </button>
+                        </form>
+
+                        <div>
+                          <p className="mb-3 text-sm text-muted-foreground">
+                            Watchlist ({watchlistCount})
+                          </p>
+                          {watchlistCount > 0 ? (
+                            <div className="space-y-2">
+                              {watchlistItems.map((item) => (
+                                <div
+                                  key={item.id}
+                                  className="rounded-lg border border-border px-3 py-3"
+                                >
+                                  <div className="mb-2 flex items-center justify-between gap-2">
+                                    <span className="font-medium">
+                                      {item.symbol}
+                                    </span>
+                                    <span className="text-sm text-muted-foreground">
+                                      {item.network}
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground">
+                                    {item.notes}
+                                  </p>
+                                  <div className="mt-2 flex justify-end">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void removeWatchlistItem(item.id)
+                                      }
+                                      className="text-xs text-destructive underline-offset-4 hover:underline"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="rounded-lg border border-dashed border-border bg-muted/40 p-4 text-sm text-muted-foreground">
+                              No items yet.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <SheetFooter className="mt-auto border-t border-border p-6">
+                      <div className="w-full space-y-4">
+                        <div className="text-sm text-muted-foreground">
+                          Saved symbols: {watchlistCount}
+                        </div>
+                        <div className="flex gap-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!watchlistCount) return
+                              void clearWatchlist()
+                            }}
+                            disabled={!watchlistCount}
+                            className="flex-1 rounded-lg border border-border px-4 py-2 text-sm font-semibold transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            Clear all
+                          </button>
+                          <SheetClose asChild>
+                            <button
+                              type="button"
+                              className="flex-1 rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                            >
+                              Done
+                            </button>
+                          </SheetClose>
+                        </div>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(heroSecondary)}
@@ -723,6 +976,14 @@ export const CryptoKimiPage = defineCapsule({
                   className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
                 >
                   Launch App
+                </button>
+                <button
+                  type="button"
+                  onClick={isSignedIn ? handleSignOut : handleSignIn}
+                  disabled={auth.isLoading}
+                  className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-60"
+                >
+                  {authLabel}
                 </button>
               </div>
             </div>

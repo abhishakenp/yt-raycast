@@ -1,9 +1,27 @@
-import { type ReactNode } from "react"
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * AiProductKimiPage6 — a faithful, token-compliant OpenUI-lang port of the
@@ -180,8 +198,73 @@ export const AiProductKimiPage6 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      trialRequests: table({
+        email: string(),
+        company: string(),
+        plan: string(),
+      }),
+    },
+    queries: {
+      trialRequests: ({ db }) => db.trialRequests.orderBy('createdAt').all(),
+    },
+    mutations: {
+      submitTrialRequest: ({ db }, email: string, company: string, plan: string) => {
+        db.trialRequests.insert({ email, company, plan })
+        return db.trialRequests.all()
+      },
+      removeTrialRequest: ({ db }, id: string) => {
+        db.trialRequests.delete(id)
+        return db.trialRequests.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [trialDrawerOpen, setTrialDrawerOpen] = useState(false)
+    const [emailInput, setEmailInput] = useState("")
+    const [companyInput, setCompanyInput] = useState("")
+    const [selectedPlan, setSelectedPlan] = useState("Professional")
+
+    const trialRequests = lakebed.useQuery('trialRequests')
+    const submitTrialRequest = lakebed.useMutation('submitTrialRequest')
+    const removeTrialRequest = lakebed.useMutation('removeTrialRequest')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const handleSubmitTrial = () => {
+      if (!emailInput || !companyInput) return
+      void submitTrialRequest(emailInput, companyInput, selectedPlan)
+      setEmailInput("")
+      setCompanyInput("")
+      setTrialDrawerOpen(false)
+    }
 
     const brand = props.brand ?? "WriteMind AI"
     const nav = props.nav?.length
@@ -672,6 +755,21 @@ export const AiProductKimiPage6 = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     const featureIcons: ReactNode[] = [
       // edit/pen
       <svg
@@ -865,20 +963,246 @@ export const AiProductKimiPage6 = defineCapsule({
             </div>
 
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => go("Sign In")}
-                className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                onClick={() => go("Start Free Trial")}
-                className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                Start Free Trial
-              </button>
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight className="size-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Settings')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Settings
+                        <ArrowRight className="size-4" />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={trialDrawerOpen} onOpenChange={setTrialDrawerOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => setTrialDrawerOpen(true)}
+                    className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    Start Free Trial
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Start your free trial</SheetTitle>
+                    <SheetDescription>
+                      {trialRequests && trialRequests.length > 0
+                        ? `${trialRequests.length} trial request${trialRequests.length === 1 ? '' : 's'} submitted.`
+                        : 'Enter your details to start your 14-day free trial.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {trialRequests && trialRequests.length > 0 ? (
+                      <div className="space-y-4">
+                        {trialRequests.map((request) => (
+                          <div
+                            key={request.id}
+                            className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-4 last:border-0"
+                          >
+                            <div className="grid size-12 place-items-center rounded-lg bg-muted">
+                              <span className="text-lg font-bold text-foreground">
+                                {request.plan[0]}
+                              </span>
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                {request.plan}
+                              </p>
+                              <p className="text-sm font-semibold text-foreground">
+                                {request.company}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {request.email}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div>
+                          <label
+                            htmlFor="email"
+                            className="mb-2 block text-sm font-medium text-foreground"
+                          >
+                            Work email
+                          </label>
+                          <input
+                            id="email"
+                            type="email"
+                            placeholder="you@company.com"
+                            value={emailInput}
+                            onChange={(e) => setEmailInput(e.target.value)}
+                            className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="company"
+                            className="mb-2 block text-sm font-medium text-foreground"
+                          >
+                            Company name
+                          </label>
+                          <input
+                            id="company"
+                            type="text"
+                            placeholder="Acme Corp"
+                            value={companyInput}
+                            onChange={(e) => setCompanyInput(e.target.value)}
+                            className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="plan"
+                            className="mb-2 block text-sm font-medium text-foreground"
+                          >
+                            Select plan
+                          </label>
+                          <select
+                            id="plan"
+                            value={selectedPlan}
+                            onChange={(e) => setSelectedPlan(e.target.value)}
+                            className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          >
+                            <option value="Starter">Starter</option>
+                            <option value="Professional">Professional</option>
+                            <option value="Enterprise">Enterprise</option>
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    {trialRequests && trialRequests.length > 0 ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full rounded-full"
+                        onClick={() => {
+                          for (const request of trialRequests) {
+                            void removeTrialRequest(request.id)
+                          }
+                        }}
+                      >
+                        Clear all requests
+                      </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        disabled={!emailInput || !companyInput}
+                        className="w-full rounded-full"
+                        onClick={handleSubmitTrial}
+                      >
+                        Submit request
+                      </Button>
+                    )}
+                    <SheetClose asChild>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full rounded-full"
+                      >
+                        Close
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
             </div>
           </nav>
         </header>
@@ -904,7 +1228,7 @@ export const AiProductKimiPage6 = defineCapsule({
                   <div className="mb-8 flex flex-col gap-4 sm:flex-row">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() => setTrialDrawerOpen(true)}
                       className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3.5 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
                     >
                       {heroPrimary}
@@ -1392,7 +1716,10 @@ export const AiProductKimiPage6 = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(plan.cta)}
+                      onClick={() => {
+                        setSelectedPlan(plan.name)
+                        setTrialDrawerOpen(true)
+                      }}
                       className={cn(
                         "block w-full rounded-lg px-6 py-3 text-center font-semibold transition-colors",
                         plan.featured
@@ -1483,7 +1810,7 @@ export const AiProductKimiPage6 = defineCapsule({
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={() => setTrialDrawerOpen(true)}
                   className="inline-flex items-center justify-center rounded-lg bg-background px-8 py-4 text-lg font-semibold text-foreground shadow-xl transition-colors hover:bg-background/90"
                 >
                   {ctaPrimary}

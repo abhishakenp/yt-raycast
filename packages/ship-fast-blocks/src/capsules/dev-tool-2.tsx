@@ -1,9 +1,37 @@
-import { type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+
+const priceAmount = (price: string) => {
+  const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ""))
+  return Number.isFinite(amount) ? amount : 0
+}
+
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    style: "currency",
+  }).format(amount)
 
 /**
  * DevToolKimiPage2 — TEMPLATE VARIANT 2 for the dev-tool category, a deliberately
@@ -165,8 +193,74 @@ export const DevToolKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      planQueue: table({
+        name: string(),
+        price: string(),
+        period: string(),
+        quantity: number(),
+      }),
+    },
+    queries: {
+      queue: ({ db }) => db.planQueue.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addPlan: ({ db }, name: string, price: string, period: string) => {
+        const normalizedName = name.trim()
+        if (!normalizedName) return db.planQueue.all()
+
+        const existing = db.planQueue.where("name", normalizedName).all()[0]
+        if (existing) {
+          db.planQueue.update(existing.id, {
+            quantity: existing.quantity + 1,
+          })
+          return db.planQueue.all()
+        }
+
+        db.planQueue.insert({
+          name: normalizedName,
+          price,
+          period,
+          quantity: 1,
+        })
+        return db.planQueue.all()
+      },
+      updatePlanQuantity: ({ db }, id: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+        for (const item of db.planQueue.where("id", id).all()) {
+          if (nextQuantity) {
+            db.planQueue.update(item.id, { quantity: nextQuantity })
+          } else {
+            db.planQueue.delete(item.id)
+          }
+        }
+        return db.planQueue.all()
+      },
+      removePlan: ({ db }, id: string) => {
+        for (const item of db.planQueue.where("id", id).all()) {
+          db.planQueue.delete(item.id)
+        }
+        return db.planQueue.all()
+      },
+      clearPlanQueue: ({ db }) => {
+        for (const item of db.planQueue.all()) {
+          db.planQueue.delete(item.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [planQueueOpen, setPlanQueueOpen] = useState(false)
+    const queue = lakebed.useQuery("queue")
+    const addPlan = lakebed.useMutation("addPlan")
+    const updatePlanQuantity = lakebed.useMutation("updatePlanQuantity")
+    const removePlan = lakebed.useMutation("removePlan")
+    const clearPlanQueue = lakebed.useMutation("clearPlanQueue")
+    const auth = lakebed.useAuth()
+
     const brand = props.brand ?? "DevPulse"
     const nav = props.nav?.length
       ? props.nav
@@ -475,6 +569,71 @@ app.listen(3000);`
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
 
+    const planQueue = queue ?? []
+    const planQueueCount = planQueue.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+    const planQueueSubtotal = planQueue.reduce(
+      (total, item) => total + priceAmount(item.price) * item.quantity,
+      0,
+    )
+    const featuredPricingPlan =
+      pricingTiers.find((tier) => tier.featured) ?? pricingTiers[0]
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const addPlanToQueue = ({
+      name,
+      price,
+      period,
+    }: {
+      name: string
+      price: string
+      period?: string
+    }) => {
+      void addPlan(name, price, period ?? "")
+      setPlanQueueOpen(true)
+    }
+
+    const ChevronDown = () => (
+      <svg
+        className="size-4 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     // Brand bolt logo tile (decorative brand asset).
     const BoltMark = ({ className }: { className?: string }) => (
       <span
@@ -764,58 +923,297 @@ app.listen(3000);`
           props.className,
         )}
       >
-        {/* Navbar */}
-        <header
-          className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl"
-          role="navigation"
-          aria-label="Main navigation"
-        >
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex h-16 items-center justify-between lg:h-20">
-              <button
-                type="button"
-                onClick={() => go(nav[0])}
-                className="flex items-center gap-2"
-              >
-                <BoltMark className="size-8" />
-                <span className="text-xl font-bold tracking-tight text-foreground">
-                  {brand}
-                </span>
-              </button>
-              <div className="hidden items-center gap-8 md:flex">
-                {nav.map((label) => (
+        <Sheet open={planQueueOpen} onOpenChange={setPlanQueueOpen}>
+          {/* Navbar */}
+          <header
+            className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl"
+            role="navigation"
+            aria-label="Main navigation"
+          >
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div className="flex h-16 items-center justify-between lg:h-20">
+                <button
+                  type="button"
+                  onClick={() => go(nav[0])}
+                  className="flex items-center gap-2"
+                >
+                  <BoltMark className="size-8" />
+                  <span className="text-xl font-bold tracking-tight text-foreground">
+                    {brand}
+                  </span>
+                </button>
+                <div className="hidden items-center gap-8 md:flex">
+                  {nav.map((label) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => go(label)}
+                      className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-4">
+                  {!isSignedIn ? (
+                    <button
+                      type="button"
+                      onClick={handleSignIn}
+                      disabled={auth.isLoading}
+                      className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
+                    >
+                      {authLabel}
+                    </button>
+                  ) : null}
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => setPlanQueueOpen(true)}
+                      className="relative inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-card-foreground transition-colors hover:bg-muted"
+                    >
+                      <svg
+                        className="size-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path d="M3 6.8h18v10.4H3z" />
+                        <path d="M16 21v-4H8v4" />
+                        <path d="M9 21h6" />
+                      </svg>
+                      {planQueueCount > 0 ? (
+                        <span className="grid size-5 place-items-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground">
+                          {planQueueCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  {isSignedIn ? (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          aria-label="Open account menu"
+                          className="hidden h-10 max-w-40 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                        >
+                          <Avatar
+                            size="sm"
+                            className="ring-2 ring-background"
+                            aria-hidden="true"
+                          >
+                            {authPicture ? (
+                              <AvatarImage src={authPicture} alt={authDisplayName} />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="hidden max-w-20 truncate text-xs font-semibold md:block">
+                            {authDisplayName}
+                          </span>
+                          <ChevronDown />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        align="end"
+                        sideOffset={10}
+                        className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                      >
+                        <div className="bg-muted/40 px-4 py-4">
+                          <div className="flex items-center gap-3">
+                            <Avatar size="lg" className="ring-2 ring-background">
+                              {authPicture ? (
+                                <AvatarImage
+                                  src={authPicture}
+                                  alt={authDisplayName}
+                                />
+                              ) : null}
+                              <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                                {authInitials}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-bold text-foreground">
+                                {authDisplayName}
+                              </p>
+                              <p className="truncate text-xs text-muted-foreground">
+                                {authEmail ?? "Signed in to this session"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-2">
+                          <button
+                            type="button"
+                            onClick={() => go("Account")}
+                            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            Account
+                            <ArrowRight />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => go("Settings")}
+                            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            Settings
+                            <ArrowRight />
+                          </button>
+                        </div>
+                        <div className="border-t border-border p-2">
+                          <button
+                            type="button"
+                            onClick={handleSignOut}
+                            className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          >
+                            Sign out
+                          </button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  ) : null}
                   <button
-                    key={label}
                     type="button"
-                    onClick={() => go(label)}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                    onClick={() => {
+                      const starter = pricingTiers[0]
+                      addPlanToQueue({
+                        name: starter.name,
+                        price: starter.price,
+                        period: starter.period,
+                      })
+                      go("Get Started")
+                    }}
+                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                   >
-                    {label}
+                    Get Started
+                    <ArrowRight className="size-4" />
                   </button>
-                ))}
-              </div>
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => go("Sign in")}
-                  className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-                >
-                  Sign in
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go("Get Started")}
-                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  Get Started
-                  <ArrowRight className="size-4" />
-                </button>
+                </div>
               </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        <main>
+          <SheetContent
+            side="right"
+            className="w-full gap-0 p-0 sm:max-w-md"
+          >
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">
+                Getting started queue
+              </SheetTitle>
+              <SheetDescription>
+                {planQueueCount > 0
+                  ? `${planQueueCount} plan${planQueueCount === 1 ? "" : "s"} queued for review.`
+                  : "Your onboarding queue is empty."}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {planQueue.length ? (
+                <div className="space-y-5">
+                  {planQueue.map((plan) => (
+                    <div
+                      key={plan.id}
+                      className="grid gap-4 border-b border-border pb-5 last:border-0"
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">
+                              {plan.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {plan.price}
+                              {plan.period ? `${plan.period}` : ""}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => void removePlan(plan.id)}
+                            className="text-xs font-semibold text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        <div className="mt-4 flex items-center justify-between">
+                          <div className="inline-flex h-9 items-center rounded-full border border-border bg-background">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                void updatePlanQuantity(plan.id, plan.quantity - 1)
+                              }
+                              className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                              aria-label={`Decrease ${plan.name} quantity`}
+                            >
+                              -
+                            </button>
+                            <span className="min-w-8 text-center text-sm font-semibold">
+                              {plan.quantity}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                void updatePlanQuantity(plan.id, plan.quantity + 1)
+                              }
+                              className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                              aria-label={`Increase ${plan.name} quantity`}
+                            >
+                              +
+                            </button>
+                          </div>
+                          <p className="text-sm font-bold text-foreground">
+                            {formatCurrency(priceAmount(plan.price) * plan.quantity)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                  <p className="text-base font-semibold text-foreground">
+                    No plans queued yet
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Pick a plan from the Pricing section to build your onboarding
+                    queue.
+                  </p>
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Monthly bill estimate</span>
+                  <span>{formatCurrency(planQueueSubtotal)}</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => void clearPlanQueue()}
+                  disabled={!planQueue.length}
+                  className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-60"
+                >
+                  Clear
+                </button>
+                <SheetClose asChild>
+                  <button
+                    type="button"
+                    onClick={() => go("Checkout")}
+                    className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-60"
+                    disabled={!planQueue.length}
+                  >
+                    Continue setup
+                  </button>
+                </SheetClose>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+          <main>
           {/* Hero */}
           <section
             className="relative overflow-hidden"
@@ -851,7 +1249,15 @@ app.listen(3000);`
                 <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                   <button
                     type="button"
-                    onClick={() => go(heroPrimary)}
+                    onClick={() => {
+                      const starter = pricingTiers[0]
+                      addPlanToQueue({
+                        name: starter.name,
+                        price: starter.price,
+                        period: starter.period,
+                      })
+                      go(heroPrimary)
+                    }}
                     className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:bg-primary/90"
                   >
                     {heroPrimary}
@@ -1119,7 +1525,14 @@ app.listen(3000);`
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(tier.cta)}
+                      onClick={() => {
+                        addPlanToQueue({
+                          name: tier.name,
+                          price: tier.price,
+                          period: tier.period,
+                        })
+                        go(tier.cta)
+                      }}
                       className={cn(
                         "w-full rounded-xl px-4 py-3 font-semibold transition-colors",
                         tier.featured
@@ -1257,11 +1670,18 @@ app.listen(3000);`
                 {ctaDesc}
               </p>
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => go(ctaPrimary)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:bg-primary/90"
-                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      addPlanToQueue({
+                        name: featuredPricingPlan.name,
+                        price: featuredPricingPlan.price,
+                        period: featuredPricingPlan.period,
+                      })
+                      go(ctaPrimary)
+                    }}
+                    className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:bg-primary/90"
+                  >
                   {ctaPrimary}
                   <ArrowRight />
                 </button>
@@ -1394,6 +1814,7 @@ app.listen(3000);`
             </div>
           </div>
         </footer>
+        </Sheet>
       </div>
     )
   },

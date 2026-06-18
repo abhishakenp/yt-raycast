@@ -4,6 +4,15 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * ConsultingKimiPage2 — SECOND, visually DISTINCT management-consulting LANDING
@@ -211,10 +220,83 @@ export const ConsultingKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      consultationLeads: table({
+        name: string(),
+        email: string(),
+        company: string(),
+        phone: string(),
+        budget: number(),
+        message: string(),
+      }),
+    },
+    queries: {
+      consultationLeads: ({ db }) =>
+        db.consultationLeads.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addConsultationLead: (
+        { db },
+        name: string,
+        email: string,
+        company: string,
+        phone: string,
+        budget: number,
+        message: string,
+      ) => {
+        db.consultationLeads.insert({
+          name,
+          email,
+          company,
+          phone,
+          budget: Number.isFinite(budget) ? budget : 0,
+          message,
+        })
+
+        return db.consultationLeads.all()
+      },
+      removeConsultationLead: ({ db }, id: string) => {
+        db.consultationLeads.delete(id)
+
+        return db.consultationLeads.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [consultationOpen, setConsultationOpen] = useState(false)
+    const [leadName, setLeadName] = useState("")
+    const [leadEmail, setLeadEmail] = useState("")
+    const [leadCompany, setLeadCompany] = useState("")
+    const [leadPhone, setLeadPhone] = useState("")
+    const [leadBudget, setLeadBudget] = useState("")
+    const [leadMessage, setLeadMessage] = useState("")
     const brand = props.brand ?? "Meridian"
+    const consultationLeads = lakebed.useQuery("consultationLeads")
+    const addConsultationLead = lakebed.useMutation("addConsultationLead")
+    const removeConsultationLead = lakebed.useMutation("removeConsultationLead")
+    const storedConsultationLeads = consultationLeads ?? []
+    const consultationCount = storedConsultationLeads.length
+    const consultationBudgetTotal = storedConsultationLeads.reduce(
+      (acc, lead) => acc + (lead.budget || 0),
+      0,
+    )
+
+    const clearLeadForm = () => {
+      setLeadName("")
+      setLeadEmail("")
+      setLeadCompany("")
+      setLeadPhone("")
+      setLeadBudget("")
+      setLeadMessage("")
+    }
+
+    const openConsultationDrawer = () => {
+      setConsultationOpen(true)
+    }
+
     const nav = props.nav?.length
       ? props.nav
       : ["Services", "Insights", "Industries", "About", "Careers"]
@@ -862,6 +944,201 @@ export const ConsultingKimiPage2 = defineCapsule({
           props.className,
         )}
       >
+        <Sheet
+          open={consultationOpen}
+          onOpenChange={setConsultationOpen}
+        >
+          <SheetContent
+            side="right"
+            className="flex w-full flex-col gap-0 sm:max-w-lg"
+          >
+            <SheetHeader>
+              <SheetTitle>Consultation requests</SheetTitle>
+              <SheetDescription>
+                Capture high-priority leads and keep a running list for your team.
+              </SheetDescription>
+            </SheetHeader>
+            <form
+              className="flex flex-1 flex-col gap-4 px-6 py-5"
+              onSubmit={(event) => {
+                event.preventDefault()
+
+                const budgetValue = Number.parseFloat(leadBudget)
+
+                void addConsultationLead(
+                  leadName.trim(),
+                  leadEmail.trim(),
+                  leadCompany.trim(),
+                  leadPhone.trim(),
+                  Number.isFinite(budgetValue) ? budgetValue : 0,
+                  leadMessage.trim(),
+                )
+
+                clearLeadForm()
+                setConsultationOpen(false)
+              }}
+            >
+              <label
+                className="space-y-2 text-sm text-foreground"
+                htmlFor="consultation-name"
+              >
+                <span className="font-medium">Name</span>
+                <input
+                  id="consultation-name"
+                  value={leadName}
+                  onChange={(event) => setLeadName(event.target.value)}
+                  required
+                  type="text"
+                  placeholder="e.g. Alex Morgan"
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+              </label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label
+                  className="space-y-2 text-sm text-foreground"
+                  htmlFor="consultation-email"
+                >
+                  <span className="font-medium">Work email</span>
+                  <input
+                    id="consultation-email"
+                    value={leadEmail}
+                    onChange={(event) => setLeadEmail(event.target.value)}
+                    required
+                    type="email"
+                    placeholder="alex@company.com"
+                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                </label>
+                <label
+                  className="space-y-2 text-sm text-foreground"
+                  htmlFor="consultation-company"
+                >
+                  <span className="font-medium">Company</span>
+                  <input
+                    id="consultation-company"
+                    value={leadCompany}
+                    onChange={(event) => setLeadCompany(event.target.value)}
+                    required
+                    type="text"
+                    placeholder="Global Finance Group"
+                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                </label>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label
+                  className="space-y-2 text-sm text-foreground"
+                  htmlFor="consultation-phone"
+                >
+                  <span className="font-medium">Phone</span>
+                  <input
+                    id="consultation-phone"
+                    value={leadPhone}
+                    onChange={(event) => setLeadPhone(event.target.value)}
+                    type="tel"
+                    placeholder="+1 (555) 555-0100"
+                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                </label>
+                <label
+                  className="space-y-2 text-sm text-foreground"
+                  htmlFor="consultation-budget"
+                >
+                  <span className="font-medium">Estimated initiative budget</span>
+                  <input
+                    id="consultation-budget"
+                    value={leadBudget}
+                    onChange={(event) => setLeadBudget(event.target.value)}
+                    type="number"
+                    min="0"
+                    step="1000"
+                    placeholder="2500000"
+                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                </label>
+              </div>
+              <label
+                className="space-y-2 text-sm text-foreground"
+                htmlFor="consultation-message"
+              >
+                <span className="font-medium">Primary objective</span>
+                <textarea
+                  id="consultation-message"
+                  value={leadMessage}
+                  onChange={(event) => setLeadMessage(event.target.value)}
+                  required
+                  rows={4}
+                  placeholder="Tell us what you want to transform."
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+              </label>
+              <SheetFooter className="mt-auto border-t border-border pt-4">
+                <button
+                  type="submit"
+                  disabled={
+                    !leadName.trim() ||
+                    !leadEmail.trim() ||
+                    !leadCompany.trim() ||
+                    !leadMessage.trim()
+                  }
+                  className="inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Add consultation request
+                </button>
+              </SheetFooter>
+            </form>
+            <div className="border-t border-border px-6 py-4">
+              <p className="mb-3 text-sm font-semibold text-foreground">
+                Open requests ({consultationCount})
+              </p>
+              <div className="space-y-3">
+                {storedConsultationLeads.length ? (
+                  storedConsultationLeads.map((lead) => (
+                    <article
+                      key={lead.id}
+                      className="rounded-md border border-border bg-muted p-3"
+                    >
+                      <p className="text-sm font-semibold text-foreground">
+                        {lead.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {lead.company} · {lead.email}
+                      </p>
+                      <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">
+                        {lead.phone
+                          ? `${lead.phone} · `
+                          : ""}
+                        {lead.message}
+                      </p>
+                      <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+                        <span>
+                          Budget: ${(lead.budget || 0).toLocaleString()}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => void removeConsultationLead(lead.id)}
+                          className="font-medium text-foreground transition-colors hover:text-primary"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </article>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No requests yet.
+                  </p>
+                )}
+                <div className="rounded-md border border-border bg-muted p-3">
+                  <p className="text-xs text-muted-foreground">
+                    Total active budget (USD): {consultationBudgetTotal.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+
         {/* Navbar */}
         <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
           <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -890,7 +1167,7 @@ export const ConsultingKimiPage2 = defineCapsule({
             <div className="flex items-center gap-4">
               <button
                 type="button"
-                onClick={() => go(heroPrimary)}
+                onClick={openConsultationDrawer}
                 className="hidden rounded-lg bg-primary px-6 py-3 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
               >
                 Schedule Consultation
@@ -967,7 +1244,7 @@ export const ConsultingKimiPage2 = defineCapsule({
                 <div className="mt-10 flex flex-col gap-4 sm:flex-row">
                   <button
                     type="button"
-                    onClick={() => go(heroPrimary)}
+                    onClick={openConsultationDrawer}
                     className="inline-flex items-center justify-center gap-2 rounded-lg bg-secondary px-8 py-4 text-lg font-semibold text-secondary-foreground transition-colors hover:bg-secondary/80"
                   >
                     {heroPrimary}
@@ -1353,7 +1630,7 @@ export const ConsultingKimiPage2 = defineCapsule({
               <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={openConsultationDrawer}
                   className="inline-flex items-center justify-center rounded-lg bg-secondary px-8 py-4 text-lg font-semibold text-secondary-foreground transition-colors hover:bg-secondary/80"
                 >
                   {ctaPrimary}

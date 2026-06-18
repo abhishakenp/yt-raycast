@@ -1,9 +1,28 @@
+import { useState } from "react"
 import { type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * HealthcareKimiPage2 — the SECOND, visually distinct healthcare / medical-clinic
@@ -232,9 +251,97 @@ export const HealthcareKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      appointments: table({
+        doctorName: string(),
+        service: string(),
+        date: string(),
+        time: string(),
+        patientName: string(),
+        patientEmail: string(),
+        patientPhone: string(),
+      }),
+      favoriteDoctors: table({
+        doctorName: string(),
+      }),
+    },
+    queries: {
+      appointments: ({ db }) => db.appointments.orderBy('createdAt').all(),
+      favoriteDoctorNames: ({ db }) =>
+        new Set(db.favoriteDoctors.all().map((favorite) => favorite.doctorName)),
+    },
+    mutations: {
+      bookAppointment: ({ db }, data: {
+        doctorName: string
+        service: string
+        date: string
+        time: string
+        patientName: string
+        patientEmail: string
+        patientPhone: string
+      }) => {
+        db.appointments.insert(data)
+        return db.appointments.all()
+      },
+      cancelAppointment: ({ db }, appointmentId: string) => {
+        db.appointments.delete(appointmentId)
+        return db.appointments.all()
+      },
+      toggleFavoriteDoctor: ({ db }, doctorName: string) => {
+        const existingFavorite = db.favoriteDoctors
+          .where('doctorName', doctorName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favoriteDoctors.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favoriteDoctors.insert({ doctorName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [appointmentOpen, setAppointmentOpen] = useState(false)
+    const [selectedDoctor, setSelectedDoctor] = useState<string | null>(null)
+    const [selectedService, setSelectedService] = useState<string | null>(null)
     const brand = props.brand ?? "VitalCare"
+
+    const appointments = lakebed.useQuery('appointments')
+    const favoriteDoctorNames = lakebed.useQuery('favoriteDoctorNames')
+    const bookAppointment = lakebed.useMutation('bookAppointment')
+    const cancelAppointment = lakebed.useMutation('cancelAppointment')
+    const toggleFavoriteDoctor = lakebed.useMutation('toggleFavoriteDoctor')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Patient Portal'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in to Patient Portal'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const safeAppointments = appointments ?? []
+    const appointmentCount = safeAppointments.length
     const nav = props.nav?.length
       ? props.nav
       : ["Services", "Doctors", "Reviews", "Pricing", "FAQ"]
@@ -710,6 +817,38 @@ export const HealthcareKimiPage2 = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = ({ className }: { className?: string }) => (
+      <svg
+        className={className}
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M6 9l6 6 6-6" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false, className }: { active?: boolean; className?: string }) => (
+      <svg
+        className={cn('size-5', className, active ? 'fill-primary text-primary' : 'text-foreground')}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
     const serviceIcons: ReactNode[] = [
       // clipboard — primary care
       <svg
@@ -839,6 +978,358 @@ export const HealthcareKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open patient portal menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown className="size-4" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to patient portal'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => setAppointmentOpen(true)}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          My Appointments
+                          <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[0.625rem] font-bold text-primary-foreground">
+                            {appointmentCount}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Medical Records')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Medical Records
+                          <ArrowRight className="size-4" />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in to patient portal"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={appointmentOpen} onOpenChange={setAppointmentOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="My Appointments"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      {appointmentCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {appointmentCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">My Appointments</SheetTitle>
+                      <SheetDescription>
+                        {appointmentCount > 0
+                          ? `${appointmentCount} appointment${appointmentCount === 1 ? '' : 's'} scheduled.`
+                          : 'No appointments scheduled yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeAppointments.length ? (
+                        <div className="space-y-5">
+                          {safeAppointments.map((appointment) => (
+                            <div
+                              key={appointment.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted flex items-center justify-center">
+                                <svg
+                                  className="size-8 text-muted-foreground"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                      {appointment.service}
+                                    </p>
+                                    <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                      {appointment.doctorName}
+                                    </h3>
+                                  </div>
+                                </div>
+                                <div className="mt-2 space-y-1">
+                                  <p className="text-sm text-muted-foreground">
+                                    {appointment.date}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {appointment.time}
+                                  </p>
+                                </div>
+                                <div className="mt-4 flex items-center justify-between">
+                                  <button
+                                    type="button"
+                                    onClick={() => void cancelAppointment(appointment.id)}
+                                    className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-destructive hover:underline"
+                                  >
+                                    Cancel Appointment
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="space-y-6">
+                          <div className="rounded-lg border border-border bg-muted/40 p-6">
+                            <h3 className="mb-4 text-lg font-semibold text-foreground">Book an Appointment</h3>
+                            <form
+                              className="space-y-4"
+                              onSubmit={(e) => {
+                                e.preventDefault()
+                                const form = e.currentTarget
+                                const formData = new FormData(form)
+                                const data = {
+                                  doctorName: selectedDoctor || doctorItems[0]?.name || '',
+                                  service: selectedService || serviceItems[0]?.title || '',
+                                  date: formData.get('date') as string,
+                                  time: formData.get('time') as string,
+                                  patientName: formData.get('patientName') as string,
+                                  patientEmail: formData.get('patientEmail') as string,
+                                  patientPhone: formData.get('patientPhone') as string,
+                                }
+                                if (data.doctorName && data.service && data.date && data.time && data.patientName && data.patientEmail && data.patientPhone) {
+                                  void bookAppointment(data)
+                                  setAppointmentOpen(false)
+                                }
+                              }}
+                            >
+                              <div>
+                                <label className="mb-2 block text-sm font-medium text-foreground">
+                                  Select Doctor
+                                </label>
+                                <select
+                                  name="doctor"
+                                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
+                                  defaultValue={selectedDoctor || doctorItems[0]?.name}
+                                  onChange={(e) => setSelectedDoctor(e.target.value)}
+                                >
+                                  {doctorItems.map((doc) => (
+                                    <option key={doc.name} value={doc.name}>
+                                      {doc.name} - {doc.specialty}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div>
+                                <label className="mb-2 block text-sm font-medium text-foreground">
+                                  Select Service
+                                </label>
+                                <select
+                                  name="service"
+                                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
+                                  defaultValue={selectedService || serviceItems[0]?.title}
+                                  onChange={(e) => setSelectedService(e.target.value)}
+                                >
+                                  {serviceItems.map((service) => (
+                                    <option key={service.title} value={service.title}>
+                                      {service.title}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className="grid gap-4 sm:grid-cols-2">
+                                <div>
+                                  <label className="mb-2 block text-sm font-medium text-foreground">
+                                    Date
+                                  </label>
+                                  <input
+                                    type="date"
+                                    name="date"
+                                    required
+                                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="mb-2 block text-sm font-medium text-foreground">
+                                    Time
+                                  </label>
+                                  <select
+                                    name="time"
+                                    required
+                                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
+                                  >
+                                    <option value="9:00 AM">9:00 AM</option>
+                                    <option value="10:00 AM">10:00 AM</option>
+                                    <option value="11:00 AM">11:00 AM</option>
+                                    <option value="1:00 PM">1:00 PM</option>
+                                    <option value="2:00 PM">2:00 PM</option>
+                                    <option value="3:00 PM">3:00 PM</option>
+                                    <option value="4:00 PM">4:00 PM</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div>
+                                <label className="mb-2 block text-sm font-medium text-foreground">
+                                  Your Name
+                                </label>
+                                <input
+                                  type="text"
+                                  name="patientName"
+                                  required
+                                  placeholder="Full name"
+                                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
+                                />
+                              </div>
+                              <div>
+                                <label className="mb-2 block text-sm font-medium text-foreground">
+                                  Email
+                                </label>
+                                <input
+                                  type="email"
+                                  name="patientEmail"
+                                  required
+                                  placeholder="your@email.com"
+                                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
+                                />
+                              </div>
+                              <div>
+                                <label className="mb-2 block text-sm font-medium text-foreground">
+                                  Phone
+                                </label>
+                                <input
+                                  type="tel"
+                                  name="patientPhone"
+                                  required
+                                  placeholder="(555) 123-4567"
+                                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
+                                />
+                              </div>
+                              <Button
+                                type="submit"
+                                className="w-full rounded-full"
+                              >
+                                Book Appointment
+                              </Button>
+                            </form>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <Button
+                        type="button"
+                        className="w-full rounded-full"
+                        onClick={() => {
+                          setAppointmentOpen(false)
+                          go(heroPrimary)
+                        }}
+                      >
+                        Book New Appointment
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(heroPrimary)}
@@ -848,13 +1339,265 @@ export const HealthcareKimiPage2 = defineCapsule({
                 </button>
               </div>
 
-              <button
-                type="button"
-                onClick={() => go(heroPrimary)}
-                className="rounded-full bg-accent px-5 py-2.5 font-semibold text-accent-foreground shadow-lg transition-colors hover:bg-accent/90 md:hidden"
-              >
-                Book Now
-              </button>
+              <div className="flex items-center gap-4 md:hidden">
+                <Sheet open={appointmentOpen} onOpenChange={setAppointmentOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="My Appointments"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      {appointmentCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {appointmentCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">My Appointments</SheetTitle>
+                      <SheetDescription>
+                        {appointmentCount > 0
+                          ? `${appointmentCount} appointment${appointmentCount === 1 ? '' : 's'} scheduled.`
+                          : 'No appointments scheduled yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeAppointments.length ? (
+                        <div className="space-y-5">
+                          {safeAppointments.map((appointment) => (
+                            <div
+                              key={appointment.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted flex items-center justify-center">
+                                <svg
+                                  className="size-8 text-muted-foreground"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                      {appointment.service}
+                                    </p>
+                                    <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                      {appointment.doctorName}
+                                    </h3>
+                                  </div>
+                                </div>
+                                <div className="mt-2 space-y-1">
+                                  <p className="text-sm text-muted-foreground">
+                                    {appointment.date}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {appointment.time}
+                                  </p>
+                                </div>
+                                <div className="mt-4 flex items-center justify-between">
+                                  <button
+                                    type="button"
+                                    onClick={() => void cancelAppointment(appointment.id)}
+                                    className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-destructive hover:underline"
+                                  >
+                                    Cancel Appointment
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="space-y-6">
+                          <div className="rounded-lg border border-border bg-muted/40 p-6">
+                            <h3 className="mb-4 text-lg font-semibold text-foreground">Book an Appointment</h3>
+                            <form
+                              className="space-y-4"
+                              onSubmit={(e) => {
+                                e.preventDefault()
+                                const form = e.currentTarget
+                                const formData = new FormData(form)
+                                const data = {
+                                  doctorName: selectedDoctor || doctorItems[0]?.name || '',
+                                  service: selectedService || serviceItems[0]?.title || '',
+                                  date: formData.get('date') as string,
+                                  time: formData.get('time') as string,
+                                  patientName: formData.get('patientName') as string,
+                                  patientEmail: formData.get('patientEmail') as string,
+                                  patientPhone: formData.get('patientPhone') as string,
+                                }
+                                if (data.doctorName && data.service && data.date && data.time && data.patientName && data.patientEmail && data.patientPhone) {
+                                  void bookAppointment(data)
+                                  setAppointmentOpen(false)
+                                }
+                              }}
+                            >
+                              <div>
+                                <label className="mb-2 block text-sm font-medium text-foreground">
+                                  Select Doctor
+                                </label>
+                                <select
+                                  name="doctor"
+                                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
+                                  defaultValue={selectedDoctor || doctorItems[0]?.name}
+                                  onChange={(e) => setSelectedDoctor(e.target.value)}
+                                >
+                                  {doctorItems.map((doc) => (
+                                    <option key={doc.name} value={doc.name}>
+                                      {doc.name} - {doc.specialty}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div>
+                                <label className="mb-2 block text-sm font-medium text-foreground">
+                                  Select Service
+                                </label>
+                                <select
+                                  name="service"
+                                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
+                                  defaultValue={selectedService || serviceItems[0]?.title}
+                                  onChange={(e) => setSelectedService(e.target.value)}
+                                >
+                                  {serviceItems.map((service) => (
+                                    <option key={service.title} value={service.title}>
+                                      {service.title}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className="grid gap-4 sm:grid-cols-2">
+                                <div>
+                                  <label className="mb-2 block text-sm font-medium text-foreground">
+                                    Date
+                                  </label>
+                                  <input
+                                    type="date"
+                                    name="date"
+                                    required
+                                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="mb-2 block text-sm font-medium text-foreground">
+                                    Time
+                                  </label>
+                                  <select
+                                    name="time"
+                                    required
+                                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
+                                  >
+                                    <option value="9:00 AM">9:00 AM</option>
+                                    <option value="10:00 AM">10:00 AM</option>
+                                    <option value="11:00 AM">11:00 AM</option>
+                                    <option value="1:00 PM">1:00 PM</option>
+                                    <option value="2:00 PM">2:00 PM</option>
+                                    <option value="3:00 PM">3:00 PM</option>
+                                    <option value="4:00 PM">4:00 PM</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div>
+                                <label className="mb-2 block text-sm font-medium text-foreground">
+                                  Your Name
+                                </label>
+                                <input
+                                  type="text"
+                                  name="patientName"
+                                  required
+                                  placeholder="Full name"
+                                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
+                                />
+                              </div>
+                              <div>
+                                <label className="mb-2 block text-sm font-medium text-foreground">
+                                  Email
+                                </label>
+                                <input
+                                  type="email"
+                                  name="patientEmail"
+                                  required
+                                  placeholder="your@email.com"
+                                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
+                                />
+                              </div>
+                              <div>
+                                <label className="mb-2 block text-sm font-medium text-foreground">
+                                  Phone
+                                </label>
+                                <input
+                                  type="tel"
+                                  name="patientPhone"
+                                  required
+                                  placeholder="(555) 123-4567"
+                                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
+                                />
+                              </div>
+                              <Button
+                                type="submit"
+                                className="w-full rounded-full"
+                              >
+                                Book Appointment
+                              </Button>
+                            </form>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <Button
+                        type="button"
+                        className="w-full rounded-full"
+                        onClick={() => {
+                          setAppointmentOpen(false)
+                          go(heroPrimary)
+                        }}
+                      >
+                        Book New Appointment
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                <button
+                  type="button"
+                  onClick={() => go(heroPrimary)}
+                  className="rounded-full bg-accent px-5 py-2.5 font-semibold text-accent-foreground shadow-lg transition-colors hover:bg-accent/90"
+                >
+                  Book Now
+                </button>
+              </div>
             </div>
           </nav>
         </header>
@@ -1055,34 +1798,65 @@ export const HealthcareKimiPage2 = defineCapsule({
               </div>
 
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-                {doctorItems.map((doc) => (
-                  <article key={doc.name} className="group">
-                    <div className="relative mb-4 overflow-hidden rounded-2xl bg-muted">
-                      <div className="aspect-[4/5]">
-                        <Image
-                          alt={doc.photoAlt}
-                          w={400}
-                          h={500}
-                          loading="lazy"
-                          className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                      </div>
-                      <div className="absolute inset-0 flex items-end bg-gradient-to-t from-primary/80 to-transparent p-6 opacity-0 transition-opacity group-hover:opacity-100">
-                        <div className="text-primary-foreground">
-                          <p className="font-semibold">{doc.experience}</p>
-                          <p className="text-sm">{doc.school}</p>
+                {doctorItems.map((doc) => {
+                  const isFavorite = favoriteDoctorNames?.has(doc.name) ?? false
+                  return (
+                    <article key={doc.name} className="group">
+                      <div className="relative mb-4 overflow-hidden rounded-2xl bg-muted">
+                        <div className="aspect-[4/5]">
+                          <Image
+                            alt={doc.photoAlt}
+                            w={400}
+                            h={500}
+                            loading="lazy"
+                            className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavoriteDoctor(doc.name)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${doc.name} from favorites`
+                              : `Add ${doc.name} to favorites`
+                          }
+                          className={cn(
+                            'absolute top-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-background/90 text-foreground hover:bg-background',
+                          )}
+                        >
+                          <HeartIcon active={isFavorite} />
+                        </button>
+                        <div className="absolute inset-0 flex items-end bg-gradient-to-t from-primary/80 to-transparent p-6 opacity-0 transition-opacity group-hover:opacity-100">
+                          <div className="text-primary-foreground">
+                            <p className="font-semibold">{doc.experience}</p>
+                            <p className="text-sm">{doc.school}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <h3 className="text-xl font-bold text-foreground">
-                      {doc.name}
-                    </h3>
-                    <p className="font-medium text-primary">{doc.specialty}</p>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {doc.bio}
-                    </p>
-                  </article>
-                ))}
+                      <h3 className="text-xl font-bold text-foreground">
+                        {doc.name}
+                      </h3>
+                      <p className="font-medium text-primary">{doc.specialty}</p>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {doc.bio}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedDoctor(doc.name)
+                          setAppointmentOpen(true)
+                        }}
+                        className="mt-4 w-full rounded-full border-2 border-primary bg-background px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+                      >
+                        Book Appointment
+                      </button>
+                    </article>
+                  )
+                })}
               </div>
 
               <div className="mt-12 text-center">

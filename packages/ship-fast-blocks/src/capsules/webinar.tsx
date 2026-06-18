@@ -1,8 +1,27 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * WebinarKimiPage — a complete, self-contained virtual-event / webinar
@@ -193,12 +212,106 @@ export const WebinarKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      registrations: table({
+        email: string(),
+        tier: string(),
+        price: string(),
+      }),
+      bookmarkedSessions: table({
+        sessionTitle: string(),
+        sessionTime: string(),
+        sessionKind: string(),
+      }),
+      bookmarkedSpeakers: table({
+        speakerName: string(),
+        speakerRole: string(),
+      }),
+    },
+    queries: {
+      registrations: ({ db }) => db.registrations.orderBy('createdAt').all(),
+      bookmarkedSessions: ({ db }) => db.bookmarkedSessions.orderBy('createdAt').all(),
+      bookmarkedSpeakers: ({ db }) => db.bookmarkedSpeakers.orderBy('createdAt').all(),
+    },
+    mutations: {
+      addRegistration: ({ db }, email: string, tier: string, price: string) => {
+        db.registrations.insert({ email, tier, price })
+        return db.registrations.all()
+      },
+      removeRegistration: ({ db }, id: string) => {
+        db.registrations.delete(id)
+        return db.registrations.all()
+      },
+      toggleSessionBookmark: ({ db }, sessionTitle: string, sessionTime: string, sessionKind: string) => {
+        const existing = db.bookmarkedSessions.where('sessionTitle', sessionTitle).all()[0]
+        if (existing) {
+          db.bookmarkedSessions.delete(existing.id)
+          return false
+        }
+        db.bookmarkedSessions.insert({ sessionTitle, sessionTime, sessionKind })
+        return true
+      },
+      toggleSpeakerBookmark: ({ db }, speakerName: string, speakerRole: string) => {
+        const existing = db.bookmarkedSpeakers.where('speakerName', speakerName).all()[0]
+        if (existing) {
+          db.bookmarkedSpeakers.delete(existing.id)
+          return false
+        }
+        db.bookmarkedSpeakers.insert({ speakerName, speakerRole })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [registrationOpen, setRegistrationOpen] = useState(false)
     const brand = props.brand ?? "Product Analytics Live"
     const nav = props.nav?.length
       ? props.nav
       : ["Agenda", "Speakers", "Topics", "FAQ"]
+
+    // Lakebed queries and mutations
+    const registrations = lakebed.useQuery('registrations')
+    const bookmarkedSessions = lakebed.useQuery('bookmarkedSessions')
+    const bookmarkedSpeakers = lakebed.useQuery('bookmarkedSpeakers')
+    const addRegistration = lakebed.useMutation('addRegistration')
+    const removeRegistration = lakebed.useMutation('removeRegistration')
+    const toggleSessionBookmark = lakebed.useMutation('toggleSessionBookmark')
+    const toggleSpeakerBookmark = lakebed.useMutation('toggleSpeakerBookmark')
+    const auth = lakebed.useAuth()
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const safeRegistrations = registrations ?? []
+    const registrationCount = safeRegistrations.length
+    const bookmarkedSessionTitles = new Set(bookmarkedSessions?.map(s => s.sessionTitle) ?? [])
+    const bookmarkedSpeakerNames = new Set(bookmarkedSpeakers?.map(s => s.speakerName) ?? [])
 
     const heroBadge = props.hero?.badge ?? "Live Virtual Event"
     const heroBefore =
@@ -591,6 +704,36 @@ export const WebinarKimiPage = defineCapsule({
       </svg>
     )
 
+    const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn("size-5", active ? "text-primary" : "text-muted-foreground")}
+        fill={active ? "currentColor" : "none"}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     // Per-section icons for the topics grid.
     const topicIcons = [
       // bar chart
@@ -699,13 +842,222 @@ export const WebinarKimiPage = defineCapsule({
                   </button>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={() => go(heroCta)}
-                className="rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {heroCta}
-              </button>
+              <div className="flex items-center gap-4">
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => setRegistrationOpen(true)}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          My Registrations
+                          <span className="flex items-center gap-2">
+                            {registrationCount > 0 && (
+                              <span className="grid size-5 place-items-center rounded-full bg-primary text-[0.625rem] font-bold text-primary-foreground">
+                                {registrationCount}
+                              </span>
+                            )}
+                          </span>
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={registrationOpen} onOpenChange={setRegistrationOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="My Registrations"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      {registrationCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {registrationCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">My Registrations</SheetTitle>
+                      <SheetDescription>
+                        {registrationCount > 0
+                          ? `${registrationCount} registration${registrationCount === 1 ? '' : 's'} for this event.`
+                          : 'No registrations yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeRegistrations.length ? (
+                        <div className="space-y-4">
+                          {safeRegistrations.map((reg) => (
+                            <div
+                              key={reg.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-4 last:border-0"
+                            >
+                              <div className="flex aspect-square items-center justify-center rounded-lg bg-muted">
+                                <svg
+                                  className="size-8 text-muted-foreground"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                      {reg.tier}
+                                    </p>
+                                    <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                      {reg.email}
+                                    </h3>
+                                  </div>
+                                  <p className="text-sm font-bold text-foreground">
+                                    {reg.price}
+                                  </p>
+                                </div>
+                                <div className="mt-4 flex items-center justify-between">
+                                  <button
+                                    type="button"
+                                    onClick={() => void removeRegistration(reg.id)}
+                                    className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No registrations yet
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Select a pricing tier to register for this event.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                <button
+                  type="button"
+                  onClick={() => go(heroCta)}
+                  className="rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  {heroCta}
+                </button>
+              </div>
             </div>
           </div>
         </nav>
@@ -772,12 +1124,16 @@ export const WebinarKimiPage = defineCapsule({
                       className="max-w-md flex-1"
                       onSubmit={(e) => {
                         e.preventDefault()
-                        go(heroCta)
+                        const formData = new FormData(e.currentTarget)
+                        const email = formData.get('email') as string
+                        void addRegistration(email, 'Free Access', '$0')
+                        setRegistrationOpen(true)
                       }}
                     >
                       <div className="flex flex-col gap-3 sm:flex-row">
                         <input
                           type="email"
+                          name="email"
                           required
                           placeholder={heroEmailPlaceholder}
                           aria-label={heroEmailPlaceholder}
@@ -906,43 +1262,64 @@ export const WebinarKimiPage = defineCapsule({
                   </div>
                 </div>
                 <div className="space-y-4 lg:col-span-2">
-                  {agendaItems.map((slot) => (
-                    <div
-                      key={slot.time + slot.title}
-                      className={cn(
-                        "flex gap-4 rounded-xl border border-border p-4",
-                        slot.kind === "break" ? "bg-muted" : "bg-card",
-                      )}
-                    >
-                      <div className="w-20 text-sm font-medium text-muted-foreground">
-                        {slot.time}
-                      </div>
-                      <div className="flex-1">
-                        <div className="mb-1 flex items-center gap-2">
-                          <span
-                            className={cn(
-                              "rounded-full px-2 py-0.5 text-xs",
-                              kindTag[slot.kind],
-                            )}
-                          >
-                            {agendaLegend[
-                              slot.kind === "keynote"
-                                ? 0
-                                : slot.kind === "workshop"
-                                  ? 1
-                                  : 2
-                            ] ?? slot.kind}
-                          </span>
+                  {agendaItems.map((slot) => {
+                    const isBookmarked = bookmarkedSessionTitles.has(slot.title)
+                    return (
+                      <div
+                        key={slot.time + slot.title}
+                        className={cn(
+                          "flex gap-4 rounded-xl border border-border p-4",
+                          slot.kind === "break" ? "bg-muted" : "bg-card",
+                        )}
+                      >
+                        <div className="w-20 text-sm font-medium text-muted-foreground">
+                          {slot.time}
                         </div>
-                        <h3 className="mb-1 text-lg font-semibold">
-                          {slot.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {slot.description}
-                        </p>
+                        <div className="flex-1">
+                          <div className="mb-1 flex items-center gap-2">
+                            <span
+                              className={cn(
+                                "rounded-full px-2 py-0.5 text-xs",
+                                kindTag[slot.kind],
+                              )}
+                            >
+                              {agendaLegend[
+                                slot.kind === "keynote"
+                                  ? 0
+                                  : slot.kind === "workshop"
+                                    ? 1
+                                    : 2
+                              ] ?? slot.kind}
+                            </span>
+                          </div>
+                          <h3 className="mb-1 text-lg font-semibold">
+                            {slot.title}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {slot.description}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => void toggleSessionBookmark(slot.title, slot.time, slot.kind)}
+                          aria-pressed={isBookmarked}
+                          aria-label={
+                            isBookmarked
+                              ? `Remove ${slot.title} from bookmarks`
+                              : `Add ${slot.title} to bookmarks`
+                          }
+                          className={cn(
+                            "grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105",
+                            isBookmarked
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-background/90 text-muted-foreground hover:bg-background",
+                          )}
+                        >
+                          <BookmarkIcon active={isBookmarked} />
+                        </button>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             </div>
@@ -958,24 +1335,45 @@ export const WebinarKimiPage = defineCapsule({
                 <p className="text-lg text-muted-foreground">{speakersDesc}</p>
               </div>
               <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-                {speakerItems.map((sp) => (
-                  <div key={sp.name} className="text-center">
-                    <div className="mb-4 aspect-square overflow-hidden rounded-2xl bg-muted">
-                      <Image
-                        alt={sp.imageAlt}
-                        w={400}
-                        h={400}
-                        loading="lazy"
-                        className="size-full object-cover"
-                      />
+                {speakerItems.map((sp) => {
+                  const isBookmarked = bookmarkedSpeakerNames.has(sp.name)
+                  return (
+                    <div key={sp.name} className="text-center">
+                      <div className="mb-4 aspect-square overflow-hidden rounded-2xl bg-muted">
+                        <Image
+                          alt={sp.imageAlt}
+                          w={400}
+                          h={400}
+                          loading="lazy"
+                          className="size-full object-cover"
+                        />
+                      </div>
+                      <h3 className="text-lg font-semibold">{sp.name}</h3>
+                      <p className="text-sm text-muted-foreground">{sp.role}</p>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {sp.bio}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => void toggleSpeakerBookmark(sp.name, sp.role)}
+                        aria-pressed={isBookmarked}
+                        aria-label={
+                          isBookmarked
+                            ? `Remove ${sp.name} from bookmarks`
+                            : `Add ${sp.name} to bookmarks`
+                        }
+                        className={cn(
+                          "mt-4 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105",
+                          isBookmarked
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-background/90 text-muted-foreground hover:bg-background",
+                        )}
+                      >
+                        <BookmarkIcon active={isBookmarked} />
+                      </button>
                     </div>
-                    <h3 className="text-lg font-semibold">{sp.name}</h3>
-                    <p className="text-sm text-muted-foreground">{sp.role}</p>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {sp.bio}
-                    </p>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -1128,7 +1526,10 @@ export const WebinarKimiPage = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(tier.cta)}
+                      onClick={() => {
+                        void addRegistration(authEmail || 'guest@example.com', tier.name, tier.price)
+                        setRegistrationOpen(true)
+                      }}
                       className={cn(
                         "w-full rounded-lg py-3 font-medium transition-colors",
                         tier.featured
@@ -1203,12 +1604,16 @@ export const WebinarKimiPage = defineCapsule({
                 className="mx-auto mb-4 max-w-md"
                 onSubmit={(e) => {
                   e.preventDefault()
-                  go(ctaButton)
+                  const formData = new FormData(e.currentTarget)
+                  const email = formData.get('email') as string
+                  void addRegistration(email, 'Free Access', '$0')
+                  setRegistrationOpen(true)
                 }}
               >
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <input
                     type="email"
+                    name="email"
                     required
                     placeholder={ctaEmailPlaceholder}
                     aria-label={ctaEmailPlaceholder}

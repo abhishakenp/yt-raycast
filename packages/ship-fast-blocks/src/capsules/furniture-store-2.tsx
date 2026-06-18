@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * FurnitureStoreKimiPage2 — TEMPLATE VARIANT 2 for the furniture-store category.
@@ -148,10 +166,113 @@ export const FurnitureStoreKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      products: table({
+        alt: string(),
+        badge: string(),
+        image: string(),
+        name: string(),
+        price: string(),
+        variant: string(),
+      }),
+      cartItems: table({
+        productId: string(),
+        quantity: number(),
+      }),
+      favorites: table({
+        productName: string(),
+      }),
+    },
+    queries: {
+      products: ({ db }) => db.products.orderBy('createdAt').all(),
+      cartLines: ({ db }) =>
+        db.cartItems.all().flatMap((item) => {
+          const product = db.products.get(item.productId)
+          return product ? [{ ...item, product }] : []
+        }),
+      favoriteProductNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.productName)),
+    },
+    mutations: {
+      addToCart: ({ db }, productName: string) => {
+        const product = db.products.where('name', productName).all()[0]
+        if (!product) return db.cartItems.all()
+
+        const existingItem = db.cartItems
+          .where('productId', product.id)
+          .all()[0]
+
+        if (existingItem) {
+          db.cartItems.update(existingItem.id, {
+            quantity: existingItem.quantity + 1,
+          })
+        } else {
+          db.cartItems.insert({
+            productId: product.id,
+            quantity: 1,
+          })
+        }
+
+        return db.cartItems.all()
+      },
+      updateCartQuantity: ({ db }, productId: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+
+        for (const item of db.cartItems.where('productId', productId).all()) {
+          if (nextQuantity) {
+            db.cartItems.update(item.id, { quantity: nextQuantity })
+          } else {
+            db.cartItems.delete(item.id)
+          }
+        }
+
+        return db.cartItems.all()
+      },
+      removeFromCart: ({ db }, productId: string) => {
+        for (const item of db.cartItems.where('productId', productId).all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return db.cartItems.all()
+      },
+      clearCart: ({ db }) => {
+        for (const item of db.cartItems.all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return []
+      },
+      toggleFavorite: ({ db }, productName: string) => {
+        const existingFavorite = db.favorites
+          .where('productName', productName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ productName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [cartOpen, setCartOpen] = useState(false)
     const brand = props.brand ?? "Maison & Co."
+
+    const priceAmount = (price: string) => {
+      const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ''))
+      return Number.isFinite(amount) ? amount : 0
+    }
+    const formatCurrency = (amount: number) =>
+      new Intl.NumberFormat('en-US', {
+        currency: 'USD',
+        style: 'currency',
+      }).format(amount)
     const nav = props.nav?.length
       ? props.nav
       : ["Room Inspiration", "New Arrivals", "Collection", "Stories"]
@@ -241,6 +362,63 @@ export const FurnitureStoreKimiPage2 = defineCapsule({
             price: "$189",
           },
         ]
+    const normalizedProductItems = productItems.map((product) => ({
+      alt: `${product.name}, ${product.variant}`,
+      badge: product.badge ?? '',
+      image: '',
+      name: product.name,
+      price: product.price,
+      variant: product.variant,
+    }))
+    const storedProducts = lakebed.useQuery('products')
+    const cartLines = lakebed.useQuery('cartLines')
+    const favoriteProductNames = lakebed.useQuery('favoriteProductNames')
+    const auth = lakebed.useAuth()
+    const addToCart = lakebed.useMutation('addToCart')
+    const updateCartQuantity = lakebed.useMutation('updateCartQuantity')
+    const removeFromCart = lakebed.useMutation('removeFromCart')
+    const clearCart = lakebed.useMutation('clearCart')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const displayProducts =
+      storedProducts && storedProducts.length > 0
+        ? storedProducts
+        : normalizedProductItems
+    const safeCartLines = cartLines ?? []
+    const cartItemCount = safeCartLines.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+    const cartSubtotal = safeCartLines.reduce(
+      (total, item) => total + priceAmount(item.product.price) * item.quantity,
+      0,
+    )
+    const shipping = cartSubtotal > 0 && cartSubtotal < 500 ? 25 : 0
+    const cartTotal = cartSubtotal + shipping
 
     const designEyebrow = props.design?.eyebrow ?? "Complimentary Service"
     const designHeading = props.design?.heading ?? "Free Interior Design"
@@ -477,6 +655,55 @@ export const FurnitureStoreKimiPage2 = defineCapsule({
       ),
     }
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     return (
       <div
         className={cn(
@@ -533,47 +760,285 @@ export const FurnitureStoreKimiPage2 = defineCapsule({
                     <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => go("Account")}
-                  className="p-2 text-muted-foreground transition-colors hover:text-primary"
-                  aria-label="Account"
-                >
-                  <svg
-                    className="size-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Orders')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Orders
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
                   >
-                    <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go("Cart")}
-                  className="relative p-2 text-muted-foreground transition-colors hover:text-primary"
-                  aria-label="Shopping cart"
-                >
-                  <svg
-                    className="size-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={cartOpen} onOpenChange={setCartOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Shopping Cart"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <path d="M16 10a4 4 0 0 1-8 0" />
+                      </svg>
+                      {cartItemCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {cartItemCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
                   >
-                    <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                  </svg>
-                  <span className="absolute right-0 top-0 flex size-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                    2
-                  </span>
-                </button>
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Shopping cart</SheetTitle>
+                      <SheetDescription>
+                        {cartItemCount > 0
+                          ? `${cartItemCount} item${cartItemCount === 1 ? '' : 's'} ready for checkout.`
+                          : 'Your cart is empty.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeCartLines.length ? (
+                        <div className="space-y-5">
+                          {safeCartLines.map((item) => (
+                            <div
+                              key={item.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                <Image
+                                  alt={item.product.alt}
+                                  src={item.product.image || undefined}
+                                  w={180}
+                                  h={180}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                      {brand}
+                                    </p>
+                                    <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                      {item.product.name}
+                                    </h3>
+                                  </div>
+                                  <p className="text-sm font-bold text-foreground">
+                                    {formatCurrency(
+                                      priceAmount(item.product.price) *
+                                        item.quantity,
+                                    )}
+                                  </p>
+                                </div>
+                                <div className="mt-4 flex items-center justify-between">
+                                  <div className="inline-flex h-9 items-center rounded-full border border-border bg-background">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void updateCartQuantity(
+                                          item.productId,
+                                          item.quantity - 1,
+                                        )
+                                      }
+                                      className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                      aria-label={`Decrease ${item.product.name} quantity`}
+                                    >
+                                      -
+                                    </button>
+                                    <span className="min-w-8 text-center text-sm font-semibold">
+                                      {item.quantity}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void updateCartQuantity(
+                                          item.productId,
+                                          item.quantity + 1,
+                                        )
+                                      }
+                                      className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                      aria-label={`Increase ${item.product.name} quantity`}
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void removeFromCart(item.productId)
+                                    }
+                                    className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No products in cart
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Add an item from New Arrivals to start a cart for this
+                            session.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>Subtotal</span>
+                          <span>{formatCurrency(cartSubtotal)}</span>
+                        </div>
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>Shipping</span>
+                          <span>
+                            {shipping ? formatCurrency(shipping) : 'Free'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between pt-2 text-base font-bold text-foreground">
+                          <span>Total</span>
+                          <span>{formatCurrency(cartTotal)}</span>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        disabled={!safeCartLines.length}
+                        className="w-full rounded-full"
+                        onClick={() => go('Checkout')}
+                      >
+                        Checkout
+                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="rounded-full"
+                          onClick={() => void clearCart()}
+                          disabled={!safeCartLines.length}
+                        >
+                          Clear
+                        </Button>
+                        <SheetClose asChild>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="rounded-full"
+                          >
+                            Continue
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => setMobileOpen((v: boolean) => !v)}
@@ -614,6 +1079,58 @@ export const FurnitureStoreKimiPage2 = defineCapsule({
                       {label}
                     </button>
                   ))}
+                  <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                    {isSignedIn ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in'}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            setMobileOpen(false)
+                            handleSignOut()
+                          }}
+                          className="w-full rounded-full"
+                        >
+                          Sign out
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignIn()
+                        }}
+                        disabled={auth.isLoading}
+                        className="w-full rounded-full"
+                      >
+                        <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                          G
+                        </span>
+                        {authLabel}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -792,68 +1309,79 @@ export const FurnitureStoreKimiPage2 = defineCapsule({
               </div>
 
               <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                {productItems.map((product) => (
-                  <article key={product.name} className="group">
-                    <div className="relative mb-4 block aspect-square overflow-hidden rounded-lg bg-muted">
-                      <button
-                        type="button"
-                        onClick={() => go(product.name)}
-                        className="block size-full"
-                        aria-label={product.name}
-                      >
+                {displayProducts.map((product) => {
+                  const isFavorite =
+                    favoriteProductNames?.has(product.name) ?? false
+
+                  return (
+                    <article key={product.name} className="group">
+                      <div className="relative mb-4 aspect-square overflow-hidden rounded-lg bg-muted">
                         <Image
-                          alt={`${product.name}, ${product.variant}`}
+                          alt={product.alt}
+                          src={product.image || undefined}
                           w={600}
                           h={600}
                           loading="lazy"
                           className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
-                      </button>
-                      {product.badge ? (
-                        <span
+                        {product.badge ? (
+                          <span
+                            className={cn(
+                              "absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-semibold",
+                              product.badge.toLowerCase() === "bestseller"
+                                ? "bg-foreground text-background"
+                                : "bg-primary text-primary-foreground",
+                            )}
+                          >
+                            {product.badge}
+                          </span>
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavorite(product.name)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${product.name} from favorites`
+                              : `Add ${product.name} to favorites`
+                          }
                           className={cn(
-                            "absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-semibold",
-                            product.badge.toLowerCase() === "bestseller"
-                              ? "bg-foreground text-background"
-                              : "bg-primary text-primary-foreground",
+                            "absolute bottom-4 right-4 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100",
+                            isFavorite
+                              ? "bg-primary text-primary-foreground opacity-100"
+                              : "bg-background/90 text-foreground opacity-0 hover:bg-background",
                           )}
                         >
-                          {product.badge}
-                        </span>
-                      ) : null}
-                      <button
-                        type="button"
-                        onClick={() => go(`Add ${product.name}`)}
-                        className="absolute bottom-4 right-4 flex size-10 items-center justify-center rounded-full bg-background text-foreground opacity-0 shadow-lg transition-all hover:bg-primary hover:text-primary-foreground group-hover:opacity-100"
-                        aria-label={`Add ${product.name} to cart`}
-                      >
-                        <svg
-                          className="size-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
+                          <HeartIcon active={isFavorite} />
+                        </button>
+                      </div>
+                      <div className="space-y-3">
+                        <h3 className="text-lg font-bold transition-colors group-hover:text-primary">
+                          <button type="button" onClick={() => go(product.name)}>
+                            {product.name}
+                          </button>
+                        </h3>
+                        <p className="mb-2 text-sm text-muted-foreground">
+                          {product.variant}
+                        </p>
+                        <p className="font-semibold text-foreground">
+                          {product.price}
+                        </p>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="w-full rounded-full"
+                          onClick={() => {
+                            void addToCart(product.name)
+                            setCartOpen(true)
+                          }}
                         >
-                          <path d="M12 4v16m8-8H4" />
-                        </svg>
-                      </button>
-                    </div>
-                    <h3 className="text-lg font-bold transition-colors group-hover:text-primary">
-                      <button type="button" onClick={() => go(product.name)}>
-                        {product.name}
-                      </button>
-                    </h3>
-                    <p className="mb-2 text-sm text-muted-foreground">
-                      {product.variant}
-                    </p>
-                    <p className="font-semibold text-foreground">
-                      {product.price}
-                    </p>
-                  </article>
-                ))}
+                          Add to cart
+                        </Button>
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
             </div>
           </section>

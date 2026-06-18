@@ -1,9 +1,19 @@
 import { useState, type ReactNode } from "react"
+import { string, table } from "@ship-fast/lakebed/server"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * DashboardKimiPage — a complete, self-contained SaaS ADMIN DASHBOARD app shell.
@@ -140,9 +150,100 @@ export const DashboardKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      orders: table({
+        amount: string(),
+        customer: string(),
+        date: string(),
+        orderId: string(),
+        product: string(),
+        status: string(),
+        statusTone: string(),
+      }),
+    },
+    queries: {
+      orders: ({ db }) => db.orders.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addOrder: (
+        { db },
+        orderId: string,
+        customer: string,
+        product: string,
+        date: string,
+        amount: string,
+        status: string,
+        statusTone: string,
+      ) => {
+        db.orders.insert({
+          amount,
+          customer,
+          date,
+          orderId,
+          product,
+          status,
+          statusTone,
+        })
+        return db.orders.orderBy("createdAt").all()
+      },
+      clearOrders: ({ db }) => {
+        for (const order of db.orders.all()) {
+          db.orders.delete(order.id)
+        }
+        return db.orders.all()
+      },
+      removeOrder: ({ db }, id: string) => {
+        const order = db.orders.get(id)
+        if (order) {
+          db.orders.delete(order.id)
+        }
+        return db.orders.orderBy("createdAt").all()
+      },
+      setOrderStatus: (
+        { db },
+        id: string,
+        status: string,
+        statusTone: string,
+      ) => {
+        const order = db.orders.get(id)
+        if (order) {
+          db.orders.update(order.id, { status, statusTone })
+        }
+        return db.orders.orderBy("createdAt").all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? "Orbit"
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || auth.user?.email || "Account"
+    const authPicture = auth.picture || auth.user?.picture
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const [mobileNavOpen, setMobileNavOpen] = useState(false)
+    const [activeNav, setActiveNav] = useState(props.nav?.[0] ?? "Dashboard")
+    const [activeRange, setActiveRange] = useState(
+      props.chart?.ranges?.[0] ?? "12 Months",
+    )
+    const [notificationsOpen, setNotificationsOpen] = useState(false)
+
+    const addOrder = lakebed.useMutation("addOrder")
+    const clearOrders = lakebed.useMutation("clearOrders")
+    const removeOrder = lakebed.useMutation("removeOrder")
+    const setOrderStatus = lakebed.useMutation("setOrderStatus")
+    const storedOrders = lakebed.useQuery("orders")
+
     const nav = props.nav?.length
       ? props.nav
       : [
@@ -163,14 +264,18 @@ export const DashboardKimiPage = defineCapsule({
       props.search ?? "Search orders, customers, products..."
 
     const userName = props.user?.name ?? "Alex Morgan"
-    const userEmail = props.user?.email ?? "alex@orbit.dev"
+    const userEmail = isSignedIn
+      ? auth.user?.email || "alex@orbit.dev"
+      : props.user?.email ?? "alex@orbit.dev"
     const userRole = props.user?.role ?? "Admin"
-    const userAvatarAlt = `portrait headshot of ${userName}, friendly professional`
+    const userAvatarAlt = `portrait headshot of ${isSignedIn ? authDisplayName : userName}, friendly professional`
 
     const headerTitle = props.header?.title ?? "Dashboard"
     const headerSubtitle =
       props.header?.subtitle ??
-      `Welcome back, ${userName.split(" ")[0]}. Here's what's happening with your store.`
+      `Welcome back, ${(
+        isSignedIn ? authDisplayName : userName
+      ).split(" ")[0]}. Here's what's happening with your store.`
     const headerSecondary = props.header?.secondaryAction ?? "Export"
     const headerPrimary = props.header?.primaryAction ?? "New Order"
 
@@ -343,14 +448,76 @@ export const DashboardKimiPage = defineCapsule({
             statusTone: "red" as const,
           },
         ]
-    const ordersSummary = props.orders?.summary ?? "Showing 1–6 of 1,247 orders"
+        const ordersSummary = props.orders?.summary ?? "Showing 1–6 of 1,247 orders"
     const ordersPages = props.orders?.pages?.length
       ? props.orders.pages
       : ["Prev", "1", "2", "3", "Next"]
+    const fallbackOrders = ordersRows
+    const hasStoredOrders = !!storedOrders && storedOrders.length > 0
+    const ordersData = hasStoredOrders
+      ? storedOrders.map((order) => ({
+          id: order.orderId || order.id,
+          customer: order.customer,
+          product: order.product,
+          date: order.date,
+          amount: order.amount,
+          status: order.status,
+          statusTone: order.statusTone || "sky",
+          dbId: order.id,
+        }))
+      : fallbackOrders.map((row) => ({ ...row, dbId: null }))
 
-    const [activeNav, setActiveNav] = useState(nav[0])
-    const [activeRange, setActiveRange] = useState(chartRanges[0])
-    const [mobileNavOpen, setMobileNavOpen] = useState(false)
+    const totalOrderAmount = ordersData.reduce((sum, row) => {
+      const value = Number.parseFloat(row.amount.replace(/[^0-9.]+/g, ""))
+      return sum + (Number.isFinite(value) ? value : 0)
+    }, 0)
+
+    const seedOrderAmount = () => {
+      const nextIndex =
+        hasStoredOrders && storedOrders ? storedOrders.length : ordersData.length
+      const orderNo = 4900 + (nextIndex + 1)
+      return {
+        orderId: `#${orderNo}`,
+        customer: "New Customer",
+        product: "Manual order",
+        date: new Date().toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }),
+        amount: "$0.00",
+        status: "Processing",
+        statusTone: "sky",
+      }
+    }
+
+    const onSetActiveNav = (label: string) => {
+      setActiveNav(label)
+      setMobileNavOpen(false)
+      go(label)
+    }
+
+    const onAddOrder = () => {
+      const next = seedOrderAmount()
+      void addOrder(
+        next.orderId,
+        next.customer,
+        next.product,
+        next.date,
+        next.amount,
+        next.status,
+        next.statusTone,
+      )
+      go(headerPrimary)
+    }
+
+    const onToggleOrderStatus = (id: string | null) => {
+      if (!id) return
+      void setOrderStatus(id, "Completed", "emerald")
+    }
+
+    const currentUserName = isSignedIn ? authDisplayName : userName
+    const currentUserRole = userRole
 
     // ── Brand mark — indigo tile + orbit glyph (decorative brand asset). ──
     const LogoMark = ({ className }: { className?: string }) => (
@@ -604,9 +771,7 @@ export const DashboardKimiPage = defineCapsule({
                 key={label}
                 type="button"
                 onClick={() => {
-                  setActiveNav(label)
-                  setMobileNavOpen(false)
-                  go(label)
+                  onSetActiveNav(label)
                 }}
                 className={cn(
                   "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
@@ -649,11 +814,9 @@ export const DashboardKimiPage = defineCapsule({
                   <button
                     key={label}
                     type="button"
-                    onClick={() => {
-                      setActiveNav(label)
-                      setMobileNavOpen(false)
-                      go(label)
-                    }}
+                onClick={() => {
+                  onSetActiveNav(label)
+                }}
                     className={cn(
                       "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
                       active
@@ -700,8 +863,15 @@ export const DashboardKimiPage = defineCapsule({
             </div>
             <button
               type="button"
-              aria-label="Sign out"
-              onClick={() => go("Logout")}
+              aria-label={isSignedIn ? "Sign out" : "Sign in"}
+              onClick={() => {
+                if (isSignedIn) {
+                  handleSignOut()
+                } else {
+                  handleSignIn()
+                }
+              }}
+              disabled={auth.isLoading}
               className="ml-auto text-muted-foreground transition-colors hover:text-foreground"
             >
               <svg
@@ -804,7 +974,7 @@ export const DashboardKimiPage = defineCapsule({
               <button
                 type="button"
                 aria-label="Notifications"
-                onClick={() => go("Notifications")}
+                onClick={() => setNotificationsOpen(true)}
                 className="relative rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <svg
@@ -823,12 +993,12 @@ export const DashboardKimiPage = defineCapsule({
                 </svg>
                 <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-destructive ring-2 ring-card" />
               </button>
-              <button
-                type="button"
-                aria-label="Messages"
-                onClick={() => go("Messages")}
-                className="hidden rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:block"
-              >
+                <button
+                  type="button"
+                  aria-label="Messages"
+                  onClick={() => go("Messages")}
+                  className="hidden rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:block"
+                >
                 <svg
                   width="20"
                   height="20"
@@ -843,30 +1013,131 @@ export const DashboardKimiPage = defineCapsule({
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                   <polyline points="22,6 12,13 2,6" />
                 </svg>
-              </button>
-              <div className="hidden h-6 w-px bg-border sm:block" />
-              <button
-                type="button"
-                onClick={() => go("Settings")}
+                </button>
+                <div className="hidden h-6 w-px bg-border sm:block" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isSignedIn) {
+                      go("Settings")
+                    } else {
+                      handleSignIn()
+                    }
+                  }}
                 className="flex items-center gap-3"
+                >
+                  <Image
+                    alt={userAvatarAlt}
+                    src={authPicture}
+                    w={64}
+                    h={64}
+                    className="size-8 rounded-full object-cover ring-2 ring-muted"
+                  />
+                  <span className="hidden text-right lg:block">
+                    <span className="block text-sm font-semibold leading-tight text-foreground">
+                      {isSignedIn ? currentUserName : userName}
+                    </span>
+                    <span className="block text-xs leading-tight text-muted-foreground">
+                      {isSignedIn ? currentUserRole : userRole}
+                    </span>
+                  </span>
+                </button>
+              </div>
+              <Sheet
+                open={notificationsOpen}
+                onOpenChange={setNotificationsOpen}
               >
-                <Image
-                  alt={userAvatarAlt}
-                  w={64}
-                  h={64}
-                  className="size-8 rounded-full object-cover ring-2 ring-muted"
-                />
-                <span className="hidden text-right lg:block">
-                  <span className="block text-sm font-semibold leading-tight text-foreground">
-                    {userName}
-                  </span>
-                  <span className="block text-xs leading-tight text-muted-foreground">
-                    {userRole}
-                  </span>
-                </span>
-              </button>
-            </div>
-          </header>
+                <SheetContent
+                  side="right"
+                  className="flex w-full flex-col gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle>Notifications</SheetTitle>
+                    <SheetDescription>
+                      {ordersData.length} recent activity updates
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-6 py-5">
+                    {ordersData.length ? (
+                      ordersData.map((row) => (
+                        <div
+                          key={row.dbId ?? row.id}
+                          className="rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm"
+                        >
+                          <p className="font-medium text-foreground">
+                            {row.id} — {row.customer}
+                          </p>
+                          <p className="mt-1 text-muted-foreground">
+                            {row.product}
+                          </p>
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            {row.date} · {row.amount}
+                          </p>
+                          <div className="mt-3 flex justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                onToggleOrderStatus(row.dbId)
+                              }
+                              className="rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
+                            >
+                              Complete
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                row.dbId
+                                  ? void removeOrder(row.dbId)
+                                  : go("Orders")
+                              }
+                              className="rounded-full bg-gradient-to-br from-primary to-primary/80 px-3 py-1 text-xs font-medium text-primary-foreground"
+                            >
+                              {row.dbId ? "Dismiss" : "Open"}
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="rounded-lg border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+                        No notifications yet.
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border px-6 py-4">
+                    <div className="w-full space-y-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Subtotal</span>
+                        <span className="font-semibold text-foreground">
+                          $
+                          {totalOrderAmount.toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void clearOrders()}
+                          disabled={!hasStoredOrders}
+                          className="inline-flex w-full items-center justify-center rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Clear all
+                        </button>
+                        <SheetClose asChild>
+                          <button
+                            type="button"
+                            className="inline-flex w-full items-center justify-center rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+                          >
+                            Close
+                          </button>
+                        </SheetClose>
+                      </div>
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+            </header>
 
           {/* Scrollable content */}
           <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
@@ -891,7 +1162,7 @@ export const DashboardKimiPage = defineCapsule({
                   </button>
                   <button
                     type="button"
-                    onClick={() => go(headerPrimary)}
+                    onClick={() => onAddOrder()}
                     className="rounded-lg bg-gradient-to-br from-primary to-primary/80 px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm shadow-primary/30 transition hover:-translate-y-px hover:shadow-md hover:shadow-primary/40"
                   >
                     + {headerPrimary}
@@ -1223,7 +1494,7 @@ export const DashboardKimiPage = defineCapsule({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/60">
-                      {ordersRows.map((row) => {
+                      {ordersData.map((row) => {
                         const tone = statusTones[row.statusTone ?? "sky"]
                         const initial = row.customer.charAt(0).toUpperCase()
                         return (
@@ -1273,7 +1544,13 @@ export const DashboardKimiPage = defineCapsule({
                               <button
                                 type="button"
                                 aria-label={`Actions for ${row.id}`}
-                                onClick={() => go(`Orders`)}
+                              onClick={() => {
+                                if (row.dbId) {
+                                  void removeOrder(row.dbId)
+                                } else {
+                                  go(`Orders`)
+                                }
+                              }}
                                 className="text-muted-foreground transition-colors hover:text-foreground"
                               >
                                 <svg

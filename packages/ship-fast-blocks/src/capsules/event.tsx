@@ -1,9 +1,28 @@
+import { useState } from "react"
 import { type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * EventKimiPage — a complete, self-contained CONFERENCE / EVENT landing page.
@@ -200,12 +219,181 @@ export const EventKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      tickets: table({
+        tierName: string(),
+        price: string(),
+        quantity: number(),
+      }),
+      favoriteSpeakers: table({
+        speakerName: string(),
+      }),
+      bookmarkedSessions: table({
+        sessionTitle: string(),
+        dayNum: string(),
+        time: string(),
+      }),
+    },
+    queries: {
+      ticketLines: ({ db }) =>
+        db.tickets.all().map((item) => ({
+          ...item,
+          tier: {
+            name: item.tierName,
+            price: item.price,
+          },
+        })),
+      favoriteSpeakerNames: ({ db }) =>
+        new Set(db.favoriteSpeakers.all().map((fav) => fav.speakerName)),
+      bookmarkedSessionTitles: ({ db }) =>
+        new Set(db.bookmarkedSessions.all().map((bm) => bm.sessionTitle)),
+    },
+    mutations: {
+      addTicket: ({ db }, tierName: string, price: string) => {
+        const existingItem = db.tickets.where('tierName', tierName).all()[0]
+
+        if (existingItem) {
+          db.tickets.update(existingItem.id, {
+            quantity: existingItem.quantity + 1,
+          })
+        } else {
+          db.tickets.insert({
+            tierName,
+            price,
+            quantity: 1,
+          })
+        }
+
+        return db.tickets.all()
+      },
+      updateTicketQuantity: ({ db }, tierName: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+
+        for (const item of db.tickets.where('tierName', tierName).all()) {
+          if (nextQuantity) {
+            db.tickets.update(item.id, { quantity: nextQuantity })
+          } else {
+            db.tickets.delete(item.id)
+          }
+        }
+
+        return db.tickets.all()
+      },
+      removeTicket: ({ db }, tierName: string) => {
+        for (const item of db.tickets.where('tierName', tierName).all()) {
+          db.tickets.delete(item.id)
+        }
+
+        return db.tickets.all()
+      },
+      clearTickets: ({ db }) => {
+        for (const item of db.tickets.all()) {
+          db.tickets.delete(item.id)
+        }
+
+        return []
+      },
+      toggleFavoriteSpeaker: ({ db }, speakerName: string) => {
+        const existingFavorite = db.favoriteSpeakers
+          .where('speakerName', speakerName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favoriteSpeakers.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favoriteSpeakers.insert({ speakerName })
+        return true
+      },
+      toggleBookmarkedSession: (
+        { db },
+        sessionTitle: string,
+        dayNum: string,
+        time: string,
+      ) => {
+        const existingBookmark = db.bookmarkedSessions
+          .where('sessionTitle', sessionTitle)
+          .all()[0]
+
+        if (existingBookmark) {
+          db.bookmarkedSessions.delete(existingBookmark.id)
+          return false
+        }
+
+        db.bookmarkedSessions.insert({ sessionTitle, dayNum, time })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [ticketDrawerOpen, setTicketDrawerOpen] = useState(false)
     const brand = props.brand ?? "DesignFront"
     const nav = props.nav?.length
       ? props.nav
       : ["Agenda", "Speakers", "Venue", "Tickets"]
+
+    const ticketLines = lakebed.useQuery('ticketLines')
+    const favoriteSpeakerNames = lakebed.useQuery('favoriteSpeakerNames')
+    const bookmarkedSessionTitles = lakebed.useQuery('bookmarkedSessionTitles')
+    const auth = lakebed.useAuth()
+    const addTicket = lakebed.useMutation('addTicket')
+    const updateTicketQuantity = lakebed.useMutation('updateTicketQuantity')
+    const removeTicket = lakebed.useMutation('removeTicket')
+    const clearTickets = lakebed.useMutation('clearTickets')
+    const toggleFavoriteSpeaker = lakebed.useMutation('toggleFavoriteSpeaker')
+    const toggleBookmarkedSession = lakebed.useMutation('toggleBookmarkedSession')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const priceAmount = (price: string) => {
+      const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ''))
+      return Number.isFinite(amount) ? amount : 0
+    }
+
+    const formatCurrency = (amount: number) =>
+      new Intl.NumberFormat('en-US', {
+        currency: 'USD',
+        style: 'currency',
+      }).format(amount)
+
+    const safeTicketLines = ticketLines ?? []
+    const ticketCount = safeTicketLines.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+    const ticketSubtotal = safeTicketLines.reduce(
+      (total, item) => total + priceAmount(item.tier.price) * item.quantity,
+      0,
+    )
+    const ticketTotal = ticketSubtotal
 
     const heroEyebrow =
       props.hero?.eyebrow ?? "September 12–13, 2024 • San Francisco"
@@ -709,6 +897,57 @@ export const EventKimiPage = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+      </svg>
+    )
+
     const CheckIcon = () => (
       <svg
         width="20"
@@ -863,13 +1102,297 @@ export const EventKimiPage = defineCapsule({
                   </button>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={() => go(nav[nav.length - 1])}
-                className="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                Get Tickets
-              </button>
+              <div className="flex items-center gap-4">
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('My Tickets')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          My Tickets
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('My Agenda')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          My Agenda
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={ticketDrawerOpen} onOpenChange={setTicketDrawerOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Your tickets"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                      {ticketCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {ticketCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Your Tickets</SheetTitle>
+                      <SheetDescription>
+                        {ticketCount > 0
+                          ? `${ticketCount} ticket${ticketCount === 1 ? '' : 's'} in your cart.`
+                          : 'Your cart is empty.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeTicketLines.length ? (
+                        <div className="space-y-5">
+                          {safeTicketLines.map((item) => (
+                            <div
+                              key={item.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted flex items-center justify-center">
+                                <div className="text-center">
+                                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                    {brand}
+                                  </p>
+                                  <p className="text-sm font-bold text-foreground">
+                                    {item.tier.name}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                      {item.tier.name}
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground">
+                                      {item.tier.price}
+                                    </p>
+                                  </div>
+                                  <p className="text-sm font-bold text-foreground">
+                                    {formatCurrency(
+                                      priceAmount(item.tier.price) *
+                                        item.quantity,
+                                    )}
+                                  </p>
+                                </div>
+                                <div className="mt-4 flex items-center justify-between">
+                                  <div className="inline-flex h-9 items-center rounded-full border border-border bg-background">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void updateTicketQuantity(
+                                          item.tierName,
+                                          item.quantity - 1,
+                                        )
+                                      }
+                                      className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                      aria-label={`Decrease ${item.tier.name} quantity`}
+                                    >
+                                      -
+                                    </button>
+                                    <span className="min-w-8 text-center text-sm font-semibold">
+                                      {item.quantity}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void updateTicketQuantity(
+                                          item.tierName,
+                                          item.quantity + 1,
+                                        )
+                                      }
+                                      className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                      aria-label={`Increase ${item.tier.name} quantity`}
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void removeTicket(item.tierName)
+                                    }
+                                    className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No tickets in cart
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Select a ticket tier below to get started.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>Subtotal</span>
+                          <span>{formatCurrency(ticketSubtotal)}</span>
+                        </div>
+                        <div className="flex justify-between pt-2 text-base font-bold text-foreground">
+                          <span>Total</span>
+                          <span>{formatCurrency(ticketTotal)}</span>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        disabled={!safeTicketLines.length}
+                        className="w-full rounded-full"
+                        onClick={() => go('Checkout')}
+                      >
+                        Checkout
+                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="rounded-full"
+                          onClick={() => void clearTickets()}
+                          disabled={!safeTicketLines.length}
+                        >
+                          Clear
+                        </Button>
+                        <SheetClose asChild>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="rounded-full"
+                          >
+                            Continue
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const regularTier = ticketTiers.find(
+                      (t) => t.name === 'Regular',
+                    )
+                    if (regularTier && !regularTier.soldOut) {
+                      void addTicket(regularTier.name, regularTier.price)
+                      setTicketDrawerOpen(true)
+                    } else {
+                      go(nav[nav.length - 1])
+                    }
+                  }}
+                  className="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  Get Tickets
+                </button>
+              </div>
             </div>
           </nav>
         </header>
@@ -892,7 +1415,17 @@ export const EventKimiPage = defineCapsule({
                 <div className="flex flex-col justify-center gap-4 sm:flex-row">
                   <button
                     type="button"
-                    onClick={() => go(heroPrimary)}
+                    onClick={() => {
+                      const regularTier = ticketTiers.find(
+                        (t) => t.name === 'Regular',
+                      )
+                      if (regularTier && !regularTier.soldOut) {
+                        void addTicket(regularTier.name, regularTier.price)
+                        setTicketDrawerOpen(true)
+                      } else {
+                        go(heroPrimary)
+                      }
+                    }}
                     className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                   >
                     {heroPrimary}
@@ -982,28 +1515,54 @@ export const EventKimiPage = defineCapsule({
                 </button>
               </div>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                {speakerItems.map((sp) => (
-                  <button
-                    key={sp.name}
-                    type="button"
-                    onClick={() => go(sp.name)}
-                    className="group rounded-2xl border border-border bg-card p-6 text-left transition-colors hover:border-primary/40"
-                  >
-                    <Image
-                      alt={`Professional headshot portrait of ${sp.name}, ${sp.role}`}
-                      w={200}
-                      h={200}
-                      className="mb-4 size-20 rounded-full object-cover"
-                    />
-                    <h3 className="font-semibold text-card-foreground">
-                      {sp.name}
-                    </h3>
-                    <p className="mb-2 text-sm text-muted-foreground">
-                      {sp.role}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{sp.bio}</p>
-                  </button>
-                ))}
+                {speakerItems.map((sp) => {
+                  const isFavorite =
+                    favoriteSpeakerNames?.has(sp.name) ?? false
+
+                  return (
+                    <button
+                      key={sp.name}
+                      type="button"
+                      onClick={() => go(sp.name)}
+                      className="group relative rounded-2xl border border-border bg-card p-6 text-left transition-colors hover:border-primary/40"
+                    >
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          void toggleFavoriteSpeaker(sp.name)
+                        }}
+                        aria-pressed={isFavorite}
+                        aria-label={
+                          isFavorite
+                            ? `Remove ${sp.name} from favorites`
+                            : `Add ${sp.name} to favorites`
+                        }
+                        className={cn(
+                          'absolute right-4 top-4 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                          isFavorite
+                            ? 'bg-primary text-primary-foreground opacity-100'
+                            : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                        )}
+                      >
+                        <HeartIcon active={isFavorite} />
+                      </button>
+                      <Image
+                        alt={`Professional headshot portrait of ${sp.name}, ${sp.role}`}
+                        w={200}
+                        h={200}
+                        className="mb-4 size-20 rounded-full object-cover"
+                      />
+                      <h3 className="font-semibold text-card-foreground">
+                        {sp.name}
+                      </h3>
+                      <p className="mb-2 text-sm text-muted-foreground">
+                        {sp.role}
+                      </p>
+                      <p className="text-sm text-muted-foreground">{sp.bio}</p>
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -1032,22 +1591,51 @@ export const EventKimiPage = defineCapsule({
                       </div>
                     </div>
                     <div className="space-y-4">
-                      {day.sessions.map((s) => (
-                        <div
-                          key={`${day.dayNum}-${s.time}-${s.title}`}
-                          className="flex gap-4 rounded-xl border border-transparent p-4 transition-colors hover:border-border hover:bg-muted"
-                        >
-                          <span className="w-16 shrink-0 text-sm text-muted-foreground">
-                            {s.time}
-                          </span>
-                          <div>
-                            <h4 className="font-medium">{s.title}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {s.detail}
-                            </p>
+                      {day.sessions.map((s) => {
+                        const isBookmarked =
+                          bookmarkedSessionTitles?.has(s.title) ?? false
+
+                        return (
+                          <div
+                            key={`${day.dayNum}-${s.time}-${s.title}`}
+                            className="group relative flex gap-4 rounded-xl border border-transparent p-4 transition-colors hover:border-border hover:bg-muted"
+                          >
+                            <span className="w-16 shrink-0 text-sm text-muted-foreground">
+                              {s.time}
+                            </span>
+                            <div className="flex-1">
+                              <h4 className="font-medium">{s.title}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                {s.detail}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                void toggleBookmarkedSession(
+                                  s.title,
+                                  day.dayNum,
+                                  s.time,
+                                )
+                              }
+                              aria-pressed={isBookmarked}
+                              aria-label={
+                                isBookmarked
+                                  ? `Remove ${s.title} from agenda`
+                                  : `Add ${s.title} to agenda`
+                              }
+                              className={cn(
+                                'grid size-8 shrink-0 place-items-center rounded-full transition-all hover:scale-105',
+                                isBookmarked
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-muted text-muted-foreground hover:bg-muted-foreground/20',
+                              )}
+                            >
+                              <BookmarkIcon active={isBookmarked} />
+                            </button>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
                 ))}
@@ -1145,7 +1733,10 @@ export const EventKimiPage = defineCapsule({
                     ) : (
                       <button
                         type="button"
-                        onClick={() => go(tier.cta)}
+                        onClick={() => {
+                          void addTicket(tier.name, tier.price)
+                          setTicketDrawerOpen(true)
+                        }}
                         className={cn(
                           "block w-full rounded-lg px-4 py-3 text-center font-medium transition-colors",
                           tier.featured
@@ -1295,20 +1886,7 @@ export const EventKimiPage = defineCapsule({
                       <span className="font-medium text-card-foreground">
                         {item.q}
                       </span>
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="text-muted-foreground transition-transform group-open:rotate-180"
-                        aria-hidden="true"
-                      >
-                        <polyline points="6 9 12 15 18 9" />
-                      </svg>
+                      <ChevronDown />
                     </summary>
                     <div className="px-5 pb-5 text-muted-foreground">
                       {item.a}
@@ -1331,7 +1909,17 @@ export const EventKimiPage = defineCapsule({
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={() => {
+                    const regularTier = ticketTiers.find(
+                      (t) => t.name === 'Regular',
+                    )
+                    if (regularTier && !regularTier.soldOut) {
+                      void addTicket(regularTier.name, regularTier.price)
+                      setTicketDrawerOpen(true)
+                    } else {
+                      go(ctaPrimary)
+                    }
+                  }}
                   className="inline-flex items-center justify-center rounded-lg bg-primary px-8 py-4 text-lg font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   {ctaPrimary}

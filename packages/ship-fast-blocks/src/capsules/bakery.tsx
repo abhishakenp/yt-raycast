@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * BakeryKimiPage — a complete, self-contained artisan-bakery LANDING page.
@@ -204,10 +222,112 @@ export const BakeryKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      menuItems: table({
+        name: string(),
+        description: string(),
+        price: string(),
+        category: string(),
+      }),
+      cartItems: table({
+        menuItemId: string(),
+        quantity: number(),
+      }),
+      favorites: table({
+        menuItemName: string(),
+      }),
+    },
+    queries: {
+      menuItems: ({ db }) => db.menuItems.orderBy('createdAt').all(),
+      cartLines: ({ db }) =>
+        db.cartItems.all().flatMap((item) => {
+          const menuItem = db.menuItems.get(item.menuItemId)
+          return menuItem ? [{ ...item, menuItem }] : []
+        }),
+      favoriteMenuItemNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.menuItemName)),
+    },
+    mutations: {
+      addToCart: ({ db }, menuItemName: string) => {
+        const menuItem = db.menuItems.where('name', menuItemName).all()[0]
+        if (!menuItem) return db.cartItems.all()
+
+        const existingItem = db.cartItems
+          .where('menuItemId', menuItem.id)
+          .all()[0]
+
+        if (existingItem) {
+          db.cartItems.update(existingItem.id, {
+            quantity: existingItem.quantity + 1,
+          })
+        } else {
+          db.cartItems.insert({
+            menuItemId: menuItem.id,
+            quantity: 1,
+          })
+        }
+
+        return db.cartItems.all()
+      },
+      updateCartQuantity: ({ db }, menuItemId: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+
+        for (const item of db.cartItems.where('menuItemId', menuItemId).all()) {
+          if (nextQuantity) {
+            db.cartItems.update(item.id, { quantity: nextQuantity })
+          } else {
+            db.cartItems.delete(item.id)
+          }
+        }
+
+        return db.cartItems.all()
+      },
+      removeFromCart: ({ db }, menuItemId: string) => {
+        for (const item of db.cartItems.where('menuItemId', menuItemId).all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return db.cartItems.all()
+      },
+      clearCart: ({ db }) => {
+        for (const item of db.cartItems.all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return []
+      },
+      toggleFavorite: ({ db }, menuItemName: string) => {
+        const existingFavorite = db.favorites
+          .where('menuItemName', menuItemName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ menuItemName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [cartOpen, setCartOpen] = useState(false)
     const brand = props.brand ?? "Flour & Stone"
+
+    const priceAmount = (price: string) => {
+      const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ''))
+      return Number.isFinite(amount) ? amount : 0
+    }
+    const formatCurrency = (amount: number) =>
+      new Intl.NumberFormat('en-US', {
+        currency: 'USD',
+        style: 'currency',
+      }).format(amount)
+
     const nav = props.nav?.length
       ? props.nav
       : ["Menu", "Our Story", "Gallery", "Order", "Visit"]
@@ -299,6 +419,78 @@ export const BakeryKimiPage = defineCapsule({
           { name: "Seasonal Fruit Galette", description: "9-inch, rustic free-form tart", price: "$28" },
           { name: "Custom Celebration Cake", description: "Consultation required, 1 week notice", price: "From $75" },
         ]
+
+    // Lakebed hooks
+    const storedMenuItems = lakebed.useQuery('menuItems')
+    const cartLines = lakebed.useQuery('cartLines')
+    const favoriteMenuItemNames = lakebed.useQuery('favoriteMenuItemNames')
+    const auth = lakebed.useAuth()
+    const addToCart = lakebed.useMutation('addToCart')
+    const updateCartQuantity = lakebed.useMutation('updateCartQuantity')
+    const removeFromCart = lakebed.useMutation('removeFromCart')
+    const clearCart = lakebed.useMutation('clearCart')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    // Normalize menu items for Lakebed
+    const allMenuItems = [
+      ...breads.map((item) => ({ ...item, category: 'breads' })),
+      ...pastries.map((item) => ({ ...item, category: 'pastries' })),
+      ...cakes.map((item) => ({ ...item, category: 'cakes' })),
+    ]
+    const normalizedMenuItems = allMenuItems.map((item) => ({
+      name: item.name,
+      description: item.description,
+      price: item.price,
+      category: item.category,
+    }))
+
+    // Use stored menu items when available, otherwise use static defaults
+    const displayMenuItems =
+      storedMenuItems && storedMenuItems.length > 0
+        ? storedMenuItems
+        : normalizedMenuItems
+
+    // Group display menu items by category
+    const displayBreads = displayMenuItems.filter((item) => item.category === 'breads')
+    const displayPastries = displayMenuItems.filter((item) => item.category === 'pastries')
+    const displayCakes = displayMenuItems.filter((item) => item.category === 'cakes')
+
+    // Cart calculations
+    const safeCartLines = cartLines ?? []
+    const cartItemCount = safeCartLines.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+    const cartSubtotal = safeCartLines.reduce(
+      (total, item) => total + priceAmount(item.menuItem.price) * item.quantity,
+      0,
+    )
+    const cartTotal = cartSubtotal
 
     const stepsHeading = props.steps?.heading ?? "How to order"
     const stepsDesc =
@@ -658,6 +850,39 @@ export const BakeryKimiPage = defineCapsule({
       </div>
     )
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     return (
       <div
         className={cn(
@@ -689,13 +914,277 @@ export const BakeryKimiPage = defineCapsule({
                 ))}
               </nav>
               <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => go("Order")}
-                  className="hidden items-center rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90 sm:inline-flex"
-                >
-                  Order Online
-                </button>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Orders')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Orders
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={cartOpen} onOpenChange={setCartOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Shopping Cart"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <path d="M16 10a4 4 0 0 1-8 0" />
+                      </svg>
+                      {cartItemCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {cartItemCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Your order</SheetTitle>
+                      <SheetDescription>
+                        {cartItemCount > 0
+                          ? `${cartItemCount} item${cartItemCount === 1 ? '' : 's'} ready for pickup.`
+                          : 'Your cart is empty.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeCartLines.length ? (
+                        <div className="space-y-5">
+                          {safeCartLines.map((item) => (
+                            <div
+                              key={item.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                <div className="flex h-full w-full items-center justify-center text-4xl">
+                                  {item.menuItem.category === 'breads' ? '🍞' : item.menuItem.category === 'pastries' ? '🥐' : '🎂'}
+                                </div>
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                      {item.menuItem.name}
+                                    </h3>
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                      {item.menuItem.description}
+                                    </p>
+                                  </div>
+                                  <p className="text-sm font-bold text-foreground">
+                                    {formatCurrency(
+                                      priceAmount(item.menuItem.price) *
+                                        item.quantity,
+                                    )}
+                                  </p>
+                                </div>
+                                <div className="mt-4 flex items-center justify-between">
+                                  <div className="inline-flex h-9 items-center rounded-full border border-border bg-background">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void updateCartQuantity(
+                                          item.menuItemId,
+                                          item.quantity - 1,
+                                        )
+                                      }
+                                      className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                      aria-label={`Decrease ${item.menuItem.name} quantity`}
+                                    >
+                                      -
+                                    </button>
+                                    <span className="min-w-8 text-center text-sm font-semibold">
+                                      {item.quantity}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void updateCartQuantity(
+                                          item.menuItemId,
+                                          item.quantity + 1,
+                                        )
+                                      }
+                                      className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                      aria-label={`Increase ${item.menuItem.name} quantity`}
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void removeFromCart(item.menuItemId)
+                                    }
+                                    className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No items in cart
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Add items from our menu to start an order for this
+                            session.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>Subtotal</span>
+                          <span>{formatCurrency(cartSubtotal)}</span>
+                        </div>
+                        <div className="flex justify-between pt-2 text-base font-bold text-foreground">
+                          <span>Total</span>
+                          <span>{formatCurrency(cartTotal)}</span>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        disabled={!safeCartLines.length}
+                        className="w-full rounded-full"
+                        onClick={() => go('Checkout')}
+                      >
+                        Checkout
+                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="rounded-full"
+                          onClick={() => void clearCart()}
+                          disabled={!safeCartLines.length}
+                        >
+                          Clear
+                        </Button>
+                        <SheetClose asChild>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="rounded-full"
+                          >
+                            Continue
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   aria-label="Open menu"
@@ -737,6 +1226,58 @@ export const BakeryKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -899,9 +1440,53 @@ export const BakeryKimiPage = defineCapsule({
                     {breadsTitle}
                   </h3>
                   <div className="space-y-6">
-                    {breads.map((item) => (
-                      <PriceRow key={item.name} item={item} />
-                    ))}
+                    {displayBreads.map((item) => {
+                      const isFavorite =
+                        favoriteMenuItemNames?.has(item.name) ?? false
+                      return (
+                        <div key={item.name} className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <h4 className="font-semibold text-card-foreground">{item.name}</h4>
+                              <button
+                                type="button"
+                                onClick={() => void toggleFavorite(item.name)}
+                                aria-pressed={isFavorite}
+                                aria-label={
+                                  isFavorite
+                                    ? `Remove ${item.name} from favorites`
+                                    : `Add ${item.name} to favorites`
+                                }
+                                className={cn(
+                                  'grid size-6 place-items-center rounded-full transition-all hover:scale-105',
+                                  isFavorite
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-muted text-muted-foreground hover:text-foreground',
+                                )}
+                              >
+                                <HeartIcon active={isFavorite} />
+                              </button>
+                            </div>
+                            <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
+                          </div>
+                          <div className="flex flex-col items-end gap-2">
+                            <span className="font-semibold text-card-foreground">{item.price}</span>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="rounded-full"
+                              onClick={() => {
+                                void addToCart(item.name)
+                                setCartOpen(true)
+                              }}
+                            >
+                              Add
+                            </Button>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
 
@@ -913,9 +1498,53 @@ export const BakeryKimiPage = defineCapsule({
                     {pastriesTitle}
                   </h3>
                   <div className="space-y-6">
-                    {pastries.map((item) => (
-                      <PriceRow key={item.name} item={item} />
-                    ))}
+                    {displayPastries.map((item) => {
+                      const isFavorite =
+                        favoriteMenuItemNames?.has(item.name) ?? false
+                      return (
+                        <div key={item.name} className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <h4 className="font-semibold text-card-foreground">{item.name}</h4>
+                              <button
+                                type="button"
+                                onClick={() => void toggleFavorite(item.name)}
+                                aria-pressed={isFavorite}
+                                aria-label={
+                                  isFavorite
+                                    ? `Remove ${item.name} from favorites`
+                                    : `Add ${item.name} to favorites`
+                                }
+                                className={cn(
+                                  'grid size-6 place-items-center rounded-full transition-all hover:scale-105',
+                                  isFavorite
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-muted text-muted-foreground hover:text-foreground',
+                                )}
+                              >
+                                <HeartIcon active={isFavorite} />
+                              </button>
+                            </div>
+                            <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
+                          </div>
+                          <div className="flex flex-col items-end gap-2">
+                            <span className="font-semibold text-card-foreground">{item.price}</span>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="rounded-full"
+                              onClick={() => {
+                                void addToCart(item.name)
+                                setCartOpen(true)
+                              }}
+                            >
+                              Add
+                            </Button>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               </div>
@@ -928,9 +1557,51 @@ export const BakeryKimiPage = defineCapsule({
                   {cakesTitle}
                 </h3>
                 <div className="grid gap-6 md:grid-cols-3">
-                  {cakes.map((item) => (
-                    <PriceRow key={item.name} item={item} />
-                  ))}
+                  {displayCakes.map((item) => {
+                    const isFavorite =
+                      favoriteMenuItemNames?.has(item.name) ?? false
+                    return (
+                      <div key={item.name} className="flex flex-col gap-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <h4 className="font-semibold text-card-foreground">{item.name}</h4>
+                          <button
+                            type="button"
+                            onClick={() => void toggleFavorite(item.name)}
+                            aria-pressed={isFavorite}
+                            aria-label={
+                              isFavorite
+                                ? `Remove ${item.name} from favorites`
+                                : `Add ${item.name} to favorites`
+                            }
+                            className={cn(
+                              'grid size-6 place-items-center rounded-full transition-all hover:scale-105',
+                              isFavorite
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-muted text-muted-foreground hover:text-foreground',
+                            )}
+                          >
+                            <HeartIcon active={isFavorite} />
+                          </button>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{item.description}</p>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-semibold text-card-foreground">{item.price}</span>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="rounded-full"
+                            onClick={() => {
+                              void addToCart(item.name)
+                              setCartOpen(true)
+                            }}
+                          >
+                            Add
+                          </Button>
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             </div>

@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * AnalyticsKimiPage — a complete, self-contained SaaS analytics DASHBOARD page.
@@ -156,9 +174,49 @@ export const AnalyticsKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      transactions: table({
+        name: string(),
+        email: string(),
+        date: string(),
+        amount: string(),
+        status: string(),
+        plan: string(),
+      }),
+      notifications: table({
+        message: string(),
+        type: string(),
+        read: string(),
+      }),
+    },
+    queries: {
+      transactions: ({ db }) => db.transactions.orderBy('createdAt').all(),
+      notifications: ({ db }) => db.notifications.orderBy('createdAt').all(),
+      unreadNotificationCount: ({ db }) =>
+        db.notifications.where('read', 'false').all().length,
+    },
+    mutations: {
+      markNotificationRead: ({ db }, id: string) => {
+        db.notifications.update(id, { read: 'true' })
+        return db.notifications.all()
+      },
+      clearAllNotifications: ({ db }) => {
+        for (const item of db.notifications.all()) {
+          db.notifications.delete(item.id)
+        }
+        return []
+      },
+      addTransaction: ({ db }, transaction: { name: string; email: string; date: string; amount: string; status: string; plan: string }) => {
+        db.transactions.insert(transaction)
+        return db.transactions.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [notificationsOpen, setNotificationsOpen] = useState(false)
     const brand = props.brand ?? "DataFlow"
     const nav = props.nav?.length
       ? props.nav
@@ -170,9 +228,46 @@ export const AnalyticsKimiPage = defineCapsule({
           "Notifications",
           "Settings",
         ]
-    const notificationCount = props.notificationCount ?? "3"
+    const notificationCount =
+      (unreadNotificationCount ?? 0) > 0
+        ? String(unreadNotificationCount)
+        : props.notificationCount ?? "3"
 
-    const userName = props.user?.name ?? "Marcus Chen"
+    // Lakebed queries and mutations
+    const storedTransactions = lakebed.useQuery('transactions')
+    const storedNotifications = lakebed.useQuery('notifications')
+    const unreadNotificationCount = lakebed.useQuery('unreadNotificationCount')
+    const markNotificationRead = lakebed.useMutation('markNotificationRead')
+    const clearAllNotifications = lakebed.useMutation('clearAllNotifications')
+    const addTransaction = lakebed.useMutation('addTransaction')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const userName = props.user?.name ?? authDisplayName ?? "Marcus Chen"
     const userRole = props.user?.role ?? "Product Manager"
     const userAvatarAlt =
       props.user?.avatarAlt ??
@@ -253,58 +348,67 @@ export const AnalyticsKimiPage = defineCapsule({
     const txViewAll = props.transactions?.viewAll ?? "View All"
     const txFootnote =
       props.transactions?.footnote ?? "Showing 6 of 247 transactions"
-    const txRows = props.transactions?.rows?.length
-      ? props.transactions.rows
-      : ([
-          {
-            name: "Sarah Miller",
-            email: "sarah@techcorp.com",
-            date: "May 30, 2026",
-            amount: "$299.00",
-            status: "completed",
-            plan: "Pro Plan",
-          },
-          {
-            name: "James Wilson",
-            email: "james@startup.io",
-            date: "May 30, 2026",
-            amount: "$499.00",
-            status: "processing",
-            plan: "Enterprise",
-          },
-          {
-            name: "Emily Davis",
-            email: "emily@design.studio",
-            date: "May 29, 2026",
-            amount: "$99.00",
-            status: "completed",
-            plan: "Starter",
-          },
-          {
-            name: "Michael Brown",
-            email: "michael@devteam.net",
-            date: "May 29, 2026",
-            amount: "$299.00",
-            status: "failed",
-            plan: "Pro Plan",
-          },
-          {
-            name: "Lisa Anderson",
-            email: "lisa@product.co",
-            date: "May 28, 2026",
-            amount: "$499.00",
-            status: "completed",
-            plan: "Enterprise",
-          },
-          {
-            name: "David Kim",
-            email: "david@innovate.io",
-            date: "May 28, 2026",
-            amount: "$99.00",
-            status: "completed",
-            plan: "Starter",
-          },
-        ] as const)
+    const txRows = storedTransactions && storedTransactions.length > 0
+      ? storedTransactions.map((t) => ({
+          name: t.name,
+          email: t.email,
+          date: t.date,
+          amount: t.amount,
+          status: t.status as "completed" | "processing" | "failed",
+          plan: t.plan,
+        }))
+      : props.transactions?.rows?.length
+        ? props.transactions.rows
+        : ([
+            {
+              name: "Sarah Miller",
+              email: "sarah@techcorp.com",
+              date: "May 30, 2026",
+              amount: "$299.00",
+              status: "completed",
+              plan: "Pro Plan",
+            },
+            {
+              name: "James Wilson",
+              email: "james@startup.io",
+              date: "May 30, 2026",
+              amount: "$499.00",
+              status: "processing",
+              plan: "Enterprise",
+            },
+            {
+              name: "Emily Davis",
+              email: "emily@design.studio",
+              date: "May 29, 2026",
+              amount: "$99.00",
+              status: "completed",
+              plan: "Starter",
+            },
+            {
+              name: "Michael Brown",
+              email: "michael@devteam.net",
+              date: "May 29, 2026",
+              amount: "$299.00",
+              status: "failed",
+              plan: "Pro Plan",
+            },
+            {
+              name: "Lisa Anderson",
+              email: "lisa@product.co",
+              date: "May 28, 2026",
+              amount: "$499.00",
+              status: "completed",
+              plan: "Enterprise",
+            },
+            {
+              name: "David Kim",
+              email: "david@innovate.io",
+              date: "May 28, 2026",
+              amount: "$99.00",
+              status: "completed",
+              plan: "Starter",
+            },
+          ] as const)
 
     const topPagesTitle = props.topPages?.title ?? "Top Performing Pages"
     const topPagesItems = props.topPages?.items?.length
@@ -460,6 +564,37 @@ export const AnalyticsKimiPage = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     const statusStyles: Record<string, string> = {
       completed: "bg-chart-1/15 text-chart-1",
       processing: "bg-chart-2/15 text-chart-2",
@@ -551,7 +686,13 @@ export const AnalyticsKimiPage = defineCapsule({
                 <button
                   key={label}
                   type="button"
-                  onClick={() => go(label)}
+                  onClick={() => {
+                    if (label === "Notifications") {
+                      setNotificationsOpen(true)
+                    } else {
+                      go(label)
+                    }
+                  }}
                   className={cn(
                     "flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
                     active
@@ -572,24 +713,113 @@ export const AnalyticsKimiPage = defineCapsule({
           </nav>
 
           <div className="border-t border-border p-4">
-            <button
-              type="button"
-              onClick={() => go(userName)}
-              className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-muted"
-            >
-              <Image
-                alt={userAvatarAlt}
-                w={80}
-                h={80}
-                className="size-10 rounded-full object-cover"
-              />
-              <div>
-                <p className="text-sm font-medium text-card-foreground">
-                  {userName}
-                </p>
-                <p className="text-xs text-muted-foreground">{userRole}</p>
-              </div>
-            </button>
+            {isSignedIn ? (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-muted"
+                  >
+                    <Avatar size="sm" className="ring-2 ring-background">
+                      {authPicture ? (
+                        <AvatarImage src={authPicture} alt={authDisplayName} />
+                      ) : null}
+                      <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                        {authInitials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-card-foreground truncate">
+                        {authDisplayName}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {authEmail ?? 'Signed in'}
+                      </p>
+                    </div>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="end"
+                  sideOffset={10}
+                  className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                >
+                  <div className="bg-muted/40 px-4 py-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar size="lg" className="ring-2 ring-background">
+                        {authPicture ? (
+                          <AvatarImage src={authPicture} alt={authDisplayName} />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-foreground">
+                          {authDisplayName}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {authEmail ?? 'Signed in to this session'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-2">
+                    <button
+                      type="button"
+                      onClick={() => go('Account')}
+                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      Account
+                      <ArrowRight />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => go('Settings')}
+                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      Settings
+                      <ArrowRight />
+                    </button>
+                  </div>
+                  <div className="border-t border-border p-2">
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSignIn}
+                disabled={auth.isLoading}
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-muted"
+              >
+                <div className="grid size-10 place-items-center rounded-full bg-muted text-muted-foreground">
+                  <svg
+                    className="size-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-card-foreground">
+                    {authLabel}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{userRole}</p>
+                </div>
+              </button>
+            )}
           </div>
         </aside>
 
@@ -1075,6 +1305,85 @@ export const AnalyticsKimiPage = defineCapsule({
             </section>
           </div>
         </div>
+
+        {/* Notifications Drawer */}
+        <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Notifications</SheetTitle>
+              <SheetDescription>
+                {storedNotifications && storedNotifications.length > 0
+                  ? `${storedNotifications.length} notification${storedNotifications.length === 1 ? '' : 's'}`
+                  : 'No notifications'}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {storedNotifications && storedNotifications.length > 0 ? (
+                <div className="space-y-4">
+                  {storedNotifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className={cn(
+                        "rounded-lg border border-border bg-card p-4",
+                        notification.read === 'false' && "bg-muted/40",
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-foreground">
+                            {notification.message}
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {notification.type}
+                          </p>
+                        </div>
+                        {notification.read === 'false' && (
+                          <button
+                            type="button"
+                            onClick={() => void markNotificationRead(notification.id)}
+                            className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                          >
+                            Mark read
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                  <p className="text-base font-semibold text-foreground">
+                    No notifications
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    You're all caught up! New notifications will appear here.
+                  </p>
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              {storedNotifications && storedNotifications.length > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full rounded-full"
+                  onClick={() => void clearAllNotifications()}
+                >
+                  Clear all
+                </Button>
+              )}
+              <SheetClose asChild>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full rounded-full"
+                >
+                  Close
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

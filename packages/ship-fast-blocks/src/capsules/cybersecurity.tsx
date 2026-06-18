@@ -1,9 +1,20 @@
 import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
+import { string, table } from "@ship-fast/lakebed/server"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * CybersecurityKimiPage — a complete, self-contained enterprise CYBERSECURITY
@@ -189,8 +200,109 @@ export const CybersecurityKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      securityLeads: table({
+        source: string(),
+        plan: string(),
+        name: string(),
+        email: string(),
+        company: string(),
+        message: string(),
+      }),
+    },
+    queries: {
+      securityLeads: ({ db }) => db.securityLeads.orderBy("createdAt").all(),
+    },
+    mutations: {
+      submitLead: (
+        { db },
+        data: {
+          source: string
+          plan: string
+          name: string
+          email: string
+          company: string
+          message: string
+        },
+      ) => {
+        db.securityLeads.insert(data)
+        return db.securityLeads.all()
+      },
+      removeLead: ({ db }, id: string) => {
+        db.securityLeads.delete(id)
+        return db.securityLeads.all()
+      },
+      clearLeads: ({ db }) => {
+        for (const lead of db.securityLeads.all()) {
+          db.securityLeads.delete(lead.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+
+    const [openFaq, setOpenFaq] = useState<number | null>(0)
+    const [requestOpen, setRequestOpen] = useState(false)
+    const [requestSource, setRequestSource] = useState("Security demo request")
+    const [requestPlan, setRequestPlan] = useState("General")
+    const [requestForm, setRequestForm] = useState({
+      name: "",
+      email: "",
+      company: "",
+      message: "",
+    })
+
+    const securityLeads = lakebed.useQuery("securityLeads")
+    const submitLead = lakebed.useMutation("submitLead")
+    const removeLead = lakebed.useMutation("removeLead")
+    const clearLeads = lakebed.useMutation("clearLeads")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+
+    const storedLeads = securityLeads ?? []
+    const requestCount = storedLeads.length
+    const uniqueCompanies = new Set(
+      storedLeads
+        .map((lead) => lead.company?.trim())
+        .filter((company): company is string => Boolean(company)),
+    )
+    const recentLeads = [...storedLeads].reverse().slice(0, 4)
+    const formInputClass =
+      "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const openLeadDrawer = (source: string, plan = "General") => {
+      setRequestSource(source)
+      setRequestPlan(plan)
+      setRequestOpen(true)
+    }
+
     const brand = props.brand ?? "SentinelGuard"
     const nav = props.nav?.length
       ? props.nav
@@ -580,8 +692,6 @@ export const CybersecurityKimiPage = defineCapsule({
       ? props.footer.social
       : ["Twitter", "LinkedIn", "GitHub"]
 
-    const [openFaq, setOpenFaq] = useState<number | null>(0)
-
     // Shield mark — brand logo glyph (decorative inline SVG, token-colored).
     const ShieldMark = ({ className }: { className?: string }) => (
       <svg
@@ -728,14 +838,30 @@ export const CybersecurityKimiPage = defineCapsule({
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go("Contact Sales")}
+                  onClick={() => openLeadDrawer("Contact Sales")}
                   className="hidden text-muted-foreground transition-colors hover:text-foreground sm:block"
                 >
                   Contact Sales
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(heroPrimary)}
+                  onClick={
+                    isSignedIn ? handleSignOut : () => void handleSignIn()
+                  }
+                  disabled={auth.isLoading}
+                  className="hidden text-xs font-medium tracking-wide text-muted-foreground transition-colors hover:text-foreground sm:block"
+                  aria-label={
+                    isSignedIn
+                      ? `Sign out ${authDisplayName}`
+                      : "Sign in with Google"
+                  }
+                  title={authInitials}
+                >
+                  {authLabel}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openLeadDrawer(heroPrimary)}
                   className="rounded-lg bg-primary px-5 py-2.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   Get Demo
@@ -766,14 +892,14 @@ export const CybersecurityKimiPage = defineCapsule({
                   <div className="flex flex-col gap-4 sm:flex-row">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() => openLeadDrawer(heroPrimary)}
                       className="rounded-xl bg-primary px-8 py-4 text-center font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                     >
                       {heroPrimary}
                     </button>
                     <button
                       type="button"
-                      onClick={() => go(heroSecondary)}
+                      onClick={() => openLeadDrawer(heroSecondary)}
                       className="rounded-xl border border-input bg-background px-8 py-4 text-center font-semibold text-foreground transition-colors hover:bg-muted"
                     >
                       {heroSecondary}
@@ -1092,7 +1218,9 @@ export const CybersecurityKimiPage = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(plan.cta)}
+                      onClick={() => {
+                        openLeadDrawer(plan.cta, plan.name)
+                      }}
                       className={cn(
                         "block w-full rounded-lg py-3 text-center font-semibold transition-colors",
                         plan.featured
@@ -1219,14 +1347,14 @@ export const CybersecurityKimiPage = defineCapsule({
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={() => openLeadDrawer(ctaPrimary)}
                   className="rounded-xl bg-background px-8 py-4 text-lg font-semibold text-foreground transition-colors hover:bg-background/90"
                 >
                   {ctaPrimary}
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(ctaSecondary)}
+                  onClick={() => openLeadDrawer(ctaSecondary)}
                   className="rounded-xl border border-background/40 bg-transparent px-8 py-4 text-lg font-semibold text-background transition-colors hover:bg-background/10"
                 >
                   {ctaSecondary}
@@ -1307,6 +1435,173 @@ export const CybersecurityKimiPage = defineCapsule({
             </div>
           </div>
         </footer>
+
+        <Sheet open={requestOpen} onOpenChange={setRequestOpen}>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Request a Security Demo</SheetTitle>
+              <SheetDescription>
+                Fill out one request to connect with the {brand} team. Your
+                submissions are saved in session state.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 space-y-6 overflow-y-auto p-6">
+              <div className="rounded-xl border border-border bg-muted/40 p-4">
+                <p className="mb-2 text-sm text-muted-foreground">
+                  Current focus
+                </p>
+                <p className="font-semibold text-foreground">{requestSource}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Preferred plan: {requestPlan}
+                </p>
+              </div>
+
+              <form
+                className="space-y-3"
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  if (!requestForm.name || !requestForm.email) return
+
+                  void submitLead({
+                    source: requestSource,
+                    plan: requestPlan,
+                    name: requestForm.name,
+                    email: requestForm.email,
+                    company: requestForm.company || "Not provided",
+                    message: requestForm.message || "No message provided",
+                  })
+
+                  setRequestForm({
+                    name: "",
+                    email: "",
+                    company: "",
+                    message: "",
+                  })
+                }}
+              >
+                <input
+                  value={requestForm.name}
+                  onChange={(event) =>
+                    setRequestForm((form) => ({
+                      ...form,
+                      name: event.currentTarget.value,
+                    }))
+                  }
+                  required
+                  placeholder="Full name"
+                  className={formInputClass}
+                />
+                <input
+                  type="email"
+                  value={requestForm.email}
+                  onChange={(event) =>
+                    setRequestForm((form) => ({
+                      ...form,
+                      email: event.currentTarget.value,
+                    }))
+                  }
+                  required
+                  placeholder="Work email"
+                  className={formInputClass}
+                />
+                <input
+                  value={requestForm.company}
+                  onChange={(event) =>
+                    setRequestForm((form) => ({
+                      ...form,
+                      company: event.currentTarget.value,
+                    }))
+                  }
+                  placeholder="Company"
+                  className={formInputClass}
+                />
+                <textarea
+                  value={requestForm.message}
+                  onChange={(event) =>
+                    setRequestForm((form) => ({
+                      ...form,
+                      message: event.currentTarget.value,
+                    }))
+                  }
+                  rows={4}
+                  placeholder="Tell us about your security environment"
+                  className={`${formInputClass} resize-none`}
+                />
+                <Button type="submit" className="w-full">
+                  Submit request
+                </Button>
+              </form>
+
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-2xl font-bold text-foreground">
+                    {requestCount}
+                  </p>
+                  <p className="text-muted-foreground">Active requests</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-2xl font-bold text-foreground">
+                    {uniqueCompanies.size}
+                  </p>
+                  <p className="text-muted-foreground">Unique companies</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-sm font-semibold text-foreground">
+                  Latest requests
+                </p>
+                {recentLeads.length > 0 ? (
+                  recentLeads.map((lead) => (
+                    <div
+                      key={lead.id}
+                      className="rounded-xl border border-border bg-muted/40 p-4"
+                    >
+                      <p className="font-semibold text-foreground">
+                        {lead.name} · {lead.plan}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {lead.email} · {lead.company}
+                      </p>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {lead.source}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => void removeLead(lead.id)}
+                        className="mt-3 text-xs font-semibold text-foreground underline-offset-4 hover:underline"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-xl border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground">
+                    No requests yet. Submit the form to capture your first lead.
+                  </div>
+                )}
+              </div>
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <div className="grid w-full gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => void clearLeads()}
+                  disabled={!storedLeads.length}
+                >
+                  Clear all requests
+                </Button>
+                <SheetClose asChild>
+                  <Button type="button" className="w-full">
+                    Close
+                  </Button>
+                </SheetClose>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

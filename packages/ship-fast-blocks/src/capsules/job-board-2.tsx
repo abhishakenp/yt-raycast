@@ -1,8 +1,27 @@
+import { useState } from 'react'
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const JobBoardKimiPage2 = defineCapsule({
   name: "JobBoardKimiPage2",
@@ -43,8 +62,64 @@ export const JobBoardKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      savedJobs: table({
+        title: string(),
+        company: string(),
+        location: string(),
+      }),
+      appliedJobs: table({
+        title: string(),
+        company: string(),
+      }),
+    },
+    queries: {
+      savedJobs: ({ db }) => db.savedJobs.orderBy('createdAt').all(),
+      appliedJobTitles: ({ db }) =>
+        new Set(db.appliedJobs.all().map((j) => j.title)),
+    },
+    mutations: {
+      saveJob: ({ db }, title: string, company: string, location: string) => {
+        const existing = db.savedJobs.where('title', title).all()[0]
+        if (!existing) db.savedJobs.insert({ title, company, location })
+        return db.savedJobs.all()
+      },
+      unsaveJob: ({ db }, id: string) => {
+        db.savedJobs.delete(id)
+        return db.savedJobs.all()
+      },
+      applyToJob: ({ db }, title: string, company: string) => {
+        const existing = db.appliedJobs.where('title', title).all()[0]
+        if (!existing) db.appliedJobs.insert({ title, company })
+        return db.appliedJobs.all()
+      },
+      clearSaved: ({ db }) => {
+        for (const job of db.savedJobs.all()) db.savedJobs.delete(job.id)
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [savedOpen, setSavedOpen] = useState(false)
+    const [mobileOpen, setMobileOpen] = useState(false)
+
+    const savedJobs = lakebed.useQuery('savedJobs')
+    const appliedJobTitles = lakebed.useQuery('appliedJobTitles')
+    const saveJob = lakebed.useMutation('saveJob')
+    const unsaveJob = lakebed.useMutation('unsaveJob')
+    const applyToJob = lakebed.useMutation('applyToJob')
+    const clearSaved = lakebed.useMutation('clearSaved')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName = auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map((p: string) => p[0]?.toUpperCase()).join('') || 'ME'
+    const safeSavedJobs = savedJobs ?? []
+    const savedCount = safeSavedJobs.length
     const brand = props.brand ?? "JobSpark Find Your Next Career"
     const nav = props.nav?.length ? props.nav : ["Find Jobs", "Companies", "Salaries", "For Employers", "JobSpark", "Sign in"]
     const hero = {
@@ -153,14 +228,182 @@ export const JobBoardKimiPage2 = defineCapsule({
                 </button>
               ))}
             </nav>
-            <button
-              type="button"
-              onClick={() => go(hero.primaryCta)}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {hero.primaryCta}
-            </button>
+            <div className="flex items-center gap-3">
+              {/* Saved Jobs drawer trigger */}
+              <Sheet open={savedOpen} onOpenChange={setSavedOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Saved Jobs"
+                    className="relative flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <svg className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                    </svg>
+                    <span className="hidden sm:inline">Saved</span>
+                    {savedCount > 0 && (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {savedCount}
+                      </span>
+                    )}
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Saved Jobs</SheetTitle>
+                    <SheetDescription>
+                      {savedCount > 0
+                        ? `${savedCount} job${savedCount === 1 ? '' : 's'} saved for later.`
+                        : 'No saved jobs yet. Browse listings and save roles you like.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {safeSavedJobs.length ? (
+                      <div className="space-y-4">
+                        {safeSavedJobs.map((job) => {
+                          const applied = appliedJobTitles?.has(job.title) ?? false
+                          return (
+                            <div key={job.id} className="rounded-lg border border-border bg-card p-4">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <h3 className="truncate font-semibold text-card-foreground">{job.title}</h3>
+                                  <p className="text-sm text-muted-foreground">{job.company}</p>
+                                  {job.location ? <p className="text-xs text-muted-foreground">{job.location}</p> : null}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => void unsaveJob(job.id)}
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                              <div className="mt-3">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant={applied ? 'secondary' : 'default'}
+                                  className="w-full rounded-full"
+                                  disabled={applied}
+                                  onClick={() => void applyToJob(job.title, job.company)}
+                                >
+                                  {applied ? 'Applied ✓' : 'Apply Now'}
+                                </Button>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">No saved jobs</p>
+                        <p className="mt-2 text-sm text-muted-foreground">Save jobs from the listings below to review them here.</p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <Button
+                      type="button"
+                      disabled={!safeSavedJobs.length}
+                      className="w-full rounded-full"
+                      onClick={() => go(hero.primaryCta)}
+                    >
+                      Browse More Jobs
+                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full"
+                        onClick={() => void clearSaved()}
+                        disabled={!safeSavedJobs.length}
+                      >
+                        Clear All
+                      </Button>
+                      <SheetClose asChild>
+                        <Button type="button" variant="secondary" className="rounded-full">
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+
+              {/* Auth */}
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Account menu"
+                      className="hidden h-9 items-center gap-2 rounded-full border border-border bg-background/90 px-2 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted sm:inline-flex"
+                    >
+                      <Avatar size="sm" className="ring-2 ring-background" aria-hidden="true">
+                        {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">{authInitials}</AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">{authDisplayName}</span>
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" sideOffset={10} className="w-64 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl">
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">{authInitials}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">{authDisplayName}</p>
+                          <p className="truncate text-xs text-muted-foreground">{authEmail ?? 'Signed in'}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={() => lakebed.signOut()}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => { if (!auth.isLoading) void lakebed.signInWithGoogle() }}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-9 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">G</span>
+                  <span>{auth.isLoading ? 'Checking...' : 'Sign in'}</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                aria-label="Open menu"
+                onClick={() => setMobileOpen((v) => !v)}
+                className="p-2 text-muted-foreground hover:text-foreground md:hidden"
+              >
+                <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+                  <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              </button>
+            </div>
           </div>
+          {mobileOpen && (
+            <div className="flex flex-col gap-3 border-t border-border bg-background px-5 py-4 md:hidden">
+              {nav.map((item) => (
+                <button key={item} type="button" onClick={() => { setMobileOpen(false); go(item) }} className="text-left text-sm font-medium text-foreground/90 hover:text-foreground">
+                  {item}
+                </button>
+              ))}
+            </div>
+          )}
         </header>
 
         <main>
@@ -218,17 +461,40 @@ export const JobBoardKimiPage2 = defineCapsule({
                   <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
-                      {section.items.map((item) => (
-                        <button
-                          key={item}
-                          type="button"
-                          onClick={() => go(item)}
-                          className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                        >
-                          <span>{item}</span>
-                          <span className="text-primary">{index + 1}</span>
-                        </button>
-                      ))}
+                      {section.items.map((item) => {
+                        const applied = appliedJobTitles?.has(item) ?? false
+                        return (
+                          <div key={item} className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2">
+                            <button
+                              type="button"
+                              onClick={() => go(item)}
+                              className="flex-1 text-left text-sm text-foreground transition-colors hover:text-primary"
+                            >
+                              {item}
+                            </button>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                aria-label={`Save ${item}`}
+                                onClick={() => { void saveJob(item, section.title, ''); setSavedOpen(true) }}
+                                className="rounded p-1 text-muted-foreground transition-colors hover:text-primary"
+                              >
+                                <svg className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+                                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                                </svg>
+                              </button>
+                              <button
+                                type="button"
+                                disabled={applied}
+                                onClick={() => void applyToJob(item, section.title)}
+                                className="rounded bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+                              >
+                                {applied ? '✓' : 'Apply'}
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
                     </div>
                   ) : null}
                 </article>
@@ -257,6 +523,25 @@ export const JobBoardKimiPage2 = defineCapsule({
                   <div className="p-5">
                     <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
                     {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <div className="mt-4 flex gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="flex-1 rounded-full"
+                        onClick={() => { void saveJob(item.title, item.caption ?? brand, ''); setSavedOpen(true) }}
+                      >
+                        Save Job
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="rounded-full"
+                        onClick={() => go(item.title)}
+                      >
+                        View
+                      </Button>
+                    </div>
                   </div>
                 </article>
               ))}

@@ -1,8 +1,27 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * VacationRentalKimiPage2 — a complete, self-contained vacation-rental LISTING-DETAIL
@@ -212,8 +231,54 @@ export const VacationRentalKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      bookings: table({
+        checkInDate: string(),
+        checkOutDate: string(),
+        guests: string(),
+        propertyTitle: string(),
+        totalAmount: string(),
+      }),
+      favorites: table({
+        propertyTitle: string(),
+      }),
+    },
+    queries: {
+      bookings: ({ db }) => db.bookings.orderBy('createdAt').all(),
+      favoritePropertyTitles: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.propertyTitle)),
+    },
+    mutations: {
+      createBooking: ({ db }, bookingData: { checkInDate: string, checkOutDate: string, guests: string, propertyTitle: string, totalAmount: string }) => {
+        db.bookings.insert(bookingData)
+        return db.bookings.all()
+      },
+      cancelBooking: ({ db }, bookingId: string) => {
+        db.bookings.delete(bookingId)
+        return db.bookings.all()
+      },
+      toggleFavorite: ({ db }, propertyTitle: string) => {
+        const existingFavorite = db.favorites
+          .where('propertyTitle', propertyTitle)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ propertyTitle })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [bookingsOpen, setBookingsOpen] = useState(false)
+    const [checkInDate, setCheckInDate] = useState('')
+    const [checkOutDate, setCheckOutDate] = useState('')
+    const [guests, setGuests] = useState('')
 
     const brand = props.brand ?? "Casa Verde"
     const nav = props.nav?.length
@@ -586,6 +651,106 @@ export const VacationRentalKimiPage2 = defineCapsule({
       </svg>
     )
 
+    // Lakebed integration
+    const bookings = lakebed.useQuery('bookings')
+    const favoritePropertyTitles = lakebed.useQuery('favoritePropertyTitles')
+    const createBooking = lakebed.useMutation('createBooking')
+    const cancelBooking = lakebed.useMutation('cancelBooking')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part: string) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const isFavorite = favoritePropertyTitles?.has(listing.title) ?? false
+
+    const handleReserve = (e: React.FormEvent) => {
+      e.preventDefault()
+      if (!checkInDate || !checkOutDate || !guests) {
+        return
+      }
+      void createBooking({
+        checkInDate,
+        checkOutDate,
+        guests,
+        propertyTitle: listing.title,
+        totalAmount: booking.totalAmount,
+      })
+      setBookingsOpen(true)
+    }
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
     return (
       <div
         className={cn(
@@ -594,7 +759,7 @@ export const VacationRentalKimiPage2 = defineCapsule({
         )}
       >
         {/* Navbar */}
-        <header className="border-b border-border">
+        <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 items-center justify-between sm:h-20">
               <button
@@ -621,6 +786,220 @@ export const VacationRentalKimiPage2 = defineCapsule({
                 ))}
               </nav>
               <div className="flex items-center gap-3">
+                {/* Bookings drawer trigger */}
+                <Sheet open={bookingsOpen} onOpenChange={setBookingsOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="View bookings"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
+                      </svg>
+                      {bookings && bookings.length > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {bookings.length}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Your Bookings</SheetTitle>
+                      <SheetDescription>
+                        {bookings && bookings.length > 0
+                          ? `${bookings.length} booking${bookings.length === 1 ? '' : 's'} confirmed.`
+                          : 'No bookings yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {bookings && bookings.length ? (
+                        <div className="space-y-5">
+                          {bookings.map((booking: { id: string; propertyTitle: string; totalAmount: string; checkInDate: string; checkOutDate: string; guests: string }) => (
+                            <div
+                              key={booking.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                <Image
+                                  alt={galleryImages[0]}
+                                  w={180}
+                                  h={180}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                      {brand}
+                                    </p>
+                                    <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                      {booking.propertyTitle}
+                                    </h3>
+                                  </div>
+                                  <p className="text-sm font-bold text-foreground">
+                                    {booking.totalAmount}
+                                  </p>
+                                </div>
+                                <div className="mt-4 space-y-1 text-sm text-muted-foreground">
+                                  <p>Check in: {booking.checkInDate}</p>
+                                  <p>Check out: {booking.checkOutDate}</p>
+                                  <p>Guests: {booking.guests}</p>
+                                </div>
+                                <div className="mt-4">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full rounded-full"
+                                    onClick={() => void cancelBooking(booking.id)}
+                                  >
+                                    Cancel Booking
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No bookings yet
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Use the booking card to reserve your stay.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+
+                {/* Auth button or account menu */}
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBookingsOpen(true)}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Bookings
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+
                 <button
                   type="button"
                   onClick={() => go(nav[4] ?? nav[0])}
@@ -628,6 +1007,7 @@ export const VacationRentalKimiPage2 = defineCapsule({
                 >
                   {nav[4] ?? "Book Now"}
                 </button>
+
                 {/* Mobile toggle via checkbox hack (no JS state) */}
                 <input
                   type="checkbox"
@@ -670,6 +1050,59 @@ export const VacationRentalKimiPage2 = defineCapsule({
                   {n}
                 </button>
               ))}
+              <button
+                type="button"
+                onClick={() => setBookingsOpen(true)}
+                className="block rounded-lg px-3 py-2 text-base font-medium text-foreground transition-colors hover:bg-muted"
+              >
+                Bookings
+              </button>
+              <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                {isSignedIn ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar size="lg">
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-foreground">
+                          {authDisplayName}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {authEmail ?? 'Signed in'}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={handleSignOut}
+                      className="w-full rounded-full"
+                    >
+                      Sign out
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    className="w-full rounded-full"
+                  >
+                    <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    {authLabel}
+                  </Button>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={() => go(nav[4] ?? nav[0])}
@@ -725,25 +1158,22 @@ export const VacationRentalKimiPage2 = defineCapsule({
               </button>
               <button
                 type="button"
-                onClick={() => go("Save")}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium text-foreground transition-colors duration-200 hover:bg-muted"
-                aria-label="Save this listing"
+                onClick={() => void toggleFavorite(listing.title)}
+                aria-pressed={isFavorite}
+                aria-label={
+                  isFavorite
+                    ? `Remove ${listing.title} from favorites`
+                    : `Save ${listing.title} to favorites`
+                }
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium transition-colors duration-200 hover:bg-muted",
+                  isFavorite
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "text-foreground",
+                )}
               >
-                <svg
-                  className="size-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5C13.516 3.75 11.25 5.76 11.25 8.25c0 2.485 2.099 4.5 4.688 4.5 3.474 0 5.364-2.25 5.364-5.25zm-18 0c0-2.485 2.099-4.5 4.688-4.5C10.484 3.75 12.75 5.76 12.75 8.25c0 2.485-2.099 4.5-4.688 4.5-3.474 0-5.364-2.25-5.364-5.25z"
-                  />
-                </svg>
-                Save
+                <HeartIcon active={isFavorite} />
+                {isFavorite ? "Saved" : "Save"}
               </button>
             </div>
           </div>
@@ -941,10 +1371,7 @@ export const VacationRentalKimiPage2 = defineCapsule({
 
                 <form
                   className="mt-6 space-y-4"
-                  onSubmit={(e) => {
-                    e.preventDefault()
-                    go(booking.reserveLabel)
-                  }}
+                  onSubmit={handleReserve}
                 >
                   <div className="grid grid-cols-2 gap-3">
                     <div className="rounded-xl border border-input px-3 py-2">
@@ -953,7 +1380,8 @@ export const VacationRentalKimiPage2 = defineCapsule({
                       </label>
                       <input
                         type="date"
-                        defaultValue={booking.checkInDate}
+                        value={checkInDate || booking.checkInDate}
+                        onChange={(e) => setCheckInDate(e.target.value)}
                         className="mt-1 w-full bg-transparent text-sm font-medium text-foreground outline-none"
                         aria-label="Check in date"
                       />
@@ -964,7 +1392,8 @@ export const VacationRentalKimiPage2 = defineCapsule({
                       </label>
                       <input
                         type="date"
-                        defaultValue={booking.checkOutDate}
+                        value={checkOutDate || booking.checkOutDate}
+                        onChange={(e) => setCheckOutDate(e.target.value)}
                         className="mt-1 w-full bg-transparent text-sm font-medium text-foreground outline-none"
                         aria-label="Check out date"
                       />
@@ -977,7 +1406,8 @@ export const VacationRentalKimiPage2 = defineCapsule({
                     <select
                       className="mt-1 w-full bg-transparent text-sm font-medium text-foreground outline-none"
                       aria-label="Number of guests"
-                      defaultValue={booking.guestsValue}
+                      value={guests || booking.guestsValue}
+                      onChange={(e) => setGuests(e.target.value)}
                     >
                       {[
                         "1 guest",
@@ -995,12 +1425,12 @@ export const VacationRentalKimiPage2 = defineCapsule({
                       ))}
                     </select>
                   </div>
-                  <button
+                  <Button
                     type="submit"
-                    className="w-full rounded-xl bg-primary px-4 py-3.5 text-center text-base font-bold text-primary-foreground shadow-sm transition-colors duration-200 hover:bg-primary/90"
+                    className="w-full rounded-xl"
                   >
                     {booking.reserveLabel}
-                  </button>
+                  </Button>
                   <p className="text-center text-sm text-muted-foreground">
                     {booking.chargeNote}
                   </p>

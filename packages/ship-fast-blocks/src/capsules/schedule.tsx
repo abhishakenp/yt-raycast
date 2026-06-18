@@ -1,8 +1,27 @@
+import { useState } from 'react'
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const ScheduleKimiPage = defineCapsule({
   name: "ScheduleKimiPage",
@@ -43,10 +62,232 @@ export const ScheduleKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      classes: table({
+        name: string(),
+        instructor: string(),
+        time: string(),
+        duration: string(),
+        level: string(),
+        alt: string(),
+      }),
+      bookings: table({
+        className: string(),
+        userId: string(),
+      }),
+      favorites: table({
+        className: string(),
+      }),
+    },
+    queries: {
+      classes: ({ db }) => db.classes.orderBy('createdAt').all(),
+      userBookings: ({ db }) =>
+        db.bookings.all().flatMap((booking) => {
+          const classItem = db.classes.where('name', booking.className).all()[0]
+          return classItem ? [{ ...booking, classItem }] : []
+        }),
+      favoriteClassNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.className)),
+    },
+    mutations: {
+      bookClass: ({ db }, className: string, userId: string) => {
+        const classItem = db.classes.where('name', className).all()[0]
+        if (!classItem) return db.bookings.all()
+
+        const existingBooking = db.bookings
+          .where('className', className)
+          .where('userId', userId)
+          .all()[0]
+
+        if (existingBooking) {
+          return db.bookings.all()
+        }
+
+        db.bookings.insert({
+          className,
+          userId,
+        })
+
+        return db.bookings.all()
+      },
+      cancelBooking: ({ db }, bookingId: string) => {
+        for (const booking of db.bookings.where('id', bookingId).all()) {
+          db.bookings.delete(booking.id)
+        }
+
+        return db.bookings.all()
+      },
+      toggleFavorite: ({ db }, className: string) => {
+        const existingFavorite = db.favorites
+          .where('className', className)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ className })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [bookingsOpen, setBookingsOpen] = useState(false)
+    const [mobileOpen, setMobileOpen] = useState(false)
     const brand = props.brand ?? "Weekly Class Schedule The Movement Room"
     const nav = props.nav?.length ? props.nav : ["Schedule", "Instructors", "Pricing", "FAQ", "The Movement Room", "Book a Class"]
+
+    // Lakebed hooks
+    const storedClasses = lakebed.useQuery('classes')
+    const userBookings = lakebed.useQuery('userBookings')
+    const favoriteClassNames = lakebed.useQuery('favoriteClassNames')
+    const auth = lakebed.useAuth()
+    const bookClass = lakebed.useMutation('bookClass')
+    const cancelBooking = lakebed.useMutation('cancelBooking')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    // Normalize class data from props or Lakebed
+    const classItems = [
+      {
+        name: 'Vinyasa Flow',
+        instructor: 'Maya Chen',
+        time: 'Mon June 1, 9:00 AM',
+        duration: '60 min',
+        level: 'All Levels',
+        alt: 'Professional headshot of a smiling woman with dark hair, Maya Chen yoga instructor',
+      },
+      {
+        name: 'Power Yoga',
+        instructor: 'James Okonkwo',
+        time: 'Tue June 2, 10:00 AM',
+        duration: '75 min',
+        level: 'Intermediate',
+        alt: 'Professional headshot of a confident man with short hair, James Okonkwo fitness instructor',
+      },
+      {
+        name: 'Restorative',
+        instructor: 'Sarah Kim',
+        time: 'Wed June 3, 6:00 PM',
+        duration: '90 min',
+        level: 'Beginner',
+        alt: 'Professional headshot of a calm woman with blonde hair, Sarah Kim yoga instructor',
+      },
+      {
+        name: 'HIIT Flow',
+        instructor: 'Maya Chen',
+        time: 'Thu June 4, 7:00 AM',
+        duration: '45 min',
+        level: 'Advanced',
+        alt: 'Professional headshot of a smiling woman with dark hair, Maya Chen yoga instructor',
+      },
+      {
+        name: 'Yin Yoga',
+        instructor: 'Sarah Kim',
+        time: 'Fri June 5, 5:30 PM',
+        duration: '60 min',
+        level: 'All Levels',
+        alt: 'Professional headshot of a calm woman with blonde hair, Sarah Kim yoga instructor',
+      },
+      {
+        name: 'Weekend Warrior',
+        instructor: 'James Okonkwo',
+        time: 'Sat June 6, 8:00 AM',
+        duration: '90 min',
+        level: 'Intermediate',
+        alt: 'Professional headshot of a confident man with short hair, James Okonkwo fitness instructor',
+      },
+    ]
+
+    const displayClasses =
+      storedClasses && storedClasses.length > 0
+        ? storedClasses
+        : classItems
+
+    const safeBookings = userBookings ?? []
+    const bookingCount = safeBookings.length
+
+    // Icon components
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const CalendarIcon = () => (
+      <svg
+        className="size-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+      </svg>
+    )
+
     const hero = {
       eyebrow: "Schedule / Variant 1",
       title: "Weekly Class Schedule",
@@ -153,14 +394,292 @@ export const ScheduleKimiPage = defineCapsule({
                 </button>
               ))}
             </nav>
-            <button
-              type="button"
-              onClick={() => go(hero.primaryCta)}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {hero.primaryCta}
-            </button>
+            <div className="flex items-center gap-3">
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('My Bookings')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        My Bookings
+                        <CalendarIcon />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={bookingsOpen} onOpenChange={setBookingsOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="My Bookings"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <CalendarIcon />
+                    {bookingCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {bookingCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">My Bookings</SheetTitle>
+                    <SheetDescription>
+                      {bookingCount > 0
+                        ? `${bookingCount} class${bookingCount === 1 ? '' : 'es'} booked.`
+                        : 'No classes booked yet.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {safeBookings.length ? (
+                      <div className="space-y-4">
+                        {safeBookings.map((booking) => (
+                          <div
+                            key={booking.id}
+                            className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-4 last:border-0"
+                          >
+                            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                              <Image
+                                alt={booking.classItem.alt}
+                                w={180}
+                                h={180}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                    {booking.classItem.instructor}
+                                  </p>
+                                  <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                    {booking.classItem.name}
+                                  </h3>
+                                  <p className="mt-1 text-xs text-muted-foreground">
+                                    {booking.classItem.time}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {booking.classItem.duration} · {booking.classItem.level}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="mt-3">
+                                <button
+                                  type="button"
+                                  onClick={() => void cancelBooking(booking.id)}
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Cancel booking
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No bookings yet
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Book a class from the schedule to get started.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <SheetClose asChild>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full rounded-full"
+                      >
+                        Close
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+              <button
+                type="button"
+                aria-label="Open menu"
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-menu"
+                onClick={() => setMobileOpen((v: boolean) => !v)}
+                className="p-2 text-muted-foreground hover:text-foreground lg:hidden"
+              >
+                <svg
+                  className="size-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              </button>
+            </div>
           </div>
+          {mobileOpen && (
+            <div
+              id="mobile-menu"
+              className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
+            >
+              {nav.map((label) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    go(label)
+                  }}
+                  className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                >
+                  {label}
+                </button>
+              ))}
+              <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                {isSignedIn ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar size="lg">
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-foreground">
+                          {authDisplayName}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {authEmail ?? 'Signed in'}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignOut()
+                      }}
+                      className="w-full rounded-full"
+                    >
+                      Sign out
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      handleSignIn()
+                    }}
+                    disabled={auth.isLoading}
+                    className="w-full rounded-full"
+                  >
+                    <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    {authLabel}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </header>
 
         <main>
@@ -207,6 +726,93 @@ export const ScheduleKimiPage = defineCapsule({
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
               </div>
             ))}
+          </section>
+
+          <section className="mx-auto max-w-7xl px-5 py-16">
+            <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+              <div>
+                <p className="text-sm font-medium text-primary">Class Schedule</p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Book Your Classes</h2>
+              </div>
+            </div>
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {displayClasses.map((classItem) => {
+                const isFavorite =
+                  favoriteClassNames?.has(classItem.name) ?? false
+                const isBooked = safeBookings.some(
+                  (b) => b.classItem.name === classItem.name,
+                )
+
+                return (
+                  <article key={classItem.name} className="group">
+                    <div className="relative mb-4 aspect-square overflow-hidden rounded-xl bg-background">
+                      <Image
+                        alt={classItem.alt}
+                        w={600}
+                        h={600}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void toggleFavorite(classItem.name)}
+                        aria-pressed={isFavorite}
+                        aria-label={
+                          isFavorite
+                            ? `Remove ${classItem.name} from favorites`
+                            : `Add ${classItem.name} to favorites`
+                        }
+                        className={cn(
+                          'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                          isFavorite
+                            ? 'bg-primary text-primary-foreground opacity-100'
+                            : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                        )}
+                      >
+                        <HeartIcon active={isFavorite} />
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        {classItem.instructor}
+                      </p>
+                      <h3 className="font-semibold text-foreground transition-colors group-hover:text-muted-foreground">
+                        {classItem.name}
+                      </h3>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>{classItem.time}</span>
+                        <span>·</span>
+                        <span>{classItem.duration}</span>
+                        <span>·</span>
+                        <span>{classItem.level}</span>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="w-full rounded-full"
+                        variant={isBooked ? 'secondary' : 'default'}
+                        onClick={() => {
+                          if (isSignedIn) {
+                            if (!isBooked) {
+                              void bookClass(
+                                classItem.name,
+                                auth.user?.id || authEmail || 'guest',
+                              )
+                              setBookingsOpen(true)
+                            }
+                          } else {
+                            handleSignIn()
+                          }
+                        }}
+                        disabled={isBooked || auth.isLoading}
+                      >
+                        {isBooked ? 'Booked' : isSignedIn ? 'Book Class' : 'Sign in to Book'}
+                      </Button>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
           </section>
 
           <section className="border-y border-border bg-muted/40">

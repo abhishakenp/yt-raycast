@@ -1,9 +1,31 @@
-import { type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "#/components/ui/avatar.tsx"
 
 /**
  * NutritionKimiPage2 — a complete, self-contained nutrition-coaching LANDING page.
@@ -197,12 +219,85 @@ export const NutritionKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      savedPrograms: table({
+        programTitle: string(),
+        programDescription: string(),
+      }),
+      newsletterSubscribers: table({
+        email: string(),
+      }),
+    },
+    queries: {
+      savedPrograms: ({ db }) => db.savedPrograms.orderBy('createdAt').all(),
+      isSubscribed: ({ db }, email: string) =>
+        db.newsletterSubscribers.where('email', email).all().length > 0,
+    },
+    mutations: {
+      saveProgram: ({ db }, programTitle: string, programDescription: string) => {
+        const existing = db.savedPrograms
+          .where('programTitle', programTitle)
+          .all()[0]
+        if (existing) {
+          db.savedPrograms.delete(existing.id)
+          return false
+        }
+        db.savedPrograms.insert({ programTitle, programDescription })
+        return true
+      },
+      removeSavedProgram: ({ db }, programTitle: string) => {
+        for (const item of db.savedPrograms.where('programTitle', programTitle).all()) {
+          db.savedPrograms.delete(item.id)
+        }
+        return db.savedPrograms.all()
+      },
+      subscribeNewsletter: ({ db }, email: string) => {
+        const existing = db.newsletterSubscribers.where('email', email).all()[0]
+        if (existing) return false
+        db.newsletterSubscribers.insert({ email })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [mobileOpen, setMobileOpen] = useState(false)
+    const [savedProgramsOpen, setSavedProgramsOpen] = useState(false)
     const brand = props.brand ?? "NutriFuel"
     const nav = props.nav?.length
       ? props.nav
       : ["Programs", "Transformations", "Pricing", "Coaches", "FAQ"]
+
+    const savedPrograms = lakebed.useQuery('savedPrograms')
+    const saveProgram = lakebed.useMutation('saveProgram')
+    const removeSavedProgram = lakebed.useMutation('removeSavedProgram')
+    const subscribeNewsletter = lakebed.useMutation('subscribeNewsletter')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
 
     const heroBadge =
       props.hero?.badge ?? "Over 15,000 Transformations Completed"
@@ -642,6 +737,22 @@ export const NutritionKimiPage2 = defineCapsule({
       </svg>
     )
 
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     const Check = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -656,6 +767,39 @@ export const NutritionKimiPage2 = defineCapsule({
           strokeWidth="2"
           d="M5 13l4 4L19 7"
         />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
       </svg>
     )
 
@@ -740,13 +884,202 @@ export const NutritionKimiPage2 = defineCapsule({
                 ))}
               </div>
               <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => go("Sign In")}
-                  className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-                >
-                  Sign In
-                </button>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Dashboard')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Dashboard
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Settings')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Settings
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={savedProgramsOpen} onOpenChange={setSavedProgramsOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Saved Programs"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                      </svg>
+                      {savedPrograms && savedPrograms.length > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {savedPrograms.length}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Saved Programs</SheetTitle>
+                      <SheetDescription>
+                        {savedPrograms && savedPrograms.length > 0
+                          ? `${savedPrograms.length} program${savedPrograms.length === 1 ? '' : 's'} saved.`
+                          : 'No programs saved yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {savedPrograms && savedPrograms.length ? (
+                        <div className="space-y-4">
+                          {savedPrograms.map((item) => (
+                            <div
+                              key={item.id}
+                              className="grid grid-cols-[1fr_auto] gap-4 border-b border-border pb-4 last:border-0"
+                            >
+                              <div>
+                                <h3 className="font-semibold text-card-foreground">
+                                  {item.programTitle}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {item.programDescription}
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  void removeSavedProgram(item.programTitle)
+                                }
+                                className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No saved programs
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Save programs from the grid to view them here.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <Button
+                        type="button"
+                        className="w-full rounded-full"
+                        onClick={() => go('Programs')}
+                      >
+                        Browse All Programs
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(heroPrimary)}
@@ -754,8 +1087,102 @@ export const NutritionKimiPage2 = defineCapsule({
                 >
                   Start Free Trial
                 </button>
+                <button
+                  type="button"
+                  aria-label="Open menu"
+                  aria-expanded={mobileOpen}
+                  aria-controls="mobile-menu"
+                  onClick={() => setMobileOpen((v: boolean) => !v)}
+                  className="p-2 text-muted-foreground hover:text-foreground lg:hidden"
+                >
+                  <svg
+                    className="size-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                  >
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="18" x2="21" y2="18" />
+                  </svg>
+                </button>
               </div>
             </div>
+            {mobileOpen && (
+              <div
+                id="mobile-menu"
+                className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
+              >
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      go(label)
+                    }}
+                    className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                  >
+                    {label}
+                  </button>
+                ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
           </nav>
         </header>
 
@@ -913,22 +1340,48 @@ export const NutritionKimiPage2 = defineCapsule({
                 <p className="text-lg text-muted-foreground">{programsDesc}</p>
               </div>
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {programItems.map((item, i) => (
-                  <div
-                    key={item.title}
-                    className="group rounded-3xl border border-border bg-muted p-8 transition-all hover:bg-card hover:shadow-xl"
-                  >
-                    <div className="mb-6 flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-transform group-hover:scale-110">
-                      {programIcons[i % programIcons.length]}
+                {programItems.map((item, i) => {
+                  const isSaved = savedPrograms?.some(
+                    (p) => p.programTitle === item.title,
+                  )
+                  return (
+                    <div
+                      key={item.title}
+                      className="group rounded-3xl border border-border bg-muted p-8 transition-all hover:bg-card hover:shadow-xl"
+                    >
+                      <div className="mb-6 flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-transform group-hover:scale-110">
+                        {programIcons[i % programIcons.length]}
+                      </div>
+                      <h3 className="mb-3 text-xl font-bold text-foreground">
+                        {item.title}
+                      </h3>
+                      <p className="mb-4 leading-relaxed text-muted-foreground">
+                        {item.description}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          void saveProgram(item.title, item.description)
+                        }
+                        aria-pressed={isSaved}
+                        aria-label={
+                          isSaved
+                            ? `Remove ${item.title} from saved programs`
+                            : `Save ${item.title} to programs`
+                        }
+                        className={cn(
+                          'inline-flex items-center gap-2 text-sm font-semibold transition-colors',
+                          isSaved
+                            ? 'text-primary'
+                            : 'text-muted-foreground hover:text-foreground',
+                        )}
+                      >
+                        <HeartIcon active={isSaved} />
+                        {isSaved ? 'Saved' : 'Save Program'}
+                      </button>
                     </div>
-                    <h3 className="mb-3 text-xl font-bold text-foreground">
-                      {item.title}
-                    </h3>
-                    <p className="leading-relaxed text-muted-foreground">
-                      {item.description}
-                    </p>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -1247,9 +1700,7 @@ export const NutritionKimiPage2 = defineCapsule({
                         {item.q}
                       </span>
                       <span className="transition-transform group-open:rotate-180">
-                        <svg className="size-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                        </svg>
+                        <ChevronDown />
                       </span>
                     </summary>
                     <div className="px-6 pb-6 leading-relaxed text-muted-foreground">
@@ -1286,7 +1737,37 @@ export const NutritionKimiPage2 = defineCapsule({
                   {ctaSecondary}
                 </button>
               </div>
-              <p className="mt-6 text-sm text-primary-foreground/80">{ctaNote}</p>
+              <div className="mx-auto mt-8 max-w-md">
+                <form
+                  className="flex flex-col gap-3 sm:flex-row"
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    const form = e.currentTarget
+                    const emailInput = form.querySelector(
+                      'input[type="email"]',
+                    ) as HTMLInputElement
+                    if (emailInput?.value) {
+                      void subscribeNewsletter(emailInput.value)
+                      emailInput.value = ''
+                    }
+                  }}
+                >
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    aria-label="Email address for newsletter"
+                    required
+                    className="flex-1 rounded-full border border-primary-foreground/20 bg-background/10 px-6 py-4 text-background placeholder:text-primary-foreground/60 focus:outline-none focus:ring-2 focus:ring-background/30"
+                  />
+                  <button
+                    type="submit"
+                    className="whitespace-nowrap rounded-full bg-background px-8 py-4 font-semibold text-primary transition-colors hover:bg-muted"
+                  >
+                    Subscribe
+                  </button>
+                </form>
+                <p className="mt-4 text-sm text-primary-foreground/80">{ctaNote}</p>
+              </div>
             </div>
           </section>
         </main>

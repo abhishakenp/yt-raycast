@@ -1,8 +1,27 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 export const AuthKimiPage4 = defineCapsule({
   name: "AuthKimiPage4",
@@ -43,9 +62,103 @@ export const AuthKimiPage4 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      sessions: table({
+        email: string(),
+        lastLogin: string(),
+      }),
+      preferences: table({
+        key: string(),
+        value: string(),
+      }),
+    },
+    queries: {
+      sessions: ({ db }) => db.sessions.orderBy('createdAt').all(),
+      preferences: ({ db }) => db.preferences.all(),
+    },
+    mutations: {
+      recordSession: ({ db }, email: string) => {
+        const existing = db.sessions.where('email', email).all()[0]
+        if (existing) {
+          db.sessions.update(existing.id, { lastLogin: new Date().toISOString() })
+        } else {
+          db.sessions.insert({ email, lastLogin: new Date().toISOString() })
+        }
+        return db.sessions.all()
+      },
+      setPreference: ({ db }, key: string, value: string) => {
+        const existing = db.preferences.where('key', key).all()[0]
+        if (existing) {
+          db.preferences.update(existing.id, { value })
+        } else {
+          db.preferences.insert({ key, value })
+        }
+        return db.preferences.all()
+      },
+      clearSessions: ({ db }) => {
+        for (const item of db.sessions.all()) {
+          db.sessions.delete(item.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [accountOpen, setAccountOpen] = useState(false)
     const brand = props.brand ?? "Sign In"
+    const auth = lakebed.useAuth()
+    const sessions = lakebed.useQuery('sessions')
+    const preferences = lakebed.useQuery('preferences')
+    const recordSession = lakebed.useMutation('recordSession')
+    const setPreference = lakebed.useMutation('setPreference')
+    const clearSessions = lakebed.useMutation('clearSessions')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName = auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials = authDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('') || 'ME'
+    const authLabel = auth.isLoading ? 'Checking...' : isSignedIn ? authDisplayName : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const ChevronDown = () => (
+      <svg
+        className="size-4 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     const nav = props.nav?.length ? props.nav : ["Overview", "Services", "Work", "Pricing", "Contact"]
     const hero = {
       eyebrow: "Auth / Variant 4",
@@ -137,13 +250,105 @@ export const AuthKimiPage4 = defineCapsule({
                 </button>
               ))}
             </nav>
-            <button
-              type="button"
-              onClick={() => go(hero.primaryCta)}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {hero.primaryCta}
-            </button>
+            {isSignedIn ? (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Open account menu"
+                    className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                  >
+                    <Avatar
+                      size="sm"
+                      className="ring-2 ring-background"
+                      aria-hidden="true"
+                    >
+                      {authPicture ? (
+                        <AvatarImage
+                          src={authPicture}
+                          alt={authDisplayName}
+                        />
+                      ) : null}
+                      <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                        {authInitials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                      {authDisplayName}
+                    </span>
+                    <ChevronDown />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="end"
+                  sideOffset={10}
+                  className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                >
+                  <div className="bg-muted/40 px-4 py-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar size="lg" className="ring-2 ring-background">
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-foreground">
+                          {authDisplayName}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {authEmail ?? 'Signed in to this session'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAccountOpen(true)
+                      }}
+                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      Account
+                      <ArrowRight />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => go('Settings')}
+                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      Settings
+                      <ArrowRight />
+                    </button>
+                  </div>
+                  <div className="border-t border-border p-2">
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSignIn}
+                disabled={auth.isLoading}
+                aria-label="Sign in with Google"
+                className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-60"
+              >
+                {authLabel}
+              </button>
+            )}
           </div>
         </header>
 
@@ -279,6 +484,85 @@ export const AuthKimiPage4 = defineCapsule({
             </div>
           </div>
         </footer>
+
+        <Sheet open={accountOpen} onOpenChange={setAccountOpen}>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Account</SheetTitle>
+              <SheetDescription>
+                Manage your session and preferences
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="mb-3 text-sm font-semibold text-foreground">Session History</h3>
+                  {sessions && sessions.length > 0 ? (
+                    <div className="space-y-2">
+                      {sessions.map((session) => (
+                        <div
+                          key={session.id}
+                          className="rounded-lg border border-border bg-muted/40 px-3 py-2"
+                        >
+                          <p className="text-sm font-medium text-foreground">
+                            {session.email}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Last login: {new Date(session.lastLogin).toLocaleString()}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      No session history yet. Sign in to track your sessions.
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <h3 className="mb-3 text-sm font-semibold text-foreground">Preferences</h3>
+                  {preferences && preferences.length > 0 ? (
+                    <div className="space-y-2">
+                      {preferences.map((pref) => (
+                        <div
+                          key={pref.id}
+                          className="flex items-center justify-between rounded-lg border border-border bg-muted/40 px-3 py-2"
+                        >
+                          <span className="text-sm font-medium text-foreground">
+                            {pref.key}
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            {pref.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      No preferences set yet.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => void clearSessions()}
+                disabled={!sessions || sessions.length === 0}
+              >
+                Clear Session History
+              </Button>
+              <SheetClose asChild>
+                <Button type="button" variant="secondary" className="w-full">
+                  Close
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

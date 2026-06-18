@@ -1,9 +1,26 @@
-import { type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
+import { string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * DatingAppKimiPage — a complete, self-contained dating-app marketing LANDING page.
@@ -169,8 +186,73 @@ export const DatingAppKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      savedProfiles: table({
+        name: string(),
+        detail: string(),
+        source: string(),
+      }),
+    },
+    queries: {
+      savedProfiles: ({ db }) => db.savedProfiles.orderBy("createdAt").all(),
+    },
+    mutations: {
+      saveProfile: ({ db }, name: string, detail: string, source: string) => {
+        const exists = db.savedProfiles.where("name", name).all()[0]
+        if (exists) return db.savedProfiles.all()
+
+        db.savedProfiles.insert({ name, detail, source })
+        return db.savedProfiles.all()
+      },
+      removeSavedProfile: ({ db }, id: string) => {
+        for (const item of db.savedProfiles.where("id", id).all()) {
+          db.savedProfiles.delete(item.id)
+        }
+        return db.savedProfiles.all()
+      },
+      clearSavedProfiles: ({ db }) => {
+        const rows = db.savedProfiles.all()
+        for (const row of rows) {
+          db.savedProfiles.delete(row.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [savedDrawerOpen, setSavedDrawerOpen] = useState(false)
+    const savedProfiles = lakebed.useQuery("savedProfiles")
+    const addSavedProfile = lakebed.useMutation("saveProfile")
+    const removeSavedProfile = lakebed.useMutation("removeSavedProfile")
+    const clearSavedProfiles = lakebed.useMutation("clearSavedProfiles")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials = authDisplayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Log In"
+    const savedProfilesList = savedProfiles ?? []
+    const savedProfilesCount = savedProfilesList.length
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
     const brand = props.brand ?? "HeartLink"
     const nav = props.nav?.length
       ? props.nav
@@ -188,6 +270,25 @@ export const DatingAppKimiPage = defineCapsule({
     const profileName = props.hero?.profileName ?? "Sarah, 28"
     const profileMeta = props.hero?.profileMeta ?? "Marketing Manager • 2 miles away"
     const matchBadge = props.hero?.matchBadge ?? "It's a Match!"
+    const savedHeroProfile = savedProfilesList.find(
+      (entry) => entry.name === profileName,
+    )
+    const isHeroSaved = Boolean(savedHeroProfile)
+
+    const toggleHeroProfile = () => {
+      if (!isSignedIn) {
+        handleSignIn()
+        return
+      }
+
+      if (savedHeroProfile?.id) {
+        void removeSavedProfile(savedHeroProfile.id)
+        return
+      }
+
+      void addSavedProfile(profileName, profileMeta, "Featured hero profile")
+      setSavedDrawerOpen(true)
+    }
 
     const logosLabel = props.logos?.label ?? "Featured in"
     const logoNames = props.logos?.names?.length
@@ -604,48 +705,227 @@ export const DatingAppKimiPage = defineCapsule({
         )}
       >
         {/* Navbar */}
-        <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
-          <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-            <button
-              type="button"
-              onClick={() => go(nav[0])}
-              className="flex items-center gap-2"
-            >
-              <span className="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground">
-                <HeartGlyph className="size-5" />
-              </span>
-              <span className="text-xl font-bold text-foreground">{brand}</span>
-            </button>
-            <div className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
+        <Sheet open={savedDrawerOpen} onOpenChange={setSavedDrawerOpen}>
+          <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
+            <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+              <button
+                type="button"
+                onClick={() => go(nav[0])}
+                className="flex items-center gap-2"
+              >
+                <span className="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground">
+                  <HeartGlyph className="size-5" />
+                </span>
+                <span className="text-xl font-bold text-foreground">{brand}</span>
+              </button>
+              <div className="hidden items-center gap-8 md:flex">
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => go(label)}
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-4">
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    className="relative inline-flex h-10 items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                    aria-label="Open saved profiles"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-primary/10 text-primary">
+                      <HeartGlyph className="size-4" />
+                    </span>
+                    <span className="hidden sm:inline">Matches</span>
+                    {savedProfilesCount > 0 ? (
+                      <span className="inline-grid min-w-5 place-items-center rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
+                        {savedProfilesCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-background/90 px-3 py-1.5 text-sm font-semibold text-foreground transition-colors hover:border-foreground/20 hover:bg-muted"
+                        aria-label="Open account menu"
+                      >
+                        <Avatar className="size-6">
+                          {authPicture ? (
+                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden md:inline">
+                          {authLabel}
+                        </span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <p className="text-sm font-bold text-foreground">
+                          {authDisplayName}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {authEmail ?? "Signed in to this session"}
+                        </p>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go("Account")}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                        >
+                          Account
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go("Matches")}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                        >
+                          Saved Matches
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    {authLabel}
+                  </button>
+                )}
                 <button
-                  key={label}
                   type="button"
-                  onClick={() => go(label)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  onClick={() => go(heroPrimary)}
+                  className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
                 >
-                  {label}
+                  Get the App
                 </button>
-              ))}
+              </div>
+            </nav>
+          </header>
+          <SheetContent
+            side="right"
+            className="w-full gap-0 p-0 sm:max-w-md"
+          >
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle>Saved matches</SheetTitle>
+              <SheetDescription>
+                {savedProfilesCount
+                  ? `${savedProfilesCount} profile${savedProfilesCount === 1 ? "" : "s"} saved for later`
+                  : "Save profiles to continue your conversations later."}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {savedProfilesList.length ? (
+                <div className="space-y-5">
+                  {savedProfilesList.map((entry) => (
+                    <article
+                      key={entry.id}
+                      className="rounded-xl border border-border bg-background px-4 py-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-foreground">
+                            {entry.name}
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {entry.detail}
+                          </p>
+                          <p className="mt-2 text-xs uppercase tracking-wide text-muted-foreground/75">
+                            {entry.source}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void removeSavedProfile(entry.id)
+                          }}
+                          aria-label={`Remove ${entry.name} from saved matches`}
+                          className="grid size-8 place-items-center rounded-full text-muted-foreground transition-colors hover:text-destructive"
+                        >
+                          <Cross className="size-4" />
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex min-h-56 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                  <p className="text-base font-semibold text-foreground">
+                    No saved matches yet
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Tap the heart on the featured profile to save matches.
+                  </p>
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-4">
+            <SheetFooter className="border-t border-border p-6">
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Total saved profiles</span>
+                  <span>{savedProfilesCount}</span>
+                </div>
+              </div>
               <button
                 type="button"
-                onClick={() => go("Log In")}
-                className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
+                onClick={() => go("Success Stories")}
+                className="w-full rounded-xl bg-foreground px-4 py-3 font-semibold text-background transition-colors hover:bg-foreground/90"
               >
-                Log In
+                View all stories
               </button>
-              <button
-                type="button"
-                onClick={() => go(heroPrimary)}
-                className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
-              >
-                Get the App
-              </button>
-            </div>
-          </nav>
-        </header>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    void clearSavedProfiles()
+                  }}
+                  disabled={!savedProfilesCount}
+                  className="rounded-xl bg-background px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Clear
+                </button>
+                <SheetClose asChild>
+                  <button
+                    type="button"
+                    className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                  >
+                    Continue
+                  </button>
+                </SheetClose>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
 
         <main>
           {/* Hero */}
@@ -737,9 +1017,20 @@ export const DatingAppKimiPage = defineCapsule({
                           </p>
                           <p className="text-sm text-muted-foreground">{profileMeta}</p>
                         </div>
-                        <span className="grid size-10 place-items-center rounded-full bg-primary/10 text-primary">
+                        <button
+                          type="button"
+                          onClick={toggleHeroProfile}
+                          aria-pressed={isHeroSaved}
+                          aria-label={isHeroSaved ? "Remove profile from saved matches" : "Save profile"}
+                          className={cn(
+                            "grid size-10 place-items-center rounded-full transition-all",
+                            isHeroSaved
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-primary/10 text-primary hover:bg-primary/20",
+                          )}
+                        >
                           <HeartGlyph className="size-5" />
-                        </span>
+                        </button>
                       </div>
                     </div>
                   </div>

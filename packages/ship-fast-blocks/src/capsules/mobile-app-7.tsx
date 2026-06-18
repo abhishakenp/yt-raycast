@@ -4,6 +4,32 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "#/components/ui/command.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * MobileAppKimiPage7 — a complete, self-contained mobile-app LANDING / marketing page.
@@ -178,10 +204,111 @@ export const MobileAppKimiPage7 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      habits: table({
+        name: string(),
+        frequency: string(),
+        streak: number(),
+        completed: number(),
+      }),
+      favorites: table({
+        habitName: string(),
+      }),
+    },
+    queries: {
+      habits: ({ db }) => db.habits.orderBy('createdAt').all(),
+      favoriteHabitNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.habitName)),
+    },
+    mutations: {
+      addHabit: ({ db }, name: string, frequency: string) => {
+        db.habits.insert({ name, frequency, streak: 0, completed: 0 })
+        return db.habits.all()
+      },
+      completeHabit: ({ db }, habitId: string) => {
+        const habit = db.habits.get(habitId)
+        if (habit) {
+          db.habits.update(habitId, {
+            streak: habit.streak + 1,
+            completed: habit.completed + 1,
+          })
+        }
+        return db.habits.all()
+      },
+      removeHabit: ({ db }, habitId: string) => {
+        db.habits.delete(habitId)
+        return db.habits.all()
+      },
+      toggleFavorite: ({ db }, habitName: string) => {
+        const existingFavorite = db.favorites
+          .where('habitName', habitName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ habitName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [habitsOpen, setHabitsOpen] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
     const brand = props.brand ?? "HabitFlow"
+
+    const storedHabits = lakebed.useQuery('habits')
+    const favoriteHabitNames = lakebed.useQuery('favoriteHabitNames')
+    const auth = lakebed.useAuth()
+    const addHabit = lakebed.useMutation('addHabit')
+    const completeHabit = lakebed.useMutation('completeHabit')
+    const removeHabit = lakebed.useMutation('removeHabit')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const defaultHabits = [
+      { name: 'Morning Meditation', frequency: 'Daily', streak: 0, completed: 0 },
+      { name: 'Exercise', frequency: 'Daily', streak: 0, completed: 0 },
+      { name: 'Read 30 minutes', frequency: 'Daily', streak: 0, completed: 0 },
+    ]
+
+    const displayHabits = storedHabits && storedHabits.length > 0
+      ? storedHabits
+      : defaultHabits
+
+    const totalStreak = displayHabits.reduce((sum, habit) => sum + (habit.streak || 0), 0)
+    const totalCompleted = displayHabits.reduce((sum, habit) => sum + (habit.completed || 0), 0)
     const nav = props.nav?.length
       ? props.nav
       : ["Features", "How It Works", "Pricing", "Reviews", "FAQ", "Download"]
@@ -295,10 +422,10 @@ export const MobileAppKimiPage7 = defineCapsule({
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "2M+", label: "Active Habit Builders" },
-          { value: "50M+", label: "Habits Completed" },
-          { value: "4.9", label: "App Store Rating" },
-          { value: "180+", label: "Countries Worldwide" },
+          { value: `${displayHabits.length}`, label: "Your Habits" },
+          { value: `${totalCompleted}`, label: "Completions" },
+          { value: `${totalStreak}`, label: "Total Streak Days" },
+          { value: isSignedIn ? "Signed In" : "Guest", label: "Account Status" },
         ]
 
     const pricingHeading = props.pricing?.heading ?? "Choose Your Plan"
@@ -577,9 +704,53 @@ export const MobileAppKimiPage7 = defineCapsule({
       </svg>
     )
 
-    const HeartIcon = ({ className }: { className?: string }) => (
+    const HeartIcon = ({ className, active = false }: { className?: string; active?: boolean }) => (
+      <svg viewBox="0 0 20 20" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={cn("size-4", className)} aria-hidden="true">
+        <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+      </svg>
+    )
+
+    const HeartIconFilled = ({ className }: { className?: string }) => (
       <svg viewBox="0 0 20 20" fill="currentColor" className={cn("size-4", className)} aria-hidden="true">
         <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+      </svg>
+    )
+
+    const PlusIcon = () => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-5" aria-hidden="true">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+    )
+
+    const TrashIcon = () => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-5" aria-hidden="true">
+        <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+      </svg>
+    )
+
+    const FireIcon = () => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-5" aria-hidden="true">
+        <path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 00.5 3.5 3.5 3.5 0 003.5-3.5z" />
+      </svg>
+    )
+
+    const SearchIcon = () => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-5" aria-hidden="true">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-5" aria-hidden="true">
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-4" aria-hidden="true">
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
       </svg>
     )
 
@@ -661,6 +832,250 @@ export const MobileAppKimiPage7 = defineCapsule({
               <div className="flex items-center gap-3">
                 <button
                   type="button"
+                  onClick={() => setSearchOpen(true)}
+                  aria-label="Search habits"
+                  className="hidden items-center gap-2 text-primary-foreground/80 transition-colors hover:text-primary-foreground sm:flex"
+                >
+                  <SearchIcon />
+                </button>
+                <Sheet open={habitsOpen} onOpenChange={setHabitsOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Your habits"
+                      className="relative flex items-center gap-2 text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+                    >
+                      <FireIcon />
+                      {displayHabits.length > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-accent text-[0.625rem] font-bold text-accent-foreground">
+                          {displayHabits.length}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-primary-foreground/20 p-6">
+                      <SheetTitle className="text-xl">Your Habits</SheetTitle>
+                      <SheetDescription>
+                        {displayHabits.length > 0
+                          ? `${displayHabits.length} habit${displayHabits.length === 1 ? '' : 's'} tracked. Total streak: ${totalStreak} days.`
+                          : 'Start building better habits today.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {displayHabits.length ? (
+                        <div className="space-y-4">
+                          {displayHabits.map((habit) => {
+                            const isFavorite = favoriteHabitNames?.has(habit.name) ?? false
+                            return (
+                              <div
+                                key={habit.id || habit.name}
+                                className="grid grid-cols-[72px_1fr] gap-4 border-b border-primary-foreground/20 pb-4 last:border-0"
+                              >
+                                <div className="flex aspect-square items-center justify-center rounded-xl bg-primary-foreground/10">
+                                  <div className="text-center">
+                                    <div className="text-2xl font-bold text-primary-foreground">{habit.streak || 0}</div>
+                                    <div className="text-xs text-primary-foreground/60">day streak</div>
+                                  </div>
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                      <h3 className="line-clamp-2 text-sm font-semibold text-primary-foreground">
+                                        {habit.name}
+                                      </h3>
+                                      <p className="text-xs text-primary-foreground/60">{habit.frequency}</p>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => void toggleFavorite(habit.name)}
+                                      aria-pressed={isFavorite}
+                                      aria-label={
+                                        isFavorite
+                                          ? `Remove ${habit.name} from favorites`
+                                          : `Add ${habit.name} to favorites`
+                                      }
+                                      className="grid size-8 place-items-center rounded-full bg-primary-foreground/10 text-primary-foreground/60 transition-all hover:bg-primary-foreground/20 hover:text-primary-foreground"
+                                    >
+                                      <HeartIcon active={isFavorite} />
+                                    </button>
+                                  </div>
+                                  <div className="mt-3 flex items-center justify-between">
+                                    <div className="text-xs text-primary-foreground/60">
+                                      {habit.completed || 0} completions
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={() => void removeHabit(habit.id || habit.name)}
+                                        className="text-xs font-semibold text-primary-foreground/60 underline-offset-4 hover:text-primary-foreground hover:underline"
+                                      >
+                                        Remove
+                                      </button>
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        className="h-8 rounded-full"
+                                        onClick={() => void completeHabit(habit.id || habit.name)}
+                                      >
+                                        Complete
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-primary-foreground/20 bg-primary-foreground/5 px-6 text-center">
+                          <p className="text-base font-semibold text-primary-foreground">
+                            No habits yet
+                          </p>
+                          <p className="mt-2 text-sm text-primary-foreground/60">
+                            Add your first habit to start building streaks.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-primary-foreground/20 p-6">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between text-primary-foreground/80">
+                          <span>Total Streak</span>
+                          <span className="font-bold text-primary-foreground">{totalStreak} days</span>
+                        </div>
+                        <div className="flex justify-between text-primary-foreground/80">
+                          <span>Completions</span>
+                          <span className="font-bold text-primary-foreground">{totalCompleted}</span>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        className="w-full rounded-full"
+                        onClick={() => {
+                          void addHabit('New Habit', 'Daily')
+                        }}
+                      >
+                        <PlusIcon />
+                        Add New Habit
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full rounded-full"
+                        >
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-2 py-1 text-primary-foreground shadow-sm transition hover:border-primary-foreground/40 hover:bg-primary-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-primary"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-primary-foreground text-[0.65rem] font-bold text-primary">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-primary-foreground/20 bg-primary-foreground/10 p-0 shadow-xl backdrop-blur-xl"
+                    >
+                      <div className="bg-primary-foreground/5 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-primary">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-primary-foreground text-sm font-bold text-primary">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-primary-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-primary-foreground/60">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Settings')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                        >
+                          Settings
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-primary-foreground/20 p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-primary-foreground px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-primary-foreground px-4 text-sm font-semibold text-primary shadow-sm transition hover:bg-primary-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-primary text-xs font-black text-primary-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <button
+                  type="button"
                   onClick={() => go(nav[nav.length - 1])}
                   className="hidden items-center gap-2 rounded-full bg-primary-foreground px-5 py-2.5 text-sm font-semibold text-primary transition-all hover:bg-primary-foreground/90 sm:inline-flex shadow-lg"
                 >
@@ -699,10 +1114,125 @@ export const MobileAppKimiPage7 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
         </header>
+
+        <CommandDialog
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          title="Search habits"
+          description="Search your habits and features."
+          className="max-w-xl"
+        >
+          <CommandInput placeholder={`Search ${brand} habits...`} />
+          <CommandList className="max-h-[420px]">
+            <CommandEmpty>No habits found.</CommandEmpty>
+            <CommandGroup heading="Your Habits">
+              {displayHabits.map((habit) => (
+                <CommandItem
+                  key={habit.id || habit.name}
+                  value={`${habit.name} ${habit.frequency}`}
+                  onSelect={() => {
+                    setSearchOpen(false)
+                    setHabitsOpen(true)
+                  }}
+                  className="gap-3 py-3"
+                >
+                  <div className="flex size-8 items-center justify-center rounded-full bg-accent/20 text-accent">
+                    <FireIcon />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-primary-foreground">
+                      {habit.name}
+                    </p>
+                    <p className="truncate text-xs text-primary-foreground/60">
+                      {habit.frequency} · {habit.streak || 0} day streak
+                    </p>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            <CommandGroup heading="Features">
+              {featureItems.map((feature) => (
+                <CommandItem
+                  key={feature.title}
+                  value={feature.title}
+                  onSelect={() => {
+                    setSearchOpen(false)
+                    go('features')
+                  }}
+                  className="gap-3 py-3"
+                >
+                  <div className="flex size-8 items-center justify-center rounded-full bg-primary-foreground/20 text-primary-foreground">
+                    <BoltIcon />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-primary-foreground">
+                      {feature.title}
+                    </p>
+                    <p className="truncate text-xs text-primary-foreground/60">
+                      {feature.description.slice(0, 50)}...
+                    </p>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
 
         <main>
           {/* Hero */}
@@ -1026,7 +1556,13 @@ export const MobileAppKimiPage7 = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(tier.cta)}
+                      onClick={() => {
+                        if (!isSignedIn) {
+                          handleSignIn()
+                        } else {
+                          setHabitsOpen(true)
+                        }
+                      }}
                       className={cn(
                         "w-full rounded-xl px-6 py-3 font-semibold transition-all",
                         tier.featured
@@ -1236,7 +1772,7 @@ export const MobileAppKimiPage7 = defineCapsule({
               <p className="text-sm text-primary-foreground/40">{footerNote}</p>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-primary-foreground/40">Made with</span>
-                <HeartIcon className="size-4 text-accent" />
+                <HeartIconFilled className="size-4 text-accent" />
                 <span className="text-sm text-primary-foreground/40">{footerMadeIn}</span>
               </div>
             </div>

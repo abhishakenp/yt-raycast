@@ -1,8 +1,27 @@
+import { useState } from 'react'
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const ResumeCvKimiPage3 = defineCapsule({
   name: "ResumeCvKimiPage3",
@@ -43,8 +62,54 @@ export const ResumeCvKimiPage3 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      inquiries: table({
+        name: string(),
+        email: string(),
+        message: string(),
+      }),
+      bookmarks: table({
+        sectionTitle: string(),
+        itemLabel: string(),
+      }),
+    },
+    queries: {
+      inquiries: ({ db }) => db.inquiries.orderBy('createdAt').all(),
+      bookmarks: ({ db }) => db.bookmarks.all(),
+    },
+    mutations: {
+      submitInquiry: ({ db }, name: string, email: string, message: string) => {
+        db.inquiries.insert({ name, email, message })
+        return db.inquiries.all()
+      },
+      addBookmark: ({ db }, sectionTitle: string, itemLabel: string) => {
+        const existing = db.bookmarks
+          .where('sectionTitle', sectionTitle)
+          .where('itemLabel', itemLabel)
+          .all()[0]
+        if (existing) {
+          db.bookmarks.delete(existing.id)
+          return false
+        }
+        db.bookmarks.insert({ sectionTitle, itemLabel })
+        return true
+      },
+      clearBookmarks: ({ db }) => {
+        for (const item of db.bookmarks.all()) {
+          db.bookmarks.delete(item.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [contactOpen, setContactOpen] = useState(false)
+    const [bookmarksOpen, setBookmarksOpen] = useState(false)
+    const [inquiryName, setInquiryName] = useState('')
+    const [inquiryEmail, setInquiryEmail] = useState('')
+    const [inquiryMessage, setInquiryMessage] = useState('')
     const brand = props.brand ?? "Alex Chen Senior Full Stack Engineer"
     const nav = props.nav?.length ? props.nav : ["AC .", "Impact", "Competencies", "Experience", "Projects", "Testimonials"]
     const hero = {
@@ -134,6 +199,83 @@ export const ResumeCvKimiPage3 = defineCapsule({
   }
 ]
 
+    const bookmarks = lakebed.useQuery('bookmarks')
+    const submitInquiry = lakebed.useMutation('submitInquiry')
+    const addBookmark = lakebed.useMutation('addBookmark')
+    const clearBookmarks = lakebed.useMutation('clearBookmarks')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const bookmarkSet = new Set(
+      (bookmarks ?? []).map((b) => `${b.sectionTitle}|${b.itemLabel}`),
+    )
+    const isBookmarked = (sectionTitle: string, itemLabel: string) =>
+      bookmarkSet.has(`${sectionTitle}|${itemLabel}`)
+    const handleBookmark = (sectionTitle: string, itemLabel: string) => {
+      void addBookmark(sectionTitle, itemLabel)
+    }
+    const handleSubmitInquiry = (e: React.FormEvent) => {
+      e.preventDefault()
+      if (!inquiryName.trim() || !inquiryEmail.trim() || !inquiryMessage.trim()) return
+      void submitInquiry(inquiryName, inquiryEmail, inquiryMessage)
+      setInquiryName('')
+      setInquiryEmail('')
+      setInquiryMessage('')
+      setContactOpen(false)
+    }
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn('size-5', active ? 'text-primary' : 'text-muted-foreground')}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+      </svg>
+    )
+
     return (
       <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
@@ -153,13 +295,271 @@ export const ResumeCvKimiPage3 = defineCapsule({
                 </button>
               ))}
             </nav>
-            <button
-              type="button"
-              onClick={() => go(hero.primaryCta)}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {hero.primaryCta}
-            </button>
+            <div className="flex items-center gap-3">
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setBookmarksOpen(true)}
+                className="relative rounded-md border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              >
+                Bookmarks
+                {bookmarks && bookmarks.length > 0 ? (
+                  <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-primary text-[0.625rem] font-bold text-primary-foreground">
+                    {bookmarks.length}
+                  </span>
+                ) : null}
+              </button>
+              <Sheet open={contactOpen} onOpenChange={setContactOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => setContactOpen(true)}
+                    className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    Contact
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Get in touch</SheetTitle>
+                    <SheetDescription>
+                      Send a message and I'll get back to you soon.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    <form onSubmit={handleSubmitInquiry} className="space-y-4">
+                      <div>
+                        <label htmlFor="name" className="mb-2 block text-sm font-medium text-foreground">
+                          Name
+                        </label>
+                        <input
+                          id="name"
+                          type="text"
+                          value={inquiryName}
+                          onChange={(e) => setInquiryName(e.target.value)}
+                          placeholder="Your name"
+                          required
+                          className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
+                          Email
+                        </label>
+                        <input
+                          id="email"
+                          type="email"
+                          value={inquiryEmail}
+                          onChange={(e) => setInquiryEmail(e.target.value)}
+                          placeholder="your@email.com"
+                          required
+                          className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="message" className="mb-2 block text-sm font-medium text-foreground">
+                          Message
+                        </label>
+                        <textarea
+                          id="message"
+                          value={inquiryMessage}
+                          onChange={(e) => setInquiryMessage(e.target.value)}
+                          placeholder="Tell me about your project..."
+                          required
+                          rows={6}
+                          className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                        />
+                      </div>
+                    </form>
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <Button
+                      type="button"
+                      onClick={handleSubmitInquiry}
+                      disabled={!inquiryName.trim() || !inquiryEmail.trim() || !inquiryMessage.trim()}
+                      className="w-full rounded-full"
+                    >
+                      Send Message
+                    </Button>
+                    <SheetClose asChild>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full rounded-full"
+                      >
+                        Cancel
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+              <Sheet open={bookmarksOpen} onOpenChange={setBookmarksOpen}>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Saved Items</SheetTitle>
+                    <SheetDescription>
+                      {bookmarks && bookmarks.length > 0
+                        ? `${bookmarks.length} item${bookmarks.length === 1 ? '' : 's'} saved.`
+                        : 'No items saved yet.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {bookmarks && bookmarks.length ? (
+                      <div className="space-y-3">
+                        {bookmarks.map((bookmark) => (
+                          <div
+                            key={bookmark.id}
+                            className="flex items-center justify-between rounded-lg border border-border bg-background p-3"
+                          >
+                            <div>
+                              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                {bookmark.sectionTitle}
+                              </p>
+                              <p className="text-sm font-semibold text-foreground">
+                                {bookmark.itemLabel}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleBookmark(bookmark.sectionTitle, bookmark.itemLabel)}
+                              className="grid size-8 place-items-center rounded hover:bg-muted transition-colors"
+                              aria-label={`Remove ${bookmark.itemLabel} from bookmarks`}
+                            >
+                              <BookmarkIcon active={true} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No saved items
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Bookmark items from the sections above to save them for later.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full rounded-full"
+                      onClick={() => void clearBookmarks()}
+                      disabled={!bookmarks || bookmarks.length === 0}
+                    >
+                      Clear All
+                    </Button>
+                    <SheetClose asChild>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full rounded-full"
+                      >
+                        Close
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </header>
 
@@ -180,10 +580,10 @@ export const ResumeCvKimiPage3 = defineCapsule({
                 <div className="mt-8 flex flex-wrap gap-3">
                   <button
                     type="button"
-                    onClick={() => go(hero.primaryCta)}
+                    onClick={() => setContactOpen(true)}
                     className="rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                   >
-                    {hero.primaryCta}
+                    Get in Touch
                   </button>
                   <button
                     type="button"
@@ -218,17 +618,34 @@ export const ResumeCvKimiPage3 = defineCapsule({
                   <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
-                      {section.items.map((item) => (
-                        <button
-                          key={item}
-                          type="button"
-                          onClick={() => go(item)}
-                          className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                        >
-                          <span>{item}</span>
-                          <span className="text-primary">{index + 1}</span>
-                        </button>
-                      ))}
+                      {section.items.map((item) => {
+                        const bookmarked = isBookmarked(section.title, item)
+                        return (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => go(item)}
+                            className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                          >
+                            <span>{item}</span>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleBookmark(section.title, item)
+                                }}
+                                aria-pressed={bookmarked}
+                                aria-label={bookmarked ? `Remove ${item} from bookmarks` : `Add ${item} to bookmarks`}
+                                className="grid size-6 place-items-center rounded hover:bg-muted transition-colors"
+                              >
+                                <BookmarkIcon active={bookmarked} />
+                              </button>
+                              <span className="text-primary">{index + 1}</span>
+                            </div>
+                          </button>
+                        )
+                      })}
                     </div>
                   ) : null}
                 </article>
@@ -244,10 +661,10 @@ export const ResumeCvKimiPage3 = defineCapsule({
               </div>
               <button
                 type="button"
-                onClick={() => go(hero.secondaryCta)}
+                onClick={() => setContactOpen(true)}
                 className="rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
               >
-                {hero.secondaryCta}
+                Contact Me
               </button>
             </div>
             <div className="grid gap-5 md:grid-cols-3">
@@ -273,10 +690,10 @@ export const ResumeCvKimiPage3 = defineCapsule({
                 </div>
                 <button
                   type="button"
-                  onClick={() => go(hero.primaryCta)}
+                  onClick={() => setContactOpen(true)}
                   className="rounded-md bg-background px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
                 >
-                  {hero.primaryCta}
+                  Get in Touch
                 </button>
               </div>
             </div>

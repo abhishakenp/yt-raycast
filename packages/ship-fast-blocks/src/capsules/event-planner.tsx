@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * EventPlannerKimiPage — a complete, self-contained luxury EVENT-PLANNING agency
@@ -191,10 +209,116 @@ export const EventPlannerKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      inquiries: table({
+        firstName: string(),
+        lastName: string(),
+        email: string(),
+        eventType: string(),
+        eventDate: string(),
+        guestCount: string(),
+        message: string(),
+      }),
+      favorites: table({
+        serviceName: string(),
+      }),
+    },
+    queries: {
+      inquiries: ({ db }) => db.inquiries.orderBy('createdAt').all(),
+      favoriteServiceNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.serviceName)),
+    },
+    mutations: {
+      submitInquiry: (
+        { db },
+        firstName: string,
+        lastName: string,
+        email: string,
+        eventType: string,
+        eventDate: string,
+        guestCount: string,
+        message: string,
+      ) => {
+        db.inquiries.insert({
+          firstName,
+          lastName,
+          email,
+          eventType,
+          eventDate,
+          guestCount,
+          message,
+        })
+        return db.inquiries.all()
+      },
+      removeInquiry: ({ db }, id: string) => {
+        db.inquiries.delete(id)
+        return db.inquiries.all()
+      },
+      clearInquiries: ({ db }) => {
+        for (const item of db.inquiries.all()) {
+          db.inquiries.delete(item.id)
+        }
+        return []
+      },
+      toggleFavorite: ({ db }, serviceName: string) => {
+        const existingFavorite = db.favorites
+          .where('serviceName', serviceName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ serviceName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [inquiryOpen, setInquiryOpen] = useState(false)
     const brand = props.brand ?? "Serene Events"
+
+    const inquiries = lakebed.useQuery('inquiries')
+    const favoriteServiceNames = lakebed.useQuery('favoriteServiceNames')
+    const auth = lakebed.useAuth()
+    const submitInquiry = lakebed.useMutation('submitInquiry')
+    const removeInquiry = lakebed.useMutation('removeInquiry')
+    const clearInquiries = lakebed.useMutation('clearInquiries')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const safeInquiries = inquiries ?? []
+    const inquiryCount = safeInquiries.length
     const nav = props.nav?.length
       ? props.nav
       : ["Services", "Gallery", "Process", "Testimonials", "FAQ"]
@@ -659,6 +783,55 @@ export const EventPlannerKimiPage = defineCapsule({
     const inputCls =
       "w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-transparent focus:ring-2 focus:ring-ring"
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     return (
       <div
         className={cn(
@@ -694,6 +867,220 @@ export const EventPlannerKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('My Inquiries')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          My Inquiries
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={inquiryOpen} onOpenChange={setInquiryOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="My Inquiries"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                      </svg>
+                      {inquiryCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {inquiryCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">My Inquiries</SheetTitle>
+                      <SheetDescription>
+                        {inquiryCount > 0
+                          ? `${inquiryCount} inquiry${inquiryCount === 1 ? '' : 'ies'} submitted.`
+                          : 'No inquiries yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeInquiries.length ? (
+                        <div className="space-y-5">
+                          {safeInquiries.map((item) => (
+                            <div
+                              key={item.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted flex items-center justify-center">
+                                <svg
+                                  className="size-8 text-muted-foreground"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                </svg>
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                      {item.eventType}
+                                    </p>
+                                    <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                      {item.firstName} {item.lastName}
+                                    </h3>
+                                  </div>
+                                  <p className="text-sm font-bold text-foreground">
+                                    {item.guestCount}
+                                  </p>
+                                </div>
+                                <div className="mt-4 flex items-center justify-between">
+                                  <p className="text-xs text-muted-foreground">
+                                    {item.eventDate || 'Date TBD'}
+                                  </p>
+                                  <button
+                                    type="button"
+                                    onClick={() => void removeInquiry(item.id)}
+                                    className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No inquiries submitted
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Fill out the contact form to submit your first event
+                            inquiry.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full rounded-full"
+                        onClick={() => void clearInquiries()}
+                        disabled={!safeInquiries.length}
+                      >
+                        Clear All
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(heroPrimary)}
@@ -744,6 +1131,58 @@ export const EventPlannerKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -867,28 +1306,51 @@ export const EventPlannerKimiPage = defineCapsule({
                 <p className="text-lg text-muted-foreground">{servicesDesc}</p>
               </div>
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
-                {serviceItems.map((item) => (
-                  <article key={item.title} className="group">
-                    <div className="mb-6 aspect-[4/3] overflow-hidden rounded-xl">
-                      <Image
-                        alt={item.imageAlt}
-                        w={600}
-                        h={450}
-                        loading="lazy"
-                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
-                    <h3 className="mb-3 text-xl font-medium text-foreground">
-                      {item.title}
-                    </h3>
-                    <p className="mb-4 leading-relaxed text-muted-foreground">
-                      {item.description}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {item.price}
-                    </p>
-                  </article>
-                ))}
+                {serviceItems.map((item) => {
+                  const isFavorite =
+                    favoriteServiceNames?.has(item.title) ?? false
+
+                  return (
+                    <article key={item.title} className="group">
+                      <div className="mb-6 aspect-[4/3] overflow-hidden rounded-xl relative">
+                        <Image
+                          alt={item.imageAlt}
+                          w={600}
+                          h={450}
+                          loading="lazy"
+                          className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavorite(item.title)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${item.title} from favorites`
+                              : `Add ${item.title} to favorites`
+                          }
+                          className={cn(
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                          )}
+                        >
+                          <HeartIcon active={isFavorite} />
+                        </button>
+                      </div>
+                      <h3 className="mb-3 text-xl font-medium text-foreground">
+                        {item.title}
+                      </h3>
+                      <p className="mb-4 leading-relaxed text-muted-foreground">
+                        {item.description}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {item.price}
+                      </p>
+                    </article>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -1320,7 +1782,39 @@ export const EventPlannerKimiPage = defineCapsule({
                   className="rounded-2xl bg-card p-8 lg:p-10"
                   onSubmit={(e) => {
                     e.preventDefault()
-                    go(contactSubmit)
+                    const firstName = (
+                      document.getElementById('ep-first') as HTMLInputElement
+                    ).value
+                    const lastName = (
+                      document.getElementById('ep-last') as HTMLInputElement
+                    ).value
+                    const email = (
+                      document.getElementById('ep-email') as HTMLInputElement
+                    ).value
+                    const eventType = (
+                      document.getElementById('ep-type') as HTMLSelectElement
+                    ).value
+                    const eventDate = (
+                      document.getElementById('ep-date') as HTMLInputElement
+                    ).value
+                    const guestCount = (
+                      document.getElementById('ep-guests') as HTMLSelectElement
+                    ).value
+                    const message = (
+                      document.getElementById('ep-message') as HTMLTextAreaElement
+                    ).value
+
+                    void submitInquiry(
+                      firstName,
+                      lastName,
+                      email,
+                      eventType,
+                      eventDate,
+                      guestCount,
+                      message,
+                    )
+                    setInquiryOpen(true)
+                    e.currentTarget.reset()
                   }}
                 >
                   <div className="space-y-6">

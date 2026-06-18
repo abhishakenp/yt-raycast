@@ -1,9 +1,20 @@
 import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
+import { number, string, table } from "@ship-fast/lakebed/server"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * ChurchKimiPage — a complete, self-contained CHURCH / faith-community website
@@ -180,9 +191,62 @@ export const ChurchKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      plans: table({
+        title: string(),
+        detail: string(),
+        date: string(),
+        time: string(),
+        source: string(),
+        attendees: number(),
+      }),
+    },
+    queries: {
+      plans: ({ db }) => db.plans.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addPlan: (
+        { db },
+        title: string,
+        detail: string,
+        date: string,
+        time: string,
+        source: string,
+        attendees: number,
+      ) => {
+        const existingPlan = db.plans.where("title", title).all()[0]
+        if (existingPlan) {
+          return db.plans.all()
+        }
+
+        db.plans.insert({
+          title,
+          detail,
+          date,
+          time,
+          source,
+          attendees: Math.max(1, Math.floor(attendees)),
+        })
+
+        return db.plans.all()
+      },
+      removePlan: ({ db }, id: string) => {
+        db.plans.delete(id)
+        return db.plans.all()
+      },
+      clearPlans: ({ db }) => {
+        for (const plan of db.plans.all()) {
+          db.plans.delete(plan.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [planOpen, setPlanOpen] = useState(false)
     const brand = props.brand ?? "Grace Community"
     const nav = props.nav?.length
       ? props.nav
@@ -503,6 +567,38 @@ export const ChurchKimiPage = defineCapsule({
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
       : ["Privacy", "Terms", "Accessibility"]
+    const plans = lakebed.useQuery("plans")
+    const addPlan = lakebed.useMutation("addPlan")
+    const removePlan = lakebed.useMutation("removePlan")
+    const clearPlans = lakebed.useMutation("clearPlans")
+    const safePlans = plans ?? []
+    const planCount = safePlans.length
+    const totalPlannedAttendees = safePlans.reduce(
+      (total, plan) => total + plan.attendees,
+      0,
+    )
+    const queuePlan = (
+      title: string,
+      detail: string,
+      date: string,
+      time: string,
+      source: string,
+    ) => {
+      void addPlan(title, detail, date, time, source, 1)
+      setPlanOpen(true)
+    }
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -713,6 +809,18 @@ export const ChurchKimiPage = defineCapsule({
                 </button>
                 <button
                   type="button"
+                  onClick={() => setPlanOpen(true)}
+                  className="relative hidden items-center rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-card-foreground transition-colors hover:bg-accent sm:inline-flex"
+                >
+                  My Plan
+                  {planCount > 0 ? (
+                    <span className="ml-2 inline-grid size-6 place-items-center rounded-full bg-foreground/15 text-xs font-semibold text-foreground">
+                      {planCount}
+                    </span>
+                  ) : null}
+                </button>
+                <button
+                  type="button"
                   aria-label="Open menu"
                   aria-expanded={mobileOpen}
                   aria-controls="mobile-menu"
@@ -754,10 +862,134 @@ export const ChurchKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    setPlanOpen(true)
+                  }}
+                  className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                >
+                  My Plan{planCount > 0 ? ` (${planCount})` : ""}
+                </button>
               </div>
             )}
           </div>
         </header>
+
+        <Sheet open={planOpen} onOpenChange={setPlanOpen}>
+          <SheetContent side="right" className="w-full max-w-md">
+            <SheetHeader>
+              <SheetTitle>My Plan</SheetTitle>
+              <SheetDescription>
+                {planCount > 0
+                  ? `${planCount} item${planCount === 1 ? "s" : ""} in your plan`
+                  : "No items yet. Add events, pathways, or giving actions from this page."}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {planCount > 0 ? (
+                <div className="space-y-4">
+                  {safePlans.map((plan) => (
+                    <article
+                      key={plan.id}
+                      className="rounded-xl border border-border bg-muted/40 p-4"
+                    >
+                      <div className="mb-2 flex items-start justify-between gap-2">
+                        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                          {plan.source}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => void removePlan(plan.id)}
+                          className="text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <p className="font-medium text-card-foreground">
+                        {plan.title}
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {plan.detail}
+                      </p>
+                      {(plan.date || plan.time) ? (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          {plan.date}
+                          {plan.date && plan.time ? " · " : ""}
+                          {plan.time}
+                        </p>
+                      ) : null}
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/40 px-4 text-center">
+                  <p className="text-sm font-medium text-foreground">
+                    Your plan is waiting
+                  </p>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Add events, pathways, or giving actions from this page.
+                  </p>
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border">
+              <div className="w-full space-y-3">
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <span>Planned attendees</span>
+                  <span className="font-medium text-foreground">
+                    {totalPlannedAttendees}
+                  </span>
+                </div>
+                {isSignedIn ? (
+                  <p className="text-xs text-muted-foreground">
+                    Signed in as {authDisplayName}
+                  </p>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full rounded-full"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                  >
+                    Sign in to save this plan across devices
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  onClick={() => {
+                    void clearPlans()
+                  }}
+                  className="w-full rounded-full"
+                  disabled={!planCount}
+                >
+                  Clear plan
+                </Button>
+                {isSignedIn ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full rounded-full"
+                    onClick={handleSignOut}
+                  >
+                    Sign out
+                  </Button>
+                ) : null}
+                <SheetClose asChild>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="w-full rounded-full"
+                  >
+                    Continue exploring
+                  </Button>
+                </SheetClose>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
 
         <main>
           {/* Hero */}
@@ -786,14 +1018,26 @@ export const ChurchKimiPage = defineCapsule({
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(heroPrimary)}
+                  onClick={() => {
+                    queuePlan(
+                      "Plan Your Visit",
+                      "Initial Sunday visit plan from hero section",
+                      "",
+                      heroServiceTime,
+                      "hero",
+                    )
+                    go(heroPrimary)
+                  }}
                   className="inline-flex items-center rounded-full bg-primary px-8 py-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   {heroPrimary}
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(heroSecondary)}
+                  onClick={() => {
+                    queuePlan("Watch Live", "Watch service live from hero", "", "", "hero")
+                    go(heroSecondary)
+                  }}
                   className="inline-flex items-center rounded-full border border-border bg-card px-8 py-4 text-sm font-medium text-card-foreground transition-colors hover:bg-accent"
                 >
                   <svg
@@ -894,12 +1138,15 @@ export const ChurchKimiPage = defineCapsule({
                     <p className="mb-4 leading-relaxed text-muted-foreground">
                       {item.description}
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => go(item.cta)}
-                      className="inline-flex items-center text-sm font-medium text-foreground hover:text-muted-foreground"
-                    >
-                      {item.cta}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      queuePlan(item.title, item.description, "", "", "pathways")
+                      go(item.cta)
+                    }}
+                    className="inline-flex items-center text-sm font-medium text-foreground hover:text-muted-foreground"
+                  >
+                    {item.cta}
                       <ArrowRight className="ml-1 size-4" />
                     </button>
                   </article>
@@ -998,7 +1245,16 @@ export const ChurchKimiPage = defineCapsule({
                   <button
                     key={ev.title}
                     type="button"
-                    onClick={() => go(ev.title)}
+                    onClick={() => {
+                      queuePlan(
+                        ev.title,
+                        ev.description,
+                        ev.date,
+                        ev.time,
+                        "event",
+                      )
+                      go(ev.title)
+                    }}
                     className="group block w-full cursor-pointer text-left"
                   >
                     <div className="mb-5 aspect-[16/10] overflow-hidden rounded-xl bg-muted">
@@ -1123,18 +1379,24 @@ export const ChurchKimiPage = defineCapsule({
                     ))}
                   </div>
                   <div className="flex flex-col gap-4 sm:flex-row">
-                    <button
-                      type="button"
-                      onClick={() => go(givePrimary)}
-                      className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                    >
-                      {givePrimary}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => go(giveSecondary)}
-                      className="inline-flex items-center justify-center rounded-full border border-border bg-card px-8 py-4 text-sm font-medium text-card-foreground transition-colors hover:bg-accent"
-                    >
+                <button
+                  type="button"
+                  onClick={() => {
+                    queuePlan(givePrimary, giveDesc, "", "", "give")
+                    go(givePrimary)
+                  }}
+                  className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  {givePrimary}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    queuePlan(giveSecondary, giveDesc, "", "", "give")
+                    go(giveSecondary)
+                  }}
+                  className="inline-flex items-center justify-center rounded-full border border-border bg-card px-8 py-4 text-sm font-medium text-card-foreground transition-colors hover:bg-accent"
+                >
                       {giveSecondary}
                     </button>
                   </div>

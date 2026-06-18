@@ -1,9 +1,21 @@
-import { type ReactNode } from "react"
+import { type FormEvent, type ReactNode, useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
 
 /**
  * CrmKimiPage — a complete, self-contained CRM / sales-platform LANDING page.
@@ -198,8 +210,141 @@ export const CrmKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      leadRequests: table({
+        name: string(),
+        email: string(),
+        company: string(),
+        plan: string(),
+        message: string(),
+      }),
+    },
+    queries: {
+      leadRequests: ({ db }) => db.leadRequests.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addLeadRequest: (
+        { db },
+        name: string,
+        email: string,
+        company: string,
+        plan: string,
+        message: string,
+      ) => {
+        const trimmedName = name.trim()
+        const trimmedEmail = email.trim()
+        const trimmedCompany = company.trim()
+        const trimmedPlan = plan.trim() || "General"
+        const trimmedMessage = message.trim()
+
+        if (!trimmedName || !trimmedEmail || !trimmedMessage) {
+          return db.leadRequests.all()
+        }
+
+        db.leadRequests.insert({
+          name: trimmedName,
+          email: trimmedEmail,
+          company: trimmedCompany || "Unknown",
+          plan: trimmedPlan,
+          message: trimmedMessage,
+        })
+
+        return db.leadRequests.all()
+      },
+      removeLeadRequest: ({ db }, id: string) => {
+        const record = db.leadRequests.get(id)
+        if (record) {
+          db.leadRequests.delete(record.id)
+        }
+
+        return db.leadRequests.all()
+      },
+      clearLeadRequests: ({ db }) => {
+        for (const record of db.leadRequests.all()) {
+          db.leadRequests.delete(record.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [inboxOpen, setInboxOpen] = useState(false)
+    const [leadName, setLeadName] = useState("")
+    const [leadEmail, setLeadEmail] = useState("")
+    const [leadCompany, setLeadCompany] = useState("")
+    const [leadPlan, setLeadPlan] = useState("General Inquiry")
+    const [leadMessage, setLeadMessage] = useState("")
+
+    const storedLeadRequests = lakebed.useQuery("leadRequests")
+    const addLeadRequest = lakebed.useMutation("addLeadRequest")
+    const removeLeadRequest = lakebed.useMutation("removeLeadRequest")
+    const clearLeadRequests = lakebed.useMutation("clearLeadRequests")
+
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+
+    const safeLeadRequests = storedLeadRequests ?? []
+    const leadRequestCount = safeLeadRequests.length
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const openLeadDrawer = (plan = "General Inquiry") => {
+      setLeadName("")
+      setLeadEmail("")
+      setLeadCompany("")
+      setLeadPlan(plan)
+      setLeadMessage(
+        plan === "General Inquiry"
+          ? ""
+          : `I'm interested in the ${plan} plan.`
+      )
+      setInboxOpen(true)
+    }
+
+    const handleSubmitLeadRequest = (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+
+      if (!leadName || !leadEmail || !leadMessage) {
+        return
+      }
+
+      void addLeadRequest(
+        leadName,
+        leadEmail,
+        leadCompany,
+        leadPlan,
+        leadMessage,
+      )
+      setLeadName("")
+      setLeadEmail("")
+      setLeadCompany("")
+      setLeadMessage("")
+      setInboxOpen(false)
+    }
+
+    const handleClearAllRequests = () => {
+      if (!leadRequestCount) return
+      void clearLeadRequests()
+    }
+
     const brand = props.brand ?? "Pipeline Pro"
     const nav = props.nav?.length
       ? props.nav
@@ -774,12 +919,210 @@ export const CrmKimiPage = defineCapsule({
               ))}
             </div>
             <div className="flex items-center gap-4">
+              <Sheet open={inboxOpen} onOpenChange={setInboxOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => openLeadDrawer("General Inquiry")}
+                    className="hidden rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground sm:flex sm:items-center sm:gap-2"
+                  >
+                    Lead requests
+                    <span className="inline-flex size-6 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground">
+                      {leadRequestCount}
+                    </span>
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle>Sales lead requests</SheetTitle>
+                    <SheetDescription>
+                      Capture qualified leads for sales follow-up or manage the
+                      saved requests.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    <form
+                      onSubmit={handleSubmitLeadRequest}
+                      className="space-y-4"
+                    >
+                      <div>
+                        <label
+                          htmlFor="lead-name"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
+                          Full name *
+                        </label>
+                        <input
+                          id="lead-name"
+                          type="text"
+                          value={leadName}
+                          onChange={(event) =>
+                            setLeadName(event.currentTarget.value)
+                          }
+                          required
+                          className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          placeholder="Jane Morgan"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="lead-email"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
+                          Work email *
+                        </label>
+                        <input
+                          id="lead-email"
+                          type="email"
+                          value={leadEmail}
+                          onChange={(event) =>
+                            setLeadEmail(event.currentTarget.value)
+                          }
+                          required
+                          className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          placeholder="jane@company.com"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="lead-company"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
+                          Company
+                        </label>
+                        <input
+                          id="lead-company"
+                          type="text"
+                          value={leadCompany}
+                          onChange={(event) =>
+                            setLeadCompany(event.currentTarget.value)
+                          }
+                          className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          placeholder="Acme Industries"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="lead-plan"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
+                          Plan interest
+                        </label>
+                        <input
+                          id="lead-plan"
+                          type="text"
+                          value={leadPlan}
+                          onChange={(event) =>
+                            setLeadPlan(event.currentTarget.value)
+                          }
+                          className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          placeholder="Starter / Professional / Enterprise"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="lead-message"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
+                          Message *
+                        </label>
+                        <textarea
+                          id="lead-message"
+                          value={leadMessage}
+                          onChange={(event) =>
+                            setLeadMessage(event.currentTarget.value)
+                          }
+                          required
+                          rows={4}
+                          className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                          placeholder="Tell us a little about your team and needs."
+                        />
+                      </div>
+                      <Button
+                        type="submit"
+                        className="w-full rounded-lg bg-primary text-primary-foreground"
+                        disabled={
+                          !leadName || !leadEmail || !leadMessage
+                        }
+                      >
+                        Save request
+                      </Button>
+                    </form>
+                    <div className="mt-6 space-y-3">
+                      {safeLeadRequests.length ? (
+                        <p className="text-sm font-medium text-foreground">
+                          Saved requests ({safeLeadRequests.length})
+                        </p>
+                      ) : null}
+                      {safeLeadRequests.map((request) => (
+                        <div
+                          key={request.id}
+                          className="rounded-lg border border-border bg-muted/60 p-3"
+                        >
+                          <div className="mb-2 flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-semibold text-foreground">
+                                {request.name}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {request.email}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => void removeLeadRequest(request.id)}
+                              className="text-xs font-semibold text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                          <p className="mb-1 text-xs text-muted-foreground">
+                            {request.company || "Company not provided"} ·{" "}
+                            {request.plan}
+                          </p>
+                          <p className="text-sm text-foreground/80">
+                            {request.message}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <div className="space-y-3">
+                      <div className="text-sm text-muted-foreground">
+                        {safeLeadRequests.length
+                          ? `${safeLeadRequests.length} request${
+                              safeLeadRequests.length === 1 ? "" : "s"
+                            } captured`
+                          : "No requests yet"}
+                      </div>
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="flex-1 rounded-lg"
+                          onClick={handleClearAllRequests}
+                          disabled={!safeLeadRequests.length}
+                        >
+                          Clear all
+                        </Button>
+                        <SheetClose asChild>
+                          <Button type="button" className="flex-1 rounded-lg">
+                            Continue
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
               <button
                 type="button"
-                onClick={() => go("Sign In")}
+                onClick={isSignedIn ? handleSignOut : handleSignIn}
+                disabled={auth.isLoading}
                 className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
               >
-                Sign In
+                {isSignedIn ? "Sign out" : authLabel}
               </button>
               <button
                 type="button"

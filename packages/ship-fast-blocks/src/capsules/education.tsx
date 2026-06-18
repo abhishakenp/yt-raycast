@@ -4,6 +4,32 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "#/components/ui/command.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * EducationKimiPage — a complete, self-contained K–12 private school landing page.
@@ -214,13 +240,125 @@ export const EducationKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      programs: table({
+        title: string(),
+        description: string(),
+        imageAlt: string(),
+      }),
+      inquiries: table({
+        programTitle: string(),
+        studentName: string(),
+        gradeLevel: string(),
+        email: string(),
+        phone: string(),
+      }),
+      savedPrograms: table({
+        programTitle: string(),
+      }),
+    },
+    queries: {
+      programs: ({ db }) => db.programs.orderBy('createdAt').all(),
+      inquiryLines: ({ db }) =>
+        db.inquiries.all().flatMap((item) => {
+          const program = db.programs.where('title', item.programTitle).all()[0]
+          return program ? [{ ...item, program }] : []
+        }),
+      savedProgramTitles: ({ db }) =>
+        new Set(db.savedPrograms.all().map((saved) => saved.programTitle)),
+    },
+    mutations: {
+      addInquiry: ({ db }, programTitle: string, studentName: string, gradeLevel: string, email: string, phone: string) => {
+        const program = db.programs.where('title', programTitle).all()[0]
+        if (!program) return db.inquiries.all()
+
+        db.inquiries.insert({
+          programTitle,
+          studentName,
+          gradeLevel,
+          email,
+          phone,
+        })
+
+        return db.inquiries.all()
+      },
+      removeInquiry: ({ db }, id: string) => {
+        for (const item of db.inquiries.where('id', id).all()) {
+          db.inquiries.delete(item.id)
+        }
+
+        return db.inquiries.all()
+      },
+      clearInquiries: ({ db }) => {
+        for (const item of db.inquiries.all()) {
+          db.inquiries.delete(item.id)
+        }
+
+        return []
+      },
+      toggleSavedProgram: ({ db }, programTitle: string) => {
+        const existingSaved = db.savedPrograms
+          .where('programTitle', programTitle)
+          .all()[0]
+
+        if (existingSaved) {
+          db.savedPrograms.delete(existingSaved.id)
+          return false
+        }
+
+        db.savedPrograms.insert({ programTitle })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
+    const [inquiriesOpen, setInquiriesOpen] = useState(false)
     const brand = props.brand ?? "Meridian Academy"
     const nav = props.nav?.length
       ? props.nav
       : ["Academics", "Admissions", "Campus Life", "Faculty", "FAQ"]
+
+    // Lakebed hooks
+    const storedPrograms = lakebed.useQuery('programs')
+    const inquiryLines = lakebed.useQuery('inquiryLines')
+    const savedProgramTitles = lakebed.useQuery('savedProgramTitles')
+    const auth = lakebed.useAuth()
+    const addInquiry = lakebed.useMutation('addInquiry')
+    const removeInquiry = lakebed.useMutation('removeInquiry')
+    const clearInquiries = lakebed.useMutation('clearInquiries')
+    const toggleSavedProgram = lakebed.useMutation('toggleSavedProgram')
+
+    // Auth state
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
 
     // ── Hero defaults ──
     const heroBadge = props.hero?.badge ?? "Cambridge, Massachusetts — Est. 1892"
@@ -281,7 +419,7 @@ export const EducationKimiPage = defineCapsule({
       "A continuous path from foundational skills to advanced scholarly research, supported by specialists in STEM, arts, and humanities."
     const programsLinkLabel =
       props.programs?.linkLabel ?? "View the curriculum catalog"
-    const programItems = props.programs?.items?.length
+    const staticProgramItems = props.programs?.items?.length
       ? props.programs.items
       : [
           {
@@ -327,6 +465,15 @@ export const EducationKimiPage = defineCapsule({
               "Athlete runners sprinting on an outdoor all-weather track during golden hour",
           },
         ]
+
+    // Use stored programs if available, otherwise fall back to static defaults
+    const displayPrograms =
+      storedPrograms && storedPrograms.length > 0
+        ? storedPrograms
+        : staticProgramItems
+
+    const safeInquiryLines = inquiryLines ?? []
+    const inquiryCount = safeInquiryLines.length
 
     // ── Admissions defaults ──
     const admissionsOverline = props.admissions?.overline ?? "Admissions"
@@ -670,17 +817,50 @@ export const EducationKimiPage = defineCapsule({
 
     const ChevronDown = () => (
       <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
+        viewBox="0 0 24 24"
         aria-hidden="true"
       >
-        <path d="m6 9 6 6 6-6" />
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
       </svg>
     )
 
@@ -783,11 +963,252 @@ export const EducationKimiPage = defineCapsule({
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => go("Apply for 2027–28")}
-                className="hidden rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
+                onClick={() => setSearchOpen(true)}
+                aria-label="Search programs"
+                className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground sm:flex"
               >
-                Apply for 2027–28
+                <svg
+                  className="size-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
               </button>
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('My Applications')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        My Applications
+                        <ArrowRight />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Saved Programs')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Saved Programs
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={inquiriesOpen} onOpenChange={setInquiriesOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Application Inquiries"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.5C2 7 4 5 5.5 5h13C20 5 22 7 22 9.5V17z" />
+                      <path d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" />
+                      <path d="M12 13V5" />
+                      <path d="M12 5L9 8" />
+                      <path d="M12 5l3 3" />
+                    </svg>
+                    {inquiryCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {inquiryCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Application Inquiries</SheetTitle>
+                    <SheetDescription>
+                      {inquiryCount > 0
+                        ? `${inquiryCount} inquiry${inquiryCount === 1 ? '' : 'ies'} ready for submission.`
+                        : 'No inquiries yet. Start by exploring our programs.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {safeInquiryLines.length ? (
+                      <div className="space-y-5">
+                        {safeInquiryLines.map((item) => (
+                          <div
+                            key={item.id}
+                            className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                          >
+                            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                              <Image
+                                alt={item.program.imageAlt}
+                                w={180}
+                                h={180}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                    {item.program.title}
+                                  </p>
+                                  <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                    {item.studentName}
+                                  </h3>
+                                  <p className="text-xs text-muted-foreground">
+                                    {item.gradeLevel}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="mt-4 flex items-center justify-between">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void removeInquiry(item.id)
+                                  }
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No inquiries yet
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Explore our academic programs and submit an inquiry to start your application journey.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <Button
+                      type="button"
+                      disabled={!safeInquiryLines.length}
+                      className="w-full rounded-full"
+                      onClick={() => go('Submit Application')}
+                    >
+                      Submit Application
+                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full"
+                        onClick={() => void clearInquiries()}
+                        disabled={!safeInquiryLines.length}
+                      >
+                        Clear
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
               <button
                 type="button"
                 aria-label="Open menu"
@@ -831,10 +1252,105 @@ export const EducationKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
         </header>
+
+        <CommandDialog
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          title="Search programs"
+          description="Search the academic programs offered at our school."
+          className="max-w-xl"
+        >
+          <CommandInput placeholder={`Search ${brand} programs...`} />
+          <CommandList className="max-h-[420px]">
+            <CommandEmpty>No programs found.</CommandEmpty>
+            <CommandGroup heading="Programs">
+              {displayPrograms.map((program) => (
+                <CommandItem
+                  key={program.title}
+                  value={program.title}
+                  onSelect={() => {
+                    setSearchOpen(false)
+                    go(program.title)
+                  }}
+                  className="gap-3 py-3"
+                >
+                  <div className="size-12 overflow-hidden rounded-md bg-muted">
+                    <Image
+                      alt={program.imageAlt}
+                      w={120}
+                      h={120}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {program.title}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {program.description.slice(0, 60)}...
+                    </p>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
 
         <main className="flex flex-1 flex-col">
           {/* Hero */}
@@ -955,29 +1471,62 @@ export const EducationKimiPage = defineCapsule({
                 </button>
               </div>
               <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {programItems.map((item) => (
-                  <article
-                    key={item.title}
-                    className="group overflow-hidden rounded-xl border border-border bg-muted"
-                  >
-                    <div className="aspect-[4/3] overflow-hidden">
-                      <Image
-                        alt={item.imageAlt}
-                        w={800}
-                        h={600}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="p-6">
-                      <h3 className="mb-2 text-lg font-semibold">
-                        {item.title}
-                      </h3>
-                      <p className="text-sm leading-relaxed text-muted-foreground">
-                        {item.description}
-                      </p>
-                    </div>
-                  </article>
-                ))}
+                {displayPrograms.map((item) => {
+                  const isSaved = savedProgramTitles?.has(item.title) ?? false
+
+                  return (
+                    <article
+                      key={item.title}
+                      className="group overflow-hidden rounded-xl border border-border bg-muted"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <Image
+                          alt={item.imageAlt}
+                          w={800}
+                          h={600}
+                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void toggleSavedProgram(item.title)}
+                          aria-pressed={isSaved}
+                          aria-label={
+                            isSaved
+                              ? `Remove ${item.title} from saved programs`
+                              : `Save ${item.title} to programs`
+                          }
+                          className={cn(
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                            isSaved
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                          )}
+                        >
+                          <HeartIcon active={isSaved} />
+                        </button>
+                      </div>
+                      <div className="p-6">
+                        <h3 className="mb-2 text-lg font-semibold">
+                          {item.title}
+                        </h3>
+                        <p className="text-sm leading-relaxed text-muted-foreground">
+                          {item.description}
+                        </p>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="mt-4 w-full rounded-full"
+                          onClick={() => {
+                            void addInquiry(item.title, 'Prospective Student', 'Grade Level', 'parent@example.com', '(555) 123-4567')
+                            setInquiriesOpen(true)
+                          }}
+                        >
+                          Request Information
+                        </Button>
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
             </div>
           </section>

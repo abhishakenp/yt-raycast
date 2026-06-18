@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * UniversityKimiPage2 — a complete, self-contained higher-education / university
@@ -192,9 +210,52 @@ export const UniversityKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      programs: table({
+        tag: string(),
+        duration: string(),
+        title: string(),
+        description: string(),
+        link: string(),
+        imageAlt: string(),
+      }),
+      favorites: table({
+        programTitle: string(),
+      }),
+    },
+    queries: {
+      programs: ({ db }) => db.programs.orderBy('createdAt').all(),
+      favoriteProgramTitles: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.programTitle)),
+    },
+    mutations: {
+      toggleFavorite: ({ db }, programTitle: string) => {
+        const existingFavorite = db.favorites
+          .where('programTitle', programTitle)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ programTitle })
+        return true
+      },
+      removeFromFavorites: ({ db }, programTitle: string) => {
+        for (const item of db.favorites.where('programTitle', programTitle).all()) {
+          db.favorites.delete(item.id)
+        }
+
+        return db.favorites.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [favoritesOpen, setFavoritesOpen] = useState(false)
     const brand = props.brand ?? "Westfield"
     const nav = props.nav?.length
       ? props.nav
@@ -302,6 +363,52 @@ export const UniversityKimiPage2 = defineCapsule({
               "Law students in university courtroom during mock trial session",
           },
         ]
+
+    const normalizedProgramItems = programItems.map((program) => ({
+      tag: program.tag,
+      duration: program.duration,
+      title: program.title,
+      description: program.description,
+      link: program.link,
+      imageAlt: program.imageAlt,
+    }))
+
+    const storedPrograms = lakebed.useQuery('programs')
+    const favoriteProgramTitles = lakebed.useQuery('favoriteProgramTitles')
+    const auth = lakebed.useAuth()
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const removeFromFavorites = lakebed.useMutation('removeFromFavorites')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const displayPrograms =
+      storedPrograms && storedPrograms.length > 0
+        ? storedPrograms
+        : normalizedProgramItems
+    const safeFavoriteProgramTitles = favoriteProgramTitles ?? new Set<string>()
+    const favoriteCount = safeFavoriteProgramTitles.size
 
     const campusEyebrow = props.campus?.eyebrow ?? "Campus Life"
     const campusHeading = props.campus?.heading ?? "Live, Learn & Thrive"
@@ -588,6 +695,39 @@ export const UniversityKimiPage2 = defineCapsule({
       </svg>
     )
 
+    const Heart = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     const campusIcons = [
       // housing / building
       <svg key="c0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>,
@@ -672,6 +812,223 @@ export const UniversityKimiPage2 = defineCapsule({
                 ))}
               </div>
               <div className="flex items-center gap-4">
+                <Sheet open={favoritesOpen} onOpenChange={setFavoritesOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Saved programs"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <Heart active={false} />
+                      {favoriteCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {favoriteCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Saved Programs</SheetTitle>
+                      <SheetDescription>
+                        {favoriteCount > 0
+                          ? `${favoriteCount} program${favoriteCount === 1 ? '' : 's'} saved for your application.`
+                          : 'No programs saved yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {favoriteCount > 0 ? (
+                        <div className="space-y-4">
+                          {displayPrograms
+                            .filter((program) =>
+                              safeFavoriteProgramTitles.has(program.title),
+                            )
+                            .map((program) => (
+                              <div
+                                key={program.title}
+                                className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-4 last:border-0"
+                              >
+                                <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                  <Image
+                                    alt={program.imageAlt}
+                                    w={180}
+                                    h={180}
+                                    className="h-full w-full object-cover"
+                                  />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                        {program.tag}
+                                      </p>
+                                      <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                        {program.title}
+                                      </h3>
+                                      <p className="text-sm text-muted-foreground">
+                                        {program.duration}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="mt-4 flex items-center justify-between">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void removeFromFavorites(program.title)
+                                      }
+                                      className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                    >
+                                      Remove
+                                    </button>
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      className="rounded-full"
+                                      onClick={() => go(program.title)}
+                                    >
+                                      Apply
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No programs saved
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Save programs from the Academic Excellence section
+                            to start your application.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <Button
+                        type="button"
+                        disabled={!favoriteCount}
+                        className="w-full rounded-full"
+                        onClick={() => go('Apply')}
+                      >
+                        Start Application
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Continue Browsing
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Application Status')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Application Status
+                          <Arrow className="size-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Profile')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Profile
+                          <Arrow className="size-4" />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => go(heroPrimary)}
@@ -709,6 +1066,58 @@ export const UniversityKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -846,44 +1255,66 @@ export const UniversityKimiPage2 = defineCapsule({
                 <p className="text-xl text-muted-foreground">{programsDesc}</p>
               </div>
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {programItems.map((p) => (
-                  <article
-                    key={p.title}
-                    className="group overflow-hidden rounded-2xl border border-border bg-card shadow-lg transition-all duration-300 hover:shadow-2xl"
-                  >
-                    <div className="h-48 overflow-hidden">
-                      <Image
-                        alt={p.imageAlt}
-                        w={600}
-                        h={400}
-                        loading="lazy"
-                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="p-6">
-                      <div className="mb-3 flex items-center gap-2">
-                        <span className="rounded-full bg-accent/15 px-3 py-1 text-xs font-bold text-accent">
-                          {p.tag}
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          {p.duration}
-                        </span>
+                {displayPrograms.map((p) => {
+                  const isFavorite = safeFavoriteProgramTitles.has(p.title)
+
+                  return (
+                    <article
+                      key={p.title}
+                      className="group overflow-hidden rounded-2xl border border-border bg-card shadow-lg transition-all duration-300 hover:shadow-2xl"
+                    >
+                      <div className="relative h-48 overflow-hidden">
+                        <Image
+                          alt={p.imageAlt}
+                          w={600}
+                          h={400}
+                          loading="lazy"
+                          className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavorite(p.title)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${p.title} from favorites`
+                              : `Add ${p.title} to favorites`
+                          }
+                          className={cn(
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-background/90 text-foreground',
+                          )}
+                        >
+                          <Heart active={isFavorite} />
+                        </button>
                       </div>
-                      <h3 className="mb-2 text-xl font-bold text-card-foreground">
-                        {p.title}
-                      </h3>
-                      <p className="mb-4 text-muted-foreground">{p.description}</p>
-                      <button
-                        type="button"
-                        onClick={() => go(p.link)}
-                        className="inline-flex items-center gap-1 font-semibold text-primary transition-all hover:gap-2"
-                      >
-                        {p.link}
-                        <Arrow className="size-4" />
-                      </button>
-                    </div>
-                  </article>
-                ))}
+                      <div className="p-6">
+                        <div className="mb-3 flex items-center gap-2">
+                          <span className="rounded-full bg-accent/15 px-3 py-1 text-xs font-bold text-accent">
+                            {p.tag}
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            {p.duration}
+                          </span>
+                        </div>
+                        <h3 className="mb-2 text-xl font-bold text-card-foreground">
+                          {p.title}
+                        </h3>
+                        <p className="mb-4 text-muted-foreground">{p.description}</p>
+                        <button
+                          type="button"
+                          onClick={() => go(p.link)}
+                          className="inline-flex items-center gap-1 font-semibold text-primary transition-all hover:gap-2"
+                        >
+                          {p.link}
+                          <Arrow className="size-4" />
+                        </button>
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
               <div className="mt-12 text-center">
                 <button
@@ -1230,19 +1661,8 @@ export const UniversityKimiPage2 = defineCapsule({
                       <h3 className="text-lg font-semibold text-foreground">
                         {item.q}
                       </h3>
-                      <span className="transition group-open:rotate-180">
-                        <svg
-                          className="size-5 text-muted-foreground"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M19 9l-7 7-7-7" />
-                        </svg>
+                      <span className="flex size-5 flex-shrink-0 items-center justify-center">
+                        <ChevronDown />
                       </span>
                     </summary>
                     <div className="px-6 pb-6 leading-relaxed text-muted-foreground">
@@ -1266,7 +1686,13 @@ export const UniversityKimiPage2 = defineCapsule({
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={() => {
+                    if (favoriteCount > 0) {
+                      setFavoritesOpen(true)
+                    } else {
+                      go(ctaPrimary)
+                    }
+                  }}
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-background px-10 py-5 text-lg font-bold text-primary shadow-xl transition-colors hover:bg-background/90"
                 >
                   {ctaPrimary}

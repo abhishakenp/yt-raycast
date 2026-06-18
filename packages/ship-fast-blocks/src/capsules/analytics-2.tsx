@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * AnalyticsKimiPage2 — a SECOND, visually DISTINCT analytics dashboard variant
@@ -159,9 +177,61 @@ export const AnalyticsKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      transactions: table({
+        id: string(),
+        name: string(),
+        email: string(),
+        date: string(),
+        time: string(),
+        amount: string(),
+        status: string(),
+        payment: string(),
+      }),
+      savedReports: table({
+        name: string(),
+        description: string(),
+        dateRange: string(),
+      }),
+      alerts: table({
+        title: string(),
+        message: string(),
+        timestamp: string(),
+        read: string(),
+      }),
+    },
+    queries: {
+      transactions: ({ db }) => db.transactions.orderBy('createdAt').all(),
+      savedReports: ({ db }) => db.savedReports.orderBy('createdAt').all(),
+      unreadAlerts: ({ db }) =>
+        db.alerts.where('read', 'false').orderBy('createdAt').all(),
+    },
+    mutations: {
+      saveReport: ({ db }, name: string, description: string, dateRange: string) => {
+        db.savedReports.insert({ name, description, dateRange })
+        return db.savedReports.all()
+      },
+      deleteReport: ({ db }, reportId: string) => {
+        db.savedReports.delete(reportId)
+        return db.savedReports.all()
+      },
+      markAlertRead: ({ db }, alertId: string) => {
+        db.alerts.update(alertId, { read: 'true' })
+        return db.alerts.all()
+      },
+      markAllAlertsRead: ({ db }) => {
+        for (const alert of db.alerts.where('read', 'false').all()) {
+          db.alerts.update(alert.id, { read: 'true' })
+        }
+        return db.alerts.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [notificationsOpen, setNotificationsOpen] = useState(false)
     const brand = props.brand ?? "MetricFlow"
     const nav = props.nav?.length
       ? props.nav
@@ -344,6 +414,50 @@ export const AnalyticsKimiPage2 = defineCapsule({
           },
         ] as const)
 
+    // Lakebed hooks
+    const storedTransactions = lakebed.useQuery('transactions')
+    const savedReports = lakebed.useQuery('savedReports')
+    const unreadAlerts = lakebed.useQuery('unreadAlerts')
+    const auth = lakebed.useAuth()
+    const saveReport = lakebed.useMutation('saveReport')
+    const deleteReport = lakebed.useMutation('deleteReport')
+    const markAlertRead = lakebed.useMutation('markAlertRead')
+    const markAllAlertsRead = lakebed.useMutation('markAllAlertsRead')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    // Use stored transactions if available, otherwise fall back to static defaults
+    const displayTxRows = storedTransactions && storedTransactions.length > 0
+      ? storedTransactions
+      : txRows
+
+    const alertCount = unreadAlerts?.length ?? 0
+
     // Chart tokens cycled for doughnut slices / legend dots (data viz only).
     const sliceTokens = ["bg-chart-1", "bg-chart-2", "bg-chart-3", "bg-chart-4"]
 
@@ -434,6 +548,37 @@ export const AnalyticsKimiPage2 = defineCapsule({
       failed: "Failed",
       refunded: "Refunded",
     }
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
 
     // Build grouped sidebar sections by chunking `nav` per navGroups counts.
     let cursor = 0
@@ -587,6 +732,55 @@ export const AnalyticsKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
 
@@ -614,35 +808,203 @@ export const AnalyticsKimiPage2 = defineCapsule({
             </form>
 
             <div className="flex items-center gap-3 lg:gap-4">
-              <button
-                type="button"
-                aria-label="Notifications"
-                onClick={() => go("Notifications")}
-                className="relative rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <svg {...iconProps} width={24} height={24}>
-                  <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                <span className="absolute right-1 top-1 size-2 rounded-full bg-primary" />
-              </button>
-              <button
-                type="button"
-                onClick={() => go(userName)}
-                className="flex items-center gap-3 border-l border-border pl-3 text-left"
-              >
-                <Image
-                  alt={userAvatarAlt}
-                  w={80}
-                  h={80}
-                  className="size-8 rounded-full object-cover"
-                />
-                <div className="hidden md:block">
-                  <p className="text-sm font-semibold text-card-foreground">
-                    {userName}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{userRole}</p>
-                </div>
-              </button>
+              <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Notifications"
+                    className="relative rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  >
+                    <svg {...iconProps} width={24} height={24}>
+                      <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    {alertCount > 0 ? (
+                      <span className="absolute right-1 top-1 size-2 rounded-full bg-primary" />
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Notifications</SheetTitle>
+                    <SheetDescription>
+                      {alertCount > 0
+                        ? `${alertCount} unread notification${alertCount === 1 ? '' : 's'}`
+                        : 'No unread notifications'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {unreadAlerts && unreadAlerts.length > 0 ? (
+                      <div className="space-y-4">
+                        {unreadAlerts.map((alert) => (
+                          <div
+                            key={alert.id}
+                            className="rounded-lg border border-border bg-muted/40 p-4"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1">
+                                <p className="text-sm font-semibold text-foreground">
+                                  {alert.title}
+                                </p>
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                  {alert.message}
+                                </p>
+                                <p className="mt-2 text-xs text-muted-foreground">
+                                  {alert.timestamp}
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => void markAlertRead(alert.id)}
+                                className="text-muted-foreground transition-colors hover:text-foreground"
+                                aria-label="Mark as read"
+                              >
+                                <svg {...iconProps} width={16} height={16}>
+                                  <path d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No notifications
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          You're all caught up! Check back later for updates.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <div className="flex w-full gap-2">
+                      {unreadAlerts && unreadAlerts.length > 0 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="flex-1 rounded-full"
+                          onClick={() => void markAllAlertsRead()}
+                        >
+                          Mark all read
+                        </Button>
+                      )}
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="flex-1 rounded-full"
+                        >
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="flex items-center gap-3 border-l border-border pl-3 text-left"
+                    >
+                      {authPicture ? (
+                        <Avatar size="sm" className="ring-2 ring-background">
+                          <AvatarImage src={authPicture} alt={authDisplayName} />
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <Image
+                          alt={userAvatarAlt}
+                          w={80}
+                          h={80}
+                          className="size-8 rounded-full object-cover"
+                        />
+                      )}
+                      <div className="hidden md:block">
+                        <p className="text-sm font-semibold text-card-foreground">
+                          {authDisplayName}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{userRole}</p>
+                      </div>
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Settings')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Settings
+                        <ArrowRight />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Reports')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Saved Reports
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
             </div>
           </div>
         </nav>
@@ -1137,7 +1499,7 @@ export const AnalyticsKimiPage2 = defineCapsule({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                      {txRows.map((row) => (
+                      {displayTxRows.map((row) => (
                         <tr
                           key={row.id}
                           className="transition-colors hover:bg-muted"

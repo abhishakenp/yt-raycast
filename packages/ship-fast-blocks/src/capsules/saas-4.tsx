@@ -1,8 +1,27 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 export const SaasKimiPage4 = defineCapsule({
   name: "SaasKimiPage4",
@@ -149,8 +168,59 @@ export const SaasKimiPage4 = defineCapsule({
     className: z.string().optional(),
   }),
 
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      subscribers: table({
+        email: string(),
+        source: string(),
+      }),
+      leads: table({
+        name: string(),
+        email: string(),
+        company: string(),
+        plan: string(),
+      }),
+      notifications: table({
+        title: string(),
+        message: string(),
+        read: string(),
+      }),
+    },
+    queries: {
+      subscribers: ({ db }) => db.subscribers.orderBy('createdAt').all(),
+      leads: ({ db }) => db.leads.orderBy('createdAt').all(),
+      unreadNotifications: ({ db }) =>
+        db.notifications.where('read', 'false').all(),
+    },
+    mutations: {
+      subscribe: ({ db }, email: string, source: string) => {
+        const existing = db.subscribers.where('email', email).all()[0]
+        if (existing) return db.subscribers.all()
+
+        db.subscribers.insert({ email, source })
+        return db.subscribers.all()
+      },
+      createLead: ({ db }, name: string, email: string, company: string, plan: string) => {
+        db.leads.insert({ name, email, company, plan })
+        return db.leads.all()
+      },
+      markNotificationRead: ({ db }, id: string) => {
+        db.notifications.update(id, { read: 'true' })
+        return db.notifications.all()
+      },
+      clearNotifications: ({ db }) => {
+        for (const item of db.notifications.all()) {
+          db.notifications.delete(item.id)
+        }
+        return []
+      },
+    },
+  },
+
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [notificationsOpen, setNotificationsOpen] = useState(false)
+    const [subscribeEmail, setSubscribeEmail] = useState("")
     const brand = props.brand ?? "Meridian"
     const nav = props.nav?.length
       ? props.nav
@@ -502,6 +572,48 @@ export const SaasKimiPage4 = defineCapsule({
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
 
+    const subscribers = lakebed.useQuery('subscribers')
+    const leads = lakebed.useQuery('leads')
+    const unreadNotifications = lakebed.useQuery('unreadNotifications')
+    const subscribe = lakebed.useMutation('subscribe')
+    const createLead = lakebed.useMutation('createLead')
+    const markNotificationRead = lakebed.useMutation('markNotificationRead')
+    const clearNotifications = lakebed.useMutation('clearNotifications')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const handleSubscribe = (e: React.FormEvent) => {
+      e.preventDefault()
+      if (!subscribeEmail.trim()) return
+
+      void subscribe(subscribeEmail, 'footer')
+      setSubscribeEmail('')
+    }
+    const notificationCount = unreadNotifications?.length ?? 0
+
     const LogoMark = ({
       className,
     }: {
@@ -542,6 +654,53 @@ export const SaasKimiPage4 = defineCapsule({
         aria-hidden="true"
       >
         <polyline points="20 6 9 17 4 12" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
+    const BellIcon = () => (
+      <svg
+        className="size-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
       </svg>
     )
 
@@ -661,13 +820,193 @@ export const SaasKimiPage4 = defineCapsule({
             </ul>
 
             <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go("Log in")}
-                className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-              >
-                Log in
-              </button>
+              <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Notifications"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <BellIcon />
+                    {notificationCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {notificationCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Notifications</SheetTitle>
+                    <SheetDescription>
+                      {notificationCount > 0
+                        ? `${notificationCount} unread notification${notificationCount === 1 ? '' : 's'}`
+                        : 'No new notifications'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {unreadNotifications && unreadNotifications.length > 0 ? (
+                      <div className="space-y-4">
+                        {unreadNotifications.map((notification) => (
+                          <div
+                            key={notification.id}
+                            className="rounded-lg border border-border bg-card p-4"
+                          >
+                            <p className="font-semibold text-foreground">
+                              {notification.title}
+                            </p>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                              {notification.message}
+                            </p>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="mt-3"
+                              onClick={() => void markNotificationRead(notification.id)}
+                            >
+                              Mark as read
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No notifications
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          You're all caught up!
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full rounded-full"
+                      onClick={() => void clearNotifications()}
+                      disabled={!unreadNotifications || unreadNotifications.length === 0}
+                    >
+                      Clear all
+                    </Button>
+                    <SheetClose asChild>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full rounded-full"
+                      >
+                        Close
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Settings')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Settings
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => go(heroPrimary)}
@@ -697,7 +1036,12 @@ export const SaasKimiPage4 = defineCapsule({
                   <div className="mb-12 flex flex-col gap-4 sm:flex-row">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() => {
+                        if (isSignedIn && authEmail) {
+                          void createLead(authDisplayName || 'User', authEmail, '', 'Starter')
+                        }
+                        go(heroPrimary)
+                      }}
                       className="inline-flex items-center justify-center rounded-full bg-foreground px-8 py-4 text-base font-semibold text-background transition-colors hover:bg-foreground/90"
                     >
                       {heroPrimary}
@@ -976,7 +1320,12 @@ export const SaasKimiPage4 = defineCapsule({
                     </div>
                     <button
                       type="button"
-                      onClick={() => go(plan.cta)}
+                      onClick={() => {
+                        if (isSignedIn && authEmail) {
+                          void createLead(authDisplayName || 'User', authEmail, '', plan.name)
+                        }
+                        go(plan.cta)
+                      }}
                       className={cn(
                         "mb-8 inline-flex w-full items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition-colors",
                         plan.popular
@@ -1133,7 +1482,12 @@ export const SaasKimiPage4 = defineCapsule({
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={() => {
+                    if (isSignedIn && authEmail) {
+                      void createLead(authDisplayName || 'User', authEmail, '', 'Professional')
+                    }
+                    go(ctaPrimary)
+                  }}
                   className="inline-flex items-center justify-center rounded-full bg-background px-8 py-4 text-base font-semibold text-foreground transition-colors hover:bg-background/90"
                 >
                   {ctaPrimary}
@@ -1167,6 +1521,27 @@ export const SaasKimiPage4 = defineCapsule({
                 <p className="mb-6 max-w-xs text-sm leading-relaxed">
                   {footerTagline}
                 </p>
+                <form
+                  className="flex flex-col gap-2"
+                  onSubmit={handleSubscribe}
+                >
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={subscribeEmail}
+                    onChange={(e) => setSubscribeEmail(e.target.value)}
+                    aria-label="Email address for newsletter"
+                    required
+                    className="rounded-lg border border-background/20 bg-background/10 px-3 py-2 text-sm text-background placeholder:text-background/40 focus:outline-none focus:ring-2 focus:ring-background/30"
+                  />
+                  <Button
+                    type="submit"
+                    size="sm"
+                    className="w-full rounded-full bg-background text-foreground hover:bg-muted"
+                  >
+                    Subscribe
+                  </Button>
+                </form>
                 <div className="flex gap-4">
                   <button
                     type="button"

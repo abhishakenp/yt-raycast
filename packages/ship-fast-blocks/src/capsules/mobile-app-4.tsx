@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * MobileAppKimiPage4 — a complete, self-contained mobile-app LANDING / marketing page.
@@ -183,10 +201,134 @@ export const MobileAppKimiPage4 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      habits: table({
+        name: string(),
+        description: string(),
+        completed: number(),
+        streak: number(),
+      }),
+      habitCompletions: table({
+        habitId: string(),
+        date: string(),
+      }),
+    },
+    queries: {
+      habits: ({ db }) => db.habits.orderBy('createdAt').all(),
+      habitStats: ({ db }) =>
+        db.habits.all().map((habit) => {
+          const completions = db.habitCompletions
+            .where('habitId', habit.id)
+            .all()
+          return {
+            ...habit,
+            completedCount: completions.length,
+            currentStreak: habit.streak,
+          }
+        }),
+    },
+    mutations: {
+      addHabit: ({ db }, name: string, description: string) => {
+        db.habits.insert({
+          name,
+          description,
+          completed: 0,
+          streak: 0,
+        })
+        return db.habits.all()
+      },
+      completeHabit: ({ db }, habitId: string) => {
+        const habit = db.habits.get(habitId)
+        if (!habit) return db.habits.all()
+
+        const today = new Date().toISOString().split('T')[0]
+        const existingCompletion = db.habitCompletions
+          .where('habitId', habitId)
+          .where('date', today)
+          .all()[0]
+
+        if (!existingCompletion) {
+          db.habitCompletions.insert({
+            habitId,
+            date: today,
+          })
+          db.habits.update(habitId, {
+            completed: habit.completed + 1,
+            streak: habit.streak + 1,
+          })
+        }
+
+        return db.habits.all()
+      },
+      deleteHabit: ({ db }, habitId: string) => {
+        for (const completion of db.habitCompletions
+          .where('habitId', habitId)
+          .all()) {
+          db.habitCompletions.delete(completion.id)
+        }
+        db.habits.delete(habitId)
+        return db.habits.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [habitsOpen, setHabitsOpen] = useState(false)
+    const [newHabitName, setNewHabitName] = useState("")
+    const [newHabitDescription, setNewHabitDescription] = useState("")
     const brand = props.brand ?? "Habitude"
+
+    const habits = lakebed.useQuery("habits")
+    const habitStats = lakebed.useQuery("habitStats")
+    const addHabit = lakebed.useMutation("addHabit")
+    const completeHabit = lakebed.useMutation("completeHabit")
+    const deleteHabit = lakebed.useMutation("deleteHabit")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const handleAddHabit = () => {
+      if (!newHabitName.trim()) return
+      void addHabit(newHabitName, newHabitDescription)
+      setNewHabitName("")
+      setNewHabitDescription("")
+    }
+
+    const displayHabits = habits && habits.length > 0 ? habits : []
+    const totalCompletions = displayHabits.reduce(
+      (sum, habit) => sum + (habit.completed || 0),
+      0,
+    )
+    const totalStreak = displayHabits.reduce(
+      (sum, habit) => sum + (habit.streak || 0),
+      0,
+    )
     const nav = props.nav?.length
       ? props.nav
       : ["Features", "How It Works", "Pricing", "Reviews", "FAQ"]
@@ -363,12 +505,19 @@ export const MobileAppKimiPage4 = defineCapsule({
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
-      : [
-          { value: "2M+", label: "Active users worldwide" },
-          { value: "18M", label: "Habits completed monthly" },
-          { value: "847K", label: "30+ day streaks achieved" },
-          { value: "4.9", label: "Average App Store rating" },
-        ]
+      : displayHabits.length > 0
+        ? [
+            { value: String(displayHabits.length), label: "Active habits" },
+            { value: String(totalCompletions), label: "Total completions" },
+            { value: String(totalStreak), label: "Current streak days" },
+            { value: "4.9", label: "Average App Store rating" },
+          ]
+        : [
+            { value: "2M+", label: "Active users worldwide" },
+            { value: "18M", label: "Habits completed monthly" },
+            { value: "847K", label: "30+ day streaks achieved" },
+            { value: "4.9", label: "Average App Store rating" },
+          ]
 
     const testimonialsPreheading =
       props.testimonials?.preheading ?? "Testimonials"
@@ -590,6 +739,37 @@ export const MobileAppKimiPage4 = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     const Star = () => (
       <svg
         viewBox="0 0 20 20"
@@ -665,6 +845,252 @@ export const MobileAppKimiPage4 = defineCapsule({
                 ))}
               </div>
               <div className="flex items-center gap-4">
+                <Sheet open={habitsOpen} onOpenChange={setHabitsOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="My Habits"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                      </svg>
+                      {displayHabits.length > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {displayHabits.length}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">My Habits</SheetTitle>
+                      <SheetDescription>
+                        {displayHabits.length > 0
+                          ? `${displayHabits.length} habit${displayHabits.length === 1 ? '' : 's'} being tracked.`
+                          : 'Start building better habits today.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {displayHabits.length ? (
+                        <div className="space-y-4">
+                          {displayHabits.map((habit) => (
+                            <div
+                              key={habit.id}
+                              className="grid grid-cols-[1fr_auto] gap-4 border-b border-border pb-4 last:border-0"
+                            >
+                              <div>
+                                <h3 className="font-semibold text-foreground">
+                                  {habit.name}
+                                </h3>
+                                {habit.description ? (
+                                  <p className="text-sm text-muted-foreground">
+                                    {habit.description}
+                                  </p>
+                                ) : null}
+                                <div className="mt-2 flex items-center gap-4 text-sm">
+                                  <span className="text-muted-foreground">
+                                    {habit.completed || 0} completed
+                                  </span>
+                                  <span className="text-muted-foreground">
+                                    {habit.streak || 0} day streak
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  onClick={() => void completeHabit(habit.id)}
+                                  className="rounded-full"
+                                >
+                                  ✓
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => void deleteHabit(habit.id)}
+                                  className="rounded-full"
+                                >
+                                  ×
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No habits yet
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Add your first habit to start tracking your progress.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="space-y-3 w-full">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Habit name"
+                            value={newHabitName}
+                            onChange={(e) => setNewHabitName(e.target.value)}
+                            className="flex-1 rounded-full border border-border bg-background px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Description (optional)"
+                            value={newHabitDescription}
+                            onChange={(e) =>
+                              setNewHabitDescription(e.target.value)
+                            }
+                            className="flex-1 rounded-full border border-border bg-background px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          className="w-full rounded-full"
+                          onClick={handleAddHabit}
+                          disabled={!newHabitName.trim()}
+                        >
+                          Add Habit
+                        </Button>
+                        <div className="grid grid-cols-2 gap-2 text-center text-sm">
+                          <div className="rounded-lg bg-muted p-3">
+                            <div className="font-bold text-foreground">
+                              {totalCompletions}
+                            </div>
+                            <div className="text-muted-foreground">
+                              Total Completions
+                            </div>
+                          </div>
+                          <div className="rounded-lg bg-muted p-3">
+                            <div className="font-bold text-foreground">
+                              {totalStreak}
+                            </div>
+                            <div className="text-muted-foreground">
+                              Current Streak
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? "Signed in to this session"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go("Account")}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go("Settings")}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Settings
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => go("Get the App")}
@@ -704,6 +1130,58 @@ export const MobileAppKimiPage4 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? "Signed in"}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -1169,7 +1647,9 @@ export const MobileAppKimiPage4 = defineCapsule({
                   >
                     <summary className="flex list-none items-center justify-between font-semibold text-lg text-foreground">
                       {item.question}
-                      <ChevronDownIcon className="size-5 text-muted-foreground transition-transform group-open:rotate-180" />
+                      <span className="flex size-5 flex-shrink-0 items-center justify-center">
+                        <ChevronDown />
+                      </span>
                     </summary>
                     <p className="mt-4 leading-relaxed text-muted-foreground">
                       {item.answer}

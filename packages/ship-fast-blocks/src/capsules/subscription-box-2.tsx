@@ -1,9 +1,27 @@
-import { type ReactNode } from "react"
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * SubscriptionBoxKimiPage2 — a complete, self-contained subscription-box e-commerce
@@ -198,12 +216,105 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      subscriptions: table({
+        planName: string(),
+        planPrice: string(),
+        billingPeriod: string(),
+        grindSize: string(),
+        deliveryFrequency: string(),
+        quantity: number(),
+      }),
+      favorites: table({
+        coffeeName: string(),
+      }),
+    },
+    queries: {
+      subscriptions: ({ db }) => db.subscriptions.orderBy('createdAt').all(),
+      favoriteCoffeeNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.coffeeName)),
+    },
+    mutations: {
+      subscribe: ({ db }, planName: string, planPrice: string, billingPeriod: string) => {
+        db.subscriptions.insert({
+          planName,
+          planPrice,
+          billingPeriod,
+          grindSize: 'Whole Bean',
+          deliveryFrequency: 'Monthly',
+          quantity: 1,
+        })
+        return db.subscriptions.all()
+      },
+      updateSubscription: ({ db }, id: string, updates: Record<string, unknown>) => {
+        const subscription = db.subscriptions.get(id)
+        if (subscription) {
+          db.subscriptions.update(id, updates)
+        }
+        return db.subscriptions.all()
+      },
+      cancelSubscription: ({ db }, id: string) => {
+        db.subscriptions.delete(id)
+        return db.subscriptions.all()
+      },
+      toggleFavorite: ({ db }, coffeeName: string) => {
+        const existingFavorite = db.favorites
+          .where('coffeeName', coffeeName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ coffeeName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [subscriptionOpen, setSubscriptionOpen] = useState(false)
     const brand = props.brand ?? "RoastCraft"
     const nav = props.nav?.length
       ? props.nav
       : ["How It Works", "Pricing", "Our Coffee", "Reviews", "FAQ"]
+
+    const subscriptions = lakebed.useQuery('subscriptions')
+    const favoriteCoffeeNames = lakebed.useQuery('favoriteCoffeeNames')
+    const auth = lakebed.useAuth()
+    const subscribe = lakebed.useMutation('subscribe')
+    const updateSubscription = lakebed.useMutation('updateSubscription')
+    const cancelSubscription = lakebed.useMutation('cancelSubscription')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const activeSubscription = subscriptions?.[0]
+    const subscriptionCount = subscriptions?.length ?? 0
 
     const heroBadge = props.hero?.badge ?? "Now roasting: Ethiopia Yirgacheffe"
     const heroHeadingBefore = props.hero?.headingBefore ?? "Coffee That "
@@ -637,7 +748,7 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className={className}
+        className={className ?? 'size-4'}
         aria-hidden="true"
       >
         <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -675,6 +786,24 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
         aria-hidden="true"
       >
         <path d="M19 9l-7 7-7-7" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
       </svg>
     )
 
@@ -825,16 +954,271 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
                   </button>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={() => go(nav[1] ?? heroPrimary)}
-                className="hidden rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:bg-primary/90 sm:inline-flex"
-              >
-                Get Started
-              </button>
+              <div className="flex items-center gap-4">
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSubscriptionOpen(true)
+                          }}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Subscription
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setSubscriptionOpen(true)}
+                  aria-label="Subscription"
+                  className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <svg
+                    className="size-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M20 7h-9" />
+                    <path d="M14 17H5" />
+                    <circle cx="17" cy="17" r="3" />
+                    <circle cx="7" cy="7" r="3" />
+                  </svg>
+                  {subscriptionCount > 0 ? (
+                    <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                      {subscriptionCount}
+                    </span>
+                  ) : null}
+                </button>
+              </div>
             </div>
           </div>
         </header>
+
+        <Sheet open={subscriptionOpen} onOpenChange={setSubscriptionOpen}>
+          <SheetContent
+            side="right"
+            className="w-full gap-0 p-0 sm:max-w-md"
+          >
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Subscription</SheetTitle>
+              <SheetDescription>
+                {activeSubscription
+                  ? `Active: ${activeSubscription.planName} (${activeSubscription.billingPeriod})`
+                  : 'No active subscription. Choose a plan to get started.'}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {activeSubscription ? (
+                <div className="space-y-6">
+                  <div className="rounded-xl border border-border bg-muted/40 p-4">
+                    <h3 className="mb-2 text-lg font-bold text-foreground">
+                      {activeSubscription.planName}
+                    </h3>
+                    <p className="mb-4 text-2xl font-bold text-foreground">
+                      {activeSubscription.planPrice}
+                      <span className="text-sm font-normal text-muted-foreground">
+                        /{activeSubscription.billingPeriod.toLowerCase()}
+                      </span>
+                    </p>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-foreground">
+                          Grind Size
+                        </label>
+                        <select
+                          value={activeSubscription.grindSize}
+                          onChange={(e) => {
+                            void updateSubscription(activeSubscription.id, {
+                              grindSize: e.target.value,
+                            })
+                          }}
+                          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        >
+                          <option value="Whole Bean">Whole Bean</option>
+                          <option value="Fine">Fine (Espresso)</option>
+                          <option value="Medium">Medium (Drip)</option>
+                          <option value="Coarse">Coarse (French Press)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-foreground">
+                          Delivery Frequency
+                        </label>
+                        <select
+                          value={activeSubscription.deliveryFrequency}
+                          onChange={(e) => {
+                            void updateSubscription(activeSubscription.id, {
+                              deliveryFrequency: e.target.value,
+                            })
+                          }}
+                          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        >
+                          <option value="Weekly">Weekly</option>
+                          <option value="Bi-Weekly">Bi-Weekly</option>
+                          <option value="Monthly">Monthly</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-foreground">
+                          Quantity (bags)
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={activeSubscription.quantity}
+                          onChange={(e) => {
+                            void updateSubscription(activeSubscription.id, {
+                              quantity: Number.parseInt(e.target.value, 10) || 1,
+                            })
+                          }}
+                          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                  <p className="text-base font-semibold text-foreground">
+                    No active subscription
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Choose a plan from the Pricing section to start your coffee journey.
+                  </p>
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              {activeSubscription ? (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="w-full rounded-full"
+                  onClick={() => {
+                    void cancelSubscription(activeSubscription.id)
+                  }}
+                >
+                  Cancel Subscription
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  className="w-full rounded-full"
+                  onClick={() => {
+                    setSubscriptionOpen(false)
+                    go('Pricing')
+                  }}
+                >
+                  View Plans
+                </Button>
+              )}
+              <SheetClose asChild>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="rounded-full"
+                >
+                  Close
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
 
         <main>
           {/* Hero */}
@@ -863,7 +1247,7 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
                       className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 text-lg font-bold text-primary-foreground shadow-xl shadow-primary/30 transition-all hover:-translate-y-0.5 hover:bg-primary/90"
                     >
                       {heroPrimary}
-                      <ArrowRight className="size-5" />
+                      <ArrowRight />
                     </button>
                     <button
                       type="button"
@@ -1028,32 +1412,58 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
                 </p>
               </div>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {collectionItems.map((item) => (
-                  <button
-                    key={item.name}
-                    type="button"
-                    onClick={() => go(item.name)}
-                    className="group relative aspect-[4/3] overflow-hidden rounded-2xl bg-muted text-left"
-                  >
-                    <Image
-                      alt={item.imageAlt}
-                      w={600}
-                      h={450}
-                      loading="lazy"
-                      className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 p-6">
-                      <span className="mb-2 inline-block rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
-                        {item.tag}
-                      </span>
-                      <h3 className="mb-1 text-xl font-bold text-background">
-                        {item.name}
-                      </h3>
-                      <p className="text-sm text-background/80">{item.notes}</p>
-                    </div>
-                  </button>
-                ))}
+                {collectionItems.map((item) => {
+                  const isFavorite =
+                    favoriteCoffeeNames?.has(item.name) ?? false
+
+                  return (
+                    <button
+                      key={item.name}
+                      type="button"
+                      onClick={() => go(item.name)}
+                      className="group relative aspect-[4/3] overflow-hidden rounded-2xl bg-muted text-left"
+                    >
+                      <Image
+                        alt={item.imageAlt}
+                        w={600}
+                        h={450}
+                        loading="lazy"
+                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          void toggleFavorite(item.name)
+                        }}
+                        aria-pressed={isFavorite}
+                        aria-label={
+                          isFavorite
+                            ? `Remove ${item.name} from favorites`
+                            : `Add ${item.name} to favorites`
+                        }
+                        className={cn(
+                          'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                          isFavorite
+                            ? 'bg-primary text-primary-foreground opacity-100'
+                            : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                        )}
+                      >
+                        <HeartIcon active={isFavorite} />
+                      </button>
+                      <div className="absolute inset-x-0 bottom-0 p-6">
+                        <span className="mb-2 inline-block rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
+                          {item.tag}
+                        </span>
+                        <h3 className="mb-1 text-xl font-bold text-background">
+                          {item.name}
+                        </h3>
+                        <p className="text-sm text-background/80">{item.notes}</p>
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -1146,7 +1556,10 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(`${plan.name} ${plan.cta}`)}
+                      onClick={() => {
+                        void subscribe(plan.name, plan.price, plan.period.replace('/', ''))
+                        setSubscriptionOpen(true)
+                      }}
                       className={cn(
                         "w-full rounded-xl py-4 font-bold transition-colors",
                         plan.featured
@@ -1289,7 +1702,7 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-background px-10 py-4 text-lg font-bold text-primary shadow-xl transition-colors hover:bg-background/90"
                 >
                   {ctaPrimary}
-                  <ArrowRight className="size-5" />
+                  <ArrowRight />
                 </button>
                 <button
                   type="button"

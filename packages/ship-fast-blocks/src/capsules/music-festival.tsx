@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * MusicFestivalKimiPage — a complete, self-contained multi-day MUSIC & ARTS
@@ -220,10 +238,171 @@ export const MusicFestivalKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      cartItems: table({
+        ticketName: string(),
+        ticketPrice: string(),
+        quantity: number(),
+      }),
+      favorites: table({
+        artistName: string(),
+        genre: string(),
+      }),
+      scheduleItems: table({
+        setTitle: string(),
+        stage: string(),
+        time: string(),
+        day: string(),
+      }),
+    },
+    queries: {
+      cartLines: ({ db }) => db.cartItems.all(),
+      favoriteArtistNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.artistName)),
+      scheduleItems: ({ db }) => db.scheduleItems.all(),
+    },
+    mutations: {
+      addToCart: ({ db }, ticketName: string, ticketPrice: string) => {
+        const existingItem = db.cartItems
+          .where('ticketName', ticketName)
+          .all()[0]
+
+        if (existingItem) {
+          db.cartItems.update(existingItem.id, {
+            quantity: existingItem.quantity + 1,
+          })
+        } else {
+          db.cartItems.insert({
+            ticketName,
+            ticketPrice,
+            quantity: 1,
+          })
+        }
+
+        return db.cartItems.all()
+      },
+      updateCartQuantity: ({ db }, ticketName: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+
+        for (const item of db.cartItems.where('ticketName', ticketName).all()) {
+          if (nextQuantity) {
+            db.cartItems.update(item.id, { quantity: nextQuantity })
+          } else {
+            db.cartItems.delete(item.id)
+          }
+        }
+
+        return db.cartItems.all()
+      },
+      removeFromCart: ({ db }, ticketName: string) => {
+        for (const item of db.cartItems.where('ticketName', ticketName).all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return db.cartItems.all()
+      },
+      clearCart: ({ db }) => {
+        for (const item of db.cartItems.all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return []
+      },
+      toggleFavorite: ({ db }, artistName: string, genre: string) => {
+        const existingFavorite = db.favorites
+          .where('artistName', artistName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ artistName, genre })
+        return true
+      },
+      toggleScheduleItem: ({ db }, setTitle: string, stage: string, time: string, day: string) => {
+        const existingItem = db.scheduleItems
+          .where('setTitle', setTitle)
+          .all()[0]
+
+        if (existingItem) {
+          db.scheduleItems.delete(existingItem.id)
+          return false
+        }
+
+        db.scheduleItems.insert({ setTitle, stage, time, day })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [cartOpen, setCartOpen] = useState(false)
     const brand = props.brand ?? "HORIZON"
+
+    const cartLines = lakebed.useQuery('cartLines')
+    const favoriteArtistNames = lakebed.useQuery('favoriteArtistNames')
+    const scheduleItems = lakebed.useQuery('scheduleItems')
+    const auth = lakebed.useAuth()
+    const addToCart = lakebed.useMutation('addToCart')
+    const updateCartQuantity = lakebed.useMutation('updateCartQuantity')
+    const removeFromCart = lakebed.useMutation('removeFromCart')
+    const clearCart = lakebed.useMutation('clearCart')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const toggleScheduleItem = lakebed.useMutation('toggleScheduleItem')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const safeCartLines = cartLines ?? []
+    const cartItemCount = safeCartLines.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+
+    const priceAmount = (price: string) => {
+      const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ''))
+      return Number.isFinite(amount) ? amount : 0
+    }
+
+    const formatCurrency = (amount: number) =>
+      new Intl.NumberFormat('en-US', {
+        currency: 'USD',
+        style: 'currency',
+      }).format(amount)
+
+    const cartSubtotal = safeCartLines.reduce(
+      (total, item) => total + priceAmount(item.ticketPrice) * item.quantity,
+      0,
+    )
+    const cartTotal = cartSubtotal
     const nav = props.nav?.length
       ? props.nav
       : ["Lineup", "Experience", "Schedule", "Tickets", "FAQ"]
@@ -598,6 +777,22 @@ export const MusicFestivalKimiPage = defineCapsule({
       </svg>
     )
 
+    const ArrowRightIcon = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     const Check = () => (
       <svg
         width="20"
@@ -625,6 +820,39 @@ export const MusicFestivalKimiPage = defineCapsule({
         aria-hidden="true"
       >
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
       </svg>
     )
 
@@ -684,6 +912,263 @@ export const MusicFestivalKimiPage = defineCapsule({
               ))}
             </div>
             <div className="flex items-center gap-4">
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('My Schedule')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        My Schedule
+                        <ArrowRightIcon />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('My Tickets')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        My Tickets
+                        <ArrowRightIcon />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={cartOpen} onOpenChange={setCartOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Shopping Cart"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                      <line x1="3" y1="6" x2="21" y2="6" />
+                      <path d="M16 10a4 4 0 0 1-8 0" />
+                    </svg>
+                    {cartItemCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {cartItemCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Your Tickets</SheetTitle>
+                    <SheetDescription>
+                      {cartItemCount > 0
+                        ? `${cartItemCount} ticket${cartItemCount === 1 ? '' : 's'} in your cart.`
+                        : 'Your cart is empty.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {safeCartLines.length ? (
+                      <div className="space-y-5">
+                        {safeCartLines.map((item) => (
+                          <div
+                            key={item.id}
+                            className="grid grid-cols-[1fr] gap-4 border-b border-border pb-5 last:border-0"
+                          >
+                            <div className="min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                    {item.ticketName}
+                                  </h3>
+                                </div>
+                                <p className="text-sm font-bold text-foreground">
+                                  {formatCurrency(
+                                    priceAmount(item.ticketPrice) *
+                                      item.quantity,
+                                  )}
+                                </p>
+                              </div>
+                              <div className="mt-4 flex items-center justify-between">
+                                <div className="inline-flex h-9 items-center rounded-full border border-border bg-background">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void updateCartQuantity(
+                                        item.ticketName,
+                                        item.quantity - 1,
+                                      )
+                                    }
+                                    className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                    aria-label={`Decrease ${item.ticketName} quantity`}
+                                  >
+                                    -
+                                  </button>
+                                  <span className="min-w-8 text-center text-sm font-semibold">
+                                    {item.quantity}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void updateCartQuantity(
+                                        item.ticketName,
+                                        item.quantity + 1,
+                                      )
+                                    }
+                                    className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                    aria-label={`Increase ${item.ticketName} quantity`}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void removeFromCart(item.ticketName)
+                                  }
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No tickets in cart
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Select a ticket tier to start building your festival
+                          experience.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between pt-2 text-base font-bold text-foreground">
+                        <span>Total</span>
+                        <span>{formatCurrency(cartTotal)}</span>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      disabled={!safeCartLines.length}
+                      className="w-full rounded-full"
+                      onClick={() => go('Checkout')}
+                    >
+                      Checkout
+                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full"
+                        onClick={() => void clearCart()}
+                        disabled={!safeCartLines.length}
+                      >
+                        Clear
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
               <button
                 type="button"
                 onClick={() => go(heroPrimary)}
@@ -722,6 +1207,58 @@ export const MusicFestivalKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -873,19 +1410,45 @@ export const MusicFestivalKimiPage = defineCapsule({
                   {featuredLabel}
                 </h3>
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-                  {featured.map((a) => (
-                    <button
-                      key={a.name}
-                      type="button"
-                      onClick={() => go(a.name)}
-                      className="rounded-lg border border-border bg-card p-6 text-center text-card-foreground transition-colors hover:border-primary/40"
-                    >
-                      <p className="font-semibold">{a.name}</p>
-                      <p className="mt-1 text-sm text-card-foreground/60">
-                        {a.genre}
-                      </p>
-                    </button>
-                  ))}
+                  {featured.map((a) => {
+                    const isFavorite =
+                      favoriteArtistNames?.has(a.name) ?? false
+
+                    return (
+                      <button
+                        key={a.name}
+                        type="button"
+                        onClick={() => go(a.name)}
+                        className="group relative rounded-lg border border-border bg-card p-6 text-center text-card-foreground transition-colors hover:border-primary/40"
+                      >
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            void toggleFavorite(a.name, a.genre)
+                          }}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${a.name} from favorites`
+                              : `Add ${a.name} to favorites`
+                          }
+                          className={cn(
+                            'absolute right-3 top-3 grid size-8 place-items-center rounded-full shadow-md transition-all hover:scale-105',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-background/90 text-card-foreground/60 hover:bg-background',
+                          )}
+                        >
+                          <HeartIcon active={isFavorite} />
+                        </button>
+                        <p className="font-semibold">{a.name}</p>
+                        <p className="mt-1 text-sm text-card-foreground/60">
+                          {a.genre}
+                        </p>
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -977,22 +1540,67 @@ export const MusicFestivalKimiPage = defineCapsule({
                       <p className="mt-1 text-sm opacity-70">{day.date}</p>
                     </div>
                     <div className="space-y-4 p-6">
-                      {day.items.map((item) => (
-                        <div
-                          key={item.title}
-                          className="flex items-start justify-between"
-                        >
-                          <div>
-                            <p className="font-semibold">{item.title}</p>
-                            <p className="text-sm text-card-foreground/60">
-                              {item.detail}
-                            </p>
+                      {day.items.map((item) => {
+                        const isInSchedule =
+                          scheduleItems?.some(
+                            (s) => s.setTitle === item.title && s.day === day.name,
+                          ) ?? false
+
+                        return (
+                          <div
+                            key={item.title}
+                            className="flex items-start justify-between"
+                          >
+                            <div className="flex-1">
+                              <p className="font-semibold">{item.title}</p>
+                              <p className="text-sm text-card-foreground/60">
+                                {item.detail}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-sm font-medium text-primary">
+                                {item.time}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  void toggleScheduleItem(
+                                    item.title,
+                                    item.detail,
+                                    item.time,
+                                    day.name,
+                                  )
+                                }
+                                aria-pressed={isInSchedule}
+                                aria-label={
+                                  isInSchedule
+                                    ? `Remove ${item.title} from schedule`
+                                    : `Add ${item.title} to schedule`
+                                }
+                                className={cn(
+                                  'grid size-8 place-items-center rounded-full transition-all hover:scale-105',
+                                  isInSchedule
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-background/90 text-card-foreground/60 hover:bg-background',
+                                )}
+                              >
+                                <svg
+                                  className="size-4"
+                                  fill={isInSchedule ? 'currentColor' : 'none'}
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 24 24"
+                                  aria-hidden="true"
+                                >
+                                  <path d="M5 13l4 4L19 7" />
+                                </svg>
+                              </button>
+                            </div>
                           </div>
-                          <span className="text-sm font-medium text-primary">
-                            {item.time}
-                          </span>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                     <div className="px-6 pb-6">
                       <button
@@ -1093,7 +1701,10 @@ export const MusicFestivalKimiPage = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(tier.cta)}
+                      onClick={() => {
+                        void addToCart(tier.name, tier.price)
+                        setCartOpen(true)
+                      }}
                       className="w-full rounded-lg bg-primary py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                     >
                       {tier.cta}

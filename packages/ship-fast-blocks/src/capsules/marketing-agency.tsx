@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * MarketingAgencyKimiPage — a complete, self-contained growth / marketing-agency
@@ -195,7 +213,52 @@ export const MarketingAgencyKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      inquiries: table({
+        name: string(),
+        email: string(),
+        company: string(),
+        message: string(),
+        plan: string(),
+      }),
+      savedCaseStudies: table({
+        caseName: string(),
+      }),
+    },
+    queries: {
+      inquiries: ({ db }) => db.inquiries.orderBy("createdAt").all(),
+      savedCaseStudyNames: ({ db }) =>
+        new Set(db.savedCaseStudies.all().map((s) => s.caseName)),
+    },
+    mutations: {
+      submitInquiry: (
+        { db },
+        name: string,
+        email: string,
+        company: string,
+        message: string,
+        plan: string,
+      ) => {
+        db.inquiries.insert({ name, email, company, message, plan })
+        return db.inquiries.all()
+      },
+      deleteInquiry: ({ db }, id: string) => {
+        db.inquiries.delete(id)
+        return db.inquiries.all()
+      },
+      toggleSavedCase: ({ db }, caseName: string) => {
+        const existing = db.savedCaseStudies.where("caseName", caseName).all()[0]
+        if (existing) {
+          db.savedCaseStudies.delete(existing.id)
+          return false
+        }
+        db.savedCaseStudies.insert({ caseName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const brand = props.brand ?? "Nexus Growth"
@@ -569,7 +632,66 @@ export const MarketingAgencyKimiPage = defineCapsule({
 
     const navCta = nav[nav.length - 1]
 
-    // Brand logo mark — layered diamond glyph (decorative brand asset).
+    // --- Lakebed reactive state ---
+    const storedInquiries = lakebed.useQuery("inquiries")
+    const savedCaseStudyNames = lakebed.useQuery("savedCaseStudyNames")
+    const submitInquiry = lakebed.useMutation("submitInquiry")
+    const deleteInquiry = lakebed.useMutation("deleteInquiry")
+    const toggleSavedCase = lakebed.useMutation("toggleSavedCase")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part: string) => part[0]?.toUpperCase())
+        .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const [inquiryOpen, setInquiryOpen] = useState(false)
+    const [inquiryName, setInquiryName] = useState("")
+    const [inquiryEmail, setInquiryEmail] = useState("")
+    const [inquiryCompany, setInquiryCompany] = useState("")
+    const [inquiryMessage, setInquiryMessage] = useState("")
+    const [inquiryPlan, setInquiryPlan] = useState("")
+    const [inquirySubmitted, setInquirySubmitted] = useState(false)
+
+    const inquiryCount = storedInquiries?.length ?? 0
+
+    const handleInquirySubmit = (e: React.FormEvent) => {
+      e.preventDefault()
+      void submitInquiry(
+        inquiryName,
+        inquiryEmail,
+        inquiryCompany,
+        inquiryMessage,
+        inquiryPlan,
+      )
+      setInquirySubmitted(true)
+      setInquiryName("")
+      setInquiryEmail("")
+      setInquiryCompany("")
+      setInquiryMessage("")
+      setInquiryPlan("")
+    }
+
+    // --- Inline SVG sub-components ---
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -771,13 +893,214 @@ export const MarketingAgencyKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
-                <button
-                  type="button"
-                  onClick={() => go(navCta)}
-                  className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  {navCta}
-                </button>
+                {/* Auth */}
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-9 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:inline-flex"
+                      >
+                        <Avatar size="sm" className="ring-2 ring-background" aria-hidden="true">
+                          {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-4 text-muted-foreground" aria-hidden="true"><path d="M19 9l-7 7-7-7" /></svg>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" sideOffset={10} className="w-64 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl">
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">{authInitials}</AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">{authDisplayName}</p>
+                            <p className="truncate text-xs text-muted-foreground">{authEmail ?? "Signed in"}</p>
+                          </div>
+                        </div>
+                        {inquiryCount > 0 && (
+                          <p className="mt-2 text-xs text-muted-foreground">{inquiryCount} inquiry{inquiryCount !== 1 ? "s" : ""} submitted</p>
+                        )}
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-9 items-center gap-2 rounded-full border border-border bg-background px-4 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-foreground text-xs font-black text-background">G</span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                {/* Inquiry drawer trigger */}
+                <Sheet open={inquiryOpen} onOpenChange={setInquiryOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      className="relative rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                    >
+                      {navCta}
+                      {inquiryCount > 0 && (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-background text-[0.625rem] font-bold text-foreground">
+                          {inquiryCount}
+                        </span>
+                      )}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Book a Strategy Call</SheetTitle>
+                      <SheetDescription>
+                        {inquiryCount > 0
+                          ? `${inquiryCount} inquiry${inquiryCount !== 1 ? "ies" : ""} submitted this session.`
+                          : "Tell us about your business and goals."}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {inquirySubmitted ? (
+                        <div className="flex min-h-48 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 py-10 text-center">
+                          <div className="mb-3 grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
+                            <Check className="size-6" />
+                          </div>
+                          <p className="text-base font-semibold text-foreground">Inquiry submitted!</p>
+                          <p className="mt-2 text-sm text-muted-foreground">We'll be in touch within 24 hours.</p>
+                          <button
+                            type="button"
+                            onClick={() => setInquirySubmitted(false)}
+                            className="mt-4 text-sm font-medium text-primary hover:underline"
+                          >
+                            Submit another
+                          </button>
+                        </div>
+                      ) : (
+                        <form onSubmit={handleInquirySubmit} className="space-y-4">
+                          <div>
+                            <label htmlFor="inq-name" className="mb-1 block text-sm font-medium text-foreground">Name</label>
+                            <input
+                              id="inq-name"
+                              type="text"
+                              required
+                              value={inquiryName}
+                              onChange={(e) => setInquiryName(e.target.value)}
+                              placeholder="Jane Smith"
+                              className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            />
+                          </div>
+                          <div>
+                            <label htmlFor="inq-email" className="mb-1 block text-sm font-medium text-foreground">Work Email</label>
+                            <input
+                              id="inq-email"
+                              type="email"
+                              required
+                              value={inquiryEmail}
+                              onChange={(e) => setInquiryEmail(e.target.value)}
+                              placeholder="jane@company.com"
+                              className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            />
+                          </div>
+                          <div>
+                            <label htmlFor="inq-company" className="mb-1 block text-sm font-medium text-foreground">Company</label>
+                            <input
+                              id="inq-company"
+                              type="text"
+                              value={inquiryCompany}
+                              onChange={(e) => setInquiryCompany(e.target.value)}
+                              placeholder="Acme Inc."
+                              className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            />
+                          </div>
+                          <div>
+                            <label htmlFor="inq-plan" className="mb-1 block text-sm font-medium text-foreground">Interested in</label>
+                            <select
+                              id="inq-plan"
+                              value={inquiryPlan}
+                              onChange={(e) => setInquiryPlan(e.target.value)}
+                              className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            >
+                              <option value="">Select a plan...</option>
+                              {pricingPlans.map((p) => (
+                                <option key={p.name} value={p.name}>{p.name} — {p.price}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label htmlFor="inq-message" className="mb-1 block text-sm font-medium text-foreground">Tell us about your goals</label>
+                            <textarea
+                              id="inq-message"
+                              rows={4}
+                              value={inquiryMessage}
+                              onChange={(e) => setInquiryMessage(e.target.value)}
+                              placeholder="We're looking to scale our MRR from $50K to $200K over the next year..."
+                              className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            />
+                          </div>
+                          <Button type="submit" className="w-full rounded-full">
+                            Submit Inquiry
+                          </Button>
+                        </form>
+                      )}
+                      {storedInquiries && storedInquiries.length > 0 && (
+                        <div className="mt-6">
+                          <p className="mb-3 text-sm font-semibold text-foreground">Submitted inquiries</p>
+                          <div className="space-y-3">
+                            {storedInquiries.map((inq) => (
+                              <div key={inq.id} className="flex items-start justify-between gap-3 rounded-lg border border-border bg-muted/40 p-3">
+                                <div className="min-w-0">
+                                  <p className="truncate text-sm font-semibold text-foreground">{inq.name}</p>
+                                  <p className="truncate text-xs text-muted-foreground">{inq.email}</p>
+                                  {inq.plan && <p className="mt-0.5 text-xs text-muted-foreground">Plan: {inq.plan}</p>}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => void deleteInquiry(inq.id)}
+                                  className="shrink-0 text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                        {ctaReassurances.map((r) => (
+                          <div key={r} className="flex items-center gap-1">
+                            <Check className="size-3.5 text-primary" />
+                            {r}
+                          </div>
+                        ))}
+                      </div>
+                      <SheetClose asChild>
+                        <Button type="button" variant="secondary" className="w-full rounded-full">
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
               </div>
               <button
                 type="button"
@@ -818,6 +1141,30 @@ export const MarketingAgencyKimiPage = defineCapsule({
                       {label}
                     </button>
                   ))}
+                  <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                    {isSignedIn ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg">
+                            {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">{authInitials}</AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">{authDisplayName}</p>
+                            <p className="truncate text-xs text-muted-foreground">{authEmail ?? "Signed in"}</p>
+                          </div>
+                        </div>
+                        <Button type="button" onClick={() => { setMobileOpen(false); handleSignOut() }} className="w-full rounded-full">
+                          Sign out
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button type="button" onClick={() => { setMobileOpen(false); handleSignIn() }} disabled={auth.isLoading} className="w-full rounded-full">
+                        <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">G</span>
+                        {authLabel}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -845,7 +1192,7 @@ export const MarketingAgencyKimiPage = defineCapsule({
                   <div className="flex flex-wrap gap-4">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() => setInquiryOpen(true)}
                       className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground transition-all hover:bg-primary/90"
                     >
                       {heroPrimary}
@@ -1033,59 +1380,82 @@ export const MarketingAgencyKimiPage = defineCapsule({
                 <p className="text-muted-foreground">{casesDesc}</p>
               </div>
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {caseItems.map((c, i) => (
-                  <button
-                    key={c.name}
-                    type="button"
-                    onClick={() => go(c.name)}
-                    className="group block w-full overflow-hidden rounded-xl bg-card text-left shadow-sm transition-shadow hover:shadow-lg"
-                  >
-                    <div className="relative h-48 overflow-hidden">
-                      <Image
-                        alt={`${c.name} ${c.tag} marketing case study`}
-                        w={600}
-                        h={400}
-                        loading="lazy"
-                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <span
+                {caseItems.map((c, i) => {
+                  const isSaved = savedCaseStudyNames?.has(c.name) ?? false
+                  return (
+                    <div
+                      key={c.name}
+                      className="group relative overflow-hidden rounded-xl bg-card text-left shadow-sm transition-shadow hover:shadow-lg"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => void toggleSavedCase(c.name)}
+                        aria-pressed={isSaved}
+                        aria-label={isSaved ? `Unsave ${c.name}` : `Save ${c.name}`}
                         className={cn(
-                          "absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-medium",
-                          tagTones[i % tagTones.length],
+                          "absolute right-3 top-3 z-10 grid size-8 place-items-center rounded-full shadow transition-all hover:scale-105",
+                          isSaved
+                            ? "bg-primary text-primary-foreground opacity-100"
+                            : "bg-background/90 text-foreground opacity-0 group-hover:opacity-100",
                         )}
                       >
-                        {c.tag}
-                      </span>
-                    </div>
-                    <div className="p-6">
-                      <h3 className="mb-2 text-lg font-semibold text-card-foreground">
-                        {c.name}
-                      </h3>
-                      <p className="mb-4 text-sm text-muted-foreground">
-                        {c.summary}
-                      </p>
-                      <div className="flex items-center gap-4 border-t border-border pt-4">
-                        <div>
-                          <p className="text-2xl font-bold text-card-foreground">
-                            {c.metricA}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {c.labelA}
-                          </p>
+                        <svg viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-4" aria-hidden="true">
+                          <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go(c.name)}
+                        className="block w-full text-left"
+                      >
+                        <div className="relative h-48 overflow-hidden">
+                          <Image
+                            alt={`${c.name} ${c.tag} marketing case study`}
+                            w={600}
+                            h={400}
+                            loading="lazy"
+                            className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                          <span
+                            className={cn(
+                              "absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-medium",
+                              tagTones[i % tagTones.length],
+                            )}
+                          >
+                            {c.tag}
+                          </span>
                         </div>
-                        <div className="h-8 w-px bg-border" />
-                        <div>
-                          <p className="text-2xl font-bold text-card-foreground">
-                            {c.metricB}
+                        <div className="p-6">
+                          <h3 className="mb-2 text-lg font-semibold text-card-foreground">
+                            {c.name}
+                          </h3>
+                          <p className="mb-4 text-sm text-muted-foreground">
+                            {c.summary}
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            {c.labelB}
-                          </p>
+                          <div className="flex items-center gap-4 border-t border-border pt-4">
+                            <div>
+                              <p className="text-2xl font-bold text-card-foreground">
+                                {c.metricA}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {c.labelA}
+                              </p>
+                            </div>
+                            <div className="h-8 w-px bg-border" />
+                            <div>
+                              <p className="text-2xl font-bold text-card-foreground">
+                                {c.metricB}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {c.labelB}
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      </button>
                     </div>
-                  </button>
-                ))}
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -1232,7 +1602,7 @@ export const MarketingAgencyKimiPage = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(plan.cta)}
+                      onClick={() => { setInquiryPlan(plan.name); setInquiryOpen(true) }}
                       className={cn(
                         "block w-full rounded-full py-3 text-center font-medium transition-colors",
                         plan.featured
@@ -1309,7 +1679,7 @@ export const MarketingAgencyKimiPage = defineCapsule({
               <div className="flex flex-wrap justify-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={() => setInquiryOpen(true)}
                   className="inline-flex items-center justify-center rounded-full bg-background px-8 py-4 font-medium text-foreground transition-colors hover:bg-background/90"
                 >
                   {ctaPrimary}

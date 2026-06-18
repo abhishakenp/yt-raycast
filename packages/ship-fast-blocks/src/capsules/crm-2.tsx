@@ -1,9 +1,20 @@
-import { type ReactNode } from "react"
+import { type FormEvent, type ReactNode, useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * CrmKimiPage2 — a complete, self-contained CRM / sales-pipeline LANDING page.
@@ -212,12 +223,123 @@ export const CrmKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      leads: table({
+        name: string(),
+        email: string(),
+        company: string(),
+        source: string(),
+        score: number(),
+      }),
+    },
+    queries: {
+      leads: ({ db }) => db.leads.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addLead: ({ db }, email: string, name: string, company: string, source: string) => {
+        const normalizedEmail = email.trim().toLowerCase()
+        if (!normalizedEmail) return db.leads.all()
+
+        db.leads.insert({
+          email: normalizedEmail,
+          name: name || "New Lead",
+          company: company || "Unknown",
+          source: source || "CRM",
+          score: 1,
+        })
+
+        return db.leads.all()
+      },
+      removeLead: ({ db }, id: string) => {
+        db.leads.delete(id)
+        return db.leads.all()
+      },
+      clearLeads: ({ db }) => {
+        for (const lead of db.leads.all()) {
+          db.leads.delete(lead.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const brand = props.brand ?? "PipelinePro"
     const nav = props.nav?.length
       ? props.nav
       : ["Features", "Pipeline", "Integrations", "Pricing", "Customers"]
+    const [leadDrawerOpen, setLeadDrawerOpen] = useState(false)
+    const [leadName, setLeadName] = useState("")
+    const [leadEmail, setLeadEmail] = useState("")
+    const [leadCompany, setLeadCompany] = useState("")
+    const [leadFormSource, setLeadFormSource] = useState("Trial request")
+
+    const storedLeads = lakebed.useQuery("leads")
+    const addLead = lakebed.useMutation("addLead")
+    const removeLead = lakebed.useMutation("removeLead")
+    const clearLeads = lakebed.useMutation("clearLeads")
+    const leads = storedLeads ?? []
+    const leadCount = leads.length
+    const leadScoreTotal = leads.reduce((total, lead) => total + lead.score, 0)
+
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || auth.email || "Account"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+
+    const openLeadDrawer = (source: string) => {
+      setLeadFormSource(source)
+      setLeadDrawerOpen(true)
+    }
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const handleLeadSubmit = (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      const normalizedName = leadName.trim()
+      const normalizedEmail = leadEmail.trim().toLowerCase()
+      const normalizedCompany = leadCompany.trim()
+
+      if (!normalizedEmail) return
+
+      void addLead(
+        normalizedEmail,
+        normalizedName || "New Lead",
+        normalizedCompany || "Unknown",
+        leadFormSource,
+      )
+
+      setLeadName("")
+      setLeadEmail("")
+      setLeadCompany("")
+      setLeadDrawerOpen(false)
+    }
+
+    const handleCtaSubmit = (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      const formData = new FormData(e.currentTarget)
+      const email = String(formData.get("cta_email") ?? "").trim().toLowerCase()
+
+      if (!email) return
+
+      void addLead(email, "CTA Lead", "", "CTA band")
+      go(props.cta?.submit ?? "Start free trial")
+      e.currentTarget.reset()
+    }
 
     const heroBadge = props.hero?.badge ?? "Now with AI-powered lead scoring"
     const heroLead = props.hero?.headingLead ?? "Close deals"
@@ -754,18 +876,160 @@ export const CrmKimiPage2 = defineCapsule({
             <div className="flex items-center gap-4">
               <button
                 type="button"
-                onClick={() => go("Sign in")}
+                onClick={isSignedIn ? handleSignOut : handleSignIn}
                 className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
+                disabled={auth.isLoading}
               >
-                Sign in
+                {authLabel}
               </button>
-              <button
-                type="button"
-                onClick={() => go(heroPrimary)}
-                className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
-              >
-                Start free trial
-              </button>
+              <Sheet open={leadDrawerOpen} onOpenChange={setLeadDrawerOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => openLeadDrawer("Header CTA")}
+                    className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-colors hover:bg-primary/90"
+                  >
+                    {heroPrimary}
+                    {leadCount > 0 ? (
+                      <span className="ml-2 inline-flex size-5 items-center justify-center rounded-full bg-primary-foreground px-1.5 py-0.5 text-[0.65rem] font-bold leading-none text-primary">
+                        {leadCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Lead requests</SheetTitle>
+                    <SheetDescription>
+                      {leadCount > 0
+                        ? `${leadCount} new lead${leadCount === 1 ? "" : "s"}`
+                        : "Capture lead requests from this page."}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    <form
+                      onSubmit={handleLeadSubmit}
+                      className="mb-6 space-y-4 rounded-lg border border-border bg-muted/40 p-4"
+                    >
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="lead-name"
+                          className="text-sm font-medium text-foreground"
+                        >
+                          Name
+                        </label>
+                        <input
+                          id="lead-name"
+                          type="text"
+                          required
+                          value={leadName}
+                          onChange={(e) => setLeadName(e.target.value)}
+                          className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          placeholder="Your name"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="lead-company"
+                          className="text-sm font-medium text-foreground"
+                        >
+                          Company
+                        </label>
+                        <input
+                          id="lead-company"
+                          type="text"
+                          value={leadCompany}
+                          onChange={(e) => setLeadCompany(e.target.value)}
+                          className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          placeholder="Company name"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="lead-email"
+                          className="text-sm font-medium text-foreground"
+                        >
+                          Work email
+                        </label>
+                        <input
+                          id="lead-email"
+                          type="email"
+                          required
+                          value={leadEmail}
+                          onChange={(e) => setLeadEmail(e.target.value)}
+                          className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          placeholder="you@company.com"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                      >
+                        Save lead
+                      </button>
+                    </form>
+
+                    {leads.length > 0 && (
+                      <div className="space-y-3">
+                        <p className="text-sm font-semibold text-foreground">
+                          Recent leads
+                        </p>
+                        {leads.slice(0, 5).map((lead) => (
+                          <div
+                            key={lead.id}
+                            className="rounded-lg border border-border bg-background p-3"
+                          >
+                            <div className="mb-2 flex items-start justify-between gap-2">
+                              <div>
+                                <p className="text-sm font-semibold text-foreground">
+                                  {lead.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {lead.email}
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => void removeLead(lead.id)}
+                                className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {lead.company} · {lead.source}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <p className="mb-3 w-full text-sm text-muted-foreground">
+                      Total score: {leadScoreTotal}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => void clearLeads()}
+                      disabled={leadCount === 0}
+                      className="w-full rounded-lg border border-border px-4 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Clear all
+                    </button>
+                    <SheetClose asChild>
+                      <button
+                        type="button"
+                        className="w-full rounded-lg bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                      >
+                        Continue
+                      </button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
             </div>
           </nav>
         </header>
@@ -797,7 +1061,7 @@ export const CrmKimiPage2 = defineCapsule({
                   <div className="mb-8 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() => openLeadDrawer("Hero primary")}
                       className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 text-base font-bold text-primary-foreground shadow-xl shadow-primary/25 transition-all hover:-translate-y-0.5 hover:bg-primary/90"
                     >
                       {heroPrimary}
@@ -1353,14 +1617,12 @@ export const CrmKimiPage2 = defineCapsule({
                 {ctaDesc}
               </p>
               <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  go(ctaSubmit)
-                }}
+                onSubmit={handleCtaSubmit}
                 className="mx-auto mb-8 flex max-w-md flex-col gap-4 sm:flex-row"
               >
                 <input
                   type="email"
+                  name="cta_email"
                   required
                   placeholder={ctaPlaceholder}
                   aria-label={ctaPlaceholder}

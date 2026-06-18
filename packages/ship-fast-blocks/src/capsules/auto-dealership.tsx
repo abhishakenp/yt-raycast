@@ -1,8 +1,27 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * AutoDealershipKimiPage — a complete, self-contained AUTO DEALERSHIP landing page.
@@ -162,8 +181,58 @@ export const AutoDealershipKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      vehicles: table({
+        name: string(),
+        specs: string(),
+        price: string(),
+        badge: string(),
+        electric: string(),
+        features: string(),
+        imageAlt: string(),
+      }),
+      savedVehicles: table({
+        vehicleName: string(),
+      }),
+      testDriveRequests: table({
+        name: string(),
+        phone: string(),
+        email: string(),
+        vehicle: string(),
+      }),
+    },
+    queries: {
+      vehicles: ({ db }) => db.vehicles.orderBy('createdAt').all(),
+      savedVehicleNames: ({ db }) =>
+        new Set(db.savedVehicles.all().map((saved) => saved.vehicleName)),
+      testDriveRequests: ({ db }) => db.testDriveRequests.orderBy('createdAt').all(),
+    },
+    mutations: {
+      saveVehicle: ({ db }, vehicleName: string) => {
+        const existing = db.savedVehicles.where('vehicleName', vehicleName).all()[0]
+        if (existing) {
+          db.savedVehicles.delete(existing.id)
+          return false
+        }
+        db.savedVehicles.insert({ vehicleName })
+        return true
+      },
+      removeSavedVehicle: ({ db }, vehicleName: string) => {
+        for (const item of db.savedVehicles.where('vehicleName', vehicleName).all()) {
+          db.savedVehicles.delete(item.id)
+        }
+        return db.savedVehicles.all()
+      },
+      submitTestDriveRequest: ({ db }, name: string, phone: string, email: string, vehicle: string) => {
+        db.testDriveRequests.insert({ name, phone, email, vehicle })
+        return db.testDriveRequests.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [savedOpen, setSavedOpen] = useState(false)
     const brand = props.brand ?? "Meridian Motors"
     const nav = props.nav?.length
       ? props.nav
@@ -253,6 +322,69 @@ export const AutoDealershipKimiPage = defineCapsule({
             imageAlt: "Toyota RAV4 hybrid compact SUV in white with black roof rails",
           },
         ]
+
+    // Lakebed hooks
+    const storedVehicles = lakebed.useQuery('vehicles')
+    const savedVehicleNames = lakebed.useQuery('savedVehicleNames')
+    const testDriveRequests = lakebed.useQuery('testDriveRequests')
+    const auth = lakebed.useAuth()
+    const saveVehicle = lakebed.useMutation('saveVehicle')
+    const removeSavedVehicle = lakebed.useMutation('removeSavedVehicle')
+    const submitTestDriveRequest = lakebed.useMutation('submitTestDriveRequest')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    // Normalize inventory items for Lakebed compatibility
+    const normalizedInventoryItems = inventoryItems.map((item) => ({
+      name: item.name,
+      specs: item.specs,
+      price: item.price,
+      badge: item.badge,
+      electric: item.electric ? 'true' : 'false',
+      features: item.features.join(', '),
+      imageAlt: item.imageAlt,
+    }))
+
+    const displayVehicles =
+      storedVehicles && storedVehicles.length > 0
+        ? storedVehicles.map((v) => ({
+            name: v.name,
+            specs: v.specs,
+            price: v.price,
+            badge: v.badge,
+            electric: v.electric === 'true',
+            features: v.features.split(', '),
+            imageAlt: v.imageAlt,
+          }))
+        : inventoryItems
+
+    const safeSavedVehicleNames = savedVehicleNames ?? new Set()
+    const savedCount = safeSavedVehicleNames.size
 
     const featuresHeading = props.features?.heading ?? `Why Buy from ${brand}`
     const featuresDesc =
@@ -525,6 +657,55 @@ export const AutoDealershipKimiPage = defineCapsule({
     )
     const featureIcons = [<CheckBadge />, <Clock />, <Shield />, <Receipt />]
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     const Star = () => (
       <svg
         className="size-5 text-chart-4"
@@ -621,6 +802,209 @@ export const AutoDealershipKimiPage = defineCapsule({
                 >
                   {heroPhone}
                 </button>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Orders')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Orders
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={savedOpen} onOpenChange={setSavedOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Saved Vehicles"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <HeartIcon />
+                      {savedCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {savedCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Saved Vehicles</SheetTitle>
+                      <SheetDescription>
+                        {savedCount > 0
+                          ? `${savedCount} vehicle${savedCount === 1 ? '' : 's'} saved for this session.`
+                          : 'No vehicles saved yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {savedCount > 0 ? (
+                        <div className="space-y-5">
+                          {displayVehicles
+                            .filter((v) => safeSavedVehicleNames.has(v.name))
+                            .map((v) => (
+                              <div
+                                key={v.name}
+                                className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                              >
+                                <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                  <Image
+                                    alt={v.imageAlt}
+                                    w={180}
+                                    h={180}
+                                    className="h-full w-full object-cover"
+                                  />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                      <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                        {v.name}
+                                      </h3>
+                                      <p className="text-sm text-muted-foreground">
+                                        {v.specs}
+                                      </p>
+                                    </div>
+                                    <p className="text-sm font-bold text-foreground">
+                                      {v.price}
+                                    </p>
+                                  </div>
+                                  <div className="mt-4 flex items-center justify-between">
+                                    <button
+                                      type="button"
+                                      onClick={() => go(v.name)}
+                                      className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                    >
+                                      View Details
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => void removeSavedVehicle(v.name)}
+                                      className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No saved vehicles
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Click the heart icon on any vehicle to save it for later.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(heroNavCta)}
@@ -722,58 +1106,79 @@ export const AutoDealershipKimiPage = defineCapsule({
               </div>
 
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-                {inventoryItems.map((v) => (
-                  <article
-                    key={v.name}
-                    className="group overflow-hidden rounded-lg border border-border bg-muted transition-colors hover:border-foreground/30"
-                  >
-                    <div className="relative aspect-[4/3] overflow-hidden">
-                      <Image
-                        alt={v.imageAlt}
-                        w={600}
-                        h={450}
-                        loading="lazy"
-                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <span
-                        className={cn(
-                          "absolute left-4 top-4 rounded px-2 py-1 text-xs font-medium",
-                          v.electric
-                            ? "bg-chart-2 text-primary-foreground"
-                            : "bg-primary text-primary-foreground",
-                        )}
-                      >
-                        {v.badge}
-                      </span>
-                    </div>
-                    <div className="space-y-4 p-6">
-                      <div>
-                        <h3 className="text-lg font-semibold">{v.name}</h3>
-                        <p className="text-sm text-muted-foreground">{v.specs}</p>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {v.features.map((f) => (
-                          <span
-                            key={f}
-                            className="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground"
-                          >
-                            {f}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="flex items-center justify-between border-t border-border pt-4">
-                        <p className="text-2xl font-semibold">{v.price}</p>
+                {displayVehicles.map((v) => {
+                  const isSaved = safeSavedVehicleNames.has(v.name)
+                  return (
+                    <article
+                      key={v.name}
+                      className="group overflow-hidden rounded-lg border border-border bg-muted transition-colors hover:border-foreground/30"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <Image
+                          alt={v.imageAlt}
+                          w={600}
+                          h={450}
+                          loading="lazy"
+                          className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <span
+                          className={cn(
+                            "absolute left-4 top-4 rounded px-2 py-1 text-xs font-medium",
+                            v.electric
+                              ? "bg-chart-2 text-primary-foreground"
+                              : "bg-primary text-primary-foreground",
+                          )}
+                        >
+                          {v.badge}
+                        </span>
                         <button
                           type="button"
-                          onClick={() => go(v.name)}
-                          className="text-sm font-medium transition-colors hover:text-muted-foreground"
+                          onClick={() => void saveVehicle(v.name)}
+                          aria-pressed={isSaved}
+                          aria-label={
+                            isSaved
+                              ? `Remove ${v.name} from saved vehicles`
+                              : `Save ${v.name} to vehicles`
+                          }
+                          className={cn(
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                            isSaved
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                          )}
                         >
-                          View Details →
+                          <HeartIcon active={isSaved} />
                         </button>
                       </div>
-                    </div>
-                  </article>
-                ))}
+                      <div className="space-y-4 p-6">
+                        <div>
+                          <h3 className="text-lg font-semibold">{v.name}</h3>
+                          <p className="text-sm text-muted-foreground">{v.specs}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {v.features.map((f) => (
+                            <span
+                              key={f}
+                              className="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground"
+                            >
+                              {f}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="flex items-center justify-between border-t border-border pt-4">
+                          <p className="text-2xl font-semibold">{v.price}</p>
+                          <button
+                            type="button"
+                            onClick={() => go(v.name)}
+                            className="text-sm font-medium transition-colors hover:text-muted-foreground"
+                          >
+                            View Details →
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
 
               <div className="mt-12 text-center">
@@ -1038,7 +1443,16 @@ export const AutoDealershipKimiPage = defineCapsule({
                     className="space-y-4"
                     onSubmit={(e) => {
                       e.preventDefault()
-                      go(ctaSubmit)
+                      const form = e.currentTarget
+                      const name = (form.elements.namedItem('dealer-name') as HTMLInputElement).value
+                      const phone = (form.elements.namedItem('dealer-phone') as HTMLInputElement).value
+                      const email = (form.elements.namedItem('dealer-email') as HTMLInputElement).value
+                      const vehicle = (form.elements.namedItem('dealer-vehicle') as HTMLSelectElement).value
+
+                      if (name && phone && email && vehicle) {
+                        void submitTestDriveRequest(name, phone, email, vehicle)
+                        go(ctaSubmit)
+                      }
                     }}
                   >
                     <div className="grid gap-4 sm:grid-cols-2">
@@ -1050,6 +1464,7 @@ export const AutoDealershipKimiPage = defineCapsule({
                           id="dealer-name"
                           type="text"
                           placeholder="Full Name"
+                          required
                           className={inputCls}
                         />
                       </div>
@@ -1061,6 +1476,7 @@ export const AutoDealershipKimiPage = defineCapsule({
                           id="dealer-phone"
                           type="tel"
                           placeholder="Phone Number"
+                          required
                           className={inputCls}
                         />
                       </div>
@@ -1073,6 +1489,7 @@ export const AutoDealershipKimiPage = defineCapsule({
                         id="dealer-email"
                         type="email"
                         placeholder="Email Address"
+                        required
                         className={inputCls}
                       />
                     </div>
@@ -1082,6 +1499,7 @@ export const AutoDealershipKimiPage = defineCapsule({
                       </label>
                       <select
                         id="dealer-vehicle"
+                        required
                         className={cn(inputCls, "appearance-none")}
                       >
                         {ctaVehicleOptions.map((opt) => (

@@ -1,9 +1,27 @@
 import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
-import { Check, ChevronDown, Box } from "lucide-react"
+import { Check, ChevronDown, Box, ArrowRight } from "lucide-react"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * PricingKimiPage — a faithful Tailwind v4 port of a Kimi-generated "VaultCloud"
@@ -126,9 +144,78 @@ export const PricingKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      subscriptions: table({
+        planName: string(),
+        price: string(),
+        period: string(),
+        features: string(),
+      }),
+    },
+    queries: {
+      subscriptions: ({ db }) => db.subscriptions.orderBy('createdAt').all(),
+    },
+    mutations: {
+      subscribe: ({ db }, planName: string, price: string, period: string, features: string) => {
+        db.subscriptions.insert({ planName, price, period, features })
+        return db.subscriptions.all()
+      },
+      unsubscribe: ({ db }, id: string) => {
+        db.subscriptions.delete(id)
+        return db.subscriptions.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [openFaq, setOpenFaq] = useState(0)
+    const [subscriptionDrawerOpen, setSubscriptionDrawerOpen] = useState(false)
+
+    const subscriptions = lakebed.useQuery('subscriptions')
+    const subscribe = lakebed.useMutation('subscribe')
+    const unsubscribe = lakebed.useMutation('unsubscribe')
+    const auth = lakebed.useAuth()
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const handleSubscribe = (planName: string, price: string, period: string, features: string[]) => {
+      void subscribe(planName, price, period, features.join(', '))
+      setSubscriptionDrawerOpen(true)
+    }
+
+    const activeSubscriptions = subscriptions ?? []
+    const subscriptionCount = activeSubscriptions.length
+
+    // Shared sub-components
+    const ArrowRightIcon = () => (
+      <ArrowRight className="size-4" />
+    )
 
     const brand = props.brand ?? "VaultCloud"
     const navLinks =
@@ -368,13 +455,205 @@ export const PricingKimiPage = defineCapsule({
             </nav>
 
             <div className="hidden items-center gap-3 md:flex">
-              <button
-                type="button"
-                onClick={() => go("Sign in")}
-                className="rounded-md px-3 py-2 text-[0.9375rem] font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                Sign in
-              </button>
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown className="size-4 text-muted-foreground" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => setSubscriptionDrawerOpen(true)}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Subscriptions
+                        <div className="flex items-center gap-2">
+                          {subscriptionCount > 0 && (
+                            <span className="grid size-5 place-items-center rounded-full bg-primary text-[0.625rem] font-bold text-primary-foreground">
+                              {subscriptionCount}
+                            </span>
+                          )}
+                          <ArrowRightIcon />
+                        </div>
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={subscriptionDrawerOpen} onOpenChange={setSubscriptionDrawerOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="View subscriptions"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4" />
+                      <path d="M4 6v12c0 1.1.9 2 2 2h14v-4" />
+                      <path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z" />
+                    </svg>
+                    {subscriptionCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {subscriptionCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Your subscriptions</SheetTitle>
+                    <SheetDescription>
+                      {subscriptionCount > 0
+                        ? `${subscriptionCount} active subscription${subscriptionCount === 1 ? '' : 's'}`
+                        : 'No active subscriptions'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {activeSubscriptions.length ? (
+                      <div className="space-y-4">
+                        {activeSubscriptions.map((sub) => (
+                          <div
+                            key={sub.id}
+                            className="rounded-xl border border-border bg-card p-4"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <h3 className="font-semibold text-foreground">
+                                  {sub.planName}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                  ${sub.price}{sub.period}
+                                </p>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => void unsubscribe(sub.id)}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                            <div className="mt-3">
+                              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                Features
+                              </p>
+                              <p className="mt-1 text-sm text-muted-foreground">
+                                {sub.features}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No subscriptions yet
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Choose a plan from the pricing section to get started.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <SheetClose asChild>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full rounded-full"
+                      >
+                        Close
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
               <button
                 type="button"
                 onClick={() => go("Pricing")}
@@ -492,7 +771,7 @@ export const PricingKimiPage = defineCapsule({
                     </div>
                     <button
                       type="button"
-                      onClick={() => go(plan.cta)}
+                      onClick={() => handleSubscribe(plan.name, plan.price, plan.period, plan.features)}
                       className={cn(
                         "w-full rounded-lg px-5 py-2.5 text-[0.9375rem] font-semibold transition-colors",
                         plan.isPopular

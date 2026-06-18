@@ -1,8 +1,21 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * ConstructionKimiPage — a complete, self-contained construction / general-contractor
@@ -193,8 +206,100 @@ export const ConstructionKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      leadRequests: table({
+        name: string(),
+        email: string(),
+        phone: string(),
+        projectType: string(),
+        budget: string(),
+        timeline: string(),
+        details: string(),
+        status: string(),
+      }),
+    },
+    queries: {
+      leadRequests: ({ db }) => db.leadRequests.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addLeadRequest: (
+        { db },
+        name: string,
+        email: string,
+        phone: string,
+        projectType: string,
+        budget: string,
+        timeline: string,
+        details: string,
+      ) => {
+        db.leadRequests.insert({
+          name: name.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+          projectType,
+          budget,
+          timeline,
+          details: details.trim(),
+          status: "new",
+        })
+
+        return db.leadRequests.all()
+      },
+      markLeadReviewed: ({ db }, leadRequestId: string) => {
+        for (const lead of db.leadRequests.where("id", leadRequestId).all()) {
+          db.leadRequests.update(lead.id, { status: "reviewed" })
+        }
+
+        return db.leadRequests.all()
+      },
+      removeLeadRequest: ({ db }, leadRequestId: string) => {
+        for (const lead of db.leadRequests.where("id", leadRequestId).all()) {
+          db.leadRequests.delete(lead.id)
+        }
+
+        return db.leadRequests.all()
+      },
+      clearLeadRequests: ({ db }) => {
+        for (const lead of db.leadRequests.all()) {
+          db.leadRequests.delete(lead.id)
+        }
+
+        return db.leadRequests.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [leadDrawerOpen, setLeadDrawerOpen] = useState(false)
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authStatus = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const storedLeadRequests = lakebed.useQuery("leadRequests")
+    const leadRequests = storedLeadRequests ?? []
+    const addLeadRequest = lakebed.useMutation("addLeadRequest")
+    const markLeadReviewed = lakebed.useMutation("markLeadReviewed")
+    const removeLeadRequest = lakebed.useMutation("removeLeadRequest")
+    const clearLeadRequests = lakebed.useMutation("clearLeadRequests")
+    const openLeadCount = leadRequests.filter(
+      (lead) => lead.status === "new",
+    ).length
+    const leadTotal = leadRequests.length
     const brand = props.brand ?? "BuiltRight"
     const nav = props.nav?.length
       ? props.nav
@@ -836,6 +941,163 @@ export const ConstructionKimiPage = defineCapsule({
                   </svg>
                   {footerPhone}
                 </button>
+                <Sheet open={leadDrawerOpen} onOpenChange={setLeadDrawerOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      className="relative flex items-center gap-2 rounded-lg border border-border bg-background px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                    >
+                      Lead Queue
+                      <span
+                        className={cn(
+                          "ml-1 grid size-5 place-items-center rounded-full text-[0.7rem] font-bold",
+                          openLeadCount > 0
+                            ? "bg-foreground text-background"
+                            : "bg-muted text-muted-foreground",
+                        )}
+                      >
+                        {leadTotal}
+                      </span>
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle>Lead requests</SheetTitle>
+                      <SheetDescription>
+                        {leadTotal > 0
+                          ? `${leadTotal} quote request${
+                              leadTotal === 1 ? "" : "s"
+                            } saved for this page session.`
+                          : "No quote requests yet. Add one from the form below."}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {leadTotal > 0 ? (
+                        <div className="space-y-4">
+                          {leadRequests.map((lead) => (
+                            <article
+                              key={lead.id}
+                              className="rounded-lg border border-border bg-muted p-4"
+                            >
+                              <div className="mb-3 flex items-start justify-between gap-3">
+                                <div>
+                                  <h3 className="text-sm font-semibold text-foreground">
+                                    {lead.name}
+                                  </h3>
+                                  <p className="text-xs text-muted-foreground">
+                                    {lead.email}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {lead.phone}
+                                  </p>
+                                </div>
+                                <span
+                                  className={cn(
+                                    "mt-0.5 rounded-full px-2 py-1 text-[0.65rem] font-semibold",
+                                    lead.status === "reviewed"
+                                      ? "bg-accent text-accent-foreground/80"
+                                      : "bg-foreground text-background",
+                                  )}
+                                >
+                                  {lead.status === "reviewed" ? "Reviewed" : "New"}
+                                </span>
+                              </div>
+                              <p className="mb-2 text-xs text-muted-foreground">
+                                {lead.projectType} • {lead.budget} • {lead.timeline}
+                              </p>
+                              {lead.details ? (
+                                <p className="mb-3 line-clamp-2 text-sm text-foreground/90">
+                                  {lead.details}
+                                </p>
+                              ) : null}
+                              <div className="flex items-center justify-end gap-2">
+                                {lead.status === "new" ? (
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => void markLeadReviewed(lead.id)}
+                                  >
+                                    Mark reviewed
+                                  </Button>
+                                ) : null}
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => void removeLeadRequest(lead.id)}
+                                >
+                                  Remove
+                                </Button>
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-4 text-center">
+                          <p className="text-sm font-medium text-foreground">
+                            No requests yet
+                          </p>
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            Submit the quote form to start building your lead queue.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="mb-3 flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Pending review</span>
+                        <span className="font-semibold text-foreground">
+                          {openLeadCount}
+                        </span>
+                      </div>
+                      <div className="mb-4 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
+                        {isSignedIn
+                          ? `Signed in as ${authDisplayName}`
+                          : "Sign in to sync these leads across devices."}
+                      </div>
+                      <div className="grid gap-2">
+                        {isSignedIn ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={handleSignOut}
+                          >
+                            Sign out
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={handleSignIn}
+                            disabled={auth.isLoading}
+                          >
+                            {authStatus}
+                          </Button>
+                        )}
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => void clearLeadRequests()}
+                          disabled={leadTotal === 0}
+                        >
+                          Clear queue
+                        </Button>
+                        <SheetClose asChild>
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="w-full rounded-full"
+                          >
+                            Continue
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(heroPrimary)}
@@ -1291,7 +1553,44 @@ export const ConstructionKimiPage = defineCapsule({
                 className="rounded-xl bg-card p-8 shadow-xl lg:p-12"
                 onSubmit={(e) => {
                   e.preventDefault()
+                  const form = e.currentTarget
+                  const formData = new FormData(form)
+                  const name = String(formData.get("con-name") ?? "").trim()
+                  const email = String(formData.get("con-email") ?? "").trim()
+                  const phone = String(formData.get("con-phone") ?? "").trim()
+                  const projectType = String(
+                    formData.get("con-type") ?? "",
+                  ).trim()
+                  const budget = String(formData.get("con-budget") ?? "").trim()
+                  const timeline = String(formData.get("con-timeline") ?? "").trim()
+                  const details = String(formData.get("con-message") ?? "").trim()
+
+                  if (
+                    !name ||
+                    !email ||
+                    !phone ||
+                    !projectType ||
+                    !budget ||
+                    !timeline ||
+                    projectType.startsWith("Select a project type") ||
+                    budget.startsWith("Select budget range") ||
+                    timeline.startsWith("Select timeline")
+                  ) {
+                    return
+                  }
+
+                  void addLeadRequest(
+                    name,
+                    email,
+                    phone,
+                    projectType,
+                    budget,
+                    timeline,
+                    details,
+                  )
+                  form.reset()
                   go(quoteSubmit)
+                  setLeadDrawerOpen(true)
                 }}
               >
                 <div className="mb-6 grid gap-6 md:grid-cols-2">
@@ -1304,6 +1603,7 @@ export const ConstructionKimiPage = defineCapsule({
                     </label>
                     <input
                       id="con-name"
+                      name="con-name"
                       type="text"
                       required
                       placeholder="John Smith"
@@ -1319,6 +1619,7 @@ export const ConstructionKimiPage = defineCapsule({
                     </label>
                     <input
                       id="con-email"
+                      name="con-email"
                       type="email"
                       required
                       placeholder="john@example.com"
@@ -1337,6 +1638,7 @@ export const ConstructionKimiPage = defineCapsule({
                     </label>
                     <input
                       id="con-phone"
+                      name="con-phone"
                       type="tel"
                       required
                       placeholder="(206) 555-1234"
@@ -1352,6 +1654,7 @@ export const ConstructionKimiPage = defineCapsule({
                     </label>
                     <select
                       id="con-type"
+                      name="con-type"
                       required
                       className={cn(inputCls, "appearance-none")}
                     >
@@ -1374,6 +1677,7 @@ export const ConstructionKimiPage = defineCapsule({
                     </label>
                     <select
                       id="con-budget"
+                      name="con-budget"
                       required
                       className={cn(inputCls, "appearance-none")}
                     >
@@ -1393,6 +1697,7 @@ export const ConstructionKimiPage = defineCapsule({
                     </label>
                     <select
                       id="con-timeline"
+                      name="con-timeline"
                       required
                       className={cn(inputCls, "appearance-none")}
                     >
@@ -1414,6 +1719,7 @@ export const ConstructionKimiPage = defineCapsule({
                   </label>
                   <textarea
                     id="con-message"
+                    name="con-message"
                     rows={4}
                     placeholder="Tell us about your project, goals, and any specific requirements..."
                     className={cn(inputCls, "resize-none")}

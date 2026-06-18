@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
+import { number, string, table } from "@ship-fast/lakebed/server"
 import {
   CalendarCheck,
   ChevronDown,
@@ -17,6 +18,23 @@ import {
 import { cn } from "#/lib/utils.ts"
 import { Image } from "#/lib/img.tsx"
 import { useNavigate } from "#/lib/use-navigate.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 // About "Our Story" feature chips, keyed by intent; falls back to a soup bowl.
 const FEATURE_ICONS = [Flame, Wheat, Leaf]
@@ -212,8 +230,60 @@ export const RestaurantKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      menuItems: table({
+        alt: string(),
+        description: string(),
+        dish: string(),
+        price: string(),
+        tagKind: string(),
+        tagLabel: string(),
+      }),
+      reservations: table({
+        date: string(),
+        name: string(),
+        partySize: number(),
+        time: string(),
+      }),
+      favorites: table({
+        dishName: string(),
+      }),
+    },
+    queries: {
+      menuItems: ({ db }) => db.menuItems.orderBy('createdAt').all(),
+      reservations: ({ db }) => db.reservations.orderBy('createdAt').all(),
+      favoriteDishNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.dishName)),
+    },
+    mutations: {
+      addReservation: ({ db }, name: string, date: string, time: string, partySize: number) => {
+        db.reservations.insert({ name, date, time, partySize })
+        return db.reservations.all()
+      },
+      removeReservation: ({ db }, id: string) => {
+        db.reservations.delete(id)
+        return db.reservations.all()
+      },
+      toggleFavorite: ({ db }, dishName: string) => {
+        const existingFavorite = db.favorites
+          .where('dishName', dishName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ dishName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [reservationOpen, setReservationOpen] = useState(false)
+    const [mobileOpen, setMobileOpen] = useState(false)
     const brand = props.brand ?? "Kaze Ramen"
 
     const navLinks = props.nav?.length
@@ -407,6 +477,109 @@ export const RestaurantKimiPage = defineCapsule({
         },
       ]
 
+    const normalizedMenuItems = menuCategories.flatMap((cat) =>
+      cat.items.map((item) => ({
+        alt: item.alt,
+        description: item.description,
+        dish: item.dish,
+        price: item.price,
+        tagKind: item.tag?.kind ?? '',
+        tagLabel: item.tag?.label ?? '',
+      })),
+    )
+
+    const storedMenuItems = lakebed.useQuery('menuItems')
+    const reservations = lakebed.useQuery('reservations')
+    const favoriteDishNames = lakebed.useQuery('favoriteDishNames')
+    const auth = lakebed.useAuth()
+    const addReservation = lakebed.useMutation('addReservation')
+    const removeReservation = lakebed.useMutation('removeReservation')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const displayMenuItems =
+      storedMenuItems && storedMenuItems.length > 0
+        ? storedMenuItems
+        : normalizedMenuItems
+
+    const safeReservations = reservations ?? []
+    const reservationCount = safeReservations.length
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     const galleryEyebrow = props.gallery?.eyebrow ?? "Gallery"
     const galleryHeading = props.gallery?.heading ?? "A Look Inside"
     const gallerySub =
@@ -527,22 +700,303 @@ export const RestaurantKimiPage = defineCapsule({
               ))}
             </nav>
 
-            <button
-              type="button"
-              onClick={() => go(reserveLabel)}
-              className="hidden items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:-translate-y-px hover:bg-primary/90 md:inline-flex"
-            >
-              <CalendarCheck className="size-4" />
-              {reserveLabel}
-            </button>
+            <div className="flex items-center gap-4">
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Reservations')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Reservations
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
 
-            <button
-              type="button"
-              onClick={() => go(reserveLabel)}
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 md:hidden"
-            >
-              {reserveLabel}
-            </button>
+              <Sheet open={reservationOpen} onOpenChange={setReservationOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Reservations"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <CalendarCheck className="size-5" />
+                    {reservationCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {reservationCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Reservations</SheetTitle>
+                    <SheetDescription>
+                      {reservationCount > 0
+                        ? `${reservationCount} reservation${reservationCount === 1 ? '' : 's'} ready.`
+                        : 'No reservations yet.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {safeReservations.length ? (
+                      <div className="space-y-5">
+                        {safeReservations.map((res) => (
+                          <div
+                            key={res.id}
+                            className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                          >
+                            <div className="aspect-square flex items-center justify-center rounded-lg bg-muted">
+                              <CalendarCheck className="size-8 text-primary" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                    {res.partySize} guest{res.partySize === 1 ? '' : 's'}
+                                  </p>
+                                  <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                    {res.name}
+                                  </h3>
+                                </div>
+                              </div>
+                              <div className="mt-4 flex items-center justify-between">
+                                <div className="text-sm text-muted-foreground">
+                                  {res.date} at {res.time}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => void removeReservation(res.id)}
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No reservations
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Make a reservation to secure your table at {brand}.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <SheetClose asChild>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="rounded-full"
+                      >
+                        Close
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+
+              <button
+                type="button"
+                onClick={() => setReservationOpen(true)}
+                className="hidden items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:-translate-y-px hover:bg-primary/90 md:inline-flex"
+              >
+                <CalendarCheck className="size-4" />
+                {reserveLabel}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setReservationOpen(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 md:hidden"
+              >
+                {reserveLabel}
+              </button>
+
+              <button
+                type="button"
+                aria-label="Open menu"
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-menu"
+                onClick={() => setMobileOpen((v: boolean) => !v)}
+                className="p-2 text-muted-foreground hover:text-foreground lg:hidden"
+              >
+                <svg
+                  className="size-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            {mobileOpen && (
+              <div
+                id="mobile-menu"
+                className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
+              >
+                {navLinks.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      go(label)
+                    }}
+                    className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                  >
+                    {label}
+                  </button>
+                ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </header>
 
@@ -717,43 +1171,64 @@ export const RestaurantKimiPage = defineCapsule({
               </div>
 
               <div className="grid gap-7 sm:grid-cols-2">
-                {activeItems.map((item) => (
-                  <article
-                    key={item.dish}
-                    className="flex gap-4 rounded-xl border border-border bg-card text-card-foreground p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-foreground/10"
-                  >
-                    <div className="size-22 flex-shrink-0 overflow-hidden rounded-md">
-                      <Image
-                        alt={item.alt}
-                        w={300}
-                        h={300}
-                        loading="lazy"
-                        className="h-full w-full bg-muted object-cover"
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="mb-1.5 flex items-baseline justify-between gap-3">
-                        <h3 className="font-serif text-lg font-semibold">{item.dish}</h3>
-                        <span className="flex-shrink-0 text-base font-bold text-primary">
-                          {item.price}
-                        </span>
-                      </div>
-                      <p className="mb-2 text-sm leading-snug text-muted-foreground">
-                        {item.description}
-                      </p>
-                      {item.tag ? (
-                        <span
+                {activeItems.map((item) => {
+                  const isFavorite = favoriteDishNames?.has(item.dish) ?? false
+                  return (
+                    <article
+                      key={item.dish}
+                      className="flex gap-4 rounded-xl border border-border bg-card text-card-foreground p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-foreground/10"
+                    >
+                      <div className="relative size-22 flex-shrink-0 overflow-hidden rounded-md">
+                        <Image
+                          alt={item.alt}
+                          w={300}
+                          h={300}
+                          loading="lazy"
+                          className="h-full w-full bg-muted object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavorite(item.dish)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${item.dish} from favorites`
+                              : `Add ${item.dish} to favorites`
+                          }
                           className={cn(
-                            "inline-block rounded px-2 py-0.5 text-[0.7rem] font-semibold tracking-wide uppercase",
-                            TAG_STYLES[item.tag.kind ?? "chef"],
+                            'absolute bottom-2 right-2 grid size-8 place-items-center rounded-full shadow-md transition-all hover:scale-105',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-background/90 text-foreground hover:bg-background',
                           )}
                         >
-                          {item.tag.label}
-                        </span>
-                      ) : null}
-                    </div>
-                  </article>
-                ))}
+                          <HeartIcon active={isFavorite} />
+                        </button>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1.5 flex items-baseline justify-between gap-3">
+                          <h3 className="font-serif text-lg font-semibold">{item.dish}</h3>
+                          <span className="flex-shrink-0 text-base font-bold text-primary">
+                            {item.price}
+                          </span>
+                        </div>
+                        <p className="mb-2 text-sm leading-snug text-muted-foreground">
+                          {item.description}
+                        </p>
+                        {item.tag ? (
+                          <span
+                            className={cn(
+                              "inline-block rounded px-2 py-0.5 text-[0.7rem] font-semibold tracking-wide uppercase",
+                              TAG_STYLES[item.tag.kind ?? "chef"],
+                            )}
+                          >
+                            {item.tag.label}
+                          </span>
+                        ) : null}
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -891,22 +1366,68 @@ export const RestaurantKimiPage = defineCapsule({
                 <p className="mx-auto mt-4 max-w-xl text-lg leading-relaxed text-background/70">
                   {resBody}
                 </p>
-                <div className="mt-9 flex flex-wrap justify-center gap-3.5">
-                  <button
-                    type="button"
-                    onClick={() => go(reserveLabel)}
-                    className="inline-flex items-center justify-center gap-2.5 rounded-md bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/35 transition-all hover:-translate-y-0.5 hover:bg-primary/90"
-                  >
-                    <Phone className="size-4" /> {resPrimary}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => go(reserveLabel)}
-                    className="inline-flex items-center justify-center gap-2.5 rounded-md border border-background/35 bg-transparent px-8 py-3.5 text-sm font-semibold text-background transition-all hover:border-background/55 hover:bg-background/10"
-                  >
-                    <CalendarCheck className="size-4" /> {resSecondary}
-                  </button>
-                </div>
+
+                <form
+                  className="mx-auto mt-9 max-w-md"
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    const formData = new FormData(e.currentTarget)
+                    const name = formData.get('name') as string
+                    const date = formData.get('date') as string
+                    const time = formData.get('time') as string
+                    const partySize = Number.parseInt(formData.get('partySize') as string, 10)
+
+                    if (name && date && time && partySize > 0) {
+                      void addReservation(name, date, time, partySize)
+                      setReservationOpen(true)
+                      e.currentTarget.reset()
+                    }
+                  }}
+                >
+                  <div className="space-y-4">
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="Your name"
+                      required
+                      className="w-full rounded-md border border-background/20 bg-background/10 px-4 py-3 text-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-background/30"
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <input
+                        type="date"
+                        name="date"
+                        required
+                        className="w-full rounded-md border border-background/20 bg-background/10 px-4 py-3 text-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-background/30"
+                      />
+                      <input
+                        type="time"
+                        name="time"
+                        required
+                        className="w-full rounded-md border border-background/20 bg-background/10 px-4 py-3 text-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-background/30"
+                      />
+                    </div>
+                    <select
+                      name="partySize"
+                      required
+                      className="w-full rounded-md border border-background/20 bg-background/10 px-4 py-3 text-background focus:outline-none focus:ring-2 focus:ring-background/30"
+                    >
+                      <option value="">Party size</option>
+                      <option value="1">1 guest</option>
+                      <option value="2">2 guests</option>
+                      <option value="3">3 guests</option>
+                      <option value="4">4 guests</option>
+                      <option value="5">5 guests</option>
+                      <option value="6">6 guests</option>
+                    </select>
+                    <button
+                      type="submit"
+                      className="w-full rounded-md bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/35 transition-all hover:-translate-y-0.5 hover:bg-primary/90"
+                    >
+                      Book Table
+                    </button>
+                  </div>
+                </form>
+
                 <p className="mt-6 text-sm text-background/50">
                   {resPhoneNote}{" "}
                   <button

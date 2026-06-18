@@ -1,9 +1,22 @@
+import { useState } from "react"
 import { type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
 
 /**
  * TelehealthKimiPage2 — a complete, self-contained telehealth / virtual-care
@@ -189,8 +202,45 @@ export const TelehealthKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      savedActions: table({
+        label: string(),
+        source: string(),
+      }),
+    },
+    queries: {
+      savedActions: ({ db }) => db.savedActions.orderBy("createdAt").all(),
+    },
+    mutations: {
+      saveSavedAction: ({ db }, label: string, source: string) => {
+        db.savedActions.insert({ label, source })
+        return db.savedActions.orderBy("createdAt").all()
+      },
+      removeSavedAction: ({ db }, id: string) => {
+        db.savedActions.delete(id)
+        return db.savedActions.orderBy("createdAt").all()
+      },
+      clearSavedActions: ({ db }) => {
+        for (const item of db.savedActions.all()) {
+          db.savedActions.delete(item.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [workspaceOpen, setWorkspaceOpen] = useState(false)
+    const savedActions = lakebed.useQuery("savedActions")
+    const saveSavedAction = lakebed.useMutation("saveSavedAction")
+    const removeSavedAction = lakebed.useMutation("removeSavedAction")
+    const clearSavedActions = lakebed.useMutation("clearSavedActions")
+    const savedActionCount = savedActions?.length ?? 0
+    const recordSavedAction = (label: string, source: string) => {
+      void saveSavedAction(label, source)
+      setWorkspaceOpen(true)
+    }
     const brand = props.brand ?? "Zenith"
     const nav = props.nav?.length
       ? props.nav
@@ -882,6 +932,61 @@ export const TelehealthKimiPage2 = defineCapsule({
               </div>
             </div>
           </header>
+        <Sheet open={workspaceOpen} onOpenChange={setWorkspaceOpen}>
+          <SheetTrigger asChild>
+            <button
+              type="button"
+              className="fixed bottom-5 right-5 z-40 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-card-foreground shadow-lg transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              Saved {savedActionCount}
+            </button>
+          </SheetTrigger>
+          <SheetContent className="flex w-full flex-col p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6 text-left">
+              <SheetTitle>Saved workspace</SheetTitle>
+              <SheetDescription>Keep track of page actions and follow-ups.</SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 space-y-3 overflow-y-auto p-6">
+              {(savedActions ?? []).length ? (
+                (savedActions ?? []).map((item) => (
+                  <div key={item.id} className="rounded-lg border border-border bg-card p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-card-foreground">{item.label}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{item.source}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void removeSavedAction(item.id)}
+                        className="text-xs font-medium text-muted-foreground transition-colors hover:text-destructive"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="rounded-lg border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground">
+                  No saved actions yet. Save this page or any follow-up you want to revisit.
+                </div>
+              )}
+            </div>
+            <SheetFooter className="gap-2 border-t border-border p-6 sm:flex-col">
+              <Button type="button" onClick={() => recordSavedAction("Saved page", brand)}>
+                Save current page
+              </Button>
+              <Button type="button" variant="outline" onClick={() => void clearSavedActions()}>
+                Clear saved actions
+              </Button>
+              <SheetClose asChild>
+                <Button type="button" variant="secondary">
+                  Done
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+
 
           {/* Logos */}
           <section

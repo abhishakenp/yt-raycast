@@ -1,9 +1,35 @@
-import { type ReactNode } from "react"
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "#/components/ui/command.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * SubscriptionBoxKimiPage — a complete, self-contained subscription-box e-commerce
@@ -183,8 +209,105 @@ export const SubscriptionBoxKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      plans: table({
+        name: string(),
+        tagline: string(),
+        price: string(),
+        period: string(),
+        features: string(),
+        cta: string(),
+        featured: string(),
+        badge: string(),
+      }),
+      subscriptions: table({
+        planName: string(),
+        quantity: number(),
+      }),
+      favorites: table({
+        planName: string(),
+      }),
+    },
+    queries: {
+      plans: ({ db }) => db.plans.orderBy('createdAt').all(),
+      subscriptionLines: ({ db }) =>
+        db.subscriptions.all().flatMap((item) => {
+          const plan = db.plans.get(item.planName)
+          return plan ? [{ ...item, plan }] : []
+        }),
+      favoritePlanNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.planName)),
+    },
+    mutations: {
+      subscribeToPlan: ({ db }, planName: string) => {
+        const plan = db.plans.where('name', planName).all()[0]
+        if (!plan) return db.subscriptions.all()
+
+        const existingSubscription = db.subscriptions
+          .where('planName', plan.id)
+          .all()[0]
+
+        if (existingSubscription) {
+          db.subscriptions.update(existingSubscription.id, {
+            quantity: existingSubscription.quantity + 1,
+          })
+        } else {
+          db.subscriptions.insert({
+            planName: plan.id,
+            quantity: 1,
+          })
+        }
+
+        return db.subscriptions.all()
+      },
+      updateSubscriptionQuantity: ({ db }, planId: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+
+        for (const item of db.subscriptions.where('planName', planId).all()) {
+          if (nextQuantity) {
+            db.subscriptions.update(item.id, { quantity: nextQuantity })
+          } else {
+            db.subscriptions.delete(item.id)
+          }
+        }
+
+        return db.subscriptions.all()
+      },
+      removeFromSubscriptions: ({ db }, planId: string) => {
+        for (const item of db.subscriptions.where('planName', planId).all()) {
+          db.subscriptions.delete(item.id)
+        }
+
+        return db.subscriptions.all()
+      },
+      clearSubscriptions: ({ db }) => {
+        for (const item of db.subscriptions.all()) {
+          db.subscriptions.delete(item.id)
+        }
+
+        return []
+      },
+      toggleFavorite: ({ db }, planName: string) => {
+        const existingFavorite = db.favorites
+          .where('planName', planName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ planName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [mobileOpen, setMobileOpen] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
+    const [subscriptionOpen, setSubscriptionOpen] = useState(false)
     const brand = props.brand ?? "BrewBox"
     const nav = props.nav?.length
       ? props.nav
@@ -367,6 +490,77 @@ export const SubscriptionBoxKimiPage = defineCapsule({
       "All plans include free shipping within the US. International shipping available for $8/box."
     const plansFootnoteLink = props.plans?.footnoteLink ?? "Learn more"
 
+    const priceAmount = (price: string) => {
+      const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ''))
+      return Number.isFinite(amount) ? amount : 0
+    }
+    const formatCurrency = (amount: number) =>
+      new Intl.NumberFormat('en-US', {
+        currency: 'USD',
+        style: 'currency',
+      }).format(amount)
+
+    const normalizedPlanItems = planItems.map((plan) => ({
+      name: plan.name,
+      tagline: plan.tagline,
+      price: plan.price,
+      period: plan.period,
+      features: plan.features.join(', '),
+      cta: plan.cta,
+      featured: plan.featured ? 'true' : 'false',
+      badge: plan.badge ?? '',
+    }))
+
+    const storedPlans = lakebed.useQuery('plans')
+    const subscriptionLines = lakebed.useQuery('subscriptionLines')
+    const favoritePlanNames = lakebed.useQuery('favoritePlanNames')
+    const auth = lakebed.useAuth()
+    const subscribeToPlan = lakebed.useMutation('subscribeToPlan')
+    const updateSubscriptionQuantity = lakebed.useMutation('updateSubscriptionQuantity')
+    const removeFromSubscriptions = lakebed.useMutation('removeFromSubscriptions')
+    const clearSubscriptions = lakebed.useMutation('clearSubscriptions')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const displayPlans =
+      storedPlans && storedPlans.length > 0
+        ? storedPlans
+        : normalizedPlanItems
+    const safeSubscriptionLines = subscriptionLines ?? []
+    const subscriptionCount = safeSubscriptionLines.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+    const subscriptionSubtotal = safeSubscriptionLines.reduce(
+      (total, item) => total + priceAmount(item.plan.price) * item.quantity,
+      0,
+    )
+    const shipping = subscriptionSubtotal > 0 && subscriptionSubtotal < 150 ? 12 : 0
+    const subscriptionTotal = subscriptionSubtotal + shipping
+
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
@@ -530,22 +724,20 @@ export const SubscriptionBoxKimiPage = defineCapsule({
 
     const ChevronDown = () => (
       <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="text-muted-foreground transition-transform group-open:rotate-180"
+        viewBox="0 0 24 24"
         aria-hidden="true"
       >
-        <path d="M19 9l-7 7-7-7" />
+        <polyline points="6 9 12 15 18 9" />
       </svg>
     )
 
-    const ArrowRight = ({ className }: { className?: string }) => (
+    const ArrowRight = ({ className }: { className?: string } = {}) => (
       <svg
         width="32"
         height="32"
@@ -559,6 +751,24 @@ export const SubscriptionBoxKimiPage = defineCapsule({
         aria-hidden="true"
       >
         <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
       </svg>
     )
 
@@ -678,41 +888,463 @@ export const SubscriptionBoxKimiPage = defineCapsule({
         )}
       >
         {/* Navbar */}
-        <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex h-16 items-center justify-between">
+        <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
+          <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 lg:h-20">
+            {/* Logo */}
+            <button
+              type="button"
+              onClick={() => go(brand)}
+              className="flex items-center gap-2 text-xl font-bold tracking-tight text-foreground"
+            >
+              <BrandMark className="size-8" />
+              <span>{brand}</span>
+            </button>
+
+            {/* Desktop nav */}
+            <div className="hidden items-center gap-8 lg:flex">
+              {nav.map((label) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => go(label)}
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-4">
               <button
                 type="button"
-                onClick={() => go(brand)}
-                className="flex items-center gap-2"
+                onClick={() => setSearchOpen(true)}
+                aria-label="Search"
+                className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground sm:flex"
               >
-                <BrandMark className="size-8" />
-                <span className="text-xl font-semibold tracking-tight">
-                  {brand}
-                </span>
+                <svg
+                  className="size-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
               </button>
-              <div className="hidden items-center gap-8 md:flex">
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight className="size-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Subscriptions')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Subscriptions
+                        <ArrowRight className="size-4" />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={subscriptionOpen} onOpenChange={setSubscriptionOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Subscriptions"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    {subscriptionCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {subscriptionCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Your subscriptions</SheetTitle>
+                    <SheetDescription>
+                      {subscriptionCount > 0
+                        ? `${subscriptionCount} subscription${subscriptionCount === 1 ? '' : 's'} in your plan.`
+                        : 'No subscriptions yet.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {safeSubscriptionLines.length ? (
+                      <div className="space-y-5">
+                        {safeSubscriptionLines.map((item) => (
+                          <div
+                            key={item.id}
+                            className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                          >
+                            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                              <Image
+                                alt={item.plan.name}
+                                w={180}
+                                h={180}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                    {item.plan.name}
+                                  </h3>
+                                  <p className="text-xs text-muted-foreground">
+                                    {item.plan.tagline}
+                                  </p>
+                                </div>
+                                <p className="text-sm font-bold text-foreground">
+                                  {formatCurrency(
+                                    priceAmount(item.plan.price) *
+                                      item.quantity,
+                                  )}
+                                </p>
+                              </div>
+                              <div className="mt-4 flex items-center justify-between">
+                                <div className="inline-flex h-9 items-center rounded-full border border-border bg-background">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void updateSubscriptionQuantity(
+                                        item.planName,
+                                        item.quantity - 1,
+                                      )
+                                    }
+                                    className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                    aria-label={`Decrease ${item.plan.name} quantity`}
+                                  >
+                                    -
+                                  </button>
+                                  <span className="min-w-8 text-center text-sm font-semibold">
+                                    {item.quantity}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void updateSubscriptionQuantity(
+                                        item.planName,
+                                        item.quantity + 1,
+                                      )
+                                    }
+                                    className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                    aria-label={`Increase ${item.plan.name} quantity`}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void removeFromSubscriptions(item.planName)
+                                  }
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No subscriptions yet
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Choose a plan to start your subscription journey.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Subtotal</span>
+                        <span>{formatCurrency(subscriptionSubtotal)}</span>
+                      </div>
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Shipping</span>
+                        <span>
+                          {shipping ? formatCurrency(shipping) : 'Free'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between pt-2 text-base font-bold text-foreground">
+                        <span>Total</span>
+                        <span>{formatCurrency(subscriptionTotal)}</span>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      disabled={!safeSubscriptionLines.length}
+                      className="w-full rounded-full"
+                      onClick={() => go('Checkout')}
+                    >
+                      Checkout
+                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full"
+                        onClick={() => void clearSubscriptions()}
+                        disabled={!safeSubscriptionLines.length}
+                      >
+                        Clear
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+              <button
+                type="button"
+                aria-label="Open menu"
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-menu"
+                onClick={() => setMobileOpen((v: boolean) => !v)}
+                className="p-2 text-muted-foreground hover:text-foreground lg:hidden"
+              >
+                <svg
+                  className="size-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              </button>
+            </div>
+            {mobileOpen && (
+              <div
+                id="mobile-menu"
+                className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
+              >
                 {nav.map((label) => (
                   <button
                     key={label}
                     type="button"
-                    onClick={() => go(label)}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      go(label)
+                    }}
+                    className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
                   >
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
-              <button
-                type="button"
-                onClick={() => go(nav[1] ?? heroPrimary)}
-                className="hidden rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
-              >
-                Get Started
-              </button>
-            </div>
-          </div>
+            )}
+          </nav>
         </header>
+
+        <CommandDialog
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          title="Search plans"
+          description="Search the subscription plans available for this session."
+          className="max-w-xl"
+        >
+          <CommandInput placeholder={`Search ${brand} plans...`} />
+          <CommandList className="max-h-[420px]">
+            <CommandEmpty>No plans found.</CommandEmpty>
+            <CommandGroup heading="Plans">
+              {displayPlans.map((plan) => (
+                <CommandItem
+                  key={plan.name}
+                  value={`${plan.name} ${plan.tagline} ${plan.price}`}
+                  onSelect={() => {
+                    setSearchOpen(false)
+                    go(plan.name)
+                  }}
+                  className="gap-3 py-3"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {plan.name}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {plan.tagline}
+                    </p>
+                  </div>
+                  <span className="text-sm font-bold text-foreground">
+                    {plan.price}
+                  </span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
 
         <main>
           {/* Hero */}
@@ -986,81 +1618,109 @@ export const SubscriptionBoxKimiPage = defineCapsule({
                 <p className="text-lg text-muted-foreground">{plansDesc}</p>
               </div>
               <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
-                {planItems.map((plan) => (
-                  <div
-                    key={plan.name}
-                    className={cn(
-                      "relative rounded-xl p-8",
-                      plan.featured
-                        ? "bg-primary text-primary-foreground"
-                        : "border border-border bg-card text-card-foreground",
-                    )}
-                  >
-                    {plan.badge && (
-                      <div className="absolute right-0 top-0 rounded-bl-lg rounded-tr-xl bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
-                        {plan.badge}
-                      </div>
-                    )}
-                    <h3 className="text-xl font-semibold">{plan.name}</h3>
-                    <p
+                {displayPlans.map((plan) => {
+                  const isFavorite =
+                    favoritePlanNames?.has(plan.name) ?? false
+                  const isFeatured = plan.featured === 'true'
+                  const features = plan.features.split(', ')
+
+                  return (
+                    <div
+                      key={plan.name}
                       className={cn(
-                        "mt-2",
-                        plan.featured
-                          ? "text-primary-foreground/70"
-                          : "text-muted-foreground",
+                        "relative rounded-xl p-8",
+                        isFeatured
+                          ? "bg-primary text-primary-foreground"
+                          : "border border-border bg-card text-card-foreground",
                       )}
                     >
-                      {plan.tagline}
-                    </p>
-                    <div className="mb-8 mt-6">
-                      <span className="text-4xl font-bold">{plan.price}</span>
-                      <span
+                      {plan.badge && (
+                        <div className="absolute right-0 top-0 rounded-bl-lg rounded-tr-xl bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
+                          {plan.badge}
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => void toggleFavorite(plan.name)}
+                        aria-pressed={isFavorite}
+                        aria-label={
+                          isFavorite
+                            ? `Remove ${plan.name} from favorites`
+                            : `Add ${plan.name} to favorites`
+                        }
                         className={cn(
-                          plan.featured
+                          "absolute -top-2 -right-2 grid size-8 place-items-center rounded-full shadow-md transition-all hover:scale-105",
+                          isFavorite
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-background/90 text-foreground hover:bg-background",
+                        )}
+                      >
+                        <HeartIcon active={isFavorite} />
+                      </button>
+                      <h3 className="text-xl font-semibold">{plan.name}</h3>
+                      <p
+                        className={cn(
+                          "mt-2",
+                          isFeatured
                             ? "text-primary-foreground/70"
                             : "text-muted-foreground",
                         )}
                       >
-                        {plan.period}
-                      </span>
+                        {plan.tagline}
+                      </p>
+                      <div className="mb-8 mt-6">
+                        <span className="text-4xl font-bold">{plan.price}</span>
+                        <span
+                          className={cn(
+                            isFeatured
+                              ? "text-primary-foreground/70"
+                              : "text-muted-foreground",
+                          )}
+                        >
+                          {plan.period}
+                        </span>
+                      </div>
+                      <ul className="mb-8 space-y-4">
+                        {features.map((feature) => (
+                          <li key={feature} className="flex items-start gap-3">
+                            <Check
+                              className={cn(
+                                "mt-0.5 size-5 shrink-0",
+                                isFeatured
+                                  ? "text-primary-foreground"
+                                  : "text-primary",
+                              )}
+                            />
+                            <span
+                              className={cn(
+                                isFeatured
+                                  ? "text-primary-foreground/90"
+                                  : "text-muted-foreground",
+                              )}
+                            >
+                              {feature}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void subscribeToPlan(plan.name)
+                          setSubscriptionOpen(true)
+                        }}
+                        className={cn(
+                          "w-full rounded-full px-6 py-3 font-medium transition-colors",
+                          isFeatured
+                            ? "bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+                            : "border border-border text-foreground hover:bg-accent",
+                        )}
+                      >
+                        {plan.cta}
+                      </button>
                     </div>
-                    <ul className="mb-8 space-y-4">
-                      {plan.features.map((feature) => (
-                        <li key={feature} className="flex items-start gap-3">
-                          <Check
-                            className={cn(
-                              "mt-0.5 size-5 shrink-0",
-                              plan.featured
-                                ? "text-primary-foreground"
-                                : "text-primary",
-                            )}
-                          />
-                          <span
-                            className={cn(
-                              plan.featured
-                                ? "text-primary-foreground/90"
-                                : "text-muted-foreground",
-                            )}
-                          >
-                            {feature}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                    <button
-                      type="button"
-                      onClick={() => go(`${plan.name} ${plan.cta}`)}
-                      className={cn(
-                        "w-full rounded-full px-6 py-3 font-medium transition-colors",
-                        plan.featured
-                          ? "bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-                          : "border border-border text-foreground hover:bg-accent",
-                      )}
-                    >
-                      {plan.cta}
-                    </button>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
               <div className="mt-12 text-center">
                 <p className="text-muted-foreground">
@@ -1165,7 +1825,9 @@ export const SubscriptionBoxKimiPage = defineCapsule({
                       <span className="font-semibold text-card-foreground">
                         {item.q}
                       </span>
-                      <ChevronDown />
+                      <span className="flex size-5 flex-shrink-0 items-center justify-center">
+                        <ChevronDown />
+                      </span>
                     </summary>
                     <div className="px-6 pb-6 leading-relaxed text-muted-foreground">
                       {item.a}

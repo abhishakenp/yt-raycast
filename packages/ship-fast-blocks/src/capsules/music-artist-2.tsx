@@ -4,13 +4,30 @@ import { defineCapsule } from './openui.ts'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
-  ArrowRight,
   PlayIcon,
   SocialIcon,
   accentBgs,
   accents,
 } from './internal/music-artist-2-icons.tsx'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * MusicArtistKimiPage2 — a complete, self-contained music ARTIST / BAND landing page.
@@ -169,10 +186,175 @@ export const MusicArtistKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      merchItems: table({
+        name: string(),
+        variant: string(),
+        price: string(),
+        imageAlt: string(),
+      }),
+      cartItems: table({
+        merchItemId: string(),
+        quantity: number(),
+      }),
+      favoriteReleases: table({
+        releaseTitle: string(),
+      }),
+      newsletterSubscribers: table({
+        email: string(),
+      }),
+      tourReservations: table({
+        venue: string(),
+        city: string(),
+        month: string(),
+        day: string(),
+        email: string(),
+      }),
+    },
+    queries: {
+      merchItems: ({ db }) => db.merchItems.orderBy('createdAt').all(),
+      cartLines: ({ db }) =>
+        db.cartItems.all().flatMap((item) => {
+          const merchItem = db.merchItems.get(item.merchItemId)
+          return merchItem ? [{ ...item, merchItem }] : []
+        }),
+      favoriteReleaseTitles: ({ db }) =>
+        new Set(db.favoriteReleases.all().map((fav) => fav.releaseTitle)),
+    },
+    mutations: {
+      addToCart: ({ db }, merchItemName: string) => {
+        const merchItem = db.merchItems.where('name', merchItemName).all()[0]
+        if (!merchItem) return db.cartItems.all()
+
+        const existingItem = db.cartItems
+          .where('merchItemId', merchItem.id)
+          .all()[0]
+
+        if (existingItem) {
+          db.cartItems.update(existingItem.id, {
+            quantity: existingItem.quantity + 1,
+          })
+        } else {
+          db.cartItems.insert({
+            merchItemId: merchItem.id,
+            quantity: 1,
+          })
+        }
+
+        return db.cartItems.all()
+      },
+      updateCartQuantity: ({ db }, merchItemId: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+
+        for (const item of db.cartItems.where('merchItemId', merchItemId).all()) {
+          if (nextQuantity) {
+            db.cartItems.update(item.id, { quantity: nextQuantity })
+          } else {
+            db.cartItems.delete(item.id)
+          }
+        }
+
+        return db.cartItems.all()
+      },
+      removeFromCart: ({ db }, merchItemId: string) => {
+        for (const item of db.cartItems.where('merchItemId', merchItemId).all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return db.cartItems.all()
+      },
+      clearCart: ({ db }) => {
+        for (const item of db.cartItems.all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return []
+      },
+      toggleFavoriteRelease: ({ db }, releaseTitle: string) => {
+        const existingFavorite = db.favoriteReleases
+          .where('releaseTitle', releaseTitle)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favoriteReleases.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favoriteReleases.insert({ releaseTitle })
+        return true
+      },
+      subscribeNewsletter: ({ db }, email: string) => {
+        const existing = db.newsletterSubscribers.where('email', email).all()[0]
+        if (existing) return db.newsletterSubscribers.all()
+
+        db.newsletterSubscribers.insert({ email })
+        return db.newsletterSubscribers.all()
+      },
+      reserveTourDate: ({ db }, venue: string, city: string, month: string, day: string, email: string) => {
+        db.tourReservations.insert({ venue, city, month, day, email })
+        return db.tourReservations.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [cartOpen, setCartOpen] = useState(false)
+    const [tourReservationOpen, setTourReservationOpen] = useState(false)
+    const [selectedTourDate, setSelectedTourDate] = useState<{ venue: string; city: string; month: string; day: string } | null>(null)
     const brand = props.brand ?? 'NEONPULSE'
+
+    const storedMerchItems = lakebed.useQuery('merchItems')
+    const cartLines = lakebed.useQuery('cartLines')
+    const favoriteReleaseTitles = lakebed.useQuery('favoriteReleaseTitles')
+    const auth = lakebed.useAuth()
+    const addToCart = lakebed.useMutation('addToCart')
+    const updateCartQuantity = lakebed.useMutation('updateCartQuantity')
+    const removeFromCart = lakebed.useMutation('removeFromCart')
+    const clearCart = lakebed.useMutation('clearCart')
+    const toggleFavoriteRelease = lakebed.useMutation('toggleFavoriteRelease')
+    const subscribeNewsletter = lakebed.useMutation('subscribeNewsletter')
+    const reserveTourDate = lakebed.useMutation('reserveTourDate')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const priceAmount = (price: string) => {
+      const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ''))
+      return Number.isFinite(amount) ? amount : 0
+    }
+
+    const formatCurrency = (amount: number) =>
+      new Intl.NumberFormat('en-US', {
+        currency: 'USD',
+        style: 'currency',
+      }).format(amount)
+
     const brandHead = brand.slice(0, Math.ceil(brand.length / 2))
     const brandTail = brand.slice(Math.ceil(brand.length / 2))
     const nav = props.nav?.length
@@ -300,7 +482,7 @@ export const MusicArtistKimiPage2 = defineCapsule({
     const merchDesc =
       props.merch?.description ?? 'Vinyl, apparel, and exclusive collectibles'
     const merchCta = props.merch?.cta ?? 'Visit Full Store'
-    const merch = props.merch?.items?.length
+    const staticMerch = props.merch?.items?.length
       ? props.merch.items
       : [
           {
@@ -330,6 +512,27 @@ export const MusicArtistKimiPage2 = defineCapsule({
               'Concert poster print of Neon Pulse live at Electric Ballroom',
           },
         ]
+    const normalizedMerchItems = staticMerch.map((item) => ({
+      name: item.name,
+      variant: item.variant,
+      price: item.price,
+      imageAlt: item.imageAlt,
+    }))
+    const displayMerch =
+      storedMerchItems && storedMerchItems.length > 0
+        ? storedMerchItems
+        : normalizedMerchItems
+    const safeCartLines = cartLines ?? []
+    const cartItemCount = safeCartLines.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+    const cartSubtotal = safeCartLines.reduce(
+      (total, item) => total + priceAmount(item.merchItem.price) * item.quantity,
+      0,
+    )
+    const shipping = cartSubtotal > 0 && cartSubtotal < 150 ? 12 : 0
+    const cartTotal = cartSubtotal + shipping
 
     const aboutEyebrow = props.about?.eyebrow ?? 'About The Band'
     const aboutHeadingTop = props.about?.headingTop ?? 'Four Friends.'
@@ -424,6 +627,55 @@ export const MusicArtistKimiPage2 = defineCapsule({
       ? props.footer.legal
       : ['Privacy Policy', 'Terms of Service', 'Contact']
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     return (
       <div
         className={cn(
@@ -456,6 +708,283 @@ export const MusicArtistKimiPage2 = defineCapsule({
                 ))}
               </div>
               <div className="flex items-center gap-4">
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Orders')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Orders
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={cartOpen} onOpenChange={setCartOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Shopping Cart"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <path d="M16 10a4 4 0 0 1-8 0" />
+                      </svg>
+                      {cartItemCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {cartItemCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Merch cart</SheetTitle>
+                      <SheetDescription>
+                        {cartItemCount > 0
+                          ? `${cartItemCount} item${cartItemCount === 1 ? '' : 's'} ready for checkout.`
+                          : 'Your cart is empty.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeCartLines.length ? (
+                        <div className="space-y-5">
+                          {safeCartLines.map((item) => (
+                            <div
+                              key={item.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                <Image
+                                  alt={item.merchItem.imageAlt}
+                                  w={180}
+                                  h={180}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                      {item.merchItem.variant}
+                                    </p>
+                                    <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                      {item.merchItem.name}
+                                    </h3>
+                                  </div>
+                                  <p className="text-sm font-bold text-foreground">
+                                    {formatCurrency(
+                                      priceAmount(item.merchItem.price) *
+                                        item.quantity,
+                                    )}
+                                  </p>
+                                </div>
+                                <div className="mt-4 flex items-center justify-between">
+                                  <div className="inline-flex h-9 items-center rounded-full border border-border bg-background">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void updateCartQuantity(
+                                          item.merchItemId,
+                                          item.quantity - 1,
+                                        )
+                                      }
+                                      className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                      aria-label={`Decrease ${item.merchItem.name} quantity`}
+                                    >
+                                      -
+                                    </button>
+                                    <span className="min-w-8 text-center text-sm font-semibold">
+                                      {item.quantity}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void updateCartQuantity(
+                                          item.merchItemId,
+                                          item.quantity + 1,
+                                        )
+                                      }
+                                      className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                      aria-label={`Increase ${item.merchItem.name} quantity`}
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void removeFromCart(item.merchItemId)
+                                    }
+                                    className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No merch in cart
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Add an item from the Official Store to start a cart for this session.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>Subtotal</span>
+                          <span>{formatCurrency(cartSubtotal)}</span>
+                        </div>
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>Shipping</span>
+                          <span>
+                            {shipping ? formatCurrency(shipping) : 'Free'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between pt-2 text-base font-bold text-foreground">
+                          <span>Total</span>
+                          <span>{formatCurrency(cartTotal)}</span>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        disabled={!safeCartLines.length}
+                        className="w-full rounded-full"
+                        onClick={() => go('Checkout')}
+                      >
+                        Checkout
+                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="rounded-full"
+                          onClick={() => void clearCart()}
+                          disabled={!safeCartLines.length}
+                        >
+                          Clear
+                        </Button>
+                        <SheetClose asChild>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="rounded-full"
+                          >
+                            Continue
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(navCta)}
@@ -506,6 +1035,58 @@ export const MusicArtistKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -580,60 +1161,83 @@ export const MusicArtistKimiPage2 = defineCapsule({
                 </p>
               </div>
               <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {releases.map((release, i) => (
-                  <article
-                    key={release.title}
-                    className="group overflow-hidden rounded-xl bg-card transition-transform duration-300 hover:scale-105"
-                  >
-                    <div className="relative aspect-square">
-                      <Image
-                        alt={release.imageAlt}
-                        w={800}
-                        h={800}
-                        loading="lazy"
-                        className="size-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
-                      <button
-                        type="button"
-                        aria-label={`Play ${release.title}`}
-                        onClick={() => go(release.title)}
-                        className={cn(
-                          'absolute bottom-4 right-4 flex size-14 items-center justify-center rounded-full text-primary-foreground transition-colors hover:bg-foreground hover:text-background',
-                          accentBgs[i % accentBgs.length],
-                        )}
-                      >
-                        <PlayIcon />
-                      </button>
-                    </div>
-                    <div className="p-6">
-                      <h3 className="mb-1 text-xl font-bold text-card-foreground">
-                        {release.title}
-                      </h3>
-                      <p className="mb-3 text-sm text-muted-foreground">
-                        {release.meta}
-                      </p>
-                      <p className="mb-4 text-sm text-muted-foreground/80">
-                        {release.blurb}
-                      </p>
-                      <div className="flex gap-3">
-                        {release.platforms.map((platform) => (
-                          <button
-                            key={platform}
-                            type="button"
-                            onClick={() => go(platform)}
-                            className={cn(
-                              'text-xs font-semibold transition-colors hover:text-foreground',
-                              accents[i % accents.length],
-                            )}
-                          >
-                            {platform}
-                          </button>
-                        ))}
+                {releases.map((release, i) => {
+                  const isFavorite =
+                    favoriteReleaseTitles?.has(release.title) ?? false
+
+                  return (
+                    <article
+                      key={release.title}
+                      className="group overflow-hidden rounded-xl bg-card transition-transform duration-300 hover:scale-105"
+                    >
+                      <div className="relative aspect-square">
+                        <Image
+                          alt={release.imageAlt}
+                          w={800}
+                          h={800}
+                          loading="lazy"
+                          className="size-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+                        <button
+                          type="button"
+                          aria-label={`Play ${release.title}`}
+                          onClick={() => go(release.title)}
+                          className={cn(
+                            'absolute bottom-4 right-4 flex size-14 items-center justify-center rounded-full text-primary-foreground transition-colors hover:bg-foreground hover:text-background',
+                            accentBgs[i % accentBgs.length],
+                          )}
+                        >
+                          <PlayIcon />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavoriteRelease(release.title)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${release.title} from favorites`
+                              : `Add ${release.title} to favorites`
+                          }
+                          className={cn(
+                            'absolute top-4 right-4 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-background/90 text-foreground hover:bg-background',
+                          )}
+                        >
+                          <HeartIcon active={isFavorite} />
+                        </button>
                       </div>
-                    </div>
-                  </article>
-                ))}
+                      <div className="p-6">
+                        <h3 className="mb-1 text-xl font-bold text-card-foreground">
+                          {release.title}
+                        </h3>
+                        <p className="mb-3 text-sm text-muted-foreground">
+                          {release.meta}
+                        </p>
+                        <p className="mb-4 text-sm text-muted-foreground/80">
+                          {release.blurb}
+                        </p>
+                        <div className="flex gap-3">
+                          {release.platforms.map((platform) => (
+                            <button
+                              key={platform}
+                              type="button"
+                              onClick={() => go(platform)}
+                              className={cn(
+                                'text-xs font-semibold transition-colors hover:text-foreground',
+                                accents[i % accents.length],
+                              )}
+                            >
+                              {platform}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -696,7 +1300,10 @@ export const MusicArtistKimiPage2 = defineCapsule({
                       ) : (
                         <button
                           type="button"
-                          onClick={() => go(`Tickets ${date.venue}`)}
+                          onClick={() => {
+                            setSelectedTourDate({ venue: date.venue, city: date.city, month: date.month, day: date.day })
+                            setTourReservationOpen(true)
+                          }}
                           className="rounded-lg bg-chart-1 px-4 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-foreground hover:text-background"
                         >
                           Get Tickets
@@ -713,7 +1320,7 @@ export const MusicArtistKimiPage2 = defineCapsule({
                   className="inline-flex items-center gap-2 font-bold text-chart-1 transition-colors hover:text-foreground"
                 >
                   {tourViewAll}
-                  <ArrowRight className="size-5" />
+                  <ArrowRight />
                 </button>
               </div>
             </div>
@@ -734,7 +1341,7 @@ export const MusicArtistKimiPage2 = defineCapsule({
                 </p>
               </div>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                {merch.map((item) => (
+                {displayMerch.map((item) => (
                   <article key={item.name} className="group">
                     <div className="relative mb-4 aspect-square overflow-hidden rounded-xl bg-card">
                       <Image
@@ -747,7 +1354,10 @@ export const MusicArtistKimiPage2 = defineCapsule({
                       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/80 to-transparent p-4 opacity-0 transition-opacity group-hover:opacity-100">
                         <button
                           type="button"
-                          onClick={() => go(`Add ${item.name}`)}
+                          onClick={() => {
+                            void addToCart(item.name)
+                            setCartOpen(true)
+                          }}
                           className="w-full rounded-lg bg-chart-1 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-foreground hover:text-background"
                         >
                           Add to Cart
@@ -883,7 +1493,12 @@ export const MusicArtistKimiPage2 = defineCapsule({
                 className="mx-auto flex max-w-lg flex-col gap-4 sm:flex-row"
                 onSubmit={(e) => {
                   e.preventDefault()
-                  go(newsletterSubmit)
+                  const form = e.currentTarget
+                  const email = form.querySelector('#newsletter-email') as HTMLInputElement
+                  if (email?.value) {
+                    void subscribeNewsletter(email.value)
+                    email.value = ''
+                  }
                 }}
               >
                 <label htmlFor="newsletter-email" className="sr-only">
@@ -909,6 +1524,93 @@ export const MusicArtistKimiPage2 = defineCapsule({
             </div>
           </section>
         </main>
+
+        {/* Tour Reservation Drawer */}
+        <Sheet open={tourReservationOpen} onOpenChange={setTourReservationOpen}>
+          <SheetContent
+            side="right"
+            className="w-full gap-0 p-0 sm:max-w-md"
+          >
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Reserve Tickets</SheetTitle>
+              <SheetDescription>
+                {selectedTourDate ? (
+                  <>
+                    {selectedTourDate.month} {selectedTourDate.day} • {selectedTourDate.venue} • {selectedTourDate.city}
+                  </>
+                ) : (
+                  'Select a tour date to reserve tickets'
+                )}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {selectedTourDate ? (
+                <form
+                  className="space-y-4"
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    const form = e.currentTarget
+                    const email = form.querySelector('#reservation-email') as HTMLInputElement
+                    if (email?.value) {
+                      void reserveTourDate(
+                        selectedTourDate.venue,
+                        selectedTourDate.city,
+                        selectedTourDate.month,
+                        selectedTourDate.day,
+                        email.value
+                      )
+                      setTourReservationOpen(false)
+                      setSelectedTourDate(null)
+                      email.value = ''
+                    }
+                  }}
+                >
+                  <div>
+                    <label htmlFor="reservation-email" className="mb-2 block text-sm font-medium text-foreground">
+                      Email address
+                    </label>
+                    <input
+                      id="reservation-email"
+                      type="email"
+                      required
+                      placeholder="you@example.com"
+                      className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground transition-colors placeholder:text-muted-foreground focus:border-chart-1 focus:outline-none"
+                    />
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    We'll send you a confirmation email with ticket details and payment information.
+                  </p>
+                  <Button
+                    type="submit"
+                    className="w-full rounded-full"
+                  >
+                    Reserve Tickets
+                  </Button>
+                </form>
+              ) : (
+                <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                  <p className="text-base font-semibold text-foreground">
+                    No tour date selected
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Select a tour date from the 2024 Tour Dates section to reserve tickets.
+                  </p>
+                </div>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <SheetClose asChild>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full rounded-full"
+                >
+                  Cancel
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
 
         {/* Footer */}
         <footer className="border-t border-border bg-background pb-8 pt-16">

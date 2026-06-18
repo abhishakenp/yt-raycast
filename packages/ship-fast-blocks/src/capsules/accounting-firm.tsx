@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * AccountingFirmKimiPage — a complete, self-contained CPA / accounting-firm
@@ -226,10 +244,125 @@ export const AccountingFirmKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      appointments: table({
+        firstName: string(),
+        lastName: string(),
+        email: string(),
+        phone: string(),
+        service: string(),
+        message: string(),
+      }),
+      serviceFavorites: table({
+        serviceName: string(),
+      }),
+      contactSubmissions: table({
+        firstName: string(),
+        lastName: string(),
+        email: string(),
+        phone: string(),
+        service: string(),
+        message: string(),
+      }),
+    },
+    queries: {
+      appointments: ({ db }) =>
+        db.appointments.orderBy('createdAt').all(),
+      favoriteServiceNames: ({ db }) =>
+        new Set(db.serviceFavorites.all().map((fav) => fav.serviceName)),
+      contactSubmissions: ({ db }) =>
+        db.contactSubmissions.orderBy('createdAt').all(),
+    },
+    mutations: {
+      bookAppointment: ({ db }, data: {
+        firstName: string
+        lastName: string
+        email: string
+        phone: string
+        service: string
+        message: string
+      }) => {
+        db.appointments.insert(data)
+        return db.appointments.all()
+      },
+      toggleServiceFavorite: ({ db }, serviceName: string) => {
+        const existing = db.serviceFavorites
+          .where('serviceName', serviceName)
+          .all()[0]
+
+        if (existing) {
+          db.serviceFavorites.delete(existing.id)
+          return false
+        }
+
+        db.serviceFavorites.insert({ serviceName })
+        return true
+      },
+      submitContactForm: ({ db }, data: {
+        firstName: string
+        lastName: string
+        email: string
+        phone: string
+        service: string
+        message: string
+      }) => {
+        db.contactSubmissions.insert(data)
+        return db.contactSubmissions.all()
+      },
+      removeAppointment: ({ db }, id: string) => {
+        for (const item of db.appointments.where('id', id).all()) {
+          db.appointments.delete(item.id)
+        }
+        return db.appointments.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [bookingOpen, setBookingOpen] = useState(false)
     const brand = props.brand ?? "Northridge"
+
+    // Lakebed hooks
+    const appointments = lakebed.useQuery('appointments')
+    const favoriteServiceNames = lakebed.useQuery('favoriteServiceNames')
+    const contactSubmissions = lakebed.useQuery('contactSubmissions')
+    const auth = lakebed.useAuth()
+    const bookAppointment = lakebed.useMutation('bookAppointment')
+    const toggleServiceFavorite = lakebed.useMutation('toggleServiceFavorite')
+    const submitContactForm = lakebed.useMutation('submitContactForm')
+    const removeAppointment = lakebed.useMutation('removeAppointment')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const safeAppointments = appointments ?? []
+    const appointmentCount = safeAppointments.length
     const nav = props.nav?.length
       ? props.nav
       : ["Services", "About", "Team", "Pricing", "FAQ"]
@@ -714,6 +847,39 @@ export const AccountingFirmKimiPage = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
     const PinIcon = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -877,7 +1043,7 @@ export const AccountingFirmKimiPage = defineCapsule({
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go(navCta)}
+                  onClick={() => setBookingOpen(true)}
                   className="hidden items-center justify-center rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
                 >
                   {navCta}
@@ -1756,6 +1922,151 @@ export const AccountingFirmKimiPage = defineCapsule({
             </div>
           </div>
         </footer>
+
+        <Sheet open={bookingOpen} onOpenChange={setBookingOpen}>
+          <SheetTrigger asChild>
+            <Button
+              type="button"
+              className="sr-only"
+              aria-label="Open consultation booking drawer"
+            >
+              Open booking drawer
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">
+                Schedule a consultation
+              </SheetTitle>
+              <SheetDescription>
+                Book time with {brand} and manage the appointments stored in this session.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 space-y-6 overflow-y-auto p-6">
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const form = new FormData(e.currentTarget)
+                  const firstName = String(form.get("firstName") ?? "").trim()
+                  const lastName = String(form.get("lastName") ?? "").trim()
+                  const email = String(form.get("email") ?? "").trim()
+                  const phone = String(form.get("phone") ?? "").trim()
+                  const service = String(form.get("service") ?? "").trim()
+                  const message = String(form.get("message") ?? "").trim()
+                  if (!firstName || !lastName || !email || !service) return
+                  void bookAppointment({
+                    firstName,
+                    lastName,
+                    email,
+                    phone,
+                    service,
+                    message,
+                  })
+                  e.currentTarget.reset()
+                }}
+              >
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <input
+                    name="firstName"
+                    required
+                    placeholder="First name"
+                    className={inputCls}
+                  />
+                  <input
+                    name="lastName"
+                    required
+                    placeholder="Last name"
+                    className={inputCls}
+                  />
+                </div>
+                <input
+                  name="email"
+                  type="email"
+                  required
+                  placeholder="Email address"
+                  className={inputCls}
+                />
+                <input
+                  name="phone"
+                  type="tel"
+                  placeholder="Phone number"
+                  className={inputCls}
+                />
+                <select
+                  name="service"
+                  required
+                  defaultValue={contactServices[0] ?? ""}
+                  className={cn(inputCls, "appearance-none")}
+                >
+                  {contactServices.map((service) => (
+                    <option key={service} value={service}>
+                      {service}
+                    </option>
+                  ))}
+                </select>
+                <textarea
+                  name="message"
+                  rows={3}
+                  placeholder="What should we prepare for?"
+                  className={cn(inputCls, "resize-none")}
+                />
+                <Button type="submit" className="w-full">
+                  Book consultation
+                </Button>
+              </form>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Appointments
+                  </h3>
+                  <span className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground">
+                    {appointmentCount}
+                  </span>
+                </div>
+                {safeAppointments.length > 0 ? (
+                  safeAppointments.map((appointment) => (
+                    <div
+                      key={appointment.id}
+                      className="rounded-xl border border-border bg-card p-4"
+                    >
+                      <div className="font-semibold text-foreground">
+                        {appointment.firstName} {appointment.lastName}
+                      </div>
+                      <div className="mt-1 text-sm text-muted-foreground">
+                        {appointment.service}
+                      </div>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {appointment.email}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="mt-3"
+                        onClick={() => void removeAppointment(appointment.id)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                    No appointments yet.
+                  </div>
+                )}
+              </div>
+            </div>
+            <SheetFooter className="border-t border-border p-6">
+              <SheetClose asChild>
+                <Button type="button" variant="outline" className="w-full">
+                  Close
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
     )
   },

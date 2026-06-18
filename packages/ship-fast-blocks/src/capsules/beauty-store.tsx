@@ -11,6 +11,31 @@ import {
   badgeClass,
   benefitIcons,
 } from './internal/beauty-store-icons.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
+
+const priceAmount = (price: string) => {
+  const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ''))
+  return Number.isFinite(amount) ? amount : 0
+}
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat('en-US', { currency: 'USD', style: 'currency' }).format(amount)
 
 /**
  * BeautyStoreKimiPage — a complete, self-contained beauty / skincare / cosmetics
@@ -149,9 +174,107 @@ export const BeautyStoreKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      cartItems: table({
+        productTitle: string(),
+        productBrand: string(),
+        productPrice: string(),
+        quantity: number(),
+      }),
+      wishlist: table({
+        productTitle: string(),
+      }),
+      subscribers: table({
+        email: string(),
+      }),
+    },
+    queries: {
+      cartLines: ({ db }) => db.cartItems.orderBy('createdAt').all(),
+      wishlistTitles: ({ db }) =>
+        new Set(db.wishlist.all().map((w) => w.productTitle)),
+      subscriberCount: ({ db }) => db.subscribers.all().length,
+    },
+    mutations: {
+      addToCart: (
+        { db },
+        title: string,
+        brand: string,
+        price: string,
+      ) => {
+        const existing = db.cartItems.where('productTitle', title).all()[0]
+        if (existing) {
+          db.cartItems.update(existing.id, { quantity: existing.quantity + 1 })
+        } else {
+          db.cartItems.insert({ productTitle: title, productBrand: brand, productPrice: price, quantity: 1 })
+        }
+        return db.cartItems.all()
+      },
+      updateQuantity: ({ db }, itemId: string, quantity: number) => {
+        const next = Math.max(0, Math.floor(quantity))
+        if (next) {
+          db.cartItems.update(itemId, { quantity: next })
+        } else {
+          db.cartItems.delete(itemId)
+        }
+        return db.cartItems.all()
+      },
+      removeFromCart: ({ db }, itemId: string) => {
+        db.cartItems.delete(itemId)
+        return db.cartItems.all()
+      },
+      clearCart: ({ db }) => {
+        for (const item of db.cartItems.all()) db.cartItems.delete(item.id)
+        return []
+      },
+      toggleWishlist: ({ db }, title: string) => {
+        const existing = db.wishlist.where('productTitle', title).all()[0]
+        if (existing) {
+          db.wishlist.delete(existing.id)
+          return false
+        }
+        db.wishlist.insert({ productTitle: title })
+        return true
+      },
+      subscribe: ({ db }, email: string) => {
+        if (!db.subscribers.where('email', email).all().length) {
+          db.subscribers.insert({ email })
+        }
+        return db.subscribers.all().length
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [cartOpen, setCartOpen] = useState(false)
+    const [emailInput, setEmailInput] = useState('')
+    const [subscribed, setSubscribed] = useState(false)
+
+    // lakebed
+    const cartLines = lakebed.useQuery('cartLines')
+    const wishlistTitles = lakebed.useQuery('wishlistTitles')
+    const auth = lakebed.useAuth()
+    const addToCart = lakebed.useMutation('addToCart')
+    const updateQuantity = lakebed.useMutation('updateQuantity')
+    const removeFromCart = lakebed.useMutation('removeFromCart')
+    const clearCart = lakebed.useMutation('clearCart')
+    const toggleWishlist = lakebed.useMutation('toggleWishlist')
+    const subscribeMut = lakebed.useMutation('subscribe')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName = auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('') || 'ME'
+    const authLabel = auth.isLoading ? 'Checking...' : isSignedIn ? authDisplayName : 'Sign in'
+
+    const safeCart = cartLines ?? []
+    const cartCount = safeCart.reduce((t, i) => t + i.quantity, 0)
+    const cartSubtotal = safeCart.reduce((t, i) => t + priceAmount(i.productPrice) * i.quantity, 0)
+    const shipping = cartSubtotal > 0 && cartSubtotal < 75 ? 9.99 : 0
+    const cartTotal = cartSubtotal + shipping
     const brand = props.brand ?? 'Lumière'
     const nav = props.nav?.length
       ? props.nav
@@ -409,51 +532,208 @@ export const BeautyStoreKimiPage = defineCapsule({
                     />
                   </svg>
                 </button>
-                <button
-                  type="button"
-                  aria-label="Account"
-                  onClick={() => go(nav[nav.length - 1])}
-                  className="p-2 text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <svg
-                    className="size-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
+
+                {/* Auth */}
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-9 items-center gap-2 rounded-full border border-border bg-background px-2 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted sm:inline-flex"
+                      >
+                        <Avatar size="sm">
+                          {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" sideOffset={10} className="w-56 p-2">
+                      <div className="px-2 py-1.5 mb-1">
+                        <p className="truncate text-sm font-bold text-foreground">{authDisplayName}</p>
+                        <p className="truncate text-xs text-muted-foreground">{authEmail ?? 'Signed in'}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full rounded-md px-2 py-1.5 text-sm text-foreground hover:bg-muted"
+                      >
+                        Account
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Orders')}
+                        className="flex w-full rounded-md px-2 py-1.5 text-sm text-foreground hover:bg-muted"
+                      >
+                        Orders
+                      </button>
+                      <div className="border-t border-border mt-1 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => lakebed.signOut()}
+                          className="flex w-full rounded-md px-2 py-1.5 text-sm font-semibold text-foreground hover:bg-muted"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => { if (!auth.isLoading) void lakebed.signInWithGoogle() }}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-9 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 disabled:opacity-60 sm:inline-flex"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  aria-label="Cart"
-                  onClick={() => go(nav[0])}
-                  className="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <svg
-                    className="size-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                    />
-                  </svg>
-                  <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                    3
-                  </span>
-                </button>
+                    <span className="grid size-4 place-items-center rounded-full bg-background text-xs font-black text-foreground">G</span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+
+                {/* Cart */}
+                <Sheet open={cartOpen} onOpenChange={setCartOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Shopping Cart"
+                      className="relative p-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                        />
+                      </svg>
+                      {cartCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                          {cartCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Your Bag</SheetTitle>
+                      <SheetDescription>
+                        {cartCount > 0
+                          ? `${cartCount} item${cartCount === 1 ? '' : 's'} ready for checkout.`
+                          : 'Your bag is empty.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeCart.length ? (
+                        <div className="space-y-5">
+                          {safeCart.map((item) => (
+                            <div key={item.id} className="grid grid-cols-[60px_1fr] gap-4 border-b border-border pb-5 last:border-0">
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                <Image
+                                  alt={`${item.productBrand} ${item.productTitle} product photo`}
+                                  w={120}
+                                  h={120}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div>
+                                    <p className="text-xs text-muted-foreground">{item.productBrand}</p>
+                                    <h3 className="line-clamp-2 text-sm font-semibold text-foreground">{item.productTitle}</h3>
+                                  </div>
+                                  <p className="text-sm font-bold text-foreground whitespace-nowrap">
+                                    {formatCurrency(priceAmount(item.productPrice) * item.quantity)}
+                                  </p>
+                                </div>
+                                <div className="mt-3 flex items-center justify-between">
+                                  <div className="inline-flex h-8 items-center rounded-full border border-border">
+                                    <button
+                                      type="button"
+                                      onClick={() => void updateQuantity(item.id, item.quantity - 1)}
+                                      className="grid size-8 place-items-center text-muted-foreground hover:text-foreground"
+                                      aria-label="Decrease quantity"
+                                    >-</button>
+                                    <span className="min-w-6 text-center text-sm font-semibold">{item.quantity}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => void updateQuantity(item.id, item.quantity + 1)}
+                                      className="grid size-8 place-items-center text-muted-foreground hover:text-foreground"
+                                      aria-label="Increase quantity"
+                                    >+</button>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => void removeFromCart(item.id)}
+                                    className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">Your bag is empty</p>
+                          <p className="mt-2 text-sm text-muted-foreground">Add a product from the bestsellers below.</p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="w-full space-y-2 text-sm mb-4">
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>Subtotal</span>
+                          <span>{formatCurrency(cartSubtotal)}</span>
+                        </div>
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>Shipping</span>
+                          <span>{shipping ? formatCurrency(shipping) : 'Free'}</span>
+                        </div>
+                        <div className="flex justify-between pt-2 text-base font-bold text-foreground">
+                          <span>Total</span>
+                          <span>{formatCurrency(cartTotal)}</span>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        disabled={!safeCart.length}
+                        className="w-full rounded-full"
+                        onClick={() => go('Checkout')}
+                      >
+                        Checkout
+                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="rounded-full"
+                          onClick={() => void clearCart()}
+                          disabled={!safeCart.length}
+                        >
+                          Clear
+                        </Button>
+                        <SheetClose asChild>
+                          <Button type="button" variant="secondary" className="rounded-full">
+                            Continue
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   aria-label="Open menu"
@@ -497,6 +777,39 @@ export const BeautyStoreKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">{authInitials}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">{authDisplayName}</p>
+                          <p className="truncate text-xs text-muted-foreground">{authEmail ?? 'Signed in'}</p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => { setMobileOpen(false); lakebed.signOut() }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => { setMobileOpen(false); if (!auth.isLoading) void lakebed.signInWithGoogle() }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-4 place-items-center rounded-full bg-background text-xs font-black text-foreground">G</span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -678,7 +991,9 @@ export const BeautyStoreKimiPage = defineCapsule({
               </div>
 
               <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4 lg:gap-8">
-                {productItems.map((product) => (
+                {productItems.map((product) => {
+                  const isWishlisted = wishlistTitles?.has(product.title) ?? false
+                  return (
                   <article
                     key={product.title}
                     className="group overflow-hidden rounded-xl bg-card shadow-sm transition-shadow hover:shadow-lg"
@@ -703,8 +1018,31 @@ export const BeautyStoreKimiPage = defineCapsule({
                       ) : null}
                       <button
                         type="button"
+                        aria-label={isWishlisted ? `Remove ${product.title} from wishlist` : `Add ${product.title} to wishlist`}
+                        aria-pressed={isWishlisted}
+                        onClick={() => void toggleWishlist(product.title)}
+                        className={cn(
+                          'absolute right-3 top-3 flex size-8 items-center justify-center rounded-full shadow-md transition-all group-hover:opacity-100',
+                          isWishlisted
+                            ? 'bg-primary text-primary-foreground opacity-100'
+                            : 'bg-card/90 text-card-foreground opacity-0 hover:bg-card',
+                        )}
+                      >
+                        <svg
+                          className="size-4"
+                          fill={isWishlisted ? 'currentColor' : 'none'}
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
                         aria-label={`Add ${product.title} to cart`}
-                        onClick={() => go(product.title)}
+                        onClick={() => { void addToCart(product.title, product.brand, product.price); setCartOpen(true) }}
                         className="absolute bottom-3 right-3 flex size-10 items-center justify-center rounded-full bg-card text-card-foreground opacity-0 shadow-md transition-opacity hover:bg-foreground hover:text-background group-hover:opacity-100"
                       >
                         <PlusIcon />
@@ -732,7 +1070,7 @@ export const BeautyStoreKimiPage = defineCapsule({
                       </p>
                     </div>
                   </article>
-                ))}
+                )})}
               </div>
             </div>
           </section>
@@ -862,22 +1200,36 @@ export const BeautyStoreKimiPage = defineCapsule({
                     className="mx-auto flex max-w-md flex-col gap-4 sm:flex-row"
                     onSubmit={(e) => {
                       e.preventDefault()
-                      go(newsletterSubmit)
+                      if (emailInput) {
+                        void subscribeMut(emailInput)
+                        setSubscribed(true)
+                        setEmailInput('')
+                      }
                     }}
                   >
-                    <input
-                      type="email"
-                      required
-                      aria-label="Email address"
-                      placeholder={newsletterPlaceholder}
-                      className="flex-1 rounded-full border border-border bg-background/10 px-6 py-4 text-background placeholder:text-background/50 focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                    <button
-                      type="submit"
-                      className="whitespace-nowrap rounded-full bg-primary px-8 py-4 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-                    >
-                      {newsletterSubmit}
-                    </button>
+                    {subscribed ? (
+                      <p className="flex-1 rounded-full bg-primary/20 px-6 py-4 text-center font-semibold text-background">
+                        🎉 You're in! Check your inbox for 15% off.
+                      </p>
+                    ) : (
+                      <>
+                        <input
+                          type="email"
+                          required
+                          aria-label="Email address"
+                          placeholder={newsletterPlaceholder}
+                          value={emailInput}
+                          onChange={(e) => setEmailInput(e.target.value)}
+                          className="flex-1 rounded-full border border-border bg-background/10 px-6 py-4 text-background placeholder:text-background/50 focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                        <button
+                          type="submit"
+                          className="whitespace-nowrap rounded-full bg-primary px-8 py-4 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                        >
+                          {newsletterSubmit}
+                        </button>
+                      </>
+                    )}
                   </form>
                   <p className="mt-4 text-sm text-background/60">
                     {newsletterNote}

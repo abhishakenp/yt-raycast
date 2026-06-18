@@ -1,7 +1,20 @@
+import { useState } from "react"
 import { z } from "zod/v4"
+import { number, string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * DocsKimiPage4 — the fourth variant of a developer DOCUMENTATION / API-reference page,
@@ -21,6 +34,63 @@ export const DocsKimiPage4 = defineCapsule({
   name: "DocsKimiPage4",
   description:
     "The fourth variant of a developer DOCUMENTATION / API-reference page, sibling to DocsKimiPage, featuring a serif-accented editorial layout with a sticky top navbar (integrated search ⌘K, brand mark, nav links, CTA), a persistent three-column docs frame (left sidebar with grouped navigation — Getting Started / Core Concepts / API Reference / Resources — and active-item highlighting, a wide reading column with a version-badge hero, a prominent site-wide search bar with popular quick-links, a six-card getting-started grid with colored icon tiles, an interactive code example with dark syntax-highlighted language tabs and request/response blocks, a stacked feature list with icon tiles, platform stats counters, a changelog timeline with version badges, an accordion FAQ, a gradient CTA banner, a right-side table-of-contents sidebar, and a full footer with social links and live status indicator). Use when a polished, content-dense docs site with multiple sidebars, a live code preview, editorial typography, and rich defaults is desired over the simpler single-sidebar DocsKimiPage layout. Supports brand, nav, hero, search, gettingStarted, codeExample, features, stats, changelog, faq, cta, sidebar, toc, footer content slots with rich defaults.",
+  lakebed: {
+    schema: {
+      searchHistory: table({
+        term: string(),
+        count: number(),
+        updatedAt: number(),
+      }),
+    },
+    queries: {
+      searchHistory: ({ db }) => db.searchHistory.orderBy("createdAt").all(),
+    },
+    mutations: {
+      saveSearchTerm: ({ db }, term: string) => {
+        const normalized = term.trim()
+
+        if (!normalized) {
+          return db.searchHistory.all()
+        }
+
+        const existing = db.searchHistory.where("term", normalized).all()[0]
+        const now = Date.now()
+
+        if (existing) {
+          db.searchHistory.update(existing.id, {
+            count: existing.count + 1,
+            updatedAt: now,
+          })
+          return db.searchHistory.all()
+        }
+
+        db.searchHistory.insert({
+          term: normalized,
+          count: 1,
+          updatedAt: now,
+        })
+
+        return db.searchHistory.all()
+      },
+      removeSearchTerm: ({ db }, term: string) => {
+        const normalized = term.trim()
+        if (!normalized) return db.searchHistory.all()
+
+        for (const entry of db.searchHistory.where("term", normalized).all()) {
+          db.searchHistory.delete(entry.id)
+        }
+
+        return db.searchHistory.all()
+      },
+      clearSearchHistory: ({ db }) => {
+        for (const entry of db.searchHistory.all()) {
+          db.searchHistory.delete(entry.id)
+        }
+
+        return []
+      },
+    },
+  },
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -162,8 +232,10 @@ export const DocsKimiPage4 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [searchOpen, setSearchOpen] = useState(false)
+    const [searchTerm, setSearchTerm] = useState("")
 
     const brand = props.brand ?? "Atlas"
     const nav = props.nav?.length
@@ -427,6 +499,37 @@ export const DocsKimiPage4 = defineCapsule({
     const footerCopyright =
       props.footer?.copyright ?? `© 2026 ${brand} Technologies, Inc. All rights reserved.`
 
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? auth.displayName || auth.user?.displayName || auth.email || "Account"
+        : "Sign in"
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const storedSearchHistory = lakebed.useQuery("searchHistory")
+    const saveSearchTerm = lakebed.useMutation("saveSearchTerm")
+    const removeSearchTerm = lakebed.useMutation("removeSearchTerm")
+    const clearSearchHistory = lakebed.useMutation("clearSearchHistory")
+    const searchHistory = (storedSearchHistory ?? []).slice().sort(
+      (a, b) => b.updatedAt - a.updatedAt,
+    )
+    const recentSearchCount = searchHistory.length
+    const totalSearchCount = searchHistory.reduce(
+      (total, entry) => total + entry.count,
+      0,
+    )
+
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
@@ -550,23 +653,122 @@ export const DocsKimiPage4 = defineCapsule({
                 </nav>
               </div>
               <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(nav[0])}
-                  className="hidden sm:flex items-center gap-2 rounded-lg bg-muted px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted/80"
-                >
-                  <SearchIcon className="size-4" />
-                  <span>Search docs...</span>
-                  <kbd className="rounded border border-input bg-card px-1.5 py-0.5 text-xs text-muted-foreground/60">
-                    ⌘K
-                  </kbd>
-                </button>
+                <Sheet open={searchOpen} onOpenChange={setSearchOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      className="hidden sm:flex items-center gap-2 rounded-lg bg-muted px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted/80"
+                    >
+                      <SearchIcon className="size-4" />
+                      <span>Search docs...</span>
+                      {recentSearchCount > 0 ? (
+                        <span className="grid size-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                          {recentSearchCount}
+                        </span>
+                      ) : null}
+                      <kbd className="rounded border border-input bg-card px-1.5 py-0.5 text-xs text-muted-foreground/60">
+                        ⌘K
+                      </kbd>
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle>Saved searches</SheetTitle>
+                      <SheetDescription>
+                        {recentSearchCount > 0
+                          ? `${recentSearchCount} saved searches`
+                          : "No searches saved yet."}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {searchHistory.length ? (
+                        <div className="space-y-4">
+                          {searchHistory.map((entry) => (
+                            <div
+                              key={entry.id}
+                              className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 p-4 text-left transition-colors hover:bg-muted"
+                            >
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSearchOpen(false)
+                                  go(entry.term)
+                                }}
+                                className="flex-1 text-left"
+                              >
+                                <p className="text-sm font-medium text-foreground">
+                                  {entry.term}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {entry.count} search
+                                  {entry.count === 1 ? "" : "es"}
+                                </p>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void removeSearchTerm(entry.term)}
+                                className="rounded border border-border bg-background px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="rounded-lg border border-dashed border-border bg-muted/40 px-6 py-12 text-center">
+                          <p className="text-sm font-medium text-foreground">
+                            No saved searches yet
+                          </p>
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            Use the search bar below to build search history.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="flex justify-between rounded-lg bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
+                        <span>Total searches: {totalSearchCount}</span>
+                        <span>Unique: {recentSearchCount}</span>
+                      </div>
+                      <div className="mt-4 grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => void clearSearchHistory()}
+                          disabled={!recentSearchCount}
+                        >
+                          Clear all
+                        </Button>
+                        <SheetClose asChild>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            className="w-full"
+                          >
+                            Close
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(heroPrimary)}
                   className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   Get Started
+                </button>
+                <button
+                  type="button"
+                  onClick={isSignedIn ? handleSignOut : handleSignIn}
+                  disabled={auth.isLoading}
+                  className="hidden sm:inline-flex rounded-lg border border-border bg-foreground px-3 py-2 text-xs font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-60"
+                >
+                  {authLabel}
                 </button>
               </div>
             </div>
@@ -652,6 +854,14 @@ export const DocsKimiPage4 = defineCapsule({
                   className="relative"
                   onSubmit={(e) => {
                     e.preventDefault()
+                    const normalizedSearchTerm = searchTerm.trim()
+
+                    if (normalizedSearchTerm) {
+                      void saveSearchTerm(normalizedSearchTerm)
+                      setSearchTerm("")
+                      setSearchOpen(true)
+                    }
+
                     go(nav[0])
                   }}
                 >
@@ -661,6 +871,10 @@ export const DocsKimiPage4 = defineCapsule({
                   <input
                     type="search"
                     placeholder={searchPlaceholder}
+                    value={searchTerm}
+                    onChange={(event) => {
+                      setSearchTerm(event.currentTarget.value)
+                    }}
                     className="w-full rounded-xl border border-input bg-card py-3 pl-11 pr-4 text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -675,7 +889,10 @@ export const DocsKimiPage4 = defineCapsule({
                     <span key={item.label} className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => go(item.label)}
+                        onClick={() => {
+                          void saveSearchTerm(item.label)
+                          go(item.label)
+                        }}
                         className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
                       >
                         {item.label}

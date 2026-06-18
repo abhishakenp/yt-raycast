@@ -1,9 +1,34 @@
-import { type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "#/components/ui/command.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * NutritionKimiPage — a complete, self-contained nutrition-coaching LANDING page.
@@ -172,12 +197,142 @@ export const NutritionKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      mealPlans: table({
+        alt: string(),
+        calories: string(),
+        description: string(),
+        image: string(),
+        name: string(),
+        price: string(),
+      }),
+      subscriptionItems: table({
+        planId: string(),
+        quantity: number(),
+      }),
+      favorites: table({
+        mealName: string(),
+      }),
+    },
+    queries: {
+      mealPlans: ({ db }) => db.mealPlans.orderBy('createdAt').all(),
+      subscriptionLines: ({ db }) =>
+        db.subscriptionItems.all().flatMap((item) => {
+          const plan = db.mealPlans.get(item.planId)
+          return plan ? [{ ...item, plan }] : []
+        }),
+      favoriteMealNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.mealName)),
+    },
+    mutations: {
+      addToSubscription: ({ db }, mealName: string) => {
+        const meal = db.mealPlans.where('name', mealName).all()[0]
+        if (!meal) return db.subscriptionItems.all()
+
+        const existingItem = db.subscriptionItems
+          .where('planId', meal.id)
+          .all()[0]
+
+        if (existingItem) {
+          db.subscriptionItems.update(existingItem.id, {
+            quantity: existingItem.quantity + 1,
+          })
+        } else {
+          db.subscriptionItems.insert({
+            planId: meal.id,
+            quantity: 1,
+          })
+        }
+
+        return db.subscriptionItems.all()
+      },
+      updateSubscriptionQuantity: ({ db }, planId: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+
+        for (const item of db.subscriptionItems.where('planId', planId).all()) {
+          if (nextQuantity) {
+            db.subscriptionItems.update(item.id, { quantity: nextQuantity })
+          } else {
+            db.subscriptionItems.delete(item.id)
+          }
+        }
+
+        return db.subscriptionItems.all()
+      },
+      removeFromSubscription: ({ db }, planId: string) => {
+        for (const item of db.subscriptionItems.where('planId', planId).all()) {
+          db.subscriptionItems.delete(item.id)
+        }
+
+        return db.subscriptionItems.all()
+      },
+      clearSubscription: ({ db }) => {
+        for (const item of db.subscriptionItems.all()) {
+          db.subscriptionItems.delete(item.id)
+        }
+
+        return []
+      },
+      toggleFavorite: ({ db }, mealName: string) => {
+        const existingFavorite = db.favorites
+          .where('mealName', mealName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ mealName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [mobileOpen, setMobileOpen] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
+    const [subscriptionOpen, setSubscriptionOpen] = useState(false)
     const brand = props.brand ?? "Nourish"
     const nav = props.nav?.length
       ? props.nav
       : ["Approach", "Stories", "Plans", "FAQ"]
+
+    const storedMealPlans = lakebed.useQuery('mealPlans')
+    const subscriptionLines = lakebed.useQuery('subscriptionLines')
+    const favoriteMealNames = lakebed.useQuery('favoriteMealNames')
+    const auth = lakebed.useAuth()
+    const addToSubscription = lakebed.useMutation('addToSubscription')
+    const updateSubscriptionQuantity = lakebed.useMutation('updateSubscriptionQuantity')
+    const removeFromSubscription = lakebed.useMutation('removeFromSubscription')
+    const clearSubscription = lakebed.useMutation('clearSubscription')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
 
     const heroEyebrow =
       props.hero?.eyebrow ?? "Evidence-Based Nutrition Coaching"
@@ -292,6 +447,86 @@ export const NutritionKimiPage = defineCapsule({
           "avocado toast with poached egg and microgreens on sourdough",
           "chicken stir fry with colorful bell peppers and broccoli in a wok",
         ]
+
+    const mealPlanItems = [
+      {
+        name: "Mediterranean Bowl",
+        description: "Grilled chicken, quinoa, fresh vegetables, and tahini dressing",
+        calories: "485 cal",
+        price: "$12",
+        alt: "colorful mediterranean bowl with chicken and vegetables",
+      },
+      {
+        name: "Protein Power Salad",
+        description: "Mixed greens, grilled salmon, avocado, and lemon vinaigrette",
+        calories: "520 cal",
+        price: "$14",
+        alt: "fresh salad with salmon and avocado",
+      },
+      {
+        name: "Veggie Buddha Bowl",
+        description: "Roasted sweet potato, kale, chickpeas, and tahini",
+        calories: "420 cal",
+        price: "$11",
+        alt: "vibrant buddha bowl with roasted vegetables",
+      },
+      {
+        name: "Lean Turkey Wrap",
+        description: "Whole wheat wrap, turkey breast, vegetables, and hummus",
+        calories: "380 cal",
+        price: "$10",
+        alt: "turkey wrap with fresh vegetables",
+      },
+      {
+        name: "Grilled Salmon Plate",
+        description: "Atlantic salmon with asparagus and wild rice",
+        calories: "450 cal",
+        price: "$16",
+        alt: "grilled salmon with asparagus on white plate",
+      },
+      {
+        name: "Chicken Stir Fry",
+        description: "Lean chicken breast with colorful vegetables and brown rice",
+        calories: "410 cal",
+        price: "$13",
+        alt: "chicken stir fry with bell peppers and broccoli",
+      },
+      {
+        name: "Overnight Oats",
+        description: "Greek yogurt, oats, berries, and honey",
+        calories: "320 cal",
+        price: "$8",
+        alt: "overnight oats with fresh berries",
+      },
+      {
+        name: "Avocado Toast",
+        description: "Sourdough bread, poached egg, avocado, and microgreens",
+        calories: "350 cal",
+        price: "$9",
+        alt: "avocado toast with poached egg",
+      },
+    ]
+    const normalizedMealPlanItems = mealPlanItems.map((meal) => ({
+      alt: meal.alt,
+      calories: meal.calories,
+      description: meal.description,
+      image: '',
+      name: meal.name,
+      price: meal.price,
+    }))
+    const displayMealPlans =
+      storedMealPlans && storedMealPlans.length > 0
+        ? storedMealPlans
+        : normalizedMealPlanItems
+    const safeSubscriptionLines = subscriptionLines ?? []
+    const subscriptionItemCount = safeSubscriptionLines.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+    const subscriptionSubtotal = safeSubscriptionLines.reduce(
+      (total, item) => total + Number.parseFloat(item.plan.price.replace(/[^0-9.]+/g, '')) * item.quantity,
+      0,
+    )
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
@@ -538,6 +773,55 @@ export const NutritionKimiPage = defineCapsule({
       </svg>
     )
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     const featureIcons: ReactNode[] = [
       // clipboard / meal plan
       <svg key="i0" className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
@@ -591,50 +875,462 @@ export const NutritionKimiPage = defineCapsule({
         )}
       >
         {/* Navbar */}
-        <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex h-16 items-center justify-between lg:h-20">
+        <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
+          <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 lg:h-20">
+            {/* Logo */}
+            <button
+              type="button"
+              onClick={() => go(nav[0])}
+              className="flex items-center gap-2 text-xl font-bold tracking-tight text-foreground"
+            >
+              <LeafMark className="size-8 text-primary" />
+              <span>{brand}</span>
+            </button>
+
+            {/* Desktop nav */}
+            <div className="hidden items-center gap-8 lg:flex">
+              {nav.map((label) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => go(label)}
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-4">
               <button
                 type="button"
-                onClick={() => go(nav[0])}
-                className="flex items-center gap-2"
+                onClick={() => setSearchOpen(true)}
+                aria-label="Search"
+                className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground sm:flex"
               >
-                <LeafMark className="size-8 text-primary" />
-                <span className="text-xl font-semibold tracking-tight text-foreground">
-                  {brand}
-                </span>
+                <svg
+                  className="size-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
               </button>
-              <nav className="hidden items-center gap-8 md:flex">
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Meal Plans')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        My Meal Plans
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="inline-flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={subscriptionOpen} onOpenChange={setSubscriptionOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Meal Plans"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    {subscriptionItemCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {subscriptionItemCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Meal Plans</SheetTitle>
+                    <SheetDescription>
+                      {subscriptionItemCount > 0
+                        ? `${subscriptionItemCount} meal plan${subscriptionItemCount === 1 ? '' : 's'} in your subscription.`
+                        : 'Your subscription is empty.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {safeSubscriptionLines.length ? (
+                      <div className="space-y-5">
+                        {safeSubscriptionLines.map((item) => (
+                          <div
+                            key={item.id}
+                            className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                          >
+                            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                              <Image
+                                alt={item.plan.alt}
+                                src={item.plan.image || undefined}
+                                w={180}
+                                h={180}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                    {item.plan.name}
+                                  </h3>
+                                  <p className="text-xs text-muted-foreground">
+                                    {item.plan.calories}
+                                  </p>
+                                </div>
+                                <p className="text-sm font-bold text-foreground">
+                                  {item.plan.price}
+                                </p>
+                              </div>
+                              <div className="mt-4 flex items-center justify-between">
+                                <div className="inline-flex h-9 items-center rounded-full border border-border bg-background">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void updateSubscriptionQuantity(
+                                        item.planId,
+                                        item.quantity - 1,
+                                      )
+                                    }
+                                    className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                    aria-label={`Decrease ${item.plan.name} quantity`}
+                                  >
+                                    -
+                                  </button>
+                                  <span className="min-w-8 text-center text-sm font-semibold">
+                                    {item.quantity}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void updateSubscriptionQuantity(
+                                        item.planId,
+                                        item.quantity + 1,
+                                      )
+                                    }
+                                    className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                    aria-label={`Increase ${item.plan.name} quantity`}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void removeFromSubscription(item.planId)
+                                  }
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No meal plans in subscription
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Add a meal plan from the gallery to start your subscription.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Subtotal</span>
+                        <span>${subscriptionSubtotal.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between pt-2 text-base font-bold text-foreground">
+                        <span>Total</span>
+                        <span>${subscriptionSubtotal.toFixed(2)}</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={!safeSubscriptionLines.length}
+                      className="inline-flex w-full items-center justify-center rounded-full bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-60"
+                      onClick={() => go('Checkout')}
+                    >
+                      Checkout
+                    </button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void clearSubscription()}
+                        disabled={!safeSubscriptionLines.length}
+                        className="inline-flex items-center justify-center rounded-full border border-input bg-card px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:text-primary disabled:pointer-events-none disabled:opacity-60"
+                      >
+                        Clear
+                      </button>
+                      <SheetClose asChild>
+                        <button
+                          type="button"
+                          className="inline-flex items-center justify-center rounded-full bg-muted px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/80"
+                        >
+                          Continue
+                        </button>
+                      </SheetClose>
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+              <button
+                type="button"
+                aria-label="Open menu"
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-menu"
+                onClick={() => setMobileOpen((v: boolean) => !v)}
+                className="p-2 text-muted-foreground hover:text-foreground lg:hidden"
+              >
+                <svg
+                  className="size-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              </button>
+            </div>
+            {mobileOpen && (
+              <div
+                id="mobile-menu"
+                className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
+              >
                 {nav.map((label) => (
                   <button
                     key={label}
                     type="button"
-                    onClick={() => go(label)}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      go(label)
+                    }}
+                    className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
                   >
                     {label}
                   </button>
                 ))}
-              </nav>
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => go("Sign In")}
-                  className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-primary sm:inline-flex"
-                >
-                  Sign In
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(heroPrimary)}
-                  className="inline-flex items-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  Start Free Trial
-                </button>
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="inline-flex w-full items-center justify-center rounded-full bg-foreground px-4 py-3 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="inline-flex w-full items-center justify-center rounded-full bg-foreground px-4 py-3 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-60"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          </div>
+            )}
+          </nav>
         </header>
+
+        <CommandDialog
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          title="Search meal plans"
+          description="Search the meal plans available for this session."
+          className="max-w-xl"
+        >
+          <CommandInput placeholder={`Search ${brand} meal plans...`} />
+          <CommandList className="max-h-[420px]">
+            <CommandEmpty>No meal plans found.</CommandEmpty>
+            <CommandGroup heading="Meal Plans">
+              {displayMealPlans.map((meal) => (
+                <CommandItem
+                  key={meal.name}
+                  value={`${meal.name} ${meal.description} ${meal.calories}`}
+                  onSelect={() => {
+                    setSearchOpen(false)
+                    go(meal.name)
+                  }}
+                  className="gap-3 py-3"
+                >
+                  <div className="size-12 overflow-hidden rounded-md bg-muted">
+                    <Image
+                      alt={meal.alt}
+                      src={meal.image || undefined}
+                      w={120}
+                      h={120}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {meal.name}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {meal.calories}
+                    </p>
+                  </div>
+                  <span className="text-sm font-bold text-foreground">
+                    {meal.price}
+                  </span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
 
         <main>
           {/* Hero */}
@@ -833,6 +1529,88 @@ export const NutritionKimiPage = defineCapsule({
                       ))}
                   </div>
                 ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Meal Plans Grid */}
+          <section className="bg-background py-16 lg:py-24">
+            <div className="mx-auto max-w-6xl px-6">
+              <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h2 className="mb-2 text-3xl font-bold text-foreground lg:text-4xl">
+                    Meal Plans
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Choose from our dietitian-approved meal plans
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6">
+                {displayMealPlans.map((meal) => {
+                  const isFavorite =
+                    favoriteMealNames?.has(meal.name) ?? false
+
+                  return (
+                    <article key={meal.name} className="group">
+                      <div className="relative mb-4 aspect-square overflow-hidden rounded-xl bg-background">
+                        <Image
+                          alt={meal.alt}
+                          src={meal.image || undefined}
+                          w={600}
+                          h={600}
+                          loading="lazy"
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavorite(meal.name)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${meal.name} from favorites`
+                              : `Add ${meal.name} to favorites`
+                          }
+                          className={cn(
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                          )}
+                        >
+                          <HeartIcon active={isFavorite} />
+                        </button>
+                      </div>
+                      <div className="space-y-3">
+                        <h3 className="font-semibold text-foreground transition-colors group-hover:text-muted-foreground">
+                          {meal.name}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {meal.description}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">
+                            {meal.calories}
+                          </span>
+                          <span className="font-bold text-foreground">
+                            {meal.price}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void addToSubscription(meal.name)
+                            setSubscriptionOpen(true)
+                          }}
+                          className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                        >
+                          Add to Plan
+                        </button>
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -1045,20 +1823,9 @@ export const NutritionKimiPage = defineCapsule({
                       <span className="font-medium text-card-foreground">
                         {item.q}
                       </span>
-                      <svg
-                        className="size-5 text-muted-foreground transition-transform group-open:rotate-180"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
+                      <span className="flex size-5 flex-shrink-0 items-center justify-center">
+                        <ChevronDown />
+                      </span>
                     </summary>
                     <div className="px-6 pb-6 leading-relaxed text-muted-foreground">
                       {item.a}

@@ -1,8 +1,27 @@
+import { useState } from 'react'
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * BlogKimiPage2 — a complete, self-contained MAGAZINE-style BLOG INDEX / homepage.
@@ -133,8 +152,73 @@ export const BlogKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      posts: table({
+        tag: string(),
+        date: string(),
+        title: string(),
+        excerpt: string(),
+        author: string(),
+        alt: string(),
+        authorAlt: string(),
+      }),
+      readingList: table({
+        postTitle: string(),
+      }),
+      subscribers: table({
+        email: string(),
+      }),
+    },
+    queries: {
+      posts: ({ db }) => db.posts.orderBy('createdAt').all(),
+      readingListPosts: ({ db }) =>
+        db.readingList.all().flatMap((item) => {
+          const post = db.posts.where('title', item.postTitle).all()[0]
+          return post ? [{ ...item, post }] : []
+        }),
+      readingListPostTitles: ({ db }) =>
+        new Set(db.readingList.all().map((item) => item.postTitle)),
+    },
+    mutations: {
+      addToReadingList: ({ db }, postTitle: string) => {
+        const existingItem = db.readingList
+          .where('postTitle', postTitle)
+          .all()[0]
+
+        if (existingItem) {
+          db.readingList.delete(existingItem.id)
+          return false
+        }
+
+        db.readingList.insert({ postTitle })
+        return true
+      },
+      removeFromReadingList: ({ db }, postTitle: string) => {
+        for (const item of db.readingList.where('postTitle', postTitle).all()) {
+          db.readingList.delete(item.id)
+        }
+
+        return db.readingList.all()
+      },
+      subscribe: ({ db }, email: string) => {
+        const existingSubscriber = db.subscribers
+          .where('email', email)
+          .all()[0]
+
+        if (existingSubscriber) {
+          return db.subscribers.all()
+        }
+
+        db.subscribers.insert({ email })
+        return db.subscribers.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [mobileOpen, setMobileOpen] = useState(false)
+    const [readingListOpen, setReadingListOpen] = useState(false)
     const brand = props.brand ?? "Form & Flow"
     const nav = props.nav?.length
       ? props.nav
@@ -258,6 +342,53 @@ export const BlogKimiPage2 = defineCapsule({
               "Professional headshot of Priya Sharma, staff product designer",
           },
         ]
+    const normalizedPostItems = posts.map((post) => ({
+      tag: post.tag,
+      date: post.date,
+      title: post.title,
+      excerpt: post.excerpt,
+      author: post.author,
+      alt: post.alt,
+      authorAlt: post.authorAlt,
+    }))
+    const storedPosts = lakebed.useQuery('posts')
+    const readingListPosts = lakebed.useQuery('readingListPosts')
+    const readingListPostTitles = lakebed.useQuery('readingListPostTitles')
+    const auth = lakebed.useAuth()
+    const addToReadingList = lakebed.useMutation('addToReadingList')
+    const removeFromReadingList = lakebed.useMutation('removeFromReadingList')
+    const subscribe = lakebed.useMutation('subscribe')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const displayPosts =
+      storedPosts && storedPosts.length > 0
+        ? storedPosts
+        : normalizedPostItems
+    const safeReadingListPosts = readingListPosts ?? []
+    const readingListCount = safeReadingListPosts.length
 
     const editorPicks = {
       title: props.editorPicks?.title ?? "Editor's Picks",
@@ -384,6 +515,39 @@ export const BlogKimiPage2 = defineCapsule({
       />,
     ]
 
+    const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     const SocialIcon = ({ name }: { name: string }) => {
       const key = name.toLowerCase()
       if (key.includes("linkedin")) {
@@ -496,15 +660,304 @@ export const BlogKimiPage2 = defineCapsule({
                     />
                   </svg>
                 </button>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Settings')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Settings
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={readingListOpen} onOpenChange={setReadingListOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Reading List"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                      </svg>
+                      {readingListCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {readingListCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Reading List</SheetTitle>
+                      <SheetDescription>
+                        {readingListCount > 0
+                          ? `${readingListCount} article${readingListCount === 1 ? '' : 's'} saved for later.`
+                          : 'Your reading list is empty.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeReadingListPosts.length ? (
+                        <div className="space-y-5">
+                          {safeReadingListPosts.map((item) => (
+                            <div
+                              key={item.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                <Image
+                                  alt={item.post.alt}
+                                  w={180}
+                                  h={180}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
+                                  <span className="font-semibold text-primary">
+                                    {item.post.tag}
+                                  </span>
+                                  <span aria-hidden="true">•</span>
+                                  <span>{item.post.date}</span>
+                                </div>
+                                <h3 className="mb-2 line-clamp-2 text-sm font-semibold text-foreground">
+                                  {item.post.title}
+                                </h3>
+                                <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
+                                  {item.post.excerpt}
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void removeFromReadingList(item.post.title)
+                                  }
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No articles saved
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Click the bookmark icon on any article to save it to
+                            your reading list.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full rounded-full"
+                        onClick={() => void setReadingListOpen(false)}
+                      >
+                        Continue Reading
+                      </Button>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
-                  onClick={() => go("Subscribe")}
-                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                  aria-label="Open menu"
+                  aria-expanded={mobileOpen}
+                  aria-controls="mobile-menu"
+                  onClick={() => setMobileOpen((v: boolean) => !v)}
+                  className="p-2 text-muted-foreground hover:text-foreground lg:hidden"
                 >
-                  Subscribe
+                  <svg
+                    className="size-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                  >
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="18" x2="21" y2="18" />
+                  </svg>
                 </button>
               </div>
             </div>
+            {mobileOpen && (
+              <div
+                id="mobile-menu"
+                className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
+              >
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      go(label)
+                    }}
+                    className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                  >
+                    {label}
+                  </button>
+                ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </nav>
 
@@ -621,52 +1074,77 @@ export const BlogKimiPage2 = defineCapsule({
           {/* Article grid */}
           <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {posts.map((post) => (
-                <article key={post.title} className="group flex flex-col">
-                  <button
-                    type="button"
-                    onClick={() => go("Blog post")}
-                    className="mb-4 block overflow-hidden rounded-xl"
-                  >
-                    <Image
-                      alt={post.alt}
-                      w={600}
-                      h={400}
-                      loading="lazy"
-                      className="aspect-[3/2] w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </button>
-                  <div className="mb-2 flex items-center gap-3 text-sm text-muted-foreground">
-                    <span className="font-semibold text-primary">
-                      {post.tag}
-                    </span>
-                    <span aria-hidden="true">•</span>
-                    <span>{post.date}</span>
-                  </div>
-                  <h3 className="mb-2 text-xl font-bold transition-colors group-hover:text-primary">
-                    <button
-                      type="button"
-                      onClick={() => go("Blog post")}
-                      className="text-left"
-                    >
-                      {post.title}
-                    </button>
-                  </h3>
-                  <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
-                    {post.excerpt}
-                  </p>
-                  <div className="mt-auto flex items-center gap-3">
-                    <Image
-                      alt={post.authorAlt}
-                      w={100}
-                      h={100}
-                      loading="lazy"
-                      className="size-8 rounded-full object-cover"
-                    />
-                    <span className="text-sm font-medium">{post.author}</span>
-                  </div>
-                </article>
-              ))}
+              {displayPosts.map((post) => {
+                const isBookmarked =
+                  readingListPostTitles?.has(post.title) ?? false
+
+                return (
+                  <article key={post.title} className="group flex flex-col">
+                    <div className="relative mb-4">
+                      <button
+                        type="button"
+                        onClick={() => go("Blog post")}
+                        className="block overflow-hidden rounded-xl"
+                      >
+                        <Image
+                          alt={post.alt}
+                          w={600}
+                          h={400}
+                          loading="lazy"
+                          className="aspect-[3/2] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void addToReadingList(post.title)}
+                        aria-pressed={isBookmarked}
+                        aria-label={
+                          isBookmarked
+                            ? `Remove ${post.title} from reading list`
+                            : `Add ${post.title} to reading list`
+                        }
+                        className={cn(
+                          'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                          isBookmarked
+                            ? 'bg-primary text-primary-foreground opacity-100'
+                            : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                        )}
+                      >
+                        <BookmarkIcon active={isBookmarked} />
+                      </button>
+                    </div>
+                    <div className="mb-2 flex items-center gap-3 text-sm text-muted-foreground">
+                      <span className="font-semibold text-primary">
+                        {post.tag}
+                      </span>
+                      <span aria-hidden="true">•</span>
+                      <span>{post.date}</span>
+                    </div>
+                    <h3 className="mb-2 text-xl font-bold transition-colors group-hover:text-primary">
+                      <button
+                        type="button"
+                        onClick={() => go("Blog post")}
+                        className="text-left"
+                      >
+                        {post.title}
+                      </button>
+                    </h3>
+                    <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
+                      {post.excerpt}
+                    </p>
+                    <div className="mt-auto flex items-center gap-3">
+                      <Image
+                        alt={post.authorAlt}
+                        w={100}
+                        h={100}
+                        loading="lazy"
+                        className="size-8 rounded-full object-cover"
+                      />
+                      <span className="text-sm font-medium">{post.author}</span>
+                    </div>
+                  </article>
+                )
+              })}
             </div>
           </section>
 
@@ -753,7 +1231,11 @@ export const BlogKimiPage2 = defineCapsule({
               <form
                 onSubmit={(e) => {
                   e.preventDefault()
-                  go(newsletter.cta)
+                  const form = e.currentTarget
+                  const email = form.querySelector('input[type="email"]')?.value
+                  if (email) {
+                    void subscribe(email)
+                  }
                 }}
                 className="mx-auto mb-6 flex max-w-lg flex-col gap-3 sm:flex-row"
               >

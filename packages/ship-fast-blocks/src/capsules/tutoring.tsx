@@ -4,6 +4,32 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '#/components/ui/command.tsx'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * TutoringKimiPage — a complete, self-contained online-tutoring / education
@@ -202,9 +228,82 @@ export const TutoringKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      tutors: table({
+        name: string(),
+        title: string(),
+        rating: string(),
+        sessions: string(),
+        tags: string(),
+        avatarAlt: string(),
+      }),
+      bookings: table({
+        studentName: string(),
+        parentEmail: string(),
+        subject: string(),
+        grade: string(),
+        days: string(),
+        goals: string(),
+        tutorId: string(),
+      }),
+      favorites: table({
+        tutorName: string(),
+      }),
+    },
+    queries: {
+      tutors: ({ db }) => db.tutors.orderBy('createdAt').all(),
+      bookingLines: ({ db }) =>
+        db.bookings.all().flatMap((booking) => {
+          const tutor = db.tutors.get(booking.tutorId)
+          return tutor ? [{ ...booking, tutor }] : []
+        }),
+      favoriteTutorNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.tutorName)),
+    },
+    mutations: {
+      addBooking: ({ db }, booking: {
+        studentName: string
+        parentEmail: string
+        subject: string
+        grade: string
+        days: string
+        goals: string
+        tutorId: string
+      }) => {
+        db.bookings.insert(booking)
+        return db.bookings.all()
+      },
+      removeBooking: ({ db }, bookingId: string) => {
+        db.bookings.delete(bookingId)
+        return db.bookings.all()
+      },
+      clearBookings: ({ db }) => {
+        for (const item of db.bookings.all()) {
+          db.bookings.delete(item.id)
+        }
+        return []
+      },
+      toggleFavorite: ({ db }, tutorName: string) => {
+        const existingFavorite = db.favorites
+          .where('tutorName', tutorName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ tutorName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
+    const [bookingsOpen, setBookingsOpen] = useState(false)
     const brand = props.brand ?? "MentorMatch"
     const nav = props.nav?.length
       ? props.nav
@@ -370,6 +469,53 @@ export const TutoringKimiPage = defineCapsule({
               "Professional headshot of Marcus Johnson, an African American man with a neat beard and warm smile wearing a charcoal suit",
           },
         ]
+    const normalizedTutorItems = tutorItems.map((tutor) => ({
+      name: tutor.name,
+      title: tutor.title,
+      rating: tutor.rating,
+      sessions: tutor.sessions,
+      tags: tutor.tags.join(', '),
+      avatarAlt: tutor.avatarAlt,
+    }))
+    const storedTutors = lakebed.useQuery('tutors')
+    const bookingLines = lakebed.useQuery('bookingLines')
+    const favoriteTutorNames = lakebed.useQuery('favoriteTutorNames')
+    const auth = lakebed.useAuth()
+    const addBooking = lakebed.useMutation('addBooking')
+    const removeBooking = lakebed.useMutation('removeBooking')
+    const clearBookings = lakebed.useMutation('clearBookings')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const displayTutors =
+      storedTutors && storedTutors.length > 0
+        ? storedTutors
+        : normalizedTutorItems
+    const safeBookingLines = bookingLines ?? []
+    const bookingCount = safeBookingLines.length
 
     const stepsHeading = props.steps?.heading ?? "How it works"
     const stepsDesc =
@@ -615,6 +761,55 @@ export const TutoringKimiPage = defineCapsule({
       </svg>
     )
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     const Star = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -702,6 +897,250 @@ export const TutoringKimiPage = defineCapsule({
               <div className="flex items-center gap-4">
                 <button
                   type="button"
+                  onClick={() => setSearchOpen(true)}
+                  aria-label="Search"
+                  className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground sm:flex"
+                >
+                  <svg
+                    className="size-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </button>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Bookings')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Bookings
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={bookingsOpen} onOpenChange={setBookingsOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Bookings"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <path d="M16 10a4 4 0 0 1-8 0" />
+                      </svg>
+                      {bookingCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {bookingCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Your bookings</SheetTitle>
+                      <SheetDescription>
+                        {bookingCount > 0
+                          ? `${bookingCount} booking${bookingCount === 1 ? '' : 's'} ready.`
+                          : 'No bookings yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeBookingLines.length ? (
+                        <div className="space-y-5">
+                          {safeBookingLines.map((booking) => (
+                            <div
+                              key={booking.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                <Image
+                                  alt={booking.tutor.avatarAlt}
+                                  w={180}
+                                  h={180}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                      {booking.tutor.title}
+                                    </p>
+                                    <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                      {booking.tutor.name}
+                                    </h3>
+                                  </div>
+                                </div>
+                                <div className="mt-4 space-y-1 text-sm">
+                                  <p className="text-muted-foreground">
+                                    <span className="font-medium">Subject:</span> {booking.subject}
+                                  </p>
+                                  <p className="text-muted-foreground">
+                                    <span className="font-medium">Grade:</span> {booking.grade}
+                                  </p>
+                                  <p className="text-muted-foreground">
+                                    <span className="font-medium">Days:</span> {booking.days}
+                                  </p>
+                                </div>
+                                <div className="mt-4">
+                                  <button
+                                    type="button"
+                                    onClick={() => void removeBooking(booking.id)}
+                                    className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                  >
+                                    Remove booking
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No bookings yet
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Book a tutor from our roster to get started.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="rounded-full"
+                          onClick={() => void clearBookings()}
+                          disabled={!safeBookingLines.length}
+                        >
+                          Clear
+                        </Button>
+                        <SheetClose asChild>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="rounded-full"
+                          >
+                            Continue
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                <button
+                  type="button"
                   onClick={() => go(heroPrimary)}
                   className="hidden items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
                 >
@@ -739,10 +1178,108 @@ export const TutoringKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
         </header>
+
+        <CommandDialog
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          title="Search tutors"
+          description="Search the tutors available for booking."
+          className="max-w-xl"
+        >
+          <CommandInput placeholder={`Search ${brand} tutors...`} />
+          <CommandList className="max-h-[420px]">
+            <CommandEmpty>No tutors found.</CommandEmpty>
+            <CommandGroup heading="Tutors">
+              {displayTutors.map((tutor) => (
+                <CommandItem
+                  key={tutor.name}
+                  value={`${tutor.name} ${tutor.title} ${tutor.tags}`}
+                  onSelect={() => {
+                    setSearchOpen(false)
+                    go(tutor.name)
+                  }}
+                  className="gap-3 py-3"
+                >
+                  <div className="size-12 overflow-hidden rounded-md bg-muted">
+                    <Image
+                      alt={tutor.avatarAlt}
+                      w={120}
+                      h={120}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {tutor.name}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {tutor.title}
+                    </p>
+                  </div>
+                  <span className="text-sm font-bold text-foreground">
+                    ★ {tutor.rating}
+                  </span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
 
         <main>
           {/* Hero */}
@@ -926,41 +1463,81 @@ export const TutoringKimiPage = defineCapsule({
                 <p className="text-lg text-muted-foreground">{tutorsDesc}</p>
               </div>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                {tutorItems.map((tutor) => (
-                  <button
-                    key={tutor.name}
-                    type="button"
-                    onClick={() => go(tutor.name)}
-                    className="group block text-left"
-                  >
-                    <div className="mb-4 aspect-[3/4] overflow-hidden rounded-2xl bg-muted">
-                      <Image
-                        alt={tutor.avatarAlt}
-                        w={400}
-                        h={533}
-                        loading="lazy"
-                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
-                    <h3 className="text-lg font-semibold">{tutor.name}</h3>
-                    <p className="mb-2 text-sm text-muted-foreground">{tutor.title}</p>
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="text-chart-4">★ {tutor.rating}</span>
-                      <span className="text-muted-foreground">•</span>
-                      <span className="text-muted-foreground">{tutor.sessions}</span>
-                    </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {tutor.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground"
+                {displayTutors.map((tutor) => {
+                  const isFavorite =
+                    favoriteTutorNames?.has(tutor.name) ?? false
+                  const tutorTags = tutor.tags.split(', ')
+
+                  return (
+                    <article key={tutor.name} className="group">
+                      <div className="relative mb-4 aspect-[3/4] overflow-hidden rounded-2xl bg-muted">
+                        <Image
+                          alt={tutor.avatarAlt}
+                          w={400}
+                          h={533}
+                          loading="lazy"
+                          className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavorite(tutor.name)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${tutor.name} from favorites`
+                              : `Add ${tutor.name} to favorites`
+                          }
+                          className={cn(
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                          )}
                         >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </button>
-                ))}
+                          <HeartIcon active={isFavorite} />
+                        </button>
+                      </div>
+                      <div className="space-y-3">
+                        <h3 className="text-lg font-semibold">{tutor.name}</h3>
+                        <p className="mb-2 text-sm text-muted-foreground">{tutor.title}</p>
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-chart-4">★ {tutor.rating}</span>
+                          <span className="text-muted-foreground">•</span>
+                          <span className="text-muted-foreground">{tutor.sessions}</span>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {tutorTags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="w-full rounded-full"
+                          onClick={() => {
+                            void addBooking({
+                              studentName: '',
+                              parentEmail: '',
+                              subject: '',
+                              grade: '',
+                              days: '',
+                              goals: '',
+                              tutorId: tutor.id,
+                            })
+                            setBookingsOpen(true)
+                          }}
+                        >
+                          Book Session
+                        </Button>
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
               <div className="mt-12 text-center">
                 <button
@@ -1132,10 +1709,8 @@ export const TutoringKimiPage = defineCapsule({
                   >
                     <summary className="flex cursor-pointer items-center justify-between p-6">
                       <h3 className="pr-8 text-lg font-medium">{item.question}</h3>
-                      <span className="text-muted-foreground transition-transform group-open:rotate-180">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <path d="M19 9l-7 7-7-7" />
-                        </svg>
+                      <span className="flex size-5 flex-shrink-0 items-center justify-center">
+                        <ChevronDown />
                       </span>
                     </summary>
                     <div className="px-6 pb-6 leading-relaxed text-muted-foreground">
@@ -1180,7 +1755,27 @@ export const TutoringKimiPage = defineCapsule({
                     className="space-y-4"
                     onSubmit={(e) => {
                       e.preventDefault()
-                      go(bookingSubmit)
+                      const form = e.currentTarget
+                      const studentName = (form.querySelector('#tutoring-student') as HTMLInputElement)?.value || ''
+                      const parentEmail = (form.querySelector('#tutoring-email') as HTMLInputElement)?.value || ''
+                      const subject = (form.querySelector('#tutoring-subject') as HTMLSelectElement)?.value || ''
+                      const grade = (form.querySelector('#tutoring-grade') as HTMLSelectElement)?.value || ''
+                      const selectedDays = Array.from(form.querySelectorAll('input[type="checkbox"]:checked')).map(
+                        (cb) => (cb as HTMLInputElement).nextElementSibling?.textContent || ''
+                      ).join(', ')
+                      const goals = (form.querySelector('#tutoring-goals') as HTMLTextAreaElement)?.value || ''
+
+                      void addBooking({
+                        studentName,
+                        parentEmail,
+                        subject,
+                        grade,
+                        days: selectedDays,
+                        goals,
+                        tutorId: displayTutors[0]?.id || '',
+                      })
+                      setBookingsOpen(true)
+                      form.reset()
                     }}
                   >
                     <div className="grid gap-4 sm:grid-cols-2">

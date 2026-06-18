@@ -1,8 +1,27 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * JewelryStoreKimiPage2 — a faithful Tailwind v4 port of the Kimi-generated
@@ -195,8 +214,94 @@ export const JewelryStoreKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      reservations: table({
+        firstName: string(),
+        lastName: string(),
+        email: string(),
+        phone: string(),
+        location: string(),
+        interest: string(),
+        message: string(),
+      }),
+      wishlist: table({
+        itemTitle: string(),
+      }),
+    },
+    queries: {
+      reservations: ({ db }) => db.reservations.orderBy("createdAt").all(),
+      wishlistTitles: ({ db }) =>
+        new Set(db.wishlist.all().map((w) => w.itemTitle)),
+    },
+    mutations: {
+      submitReservation: (
+        { db },
+        firstName: string,
+        lastName: string,
+        email: string,
+        phone: string,
+        location: string,
+        interest: string,
+        message: string,
+      ) => {
+        db.reservations.insert({
+          firstName,
+          lastName,
+          email,
+          phone,
+          location,
+          interest,
+          message,
+        })
+        return db.reservations.all()
+      },
+      toggleWishlist: ({ db }, itemTitle: string) => {
+        const existing = db.wishlist.where("itemTitle", itemTitle).all()[0]
+        if (existing) {
+          db.wishlist.delete(existing.id)
+          return false
+        }
+        db.wishlist.insert({ itemTitle })
+        return true
+      },
+      removeReservation: ({ db }, id: string) => {
+        db.reservations.delete(id)
+        return db.reservations.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [drawerOpen, setDrawerOpen] = useState(false)
+
+    const reservations = lakebed.useQuery("reservations")
+    const wishlistTitles = lakebed.useQuery("wishlistTitles")
+    const submitReservation = lakebed.useMutation("submitReservation")
+    const toggleWishlist = lakebed.useMutation("toggleWishlist")
+    const removeReservation = lakebed.useMutation("removeReservation")
+
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part: string) => part[0]?.toUpperCase())
+        .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+
+    const safeReservations = reservations ?? []
+    const reservationCount = safeReservations.length
     const brand = props.brand ?? "Maison Aurelie"
     const nav = props.nav?.length
       ? props.nav
@@ -654,27 +759,154 @@ export const JewelryStoreKimiPage2 = defineCapsule({
                     />
                   </svg>
                 </button>
-                <button
-                  type="button"
-                  aria-label="Wishlist"
-                  onClick={() => go(nav[1] ?? nav[0])}
-                  className="hidden text-primary transition-colors hover:text-primary/80 sm:flex"
-                >
-                  <svg
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
+                {/* Wishlist drawer trigger */}
+                <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Wishlist & Reservations"
+                      className="relative hidden text-primary transition-colors hover:text-primary/80 sm:flex"
+                    >
+                      <svg
+                        className="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                        />
+                      </svg>
+                      {reservationCount > 0 && (
+                        <span className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {reservationCount}
+                        </span>
+                      )}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Your Reservations</SheetTitle>
+                      <SheetDescription>
+                        {reservationCount > 0
+                          ? `${reservationCount} appointment request${reservationCount === 1 ? "" : "s"} submitted.`
+                          : "No appointment requests yet."}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeReservations.length ? (
+                        <div className="space-y-4">
+                          {safeReservations.map((r) => (
+                            <div key={r.id} className="rounded-sm border border-border bg-card p-4">
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <p className="font-semibold text-card-foreground">
+                                    {r.firstName} {r.lastName}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">{r.email}</p>
+                                  {r.location && (
+                                    <p className="mt-1 text-xs text-primary">{r.location}</p>
+                                  )}
+                                  {r.interest && (
+                                    <p className="text-xs text-muted-foreground">{r.interest}</p>
+                                  )}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => void removeReservation(r.id)}
+                                  aria-label="Remove reservation"
+                                  className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-sm border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">No reservations yet</p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Submit the appointment form below to begin your journey.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button type="button" variant="secondary" className="w-full rounded-sm">
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                {/* Auth */}
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-9 max-w-40 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted sm:inline-flex"
+                      >
+                        <Avatar size="sm" className="ring-2 ring-background" aria-hidden="true">
+                          {authPicture ? (
+                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-20 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" sideOffset={10} className="w-60 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl">
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage src={authPicture} alt={authDisplayName} />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">{authDisplayName}</p>
+                            <p className="truncate text-xs text-muted-foreground">{authEmail ?? "Signed in"}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={() => lakebed.signOut()}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => { if (!auth.isLoading) void lakebed.signInWithGoogle() }}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-9 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                    />
-                  </svg>
-                </button>
+                    <span className="grid h-5 w-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">G</span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => go(consultHeading)}
@@ -810,13 +1042,15 @@ export const JewelryStoreKimiPage2 = defineCapsule({
                 </p>
               </div>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {collectionItems.map((c) => (
-                  <button
-                    key={c.title}
-                    type="button"
-                    onClick={() => go(c.title)}
-                    className="group relative block aspect-[4/5] w-full overflow-hidden rounded-sm bg-muted text-left"
-                  >
+                {collectionItems.map((c) => {
+                  const isWishlisted = wishlistTitles?.has(c.title) ?? false
+                  return (
+                  <div key={c.title} className="group relative aspect-[4/5] w-full overflow-hidden rounded-sm bg-muted">
+                    <button
+                      type="button"
+                      onClick={() => go(c.title)}
+                      className="absolute inset-0 text-left"
+                    >
                     <Image
                       alt={c.imageAlt}
                       w={600}
@@ -856,8 +1090,33 @@ export const JewelryStoreKimiPage2 = defineCapsule({
                         </svg>
                       </span>
                     </div>
-                  </button>
-                ))}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void toggleWishlist(c.title)}
+                      aria-pressed={isWishlisted}
+                      aria-label={isWishlisted ? `Remove ${c.title} from wishlist` : `Add ${c.title} to wishlist`}
+                      className={cn(
+                        "absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full shadow-md transition-all",
+                        isWishlisted
+                          ? "bg-primary text-primary-foreground opacity-100"
+                          : "bg-background/90 text-foreground opacity-0 group-hover:opacity-100",
+                      )}
+                    >
+                      <svg
+                        className="h-5 w-5"
+                        fill={isWishlisted ? "currentColor" : "none"}
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                    </button>
+                  </div>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -1351,7 +1610,18 @@ export const JewelryStoreKimiPage2 = defineCapsule({
                     className="space-y-4"
                     onSubmit={(e) => {
                       e.preventDefault()
-                      go(consultSubmit)
+                      const fd = new FormData(e.currentTarget)
+                      void submitReservation(
+                        fd.get("ja2-first") as string,
+                        fd.get("ja2-last") as string,
+                        fd.get("ja2-email") as string,
+                        fd.get("ja2-phone") as string,
+                        fd.get("ja2-location") as string,
+                        fd.get("ja2-interest") as string,
+                        fd.get("ja2-message") as string,
+                      )
+                      ;(e.target as HTMLFormElement).reset()
+                      setDrawerOpen(true)
                     }}
                   >
                     <div className="grid gap-4 sm:grid-cols-2">
@@ -1364,6 +1634,7 @@ export const JewelryStoreKimiPage2 = defineCapsule({
                         </label>
                         <input
                           id="ja2-first"
+                          name="ja2-first"
                           type="text"
                           placeholder="Your first name"
                           className={inputCls}
@@ -1378,6 +1649,7 @@ export const JewelryStoreKimiPage2 = defineCapsule({
                         </label>
                         <input
                           id="ja2-last"
+                          name="ja2-last"
                           type="text"
                           placeholder="Your last name"
                           className={inputCls}
@@ -1393,6 +1665,7 @@ export const JewelryStoreKimiPage2 = defineCapsule({
                       </label>
                       <input
                         id="ja2-email"
+                        name="ja2-email"
                         type="email"
                         placeholder="your@email.com"
                         className={inputCls}
@@ -1407,6 +1680,7 @@ export const JewelryStoreKimiPage2 = defineCapsule({
                       </label>
                       <input
                         id="ja2-phone"
+                        name="ja2-phone"
                         type="tel"
                         placeholder="+1 (555) 000-0000"
                         className={inputCls}
@@ -1419,7 +1693,7 @@ export const JewelryStoreKimiPage2 = defineCapsule({
                       >
                         Preferred Location
                       </label>
-                      <select id="ja2-location" className={inputCls}>
+                      <select id="ja2-location" name="ja2-location" className={inputCls}>
                         <option value="">Select a salon</option>
                         {consultLocations.map((loc) => (
                           <option key={loc.city} value={loc.city}>
@@ -1435,7 +1709,7 @@ export const JewelryStoreKimiPage2 = defineCapsule({
                       >
                         Interest
                       </label>
-                      <select id="ja2-interest" className={inputCls}>
+                      <select id="ja2-interest" name="ja2-interest" className={inputCls}>
                         <option value="">
                           What brings you to {brand}?
                         </option>
@@ -1455,6 +1729,7 @@ export const JewelryStoreKimiPage2 = defineCapsule({
                       </label>
                       <textarea
                         id="ja2-message"
+                        name="ja2-message"
                         rows={4}
                         placeholder="Tell us about your vision, timeline, or any specific requirements..."
                         className={cn(inputCls, "resize-none")}

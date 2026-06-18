@@ -1,9 +1,20 @@
-import { useState, type ReactNode } from "react"
+import { useState, type FormEvent, type ReactNode } from "react"
 import { z } from "zod/v4"
+import { number, string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * LawFirmKimiPage — a complete, self-contained corporate & trial law-firm
@@ -178,9 +189,110 @@ export const LawFirmKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      consultationRequests: table({
+        email: string(),
+        leadScore: number(),
+        firstName: string(),
+        lastName: string(),
+        message: string(),
+        phone: string(),
+        practiceArea: string(),
+        status: string(),
+      }),
+    },
+    queries: {
+      consultationRequests: ({ db }) =>
+        db.consultationRequests.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addConsultationRequest: (
+        { db },
+        firstName: string,
+        lastName: string,
+        email: string,
+        phone: string,
+        practiceArea: string,
+        message: string,
+      ) => {
+        db.consultationRequests.insert({
+          firstName,
+          lastName,
+          email,
+          leadScore: 0,
+          phone,
+          practiceArea,
+          message,
+          status: "New",
+        })
+
+        return db.consultationRequests.all()
+      },
+      markConsultationHandled: ({ db }, id: string) => {
+        const request = db.consultationRequests.get(id)
+        if (!request) return db.consultationRequests.all()
+
+        db.consultationRequests.update(id, {
+          status:
+            request.status.toLowerCase() === "contacted"
+              ? "Handled"
+              : "Contacted",
+        })
+
+        return db.consultationRequests.all()
+      },
+      removeConsultationRequest: ({ db }, id: string) => {
+        db.consultationRequests.delete(id)
+        return db.consultationRequests.all()
+      },
+      clearConsultationRequests: ({ db }) => {
+        for (const item of db.consultationRequests.all()) {
+          db.consultationRequests.delete(item.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [requestInboxOpen, setRequestInboxOpen] = useState(false)
+    const consultationRequests = lakebed.useQuery("consultationRequests")
+    const addConsultationRequest = lakebed.useMutation("addConsultationRequest")
+    const markConsultationHandled = lakebed.useMutation("markConsultationHandled")
+    const removeConsultationRequest = lakebed.useMutation(
+      "removeConsultationRequest",
+    )
+    const clearConsultationRequests = lakebed.useMutation(
+      "clearConsultationRequests",
+    )
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authLabel = auth.isLoading
+      ? "Checking…"
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+    const savedRequests = consultationRequests ?? []
+    const newRequestCount = savedRequests.filter(
+      (item) => item.status === "New",
+    ).length
+    const totalRequestCount = savedRequests.length
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
     const brand = props.brand ?? "Reinhart & Associates"
     const nav = props.nav?.length
       ? props.nav
@@ -436,6 +548,41 @@ export const LawFirmKimiPage = defineCapsule({
           "Tax & Estates",
           "Other",
         ]
+    const defaultPracticeOption = practiceOptions[0] ?? ""
+    const handleRequestSubmit = (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      const form = event.currentTarget as HTMLFormElement
+      const data = new FormData(form)
+      const firstName = String(data.get("lawfirm-first") ?? "").trim()
+      const lastName = String(data.get("lawfirm-last") ?? "").trim()
+      const email = String(data.get("lawfirm-email") ?? "").trim()
+      const phone = String(data.get("lawfirm-phone") ?? "").trim()
+      const practiceArea = String(
+        data.get("lawfirm-practice") ?? defaultPracticeOption,
+      ).trim()
+      const message = String(data.get("lawfirm-message") ?? "").trim()
+
+      if (
+        !firstName ||
+        !lastName ||
+        !email ||
+        !practiceArea ||
+        practiceArea === defaultPracticeOption
+      ) {
+        return
+      }
+
+      void addConsultationRequest(
+        firstName,
+        lastName,
+        email,
+        phone,
+        practiceArea,
+        message,
+      )
+      setRequestInboxOpen(true)
+      form.reset()
+    }
 
     const footerAbout =
       props.footer?.about ??
@@ -568,6 +715,25 @@ export const LawFirmKimiPage = defineCapsule({
       </svg>
     )
 
+    const RequestIcon = ({ className }: { className?: string }) => (
+      <svg
+        className={className}
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M21 8v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8" />
+        <path d="M3 8l9-6 9 6" />
+        <path d="M12 2v14" />
+      </svg>
+    )
+
     const LinkedInIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -660,6 +826,155 @@ export const LawFirmKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <Sheet open={requestInboxOpen} onOpenChange={setRequestInboxOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open consultation requests"
+                      className="relative flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <RequestIcon className="size-4" />
+                      <span>Requests</span>
+                      {newRequestCount > 0 ? (
+                        <span className="grid size-5 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                          {newRequestCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle>Consultation Requests</SheetTitle>
+                      <SheetDescription>
+                        {newRequestCount > 0
+                          ? `${newRequestCount} new request${newRequestCount === 1 ? "" : "s"}`
+                          : "No new request."}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
+                      {savedRequests.length ? (
+                        <div className="space-y-4">
+                          {savedRequests.map((request) => (
+                            <div
+                              key={request.id}
+                              className="rounded-lg border border-border bg-background p-4"
+                            >
+                              <div className="mb-2 flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="font-medium text-foreground">
+                                    {request.firstName} {request.lastName}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {request.email}
+                                  </p>
+                                </div>
+                                <span className="text-xs text-muted-foreground">
+                                  {request.status}
+                                </span>
+                              </div>
+                              <p className="mb-2 text-sm text-muted-foreground">
+                                {request.practiceArea}
+                              </p>
+                              <p className="line-clamp-3 text-sm leading-relaxed text-foreground/80">
+                                {request.message}
+                              </p>
+                              <div className="mt-4 flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (!isSignedIn) {
+                                      void lakebed.signInWithGoogle()
+                                      return
+                                    }
+                                    void markConsultationHandled(request.id)
+                                  }}
+                                  className="rounded-sm border border-border px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                                >
+                                  Mark Contacted
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (!isSignedIn) {
+                                      void lakebed.signInWithGoogle()
+                                      return
+                                    }
+                                    void removeConsultationRequest(request.id)
+                                  }}
+                                  className="rounded-sm border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="rounded-lg border border-dashed border-border bg-muted/40 px-4 py-10 text-center">
+                          <p className="text-sm text-muted-foreground">
+                            No consultation requests yet.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="mb-4 w-full space-y-2 text-sm">
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>Total Requests</span>
+                          <span>{totalRequestCount}</span>
+                        </div>
+                        <div className="flex justify-between text-muted-foreground">
+                          <span>New Requests</span>
+                          <span>{newRequestCount}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Signed in as{" "}
+                          <span className="font-medium text-foreground">
+                            {authLabel}
+                          </span>
+                        </p>
+                      </div>
+                      <div className="grid w-full gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!isSignedIn) {
+                              handleSignIn()
+                              return
+                            }
+                            void clearConsultationRequests()
+                          }}
+                          disabled={totalRequestCount === 0}
+                          className="w-full rounded-sm border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {isSignedIn
+                            ? "Clear all requests"
+                            : "Sign in to manage requests"}
+                        </button>
+                        {isSignedIn ? (
+                          <button
+                            type="button"
+                            onClick={handleSignOut}
+                            className="w-full rounded-sm bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+                          >
+                            Sign out
+                          </button>
+                        ) : null}
+                        <SheetClose asChild>
+                          <button
+                            type="button"
+                            className="w-full rounded-sm bg-muted px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/80"
+                          >
+                            Close
+                          </button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(nav[nav.length - 1])}
@@ -701,6 +1016,39 @@ export const LawFirmKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    setRequestInboxOpen(true)
+                  }}
+                  className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                >
+                  Consultation Requests ({totalRequestCount})
+                </button>
+                {isSignedIn ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      handleSignOut()
+                    }}
+                    className="w-fit rounded-sm border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                  >
+                    Sign out
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      handleSignIn()
+                    }}
+                    className="w-fit rounded-sm bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+                  >
+                    {authLabel}
+                  </button>
+                )}
               </div>
             )}
           </nav>
@@ -1098,10 +1446,7 @@ export const LawFirmKimiPage = defineCapsule({
                   </h3>
                   <form
                     className="space-y-6"
-                    onSubmit={(e) => {
-                      e.preventDefault()
-                      go(nav[nav.length - 1])
-                    }}
+                    onSubmit={handleRequestSubmit}
                   >
                     <div className="grid gap-6 sm:grid-cols-2">
                       <div>
@@ -1113,6 +1458,7 @@ export const LawFirmKimiPage = defineCapsule({
                         </label>
                         <input
                           id="lawfirm-first"
+                          name="lawfirm-first"
                           type="text"
                           required
                           className={inputCls}
@@ -1127,6 +1473,7 @@ export const LawFirmKimiPage = defineCapsule({
                         </label>
                         <input
                           id="lawfirm-last"
+                          name="lawfirm-last"
                           type="text"
                           required
                           className={inputCls}
@@ -1142,6 +1489,7 @@ export const LawFirmKimiPage = defineCapsule({
                       </label>
                       <input
                         id="lawfirm-email"
+                        name="lawfirm-email"
                         type="email"
                         required
                         className={inputCls}
@@ -1154,7 +1502,12 @@ export const LawFirmKimiPage = defineCapsule({
                       >
                         Phone Number
                       </label>
-                      <input id="lawfirm-phone" type="tel" className={inputCls} />
+                      <input
+                        id="lawfirm-phone"
+                        name="lawfirm-phone"
+                        type="tel"
+                        className={inputCls}
+                      />
                     </div>
                     <div>
                       <label
@@ -1165,6 +1518,8 @@ export const LawFirmKimiPage = defineCapsule({
                       </label>
                       <select
                         id="lawfirm-practice"
+                        name="lawfirm-practice"
+                        required
                         className={cn(inputCls, "appearance-none")}
                       >
                         {practiceOptions.map((opt) => (
@@ -1185,6 +1540,7 @@ export const LawFirmKimiPage = defineCapsule({
                         id="lawfirm-message"
                         rows={4}
                         className={cn(inputCls, "resize-none")}
+                        name="lawfirm-message"
                       />
                     </div>
                     <button

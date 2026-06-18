@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * FilmDirectorKimiPage2 — VARIANT 2 (a sibling/alternative to FilmDirectorKimiPage).
@@ -166,9 +184,55 @@ export const FilmDirectorKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      favorites: table({
+        projectTitle: string(),
+        projectTag: string(),
+        projectRole: string(),
+        projectImageAlt: string(),
+      }),
+      inquiries: table({
+        name: string(),
+        email: string(),
+        projectType: string(),
+        budget: string(),
+        message: string(),
+      }),
+    },
+    queries: {
+      favorites: ({ db }) => db.favorites.orderBy('createdAt').all(),
+      inquiries: ({ db }) => db.inquiries.orderBy('createdAt').all(),
+    },
+    mutations: {
+      toggleFavorite: ({ db }, projectTitle: string, projectTag: string, projectRole: string, projectImageAlt: string) => {
+        const existingFavorite = db.favorites.where('projectTitle', projectTitle).all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ projectTitle, projectTag, projectRole, projectImageAlt })
+        return true
+      },
+      submitInquiry: ({ db }, name: string, email: string, projectType: string, budget: string, message: string) => {
+        db.inquiries.insert({ name, email, projectType, budget, message })
+        return db.inquiries.all()
+      },
+      clearInquiries: ({ db }) => {
+        for (const item of db.inquiries.all()) {
+          db.inquiries.delete(item.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [favoritesOpen, setFavoritesOpen] = useState(false)
+    const [inquiriesOpen, setInquiriesOpen] = useState(false)
     const brand = props.brand ?? "Jonah Marks"
     const nav = props.nav?.length
       ? props.nav
@@ -379,6 +443,41 @@ export const FilmDirectorKimiPage2 = defineCapsule({
       : ["Work", "Services", "About", "Contact"]
     const footerNote = props.footer?.note ?? "All rights reserved."
 
+    // Lakebed hooks
+    const favorites = lakebed.useQuery('favorites')
+    const inquiries = lakebed.useQuery('inquiries')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const submitInquiry = lakebed.useMutation('submitInquiry')
+    const clearInquiries = lakebed.useMutation('clearInquiries')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const favoriteProjectTitles = new Set(favorites?.map((f) => f.projectTitle) ?? [])
+
     const PlayIcon = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
@@ -444,6 +543,55 @@ export const FilmDirectorKimiPage2 = defineCapsule({
         aria-hidden="true"
       >
         <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
       </svg>
     )
 
@@ -562,29 +710,216 @@ export const FilmDirectorKimiPage2 = defineCapsule({
                   {nav[nav.length - 1]}
                 </button>
               </div>
-              <button
-                type="button"
-                aria-label="Open menu"
-                aria-expanded={mobileOpen}
-                aria-controls="mobile-menu"
-                onClick={() => setMobileOpen((v: boolean) => !v)}
-                className="p-2 text-muted-foreground hover:text-foreground md:hidden"
-              >
-                <svg
-                  className="size-6"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
+              <div className="flex items-center gap-4">
+                <Sheet open={favoritesOpen} onOpenChange={setFavoritesOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Favorites"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <HeartIcon />
+                      {favorites && favorites.length > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {favorites.length}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Saved Projects</SheetTitle>
+                      <SheetDescription>
+                        {favorites && favorites.length > 0
+                          ? `${favorites.length} project${favorites.length === 1 ? '' : 's'} saved to your favorites.`
+                          : 'No saved projects yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {favorites && favorites.length > 0 ? (
+                        <div className="space-y-5">
+                          {favorites.map((item) => (
+                            <div
+                              key={item.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                <Image
+                                  alt={item.projectImageAlt}
+                                  w={180}
+                                  h={180}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <span className="mb-2 inline-block rounded-full bg-primary/20 px-2 py-0.5 text-xs font-semibold text-primary">
+                                  {item.projectTag}
+                                </span>
+                                <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                  {item.projectTitle}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {item.projectRole}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No saved projects
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Click the heart icon on any project to save it to your favorites.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFavoritesOpen(true)
+                          }}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Favorites
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setInquiriesOpen(true)
+                          }}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Inquiries
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  aria-label="Open menu"
+                  aria-expanded={mobileOpen}
+                  aria-controls="mobile-menu"
+                  onClick={() => setMobileOpen((v: boolean) => !v)}
+                  className="p-2 text-muted-foreground hover:text-foreground md:hidden"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    className="size-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
             {mobileOpen && (
               <div
@@ -604,6 +939,58 @@ export const FilmDirectorKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -736,39 +1123,67 @@ export const FilmDirectorKimiPage2 = defineCapsule({
               </div>
 
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-                {workItems.map((proj) => (
-                  <button
-                    key={proj.title}
-                    type="button"
-                    onClick={() => go(proj.title)}
-                    className="group relative block aspect-[4/5] w-full cursor-pointer overflow-hidden rounded-2xl text-left"
-                  >
-                    <Image
-                      alt={proj.imageAlt}
-                      w={800}
-                      h={1000}
-                      loading="lazy"
-                      className="size-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent opacity-90" />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                      <div className="grid size-16 place-items-center rounded-full bg-primary text-primary-foreground">
-                        <PlayIcon className="ml-1 size-6" />
-                      </div>
+                {workItems.map((proj) => {
+                  const isFavorite = favoriteProjectTitles.has(proj.title)
+
+                  return (
+                    <div
+                      key={proj.title}
+                      className="group relative aspect-[4/5] w-full overflow-hidden rounded-2xl"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => go(proj.title)}
+                        className="absolute inset-0 z-0"
+                      >
+                        <Image
+                          alt={proj.imageAlt}
+                          w={800}
+                          h={1000}
+                          loading="lazy"
+                          className="size-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent opacity-90" />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                          <div className="grid size-16 place-items-center rounded-full bg-primary text-primary-foreground">
+                            <PlayIcon className="ml-1 size-6" />
+                          </div>
+                        </div>
+                        <div className="absolute inset-x-0 bottom-0 p-6 text-left">
+                          <span className="mb-3 inline-block rounded-full bg-primary/20 px-3 py-1 text-xs font-semibold text-primary">
+                            {proj.tag}
+                          </span>
+                          <h3 className="mb-1 text-2xl font-bold tracking-wide">
+                            {proj.title}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {proj.role}
+                          </p>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void toggleFavorite(proj.title, proj.tag, proj.role, proj.imageAlt)
+                        }}
+                        aria-pressed={isFavorite}
+                        aria-label={
+                          isFavorite
+                            ? `Remove ${proj.title} from favorites`
+                            : `Add ${proj.title} to favorites`
+                        }
+                        className={cn(
+                          'absolute top-4 right-4 z-10 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
+                          isFavorite
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-background/90 text-foreground',
+                        )}
+                      >
+                        <HeartIcon active={isFavorite} />
+                      </button>
                     </div>
-                    <div className="absolute inset-x-0 bottom-0 p-6">
-                      <span className="mb-3 inline-block rounded-full bg-primary/20 px-3 py-1 text-xs font-semibold text-primary">
-                        {proj.tag}
-                      </span>
-                      <h3 className="mb-1 text-2xl font-bold tracking-wide">
-                        {proj.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {proj.role}
-                      </p>
-                    </div>
-                  </button>
-                ))}
+                  )
+                })}
               </div>
 
               <div className="mt-12 text-center">
@@ -1087,110 +1502,204 @@ export const FilmDirectorKimiPage2 = defineCapsule({
                   </div>
                 </div>
 
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault()
-                    go(submitLabel)
-                  }}
-                  className="rounded-2xl border border-border bg-background p-6 lg:p-8"
-                >
-                  <div className="mb-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
-                    <div>
-                      <label
-                        htmlFor="name"
-                        className="mb-2 block text-sm font-medium text-muted-foreground"
+                <Sheet open={inquiriesOpen} onOpenChange={setInquiriesOpen}>
+                  <SheetTrigger asChild>
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault()
+                        const formData = new FormData(e.currentTarget)
+                        const name = formData.get('name') as string
+                        const email = formData.get('email') as string
+                        const projectType = formData.get('project-type') as string
+                        const budget = formData.get('budget') as string
+                        const message = formData.get('message') as string
+
+                        void submitInquiry(name, email, projectType, budget, message)
+                        setInquiriesOpen(true)
+                        e.currentTarget.reset()
+                      }}
+                      className="rounded-2xl border border-border bg-background p-6 lg:p-8"
+                    >
+                      <div className="mb-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div>
+                          <label
+                            htmlFor="name"
+                            className="mb-2 block text-sm font-medium text-muted-foreground"
+                          >
+                            Name
+                          </label>
+                          <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            required
+                            placeholder="Your name"
+                            className="w-full rounded-xl border border-input bg-muted px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="email"
+                            className="mb-2 block text-sm font-medium text-muted-foreground"
+                          >
+                            Email
+                          </label>
+                          <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            required
+                            placeholder="your@email.com"
+                            className="w-full rounded-xl border border-input bg-muted px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                      <div className="mb-6">
+                        <label
+                          htmlFor="project-type"
+                          className="mb-2 block text-sm font-medium text-muted-foreground"
+                        >
+                          Project Type
+                        </label>
+                        <select
+                          id="project-type"
+                          name="project-type"
+                          className="w-full rounded-xl border border-input bg-muted px-4 py-3 text-foreground transition-colors focus:border-primary focus:outline-none"
+                        >
+                          <option value="">Select a project type</option>
+                          {projectTypes.map((t) => (
+                            <option key={t} value={t}>
+                              {t}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="mb-6">
+                        <label
+                          htmlFor="budget"
+                          className="mb-2 block text-sm font-medium text-muted-foreground"
+                        >
+                          Budget Range
+                        </label>
+                        <select
+                          id="budget"
+                          name="budget"
+                          className="w-full rounded-xl border border-input bg-muted px-4 py-3 text-foreground transition-colors focus:border-primary focus:outline-none"
+                        >
+                          <option value="">Select budget range</option>
+                          {budgets.map((b) => (
+                            <option key={b} value={b}>
+                              {b}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="mb-6">
+                        <label
+                          htmlFor="message"
+                          className="mb-2 block text-sm font-medium text-muted-foreground"
+                        >
+                          Tell me about your project
+                        </label>
+                        <textarea
+                          id="message"
+                          name="message"
+                          rows={5}
+                          required
+                          placeholder="Share your vision, timeline, and any reference links..."
+                          className="w-full resize-none rounded-xl border border-input bg-muted px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary focus:outline-none"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        className="w-full rounded-xl bg-primary px-8 py-4 font-semibold text-primary-foreground transition-all duration-200 hover:bg-primary/90"
                       >
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        required
-                        placeholder="Your name"
-                        className="w-full rounded-xl border border-input bg-muted px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="email"
-                        className="mb-2 block text-sm font-medium text-muted-foreground"
-                      >
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        required
-                        placeholder="your@email.com"
-                        className="w-full rounded-xl border border-input bg-muted px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary focus:outline-none"
-                      />
-                    </div>
-                  </div>
-                  <div className="mb-6">
-                    <label
-                      htmlFor="project-type"
-                      className="mb-2 block text-sm font-medium text-muted-foreground"
-                    >
-                      Project Type
-                    </label>
-                    <select
-                      id="project-type"
-                      name="project-type"
-                      className="w-full rounded-xl border border-input bg-muted px-4 py-3 text-foreground transition-colors focus:border-primary focus:outline-none"
-                    >
-                      <option value="">Select a project type</option>
-                      {projectTypes.map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="mb-6">
-                    <label
-                      htmlFor="budget"
-                      className="mb-2 block text-sm font-medium text-muted-foreground"
-                    >
-                      Budget Range
-                    </label>
-                    <select
-                      id="budget"
-                      name="budget"
-                      className="w-full rounded-xl border border-input bg-muted px-4 py-3 text-foreground transition-colors focus:border-primary focus:outline-none"
-                    >
-                      <option value="">Select budget range</option>
-                      {budgets.map((b) => (
-                        <option key={b} value={b}>
-                          {b}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="mb-6">
-                    <label
-                      htmlFor="message"
-                      className="mb-2 block text-sm font-medium text-muted-foreground"
-                    >
-                      Tell me about your project
-                    </label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      rows={5}
-                      required
-                      placeholder="Share your vision, timeline, and any reference links..."
-                      className="w-full resize-none rounded-xl border border-input bg-muted px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary focus:outline-none"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="w-full rounded-xl bg-primary px-8 py-4 font-semibold text-primary-foreground transition-all duration-200 hover:bg-primary/90"
+                        {submitLabel}
+                      </button>
+                    </form>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
                   >
-                    {submitLabel}
-                  </button>
-                </form>
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Project Inquiries</SheetTitle>
+                      <SheetDescription>
+                        {inquiries && inquiries.length > 0
+                          ? `${inquiries.length} inquiry${inquiries.length === 1 ? '' : 's'} submitted.`
+                          : 'No inquiries submitted yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {inquiries && inquiries.length > 0 ? (
+                        <div className="space-y-5">
+                          {inquiries.map((item) => (
+                            <div
+                              key={item.id}
+                              className="rounded-xl border border-border bg-muted/40 p-4"
+                            >
+                              <div className="mb-3 flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="font-semibold text-foreground">
+                                    {item.name}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {item.email}
+                                  </p>
+                                </div>
+                                <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs font-semibold text-primary">
+                                  {item.projectType}
+                                </span>
+                              </div>
+                              <div className="mb-2 text-sm">
+                                <span className="font-medium text-foreground">
+                                  Budget:
+                                </span>{' '}
+                                <span className="text-muted-foreground">
+                                  {item.budget}
+                                </span>
+                              </div>
+                              <p className="text-sm leading-relaxed text-muted-foreground">
+                                {item.message}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No inquiries yet
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Submit the contact form to track your project inquiries.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="grid grid-cols-2 gap-2 w-full">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="rounded-full"
+                          onClick={() => void clearInquiries()}
+                          disabled={!inquiries || inquiries.length === 0}
+                        >
+                          Clear
+                        </Button>
+                        <SheetClose asChild>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="rounded-full"
+                          >
+                            Close
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
               </div>
             </div>
           </section>

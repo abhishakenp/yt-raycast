@@ -1,8 +1,19 @@
+import { useState, type FormEvent } from "react"
 import { z } from "zod/v4"
+import { string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 
 export const CybersecurityKimiPage3 = defineCapsule({
   name: "CybersecurityKimiPage3",
@@ -43,102 +54,227 @@ export const CybersecurityKimiPage3 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      securityLeads: table({
+        source: string(),
+        name: string(),
+        email: string(),
+        company: string(),
+        message: string(),
+      }),
+    },
+    queries: {
+      securityLeads: ({ db }) => db.securityLeads.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addSecurityLead: (
+        { db },
+        lead: {
+          source: string
+          name: string
+          email: string
+          company: string
+          message: string
+        },
+      ) => {
+        db.securityLeads.insert(lead)
+        return db.securityLeads.all()
+      },
+      removeSecurityLead: ({ db }, id: string) => {
+        db.securityLeads.delete(id)
+        return db.securityLeads.all()
+      },
+      clearSecurityLeads: ({ db }) => {
+        for (const lead of db.securityLeads.all()) {
+          db.securityLeads.delete(lead.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [leadDrawerOpen, setLeadDrawerOpen] = useState(false)
+    const [leadSource, setLeadSource] = useState("Cybersecurity inquiry")
+    const [leadForm, setLeadForm] = useState({
+      name: "",
+      email: "",
+      company: "",
+      message: "",
+    })
+    const storedLeads = lakebed.useQuery("securityLeads") ?? []
+    const addSecurityLead = lakebed.useMutation("addSecurityLead")
+    const removeSecurityLead = lakebed.useMutation("removeSecurityLead")
+    const clearSecurityLeads = lakebed.useMutation("clearSecurityLeads")
+    const auth = lakebed.useAuth()
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? "Sign out"
+        : "Sign in with Google"
+
+    const leadRows = [...storedLeads].reverse()
+    const leadCount = leadRows.length
+    const leadFormClass =
+      "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const openLeadDrawer = (source: string, prefillMessage?: string) => {
+      setLeadSource(source)
+      setLeadForm((current) => ({
+        ...current,
+        message: prefillMessage ?? current.message,
+      }))
+      setLeadDrawerOpen(true)
+    }
+
+    const handleLeadSubmit = (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      const name = leadForm.name.trim()
+      const email = leadForm.email.trim()
+      const company = leadForm.company.trim()
+      const message = leadForm.message.trim()
+
+      if (!name || !email) return
+
+      void addSecurityLead({
+        source: leadSource,
+        name,
+        email,
+        company,
+        message: message || "Customer requested enterprise security consultation",
+      })
+
+      setLeadForm({
+        name: "",
+        email: "",
+        company: "",
+        message: "",
+      })
+    }
+
     const brand = props.brand ?? "Aegis Defense Autonomous Enterprise Cybersecurity Platform"
-    const nav = props.nav?.length ? props.nav : ["Aegis", "Platform", "Solutions", "Pricing", "Customers", "Resources"]
+    const nav = props.nav?.length
+      ? props.nav
+      : ["Aegis", "Platform", "Solutions", "Pricing", "Customers", "Resources"]
     const hero = {
       eyebrow: "Cybersecurity / Variant 3",
       title: "Eliminate Breaches Before They Strike",
-      description: "Aegis Defense Autonomous Enterprise Cybersecurity Platform Aegis Platform Solutions Pricing Customers Resources Request Demo Now with Autonomous Response v3.2 Eliminate Breaches...",
+      description:
+        "Aegis Defense Autonomous Enterprise Cybersecurity Platform Aegis Platform Solutions Pricing Customers Resources Request Demo Now with Autonomous Response v3.2 Eliminate Breaches...",
       primaryCta: "Subscribe",
       secondaryCta: "Aegis",
       imageAlt: "Professional headshot of a male security analyst",
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "One platform. Total adversarial visibility.",
-    "body": "Aegis Defense Autonomous Enterprise Cybersecurity Platform Aegis Platform Solutions Pricing Customers Resources Request Demo Now with Autonomous Response v3.2 Eliminate Breaches...",
-    "items": [
-      "Predictable pricing, unlimited value",
-      "Trusted by the front line",
-      "Questions & Answers"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "Deploy in minutes, not months",
-    "body": "Cybersecurity page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Start protecting your perimeter today",
-      "Autonomous Threat Hunting",
-      "Cloud-Native XDR"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Built for operators, not dashboards",
-    "body": "Cybersecurity page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Zero-Touch Remediation",
-      "Adversary Intelligence",
-      "Vulnerability Shield"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Predictable pricing, unlimited value",
-    "body": "Cybersecurity page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Compliance Automation",
-      "Deploy Sensors",
-      "Correlation Engine"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "Deploy in minutes, not months",
-    "alt": "Professional headshot of a male security analyst",
-    "caption": "Cybersecurity generated page detail"
-  },
-  {
-    "title": "Built for operators, not dashboards",
-    "alt": "Professional headshot of a female SOC manager",
-    "caption": "Cybersecurity generated page detail"
-  },
-  {
-    "title": "Predictable pricing, unlimited value",
-    "alt": "Professional headshot of a male threat hunter",
-    "caption": "Cybersecurity generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: "24/7",
+            label: "Responsive service",
+          },
+          {
+            value: "98%",
+            label: "Positive outcomes",
+          },
+          {
+            value: "4.9",
+            label: "Average rating",
+          },
+          {
+            value: "12+",
+            label: "Core capabilities",
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: "Overview",
+            title: "One platform. Total adversarial visibility.",
+            body: "Aegis Defense Autonomous Enterprise Cybersecurity Platform Aegis Platform Solutions Pricing Customers Resources Request Demo Now with Autonomous Response v3.2 Eliminate Breaches...",
+            items: [
+              "Predictable pricing, unlimited value",
+              "Trusted by the front line",
+              "Questions & Answers",
+            ],
+          },
+          {
+            eyebrow: "Experience",
+            title: "Deploy in minutes, not months",
+            body: "Cybersecurity page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              "Start protecting your perimeter today",
+              "Autonomous Threat Hunting",
+              "Cloud-Native XDR",
+            ],
+          },
+          {
+            eyebrow: "Proof",
+            title: "Built for operators, not dashboards",
+            body: "Cybersecurity page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              "Zero-Touch Remediation",
+              "Adversary Intelligence",
+              "Vulnerability Shield",
+            ],
+          },
+          {
+            eyebrow: "Next steps",
+            title: "Predictable pricing, unlimited value",
+            body: "Cybersecurity page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              "Compliance Automation",
+              "Deploy Sensors",
+              "Correlation Engine",
+            ],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: "Deploy in minutes, not months",
+            alt: "Professional headshot of a male security analyst",
+            caption: "Cybersecurity generated page detail",
+          },
+          {
+            title: "Built for operators, not dashboards",
+            alt: "Professional headshot of a female SOC manager",
+            caption: "Cybersecurity generated page detail",
+          },
+          {
+            title: "Predictable pricing, unlimited value",
+            alt: "Professional headshot of a male threat hunter",
+            caption: "Cybersecurity generated page detail",
+          },
+        ]
 
     return (
       <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go("Home")}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -155,10 +291,18 @@ export const CybersecurityKimiPage3 = defineCapsule({
             </nav>
             <button
               type="button"
-              onClick={() => go(hero.primaryCta)}
+              onClick={() => {
+                openLeadDrawer(hero.primaryCta, "Header CTA enquiry")
+                go(hero.primaryCta)
+              }}
               className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
             >
               {hero.primaryCta}
+              {leadCount > 0 ? (
+                <span className="ml-2 inline-flex size-5 items-center justify-center rounded-full bg-primary-foreground/15 text-[0.7rem] font-semibold text-primary-foreground/90">
+                  {leadCount}
+                </span>
+              ) : null}
             </button>
           </div>
         </header>
@@ -180,7 +324,10 @@ export const CybersecurityKimiPage3 = defineCapsule({
                 <div className="mt-8 flex flex-wrap gap-3">
                   <button
                     type="button"
-                    onClick={() => go(hero.primaryCta)}
+                    onClick={() => {
+                      openLeadDrawer("Hero primary CTA")
+                      go(hero.primaryCta)
+                    }}
                     className="rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                   >
                     {hero.primaryCta}
@@ -195,16 +342,28 @@ export const CybersecurityKimiPage3 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -212,10 +371,19 @@ export const CybersecurityKimiPage3 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -239,12 +407,19 @@ export const CybersecurityKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
-                onClick={() => go(hero.secondaryCta)}
+                onClick={() => {
+                  openLeadDrawer("Gallery CTA")
+                  go(hero.secondaryCta)
+                }}
                 className="rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
               >
                 {hero.secondaryCta}
@@ -252,11 +427,26 @@ export const CybersecurityKimiPage3 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -267,13 +457,22 @@ export const CybersecurityKimiPage3 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => go(hero.primaryCta)}
+                  onClick={() => {
+                    openLeadDrawer("Final section CTA")
+                    go(hero.primaryCta)
+                  }}
                   className="rounded-md bg-background px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
                 >
                   {hero.primaryCta}
@@ -281,14 +480,218 @@ export const CybersecurityKimiPage3 = defineCapsule({
               </div>
             </div>
           </section>
+          <Sheet
+            open={leadDrawerOpen}
+            onOpenChange={setLeadDrawerOpen}
+          >
+            <SheetContent
+              side="right"
+              className="w-full gap-0 p-0 sm:max-w-md"
+            >
+              <SheetHeader className="border-b border-border p-6">
+                <SheetTitle>Security consultation requests</SheetTitle>
+                <SheetDescription>
+                  Capture inbound leads and convert them into prioritized follow-ups.
+                </SheetDescription>
+              </SheetHeader>
+              <div className="flex-1 overflow-y-auto px-6 py-5">
+                <form className="space-y-3" onSubmit={handleLeadSubmit}>
+                  <input
+                    type="text"
+                    required
+                    value={leadForm.name}
+                    onChange={(event) =>
+                      setLeadForm((current) => ({
+                        ...current,
+                        name: event.target.value,
+                      }))
+                    }
+                    placeholder="Your name"
+                    className={leadFormClass}
+                    aria-label="Full name"
+                  />
+                  <input
+                    type="email"
+                    required
+                    value={leadForm.email}
+                    onChange={(event) =>
+                      setLeadForm((current) => ({
+                        ...current,
+                        email: event.target.value,
+                      }))
+                    }
+                    placeholder="Work email"
+                    className={leadFormClass}
+                    aria-label="Work email"
+                  />
+                  <input
+                    type="text"
+                    value={leadForm.company}
+                    onChange={(event) =>
+                      setLeadForm((current) => ({
+                        ...current,
+                        company: event.target.value,
+                      }))
+                    }
+                    placeholder="Company"
+                    className={leadFormClass}
+                    aria-label="Company"
+                  />
+                  <textarea
+                    rows={3}
+                    value={leadForm.message}
+                    onChange={(event) =>
+                      setLeadForm((current) => ({
+                        ...current,
+                        message: event.target.value,
+                      }))
+                    }
+                    placeholder={`Message for ${leadSource}`}
+                    className={cn(leadFormClass, "resize-none")}
+                    aria-label="Message"
+                  />
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <button
+                      type="submit"
+                      className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                    >
+                      Save inquiry
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setLeadForm({
+                          name: "",
+                          email: "",
+                          company: "",
+                          message: "",
+                        })
+                      }
+                      className="rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                </form>
+
+                <div className="mt-8">
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-sm font-semibold text-foreground">
+                      Inquiry queue
+                    </p>
+                    {leadCount > 0 ? (
+                      <span className="rounded-full bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground">
+                        {leadCount}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  {leadRows.length ? (
+                    <div className="space-y-3">
+                      {leadRows.map((lead) => (
+                        <article
+                          key={lead.id}
+                          className="rounded-lg border border-border bg-card p-4"
+                        >
+                          <div className="mb-2 flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-semibold text-foreground">
+                                {lead.name}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {lead.email}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => void removeSecurityLead(lead.id)}
+                              className="rounded-full border border-border px-2 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                              aria-label={`Remove ${lead.name}`}
+                            >
+                              Remove
+                            </button>
+                          </div>
+                          <p className="text-xs uppercase tracking-wide text-primary">
+                            {lead.source}
+                          </p>
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            {lead.company || "Company not provided"}
+                          </p>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {lead.message}
+                          </p>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-dashed border-border bg-muted/40 px-4 py-8 text-center">
+                      <p className="text-sm text-muted-foreground">
+                        No consultation requests yet.
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground/80">
+                        Submit details in the form to begin.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <SheetFooter className="border-t border-border p-6">
+                <div className="space-y-2 text-sm">
+                  <p className="font-semibold text-foreground">Account</p>
+                  <p className="text-muted-foreground">
+                    {auth.isLoading
+                      ? "Checking account..."
+                      : isSignedIn
+                        ? `Signed in as ${authDisplayName}`
+                        : "Sign in with Google to persist leads across sessions"}
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={isSignedIn ? handleSignOut : handleSignIn}
+                    disabled={auth.isLoading}
+                    className="rounded-md bg-foreground px-4 py-2 text-xs font-semibold text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-60"
+                  >
+                    {authLabel}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void clearSecurityLeads()
+                    }}
+                    disabled={!leadRows.length}
+                    className="rounded-md border border-border bg-background px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-60"
+                  >
+                    Clear all
+                  </button>
+                </div>
+                <SheetClose asChild>
+                  <button
+                    type="button"
+                    className="rounded-md bg-card px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                  >
+                    Continue
+                  </button>
+                </SheetClose>
+              </SheetFooter>
+            </SheetContent>
+          </Sheet>
         </main>
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

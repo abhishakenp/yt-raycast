@@ -4,10 +4,28 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * ManufacturingKimiPage — a complete, self-contained precision-manufacturing /
- * industrial-fabrication LANDING page.
+ * industrial-fabrication LANDING page with full-stack quote request functionality.
  *
  * A faithful Tailwind v4 port of a Kimi-generated "Vertex Manufacturing
  * Solutions" design: a clean, neutral, industrial B2B aesthetic on a light
@@ -17,9 +35,16 @@ import { Image } from "#/lib/img.tsx"
  * grid (5-axis CNC, sheet metal, grinding, wire EDM, finishing, inspection),
  * an 8-up industries-served grid with certification tags, a 5-step quote→
  * delivery process with lead-time stats, a dark portfolio gallery of recent
- * machined parts, a 3-tier pricing block (Prototypes / Low-Volume / Production),
+ * machined parts with "Add to Quote" buttons, a 3-tier pricing block (Prototypes / Low-Volume / Production),
  * a company stats band, a testimonials grid (featured + compact quotes), an
  * 8-question FAQ, a dark CTA band, and a 4-column footer.
+ *
+ * Full-stack features include:
+ * - Quote request drawer (Sheet) for managing project quote requests
+ * - Google authentication with account menu (Popover)
+ * - Persistent quote request state via Lakebed
+ * - Reactive quote count badge on navbar
+ * - Add/remove/clear quote request mutations
  *
  * The block owns ALL layout, spacing, depth and type hierarchy and colors
  * itself entirely with semantic theme tokens. Every nav item / CTA / link /
@@ -31,7 +56,7 @@ import { Image } from "#/lib/img.tsx"
 export const ManufacturingKimiPage = defineCapsule({
   name: "ManufacturingKimiPage",
   description:
-    "Complete precision-manufacturing / industrial-fabrication LANDING page with a clean, neutral, industrial B2B aesthetic: light surface, dark charcoal brand accent, ISO/AS9100 certification badges. Includes a split hero (certification pill, headline, KPI stat strip, CNC machining photo with a floating quality badge, dual CTAs), a 'trusted by industry leaders' logo strip, a 6-up capabilities grid (5-axis CNC machining, sheet metal fabrication, precision grinding, wire EDM, finishing & coating, quality inspection) with icons, an 8-up industries-served grid (aerospace, automotive, energy & oil, medical, defense, robotics, semiconductor, industrial) with certification tags, a 5-step quote-to-delivery process with lead-time stats, a dark portfolio gallery of recent machined parts with material specs, a 3-tier pricing block (Prototypes / Low-Volume / Production), a company stats band, a testimonials grid, an FAQ accordion-style list, a dark CTA band, and a 4-column footer. Use as the ROOT/home page for CNC machine shops, metal fabricators, contract manufacturers, industrial engineering firms, machining job shops, or any precision-parts supplier serving aerospace, automotive, medical, defense, energy or robotics sectors when a trustworthy, spec-heavy, conversion-focused page with capabilities, certifications and social proof is wanted. Supply content only — brand, nav, hero, capabilities, industries, process, gallery, pricing, stats, testimonials, faq, cta, footer; the block owns all layout and styling.",
+    "Complete precision-manufacturing / industrial-fabrication LANDING page with a clean, neutral, industrial B2B aesthetic: light surface, dark charcoal brand accent, ISO/AS9100 certification badges. Includes a split hero (certification pill, headline, KPI stat strip, CNC machining photo with a floating quality badge, dual CTAs), a 'trusted by industry leaders' logo strip, a 6-up capabilities grid (5-axis CNC machining, sheet metal fabrication, precision grinding, wire EDM, finishing & coating, quality inspection) with icons, an 8-up industries-served grid (aerospace, automotive, energy & oil, medical, defense, robotics, semiconductor, industrial) with certification tags, a 5-step quote-to-delivery process with lead-time stats, a dark portfolio gallery of recent machined parts with 'Add to Quote' buttons, a 3-tier pricing block (Prototypes / Low-Volume / Production), a company stats band, a testimonials grid, an FAQ accordion-style list, a dark CTA band, and a 4-column footer. Full-stack features: quote request drawer (Sheet) for managing project quote requests, Google authentication with account menu (Popover), persistent quote request state via Lakebed, reactive quote count badge on navbar, add/remove/clear quote request mutations. Use as the ROOT/home page for CNC machine shops, metal fabricators, contract manufacturers, industrial engineering firms, machining job shops, or any precision-parts supplier serving aerospace, automotive, medical, defense, energy or robotics sectors when a trustworthy, spec-heavy, conversion-focused page with capabilities, certifications and social proof is wanted. Supply content only — brand, nav, hero, capabilities, industries, process, gallery, pricing, stats, testimonials, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
     /** Brand / company name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -208,10 +233,71 @@ export const ManufacturingKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      quoteRequests: table({
+        title: string(),
+        spec: string(),
+        quantity: number(),
+      }),
+    },
+    queries: {
+      quoteRequests: ({ db }) => db.quoteRequests.orderBy('createdAt').all(),
+    },
+    mutations: {
+      addQuoteRequest: ({ db }, title: string, spec: string, quantity: number) => {
+        db.quoteRequests.insert({ title, spec, quantity })
+        return db.quoteRequests.all()
+      },
+      removeQuoteRequest: ({ db }, id: string) => {
+        db.quoteRequests.delete(id)
+        return db.quoteRequests.all()
+      },
+      clearQuoteRequests: ({ db }) => {
+        for (const item of db.quoteRequests.all()) {
+          db.quoteRequests.delete(item.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [quoteDrawerOpen, setQuoteDrawerOpen] = useState(false)
     const brand = props.brand ?? "Vertex Manufacturing"
+
+    const quoteRequests = lakebed.useQuery('quoteRequests')
+    const addQuoteRequest = lakebed.useMutation('addQuoteRequest')
+    const removeQuoteRequest = lakebed.useMutation('removeQuoteRequest')
+    const clearQuoteRequests = lakebed.useMutation('clearQuoteRequests')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const safeQuoteRequests = quoteRequests ?? []
+    const quoteRequestCount = safeQuoteRequests.length
     const nav = props.nav?.length
       ? props.nav
       : ["Capabilities", "Industries", "Process", "Work", "Clients", "Get a Quote"]
@@ -673,6 +759,37 @@ export const ManufacturingKimiPage = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     // Capability icons (decorative, token-colored).
     const capIcons: ReactNode[] = [
       <svg key="i0" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -775,28 +892,236 @@ export const ManufacturingKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Orders')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Quote Requests
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 md:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={quoteDrawerOpen} onOpenChange={setQuoteDrawerOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => go(nav[nav.length - 1])}
+                      className="inline-flex items-center rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+                    >
+                      {nav[nav.length - 1]}
+                      {quoteRequestCount > 0 ? (
+                        <span className="ml-2 grid size-5 place-items-center rounded-full bg-background text-[0.625rem] font-bold text-foreground">
+                          {quoteRequestCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Quote Requests</SheetTitle>
+                      <SheetDescription>
+                        {quoteRequestCount > 0
+                          ? `${quoteRequestCount} project${quoteRequestCount === 1 ? '' : 's'} ready for quote.`
+                          : 'No quote requests yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeQuoteRequests.length ? (
+                        <div className="space-y-5">
+                          {safeQuoteRequests.map((item) => (
+                            <div
+                              key={item.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                <Image
+                                  alt={item.title}
+                                  w={180}
+                                  h={180}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                      {item.title}
+                                    </h3>
+                                    <p className="text-xs text-muted-foreground">
+                                      {item.spec}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      Qty: {item.quantity}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="mt-4">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void removeQuoteRequest(item.id)
+                                    }
+                                    className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No quote requests
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Add projects from the portfolio to start a quote request.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <Button
+                        type="button"
+                        disabled={!safeQuoteRequests.length}
+                        className="w-full rounded-full"
+                        onClick={() => go('Submit Quote')}
+                      >
+                        Submit Quote Request
+                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="rounded-full"
+                          onClick={() => void clearQuoteRequests()}
+                          disabled={!safeQuoteRequests.length}
+                        >
+                          Clear
+                        </Button>
+                        <SheetClose asChild>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="rounded-full"
+                          >
+                            Continue
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
-                  onClick={() => go(nav[nav.length - 1])}
-                  className="inline-flex items-center rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+                  aria-label="Open menu"
+                  aria-expanded={mobileOpen}
+                  aria-controls="mobile-menu"
+                  onClick={() => setMobileOpen((v: boolean) => !v)}
+                  className="p-2 text-muted-foreground md:hidden"
                 >
-                  {nav[nav.length - 1]}
-                </button>
-              </div>
-              <button
-                type="button"
-                aria-label="Open menu"
-                aria-expanded={mobileOpen}
-                aria-controls="mobile-menu"
-                onClick={() => setMobileOpen((v: boolean) => !v)}
-                className="p-2 text-muted-foreground md:hidden"
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-            </div>
-            {mobileOpen && (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+	                  </button>
+	                </div>
+	            </div>
+	            {mobileOpen && (
               <div
                 id="mobile-menu"
                 className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
@@ -814,6 +1139,58 @@ export const ManufacturingKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -840,7 +1217,10 @@ export const ManufacturingKimiPage = defineCapsule({
                   <div className="flex flex-wrap gap-4">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() => {
+                        go(heroPrimary)
+                        setQuoteDrawerOpen(true)
+                      }}
                       className="inline-flex items-center rounded-md bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90"
                     >
                       {heroPrimary}
@@ -1060,12 +1440,7 @@ export const ManufacturingKimiPage = defineCapsule({
               </div>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {galItems.map((item) => (
-                  <button
-                    key={item.title}
-                    type="button"
-                    onClick={() => go(item.title)}
-                    className="group block text-left"
-                  >
+                  <article key={item.title} className="group">
                     <div className="overflow-hidden rounded-lg">
                       <Image
                         alt={item.title}
@@ -1079,7 +1454,18 @@ export const ManufacturingKimiPage = defineCapsule({
                       <p className="font-medium text-background">{item.title}</p>
                       <p className="text-sm text-background/60">{item.spec}</p>
                     </div>
-                  </button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="mt-4 w-full rounded-full"
+                      onClick={() => {
+                        void addQuoteRequest(item.title, item.spec, 1)
+                        setQuoteDrawerOpen(true)
+                      }}
+                    >
+                      Add to Quote
+                    </Button>
+                  </article>
                 ))}
               </div>
             </div>
@@ -1176,7 +1562,10 @@ export const ManufacturingKimiPage = defineCapsule({
                       </ul>
                       <button
                         type="button"
-                        onClick={() => go(tier.cta)}
+                        onClick={() => {
+                          go(tier.cta)
+                          setQuoteDrawerOpen(true)
+                        }}
                         className={cn(
                           "mt-6 w-full rounded-md py-2.5 font-medium transition-colors",
                           featured
@@ -1320,7 +1709,10 @@ export const ManufacturingKimiPage = defineCapsule({
               <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={() => {
+                    go(ctaPrimary)
+                    setQuoteDrawerOpen(true)
+                  }}
                   className="inline-flex items-center justify-center rounded-md bg-background px-8 py-4 font-medium text-foreground transition-colors hover:bg-background/90"
                 >
                   {ctaPrimary}

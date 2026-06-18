@@ -1,5 +1,17 @@
+import { useState } from "react"
 import { z } from "zod/v4"
+import { string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
@@ -21,7 +33,9 @@ export const CommunityForumKimiPage2 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -43,259 +57,578 @@ export const CommunityForumKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      bookmarks: table({
+        title: string(),
+        section: string(),
+        route: string(),
+      }),
+    },
+    queries: {
+      bookmarks: ({ db }) => db.bookmarks.orderBy("createdAt").all(),
+    },
+    mutations: {
+      saveBookmark: ({ db }, title: string, section: string, route: string) => {
+        const normalizedTitle = title.trim()
+        const normalizedSection = section.trim()
+        const normalizedRoute = route.trim() || normalizedTitle
+
+        if (!normalizedTitle) {
+          return db.bookmarks.all()
+        }
+
+        const existing = db.bookmarks
+          .where("title", normalizedTitle)
+          .all()
+
+        if (existing.length) {
+          return db.bookmarks.all()
+        }
+
+        db.bookmarks.insert({
+          title: normalizedTitle,
+          section: normalizedSection || "Forum",
+          route: normalizedRoute,
+        })
+
+        return db.bookmarks.all()
+      },
+      removeBookmark: ({ db }, id: string) => {
+        const target = db.bookmarks.get(id)
+        if (!target) {
+          return db.bookmarks.all()
+        }
+
+        db.bookmarks.delete(target.id)
+        return db.bookmarks.all()
+      },
+      clearBookmarks: ({ db }) => {
+        for (const bookmark of db.bookmarks.all()) {
+          db.bookmarks.delete(bookmark.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
+    const [bookmarksOpen, setBookmarksOpen] = useState(false)
     const go = useNavigate()
-    const brand = props.brand ?? "ThreadSpace The Community Platform for Builders, Makers & Thinkers"
-    const nav = props.nav?.length ? props.nav : ["ThreadSpace", "Topics", "Features", "Pricing", "Stories", "FAQ"]
+    const brand =
+      props.brand ??
+      "ThreadSpace The Community Platform for Builders, Makers & Thinkers"
+    const nav = props.nav?.length
+      ? props.nav
+      : ["ThreadSpace", "Topics", "Features", "Pricing", "Stories", "FAQ"]
     const hero = {
       eyebrow: "Community Forum / Variant 2",
       title: "Where curious minds collide and create",
-      description: "ThreadSpace The Community Platform for Builders, Makers & Thinkers ThreadSpace Topics Features Pricing Stories FAQ Sign in Get Started Over 12,000 new members joined this month...",
+      description:
+        "ThreadSpace The Community Platform for Builders, Makers & Thinkers ThreadSpace Topics Features Pricing Stories FAQ Sign in Get Started Over 12,000 new members joined this month...",
       primaryCta: "ThreadSpace",
       secondaryCta: "Topics",
-      imageAlt: "professional headshot of a smiling woman with short dark hair",
+      imageAlt:
+        "professional headshot of a smiling woman with short dark hair",
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Everything you need to build a thriving community",
-    "body": "ThreadSpace The Community Platform for Builders, Makers & Thinkers ThreadSpace Topics Features Pricing Stories FAQ Sign in Get Started Over 12,000 new members joined this month...",
-    "items": [
-      "Conversations that lead somewhere",
-      "Lives changed one thread at a time",
-      "Simple pricing for every stage"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "Find your people in 340+ channels",
-    "body": "Community Forum page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Questions? Answers.",
-      "Ready to find your people?",
-      "Threaded Conversations"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Get started in under 60 seconds",
-    "body": "Community Forum page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Smart Topic Channels",
-      "Member Directory",
-      "Analytics Dashboard"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Conversations that lead somewhere",
-    "body": "Community Forum page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Moderation Tools",
-      "Custom Domain & Branding",
-      "React & Next.js"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "Find your people in 340+ channels",
-    "alt": "professional headshot of a smiling woman with short dark hair",
-    "caption": "Community Forum generated page detail"
-  },
-  {
-    "title": "Get started in under 60 seconds",
-    "alt": "professional headshot of a man with glasses and curly hair",
-    "caption": "Community Forum generated page detail"
-  },
-  {
-    "title": "Conversations that lead somewhere",
-    "alt": "professional headshot of a woman with natural curly hair in a blazer",
-    "caption": "Community Forum generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: "24/7",
+            label: "Responsive service",
+          },
+          {
+            value: "98%",
+            label: "Positive outcomes",
+          },
+          {
+            value: "4.9",
+            label: "Average rating",
+          },
+          {
+            value: "12+",
+            label: "Core capabilities",
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: "Overview",
+            title:
+              "Everything you need to build a thriving community",
+            body: "ThreadSpace The Community Platform for Builders, Makers & Thinkers ThreadSpace Topics Features Pricing Stories FAQ Sign in Get Started Over 12,000 new members joined this month...",
+            items: [
+              "Conversations that lead somewhere",
+              "Lives changed one thread at a time",
+              "Simple pricing for every stage",
+            ],
+          },
+          {
+            eyebrow: "Experience",
+            title: "Find your people in 340+ channels",
+            body: "Community Forum page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              "Questions? Answers.",
+              "Ready to find your people?",
+              "Threaded Conversations",
+            ],
+          },
+          {
+            eyebrow: "Proof",
+            title: "Get started in under 60 seconds",
+            body: "Community Forum page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              "Smart Topic Channels",
+              "Member Directory",
+              "Analytics Dashboard",
+            ],
+          },
+          {
+            eyebrow: "Next steps",
+            title: "Conversations that lead somewhere",
+            body: "Community Forum page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              "Moderation Tools",
+              "Custom Domain & Branding",
+              "React & Next.js",
+            ],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: "Find your people in 340+ channels",
+            alt: "professional headshot of a smiling woman with short dark hair",
+            caption: "Community Forum generated page detail",
+          },
+          {
+            title: "Get started in under 60 seconds",
+            alt: "professional headshot of a man with glasses and curly hair",
+            caption: "Community Forum generated page detail",
+          },
+          {
+            title: "Conversations that lead somewhere",
+            alt: "professional headshot of a woman with natural curly hair in a blazer",
+            caption: "Community Forum generated page detail",
+          },
+        ]
+
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Member"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? `Signed in as ${authDisplayName}`
+        : "Sign in with Google"
+    const bookmarks = lakebed.useQuery("bookmarks")
+    const saveBookmark = lakebed.useMutation("saveBookmark")
+    const removeBookmark = lakebed.useMutation("removeBookmark")
+    const clearBookmarks = lakebed.useMutation("clearBookmarks")
+    const storedBookmarks = bookmarks ?? []
+    const bookmarkCount = storedBookmarks.length
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const handleSaveSectionItem = (item: string, section: string) => {
+      void saveBookmark(item, section, item)
+    }
+
+    const handleOpenBookmark = (route: string) => {
+      setBookmarksOpen(false)
+      go(route)
+    }
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
-        <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
-              {brand}
-            </button>
-            <nav className="hidden items-center gap-1 md:flex">
-              {nav.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => go(item)}
-                  className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                >
-                  {item}
-                </button>
-              ))}
-            </nav>
-            <button
-              type="button"
-              onClick={() => go(hero.primaryCta)}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {hero.primaryCta}
-            </button>
-          </div>
-        </header>
-
-        <main>
-          <section className="relative overflow-hidden border-b border-border">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10" />
-            <div className="relative mx-auto grid max-w-7xl gap-10 px-5 py-16 md:grid-cols-[1.05fr_0.95fr] md:items-center lg:py-24">
-              <div>
-                <p className="mb-4 inline-flex rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground">
-                  {hero.eyebrow}
-                </p>
-                <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                  {hero.title}
-                </h1>
-                <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
-                  {hero.description}
-                </p>
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={() => go(hero.primaryCta)}
-                    className="rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-                  >
-                    {hero.primaryCta}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => go(hero.secondaryCta)}
-                    className="rounded-md border border-border bg-card px-5 py-3 text-sm font-semibold text-card-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    {hero.secondaryCta}
-                  </button>
-                </div>
-              </div>
-              <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
-              </div>
-            </div>
-          </section>
-
-          <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
-            {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
-              </div>
-            ))}
-          </section>
-
-          <section className="border-y border-border bg-muted/40">
-            <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
-              {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
-                  {section.items?.length ? (
-                    <div className="mt-5 grid gap-2">
-                      {section.items.map((item) => (
-                        <button
-                          key={item}
-                          type="button"
-                          onClick={() => go(item)}
-                          className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                        >
-                          <span>{item}</span>
-                          <span className="text-primary">{index + 1}</span>
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="mx-auto max-w-7xl px-5 py-16">
-            <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-              <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
-              </div>
+      <Sheet open={bookmarksOpen} onOpenChange={setBookmarksOpen}>
+        <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+          <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
+            <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
               <button
                 type="button"
-                onClick={() => go(hero.secondaryCta)}
-                className="rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                onClick={() => go("Home")}
+                className="text-left text-lg font-semibold tracking-tight"
               >
-                {hero.secondaryCta}
+                {brand}
               </button>
-            </div>
-            <div className="grid gap-5 md:grid-cols-3">
-              {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
-                  <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="mx-auto max-w-7xl px-5 pb-16">
-            <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
-              <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
-                <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
-                </div>
+              <nav className="hidden items-center gap-1 md:flex">
+                {nav.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => go(item)}
+                    className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                  >
+                    {item}
+                  </button>
+                ))}
+              </nav>
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => go(hero.primaryCta)}
-                  className="rounded-md bg-background px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                  className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   {hero.primaryCta}
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setBookmarksOpen(true)}
+                  className="rounded-md border border-border bg-card px-3 py-2 text-sm font-semibold text-card-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                  aria-label="Open saved topics"
+                >
+                  Saved
+                  <span className="ml-2 inline-flex min-w-6 items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[11px] font-bold text-primary-foreground">
+                    {bookmarkCount}
+                  </span>
+                </button>
               </div>
             </div>
-          </section>
-        </main>
+          </header>
 
-        <footer className="border-t border-border">
-          <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
-            <div className="flex flex-wrap gap-3">
-              {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
-                  {item}
-                </button>
+          <main>
+            <section className="relative overflow-hidden border-b border-border">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10" />
+              <div className="relative mx-auto grid max-w-7xl gap-10 px-5 py-16 md:grid-cols-[1.05fr_0.95fr] md:items-center lg:py-24">
+                <div>
+                  <p className="mb-4 inline-flex rounded-md bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground">
+                    {hero.eyebrow}
+                  </p>
+                  <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+                    {hero.title}
+                  </h1>
+                  <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
+                    {hero.description}
+                  </p>
+                  <div className="mt-8 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void saveBookmark(hero.primaryCta, "Hero", hero.primaryCta)
+                        go(hero.primaryCta)
+                      }}
+                      className="rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                    >
+                      {hero.primaryCta}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void saveBookmark(hero.secondaryCta, "Hero", hero.secondaryCta)
+                        go(hero.secondaryCta)
+                      }}
+                      className="rounded-md border border-border bg-card px-5 py-3 text-sm font-semibold text-card-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                      {hero.secondaryCta}
+                    </button>
+                  </div>
+                </div>
+                <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+                  <Image
+                    alt={hero.imageAlt}
+                    w={1200}
+                    h={900}
+                    className="aspect-[4/3] w-full object-cover"
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
+              {metrics.map((metric) => (
+                <div
+                  key={metric.label}
+                  className="rounded-lg border border-border bg-card p-5"
+                >
+                  <p className="text-3xl font-semibold text-card-foreground">
+                    {metric.value}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {metric.label}
+                  </p>
+                </div>
               ))}
+            </section>
+
+            <section className="border-y border-border bg-muted/40">
+              <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
+                {sections.map((section, index) => (
+                  <article
+                    key={section.title}
+                    className="rounded-lg border border-border bg-card p-6"
+                  >
+                    <p className="text-sm font-medium text-primary">
+                      {section.eyebrow}
+                    </p>
+                    <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                      {section.title}
+                    </h2>
+                    <p className="mt-3 leading-7 text-muted-foreground">
+                      {section.body}
+                    </p>
+                    {section.items?.length ? (
+                      <div className="mt-5 grid gap-2">
+                        {section.items.map((item) => (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => {
+                              handleSaveSectionItem(item, section.eyebrow)
+                              go(item)
+                            }}
+                            className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                          >
+                            <span>{item}</span>
+                            <span className="text-primary">{index + 1}</span>
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="mx-auto max-w-7xl px-5 py-16">
+              <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+                <div>
+                  <p className="text-sm font-medium text-primary">
+                    Generated visuals
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Content-led page moments
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void saveBookmark(hero.secondaryCta, "Gallery CTA", hero.secondaryCta)
+                    go(hero.secondaryCta)
+                  }}
+                  className="rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                >
+                  {hero.secondaryCta}
+                </button>
+              </div>
+              <div className="grid gap-5 md:grid-cols-3">
+                {gallery.map((item) => (
+                  <article
+                    key={item.title}
+                    className="overflow-hidden rounded-lg border border-border bg-card"
+                  >
+                    <Image
+                      alt={item.alt}
+                      w={900}
+                      h={700}
+                      loading="lazy"
+                      className="aspect-[4/3] w-full object-cover"
+                    />
+                    <div className="p-5">
+                      <h3 className="text-lg font-semibold text-card-foreground">
+                        {item.title}
+                      </h3>
+                      {item.caption ? (
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                          {item.caption}
+                        </p>
+                      ) : null}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="mx-auto max-w-7xl px-5 pb-16">
+              <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
+                <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
+                  <div>
+                    <p className="text-sm font-medium text-primary-foreground/70">
+                      {brand}
+                    </p>
+                    <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                      Ready for the next step?
+                    </h2>
+                    <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                      {hero.description}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void saveBookmark(hero.primaryCta, "Final CTA", hero.primaryCta)
+                      go(hero.primaryCta)
+                    }}
+                    className="rounded-md bg-background px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                  >
+                    {hero.primaryCta}
+                  </button>
+                </div>
+              </div>
+            </section>
+          </main>
+
+          <footer className="border-t border-border">
+            <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-muted-foreground">
+                (c) {new Date().getFullYear()} {brand}. All rights reserved.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {nav.slice(0, 4).map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => go(item)}
+                    className="text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
             </div>
+          </footer>
+        </div>
+
+        <SheetContent
+          side="right"
+          className="flex w-full flex-col border-l border-border p-0 sm:max-w-md"
+        >
+          <SheetHeader className="border-b border-border px-6 py-6">
+            <SheetTitle className="text-xl">Saved topics</SheetTitle>
+            <SheetDescription>
+              Save threads and references to return to them quickly.
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="flex-1 overflow-y-auto px-6 py-5">
+            <div className="mb-4 rounded-lg border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
+              <p className="font-medium text-foreground">Account sync</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {isSignedIn
+                  ? `${authDisplayName} (${authEmail ?? "signed in"})`
+                  : authLabel}
+              </p>
+              <div className="mt-3">
+                {isSignedIn ? (
+                  <Button
+                    type="button"
+                    onClick={handleSignOut}
+                    variant="outline"
+                    className="h-8 rounded-full px-3 text-xs"
+                  >
+                    Sign out
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    className="h-8 rounded-full px-3 text-xs"
+                  >
+                    {authLabel}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {storedBookmarks.length ? (
+              <div className="space-y-3">
+                {storedBookmarks.map((bookmark) => (
+                  <article
+                    key={bookmark.id}
+                    className="rounded-lg border border-border bg-card p-3"
+                  >
+                    <div className="grid gap-2">
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                        {bookmark.section}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenBookmark(bookmark.route)}
+                        className="text-left text-sm font-medium text-foreground transition-colors hover:text-primary"
+                      >
+                        {bookmark.title}
+                      </button>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground">
+                        added to reading list
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void removeBookmark(bookmark.id)}
+                        className="h-7 rounded-full px-3 text-xs"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="flex min-h-48 flex-col justify-center rounded-lg border border-dashed border-border bg-muted/40 px-4 text-center">
+                <p className="text-sm font-semibold text-foreground">
+                  No saved topics yet
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Save a section item to build your reading list.
+                </p>
+              </div>
+            )}
           </div>
-        </footer>
-      </div>
+
+          <SheetFooter className="border-t border-border p-6">
+            <div className="w-full space-y-3">
+              <p className="text-sm text-muted-foreground">
+                {bookmarkCount} saved {bookmarkCount === 1 ? "topic" : "topics"}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    void clearBookmarks()
+                  }}
+                  disabled={!bookmarkCount}
+                  className="rounded-full"
+                >
+                  Clear all
+                </Button>
+                <SheetClose asChild>
+                  <Button
+                    type="button"
+                    className="rounded-full"
+                    onClick={() => setBookmarksOpen(false)}
+                  >
+                    Continue
+                  </Button>
+                </SheetClose>
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setBookmarksOpen(false)}
+                className="w-full rounded-full"
+              >
+                Done
+              </Button>
+            </div>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     )
   },
 })

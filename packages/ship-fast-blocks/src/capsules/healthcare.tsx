@@ -1,9 +1,28 @@
+import { useState } from "react"
 import { type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+import { Button } from "#/components/ui/button.tsx"
 
 /**
  * HealthcareKimiPage — a complete, self-contained primary-care / medical-clinic
@@ -202,12 +221,109 @@ export const HealthcareKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      appointments: table({
+        service: string(),
+        doctor: string(),
+        date: string(),
+        time: string(),
+        patientName: string(),
+        patientEmail: string(),
+        patientPhone: string(),
+      }),
+      favorites: table({
+        doctorName: string(),
+      }),
+    },
+    queries: {
+      appointments: ({ db }) => db.appointments.orderBy('createdAt').all(),
+      favoriteDoctorNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.doctorName)),
+    },
+    mutations: {
+      bookAppointment: (
+        { db },
+        service: string,
+        doctor: string,
+        date: string,
+        time: string,
+        patientName: string,
+        patientEmail: string,
+        patientPhone: string,
+      ) => {
+        db.appointments.insert({
+          service,
+          doctor,
+          date,
+          time,
+          patientName,
+          patientEmail,
+          patientPhone,
+        })
+        return db.appointments.all()
+      },
+      cancelAppointment: ({ db }, appointmentId: string) => {
+        db.appointments.delete(appointmentId)
+        return db.appointments.all()
+      },
+      toggleFavorite: ({ db }, doctorName: string) => {
+        const existingFavorite = db.favorites
+          .where('doctorName', doctorName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ doctorName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [mobileOpen, setMobileOpen] = useState(false)
+    const [bookingOpen, setBookingOpen] = useState(false)
     const brand = props.brand ?? "Vitality Health Partners"
     const nav = props.nav?.length
       ? props.nav
       : ["Services", "Doctors", "Reviews", "Pricing", "FAQ"]
+
+    const appointments = lakebed.useQuery('appointments')
+    const favoriteDoctorNames = lakebed.useQuery('favoriteDoctorNames')
+    const bookAppointment = lakebed.useMutation('bookAppointment')
+    const cancelAppointment = lakebed.useMutation('cancelAppointment')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const safeAppointments = appointments ?? []
+    const appointmentCount = safeAppointments.length
 
     const heroBadge = props.hero?.badge ?? "Now accepting new patients"
     const heroBefore = props.hero?.headingBefore ?? "Healthcare that puts "
@@ -605,6 +721,21 @@ export const HealthcareKimiPage = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     const CheckCircle = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -804,15 +935,536 @@ export const HealthcareKimiPage = defineCapsule({
                   </svg>
                   <span className="font-medium">{ctaPhone}</span>
                 </button>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('My Appointments')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          My Appointments
+                          <ChevronRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Profile')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Profile
+                          <ChevronRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={bookingOpen} onOpenChange={setBookingOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="My Appointments"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      {appointmentCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {appointmentCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">My Appointments</SheetTitle>
+                      <SheetDescription>
+                        {appointmentCount > 0
+                          ? `${appointmentCount} appointment${appointmentCount === 1 ? '' : 's'} scheduled.`
+                          : 'No appointments scheduled yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeAppointments.length ? (
+                        <div className="space-y-5">
+                          {safeAppointments.map((appointment) => (
+                            <div
+                              key={appointment.id}
+                              className="rounded-xl border border-border bg-card p-5"
+                            >
+                              <div className="mb-3 flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+                                    {appointment.service}
+                                  </p>
+                                  <h3 className="text-lg font-semibold text-foreground">
+                                    {appointment.doctor}
+                                  </h3>
+                                </div>
+                              </div>
+                              <div className="mb-4 space-y-2 text-sm">
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <svg
+                                    className="size-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <rect
+                                      x="3"
+                                      y="4"
+                                      width="18"
+                                      height="18"
+                                      rx="2"
+                                      ry="2"
+                                    />
+                                    <line x1="16" y1="2" x2="16" y2="6" />
+                                    <line x1="8" y1="2" x2="8" y2="6" />
+                                    <line x1="3" y1="10" x2="21" y2="10" />
+                                  </svg>
+                                  <span>{appointment.date}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <svg
+                                    className="size-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <circle cx="12" cy="12" r="10" />
+                                    <polyline points="12 6 12 12 16 14" />
+                                  </svg>
+                                  <span>{appointment.time}</span>
+                                </div>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="w-full"
+                                onClick={() =>
+                                  void cancelAppointment(appointment.id)
+                                }
+                              >
+                                Cancel Appointment
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No appointments scheduled
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Book your first appointment to get started.
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="mt-8 border-t border-border pt-8">
+                        <h3 className="mb-4 text-lg font-semibold text-foreground">
+                          Book a New Appointment
+                        </h3>
+                        <form
+                          className="space-y-4"
+                          onSubmit={(e) => {
+                            e.preventDefault()
+                            const form = e.currentTarget
+                            const service = (
+                              form.elements.namedItem('service') as HTMLSelectElement
+                            ).value
+                            const doctor = (
+                              form.elements.namedItem('doctor') as HTMLSelectElement
+                            ).value
+                            const date = (
+                              form.elements.namedItem('date') as HTMLInputElement
+                            ).value
+                            const time = (
+                              form.elements.namedItem('time') as HTMLSelectElement
+                            ).value
+                            const patientName = (
+                              form.elements.namedItem('patientName') as HTMLInputElement
+                            ).value
+                            const patientEmail = (
+                              form.elements.namedItem('patientEmail') as HTMLInputElement
+                            ).value
+                            const patientPhone = (
+                              form.elements.namedItem('patientPhone') as HTMLInputElement
+                            ).value
+
+                            if (
+                              service &&
+                              doctor &&
+                              date &&
+                              time &&
+                              patientName &&
+                              patientEmail &&
+                              patientPhone
+                            ) {
+                              void bookAppointment(
+                                service,
+                                doctor,
+                                date,
+                                time,
+                                patientName,
+                                patientEmail,
+                                patientPhone,
+                              )
+                              form.reset()
+                            }
+                          }}
+                        >
+                          <div>
+                            <label
+                              htmlFor="service"
+                              className="mb-1.5 block text-sm font-medium text-foreground"
+                            >
+                              Service
+                            </label>
+                            <select
+                              id="service"
+                              name="service"
+                              required
+                              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            >
+                              <option value="">Select a service</option>
+                              {serviceItems.map((item) => (
+                                <option key={item.title} value={item.title}>
+                                  {item.title}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label
+                              htmlFor="doctor"
+                              className="mb-1.5 block text-sm font-medium text-foreground"
+                            >
+                              Doctor
+                            </label>
+                            <select
+                              id="doctor"
+                              name="doctor"
+                              required
+                              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            >
+                              <option value="">Select a doctor</option>
+                              {doctorItems.map((doc) => (
+                                <option key={doc.name} value={doc.name}>
+                                  {doc.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label
+                              htmlFor="date"
+                              className="mb-1.5 block text-sm font-medium text-foreground"
+                            >
+                              Date
+                            </label>
+                            <input
+                              type="date"
+                              id="date"
+                              name="date"
+                              required
+                              min={new Date().toISOString().split('T')[0]}
+                              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            />
+                          </div>
+                          <div>
+                            <label
+                              htmlFor="time"
+                              className="mb-1.5 block text-sm font-medium text-foreground"
+                            >
+                              Time
+                            </label>
+                            <select
+                              id="time"
+                              name="time"
+                              required
+                              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            >
+                              <option value="">Select a time</option>
+                              <option value="9:00 AM">9:00 AM</option>
+                              <option value="10:00 AM">10:00 AM</option>
+                              <option value="11:00 AM">11:00 AM</option>
+                              <option value="12:00 PM">12:00 PM</option>
+                              <option value="1:00 PM">1:00 PM</option>
+                              <option value="2:00 PM">2:00 PM</option>
+                              <option value="3:00 PM">3:00 PM</option>
+                              <option value="4:00 PM">4:00 PM</option>
+                              <option value="5:00 PM">5:00 PM</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label
+                              htmlFor="patientName"
+                              className="mb-1.5 block text-sm font-medium text-foreground"
+                            >
+                              Your Name
+                            </label>
+                            <input
+                              type="text"
+                              id="patientName"
+                              name="patientName"
+                              required
+                              placeholder="John Doe"
+                              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            />
+                          </div>
+                          <div>
+                            <label
+                              htmlFor="patientEmail"
+                              className="mb-1.5 block text-sm font-medium text-foreground"
+                            >
+                              Email
+                            </label>
+                            <input
+                              type="email"
+                              id="patientEmail"
+                              name="patientEmail"
+                              required
+                              placeholder="john@example.com"
+                              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            />
+                          </div>
+                          <div>
+                            <label
+                              htmlFor="patientPhone"
+                              className="mb-1.5 block text-sm font-medium text-foreground"
+                            >
+                              Phone
+                            </label>
+                            <input
+                              type="tel"
+                              id="patientPhone"
+                              name="patientPhone"
+                              required
+                              placeholder="(415) 555-1234"
+                              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            />
+                          </div>
+                          <Button
+                            type="submit"
+                            className="w-full rounded-full"
+                          >
+                            Book Appointment
+                          </Button>
+                        </form>
+                      </div>
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
-                  onClick={() => go(heroPrimary)}
+                  onClick={() => setBookingOpen(true)}
                   className="inline-flex items-center rounded-lg bg-primary px-5 py-2.5 font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
                 >
                   Book Appointment
                 </button>
+                <button
+                  type="button"
+                  aria-label="Open menu"
+                  aria-expanded={mobileOpen}
+                  aria-controls="mobile-menu"
+                  onClick={() => setMobileOpen((v: boolean) => !v)}
+                  className="p-2 text-muted-foreground hover:text-foreground lg:hidden"
+                >
+                  <svg
+                    className="size-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                  >
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="18" x2="21" y2="18" />
+                  </svg>
+                </button>
               </div>
             </div>
+            {mobileOpen && (
+              <div
+                id="mobile-menu"
+                className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
+              >
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      go(label)
+                    }}
+                    className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                  >
+                    {label}
+                  </button>
+                ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
           </nav>
         </header>
 
@@ -846,7 +1498,7 @@ export const HealthcareKimiPage = defineCapsule({
                   <div className="mb-10 flex flex-col gap-4 sm:flex-row">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() => setBookingOpen(true)}
                       className="inline-flex items-center justify-center rounded-xl bg-primary px-8 py-4 font-semibold text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl"
                     >
                       {heroPrimary}
@@ -989,7 +1641,7 @@ export const HealthcareKimiPage = defineCapsule({
                     </p>
                     <button
                       type="button"
-                      onClick={() => go(item.cta)}
+                      onClick={() => setBookingOpen(true)}
                       className="inline-flex items-center font-semibold text-primary transition-colors hover:text-primary/80"
                     >
                       {item.cta}
@@ -1023,28 +1675,62 @@ export const HealthcareKimiPage = defineCapsule({
               </div>
 
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-                {doctorItems.map((doc) => (
-                  <article key={doc.name} className="group">
-                    <div className="mb-6 aspect-[3/4] overflow-hidden rounded-2xl bg-muted">
-                      <Image
-                        alt={doc.photoAlt}
-                        w={600}
-                        h={800}
-                        loading="lazy"
-                        className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
-                    <h3 className="mb-1 text-xl font-bold text-foreground">
-                      {doc.name}
-                    </h3>
-                    <p className="mb-2 font-medium text-primary">
-                      {doc.specialty}
-                    </p>
-                    <p className="text-sm leading-relaxed text-muted-foreground">
-                      {doc.bio}
-                    </p>
-                  </article>
-                ))}
+                {doctorItems.map((doc) => {
+                  const isFavorite =
+                    favoriteDoctorNames?.has(doc.name) ?? false
+
+                  return (
+                    <article key={doc.name} className="group">
+                      <div className="mb-6 aspect-[3/4] overflow-hidden rounded-2xl bg-muted relative">
+                        <Image
+                          alt={doc.photoAlt}
+                          w={600}
+                          h={800}
+                          loading="lazy"
+                          className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavorite(doc.name)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${doc.name} from favorites`
+                              : `Add ${doc.name} to favorites`
+                          }
+                          className={cn(
+                            'absolute top-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-background/90 text-foreground hover:bg-background',
+                          )}
+                        >
+                          <svg
+                            className="size-5"
+                            fill={isFavorite ? 'currentColor' : 'none'}
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                          </svg>
+                        </button>
+                      </div>
+                      <h3 className="mb-1 text-xl font-bold text-foreground">
+                        {doc.name}
+                      </h3>
+                      <p className="mb-2 font-medium text-primary">
+                        {doc.specialty}
+                      </p>
+                      <p className="text-sm leading-relaxed text-muted-foreground">
+                        {doc.bio}
+                      </p>
+                    </article>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -1231,7 +1917,7 @@ export const HealthcareKimiPage = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(plan.cta)}
+                      onClick={() => setBookingOpen(true)}
                       className={cn(
                         "block w-full rounded-xl px-6 py-3 text-center font-semibold transition-colors",
                         plan.featured
@@ -1290,18 +1976,9 @@ export const HealthcareKimiPage = defineCapsule({
                       <h3 className="pr-8 text-lg font-semibold text-foreground">
                         {item.question}
                       </h3>
-                      <svg
-                        className="size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <span className="flex size-5 flex-shrink-0 items-center justify-center">
+                        <ChevronDown />
+                      </span>
                     </summary>
                     <div className="px-6 pb-6 leading-relaxed text-muted-foreground">
                       {item.answer}
@@ -1330,7 +2007,7 @@ export const HealthcareKimiPage = defineCapsule({
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={() => setBookingOpen(true)}
                   className="inline-flex items-center justify-center rounded-xl bg-background px-8 py-4 font-semibold text-primary shadow-lg transition-colors hover:bg-muted"
                 >
                   {ctaPrimary}

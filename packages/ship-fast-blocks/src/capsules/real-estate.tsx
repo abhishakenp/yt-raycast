@@ -4,6 +4,32 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "#/components/ui/command.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * RealEstateKimiPage — a complete, self-contained real-estate / property
@@ -168,9 +194,89 @@ export const RealEstateKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      properties: table({
+        address: string(),
+        baths: string(),
+        beds: string(),
+        forRent: string(),
+        imageAlt: string(),
+        listed: string(),
+        price: string(),
+        priceSuffix: string(),
+        sqft: string(),
+        status: string(),
+        title: string(),
+      }),
+      savedProperties: table({
+        propertyTitle: string(),
+      }),
+      consultations: table({
+        email: string(),
+        firstName: string(),
+        interest: string(),
+        lastName: string(),
+        phone: string(),
+      }),
+    },
+    queries: {
+      properties: ({ db }) => db.properties.orderBy('createdAt').all(),
+      savedPropertyTitles: ({ db }) =>
+        new Set(db.savedProperties.all().map((saved) => saved.propertyTitle)),
+    },
+    mutations: {
+      toggleSaveProperty: ({ db }, propertyTitle: string) => {
+        const existingSaved = db.savedProperties
+          .where('propertyTitle', propertyTitle)
+          .all()[0]
+
+        if (existingSaved) {
+          db.savedProperties.delete(existingSaved.id)
+          return false
+        }
+
+        db.savedProperties.insert({ propertyTitle })
+        return true
+      },
+      removeSavedProperty: ({ db }, propertyTitle: string) => {
+        for (const item of db.savedProperties
+          .where('propertyTitle', propertyTitle)
+          .all()) {
+          db.savedProperties.delete(item.id)
+        }
+        return db.savedProperties.all()
+      },
+      clearSavedProperties: ({ db }) => {
+        for (const item of db.savedProperties.all()) {
+          db.savedProperties.delete(item.id)
+        }
+        return []
+      },
+      submitConsultation: (
+        { db },
+        firstName: string,
+        lastName: string,
+        email: string,
+        phone: string,
+        interest: string,
+      ) => {
+        db.consultations.insert({
+          firstName,
+          lastName,
+          email,
+          phone,
+          interest,
+        })
+        return db.consultations.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [savedOpen, setSavedOpen] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
     const brand = props.brand ?? "Apex Realty"
     const nav = props.nav?.length
       ? props.nav
@@ -345,6 +451,59 @@ export const RealEstateKimiPage = defineCapsule({
           },
         ]
 
+    const normalizedListingItems = listingItems.map((property) => ({
+      address: property.address,
+      baths: property.baths,
+      beds: property.beds,
+      forRent: property.forRent ? 'true' : 'false',
+      imageAlt: property.imageAlt,
+      listed: property.listed,
+      price: property.price,
+      priceSuffix: property.priceSuffix ?? '',
+      sqft: property.sqft,
+      status: property.status,
+      title: property.title,
+    }))
+
+    const storedProperties = lakebed.useQuery('properties')
+    const savedPropertyTitles = lakebed.useQuery('savedPropertyTitles')
+    const auth = lakebed.useAuth()
+    const toggleSaveProperty = lakebed.useMutation('toggleSaveProperty')
+    const removeSavedProperty = lakebed.useMutation('removeSavedProperty')
+    const clearSavedProperties = lakebed.useMutation('clearSavedProperties')
+    const submitConsultation = lakebed.useMutation('submitConsultation')
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const displayProperties =
+      storedProperties && storedProperties.length > 0
+        ? storedProperties
+        : normalizedListingItems
+    const safeSavedPropertyTitles = savedPropertyTitles ?? new Set<string>()
+    const savedCount = safeSavedPropertyTitles.size
+
     const agentsHeading = props.agents?.heading ?? "Meet Our Expert Agents"
     const agentsDesc =
       props.agents?.description ??
@@ -480,20 +639,53 @@ export const RealEstateKimiPage = defineCapsule({
       </svg>
     )
 
+    const HeartIcon = ({ active = false, className }: { active?: boolean; className?: string }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+          className,
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
         className={className}
         fill="none"
         stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         viewBox="0 0 24 24"
         aria-hidden="true"
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.5"
-          d="M17 8l4 4m0 0l-4 4m4-4H3"
-        />
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
       </svg>
     )
 
@@ -722,12 +914,273 @@ export const RealEstateKimiPage = defineCapsule({
               <div className="flex items-center gap-4">
                 <button
                   type="button"
+                  onClick={() => setSearchOpen(true)}
+                  aria-label="Search"
+                  className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground sm:flex"
+                >
+                  <svg
+                    className="size-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
                   onClick={() => go(heroPhone)}
                   className="hidden items-center gap-2 text-sm font-medium text-foreground transition-colors hover:text-muted-foreground sm:flex"
                 >
                   <PhoneIcon className="size-4" />
                   {heroPhone}
                 </button>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Saved Properties')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Saved Properties
+                          <ArrowRight className="size-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Profile')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Profile
+                          <ArrowRight className="size-4" />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={savedOpen} onOpenChange={setSavedOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Saved Properties"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <HeartIcon className="size-5" />
+                      {savedCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {savedCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Saved Properties</SheetTitle>
+                      <SheetDescription>
+                        {savedCount > 0
+                          ? `${savedCount} propert${savedCount === 1 ? 'y' : 'ies'} saved for this session.`
+                          : 'Your saved properties list is empty.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {savedCount > 0 ? (
+                        <div className="space-y-5">
+                          {displayProperties
+                            .filter((property) =>
+                              safeSavedPropertyTitles.has(property.title),
+                            )
+                            .map((property) => (
+                              <div
+                                key={property.title}
+                                className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                              >
+                                <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                  <Image
+                                    alt={property.imageAlt}
+                                    w={180}
+                                    h={180}
+                                    className="h-full w-full object-cover"
+                                  />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                        {property.status}
+                                      </p>
+                                      <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                        {property.title}
+                                      </h3>
+                                      <p className="mt-1 text-sm text-muted-foreground">
+                                        {property.address}
+                                      </p>
+                                    </div>
+                                    <p className="text-sm font-bold text-foreground">
+                                      {property.price}
+                                      {property.priceSuffix ? (
+                                        <span className="text-sm font-normal text-muted-foreground">
+                                          {property.priceSuffix}
+                                        </span>
+                                      ) : null}
+                                    </p>
+                                  </div>
+                                  <div className="mt-4 flex items-center justify-between">
+                                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                      <span className="flex items-center gap-1">
+                                        <BedIcon className="size-3" />
+                                        {property.beds}
+                                      </span>
+                                      <span className="flex items-center gap-1">
+                                        <BathIcon className="size-3" />
+                                        {property.baths}
+                                      </span>
+                                      <span className="flex items-center gap-1">
+                                        <AreaIcon className="size-3" />
+                                        {property.sqft}
+                                      </span>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        void removeSavedProperty(property.title)
+                                      }
+                                      className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No saved properties
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Save properties from the listings to start building
+                            your collection.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <Button
+                        type="button"
+                        disabled={!savedCount}
+                        className="w-full rounded-full"
+                        onClick={() => go('Schedule Viewings')}
+                      >
+                        Schedule Viewings
+                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="rounded-full"
+                          onClick={() => void clearSavedProperties()}
+                          disabled={!savedCount}
+                        >
+                          Clear All
+                        </Button>
+                        <SheetClose asChild>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="rounded-full"
+                          >
+                            Continue
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(nav[nav.length - 1])}
@@ -778,10 +1231,108 @@ export const RealEstateKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
         </nav>
+
+        <CommandDialog
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          title="Search properties"
+          description="Search the properties available for this session."
+          className="max-w-xl"
+        >
+          <CommandInput placeholder={`Search ${brand} properties...`} />
+          <CommandList className="max-h-[420px]">
+            <CommandEmpty>No properties found.</CommandEmpty>
+            <CommandGroup heading="Properties">
+              {displayProperties.map((property) => (
+                <CommandItem
+                  key={property.title}
+                  value={`${property.title} ${property.address} ${property.price}`}
+                  onSelect={() => {
+                    setSearchOpen(false)
+                    go(property.title)
+                  }}
+                  className="gap-3 py-3"
+                >
+                  <div className="size-12 overflow-hidden rounded-md bg-muted">
+                    <Image
+                      alt={property.imageAlt}
+                      w={120}
+                      h={120}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {property.title}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {property.address}
+                    </p>
+                  </div>
+                  <span className="text-sm font-bold text-foreground">
+                    {property.price}
+                  </span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
 
         <main>
           {/* Hero */}
@@ -1020,77 +1571,100 @@ export const RealEstateKimiPage = defineCapsule({
                 </button>
               </div>
               <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                {listingItems.map((p) => (
-                  <article
-                    key={p.title}
-                    className="group overflow-hidden rounded-2xl border border-border bg-muted transition-shadow hover:shadow-lg"
-                  >
-                    <div className="aspect-[4/3] overflow-hidden">
-                      <Image
-                        alt={p.imageAlt}
-                        w={800}
-                        h={600}
-                        loading="lazy"
-                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="p-6">
-                      <div className="mb-3 flex items-center gap-2">
-                        <span
-                          className={cn(
-                            "rounded-full px-2.5 py-1 text-xs font-medium",
-                            p.forRent
-                              ? "bg-accent text-accent-foreground"
-                              : "bg-primary/10 text-primary",
-                          )}
-                        >
-                          {p.status}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {p.listed}
-                        </span>
-                      </div>
-                      <h3 className="mb-2 text-xl font-semibold text-foreground">
-                        {p.title}
-                      </h3>
-                      <p className="mb-4 flex items-center gap-1 text-sm text-muted-foreground">
-                        <PinIcon className="size-4" />
-                        {p.address}
-                      </p>
-                      <div className="mb-4 flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <BedIcon className="size-4" />
-                          {p.beds}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <BathIcon className="size-4" />
-                          {p.baths}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <AreaIcon className="size-4" />
-                          {p.sqft}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between border-t border-border pt-4">
-                        <p className="text-2xl font-semibold text-foreground">
-                          {p.price}
-                          {p.priceSuffix ? (
-                            <span className="text-sm font-normal text-muted-foreground">
-                              {p.priceSuffix}
-                            </span>
-                          ) : null}
-                        </p>
+                {displayProperties.map((p) => {
+                  const isSaved = safeSavedPropertyTitles.has(p.title)
+                  const forRent = p.forRent === 'true'
+
+                  return (
+                    <article
+                      key={p.title}
+                      className="group overflow-hidden rounded-2xl border border-border bg-muted transition-shadow hover:shadow-lg"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <Image
+                          alt={p.imageAlt}
+                          w={800}
+                          h={600}
+                          loading="lazy"
+                          className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
                         <button
                           type="button"
-                          onClick={() => go(p.title)}
-                          className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+                          onClick={() => void toggleSaveProperty(p.title)}
+                          aria-pressed={isSaved}
+                          aria-label={
+                            isSaved
+                              ? `Remove ${p.title} from saved properties`
+                              : `Save ${p.title} to properties`
+                          }
+                          className={cn(
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                            isSaved
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                          )}
                         >
-                          View Details
+                          <HeartIcon active={isSaved} />
                         </button>
                       </div>
-                    </div>
-                  </article>
-                ))}
+                      <div className="p-6">
+                        <div className="mb-3 flex items-center gap-2">
+                          <span
+                            className={cn(
+                              "rounded-full px-2.5 py-1 text-xs font-medium",
+                              forRent
+                                ? "bg-accent text-accent-foreground"
+                                : "bg-primary/10 text-primary",
+                            )}
+                          >
+                            {p.status}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {p.listed}
+                          </span>
+                        </div>
+                        <h3 className="mb-2 text-xl font-semibold text-foreground">
+                          {p.title}
+                        </h3>
+                        <p className="mb-4 flex items-center gap-1 text-sm text-muted-foreground">
+                          <PinIcon className="size-4" />
+                          {p.address}
+                        </p>
+                        <div className="mb-4 flex items-center gap-4 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <BedIcon className="size-4" />
+                            {p.beds}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <BathIcon className="size-4" />
+                            {p.baths}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <AreaIcon className="size-4" />
+                            {p.sqft}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between border-t border-border pt-4">
+                          <p className="text-2xl font-semibold text-foreground">
+                            {p.price}
+                            {p.priceSuffix ? (
+                              <span className="text-sm font-normal text-muted-foreground">
+                                {p.priceSuffix}
+                              </span>
+                            ) : null}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => go(p.title)}
+                            className="text-sm font-medium text-foreground transition-colors hover:text-muted-foreground"
+                          >
+                            View Details
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -1251,7 +1825,33 @@ export const RealEstateKimiPage = defineCapsule({
                     className="space-y-4"
                     onSubmit={(e) => {
                       e.preventDefault()
-                      go(contactSubmit)
+                      const form = e.currentTarget
+                      const firstName =
+                        (form.elements.namedItem('re-first') as HTMLInputElement)
+                          .value
+                      const lastName =
+                        (form.elements.namedItem('re-last') as HTMLInputElement)
+                          .value
+                      const email =
+                        (form.elements.namedItem('re-email') as HTMLInputElement)
+                          .value
+                      const phone =
+                        (form.elements.namedItem('re-phone') as HTMLInputElement)
+                          .value
+                      const interest = (
+                        form.elements.namedItem('re-interest') as HTMLSelectElement
+                      ).value
+
+                      if (firstName && lastName && email && phone && interest) {
+                        void submitConsultation(
+                          firstName,
+                          lastName,
+                          email,
+                          phone,
+                          interest,
+                        )
+                        go(contactSubmit)
+                      }
                     }}
                   >
                     <div className="grid gap-4 sm:grid-cols-2">
@@ -1267,6 +1867,7 @@ export const RealEstateKimiPage = defineCapsule({
                           type="text"
                           placeholder="John"
                           className={inputCls}
+                          required
                         />
                       </div>
                       <div>
@@ -1281,6 +1882,7 @@ export const RealEstateKimiPage = defineCapsule({
                           type="text"
                           placeholder="Smith"
                           className={inputCls}
+                          required
                         />
                       </div>
                     </div>
@@ -1296,6 +1898,7 @@ export const RealEstateKimiPage = defineCapsule({
                         type="email"
                         placeholder="john@example.com"
                         className={inputCls}
+                        required
                       />
                     </div>
                     <div>
@@ -1310,6 +1913,7 @@ export const RealEstateKimiPage = defineCapsule({
                         type="tel"
                         placeholder="(123) 456-7890"
                         className={inputCls}
+                        required
                       />
                     </div>
                     <div>
@@ -1322,6 +1926,7 @@ export const RealEstateKimiPage = defineCapsule({
                       <select
                         id="re-interest"
                         className={cn(inputCls, "cursor-pointer appearance-none")}
+                        required
                       >
                         {contactInterests.map((opt) => (
                           <option key={opt} className="bg-background text-foreground">

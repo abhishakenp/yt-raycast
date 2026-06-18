@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * ManufacturingKimiPage2 — a complete, self-contained precision-manufacturing /
@@ -200,11 +218,99 @@ export const ManufacturingKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      quoteRequests: table({
+        projectName: string(),
+        company: string(),
+        email: string(),
+        phone: string(),
+        description: string(),
+        quantity: string(),
+        timeline: string(),
+      }),
+      favorites: table({
+        projectName: string(),
+      }),
+    },
+    queries: {
+      quoteRequests: ({ db }) => db.quoteRequests.orderBy('createdAt').all(),
+      favoriteProjectNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.projectName)),
+    },
+    mutations: {
+      submitQuoteRequest: ({ db }, data: {
+        projectName: string
+        company: string
+        email: string
+        phone: string
+        description: string
+        quantity: string
+        timeline: string
+      }) => {
+        db.quoteRequests.insert(data)
+        return db.quoteRequests.all()
+      },
+      toggleFavorite: ({ db }, projectName: string) => {
+        const existingFavorite = db.favorites
+          .where('projectName', projectName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ projectName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [quoteOpen, setQuoteOpen] = useState(false)
+    const [quoteForm, setQuoteForm] = useState({
+      projectName: '',
+      company: '',
+      email: '',
+      phone: '',
+      description: '',
+      quantity: '',
+      timeline: '',
+    })
     const brand = props.brand ?? "ApexForge"
     const brandTagline = props.brandTagline ?? "INDUSTRIES"
+
+    const favoriteProjectNames = lakebed.useQuery('favoriteProjectNames')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const submitQuoteRequest = lakebed.useMutation('submitQuoteRequest')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
     const nav = props.nav?.length
       ? props.nav
       : ["Capabilities", "Industries", "Process", "Projects", "About", "Get Quote"]
@@ -634,6 +740,55 @@ export const ManufacturingKimiPage2 = defineCapsule({
       </svg>
     )
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     const heroStatIcons: ReactNode[] = [
       <svg key="h0" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -746,16 +901,298 @@ export const ManufacturingKimiPage2 = defineCapsule({
               </div>
 
               <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => go(nav[nav.length - 1])}
-                  className="hidden items-center gap-2 rounded-lg bg-primary px-5 py-2.5 font-semibold text-primary-foreground shadow-lg transition-all hover:bg-primary/90 sm:inline-flex"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  {nav[nav.length - 1]}
-                </button>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <ArrowRight />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Quote History')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Quote History
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={quoteOpen} onOpenChange={setQuoteOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => go(nav[nav.length - 1])}
+                      className="hidden items-center gap-2 rounded-lg bg-primary px-5 py-2.5 font-semibold text-primary-foreground shadow-lg transition-all hover:bg-primary/90 sm:inline-flex"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      {nav[nav.length - 1]}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Request a Quote</SheetTitle>
+                      <SheetDescription>
+                        Get a detailed quote within 48 hours. Our engineering team is ready to review your designs.
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      <form
+                        className="space-y-4"
+                        onSubmit={(e) => {
+                          e.preventDefault()
+                          void submitQuoteRequest(quoteForm)
+                          setQuoteOpen(false)
+                          setQuoteForm({
+                            projectName: '',
+                            company: '',
+                            email: '',
+                            phone: '',
+                            description: '',
+                            quantity: '',
+                            timeline: '',
+                          })
+                        }}
+                      >
+                        <div>
+                          <label
+                            htmlFor="projectName"
+                            className="mb-2 block text-sm font-medium text-foreground"
+                          >
+                            Project Name
+                          </label>
+                          <input
+                            id="projectName"
+                            type="text"
+                            required
+                            value={quoteForm.projectName}
+                            onChange={(e) =>
+                              setQuoteForm({ ...quoteForm, projectName: e.target.value })
+                            }
+                            className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            placeholder="e.g., Titanium Turbine Components"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="company"
+                            className="mb-2 block text-sm font-medium text-foreground"
+                          >
+                            Company
+                          </label>
+                          <input
+                            id="company"
+                            type="text"
+                            required
+                            value={quoteForm.company}
+                            onChange={(e) =>
+                              setQuoteForm({ ...quoteForm, company: e.target.value })
+                            }
+                            className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            placeholder="Your company name"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="email"
+                            className="mb-2 block text-sm font-medium text-foreground"
+                          >
+                            Email
+                          </label>
+                          <input
+                            id="email"
+                            type="email"
+                            required
+                            value={quoteForm.email}
+                            onChange={(e) =>
+                              setQuoteForm({ ...quoteForm, email: e.target.value })
+                            }
+                            className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            placeholder="you@company.com"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="phone"
+                            className="mb-2 block text-sm font-medium text-foreground"
+                          >
+                            Phone
+                          </label>
+                          <input
+                            id="phone"
+                            type="tel"
+                            value={quoteForm.phone}
+                            onChange={(e) =>
+                              setQuoteForm({ ...quoteForm, phone: e.target.value })
+                            }
+                            className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            placeholder="(555) 123-4567"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="description"
+                            className="mb-2 block text-sm font-medium text-foreground"
+                          >
+                            Project Description
+                          </label>
+                          <textarea
+                            id="description"
+                            required
+                            rows={4}
+                            value={quoteForm.description}
+                            onChange={(e) =>
+                              setQuoteForm({ ...quoteForm, description: e.target.value })
+                            }
+                            className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            placeholder="Describe your project requirements, materials, specifications..."
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="quantity"
+                            className="mb-2 block text-sm font-medium text-foreground"
+                          >
+                            Quantity
+                          </label>
+                          <input
+                            id="quantity"
+                            type="text"
+                            value={quoteForm.quantity}
+                            onChange={(e) =>
+                              setQuoteForm({ ...quoteForm, quantity: e.target.value })
+                            }
+                            className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            placeholder="e.g., 100 units, 5000 units/month"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="timeline"
+                            className="mb-2 block text-sm font-medium text-foreground"
+                          >
+                            Timeline
+                          </label>
+                          <input
+                            id="timeline"
+                            type="text"
+                            value={quoteForm.timeline}
+                            onChange={(e) =>
+                              setQuoteForm({ ...quoteForm, timeline: e.target.value })
+                            }
+                            className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            placeholder="e.g., 4 weeks, 3 months"
+                          />
+                        </div>
+                        <Button
+                          type="submit"
+                          className="w-full rounded-full"
+                        >
+                          Submit Quote Request
+                        </Button>
+                      </form>
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-full"
+                        >
+                          Cancel
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   aria-label="Open menu"
@@ -788,6 +1225,58 @@ export const ManufacturingKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -828,7 +1317,7 @@ export const ManufacturingKimiPage2 = defineCapsule({
                 <div className="mb-12 flex flex-wrap gap-4">
                   <button
                     type="button"
-                    onClick={() => go(heroPrimary)}
+                    onClick={() => setQuoteOpen(true)}
                     className="inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-4 text-lg font-bold text-primary-foreground shadow-xl transition-all hover:-translate-y-0.5 hover:bg-primary/90"
                   >
                     {heroPrimary}
@@ -931,6 +1420,19 @@ export const ManufacturingKimiPage2 = defineCapsule({
                         </li>
                       ))}
                     </ul>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuoteForm({ ...quoteForm, projectName: item.title })
+                        setQuoteOpen(true)
+                      }}
+                      className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary/80"
+                    >
+                      Get Quote
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </button>
                   </article>
                 ))}
               </div>
@@ -1047,41 +1549,81 @@ export const ManufacturingKimiPage2 = defineCapsule({
               </div>
 
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {galItems.map((item) => (
-                  <button
-                    key={item.title}
-                    type="button"
-                    onClick={() => go(item.title)}
-                    className="group block overflow-hidden rounded-2xl bg-card text-left shadow-lg transition-all hover:shadow-2xl"
-                  >
-                    <div className="relative overflow-hidden">
-                      <Image
-                        alt={item.imageAlt}
-                        w={600}
-                        h={448}
-                        loading="lazy"
-                        className="h-56 w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                      <span className="absolute left-4 top-4 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
-                        {item.tag}
-                      </span>
-                    </div>
-                    <div className="p-6">
-                      <h3 className="mb-2 text-xl font-bold text-card-foreground">
-                        {item.title}
-                      </h3>
-                      <p className="mb-4 text-sm text-muted-foreground">
-                        {item.description}
-                      </p>
-                      <div className="flex items-center justify-between text-sm text-muted-foreground">
-                        <span>{item.metric}</span>
-                        <span className="font-semibold text-primary">
-                          {item.client}
+                {galItems.map((item) => {
+                  const isFavorite =
+                    favoriteProjectNames?.has(item.title) ?? false
+
+                  return (
+                    <button
+                      key={item.title}
+                      type="button"
+                      onClick={() => go(item.title)}
+                      className="group block overflow-hidden rounded-2xl bg-card text-left shadow-lg transition-all hover:shadow-2xl"
+                    >
+                      <div className="relative overflow-hidden">
+                        <Image
+                          alt={item.imageAlt}
+                          w={600}
+                          h={448}
+                          loading="lazy"
+                          className="h-56 w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <span className="absolute left-4 top-4 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
+                          {item.tag}
                         </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            void toggleFavorite(item.title)
+                          }}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${item.title} from favorites`
+                              : `Add ${item.title} to favorites`
+                          }
+                          className={cn(
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                          )}
+                        >
+                          <HeartIcon active={isFavorite} />
+                        </button>
                       </div>
-                    </div>
-                  </button>
-                ))}
+                      <div className="p-6">
+                        <h3 className="mb-2 text-xl font-bold text-card-foreground">
+                          {item.title}
+                        </h3>
+                        <p className="mb-4 text-sm text-muted-foreground">
+                          {item.description}
+                        </p>
+                        <div className="flex items-center justify-between text-sm text-muted-foreground">
+                          <span>{item.metric}</span>
+                          <span className="font-semibold text-primary">
+                            {item.client}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setQuoteForm({ ...quoteForm, projectName: item.title })
+                            setQuoteOpen(true)
+                          }}
+                          className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary/80"
+                        >
+                          Request Similar Quote
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </button>
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -1218,7 +1760,7 @@ export const ManufacturingKimiPage2 = defineCapsule({
               <div className="mb-12 flex flex-wrap justify-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={() => setQuoteOpen(true)}
                   className="inline-flex items-center gap-2 rounded-lg bg-background px-8 py-4 text-lg font-bold text-foreground shadow-xl transition-all hover:bg-background/90 hover:shadow-2xl"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

@@ -1,9 +1,20 @@
-import { type ReactNode } from "react"
+import { type FormEvent, type ReactNode, useState } from "react"
 import { z } from "zod/v4"
+import { number, string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * ComingSoonKimiPage — a complete, self-contained "launching soon" / waitlist
@@ -31,6 +42,70 @@ export const ComingSoonKimiPage = defineCapsule({
   name: "ComingSoonKimiPage",
   description:
     "Complete 'launching soon' / pre-launch / coming-soon waitlist LANDING page with a calm, minimal, editorial light aesthetic: airy whitespace, thin display headline, quiet neutral surfaces. Includes a centered hero with a launch-date eyebrow, a big light headline, a waitlist email-capture form and an early-access incentive line; a four-cell countdown timer (Days/Hours/Minutes/Seconds); a 'Trusted by teams at' logo strip; a 6-up product feature grid with line icons (real-time sync, security, boards, chat, docs, automations); a 3-up early-access testimonial wall with 5-star ratings and avatar headshots; a 3-tier pricing table (Starter / Pro 'Most Popular' / Enterprise) with feature checklists; an accordion FAQ; a final email-capture CTA band with a contact email; and a slim footer with social and legal links. Use as the ROOT/home page for products that are not yet launched — SaaS waitlists, app pre-launch, beta sign-ups, countdown / 'notify me' / early-access landing pages — when a clean, premium, conversion-focused pre-launch page with countdown, waitlist capture and social proof is wanted. Supply content only — brand, nav, hero, countdown, logos, features, testimonials, pricing, faq, cta, footer; the block owns all layout and styling.",
+  lakebed: {
+    schema: {
+      waitlistEntries: table({
+        email: string(),
+        source: string(),
+        count: number(),
+      }),
+    },
+    queries: {
+      waitlistEntries: ({ db }) =>
+        db.waitlistEntries.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addWaitlistEntry: ({ db }, email: string, source: string) => {
+        const normalizedEmail = email.trim().toLowerCase()
+        if (!normalizedEmail) return db.waitlistEntries.all()
+
+        const existing = db.waitlistEntries
+          .where("email", normalizedEmail)
+          .all()[0]
+
+        if (existing) {
+          const sameSource = existing.source
+            .split(",")
+            .map((item) => item.trim())
+            .includes(source)
+
+          db.waitlistEntries.update(existing.id, {
+            source: sameSource
+              ? existing.source
+              : existing.source
+                  ? `${existing.source}, ${source}`
+                  : source,
+            count: existing.count + 1,
+          })
+
+          return db.waitlistEntries.all()
+        }
+
+        db.waitlistEntries.insert({
+          email: normalizedEmail,
+          source,
+          count: 1,
+        })
+
+        return db.waitlistEntries.all()
+      },
+      removeWaitlistEntry: ({ db }, id: string) => {
+        const entry = db.waitlistEntries.get(id)
+        if (entry) {
+          db.waitlistEntries.delete(entry.id)
+        }
+
+        return db.waitlistEntries.all()
+      },
+      clearWaitlistEntries: ({ db }) => {
+        for (const entry of db.waitlistEntries.all()) {
+          db.waitlistEntries.delete(entry.id)
+        }
+
+        return []
+      },
+    },
+  },
   props: z.object({
     /** Brand / product name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -140,10 +215,45 @@ export const ComingSoonKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [drawerOpen, setDrawerOpen] = useState(false)
     const brand = props.brand ?? "Nexus"
     const nav = props.nav?.length ? props.nav : ["Features", "Join Waitlist"]
+
+    const storedWaitlistEntries = lakebed.useQuery("waitlistEntries")
+    const addWaitlistEntry = lakebed.useMutation("addWaitlistEntry")
+    const removeWaitlistEntry = lakebed.useMutation("removeWaitlistEntry")
+    const clearWaitlistEntries = lakebed.useMutation("clearWaitlistEntries")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? auth.displayName || auth.email || "Account"
+        : "Sign in"
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const waitlistEntries = storedWaitlistEntries ?? []
+    const waitlistCount = waitlistEntries.length
+
+    const handleWaitlistSubmit = (source: string, e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      const email = String(new FormData(e.currentTarget).get("email") ?? "").trim()
+      if (!email) return
+
+      void addWaitlistEntry(email, source)
+      e.currentTarget.reset()
+      setDrawerOpen(true)
+    }
 
     const heroEyebrow = props.hero?.eyebrow ?? "Launching March 15, 2025"
     const headingTop = props.hero?.headingTop ?? "The future of"
@@ -487,6 +597,17 @@ export const ComingSoonKimiPage = defineCapsule({
     const submitCls =
       "whitespace-nowrap rounded-lg bg-primary px-8 py-3.5 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
 
+    const formatEntryDate = (
+      value: string | number | Date | undefined | null,
+    ) => {
+      if (!value) return "—"
+
+      const parsed = new Date(value)
+      if (Number.isNaN(parsed.getTime())) return "—"
+
+      return parsed.toLocaleString()
+    }
+
     return (
       <div
         className={cn(
@@ -520,6 +641,116 @@ export const ComingSoonKimiPage = defineCapsule({
               >
                 {nav[nav.length - 1]}
               </button>
+              <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    className="relative flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs font-medium tracking-wide text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground sm:text-sm"
+                  >
+                    <span>Waitlist</span>
+                    <span className="grid size-6 place-items-center rounded-full bg-foreground/10 px-1.5 py-0.5 text-[11px] font-semibold text-foreground">
+                      {waitlistCount}
+                    </span>
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="flex w-full flex-col sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border pb-4">
+                    <SheetTitle>Waitlist entries</SheetTitle>
+                    <SheetDescription>
+                      {waitlistCount === 0
+                        ? "No submissions yet. Capture one from the hero or CTA form."
+                        : `${waitlistCount} captured lead${waitlistCount === 1 ? "" : "s"} for this session.`}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-4">
+                    {waitlistEntries.length ? (
+                      <div className="space-y-4">
+                        {waitlistEntries.map((entry) => (
+                          <div
+                            key={entry.id}
+                            className="rounded-lg border border-border bg-muted/40 p-3"
+                          >
+                            <p className="font-medium text-sm text-foreground">
+                              {entry.email}
+                            </p>
+                            <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+                              <span className="mr-2">
+                                {entry.source || "Direct"}
+                                {entry.count > 1 ? ` (${entry.count}x)` : ""}
+                              </span>
+                              <span>{formatEntryDate(entry.createdAt)}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => void removeWaitlistEntry(entry.id)}
+                              className="mt-3 text-xs font-medium text-destructive hover:underline"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="rounded-lg border border-dashed border-border bg-muted/40 p-6 text-center">
+                        <p className="text-sm text-muted-foreground">
+                          No waitlist submissions yet.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border px-6 py-4">
+                    <div className="space-y-3">
+                      <div className="text-sm text-muted-foreground">
+                        <p>
+                          Signed in as{" "}
+                          <span className="font-medium text-foreground">
+                            {authLabel}
+                          </span>
+                        </p>
+                      </div>
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        {isSignedIn ? (
+                          <button
+                            type="button"
+                            onClick={handleSignOut}
+                            className="inline-flex items-center justify-center rounded-lg border border-border px-3 py-2 text-sm font-medium transition-colors hover:text-foreground"
+                          >
+                            Sign out
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleSignIn}
+                            disabled={auth.isLoading}
+                            className="inline-flex items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {authLabel}
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => void clearWaitlistEntries()}
+                          disabled={waitlistCount === 0}
+                          className="inline-flex items-center justify-center rounded-lg border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Clear all
+                        </button>
+                        <SheetClose asChild>
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                          >
+                            Close
+                          </button>
+                        </SheetClose>
+                      </div>
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
         </nav>
@@ -562,10 +793,7 @@ export const ComingSoonKimiPage = defineCapsule({
             <form
               className="mx-auto max-w-md"
               aria-label="Join the waitlist"
-              onSubmit={(e) => {
-                e.preventDefault()
-                go(heroSubmit)
-              }}
+              onSubmit={(e) => void handleWaitlistSubmit("Hero Form", e)}
             >
               <div className="flex flex-col gap-3 sm:flex-row">
                 <label htmlFor="hero-email" className="sr-only">
@@ -865,10 +1093,7 @@ export const ComingSoonKimiPage = defineCapsule({
             <form
               className="mx-auto max-w-md"
               aria-label="Final waitlist signup"
-              onSubmit={(e) => {
-                e.preventDefault()
-                go(ctaSubmit)
-              }}
+              onSubmit={(e) => void handleWaitlistSubmit("CTA Form", e)}
             >
               <div className="flex flex-col gap-3 sm:flex-row">
                 <label htmlFor="cta-email" className="sr-only">

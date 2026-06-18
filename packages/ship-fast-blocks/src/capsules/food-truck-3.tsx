@@ -1,8 +1,27 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 export const FoodTruckKimiPage3 = defineCapsule({
   name: "FoodTruckKimiPage3",
@@ -43,8 +62,126 @@ export const FoodTruckKimiPage3 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      menuItems: table({
+        name: string(),
+        description: string(),
+        price: string(),
+        category: string(),
+        alt: string(),
+      }),
+      cartItems: table({
+        menuItemId: string(),
+        quantity: number(),
+      }),
+      favorites: table({
+        menuItemName: string(),
+      }),
+      cateringInquiries: table({
+        name: string(),
+        email: string(),
+        date: string(),
+        guests: number(),
+        message: string(),
+      }),
+    },
+    queries: {
+      menuItems: ({ db }) => db.menuItems.orderBy('createdAt').all(),
+      cartLines: ({ db }) =>
+        db.cartItems.all().flatMap((item) => {
+          const menuItem = db.menuItems.get(item.menuItemId)
+          return menuItem ? [{ ...item, menuItem }] : []
+        }),
+      favoriteMenuItemNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.menuItemName)),
+    },
+    mutations: {
+      addToCart: ({ db }, menuItemName: string) => {
+        const menuItem = db.menuItems.where('name', menuItemName).all()[0]
+        if (!menuItem) return db.cartItems.all()
+
+        const existingItem = db.cartItems
+          .where('menuItemId', menuItem.id)
+          .all()[0]
+
+        if (existingItem) {
+          db.cartItems.update(existingItem.id, {
+            quantity: existingItem.quantity + 1,
+          })
+        } else {
+          db.cartItems.insert({
+            menuItemId: menuItem.id,
+            quantity: 1,
+          })
+        }
+
+        return db.cartItems.all()
+      },
+      updateCartQuantity: ({ db }, menuItemId: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+
+        for (const item of db.cartItems.where('menuItemId', menuItemId).all()) {
+          if (nextQuantity) {
+            db.cartItems.update(item.id, { quantity: nextQuantity })
+          } else {
+            db.cartItems.delete(item.id)
+          }
+        }
+
+        return db.cartItems.all()
+      },
+      removeFromCart: ({ db }, menuItemId: string) => {
+        for (const item of db.cartItems.where('menuItemId', menuItemId).all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return db.cartItems.all()
+      },
+      clearCart: ({ db }) => {
+        for (const item of db.cartItems.all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return []
+      },
+      toggleFavorite: ({ db }, menuItemName: string) => {
+        const existingFavorite = db.favorites
+          .where('menuItemName', menuItemName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ menuItemName })
+        return true
+      },
+      submitCateringInquiry: ({ db }, name: string, email: string, date: string, guests: number, message: string) => {
+        db.cateringInquiries.insert({
+          name,
+          email,
+          date,
+          guests,
+          message,
+        })
+        return db.cateringInquiries.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [cartOpen, setCartOpen] = useState(false)
+    const [cateringOpen, setCateringOpen] = useState(false)
+    const [cateringForm, setCateringForm] = useState({
+      name: '',
+      email: '',
+      date: '',
+      guests: '',
+      message: '',
+    })
+
     const brand = props.brand ?? "The Glow Truck Premium Street Eats After Dark"
     const nav = props.nav?.length ? props.nav : ["The Glow .", "Locations", "Catering", "Gallery", "FAQ", "Book the Truck"]
     const hero = {
@@ -133,6 +270,162 @@ export const FoodTruckKimiPage3 = defineCapsule({
     "caption": "Food Truck generated page detail"
   }
 ]
+
+    const priceAmount = (price: string) => {
+      const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ''))
+      return Number.isFinite(amount) ? amount : 0
+    }
+    const formatCurrency = (amount: number) =>
+      new Intl.NumberFormat('en-US', {
+        currency: 'USD',
+        style: 'currency',
+      }).format(amount)
+
+    const defaultMenuItems = [
+      {
+        name: 'Smash Burger',
+        description: 'Double patty with aged cheddar on brioche',
+        price: '$12',
+        category: 'Burgers',
+        alt: 'juicy double smash burger with melted aged cheddar on a toasted brioche bun',
+      },
+      {
+        name: 'Truffle Fries',
+        description: 'Hand-cut with truffle oil and parmesan',
+        price: '$8',
+        category: 'Sides',
+        alt: 'golden crispy fries drizzled with truffle oil',
+      },
+      {
+        name: 'Street Tacos',
+        description: 'Three tacos with carnitas and fresh salsa',
+        price: '$14',
+        category: 'Tacos',
+        alt: 'three street tacos with carnitas and fresh salsa verde',
+      },
+      {
+        name: 'Loaded Nachos',
+        description: 'Tortilla chips with queso, jalapeños, and guac',
+        price: '$11',
+        category: 'Sides',
+        alt: 'loaded nachos with melted cheese and fresh toppings',
+      },
+      {
+        name: 'Grilled Chicken',
+        description: 'Marinated chicken with citrus slaw',
+        price: '$13',
+        category: 'Bowls',
+        alt: 'grilled chicken bowl with citrus slaw',
+      },
+      {
+        name: 'Veggie Burger',
+        description: 'Plant-based patty with avocado',
+        price: '$13',
+        category: 'Burgers',
+        alt: 'veggie burger with avocado and sprouts',
+      },
+    ]
+
+    const storedMenuItems = lakebed.useQuery('menuItems')
+    const cartLines = lakebed.useQuery('cartLines')
+    const favoriteMenuItemNames = lakebed.useQuery('favoriteMenuItemNames')
+    const auth = lakebed.useAuth()
+    const addToCart = lakebed.useMutation('addToCart')
+    const updateCartQuantity = lakebed.useMutation('updateCartQuantity')
+    const removeFromCart = lakebed.useMutation('removeFromCart')
+    const clearCart = lakebed.useMutation('clearCart')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const submitCateringInquiry = lakebed.useMutation('submitCateringInquiry')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const displayMenuItems =
+      storedMenuItems && storedMenuItems.length > 0
+        ? storedMenuItems
+        : defaultMenuItems
+    const safeCartLines = cartLines ?? []
+    const cartItemCount = safeCartLines.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+    const cartSubtotal = safeCartLines.reduce(
+      (total, item) => total + priceAmount(item.menuItem.price) * item.quantity,
+      0,
+    )
+    const cartTotal = cartSubtotal
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
 
     return (
       <div className={cn("min-h-screen bg-background text-foreground", props.className)}>

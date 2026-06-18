@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * BarNightclubKimiPage2 — bold, neon-accented bar & nightclub landing + reservations page.
@@ -163,10 +181,94 @@ export const BarNightclubKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      reservations: table({
+        name: string(),
+        time: string(),
+        guests: string(),
+      }),
+      favoriteEvents: table({
+        eventTitle: string(),
+      }),
+    },
+    queries: {
+      reservations: ({ db }) => db.reservations.orderBy('createdAt').all(),
+      favoriteEventTitles: ({ db }) =>
+        new Set(db.favoriteEvents.all().map((favorite) => favorite.eventTitle)),
+    },
+    mutations: {
+      addReservation: ({ db }, name: string, time: string, guests: string) => {
+        db.reservations.insert({ name, time, guests })
+        return db.reservations.all()
+      },
+      removeReservation: ({ db }, id: string) => {
+        db.reservations.delete(id)
+        return db.reservations.all()
+      },
+      clearReservations: ({ db }) => {
+        for (const item of db.reservations.all()) {
+          db.reservations.delete(item.id)
+        }
+        return []
+      },
+      toggleFavoriteEvent: ({ db }, eventTitle: string) => {
+        const existingFavorite = db.favoriteEvents
+          .where('eventTitle', eventTitle)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favoriteEvents.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favoriteEvents.insert({ eventTitle })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [menuOpen, setMenuOpen] = useState(false)
-    const [formSubmitted, setFormSubmitted] = useState(false)
+    const [reservationsOpen, setReservationsOpen] = useState(false)
+
+    const storedReservations = lakebed.useQuery('reservations')
+    const favoriteEventTitles = lakebed.useQuery('favoriteEventTitles')
+    const auth = lakebed.useAuth()
+    const addReservation = lakebed.useMutation('addReservation')
+    const removeReservation = lakebed.useMutation('removeReservation')
+    const clearReservations = lakebed.useMutation('clearReservations')
+    const toggleFavoriteEvent = lakebed.useMutation('toggleFavoriteEvent')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const safeReservations = storedReservations ?? []
+    const reservationCount = safeReservations.length
 
     const brand = props.brand ?? "Nocturne"
     const nav = props.nav?.length
@@ -451,6 +553,55 @@ export const BarNightclubKimiPage2 = defineCapsule({
       "w-full rounded-xl border border-border bg-card px-4 py-3 text-foreground placeholder-muted-foreground/60 outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring"
     const labelCls = "mb-2 block text-sm font-medium text-muted-foreground"
 
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const ArrowRight = () => (
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    )
+
     const logoEls = logos.flatMap((name, i) => [
       <span key={`name-${i}`}>{name}</span>,
       ...(i < logos.length - 1
@@ -492,35 +643,254 @@ export const BarNightclubKimiPage2 = defineCapsule({
                   </button>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={() => go(heroPrimary)}
-                className="hidden items-center rounded-full bg-primary px-6 py-2 text-sm font-medium tracking-wide text-primary-foreground transition-colors hover:bg-primary/90 md:inline-flex"
-              >
-                {heroPrimary}
-              </button>
-              <button
-                type="button"
-                aria-label="Toggle menu"
-                aria-expanded={menuOpen}
-                onClick={() => setMenuOpen((o) => !o)}
-                className="p-2 text-foreground md:hidden"
-              >
-                <svg
-                  className="size-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
+              <div className="flex items-center gap-4">
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Reservations')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Reservations
+                          <ArrowRight />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={reservationsOpen} onOpenChange={setReservationsOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Reservations"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                      {reservationCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {reservationCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Reservations</SheetTitle>
+                      <SheetDescription>
+                        {reservationCount > 0
+                          ? `${reservationCount} reservation${reservationCount === 1 ? '' : 's'} for this session.`
+                          : 'No reservations yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeReservations.length ? (
+                        <div className="space-y-5">
+                          {safeReservations.map((reservation) => (
+                            <div
+                              key={reservation.id}
+                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-lg bg-muted flex items-center justify-center">
+                                <svg
+                                  className="size-8 text-muted-foreground"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                  <circle cx="12" cy="7" r="4" />
+                                </svg>
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                      {reservation.time}
+                                    </p>
+                                    <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                      {reservation.name}
+                                    </h3>
+                                  </div>
+                                  <p className="text-sm font-bold text-foreground">
+                                    {reservation.guests}
+                                  </p>
+                                </div>
+                                <div className="mt-4 flex items-center justify-between">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void removeReservation(reservation.id)
+                                    }
+                                    className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No reservations
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Use the reservation form to book a table for this
+                            session.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="rounded-full"
+                          onClick={() => void clearReservations()}
+                          disabled={!safeReservations.length}
+                        >
+                          Clear
+                        </Button>
+                        <SheetClose asChild>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="rounded-full"
+                          >
+                            Continue
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                <button
+                  type="button"
+                  onClick={() => go(heroPrimary)}
+                  className="hidden items-center rounded-full bg-primary px-6 py-2 text-sm font-medium tracking-wide text-primary-foreground transition-colors hover:bg-primary/90 md:inline-flex"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
+                  {heroPrimary}
+                </button>
+                <button
+                  type="button"
+                  aria-label="Toggle menu"
+                  aria-expanded={menuOpen}
+                  onClick={() => setMenuOpen((o) => !o)}
+                  className="p-2 text-foreground md:hidden"
+                >
+                  <svg
+                    className="size-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1.5"
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
             {menuOpen && (
               <div className="flex flex-col gap-2 border-t border-border py-4 md:hidden">
@@ -537,6 +907,58 @@ export const BarNightclubKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMenuOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -616,49 +1038,72 @@ export const BarNightclubKimiPage2 = defineCapsule({
               </div>
 
               <div className="grid gap-8 md:grid-cols-3">
-                {eventItems.map((ev) => (
-                  <div
-                    key={ev.title}
-                    className="group overflow-hidden rounded-2xl border border-border bg-card"
-                  >
-                    <div className="relative">
-                      <Image
-                        alt={ev.imageAlt}
-                        w={600}
-                        h={400}
-                        loading="lazy"
-                        className="h-56 w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
-                      <span
-                        className={cn(
-                          "absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-semibold tracking-wide",
-                          ev.badgeStyle === "secondary"
-                            ? "bg-secondary text-secondary-foreground"
-                            : "bg-primary text-primary-foreground",
-                        )}
-                      >
-                        {ev.dateBadge}
-                      </span>
+                {eventItems.map((ev) => {
+                  const isFavorite =
+                    favoriteEventTitles?.has(ev.title) ?? false
+
+                  return (
+                    <div
+                      key={ev.title}
+                      className="group overflow-hidden rounded-2xl border border-border bg-card"
+                    >
+                      <div className="relative">
+                        <Image
+                          alt={ev.imageAlt}
+                          w={600}
+                          h={400}
+                          loading="lazy"
+                          className="h-56 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
+                        <span
+                          className={cn(
+                            "absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-semibold tracking-wide",
+                            ev.badgeStyle === "secondary"
+                              ? "bg-secondary text-secondary-foreground"
+                              : "bg-primary text-primary-foreground",
+                          )}
+                        >
+                          {ev.dateBadge}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavoriteEvent(ev.title)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${ev.title} from favorites`
+                              : `Add ${ev.title} to favorites`
+                          }
+                          className={cn(
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                          )}
+                        >
+                          <HeartIcon active={isFavorite} />
+                        </button>
+                      </div>
+                      <div className="p-6">
+                        <h3 className="mb-2 text-xl font-bold">{ev.title}</h3>
+                        <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+                          {ev.description}
+                        </p>
+                        <p className="mb-6 text-sm text-muted-foreground">
+                          {ev.price}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => go(`${ev.title} ${eventsCtaLabel}`)}
+                          className="w-full rounded-full border border-border py-2 text-sm tracking-wide transition-colors hover:bg-primary hover:text-primary-foreground"
+                        >
+                          Reserve
+                        </button>
+                      </div>
                     </div>
-                    <div className="p-6">
-                      <h3 className="mb-2 text-xl font-bold">{ev.title}</h3>
-                      <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-                        {ev.description}
-                      </p>
-                      <p className="mb-6 text-sm text-muted-foreground">
-                        {ev.price}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => go(`${ev.title} ${eventsCtaLabel}`)}
-                        className="w-full rounded-full border border-border py-2 text-sm tracking-wide transition-colors hover:bg-primary hover:text-primary-foreground"
-                      >
-                        Reserve
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
 
               <div className="mt-8 grid gap-6 md:grid-cols-2">
@@ -892,64 +1337,64 @@ export const BarNightclubKimiPage2 = defineCapsule({
                   </div>
                 </div>
 
-                {formSubmitted ? (
-                  <div className="flex items-center justify-center rounded-2xl border border-border bg-card p-8 text-center">
-                    <p className="text-lg text-foreground">{resSuccess}</p>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    const form = e.currentTarget
+                    const name = (form.elements.namedItem('res-name') as HTMLInputElement).value
+                    const time = (form.elements.namedItem('res-time') as HTMLSelectElement).value
+                    const guests = (form.elements.namedItem('res-guests') as HTMLSelectElement).value
+                    void addReservation(name, time, guests)
+                    setReservationsOpen(true)
+                    form.reset()
+                  }}
+                  className="space-y-5 rounded-2xl border border-border bg-card p-8"
+                >
+                  <div>
+                    <label htmlFor="res-name" className={labelCls}>
+                      Name
+                    </label>
+                    <input
+                      id="res-name"
+                      type="text"
+                      required
+                      placeholder="Your name"
+                      className={inputCls}
+                    />
                   </div>
-                ) : (
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault()
-                      setFormSubmitted(true)
-                    }}
-                    className="space-y-5 rounded-2xl border border-border bg-card p-8"
-                  >
+                  <div className="grid gap-5 sm:grid-cols-2">
                     <div>
-                      <label htmlFor="res-name" className={labelCls}>
-                        Name
+                      <label htmlFor="res-time" className={labelCls}>
+                        Time
                       </label>
-                      <input
-                        id="res-name"
-                        type="text"
-                        required
-                        placeholder="Your name"
-                        className={inputCls}
-                      />
+                      <select id="res-time" className={inputCls}>
+                        {timeOptions.map((t) => (
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
+                        ))}
+                      </select>
                     </div>
-                    <div className="grid gap-5 sm:grid-cols-2">
-                      <div>
-                        <label htmlFor="res-time" className={labelCls}>
-                          Time
-                        </label>
-                        <select id="res-time" className={inputCls}>
-                          {timeOptions.map((t) => (
-                            <option key={t} value={t}>
-                              {t}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label htmlFor="res-guests" className={labelCls}>
-                          Guests
-                        </label>
-                        <select id="res-guests" className={inputCls}>
-                          {guestOptions.map((g) => (
-                            <option key={g} value={g}>
-                              {g}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                    <div>
+                      <label htmlFor="res-guests" className={labelCls}>
+                        Guests
+                      </label>
+                      <select id="res-guests" className={inputCls}>
+                        {guestOptions.map((g) => (
+                          <option key={g} value={g}>
+                            {g}
+                          </option>
+                        ))}
+                      </select>
                     </div>
-                    <button
-                      type="submit"
-                      className="w-full rounded-full bg-primary px-8 py-3 text-sm font-medium tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
-                    >
-                      {resSubmit}
-                    </button>
-                  </form>
-                )}
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full rounded-full bg-primary px-8 py-3 text-sm font-medium tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    {resSubmit}
+                  </button>
+                </form>
               </div>
             </div>
           </section>

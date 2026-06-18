@@ -4,6 +4,24 @@ import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * SpaWellnessKimiPage2 — a complete, self-contained luxury spa & wellness-retreat
@@ -190,10 +208,107 @@ export const SpaWellnessKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      reservations: table({
+        firstName: string(),
+        lastName: string(),
+        email: string(),
+        phone: string(),
+        service: string(),
+        date: string(),
+        notes: string(),
+      }),
+      favorites: table({
+        treatmentName: string(),
+      }),
+    },
+    queries: {
+      reservations: ({ db }) => db.reservations.orderBy('createdAt').all(),
+      favoriteTreatmentNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.treatmentName)),
+    },
+    mutations: {
+      addReservation: ({ db }, data: {
+        firstName: string
+        lastName: string
+        email: string
+        phone: string
+        service: string
+        date: string
+        notes: string
+      }) => {
+        db.reservations.insert(data)
+        return db.reservations.all()
+      },
+      removeReservation: ({ db }, id: string) => {
+        db.reservations.delete(id)
+        return db.reservations.all()
+      },
+      clearReservations: ({ db }) => {
+        for (const item of db.reservations.all()) {
+          db.reservations.delete(item.id)
+        }
+        return []
+      },
+      toggleFavorite: ({ db }, treatmentName: string) => {
+        const existingFavorite = db.favorites
+          .where('treatmentName', treatmentName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ treatmentName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [reservationsOpen, setReservationsOpen] = useState(false)
     const brand = props.brand ?? "Solace Springs"
+
+    const reservations = lakebed.useQuery('reservations')
+    const favoriteTreatmentNames = lakebed.useQuery('favoriteTreatmentNames')
+    const auth = lakebed.useAuth()
+    const addReservation = lakebed.useMutation('addReservation')
+    const removeReservation = lakebed.useMutation('removeReservation')
+    const clearReservations = lakebed.useMutation('clearReservations')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const safeReservations = reservations ?? []
+    const reservationCount = safeReservations.length
     const nav = props.nav?.length
       ? props.nav
       : ["Treatments", "Gallery", "Packages", "Reviews", "FAQ"]
@@ -611,6 +726,39 @@ export const SpaWellnessKimiPage2 = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
     const socialIcons: Record<string, string> = {
       Instagram:
         "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z",
@@ -661,6 +809,217 @@ export const SpaWellnessKimiPage2 = defineCapsule({
               </div>
 
               <div className="flex items-center gap-4">
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                      >
+                        <Avatar
+                          size="sm"
+                          className="ring-2 ring-background"
+                          aria-hidden="true"
+                        >
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                    >
+                      <div className="bg-muted/40 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar size="lg" className="ring-2 ring-background">
+                            {authPicture ? (
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                              {authInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-foreground">
+                              {authDisplayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {authEmail ?? 'Signed in to this session'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => go('Reservations')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          My Reservations
+                          <Arrow className="size-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go('Account')}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Account
+                          <Arrow className="size-4" />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    aria-label="Sign in with Google"
+                    className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                  >
+                    <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                      G
+                    </span>
+                    <span>{authLabel}</span>
+                  </button>
+                )}
+                <Sheet open={reservationsOpen} onOpenChange={setReservationsOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Reservations"
+                      className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      {reservationCount > 0 ? (
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                          {reservationCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Your Reservations</SheetTitle>
+                      <SheetDescription>
+                        {reservationCount > 0
+                          ? `${reservationCount} reservation${reservationCount === 1 ? '' : 's'} pending.`
+                          : 'No reservations yet.'}
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {safeReservations.length ? (
+                        <div className="space-y-5">
+                          {safeReservations.map((reservation) => (
+                            <div
+                              key={reservation.id}
+                              className="rounded-xl border border-border bg-muted/40 p-4"
+                            >
+                              <div className="mb-3 flex items-start justify-between gap-3">
+                                <div className="flex-1">
+                                  <p className="text-sm font-semibold text-foreground">
+                                    {reservation.service}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {reservation.date}
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void removeReservation(reservation.id)
+                                  }
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                              <div className="space-y-1 text-sm text-muted-foreground">
+                                <p>
+                                  {reservation.firstName} {reservation.lastName}
+                                </p>
+                                <p>{reservation.email}</p>
+                                <p>{reservation.phone}</p>
+                                {reservation.notes && (
+                                  <p className="text-xs italic">
+                                    Notes: {reservation.notes}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-base font-semibold text-foreground">
+                            No reservations
+                          </p>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            Book a treatment to get started.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full rounded-full"
+                        onClick={() => void clearReservations()}
+                        disabled={!safeReservations.length}
+                      >
+                        Clear All
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          className="w-full rounded-full"
+                        >
+                          Close
+                        </Button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
                 <button
                   type="button"
                   onClick={() => go(heroBook)}
@@ -711,6 +1070,58 @@ export const SpaWellnessKimiPage2 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </nav>
@@ -830,46 +1241,69 @@ export const SpaWellnessKimiPage2 = defineCapsule({
               </div>
 
               <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                {treatItems.map((item) => (
-                  <article
-                    key={item.title}
-                    className="group overflow-hidden rounded-2xl bg-card shadow-sm transition-shadow hover:shadow-xl"
-                  >
-                    <div className="aspect-[4/3] overflow-hidden">
-                      <Image
-                        alt={item.imageAlt}
-                        w={800}
-                        h={600}
-                        loading="lazy"
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="p-6">
-                      <div className="mb-3 flex items-center justify-between">
-                        <span className="text-sm font-semibold text-primary">
-                          {item.duration}
-                        </span>
-                        <span className="font-bold text-card-foreground">
-                          {item.price}
-                        </span>
+                {treatItems.map((item) => {
+                  const isFavorite =
+                    favoriteTreatmentNames?.has(item.title) ?? false
+
+                  return (
+                    <article
+                      key={item.title}
+                      className="group overflow-hidden rounded-2xl bg-card shadow-sm transition-shadow hover:shadow-xl"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <Image
+                          alt={item.imageAlt}
+                          w={800}
+                          h={600}
+                          loading="lazy"
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavorite(item.title)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${item.title} from favorites`
+                              : `Add ${item.title} to favorites`
+                          }
+                          className={cn(
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                          )}
+                        >
+                          <HeartIcon active={isFavorite} />
+                        </button>
                       </div>
-                      <h3 className="mb-2 font-serif text-xl font-semibold text-card-foreground">
-                        {item.title}
-                      </h3>
-                      <p className="mb-4 text-sm text-muted-foreground">
-                        {item.description}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => go(treatCta)}
-                        className="inline-flex items-center text-sm font-semibold text-primary transition-colors hover:text-primary/80"
-                      >
-                        {treatCta}
-                        <Arrow className="ml-1 h-4 w-4" />
-                      </button>
-                    </div>
-                  </article>
-                ))}
+                      <div className="p-6">
+                        <div className="mb-3 flex items-center justify-between">
+                          <span className="text-sm font-semibold text-primary">
+                            {item.duration}
+                          </span>
+                          <span className="font-bold text-card-foreground">
+                            {item.price}
+                          </span>
+                        </div>
+                        <h3 className="mb-2 font-serif text-xl font-semibold text-card-foreground">
+                          {item.title}
+                        </h3>
+                        <p className="mb-4 text-sm text-muted-foreground">
+                          {item.description}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => go(treatCta)}
+                          className="inline-flex items-center text-sm font-semibold text-primary transition-colors hover:text-primary/80"
+                        >
+                          {treatCta}
+                          <Arrow className="ml-1 h-4 w-4" />
+                        </button>
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -1188,20 +1622,7 @@ export const SpaWellnessKimiPage2 = defineCapsule({
                         {item.q}
                       </span>
                       <span className="text-primary transition-transform group-open:rotate-180">
-                        <svg
-                          className="h-6 w-6"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          aria-hidden="true"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
+                        <ChevronDown />
                       </span>
                     </summary>
                     <div className="px-6 pb-6 leading-relaxed text-muted-foreground">
@@ -1254,7 +1675,28 @@ export const SpaWellnessKimiPage2 = defineCapsule({
                   className="space-y-6"
                   onSubmit={(e) => {
                     e.preventDefault()
-                    go(bookSubmit)
+                    const form = e.currentTarget
+                    const firstName = (form.querySelector('#spa2-first') as HTMLInputElement)?.value
+                    const lastName = (form.querySelector('#spa2-last') as HTMLInputElement)?.value
+                    const email = (form.querySelector('#spa2-email') as HTMLInputElement)?.value
+                    const phone = (form.querySelector('#spa2-phone') as HTMLInputElement)?.value
+                    const service = (form.querySelector('#spa2-service') as HTMLSelectElement)?.value
+                    const date = (form.querySelector('#spa2-date') as HTMLInputElement)?.value
+                    const notes = (form.querySelector('#spa2-notes') as HTMLTextAreaElement)?.value
+
+                    if (firstName && lastName && email && phone && service && date) {
+                      void addReservation({
+                        firstName,
+                        lastName,
+                        email,
+                        phone,
+                        service,
+                        date,
+                        notes: notes || '',
+                      })
+                      setReservationsOpen(true)
+                      form.reset()
+                    }
                   }}
                 >
                   <div className="grid gap-6 sm:grid-cols-2">

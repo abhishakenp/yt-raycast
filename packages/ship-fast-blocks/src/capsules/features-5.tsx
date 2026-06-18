@@ -1,8 +1,27 @@
+import { useState } from 'react'
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const FeaturesKimiPage5 = defineCapsule({
   name: "FeaturesKimiPage5",
@@ -43,8 +62,41 @@ export const FeaturesKimiPage5 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      savedFeatures: table({
+        featureName: string(),
+        sectionTitle: string(),
+      }),
+    },
+    queries: {
+      savedFeatures: ({ db }) => db.savedFeatures.orderBy('createdAt').all(),
+    },
+    mutations: {
+      saveFeature: ({ db }, featureName: string, sectionTitle: string) => {
+        const existing = db.savedFeatures.where('featureName', featureName).all()[0]
+        if (existing) return db.savedFeatures.all()
+
+        db.savedFeatures.insert({ featureName, sectionTitle })
+        return db.savedFeatures.all()
+      },
+      removeFeature: ({ db }, featureName: string) => {
+        for (const item of db.savedFeatures.where('featureName', featureName).all()) {
+          db.savedFeatures.delete(item.id)
+        }
+        return db.savedFeatures.all()
+      },
+      clearSaved: ({ db }) => {
+        for (const item of db.savedFeatures.all()) {
+          db.savedFeatures.delete(item.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [savedOpen, setSavedOpen] = useState(false)
     const brand = props.brand ?? "Features"
     const nav = props.nav?.length ? props.nav : ["Features", "Pricing", "About", "Get Started"]
     const hero = {
@@ -128,6 +180,69 @@ export const FeaturesKimiPage5 = defineCapsule({
   }
 ]
 
+    const savedFeatures = lakebed.useQuery('savedFeatures')
+    const saveFeature = lakebed.useMutation('saveFeature')
+    const removeFeature = lakebed.useMutation('removeFeature')
+    const clearSaved = lakebed.useMutation('clearSaved')
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const savedFeatureNames = new Set(savedFeatures?.map((f) => f.featureName) ?? [])
+    const savedCount = savedFeatures?.length ?? 0
+
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
+    const BookmarkIcon = ({ saved = false }: { saved?: boolean }) => (
+      <svg
+        className={cn('size-5', saved ? 'text-primary' : 'text-foreground')}
+        fill={saved ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+      </svg>
+    )
+
     return (
       <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
@@ -147,13 +262,198 @@ export const FeaturesKimiPage5 = defineCapsule({
                 </button>
               ))}
             </nav>
-            <button
-              type="button"
-              onClick={() => go(hero.primaryCta)}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              {hero.primaryCta}
-            </button>
+            <div className="flex items-center gap-3">
+              <Sheet open={savedOpen} onOpenChange={setSavedOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Saved features"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <BookmarkIcon />
+                    {savedCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {savedCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Saved Features</SheetTitle>
+                    <SheetDescription>
+                      {savedCount > 0
+                        ? `${savedCount} feature${savedCount === 1 ? '' : 's'} saved for this session.`
+                        : 'No features saved yet.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {savedFeatures && savedFeatures.length > 0 ? (
+                      <div className="space-y-3">
+                        {savedFeatures.map((item) => (
+                          <div
+                            key={item.id}
+                            className="flex items-center justify-between rounded-lg border border-border bg-card p-4"
+                          >
+                            <div className="min-w-0">
+                              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                {item.sectionTitle}
+                              </p>
+                              <p className="text-sm font-semibold text-foreground">
+                                {item.featureName}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => void removeFeature(item.featureName)}
+                              aria-label={`Remove ${item.featureName} from saved`}
+                              className="text-muted-foreground transition-colors hover:text-destructive"
+                            >
+                              <svg
+                                className="size-5"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M18 6L6 18M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No saved features
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Click the bookmark icon on any feature to save it for later.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full"
+                        onClick={() => void clearSaved()}
+                        disabled={!savedFeatures || savedFeatures.length === 0}
+                      >
+                        Clear All
+                      </Button>
+                      <SheetClose asChild>
+                        <Button type="button" variant="secondary" className="rounded-full">
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => go(hero.primaryCta)}
+                className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                {hero.primaryCta}
+              </button>
+            </div>
           </div>
         </header>
 
@@ -212,17 +512,41 @@ export const FeaturesKimiPage5 = defineCapsule({
                   <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
-                      {section.items.map((item) => (
-                        <button
-                          key={item}
-                          type="button"
-                          onClick={() => go(item)}
-                          className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                        >
-                          <span>{item}</span>
-                          <span className="text-primary">{index + 1}</span>
-                        </button>
-                      ))}
+                      {section.items.map((item) => {
+                        const isSaved = savedFeatureNames.has(item)
+                        return (
+                          <div
+                            key={item}
+                            className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => go(item)}
+                              className="flex-1 text-left"
+                            >
+                              {item}
+                            </button>
+                            <div className="flex items-center gap-2">
+                              <span className="text-primary">{index + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (isSaved) {
+                                    void removeFeature(item)
+                                  } else {
+                                    void saveFeature(item, section.title)
+                                  }
+                                }}
+                                aria-label={isSaved ? `Remove ${item} from saved` : `Save ${item}`}
+                                aria-pressed={isSaved}
+                                className="text-muted-foreground transition-colors hover:text-foreground"
+                              >
+                                <BookmarkIcon saved={isSaved} />
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
                     </div>
                   ) : null}
                 </article>

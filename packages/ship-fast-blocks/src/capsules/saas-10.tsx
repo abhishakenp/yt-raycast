@@ -1,9 +1,27 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { boolean, number, string, table } from '@ship-fast/lakebed/server'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * SaasKimiPage10 — the 10th stylistic sibling to SaasKimiPage.
@@ -21,7 +39,7 @@ import { Image } from "#/lib/img.tsx"
  * standard indigo-heavy SaasKimiPage.
  */
 export const SaasKimiPage10 = defineCapsule({
-  name: "SaasKimiPage10",
+  name: 'SaasKimiPage10',
   description:
     "A bright, cheerful SaaS landing page (the 10th style sibling to SaasKimiPage) with a split hero showing a calendar-dashboard mockup, a 6-up feature grid + two large highlight cards, a numbered How It Works band with a gradient connector, a product image gallery, a 3-tier pricing table with a dark 'Most Popular' tier, a dark stats band, 6 testimonial cards with star ratings and headshots, a simple FAQ list, a gradient CTA banner, and a rich multi-column dark footer. Use for AI scheduling, productivity SaaS, calendar tools, or modern B2B startups when a light, friendly, conversion-focused page with social proof and pricing is wanted.",
   props: z.object({
@@ -43,7 +61,7 @@ export const SaasKimiPage10 = defineCapsule({
               time: z.string(),
               title: z.string().optional(),
               note: z.string().optional(),
-              tone: z.enum(["primary", "accent", "muted"]).optional(),
+              tone: z.enum(['primary', 'accent', 'muted']).optional(),
             }),
           )
           .optional(),
@@ -204,204 +222,299 @@ export const SaasKimiPage10 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      meetings: table({
+        time: string(),
+        title: string(),
+        note: string(),
+        tone: string(),
+      }),
+      scheduledSlots: table({
+        day: string(),
+        time: string(),
+        active: boolean(),
+      }),
+    },
+    queries: {
+      meetings: ({ db }) => db.meetings.orderBy('createdAt').all(),
+      scheduledSlots: ({ db }) => db.scheduledSlots.all(),
+    },
+    mutations: {
+      addMeeting: (
+        { db },
+        time: string,
+        title: string,
+        note: string,
+        tone: string,
+      ) => {
+        db.meetings.insert({ time, title, note, tone })
+        return db.meetings.all()
+      },
+      removeMeeting: ({ db }, id: string) => {
+        db.meetings.delete(id)
+        return db.meetings.all()
+      },
+      toggleSlot: ({ db }, day: string, time: string) => {
+        const existing = db.scheduledSlots
+          .where('day', day)
+          .where('time', time)
+          .all()[0]
+        if (existing) {
+          db.scheduledSlots.delete(existing.id)
+        } else {
+          db.scheduledSlots.insert({ day, time, active: true })
+        }
+        return db.scheduledSlots.all()
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [meetingsOpen, setMeetingsOpen] = useState(false)
 
-    const brand = props.brand ?? "Chrono AI"
+    const storedMeetings = lakebed.useQuery('meetings')
+    const storedSlots = lakebed.useQuery('scheduledSlots')
+    const auth = lakebed.useAuth()
+    const addMeeting = lakebed.useMutation('addMeeting')
+    const removeMeeting = lakebed.useMutation('removeMeeting')
+    const toggleSlot = lakebed.useMutation('toggleSlot')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const brand = props.brand ?? 'Chrono AI'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "How It Works", "Pricing", "Reviews", "FAQ"]
+      : ['Features', 'How It Works', 'Pricing', 'Reviews', 'FAQ']
 
-    const heroBadge =
-      props.hero?.badge ?? "New: AI Conflict Resolution 2.0"
-    const heroHeading = props.hero?.heading ?? "Your Calendar, "
-    const heroHighlight = props.hero?.highlight ?? "Supercharged by AI"
+    const heroBadge = props.hero?.badge ?? 'New: AI Conflict Resolution 2.0'
+    const heroHeading = props.hero?.heading ?? 'Your Calendar, '
+    const heroHighlight = props.hero?.highlight ?? 'Supercharged by AI'
     const heroSub =
       props.hero?.subheading ??
-      "Chrono AI automatically schedules meetings, resolves conflicts, and optimizes your day for peak productivity. Connect your calendars and let AI handle the rest."
-    const heroPrimary = props.hero?.primaryCta ?? "Get Started Free"
-    const heroSecondary = props.hero?.secondaryCta ?? "Watch Demo"
+      'Chrono AI automatically schedules meetings, resolves conflicts, and optimizes your day for peak productivity. Connect your calendars and let AI handle the rest.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Get Started Free'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Watch Demo'
     const heroProof =
-      props.hero?.socialProof ?? "Trusted by 12,000+ professionals"
-    const demoTitle = props.hero?.demoTitle ?? "Chrono AI Dashboard"
+      props.hero?.socialProof ?? 'Trusted by 12,000+ professionals'
+    const demoTitle = props.hero?.demoTitle ?? 'Chrono AI Dashboard'
+    const defaultSchedule = [
+      {
+        time: '9:00 AM',
+        title: 'Product Team Standup',
+        note: '30 min \u2022 Zoom',
+        tone: 'primary' as const,
+      },
+      {
+        time: '10:30 AM',
+        title: 'Deep Work Block',
+        note: '2 hrs \u2022 Focus Time',
+        tone: 'accent' as const,
+      },
+      {
+        time: '1:00 PM',
+        title: 'Client Review \u2014 Moved by AI',
+        note: '45 min \u2022 Google Meet',
+        tone: 'primary' as const,
+      },
+      {
+        time: '3:00 PM',
+        title: 'Sync with Marketing',
+        note: 'Resolved \u2014 Merged with 1:00 PM',
+        tone: 'muted' as const,
+      },
+    ]
     const schedule = props.hero?.schedule?.length
       ? props.hero.schedule
-      : [
-          {
-            time: "9:00 AM",
-            title: "Product Team Standup",
-            note: "30 min \u2022 Zoom",
-            tone: "primary" as const,
-          },
-          {
-            time: "10:30 AM",
-            title: "Deep Work Block",
-            note: "2 hrs \u2022 Focus Time",
-            tone: "accent" as const,
-          },
-          {
-            time: "1:00 PM",
-            title: "Client Review \u2014 Moved by AI",
-            note: "45 min \u2022 Google Meet",
-            tone: "primary" as const,
-          },
-          {
-            time: "3:00 PM",
-            title: "Sync with Marketing",
-            note: "Resolved \u2014 Merged with 1:00 PM",
-            tone: "muted" as const,
-          },
-        ]
+      : storedMeetings && storedMeetings.length > 0
+        ? storedMeetings.map((m) => ({
+            time: m.time,
+            title: m.title,
+            note: m.note,
+            tone: (m.tone as 'primary' | 'accent' | 'muted') || 'primary',
+          }))
+        : defaultSchedule
 
-    const logosLabel = props.logos?.label ?? "Trusted by teams at"
+    const logosLabel = props.logos?.label ?? 'Trusted by teams at'
     const logoNames = props.logos?.names?.length
       ? props.logos.names
-      : ["Stripe", "Notion", "Slack", "Figma", "Linear", "Vercel"]
+      : ['Stripe', 'Notion', 'Slack', 'Figma', 'Linear', 'Vercel']
 
-    const featuresTag = props.features?.tag ?? "Features"
+    const featuresTag = props.features?.tag ?? 'Features'
     const featuresHeading =
-      props.features?.heading ?? "Everything you need to reclaim your time"
+      props.features?.heading ?? 'Everything you need to reclaim your time'
     const featuresDesc =
       props.features?.description ??
-      "Chrono AI combines intelligent scheduling with seamless integrations to transform how you manage your calendar."
+      'Chrono AI combines intelligent scheduling with seamless integrations to transform how you manage your calendar.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "AI Smart Scheduling",
+            title: 'AI Smart Scheduling',
             description:
-              "Our AI analyzes your work patterns, energy levels, and priorities to automatically schedule meetings at optimal times.",
+              'Our AI analyzes your work patterns, energy levels, and priorities to automatically schedule meetings at optimal times.',
           },
           {
-            title: "Conflict Resolution",
+            title: 'Conflict Resolution',
             description:
-              "When double-bookings occur, Chrono AI automatically suggests alternative times and notifies all participants instantly.",
+              'When double-bookings occur, Chrono AI automatically suggests alternative times and notifies all participants instantly.',
           },
           {
-            title: "Team Coordination",
+            title: 'Team Coordination',
             description:
-              "Find the perfect meeting time across multiple time zones and busy schedules with one click.",
+              'Find the perfect meeting time across multiple time zones and busy schedules with one click.',
           },
           {
-            title: "Calendar Sync",
+            title: 'Calendar Sync',
             description:
-              "Connect Google Calendar, Outlook, Apple Calendar, and more. All your events in one intelligent view.",
+              'Connect Google Calendar, Outlook, Apple Calendar, and more. All your events in one intelligent view.',
           },
           {
-            title: "Smart Reminders",
+            title: 'Smart Reminders',
             description:
-              "AI-powered notifications that know when to remind you based on travel time, prep needed, and your location.",
+              'AI-powered notifications that know when to remind you based on travel time, prep needed, and your location.',
           },
           {
-            title: "Analytics & Insights",
+            title: 'Analytics & Insights',
             description:
-              "Understand how you spend your time with detailed reports on meeting load, focus time, and productivity trends.",
+              'Understand how you spend your time with detailed reports on meeting load, focus time, and productivity trends.',
           },
         ]
 
-    const focusTitle = props.focusCard?.title ?? "Focus Time Protection"
+    const focusTitle = props.focusCard?.title ?? 'Focus Time Protection'
     const focusDesc =
       props.focusCard?.description ??
-      "Automatically block deep work sessions and defend them from meeting creep."
+      'Automatically block deep work sessions and defend them from meeting creep.'
     const focusBullets = props.focusCard?.bullets?.length
       ? props.focusCard.bullets
       : [
-          "Auto-decline meetings during focus blocks",
-          "Smart Slack status updates",
-          "Do Not Disturb automation",
+          'Auto-decline meetings during focus blocks',
+          'Smart Slack status updates',
+          'Do Not Disturb automation',
         ]
 
-    const schedTitle = props.schedulingCard?.title ?? "One-Click Scheduling"
+    const schedTitle = props.schedulingCard?.title ?? 'One-Click Scheduling'
     const schedDesc =
       props.schedulingCard?.description ??
-      "Share your availability and let others book directly without the back-and-forth."
-    const schedUrl = props.schedulingCard?.urlLabel ?? "chrono.ai/book/sarah"
+      'Share your availability and let others book directly without the back-and-forth.'
+    const schedUrl = props.schedulingCard?.urlLabel ?? 'chrono.ai/book/sarah'
+    const defaultSlots = [
+      { day: 'Mon', time: '9a', active: false },
+      { day: 'Tue', time: '2p', active: false },
+      { day: 'Wed', time: '10a', active: true },
+      { day: 'Thu', time: '3p', active: false },
+    ]
     const schedSlots = props.schedulingCard?.slots?.length
       ? props.schedulingCard.slots
-      : [
-          { day: "Mon", time: "9a", active: false },
-          { day: "Tue", time: "2p", active: false },
-          { day: "Wed", time: "10a", active: true },
-          { day: "Thu", time: "3p", active: false },
-        ]
+      : storedSlots && storedSlots.length > 0
+        ? storedSlots.map((s) => ({
+            day: s.day,
+            time: s.time,
+            active: s.active,
+          }))
+        : defaultSlots
 
-    const stepsTag = props.steps?.tag ?? "How It Works"
+    const stepsTag = props.steps?.tag ?? 'How It Works'
     const stepsHeading =
-      props.steps?.heading ?? "Get started in minutes, not hours"
+      props.steps?.heading ?? 'Get started in minutes, not hours'
     const stepsDesc =
       props.steps?.description ??
-      "Chrono AI integrates seamlessly with your existing workflow. No migration headaches, no complex setup."
+      'Chrono AI integrates seamlessly with your existing workflow. No migration headaches, no complex setup.'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Connect Your Calendars",
+            title: 'Connect Your Calendars',
             description:
-              "Link Google Calendar, Outlook, Apple Calendar, and any other calendar you use. We sync bidirectionally in real-time.",
-            note: "2-minute setup",
+              'Link Google Calendar, Outlook, Apple Calendar, and any other calendar you use. We sync bidirectionally in real-time.',
+            note: '2-minute setup',
           },
           {
-            title: "Set Your Preferences",
+            title: 'Set Your Preferences',
             description:
-              "Tell Chrono AI your working hours, focus time preferences, meeting limits, and buffer times between calls.",
-            note: "Fully customizable",
+              'Tell Chrono AI your working hours, focus time preferences, meeting limits, and buffer times between calls.',
+            note: 'Fully customizable',
           },
           {
-            title: "Let AI Take Over",
+            title: 'Let AI Take Over',
             description:
-              "Chrono AI starts scheduling, resolving conflicts, and protecting your focus time automatically.",
-            note: "Works 24/7",
+              'Chrono AI starts scheduling, resolving conflicts, and protecting your focus time automatically.',
+            note: 'Works 24/7',
           },
         ]
 
-    const galleryTag = props.gallery?.tag ?? "Product Gallery"
+    const galleryTag = props.gallery?.tag ?? 'Product Gallery'
     const galleryHeading =
-      props.gallery?.heading ??
-      "A beautiful interface for complex scheduling"
+      props.gallery?.heading ?? 'A beautiful interface for complex scheduling'
     const galleryDesc =
       props.gallery?.description ??
-      "Every pixel designed to reduce cognitive load and make calendar management effortless."
+      'Every pixel designed to reduce cognitive load and make calendar management effortless.'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
           {
-            title: "Unified Calendar View",
-            description: "See all your calendars in one intelligent timeline",
-            alt: "modern calendar dashboard interface showing weekly schedule with colorful event blocks",
+            title: 'Unified Calendar View',
+            description: 'See all your calendars in one intelligent timeline',
+            alt: 'modern calendar dashboard interface showing weekly schedule with colorful event blocks',
             w: 1200,
             h: 700,
-            span: "md:col-span-2 lg:col-span-2",
-            tag: "Dashboard",
+            span: 'md:col-span-2 lg:col-span-2',
+            tag: 'Dashboard',
           },
           {
-            title: "Time Analytics",
-            description: "Insights into your meeting patterns",
-            alt: "analytics dashboard showing colorful pie charts and productivity metrics",
+            title: 'Time Analytics',
+            description: 'Insights into your meeting patterns',
+            alt: 'analytics dashboard showing colorful pie charts and productivity metrics',
             w: 600,
             h: 400,
           },
           {
-            title: "Mobile App",
-            description: "Manage on the go",
-            alt: "mobile phone showing a scheduling app interface held in hand",
+            title: 'Mobile App',
+            description: 'Manage on the go',
+            alt: 'mobile phone showing a scheduling app interface held in hand',
             w: 600,
             h: 400,
           },
           {
-            title: "Team Scheduling",
-            description: "Coordinate across your entire organization",
-            alt: "team collaboration meeting with diverse professionals around a conference table with laptops",
+            title: 'Team Scheduling',
+            description: 'Coordinate across your entire organization',
+            alt: 'team collaboration meeting with diverse professionals around a conference table with laptops',
             w: 800,
             h: 500,
-            span: "md:col-span-2",
-            tag: "Teams",
+            span: 'md:col-span-2',
+            tag: 'Teams',
           },
         ]
 
-    const pricingTag = props.pricing?.tag ?? "Pricing"
+    const pricingTag = props.pricing?.tag ?? 'Pricing'
     const pricingHeading =
-      props.pricing?.heading ?? "Simple pricing for every stage"
+      props.pricing?.heading ?? 'Simple pricing for every stage'
     const pricingDesc =
       props.pricing?.description ??
       "Start free, upgrade when you're ready. No hidden fees, no surprise charges."
@@ -409,191 +522,189 @@ export const SaasKimiPage10 = defineCapsule({
       ? props.pricing.plans
       : [
           {
-            name: "Starter",
-            description: "For individual professionals",
-            price: "$0",
-            period: "/month",
+            name: 'Starter',
+            description: 'For individual professionals',
+            price: '$0',
+            period: '/month',
             features: [
-              "1 calendar connection",
-              "Basic AI scheduling",
-              "10 meetings/month",
-              "Email reminders",
+              '1 calendar connection',
+              'Basic AI scheduling',
+              '10 meetings/month',
+              'Email reminders',
             ],
-            cta: "Get Started Free",
+            cta: 'Get Started Free',
             popular: false,
           },
           {
-            name: "Pro",
-            description: "For busy professionals",
-            price: "$12",
-            period: "/month",
+            name: 'Pro',
+            description: 'For busy professionals',
+            price: '$12',
+            period: '/month',
             features: [
-              "Unlimited calendars",
-              "Advanced AI conflict resolution",
-              "Unlimited meetings",
-              "Focus time protection",
-              "Custom booking links",
-              "Analytics dashboard",
+              'Unlimited calendars',
+              'Advanced AI conflict resolution',
+              'Unlimited meetings',
+              'Focus time protection',
+              'Custom booking links',
+              'Analytics dashboard',
             ],
-            cta: "Start 14-Day Free Trial",
+            cta: 'Start 14-Day Free Trial',
             popular: true,
           },
           {
-            name: "Team",
-            description: "For growing teams",
-            price: "$29",
-            period: "/user/month",
+            name: 'Team',
+            description: 'For growing teams',
+            price: '$29',
+            period: '/user/month',
             features: [
-              "Everything in Pro",
-              "Team scheduling optimization",
-              "Shared team calendars",
-              "Admin controls & insights",
-              "Priority support",
-              "SSO & advanced security",
+              'Everything in Pro',
+              'Team scheduling optimization',
+              'Shared team calendars',
+              'Admin controls & insights',
+              'Priority support',
+              'SSO & advanced security',
             ],
-            cta: "Contact Sales",
+            cta: 'Contact Sales',
             popular: false,
           },
         ]
     const pricingNote =
       props.pricing?.note ??
-      "All plans include a 14-day free trial. No credit card required."
+      'All plans include a 14-day free trial. No credit card required.'
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "12,000+", label: "Active Professionals" },
-          { value: "2.4M", label: "Meetings Scheduled" },
-          { value: "847K", label: "Hours Saved" },
-          { value: "98.7%", label: "Satisfaction Rate" },
+          { value: '12,000+', label: 'Active Professionals' },
+          { value: '2.4M', label: 'Meetings Scheduled' },
+          { value: '847K', label: 'Hours Saved' },
+          { value: '98.7%', label: 'Satisfaction Rate' },
         ]
 
-    const testimonialsTag = props.testimonials?.tag ?? "Reviews"
+    const testimonialsTag = props.testimonials?.tag ?? 'Reviews'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Loved by professionals worldwide"
+      props.testimonials?.heading ?? 'Loved by professionals worldwide'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "See how Chrono AI is transforming the way people work."
+      'See how Chrono AI is transforming the way people work.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
               "Chrono AI has completely eliminated the back-and-forth of scheduling. What used to take 15 emails now happens automatically. I've reclaimed 6+ hours every week.",
-            name: "Sarah Chen",
-            role: "Product Manager at Notion",
-            alt: "professional headshot of Sarah Chen a product manager with shoulder length dark hair",
+            name: 'Sarah Chen',
+            role: 'Product Manager at Notion',
+            alt: 'professional headshot of Sarah Chen a product manager with shoulder length dark hair',
           },
           {
             quote:
               "The AI conflict resolution is magic. It caught a double-booking I didn't even notice and suggested a perfect alternative that worked for everyone. Game changer.",
-            name: "Marcus Johnson",
-            role: "Engineering Manager at Stripe",
-            alt: "professional headshot of Marcus Johnson an engineering manager with short hair and friendly smile",
+            name: 'Marcus Johnson',
+            role: 'Engineering Manager at Stripe',
+            alt: 'professional headshot of Marcus Johnson an engineering manager with short hair and friendly smile',
           },
           {
             quote:
               "As a founder, my time is my most valuable asset. Chrono AI's focus time protection ensures I get uninterrupted blocks for deep work. Indispensable.",
-            name: "Elena Rodriguez",
-            role: "CEO at Brightpath",
-            alt: "professional headshot of Elena Rodriguez a startup founder with blonde hair in professional attire",
+            name: 'Elena Rodriguez',
+            role: 'CEO at Brightpath',
+            alt: 'professional headshot of Elena Rodriguez a startup founder with blonde hair in professional attire',
           },
           {
             quote:
-              "Rolled this out to our 50-person team and saw an immediate 30% reduction in scheduling overhead. The ROI was clear within the first week.",
-            name: "David Kim",
-            role: "Operations Director at Linear",
-            alt: "professional headshot of David Kim an operations director with glasses and short dark hair",
+              'Rolled this out to our 50-person team and saw an immediate 30% reduction in scheduling overhead. The ROI was clear within the first week.',
+            name: 'David Kim',
+            role: 'Operations Director at Linear',
+            alt: 'professional headshot of David Kim an operations director with glasses and short dark hair',
           },
           {
             quote:
-              "The analytics helped me realize I was spending 70% of my day in meetings. Chrono AI helped me reclaim 15 hours per week for actual work.",
-            name: "Jennifer Walsh",
-            role: "Design Lead at Figma",
-            alt: "professional headshot of Jennifer Walsh a design lead with curly brown hair and confident expression",
+              'The analytics helped me realize I was spending 70% of my day in meetings. Chrono AI helped me reclaim 15 hours per week for actual work.',
+            name: 'Jennifer Walsh',
+            role: 'Design Lead at Figma',
+            alt: 'professional headshot of Jennifer Walsh a design lead with curly brown hair and confident expression',
           },
           {
             quote:
-              "Working across 3 time zones used to be a nightmare. Chrono AI finds optimal meeting times automatically. My international team loves it.",
-            name: "Ahmed Hassan",
-            role: "Remote Team Lead at GitLab",
-            alt: "professional headshot of Ahmed Hassan a remote team lead with beard and warm smile",
+              'Working across 3 time zones used to be a nightmare. Chrono AI finds optimal meeting times automatically. My international team loves it.',
+            name: 'Ahmed Hassan',
+            role: 'Remote Team Lead at GitLab',
+            alt: 'professional headshot of Ahmed Hassan a remote team lead with beard and warm smile',
           },
         ]
 
-    const faqTag = props.faq?.tag ?? "FAQ"
-    const faqHeading =
-      props.faq?.heading ?? "Frequently asked questions"
+    const faqTag = props.faq?.tag ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Frequently asked questions'
     const faqDesc =
-      props.faq?.description ??
-      "Everything you need to know about Chrono AI."
+      props.faq?.description ?? 'Everything you need to know about Chrono AI.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "How does the AI conflict resolution work?",
+            question: 'How does the AI conflict resolution work?',
             answer:
-              "When Chrono AI detects a scheduling conflict, it analyzes the priority of each meeting, the availability of all participants, and your preferences. It then suggests alternative times, sends reschedule requests, and updates all calendars automatically. You can review and approve, or let it handle everything hands-free.",
+              'When Chrono AI detects a scheduling conflict, it analyzes the priority of each meeting, the availability of all participants, and your preferences. It then suggests alternative times, sends reschedule requests, and updates all calendars automatically. You can review and approve, or let it handle everything hands-free.',
           },
           {
-            question: "Which calendar platforms do you support?",
+            question: 'Which calendar platforms do you support?',
             answer:
-              "We currently support Google Calendar, Microsoft Outlook/Exchange, Apple Calendar, Calendly, and any calendar that supports CalDAV. You can connect multiple calendars from different providers and Chrono AI will keep them all in sync.",
+              'We currently support Google Calendar, Microsoft Outlook/Exchange, Apple Calendar, Calendly, and any calendar that supports CalDAV. You can connect multiple calendars from different providers and Chrono AI will keep them all in sync.',
           },
           {
-            question: "Is my calendar data secure?",
+            question: 'Is my calendar data secure?',
             answer:
               "Absolutely. We use bank-level AES-256 encryption for all data at rest and TLS 1.3 for data in transit. We're SOC 2 Type II certified and GDPR compliant. Your data is never used to train our AI models, and we never sell or share your information with third parties.",
           },
           {
-            question: "Can I try Chrono AI before committing?",
+            question: 'Can I try Chrono AI before committing?',
             answer:
-              "Yes! Every plan includes a 14-day free trial with full access to all features. No credit card required to start. You can upgrade, downgrade, or cancel at any time.",
+              'Yes! Every plan includes a 14-day free trial with full access to all features. No credit card required to start. You can upgrade, downgrade, or cancel at any time.',
           },
           {
-            question: "How does the team plan work?",
+            question: 'How does the team plan work?',
             answer:
-              "Team plans include all Pro features plus shared team calendars, collective scheduling optimization, admin analytics, and advanced permissions. You pay per active user, and we offer volume discounts for teams of 50+.",
+              'Team plans include all Pro features plus shared team calendars, collective scheduling optimization, admin analytics, and advanced permissions. You pay per active user, and we offer volume discounts for teams of 50+.',
           },
           {
-            question: "What happens if I want to cancel?",
+            question: 'What happens if I want to cancel?',
             answer:
-              "You can cancel anytime with no penalties. Your data remains accessible for 30 days after cancellation, giving you plenty of time to export if needed. We also offer prorated refunds for annual plans if you cancel within 30 days.",
+              'You can cancel anytime with no penalties. Your data remains accessible for 30 days after cancellation, giving you plenty of time to export if needed. We also offer prorated refunds for annual plans if you cancel within 30 days.',
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to reclaim your time?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to reclaim your time?'
     const ctaSub =
       props.cta?.subheading ??
-      "Join 12,000+ professionals who have transformed their productivity with Chrono AI. Start your free 14-day trial today."
-    const ctaPrimary = props.cta?.primaryCta ?? "Start Free Trial"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Watch Demo"
+      'Join 12,000+ professionals who have transformed their productivity with Chrono AI. Start your free 14-day trial today.'
+    const ctaPrimary = props.cta?.primaryCta ?? 'Start Free Trial'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'Watch Demo'
     const ctaFine =
       props.cta?.finePrint ??
-      "No credit card required \u2022 14-day free trial \u2022 Cancel anytime"
+      'No credit card required \u2022 14-day free trial \u2022 Cancel anytime'
 
     const footerDesc =
       props.footer?.description ??
-      "Intelligent calendar and scheduling assistant that uses AI to automatically schedule meetings, resolve conflicts, and optimize your day."
+      'Intelligent calendar and scheduling assistant that uses AI to automatically schedule meetings, resolve conflicts, and optimize your day.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Product",
-            links: ["Features", "Pricing", "Integrations", "API", "Changelog"],
+            title: 'Product',
+            links: ['Features', 'Pricing', 'Integrations', 'API', 'Changelog'],
           },
           {
-            title: "Company",
-            links: ["About", "Blog", "Careers", "Press", "Contact"],
+            title: 'Company',
+            links: ['About', 'Blog', 'Careers', 'Press', 'Contact'],
           },
           {
-            title: "Resources",
+            title: 'Resources',
             links: [
-              "Documentation",
-              "Help Center",
-              "Community",
-              "Webinars",
-              "FAQ",
+              'Documentation',
+              'Help Center',
+              'Community',
+              'Webinars',
+              'FAQ',
             ],
           },
         ]
@@ -696,19 +807,34 @@ export const SaasKimiPage10 = defineCapsule({
       </svg>
     )
 
+    const ChevronDown = () => (
+      <svg
+        className="size-5 text-muted-foreground"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    )
+
     const featureIconTints = [
-      "bg-primary/10 text-primary",
-      "bg-accent/10 text-accent",
-      "bg-chart-2/10 text-chart-2",
-      "bg-chart-1/10 text-chart-1",
-      "bg-chart-4/10 text-chart-4",
-      "bg-chart-5/10 text-chart-5",
+      'bg-primary/10 text-primary',
+      'bg-accent/10 text-accent',
+      'bg-chart-2/10 text-chart-2',
+      'bg-chart-1/10 text-chart-1',
+      'bg-chart-4/10 text-chart-4',
+      'bg-chart-5/10 text-chart-5',
     ]
 
     return (
       <div
         className={cn(
-          "flex min-h-svh flex-col bg-background text-foreground antialiased",
+          'flex min-h-svh flex-col bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -741,13 +867,247 @@ export const SaasKimiPage10 = defineCapsule({
               ))}
             </ul>
             <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go("Sign In")}
-                className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-              >
-                Sign In
-              </button>
+              <Sheet open={meetingsOpen} onOpenChange={setMeetingsOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Your Schedule"
+                    className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground sm:flex"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                    <span className="text-sm font-medium">Schedule</span>
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Your Schedule</SheetTitle>
+                    <SheetDescription>
+                      {schedule.length} meeting
+                      {schedule.length === 1 ? '' : 's'} today
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    <div className="space-y-3">
+                      {schedule.map((row, i) => (
+                        <div
+                          key={i}
+                          className={cn(
+                            'flex items-center gap-3 rounded-xl border border-border/60 p-3',
+                            row.tone === 'primary'
+                              ? 'bg-primary/10'
+                              : row.tone === 'accent'
+                                ? 'bg-accent/10'
+                                : row.tone === 'muted'
+                                  ? 'bg-muted opacity-60'
+                                  : 'bg-background',
+                            row.tone === 'muted' && 'line-through',
+                          )}
+                        >
+                          <div className="w-12 text-center">
+                            <p
+                              className={cn(
+                                'text-xs',
+                                row.tone === 'primary'
+                                  ? 'text-primary'
+                                  : 'text-muted-foreground',
+                              )}
+                            >
+                              {row.time.split(' ')[0]}
+                            </p>
+                            <p
+                              className={cn(
+                                'text-xs',
+                                row.tone === 'primary'
+                                  ? 'text-primary'
+                                  : 'text-muted-foreground',
+                              )}
+                            >
+                              {row.time.split(' ')[1]}
+                            </p>
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-foreground">
+                              {row.title}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {row.note}
+                            </p>
+                          </div>
+                          {row.tone === 'primary' && (
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="text-primary"
+                              aria-hidden="true"
+                            >
+                              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                            </svg>
+                          )}
+                          {row.tone === 'muted' && (
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="text-muted-foreground"
+                              aria-hidden="true"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <Button
+                      type="button"
+                      className="w-full rounded-full"
+                      onClick={() => go(heroPrimary)}
+                    >
+                      Schedule New Meeting
+                    </Button>
+                    <SheetClose asChild>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full rounded-full"
+                      >
+                        Close
+                      </Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Settings')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Settings
+                        <ArrowRight />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => go(heroPrimary)}
@@ -797,6 +1157,58 @@ export const SaasKimiPage10 = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3">
+                  {isSignedIn ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false)
+                          handleSignOut()
+                        }}
+                        className="w-full rounded-full"
+                      >
+                        Sign out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        handleSignIn()
+                      }}
+                      disabled={auth.isLoading}
+                      className="w-full rounded-full"
+                    >
+                      <span className="mr-2 grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                        G
+                      </span>
+                      {authLabel}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -852,19 +1264,24 @@ export const SaasKimiPage10 = defineCapsule({
                   <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground lg:justify-start">
                     <div className="flex" aria-hidden="true">
                       {[
-                        "professional headshot of a smiling woman with dark hair",
-                        "professional headshot of a man with short brown hair and friendly smile",
-                        "professional headshot of a woman with blonde hair and warm smile",
-                        "professional headshot of a man with glasses and beard",
+                        'professional headshot of a smiling woman with dark hair',
+                        'professional headshot of a man with short brown hair and friendly smile',
+                        'professional headshot of a woman with blonde hair and warm smile',
+                        'professional headshot of a man with glasses and beard',
                       ].map((alt, i) => (
                         <span
                           key={i}
                           className={cn(
-                            "block size-8 shrink-0 overflow-hidden rounded-full border-2 border-background",
-                            i > 0 && "-ml-2",
+                            'block size-8 shrink-0 overflow-hidden rounded-full border-2 border-background',
+                            i > 0 && '-ml-2',
                           )}
                         >
-                          <Image alt={alt} w={64} h={64} className="size-full object-cover" />
+                          <Image
+                            alt={alt}
+                            w={64}
+                            h={64}
+                            className="size-full object-cover"
+                          />
                         </span>
                       ))}
                     </div>
@@ -909,37 +1326,37 @@ export const SaasKimiPage10 = defineCapsule({
                           <div
                             key={i}
                             className={cn(
-                              "flex items-center gap-3 rounded-xl border border-border/60 p-3",
-                              row.tone === "primary"
-                                ? "bg-primary/10"
-                                : row.tone === "accent"
-                                  ? "bg-accent/10"
-                                  : row.tone === "muted"
-                                    ? "bg-muted opacity-60"
-                                    : "bg-background",
-                              row.tone === "muted" && "line-through",
+                              'flex items-center gap-3 rounded-xl border border-border/60 p-3',
+                              row.tone === 'primary'
+                                ? 'bg-primary/10'
+                                : row.tone === 'accent'
+                                  ? 'bg-accent/10'
+                                  : row.tone === 'muted'
+                                    ? 'bg-muted opacity-60'
+                                    : 'bg-background',
+                              row.tone === 'muted' && 'line-through',
                             )}
                           >
                             <div className="w-12 text-center">
                               <p
                                 className={cn(
-                                  "text-xs",
-                                  row.tone === "primary"
-                                    ? "text-primary"
-                                    : "text-muted-foreground",
+                                  'text-xs',
+                                  row.tone === 'primary'
+                                    ? 'text-primary'
+                                    : 'text-muted-foreground',
                                 )}
                               >
-                                {row.time.split(" ")[0]}
+                                {row.time.split(' ')[0]}
                               </p>
                               <p
                                 className={cn(
-                                  "text-xs",
-                                  row.tone === "primary"
-                                    ? "text-primary"
-                                    : "text-muted-foreground",
+                                  'text-xs',
+                                  row.tone === 'primary'
+                                    ? 'text-primary'
+                                    : 'text-muted-foreground',
                                 )}
                               >
-                                {row.time.split(" ")[1]}
+                                {row.time.split(' ')[1]}
                               </p>
                             </div>
                             <div className="flex-1">
@@ -950,7 +1367,7 @@ export const SaasKimiPage10 = defineCapsule({
                                 {row.note}
                               </p>
                             </div>
-                            {row.tone === "primary" && (
+                            {row.tone === 'primary' && (
                               <svg
                                 width="20"
                                 height="20"
@@ -966,7 +1383,7 @@ export const SaasKimiPage10 = defineCapsule({
                                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                               </svg>
                             )}
-                            {row.tone === "muted" && (
+                            {row.tone === 'muted' && (
                               <svg
                                 width="20"
                                 height="20"
@@ -1123,9 +1540,7 @@ export const SaasKimiPage10 = defineCapsule({
                 <h2 className="mb-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                   {featuresHeading}
                 </h2>
-                <p className="text-lg text-muted-foreground">
-                  {featuresDesc}
-                </p>
+                <p className="text-lg text-muted-foreground">{featuresDesc}</p>
               </div>
 
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -1136,7 +1551,7 @@ export const SaasKimiPage10 = defineCapsule({
                   >
                     <div
                       className={cn(
-                        "mb-4 grid size-12 place-items-center rounded-xl transition-transform group-hover:scale-110",
+                        'mb-4 grid size-12 place-items-center rounded-xl transition-transform group-hover:scale-110',
                         featureIconTints[i % featureIconTints.length],
                       )}
                     >
@@ -1199,7 +1614,14 @@ export const SaasKimiPage10 = defineCapsule({
                           strokeLinejoin="round"
                           aria-hidden="true"
                         >
-                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                          <rect
+                            x="3"
+                            y="4"
+                            width="18"
+                            height="18"
+                            rx="2"
+                            ry="2"
+                          />
                           <line x1="16" y1="2" x2="16" y2="6" />
                           <line x1="8" y1="2" x2="8" y2="6" />
                           <line x1="3" y1="10" x2="21" y2="10" />
@@ -1253,9 +1675,7 @@ export const SaasKimiPage10 = defineCapsule({
                   <div className="mb-6 flex items-start justify-between">
                     <div>
                       <h3 className="mb-2 text-xl font-bold">{focusTitle}</h3>
-                      <p className="text-sm text-background/70">
-                        {focusDesc}
-                      </p>
+                      <p className="text-sm text-background/70">{focusDesc}</p>
                     </div>
                     <div className="grid size-12 place-items-center rounded-xl bg-background/10">
                       <svg
@@ -1270,14 +1690,24 @@ export const SaasKimiPage10 = defineCapsule({
                         className="text-primary"
                         aria-hidden="true"
                       >
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <rect
+                          x="3"
+                          y="11"
+                          width="18"
+                          height="11"
+                          rx="2"
+                          ry="2"
+                        />
                         <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                       </svg>
                     </div>
                   </div>
                   <div className="space-y-3">
                     {focusBullets.map((b) => (
-                      <div key={b} className="flex items-center gap-3 text-sm text-background/90">
+                      <div
+                        key={b}
+                        className="flex items-center gap-3 text-sm text-background/90"
+                      >
                         <Check />
                         {b}
                       </div>
@@ -1308,7 +1738,14 @@ export const SaasKimiPage10 = defineCapsule({
                         className="text-primary"
                         aria-hidden="true"
                       >
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <rect
+                          x="3"
+                          y="4"
+                          width="18"
+                          height="18"
+                          rx="2"
+                          ry="2"
+                        />
                         <line x1="16" y1="2" x2="16" y2="6" />
                         <line x1="8" y1="2" x2="8" y2="6" />
                         <line x1="3" y1="10" x2="21" y2="10" />
@@ -1328,36 +1765,36 @@ export const SaasKimiPage10 = defineCapsule({
                     </div>
                     <div className="grid grid-cols-4 gap-2">
                       {schedSlots.map((slot) => (
-                        <div
+                        <button
                           key={slot.day}
+                          type="button"
+                          onClick={() => void toggleSlot(slot.day, slot.time)}
                           className={cn(
-                            "rounded-lg border py-2 text-center",
+                            'rounded-lg border py-2 text-center transition-colors hover:border-primary/50',
                             slot.active
-                              ? "border-primary/30 bg-primary/10"
-                              : "border-border/60 bg-background",
+                              ? 'border-primary/30 bg-primary/10'
+                              : 'border-border/60 bg-background',
                           )}
                         >
                           <p
                             className={cn(
-                              "text-xs",
+                              'text-xs',
                               slot.active
-                                ? "text-primary"
-                                : "text-muted-foreground",
+                                ? 'text-primary'
+                                : 'text-muted-foreground',
                             )}
                           >
                             {slot.day}
                           </p>
                           <p
                             className={cn(
-                              "text-sm font-medium",
-                              slot.active
-                                ? "text-primary"
-                                : "text-foreground",
+                              'text-sm font-medium',
+                              slot.active ? 'text-primary' : 'text-foreground',
                             )}
                           >
                             {slot.time}
                           </p>
-                        </div>
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -1388,10 +1825,13 @@ export const SaasKimiPage10 = defineCapsule({
                   <article key={step.title} className="relative text-center">
                     <div
                       className={cn(
-                        "relative z-10 mx-auto mb-6 grid size-16 place-items-center rounded-2xl text-2xl font-bold text-primary-foreground shadow-lg",
-                        i === 0 && "bg-gradient-to-br from-primary to-primary/80 shadow-primary/25",
-                        i === 1 && "bg-gradient-to-br from-accent to-accent/80 shadow-accent/25",
-                        i === 2 && "bg-gradient-to-br from-chart-2 to-chart-2/80 shadow-chart-2/25",
+                        'relative z-10 mx-auto mb-6 grid size-16 place-items-center rounded-2xl text-2xl font-bold text-primary-foreground shadow-lg',
+                        i === 0 &&
+                          'bg-gradient-to-br from-primary to-primary/80 shadow-primary/25',
+                        i === 1 &&
+                          'bg-gradient-to-br from-accent to-accent/80 shadow-accent/25',
+                        i === 2 &&
+                          'bg-gradient-to-br from-chart-2 to-chart-2/80 shadow-chart-2/25',
                       )}
                     >
                       {i + 1}
@@ -1447,16 +1887,14 @@ export const SaasKimiPage10 = defineCapsule({
                 <h2 className="mb-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                   {galleryHeading}
                 </h2>
-                <p className="text-lg text-muted-foreground">
-                  {galleryDesc}
-                </p>
+                <p className="text-lg text-muted-foreground">{galleryDesc}</p>
               </div>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {galleryItems.map((item, i) => (
                   <div
                     key={i}
                     className={cn(
-                      "overflow-hidden rounded-2xl border border-border/60 bg-card p-4 shadow-sm",
+                      'overflow-hidden rounded-2xl border border-border/60 bg-card p-4 shadow-sm',
                       item.span,
                     )}
                   >
@@ -1498,9 +1936,7 @@ export const SaasKimiPage10 = defineCapsule({
                 <h2 className="mb-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                   {pricingHeading}
                 </h2>
-                <p className="text-lg text-muted-foreground">
-                  {pricingDesc}
-                </p>
+                <p className="text-lg text-muted-foreground">{pricingDesc}</p>
               </div>
 
               <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-3">
@@ -1508,10 +1944,10 @@ export const SaasKimiPage10 = defineCapsule({
                   <article
                     key={plan.name}
                     className={cn(
-                      "relative flex flex-col rounded-2xl p-8",
+                      'relative flex flex-col rounded-2xl p-8',
                       plan.popular
-                        ? "bg-gradient-to-br from-foreground to-foreground/80 text-background shadow-2xl shadow-primary/10"
-                        : "border border-border bg-muted",
+                        ? 'bg-gradient-to-br from-foreground to-foreground/80 text-background shadow-2xl shadow-primary/10'
+                        : 'border border-border bg-muted',
                     )}
                   >
                     {plan.popular && (
@@ -1524,18 +1960,18 @@ export const SaasKimiPage10 = defineCapsule({
                     <div className="mb-6">
                       <h3
                         className={cn(
-                          "text-lg font-semibold",
-                          plan.popular ? "text-background" : "text-foreground",
+                          'text-lg font-semibold',
+                          plan.popular ? 'text-background' : 'text-foreground',
                         )}
                       >
                         {plan.name}
                       </h3>
                       <p
                         className={cn(
-                          "mt-1 text-sm",
+                          'mt-1 text-sm',
                           plan.popular
-                            ? "text-background/70"
-                            : "text-muted-foreground",
+                            ? 'text-background/70'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {plan.description}
@@ -1544,8 +1980,8 @@ export const SaasKimiPage10 = defineCapsule({
                     <div className="mb-6">
                       <span
                         className={cn(
-                          "text-4xl font-bold",
-                          plan.popular ? "text-background" : "text-foreground",
+                          'text-4xl font-bold',
+                          plan.popular ? 'text-background' : 'text-foreground',
                         )}
                       >
                         {plan.price}
@@ -1553,8 +1989,8 @@ export const SaasKimiPage10 = defineCapsule({
                       <span
                         className={cn(
                           plan.popular
-                            ? "text-background/60"
-                            : "text-muted-foreground",
+                            ? 'text-background/60'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {plan.period}
@@ -1565,10 +2001,10 @@ export const SaasKimiPage10 = defineCapsule({
                         <li
                           key={feat}
                           className={cn(
-                            "flex items-center gap-3 text-sm",
+                            'flex items-center gap-3 text-sm',
                             plan.popular
-                              ? "text-background/90"
-                              : "text-muted-foreground",
+                              ? 'text-background/90'
+                              : 'text-muted-foreground',
                           )}
                         >
                           {plan.popular ? <CheckPrimary /> : <Check />}
@@ -1580,10 +2016,10 @@ export const SaasKimiPage10 = defineCapsule({
                       type="button"
                       onClick={() => go(plan.cta)}
                       className={cn(
-                        "mt-auto w-full rounded-xl py-3 px-4 font-semibold transition-all",
+                        'mt-auto w-full rounded-xl py-3 px-4 font-semibold transition-all',
                         plan.popular
-                          ? "bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-sm hover:shadow-lg hover:shadow-primary/25"
-                          : "border border-border bg-background text-foreground hover:bg-muted",
+                          ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-sm hover:shadow-lg hover:shadow-primary/25'
+                          : 'border border-border bg-background text-foreground hover:bg-muted',
                       )}
                     >
                       {plan.cta}
@@ -1593,9 +2029,7 @@ export const SaasKimiPage10 = defineCapsule({
               </div>
 
               <div className="mt-12 text-center">
-                <p className="text-sm text-muted-foreground">
-                  {pricingNote}
-                </p>
+                <p className="text-sm text-muted-foreground">{pricingNote}</p>
               </div>
             </div>
           </section>
@@ -1742,7 +2176,7 @@ export const SaasKimiPage10 = defineCapsule({
                   {footerDesc}
                 </p>
                 <div className="flex gap-4">
-                  {["Twitter", "GitHub", "LinkedIn"].map((social) => (
+                  {['Twitter', 'GitHub', 'LinkedIn'].map((social) => (
                     <button
                       key={social}
                       type="button"
@@ -1750,7 +2184,7 @@ export const SaasKimiPage10 = defineCapsule({
                       onClick={() => go(social)}
                       className="grid size-10 place-items-center rounded-full bg-background/10 text-background/70 transition-colors hover:bg-background/20"
                     >
-                      {social === "Twitter" && (
+                      {social === 'Twitter' && (
                         <svg
                           className="size-5"
                           viewBox="0 0 24 24"
@@ -1760,7 +2194,7 @@ export const SaasKimiPage10 = defineCapsule({
                           <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
                         </svg>
                       )}
-                      {social === "GitHub" && (
+                      {social === 'GitHub' && (
                         <svg
                           className="size-5"
                           viewBox="0 0 24 24"
@@ -1770,7 +2204,7 @@ export const SaasKimiPage10 = defineCapsule({
                           <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
                         </svg>
                       )}
-                      {social === "LinkedIn" && (
+                      {social === 'LinkedIn' && (
                         <svg
                           className="size-5"
                           viewBox="0 0 24 24"
@@ -1810,21 +2244,21 @@ export const SaasKimiPage10 = defineCapsule({
               <div className="flex gap-6">
                 <button
                   type="button"
-                  onClick={() => go("Privacy Policy")}
+                  onClick={() => go('Privacy Policy')}
                   className="transition-colors hover:text-background"
                 >
                   Privacy Policy
                 </button>
                 <button
                   type="button"
-                  onClick={() => go("Terms of Service")}
+                  onClick={() => go('Terms of Service')}
                   className="transition-colors hover:text-background"
                 >
                   Terms of Service
                 </button>
                 <button
                   type="button"
-                  onClick={() => go("Cookie Policy")}
+                  onClick={() => go('Cookie Policy')}
                   className="transition-colors hover:text-background"
                 >
                   Cookie Policy

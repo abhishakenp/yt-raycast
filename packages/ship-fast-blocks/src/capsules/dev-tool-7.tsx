@@ -1,9 +1,27 @@
-import { type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 export const DevToolKimiPage7 = defineCapsule({
   name: "DevToolKimiPage7",
@@ -146,12 +164,94 @@ export const DevToolKimiPage7 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      leadRequests: table({
+        section: string(),
+        action: string(),
+        destination: string(),
+        position: number(),
+      }),
+    },
+    queries: {
+      leadRequests: ({ db }) => db.leadRequests.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addLeadRequest: ({ db }, section: string, action: string, destination: string) => {
+        const position = db.leadRequests.all().length + 1
+
+        db.leadRequests.insert({
+          section,
+          action,
+          destination,
+          position,
+        })
+
+        return db.leadRequests.all()
+      },
+      removeLeadRequest: ({ db }, id: string) => {
+        const request = db.leadRequests.get(id)
+
+        if (request) {
+          db.leadRequests.delete(id)
+        }
+
+        return db.leadRequests.all()
+      },
+      clearLeadRequests: ({ db }) => {
+        for (const request of db.leadRequests.all()) {
+          db.leadRequests.delete(request.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [leadDrawerOpen, setLeadDrawerOpen] = useState(false)
     const brand = props.brand ?? "StreamAPI"
     const nav = props.nav?.length
       ? props.nav
       : ["Features", "Pricing", "Docs", "Integrations"]
+    const leadRequests = lakebed.useQuery("leadRequests") ?? []
+    const addLeadRequest = lakebed.useMutation("addLeadRequest")
+    const removeLeadRequest = lakebed.useMutation("removeLeadRequest")
+    const clearLeadRequests = lakebed.useMutation("clearLeadRequests")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join("") || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+
+    const trackAndNavigate = (
+      section: string,
+      action: string,
+      destination: string,
+    ) => {
+      void addLeadRequest(section, action, destination)
+      go(destination)
+    }
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
 
     const heroBadge =
       props.hero?.badge ?? "Now with real-time WebSocket streaming"
@@ -676,6 +776,7 @@ const stream = await client.createStream({
     ]
 
     const stepColors = ["bg-primary", "bg-secondary", "bg-chart-1"]
+    const leadCount = leadRequests.length
 
     return (
       <div
@@ -694,7 +795,7 @@ const stream = await client.createStream({
             <div className="flex h-16 items-center justify-between lg:h-20">
               <button
                 type="button"
-                onClick={() => go(nav[0])}
+                onClick={() => trackAndNavigate("Header", "Home", nav[0])}
                 className="flex items-center gap-2"
               >
                 <BoltMark className="size-8" />
@@ -707,7 +808,9 @@ const stream = await client.createStream({
                   <button
                     key={label}
                     type="button"
-                    onClick={() => go(label)}
+                    onClick={() =>
+                      trackAndNavigate("Header", `Go to ${label}`, label)
+                    }
                     className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {label}
@@ -715,20 +818,186 @@ const stream = await client.createStream({
                 ))}
               </div>
               <div className="flex items-center gap-4">
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Open account menu"
+                        className="hidden h-10 items-center gap-2 rounded-full border border-border bg-background/90 px-3 py-1 font-semibold transition-colors sm:inline-flex"
+                      >
+                        <Avatar size="sm" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden text-sm text-muted-foreground md:block">
+                          {authLabel}
+                        </span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="end"
+                      sideOffset={12}
+                      className="w-64 rounded-xl border-border bg-background p-2"
+                    >
+                      <div className="mb-2 rounded-lg bg-muted/40 px-3 py-3">
+                        <p className="truncate text-sm font-semibold text-foreground">
+                          {authDisplayName}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {authEmail ?? "Signed in to this session"}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => trackAndNavigate("Header", "Account", "Account")}
+                        className="mb-1 w-full rounded-md px-3 py-2 text-left text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                      >
+                        Account
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleSignOut()
+                          setLeadDrawerOpen(false)
+                        }}
+                        className="w-full rounded-md px-3 py-2 text-left text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                      >
+                        Sign out
+                      </button>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
+                  >
+                    {authLabel}
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={() => go("Sign In")}
-                  className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-                >
-                  Sign In
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(heroPrimary)}
+                  onClick={() =>
+                    trackAndNavigate("Hero", "Primary CTA", heroPrimary)
+                  }
                   className="inline-flex items-center rounded-lg bg-gradient-to-r from-primary to-secondary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
                 >
-                  Start free trial
+                  {heroPrimary}
                 </button>
+                <Sheet
+                  open={leadDrawerOpen}
+                  onOpenChange={setLeadDrawerOpen}
+                >
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open lead request drawer"
+                      className="relative inline-flex items-center justify-center rounded-lg border border-border bg-card/60 px-3 py-2 text-foreground transition-colors hover:bg-card/80"
+                    >
+                      <svg
+                        className="size-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path d="M15 17h5l-1.1 2.1a1 1 0 01-.9.9h-3a1 1 0 01-.9-1.4l.9-1.6z" />
+                        <path d="M12 17v4" />
+                        <path d="M16 8h3l.5 5H14" />
+                        <path d="M5 3h14a1 1 0 011 1v4H4V4a1 1 0 011-1z" />
+                        <path d="M4 8h16v11a1 1 0 01-1 1H5a1 1 0 01-1-1V8z" />
+                      </svg>
+                      {leadCount > 0 ? (
+                        <span className="absolute -right-2 -top-2 grid size-5 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                          {leadCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle className="text-xl">Session activity</SheetTitle>
+                      <SheetDescription>
+                        Real-time interactions captured for this session.
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {leadRequests.length ? (
+                        <div className="space-y-3">
+                          {leadRequests.map((request) => (
+                            <article
+                              key={request.id}
+                              className="rounded-lg border border-border p-3"
+                            >
+                              <p className="text-sm font-semibold text-foreground">
+                                {request.action}
+                              </p>
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {request.section} • {request.destination}
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => void removeLeadRequest(request.id)}
+                                className="mt-2 text-xs font-semibold text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+                              >
+                                Remove
+                              </button>
+                            </article>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="rounded-lg border border-dashed border-border bg-muted/40 p-6 text-center text-sm text-muted-foreground">
+                          No tracked actions yet.
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="border-t border-border p-6">
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <span>
+                          Total actions
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          {leadRequests.length}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="rounded-full"
+                          onClick={() => void clearLeadRequests()}
+                          disabled={!leadRequests.length}
+                        >
+                          Clear
+                        </Button>
+                        <SheetClose asChild>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="rounded-full"
+                          >
+                            Done
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
               </div>
             </div>
           </div>
@@ -769,14 +1038,18 @@ const stream = await client.createStream({
                   <div className="flex flex-col gap-4 justify-center lg:justify-start mb-8 sm:flex-row">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() =>
+                        trackAndNavigate("Hero", "Primary CTA", heroPrimary)
+                      }
                       className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-secondary px-8 py-4 font-semibold text-primary-foreground transition-opacity hover:opacity-90 text-center shadow-xl"
                     >
                       {heroPrimary}
                     </button>
                     <button
                       type="button"
-                      onClick={() => go(heroSecondary)}
+                      onClick={() =>
+                        trackAndNavigate("Hero", "Secondary CTA", heroSecondary)
+                      }
                       className="inline-flex items-center justify-center rounded-xl bg-card/40 border border-border/50 px-8 py-4 font-semibold text-foreground transition-colors hover:bg-card/60 backdrop-blur-sm text-center"
                     >
                       {heroSecondary}
@@ -860,7 +1133,9 @@ const stream = await client.createStream({
                   >
                     <button
                       type="button"
-                      onClick={() => go(company)}
+                      onClick={() =>
+                        trackAndNavigate("Trusted by logos", company, company)
+                      }
                       className="text-lg font-semibold text-muted-foreground transition-colors hover:text-foreground"
                     >
                       {company}
@@ -905,7 +1180,9 @@ const stream = await client.createStream({
                     </p>
                     <button
                       type="button"
-                      onClick={() => go(item.title)}
+                      onClick={() =>
+                        trackAndNavigate("Features", `${featuresLearnMore}`, item.title)
+                      }
                       className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary/80"
                     >
                       {featuresLearnMore}
@@ -993,7 +1270,9 @@ const stream = await client.createStream({
                   >
                     <button
                       type="button"
-                      onClick={() => go(item.title)}
+                      onClick={() =>
+                        trackAndNavigate("Gallery", item.title, item.title)
+                      }
                       className="block w-full overflow-hidden"
                     >
                       <Image
@@ -1120,7 +1399,9 @@ const stream = await client.createStream({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(tier.cta)}
+                      onClick={() =>
+                        trackAndNavigate("Pricing", tier.name, tier.cta)
+                      }
                       className={cn(
                         "block w-full rounded-xl px-4 py-3 text-center font-semibold transition-all",
                         tier.featured
@@ -1256,14 +1537,16 @@ const stream = await client.createStream({
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={() => trackAndNavigate("CTA", "Primary CTA", ctaPrimary)}
                   className="rounded-xl bg-gradient-to-r from-primary to-secondary px-8 py-4 font-semibold text-primary-foreground shadow-xl transition-opacity hover:opacity-90"
                 >
                   {ctaPrimary}
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(ctaSecondary)}
+                  onClick={() =>
+                    trackAndNavigate("CTA", "Secondary CTA", ctaSecondary)
+                  }
                   className="rounded-xl border border-border bg-card/40 px-8 py-4 font-semibold text-foreground backdrop-blur-sm transition-colors hover:bg-card/60"
                 >
                   {ctaSecondary}
@@ -1286,7 +1569,7 @@ const stream = await client.createStream({
               <div className="lg:col-span-2">
                 <button
                   type="button"
-                  onClick={() => go(nav[0])}
+                  onClick={() => trackAndNavigate("Footer", "Back to top", nav[0])}
                   className="mb-4 flex items-center gap-2"
                 >
                   <BoltMark className="size-8" />
@@ -1316,7 +1599,7 @@ const stream = await client.createStream({
                       key={name}
                       type="button"
                       aria-label={name}
-                      onClick={() => go(name)}
+                      onClick={() => trackAndNavigate("Footer Social", name, name)}
                       className="grid size-10 place-items-center rounded-lg bg-card/40 text-muted-foreground transition-all hover:bg-card/60 hover:text-foreground"
                     >
                       <svg
@@ -1341,7 +1624,7 @@ const stream = await client.createStream({
                       <li key={link}>
                         <button
                           type="button"
-                          onClick={() => go(link)}
+                          onClick={() => trackAndNavigate("Footer", "Column link", link)}
                           className="text-muted-foreground transition-colors hover:text-foreground"
                         >
                           {link}
@@ -1359,7 +1642,7 @@ const stream = await client.createStream({
                   <button
                     key={link}
                     type="button"
-                    onClick={() => go(link)}
+                    onClick={() => trackAndNavigate("Footer", "Legal link", link)}
                     className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {link}

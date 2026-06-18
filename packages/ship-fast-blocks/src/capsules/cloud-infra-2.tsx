@@ -1,9 +1,19 @@
-import { type ReactNode } from "react"
+import { type ReactNode, useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * CloudInfraKimiPage2 — TEMPLATE VARIANT 2 (a visually DISTINCT sibling to
@@ -205,8 +215,101 @@ export const CloudInfraKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      deploymentQueue: table({
+        plan: string(),
+        source: string(),
+        cta: string(),
+      }),
+    },
+    queries: {
+      deploymentQueue: ({ db }) => db.deploymentQueue.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addDeploymentPlan: ({ db }, plan: string, source: string, cta: string) => {
+        db.deploymentQueue.insert({
+          plan,
+          source,
+          cta,
+        })
+        return db.deploymentQueue.all()
+      },
+      removeDeploymentPlan: ({ db }, id: string) => {
+        for (const row of db.deploymentQueue.where("id", id).all()) {
+          db.deploymentQueue.delete(row.id)
+        }
+        return db.deploymentQueue.all()
+      },
+      clearDeploymentQueue: ({ db }) => {
+        for (const row of db.deploymentQueue.all()) {
+          db.deploymentQueue.delete(row.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [queueOpen, setQueueOpen] = useState(false)
+    const queueData = lakebed.useQuery("deploymentQueue")
+    const addDeploymentPlan = lakebed.useMutation("addDeploymentPlan")
+    const removeDeploymentPlan = lakebed.useMutation("removeDeploymentPlan")
+    const clearDeploymentQueue = lakebed.useMutation("clearDeploymentQueue")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+    const deploymentQueue = queueData ?? []
+    const deploymentQueueCount = deploymentQueue.length
+    const deploymentQueueHasItems = deploymentQueueCount > 0
+    const planRateTable = {
+      Starter: 0,
+      Pro: 29,
+      Enterprise: 0,
+    }
+    const queueSubtotal = deploymentQueue.reduce((acc, row) => {
+      const rate = planRateTable[row.plan as keyof typeof planRateTable]
+      return Number.isFinite(rate) ? acc + rate : acc
+    }, 0)
+    const queueHasEnterprise = deploymentQueue.some(
+      (row) =>
+        row.plan.toLowerCase() === "enterprise" ||
+        row.plan.toLowerCase() === "enterprise plan",
+    )
+    const queueAmount = queueHasEnterprise
+      ? "Custom"
+      : queueSubtotal > 0
+        ? `$${queueSubtotal.toFixed(2)}/month`
+        : "Starter free"
+    const handleQueueCta = (
+      plan: string,
+      source: string,
+      cta: string,
+      destination: string,
+    ) => {
+      void addDeploymentPlan(plan, source, cta)
+      setQueueOpen(true)
+      go(destination)
+    }
+    const handleAuthPrimary = () => {
+      if (auth.isLoading) return
+      if (isSignedIn) {
+        go("Account")
+        return
+      }
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
     const brand = props.brand ?? "CloudScale"
     const nav = props.nav?.length
       ? props.nav
@@ -828,22 +931,143 @@ export const CloudInfraKimiPage2 = defineCapsule({
               <div className="flex items-center gap-3 lg:gap-4">
                 <button
                   type="button"
-                  onClick={() => go("Sign in")}
+                  onClick={handleAuthPrimary}
                   className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
                 >
-                  Sign in
+                  {authLabel}
                 </button>
                 <button
                   type="button"
-                  onClick={() => go("Get Started")}
+                  onClick={() =>
+                    handleQueueCta(
+                      "Starter",
+                      "header",
+                      "Get Started",
+                      "Get Started",
+                    )
+                  }
                   className="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 lg:px-5 lg:py-2.5"
                 >
                   Get Started
                 </button>
+                {deploymentQueueHasItems ? (
+                  <button
+                    type="button"
+                    onClick={() => setQueueOpen(true)}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-accent text-accent-foreground"
+                  >
+                    {deploymentQueueCount}
+                  </button>
+                ) : null}
               </div>
             </div>
           </nav>
         </header>
+
+        <Sheet open={queueOpen} onOpenChange={setQueueOpen}>
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle>Deployment queue</SheetTitle>
+              <SheetDescription>
+                {deploymentQueueHasItems
+                  ? `${deploymentQueueCount} plan${deploymentQueueCount === 1 ? "" : "s"} added from this session`
+                  : "Add a plan from pricing or CTA to start your trial setup."}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {deploymentQueueHasItems ? (
+                <div className="space-y-4">
+                  {deploymentQueue.map((item) => (
+                    <div
+                      key={item.id}
+                      className="rounded-xl border border-border bg-muted/40 p-4"
+                    >
+                      <p className="font-semibold text-sm text-card-foreground">
+                        {item.plan}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {item.cta} · {item.source}
+                      </p>
+                      <div className="mt-4 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => void removeDeploymentPlan(item.id)}
+                          className="rounded-md border border-border px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:border-destructive hover:text-destructive"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                  <p className="text-base font-semibold text-foreground">
+                    Your deployment queue is empty
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Add a plan from pricing or primary CTAs to begin.
+                  </p>
+                </div>
+              )}
+            </div>
+            <SheetFooter className="flex flex-col gap-3 border-t border-border p-6">
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">
+                    Estimated monthly spend
+                  </span>
+                  <span className="font-semibold text-foreground">
+                    {queueAmount}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Items in queue</span>
+                  <span className="font-semibold text-foreground">
+                    {deploymentQueueCount}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setQueueOpen(false)
+                  go("Checkout")
+                }}
+                className="rounded-xl bg-primary px-4 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Continue to Checkout
+              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => void clearDeploymentQueue()}
+                  disabled={!deploymentQueueHasItems}
+                  className="rounded-xl border-2 border-border px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:border-foreground/30 disabled:pointer-events-none disabled:opacity-50"
+                >
+                  Clear queue
+                </button>
+                <SheetClose asChild>
+                  <button
+                    type="button"
+                    className="rounded-xl border-2 border-foreground/10 bg-muted/70 px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-foreground/20"
+                  >
+                    Continue browsing
+                  </button>
+                </SheetClose>
+              </div>
+              {isSignedIn ? (
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="rounded-xl border-2 border-border px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:border-destructive hover:text-destructive"
+                >
+                  Sign out
+                </button>
+              ) : null}
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
 
         <main>
           {/* Hero */}
@@ -879,7 +1103,14 @@ export const CloudInfraKimiPage2 = defineCapsule({
                   <div className="flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
                     <button
                       type="button"
-                      onClick={() => go(heroPrimary)}
+                      onClick={() =>
+                        handleQueueCta(
+                          "Starter",
+                          "hero",
+                          heroPrimary,
+                          heroPrimary,
+                        )
+                      }
                       className="inline-flex items-center justify-center rounded-xl bg-primary px-6 py-3.5 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-xl"
                     >
                       {heroPrimary}
@@ -887,7 +1118,14 @@ export const CloudInfraKimiPage2 = defineCapsule({
                     </button>
                     <button
                       type="button"
-                      onClick={() => go(heroSecondary)}
+                      onClick={() =>
+                        handleQueueCta(
+                          "Starter",
+                          "hero-secondary",
+                          heroSecondary,
+                          heroSecondary,
+                        )
+                      }
                       className="inline-flex items-center justify-center rounded-xl border-2 border-border bg-background px-6 py-3.5 text-base font-semibold text-foreground transition-all hover:bg-accent"
                     >
                       <svg
@@ -1091,7 +1329,14 @@ export const CloudInfraKimiPage2 = defineCapsule({
               <div className="mt-16 text-center lg:mt-20">
                 <button
                   type="button"
-                  onClick={() => go(stepsCta)}
+                  onClick={() =>
+                    handleQueueCta(
+                      "Starter",
+                      "steps",
+                      stepsCta,
+                      stepsCta,
+                    )
+                  }
                   className="inline-flex items-center rounded-xl bg-background px-6 py-3.5 text-base font-semibold text-foreground transition-colors hover:bg-background/90"
                 >
                   {stepsCta}
@@ -1240,7 +1485,9 @@ export const CloudInfraKimiPage2 = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(tier.cta)}
+                      onClick={() =>
+                        handleQueueCta(tier.name, "pricing", tier.cta, tier.cta)
+                      }
                       className={cn(
                         "w-full rounded-xl px-4 py-3 font-semibold transition-colors",
                         tier.popular
@@ -1397,7 +1644,14 @@ export const CloudInfraKimiPage2 = defineCapsule({
                   <div className="flex flex-col justify-center gap-4 sm:flex-row">
                     <button
                       type="button"
-                      onClick={() => go(finalCtaPrimary)}
+                      onClick={() =>
+                        handleQueueCta(
+                          "Starter",
+                          "final-cta-primary",
+                          finalCtaPrimary,
+                          finalCtaPrimary,
+                        )
+                      }
                       className="inline-flex items-center justify-center rounded-xl bg-background px-8 py-4 text-base font-semibold text-foreground shadow-lg transition-colors hover:bg-background/90"
                     >
                       {finalCtaPrimary}
@@ -1405,7 +1659,14 @@ export const CloudInfraKimiPage2 = defineCapsule({
                     </button>
                     <button
                       type="button"
-                      onClick={() => go(finalCtaSecondary)}
+                      onClick={() =>
+                        handleQueueCta(
+                          "Enterprise",
+                          "final-cta-secondary",
+                          finalCtaSecondary,
+                          finalCtaSecondary,
+                        )
+                      }
                       className="inline-flex items-center justify-center rounded-xl border-2 border-primary-foreground/30 px-8 py-4 text-base font-semibold text-primary-foreground transition-colors hover:border-primary-foreground hover:bg-primary-foreground/10"
                     >
                       {finalCtaSecondary}

@@ -1,9 +1,11 @@
-import { useState, type ReactNode } from "react"
+import { useState, type FormEvent, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
+import { string, table } from "@ship-fast/lakebed/server"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "#/components/ui/sheet.tsx"
 
 /**
  * ConsultingKimiPage — a complete, self-contained management-consulting firm
@@ -202,13 +204,124 @@ export const ConsultingKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      inquiries: table({
+        company: string(),
+        email: string(),
+        message: string(),
+        name: string(),
+        service: string(),
+      }),
+    },
+    queries: {
+      inquiries: ({ db }) => db.inquiries.orderBy("createdAt").all(),
+    },
+    mutations: {
+      submitInquiry: (
+        { db },
+        name: string,
+        email: string,
+        company: string,
+        service: string,
+        message: string,
+      ) => {
+        db.inquiries.insert({
+          name,
+          email,
+          company,
+          service,
+          message,
+        })
+
+        return db.inquiries.all()
+      },
+      removeInquiry: ({ db }, id: string) => {
+        db.inquiries.delete(id)
+
+        return db.inquiries.all()
+      },
+      clearInquiries: ({ db }) => {
+        for (const inquiry of db.inquiries.all()) {
+          db.inquiries.delete(inquiry.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [inquiryDrawerOpen, setInquiryDrawerOpen] = useState(false)
+    const [inquiryName, setInquiryName] = useState("")
+    const [inquiryEmail, setInquiryEmail] = useState("")
+    const [inquiryCompany, setInquiryCompany] = useState("")
+    const [inquiryService, setInquiryService] = useState("")
+    const [inquiryMessage, setInquiryMessage] = useState("")
+    const [inquiryFormError, setInquiryFormError] = useState<string | null>(
+      null,
+    )
     const brand = props.brand ?? "Nexus Strategy Partners"
     const nav = props.nav?.length
       ? props.nav
       : ["Services", "Insights", "Industries", "About", "Careers"]
+    const storedInquiries = lakebed.useQuery("inquiries")
+    const submitInquiry = lakebed.useMutation("submitInquiry")
+    const removeInquiry = lakebed.useMutation("removeInquiry")
+    const clearInquiries = lakebed.useMutation("clearInquiries")
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Client"
+    const inquiryRows = storedInquiries ?? []
+    const inquiryCount = inquiryRows.length
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const handleInquirySubmit = (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      const nextName = inquiryName.trim() || authDisplayName
+      const nextEmail = inquiryEmail.trim() || authEmail || ""
+      const nextCompany = inquiryCompany.trim()
+      const nextService = inquiryService.trim() || "General"
+      const nextMessage = inquiryMessage.trim()
+
+      if (!nextName || !nextEmail || !nextMessage) {
+        setInquiryFormError("Name, email, and message are required.")
+        return
+      }
+
+      setInquiryFormError(null)
+      void submitInquiry(
+        nextName,
+        nextEmail,
+        nextCompany,
+        nextService,
+        nextMessage,
+      )
+      setInquiryName("")
+      setInquiryEmail("")
+      setInquiryCompany("")
+      setInquiryService("")
+      setInquiryMessage("")
+      setInquiryDrawerOpen(true)
+    }
+    const openInquiryDrawer = () => {
+      if (!inquiryName && authDisplayName) {
+        setInquiryName(authDisplayName)
+      }
+      if (!inquiryEmail && authEmail) {
+        setInquiryEmail(authEmail)
+      }
+      setInquiryDrawerOpen(true)
+    }
 
     const heroEyebrow = props.hero?.eyebrow ?? "Global Management Consulting"
     const heroHeading =
@@ -757,12 +870,13 @@ export const ConsultingKimiPage = defineCapsule({
     }
 
     return (
-      <div
-        className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
-          props.className,
-        )}
-      >
+      <Sheet open={inquiryDrawerOpen} onOpenChange={setInquiryDrawerOpen}>
+        <div
+          className={cn(
+            "min-h-svh bg-background text-foreground antialiased",
+            props.className,
+          )}
+        >
         {/* Navbar */}
         <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
           <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -789,13 +903,20 @@ export const ConsultingKimiPage = defineCapsule({
               ))}
             </div>
             <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go(heroSecondary)}
-                className="hidden rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
-              >
-                Contact Us
-              </button>
+              <SheetTrigger asChild>
+                <button
+                  type="button"
+                  onClick={openInquiryDrawer}
+                  className="relative hidden rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
+                >
+                  Contact Us
+                  {inquiryCount > 0 ? (
+                    <span className="ml-2 inline-flex size-5 items-center justify-center rounded-full bg-background text-[0.65rem] font-bold text-foreground">
+                      {inquiryCount}
+                    </span>
+                  ) : null}
+                </button>
+              </SheetTrigger>
               <button
                 type="button"
                 aria-label="Toggle menu"
@@ -839,6 +960,16 @@ export const ConsultingKimiPage = defineCapsule({
                     {label}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    openInquiryDrawer()
+                  }}
+                  className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                >
+                  Contact Us
+                </button>
               </div>
             )}
           </nav>
@@ -1351,7 +1482,7 @@ export const ConsultingKimiPage = defineCapsule({
                 <div className="flex flex-col justify-center gap-4 sm:flex-row">
                   <button
                     type="button"
-                    onClick={() => go(ctaPrimary)}
+                    onClick={openInquiryDrawer}
                     className="inline-flex items-center justify-center rounded-md bg-background px-8 py-4 text-base font-medium text-foreground transition-colors hover:bg-muted"
                   >
                     {ctaPrimary}
@@ -1548,7 +1679,193 @@ export const ConsultingKimiPage = defineCapsule({
             </div>
           </div>
         </footer>
-      </div>
+        </div>
+        <SheetContent side="right" className="w-full sm:max-w-lg">
+          <SheetHeader>
+            <SheetTitle>Inquiry Inbox</SheetTitle>
+            <SheetDescription>
+              Send a consultation brief or proposal request. Submitted inquiries
+              are stored for this session and can be reviewed here.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="flex h-full flex-col">
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              <form
+                className="mb-5 space-y-4 rounded-lg border border-border bg-muted/40 p-4"
+                onSubmit={handleInquirySubmit}
+              >
+                <h3 className="text-sm font-semibold text-foreground">
+                  Submit New Inquiry
+                </h3>
+                {inquiryFormError ? (
+                  <p className="rounded-md bg-destructive/10 p-2 text-sm text-destructive">
+                    {inquiryFormError}
+                  </p>
+                ) : null}
+                <label className="text-xs text-muted-foreground">
+                  Name
+                  <input
+                    type="text"
+                    required
+                    value={inquiryName}
+                    onChange={(event) => setInquiryName(event.target.value)}
+                    className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    placeholder="Your full name"
+                  />
+                </label>
+                <label className="text-xs text-muted-foreground">
+                  Email
+                  <input
+                    type="email"
+                    required
+                    value={inquiryEmail}
+                    onChange={(event) => setInquiryEmail(event.target.value)}
+                    className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    placeholder={authEmail ?? "you@company.com"}
+                  />
+                </label>
+                <label className="text-xs text-muted-foreground">
+                  Company
+                  <input
+                    type="text"
+                    value={inquiryCompany}
+                    onChange={(event) => setInquiryCompany(event.target.value)}
+                    className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    placeholder="Company / organization"
+                  />
+                </label>
+                <label className="text-xs text-muted-foreground">
+                  Service Focus
+                  <input
+                    type="text"
+                    value={inquiryService}
+                    onChange={(event) => setInquiryService(event.target.value)}
+                    className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    placeholder="Strategy, transformation, M&A..."
+                  />
+                </label>
+                <label className="text-xs text-muted-foreground">
+                  Details
+                  <textarea
+                    required
+                    value={inquiryMessage}
+                    onChange={(event) => setInquiryMessage(event.target.value)}
+                    rows={4}
+                    className="mt-1 w-full resize-y rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    placeholder="Share a brief overview of your challenge."
+                  />
+                </label>
+                <button
+                  type="submit"
+                  className="w-full rounded-md bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                >
+                  Submit inquiry
+                </button>
+                {isSignedIn ? (
+                  <p className="text-[11px] text-muted-foreground">
+                    Signed in as {authDisplayName}
+                  </p>
+                ) : null}
+              </form>
+
+              <div>
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Recent submissions
+                  </h3>
+                  <span className="text-xs text-muted-foreground">
+                    {inquiryCount} submitted
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  {inquiryRows.length ? (
+                    inquiryRows.map((inquiry) => (
+                      <div
+                        key={inquiry.id}
+                        className="rounded-lg border border-border bg-muted p-3 text-sm"
+                      >
+                        <div className="mb-2 flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="font-medium text-foreground">
+                              {inquiry.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {inquiry.email}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              void removeInquiry(inquiry.id)
+                            }}
+                            className="rounded px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        <p className="mb-1 text-xs text-muted-foreground">
+                          {inquiry.service}
+                        </p>
+                        <p className="leading-relaxed text-muted-foreground">
+                          {inquiry.message}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="rounded-lg border border-dashed border-border bg-muted/40 px-4 py-6 text-center text-sm text-muted-foreground">
+                      No inquiries yet.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+            <SheetFooter className="border-t border-border px-6 py-4">
+              <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
+                <span>Session inquiry count</span>
+                <span>{inquiryCount}</span>
+              </div>
+              <div className="flex gap-2">
+                {isSignedIn ? (
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="inline-flex flex-1 items-center justify-center rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                  >
+                    Sign out
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    className="inline-flex flex-1 items-center justify-center rounded-md bg-foreground px-3 py-2 text-sm font-medium text-background transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    Sign in with Google
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    void clearInquiries()
+                  }}
+                  disabled={inquiryCount === 0}
+                  className="inline-flex flex-1 items-center justify-center rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Clear all
+                </button>
+                <SheetClose asChild>
+                  <button
+                    type="button"
+                    className="inline-flex flex-1 items-center justify-center rounded-md border border-border bg-muted px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-background"
+                  >
+                    Close
+                  </button>
+                </SheetClose>
+              </div>
+            </SheetFooter>
+          </div>
+        </SheetContent>
+      </Sheet>
     )
   },
 })

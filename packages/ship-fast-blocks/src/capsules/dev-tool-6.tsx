@@ -1,9 +1,26 @@
-import { type ReactNode } from "react"
+import { type ReactNode, useState } from "react"
 import { z } from "zod/v4"
+import { number, string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * DevToolKimiPage6 — the 6th style-sibling to DevToolKimiPage.
@@ -214,8 +231,101 @@ export const DevToolKimiPage6 = defineCapsule({
     className: z.string().optional(),
   }),
 
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      savedItems: table({
+        label: string(),
+        section: string(),
+        touched: number(),
+      }),
+    },
+    queries: {
+      savedItems: ({ db }) => db.savedItems.orderBy("createdAt").all(),
+    },
+    mutations: {
+      saveItem: ({ db }, label: string, section: string) => {
+        const existing = db.savedItems.where("label", label).all()[0]
+
+        if (existing) {
+          db.savedItems.update(existing.id, {
+            touched: (existing.touched ?? 0) + 1,
+            section,
+          })
+
+          return db.savedItems.all()
+        }
+
+        db.savedItems.insert({
+          label,
+          section,
+          touched: 1,
+        })
+
+        return db.savedItems.all()
+      },
+      removeSavedItem: ({ db }, itemId: string) => {
+        const item = db.savedItems.get(itemId)
+
+        if (item) {
+          db.savedItems.delete(item.id)
+        }
+
+        return db.savedItems.all()
+      },
+      clearSavedItems: ({ db }) => {
+        for (const item of db.savedItems.all()) {
+          db.savedItems.delete(item.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [savedItemsOpen, setSavedItemsOpen] = useState(false)
+    const savedItems = lakebed.useQuery("savedItems")
+    const saveItem = lakebed.useMutation("saveItem")
+    const removeSavedItem = lakebed.useMutation("removeSavedItem")
+    const clearSavedItems = lakebed.useMutation("clearSavedItems")
+    const auth = lakebed.useAuth()
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authInitials = authDisplayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("")
+      || "ME"
+    const authLabel = auth.isLoading
+      ? "Checking..."
+      : isSignedIn
+        ? authDisplayName
+        : "Sign in"
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const activeSavedItems = savedItems ?? []
+    const savedItemCount = activeSavedItems.length
+    const savedItemTouches =
+      activeSavedItems.reduce((total, item) => total + (item.touched ?? 0), 0) ??
+      0
+
+    const trackSavedItem = (section: string, label: string) => {
+      void saveItem(label, section)
+    }
+
     const brand = props.brand ?? "APIForge"
     const nav = props.nav?.length
       ? props.nav
@@ -667,6 +777,21 @@ export const DevToolKimiPage6 = defineCapsule({
       </svg>
     )
 
+    const Bookmark = ({ className }: { className?: string }) => (
+      <svg
+        className={className}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+      </svg>
+    )
+
     const ChevronDown = () => (
       <svg
         className="size-5 text-muted-foreground transition-transform group-open:rotate-180"
@@ -831,17 +956,181 @@ export const DevToolKimiPage6 = defineCapsule({
                   </button>
                 ))}
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
+                <Sheet open={savedItemsOpen} onOpenChange={setSavedItemsOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      className="relative inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                    >
+                      <Bookmark className="size-4" />
+                      Saved
+                      {savedItemCount > 0 ? (
+                        <span className="grid size-5 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                          {savedItemCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                    <SheetHeader className="border-b border-border p-6">
+                      <SheetTitle>Saved interactions</SheetTitle>
+                      <SheetDescription>
+                        Keep track of sections and actions you want to revisit.
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                      {activeSavedItems.length ? (
+                        <div className="space-y-4">
+                          {activeSavedItems.map((item) => (
+                            <div
+                              key={item.id}
+                              className="rounded-lg border border-border bg-muted/60 p-4"
+                            >
+                              <div className="mb-2 flex items-start justify-between gap-4">
+                                <div className="min-w-0">
+                                  <p className="truncate text-sm font-semibold text-foreground">
+                                    {item.label}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {item.section}
+                                  </p>
+                                </div>
+                                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
+                                  x{item.touched}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <button
+                                  type="button"
+                                  onClick={() => go(item.label)}
+                                  className="text-xs font-medium text-primary hover:text-primary/80"
+                                >
+                                  Open
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void removeSavedItem(item.id)}
+                                  className="text-xs font-medium text-muted-foreground hover:text-foreground"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-64 items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                          <p className="text-sm text-muted-foreground">
+                            No saved interactions yet.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <SheetFooter className="flex-col gap-3 border-t border-border px-6 py-5">
+                      <div className="mb-1 text-sm text-muted-foreground">
+                        Total interactions saved: <span className="font-semibold text-foreground">{savedItemTouches}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void clearSavedItems()}
+                          disabled={!activeSavedItems.length}
+                          className="rounded-full border border-border py-2 text-sm font-semibold transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Clear all
+                        </button>
+                        <SheetClose asChild>
+                          <button
+                            type="button"
+                            className="rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                            onClick={() => go("Pricing")}
+                          >
+                            Continue
+                          </button>
+                        </SheetClose>
+                      </div>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+                {isSignedIn ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="hidden h-10 items-center gap-2 rounded-full border border-border bg-background px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted sm:inline-flex"
+                        aria-label="Open account menu"
+                        disabled={auth.isLoading}
+                      >
+                        <Avatar
+                          size="sm"
+                          className="bg-muted text-xs font-bold ring-2 ring-background"
+                        >
+                          {authPicture ? (
+                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                          ) : null}
+                          <AvatarFallback>{authInitials}</AvatarFallback>
+                        </Avatar>
+                        <span className="max-w-20 truncate text-sm font-semibold md:block">
+                          {authDisplayName}
+                        </span>
+                        <ChevronDown />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" sideOffset={10} className="w-64 rounded-xl border-border p-0">
+                      <div className="bg-muted/40 px-4 py-4">
+                        <p className="truncate text-sm font-semibold text-foreground">
+                          {authDisplayName}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {authEmail ?? "Signed in"}
+                        </p>
+                      </div>
+                      <div className="space-y-2 p-2">
+                        <button
+                          type="button"
+                          onClick={() => go("Account")}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                        >
+                          Account
+                          <ChevronDown />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => go("Docs")}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                        >
+                          Docs
+                          <ChevronDown />
+                        </button>
+                      </div>
+                      <div className="border-t border-border p-2">
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSignIn}
+                    disabled={auth.isLoading}
+                    className="inline-flex items-center rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background shadow-sm transition-colors hover:bg-foreground/90"
+                  >
+                    {authLabel}
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={() => go("Sign In")}
-                  className="hidden text-sm font-medium text-primary transition-colors hover:text-primary/90 sm:block"
-                >
-                  Sign In
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go(heroPrimary)}
+                  onClick={() => {
+                    trackSavedItem("hero", heroPrimary)
+                    go(heroPrimary)
+                  }}
                   className="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   Get Started Free
@@ -882,7 +1171,10 @@ export const DevToolKimiPage6 = defineCapsule({
                     </button>
                     <button
                       type="button"
-                      onClick={() => go(heroSecondary)}
+                      onClick={() => {
+                        trackSavedItem("hero", heroSecondary)
+                        go(heroSecondary)
+                      }}
                       className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-border bg-background px-8 py-4 font-semibold text-foreground transition-colors hover:bg-muted"
                     >
                       <PlayIcon />
@@ -1021,7 +1313,10 @@ export const DevToolKimiPage6 = defineCapsule({
                     <p className="mb-4 text-muted-foreground">{item.description}</p>
                     <button
                       type="button"
-                      onClick={() => go(item.title)}
+                      onClick={() => {
+                        trackSavedItem("features", item.title)
+                        go(item.title)
+                      }}
                       className="inline-flex items-center gap-1 font-medium text-primary transition-colors hover:text-primary/80"
                     >
                       Learn more
@@ -1086,7 +1381,10 @@ export const DevToolKimiPage6 = defineCapsule({
                   </div>
                   <button
                     type="button"
-                    onClick={() => go(stepsBannerCta)}
+                    onClick={() => {
+                      trackSavedItem("steps", stepsBannerCta)
+                      go(stepsBannerCta)
+                    }}
                     className="rounded-lg bg-background px-6 py-3 font-semibold text-foreground transition-colors hover:bg-muted"
                   >
                     {stepsBannerCta}
@@ -1109,7 +1407,10 @@ export const DevToolKimiPage6 = defineCapsule({
                       <button
                         key={item.name}
                         type="button"
-                        onClick={() => go(item.name)}
+                        onClick={() => {
+                          trackSavedItem("integrations", item.name)
+                          go(item.name)
+                        }}
                         className="flex items-center gap-3 rounded-xl border border-border bg-background p-4 transition-colors hover:bg-muted"
                       >
                         <div
@@ -1177,7 +1478,10 @@ export const DevToolKimiPage6 = defineCapsule({
                       <span className="text-muted-foreground">Last synced: 2 minutes ago</span>
                       <button
                         type="button"
-                        onClick={() => go("View Details")}
+                        onClick={() => {
+                          trackSavedItem("integrations", "View Details")
+                          go("View Details")
+                        }}
                         className="font-medium text-primary transition-colors hover:text-primary/80"
                       >
                         View Details
@@ -1207,7 +1511,10 @@ export const DevToolKimiPage6 = defineCapsule({
                     </div>
                     <button
                       type="button"
-                      onClick={() => go("Copy")}
+                      onClick={() => {
+                        trackSavedItem("code", "Copy TypeScript sample")
+                        go("Copy")
+                      }}
                       className="text-xs text-muted-foreground transition-colors hover:text-background"
                     >
                       Copy
@@ -1253,7 +1560,10 @@ export const DevToolKimiPage6 = defineCapsule({
                     </div>
                     <button
                       type="button"
-                      onClick={() => go("Copy")}
+                      onClick={() => {
+                        trackSavedItem("code", "Copy Python sample")
+                        go("Copy")
+                      }}
                       className="text-xs text-muted-foreground transition-colors hover:text-background"
                     >
                       Copy
@@ -1295,7 +1605,10 @@ export const DevToolKimiPage6 = defineCapsule({
                   <button
                     key={lang}
                     type="button"
-                    onClick={() => go(lang)}
+                    onClick={() => {
+                      trackSavedItem("code", lang)
+                      go(lang)
+                    }}
                     className="rounded-full bg-muted px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
                   >
                     {lang}
@@ -1376,7 +1689,10 @@ export const DevToolKimiPage6 = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(tier.cta)}
+                      onClick={() => {
+                        trackSavedItem("pricing", tier.cta)
+                        go(tier.cta)
+                      }}
                       className={cn(
                         "block w-full rounded-xl py-3 text-center font-semibold transition-colors",
                         tier.featured
@@ -1395,7 +1711,10 @@ export const DevToolKimiPage6 = defineCapsule({
                   Need more details? Compare all features in our{" "}
                   <button
                     type="button"
-                    onClick={() => go("full pricing breakdown")}
+                    onClick={() => {
+                      trackSavedItem("pricing", "full pricing breakdown")
+                      go("full pricing breakdown")
+                    }}
                     className="font-medium text-primary transition-colors hover:text-primary/80"
                   >
                     full pricing breakdown
@@ -1496,7 +1815,10 @@ export const DevToolKimiPage6 = defineCapsule({
                       {i > 0 ? <span>,</span> : null}
                       <button
                         type="button"
-                        onClick={() => go(site)}
+                        onClick={() => {
+                          trackSavedItem("testimonials", site)
+                          go(site)
+                        }}
                         className="inline-flex items-center gap-1 font-medium text-primary transition-colors hover:text-primary/80"
                       >
                         {site}
@@ -1537,7 +1859,10 @@ export const DevToolKimiPage6 = defineCapsule({
                 <p className="mb-4 text-muted-foreground">Still have questions?</p>
                 <button
                   type="button"
-                  onClick={() => go(faqCtaLabel)}
+                  onClick={() => {
+                    trackSavedItem("faq", faqCtaLabel)
+                    go(faqCtaLabel)
+                  }}
                   className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   <ChatIcon />
@@ -1555,7 +1880,10 @@ export const DevToolKimiPage6 = defineCapsule({
               <div className="mb-12 flex flex-col justify-center gap-4 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => go(ctaPrimary)}
+                  onClick={() => {
+                    trackSavedItem("cta", ctaPrimary)
+                    go(ctaPrimary)
+                  }}
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-background px-8 py-4 font-semibold text-foreground transition-colors hover:bg-muted"
                 >
                   {ctaPrimary}
@@ -1563,7 +1891,10 @@ export const DevToolKimiPage6 = defineCapsule({
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(ctaSecondary)}
+                  onClick={() => {
+                    trackSavedItem("cta", ctaSecondary)
+                    go(ctaSecondary)
+                  }}
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-background/30 bg-transparent px-8 py-4 font-semibold text-background transition-colors hover:bg-background/10"
                 >
                   <CalendarIcon />

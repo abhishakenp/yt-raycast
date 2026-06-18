@@ -1,9 +1,19 @@
-import { type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * CommunityForumKimiPage — a complete, self-contained community-platform /
@@ -178,8 +188,50 @@ export const CommunityForumKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      readingList: table({
+        emoji: string(),
+        topic: string(),
+      }),
+    },
+    queries: {
+      readingList: ({ db }) => db.readingList.orderBy("createdAt").all(),
+      topicSet: ({ db }) =>
+        new Set(db.readingList.all().map((item) => item.topic)),
+    },
+    mutations: {
+      toggleReadingList: ({ db }, topic: string, emoji: string) => {
+        const existing = db.readingList.where("topic", topic).all()[0]
+
+        if (existing) {
+          db.readingList.delete(existing.id)
+          return db.readingList.all()
+        }
+
+        db.readingList.insert({ topic, emoji })
+        return db.readingList.all()
+      },
+      removeReadingListItem: ({ db }, id: string) => {
+        const item = db.readingList.get(id)
+
+        if (item) {
+          db.readingList.delete(item.id)
+        }
+
+        return db.readingList.all()
+      },
+      clearReadingList: ({ db }) => {
+        for (const item of db.readingList.all()) {
+          db.readingList.delete(item.id)
+        }
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [readingListOpen, setReadingListOpen] = useState(false)
     const brand = props.brand ?? "Threadloom"
     const nav = props.nav?.length
       ? props.nav
@@ -456,6 +508,30 @@ export const CommunityForumKimiPage = defineCapsule({
       ? props.footer.legal
       : ["Status", "Security", "Sitemap"]
 
+    const auth = lakebed.useAuth()
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authDisplayName =
+      auth.displayName ||
+      auth.user?.displayName ||
+      auth.email ||
+      auth.user?.email ||
+      "Community member"
+    const accountLabel = auth.isLoading ? "Checking..." : isSignedIn ? authDisplayName : signIn
+    const readingList = lakebed.useQuery("readingList")
+    const readingListSet = lakebed.useQuery("topicSet")
+    const toggleReadingList = lakebed.useMutation("toggleReadingList")
+    const removeReadingListItem = lakebed.useMutation("removeReadingListItem")
+    const clearReadingList = lakebed.useMutation("clearReadingList")
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+    const readingListItems = readingList ?? []
+    const readingListCount = readingListItems.length
+
     // Brand mark — three connected nodes (decorative inline SVG, currentColor).
     const BrandMark = ({ className }: { className?: string }) => (
       <svg
@@ -488,6 +564,27 @@ export const CommunityForumKimiPage = defineCapsule({
     const Star = ({ className }: { className?: string }) => (
       <svg viewBox="0 0 20 20" fill="currentColor" className={className} aria-hidden="true">
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+      </svg>
+    )
+
+    const Bookmark = ({
+      className,
+      active = false,
+    }: {
+      className?: string
+      active?: boolean
+    }) => (
+      <svg
+        viewBox="0 0 24 24"
+        fill={active ? "currentColor" : "none"}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+        aria-hidden="true"
+      >
+        <path d="M19 21l-7-4-7 4V5a2 2 0 012-2h10a2 2 0 012 2z" />
       </svg>
     )
 
@@ -564,10 +661,31 @@ export const CommunityForumKimiPage = defineCapsule({
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go(signIn)}
+                  onClick={() => {
+                    if (auth.isLoading) return
+                    if (!isSignedIn) {
+                      handleSignIn()
+                      return
+                    }
+                    setReadingListOpen(true)
+                  }}
                   className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
                 >
-                  {signIn}
+                  {accountLabel}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setReadingListOpen(true)}
+                  className="relative inline-flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground/80 transition-colors hover:border-foreground/20 hover:text-foreground"
+                  aria-label={`Open reading list (${readingListCount} topics saved)`}
+                >
+                  <Bookmark className="size-4" active={readingListCount > 0} />
+                  <span className="hidden sm:inline">Saved</span>
+                  {readingListCount > 0 ? (
+                    <span className="inline-grid min-w-5 place-items-center rounded-full bg-primary px-1.5 py-0.5 text-[0.6875rem] font-semibold text-primary-foreground">
+                      {readingListCount}
+                    </span>
+                  ) : null}
                 </button>
                 <button
                   type="button"
@@ -580,6 +698,84 @@ export const CommunityForumKimiPage = defineCapsule({
             </div>
           </nav>
         </header>
+
+        <Sheet open={readingListOpen} onOpenChange={setReadingListOpen}>
+          <SheetContent className="w-full p-0 sm:max-w-md">
+            <SheetHeader className="border-b border-border p-6">
+              <SheetTitle className="text-xl">Reading List</SheetTitle>
+              <SheetDescription>
+                Save discussion categories to return later.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {readingListItems.length > 0 ? (
+                <div className="space-y-4">
+                  {readingListItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between gap-4 border-b border-border pb-4 last:border-0 last:pb-0"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span
+                          aria-hidden="true"
+                          className="grid size-8 shrink-0 place-items-center rounded-md bg-primary/10 text-lg"
+                        >
+                          {item.emoji}
+                        </span>
+                        <p className="truncate text-sm font-medium text-foreground">
+                          {item.topic}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void removeReadingListItem(item.id)}
+                        className="rounded-md px-2 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-lg border border-dashed border-border bg-muted/40 px-4 py-8 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Save topics from the directory and revisit them here.
+                  </p>
+                </div>
+              )}
+            </div>
+            <SheetFooter className="grid gap-2 border-t border-border p-6">
+              {isSignedIn ? (
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="rounded-md border border-border px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted"
+                >
+                  Sign out ({accountLabel})
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => {
+                  if (!readingListItems.length) return
+                  void clearReadingList()
+                }}
+                disabled={!readingListItems.length}
+                className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+              >
+                Clear list
+              </button>
+              <SheetClose asChild>
+                <button
+                  type="button"
+                  className="w-full rounded-md bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
+                >
+                  Close
+                </button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
 
         <main>
           {/* Hero */}
@@ -690,25 +886,45 @@ export const CommunityForumKimiPage = defineCapsule({
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {topicItems.map((topic, i) => (
-                  <button
+                  <div
                     key={topic.title}
-                    type="button"
-                    onClick={() => go(topic.title)}
-                    className="group rounded-xl border border-border bg-card p-6 text-left transition-all hover:border-foreground/20 hover:shadow-sm"
+                    className="group relative rounded-xl border border-border bg-card p-6 text-left transition-all hover:border-foreground/20 hover:shadow-sm"
                   >
-                    <div
-                      className={cn(
-                        "mb-4 flex size-10 items-center justify-center rounded-lg text-xl",
-                        topicTints[i % topicTints.length],
-                      )}
+                    <button
+                      type="button"
+                      onClick={() => go(topic.title)}
+                      className="w-full text-left"
                     >
-                      <span aria-hidden="true">{topic.emoji}</span>
-                    </div>
-                    <h4 className="mb-1 font-semibold text-card-foreground">
-                      {topic.title}
-                    </h4>
-                    <p className="text-sm text-muted-foreground">{topic.count}</p>
-                  </button>
+                      <div
+                        className={cn(
+                          "mb-4 flex size-10 items-center justify-center rounded-lg text-xl",
+                          topicTints[i % topicTints.length],
+                        )}
+                      >
+                        <span aria-hidden="true">{topic.emoji}</span>
+                      </div>
+                      <h4 className="mb-1 font-semibold text-card-foreground">
+                        {topic.title}
+                      </h4>
+                      <p className="text-sm text-muted-foreground">{topic.count}</p>
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`${
+                        readingListSet?.has(topic.title) ? "Remove" : "Save"
+                      } ${topic.title} in your reading list`}
+                      onClick={() => {
+                        void toggleReadingList(topic.title, topic.emoji)
+                        setReadingListOpen(true)
+                      }}
+                      className="absolute right-4 top-4 inline-flex rounded-md p-1 text-muted-foreground transition hover:text-foreground"
+                    >
+                      <Bookmark
+                        className="size-4"
+                        active={Boolean(readingListSet?.has(topic.title))}
+                      />
+                    </button>
+                  </div>
                 ))}
               </div>
             </div>

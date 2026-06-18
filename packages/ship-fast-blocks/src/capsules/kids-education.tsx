@@ -1,9 +1,20 @@
-import { type ReactNode } from "react"
+import { type ReactNode, useState } from "react"
 import { z } from "zod/v4"
+import { string, table } from "@ship-fast/lakebed/server"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "#/components/ui/sheet.tsx"
 
 /**
  * KidsEducationKimiPage — a complete, self-contained kids / family LEARNING
@@ -186,8 +197,60 @@ export const KidsEducationKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      learningList: table({
+        title: string(),
+        badge: string(),
+        cta: string(),
+      }),
+    },
+    queries: {
+      learningList: ({ db }) => db.learningList.orderBy("createdAt").all(),
+    },
+    mutations: {
+      addLearningItem: ({ db }, title: string, badge: string, cta: string) => {
+        const existing = db.learningList.where("title", title).all()[0]
+        if (existing) return db.learningList.all()
+
+        db.learningList.insert({ title, badge, cta })
+        return db.learningList.all()
+      },
+      removeLearningItem: ({ db }, id: string) => {
+        const item = db.learningList.get(id)
+        if (item) {
+          db.learningList.delete(item.id)
+        }
+
+        return db.learningList.all()
+      },
+      clearLearningList: ({ db }) => {
+        for (const item of db.learningList.all()) {
+          db.learningList.delete(item.id)
+        }
+
+        return []
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [learningListOpen, setLearningListOpen] = useState(false)
+    const auth = lakebed.useAuth()
+    const storedLearningList = lakebed.useQuery("learningList")
+    const addLearningItem = lakebed.useMutation("addLearningItem")
+    const removeLearningItem = lakebed.useMutation("removeLearningItem")
+    const clearLearningList = lakebed.useMutation("clearLearningList")
+    const learningList = storedLearningList ?? []
+    const learningListTitles = new Set(learningList.map((item) => item.title))
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+      void lakebed.signInWithGoogle()
+    }
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
     const brand = props.brand ?? "WonderLearn"
     const nav = props.nav?.length
       ? props.nav
@@ -626,6 +689,26 @@ export const KidsEducationKimiPage = defineCapsule({
       </svg>
     )
 
+    const ListIcon = () => (
+      <svg
+        className="size-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <line x1="8" y1="6" x2="21" y2="6" />
+        <line x1="8" y1="12" x2="21" y2="12" />
+        <line x1="8" y1="18" x2="21" y2="18" />
+        <line x1="3" y1="6" x2="3.01" y2="6" />
+        <line x1="3" y1="12" x2="3.01" y2="12" />
+        <line x1="3" y1="18" x2="3.01" y2="18" />
+      </svg>
+    )
+
     // Per-activity icon set (rotating accent palette per card).
     const activityIcons: ReactNode[] = [
       // beaker / science
@@ -669,6 +752,16 @@ export const KidsEducationKimiPage = defineCapsule({
       "bg-accent/15 text-accent-foreground",
     ]
 
+    const saveLearningItem = (item: {
+      title: string
+      badge: string
+      cta: string
+    }) => {
+      if (!learningListTitles.has(item.title)) {
+        void addLearningItem(item.title, item.badge, item.cta)
+      }
+    }
+
     return (
       <div
         className={cn(
@@ -704,10 +797,30 @@ export const KidsEducationKimiPage = defineCapsule({
             <div className="flex items-center gap-4">
               <button
                 type="button"
-                onClick={() => go("Sign In")}
-                className="hidden font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
+                onClick={() => setLearningListOpen(true)}
+                className="relative inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-muted-foreground transition-colors hover:text-foreground hover:bg-muted sm:block"
               >
-                Sign In
+                <ListIcon />
+                <span className="hidden sm:inline">Learning List</span>
+                {learningList.length > 0 ? (
+                  <span className="absolute -right-2 -top-2 grid size-5 place-items-center rounded-full bg-foreground px-2 text-xs font-bold text-background">
+                    {learningList.length}
+                  </span>
+                ) : null}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (isSignedIn) {
+                    handleSignOut()
+                  } else {
+                    handleSignIn()
+                  }
+                }}
+                disabled={auth.isLoading}
+                className="hidden font-medium text-muted-foreground transition-colors hover:text-foreground sm:block disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {auth.isLoading ? "Checking..." : isSignedIn ? "Sign Out" : "Sign In"}
               </button>
               <button
                 type="button"
@@ -719,6 +832,83 @@ export const KidsEducationKimiPage = defineCapsule({
             </div>
           </nav>
         </header>
+
+        <Sheet open={learningListOpen} onOpenChange={setLearningListOpen}>
+          <SheetContent side="right" className="flex w-full max-w-sm flex-col">
+            <SheetHeader>
+              <SheetTitle>Learning Plan</SheetTitle>
+              <SheetDescription>
+                Save your preferred activities and launch your plan anytime.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto px-4 py-4">
+              {learningList.length ? (
+                <div className="space-y-3">
+                  {learningList.map((item) => (
+                    <div
+                      key={item.id}
+                      className="rounded-xl border border-border bg-muted/50 p-4"
+                    >
+                      <div className="mb-3">
+                        <p className="font-semibold text-foreground">{item.title}</p>
+                        <p className="text-xs text-muted-foreground">{item.badge}</p>
+                        <p className="text-xs text-muted-foreground">{item.cta}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void removeLearningItem(item.id)}
+                        className="text-xs font-semibold text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="rounded-xl border border-dashed border-border bg-muted/50 p-6 text-center text-sm text-muted-foreground">
+                  Your learning list is empty. Save activities to personalize your
+                  child&apos;s plan.
+                </p>
+              )}
+            </div>
+            <SheetFooter className="border-t border-border pt-4">
+              <div className="mb-3 flex items-center justify-between text-sm text-muted-foreground">
+                <span>Items saved</span>
+                <span>{learningList.length}</span>
+              </div>
+              <div className="grid gap-2">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setLearningListOpen(false)
+                    go("Learning Plan")
+                  }}
+                  variant="default"
+                  className="w-full rounded-full"
+                  disabled={!learningList.length}
+                >
+                  Continue to plan
+                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-full"
+                    onClick={() => void clearLearningList()}
+                    disabled={!learningList.length}
+                  >
+                    Clear list
+                  </Button>
+                  <SheetClose asChild>
+                    <Button type="button" variant="secondary" className="rounded-full">
+                      Continue
+                    </Button>
+                  </SheetClose>
+                </div>
+              </div>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
 
         <main>
           {/* Hero */}
@@ -899,7 +1089,10 @@ export const KidsEducationKimiPage = defineCapsule({
                     <p className="mb-4 text-muted-foreground">{item.description}</p>
                     <button
                       type="button"
-                      onClick={() => go(item.cta)}
+                      onClick={() => {
+                        saveLearningItem(item)
+                        go(item.cta)
+                      }}
                       className="inline-flex items-center gap-2 font-semibold text-foreground transition-colors hover:text-secondary"
                     >
                       {item.cta}

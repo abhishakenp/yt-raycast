@@ -1,9 +1,27 @@
-import { type ReactNode } from "react"
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineCapsule } from "./openui.ts"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { number, string, table } from "@ship-fast/lakebed/server"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "#/components/ui/sheet.tsx"
+import { Button } from "#/components/ui/button.tsx"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "#/components/ui/popover.tsx"
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
 
 /**
  * TutoringKimiPage2 — a bold, dark-hero tutoring landing page. This is the
@@ -187,8 +205,99 @@ export const TutoringKimiPage2 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      tutors: table({
+        avatarAlt: string(),
+        bio: string(),
+        name: string(),
+        rating: string(),
+        subject: string(),
+        tags: string(),
+      }),
+      bookedSessions: table({
+        planName: string(),
+        price: string(),
+        quantity: number(),
+      }),
+      favoriteTutors: table({
+        tutorName: string(),
+      }),
+    },
+    queries: {
+      tutors: ({ db }) => db.tutors.orderBy('createdAt').all(),
+      bookedSessionLines: ({ db }) =>
+        db.bookedSessions.all().flatMap((item) => {
+          return [{ ...item }]
+        }),
+      favoriteTutorNames: ({ db }) =>
+        new Set(db.favoriteTutors.all().map((favorite) => favorite.tutorName)),
+    },
+    mutations: {
+      bookSession: ({ db }, planName: string, price: string) => {
+        const existingItem = db.bookedSessions
+          .where('planName', planName)
+          .all()[0]
+
+        if (existingItem) {
+          db.bookedSessions.update(existingItem.id, {
+            quantity: existingItem.quantity + 1,
+          })
+        } else {
+          db.bookedSessions.insert({
+            planName,
+            price,
+            quantity: 1,
+          })
+        }
+
+        return db.bookedSessions.all()
+      },
+      updateSessionQuantity: ({ db }, planName: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+
+        for (const item of db.bookedSessions.where('planName', planName).all()) {
+          if (nextQuantity) {
+            db.bookedSessions.update(item.id, { quantity: nextQuantity })
+          } else {
+            db.bookedSessions.delete(item.id)
+          }
+        }
+
+        return db.bookedSessions.all()
+      },
+      removeSession: ({ db }, planName: string) => {
+        for (const item of db.bookedSessions.where('planName', planName).all()) {
+          db.bookedSessions.delete(item.id)
+        }
+
+        return db.bookedSessions.all()
+      },
+      clearSessions: ({ db }) => {
+        for (const item of db.bookedSessions.all()) {
+          db.bookedSessions.delete(item.id)
+        }
+
+        return []
+      },
+      toggleFavorite: ({ db }, tutorName: string) => {
+        const existingFavorite = db.favoriteTutors
+          .where('tutorName', tutorName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favoriteTutors.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favoriteTutors.insert({ tutorName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
+    const [sessionsOpen, setSessionsOpen] = useState(false)
 
     const brand = props.brand ?? "SparkTutors"
     const nav = props.nav?.length
@@ -606,6 +715,82 @@ export const TutoringKimiPage2 = defineCapsule({
       tagline: props.footer?.tagline ?? "Made with care for students everywhere.",
     }
 
+    const storedTutors = lakebed.useQuery('tutors')
+    const bookedSessionLines = lakebed.useQuery('bookedSessionLines')
+    const favoriteTutorNames = lakebed.useQuery('favoriteTutorNames')
+    const auth = lakebed.useAuth()
+    const bookSession = lakebed.useMutation('bookSession')
+    const updateSessionQuantity = lakebed.useMutation('updateSessionQuantity')
+    const removeSession = lakebed.useMutation('removeSession')
+    const clearSessions = lakebed.useMutation('clearSessions')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+
+    const isSignedIn = auth.isAuthenticated && !auth.isGuest
+    const authEmail = auth.email || auth.user?.email
+    const authPicture = auth.picture || auth.user?.picture
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
+
+    const handleSignIn = () => {
+      if (auth.isLoading) return
+
+      void lakebed.signInWithGoogle()
+    }
+
+    const handleSignOut = () => {
+      lakebed.signOut()
+    }
+
+    const normalizedTutorItems = tutors.items.map((tutor) => ({
+      avatarAlt: tutor.avatarAlt,
+      bio: tutor.bio,
+      name: tutor.name,
+      rating: tutor.rating,
+      subject: tutor.subject,
+      tags: tutor.tags.join(','),
+    }))
+
+    const displayTutors =
+      storedTutors && storedTutors.length > 0
+        ? storedTutors
+        : normalizedTutorItems
+
+    const safeSessionLines = bookedSessionLines ?? []
+    const sessionCount = safeSessionLines.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
+      <svg
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    )
+
     const LogoIcon = ({ className }: { className?: string }) => (
       <svg
         className={className}
@@ -881,20 +1066,260 @@ export const TutoringKimiPage2 = defineCapsule({
             </div>
 
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => go("Log in")}
-                className="hidden text-sm font-semibold text-primary transition-colors hover:text-primary/80 sm:inline-flex"
-              >
-                Log in
-              </button>
-              <button
-                type="button"
-                onClick={() => go("Book a Session")}
-                className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-lg transition-colors hover:bg-primary/90"
-              >
-                Book a Session
-              </button>
+              {isSignedIn ? (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open account menu"
+                      className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
+                    >
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
+                          {authInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-72 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
+                    <div className="bg-muted/40 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar size="lg" className="ring-2 ring-background">
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => go('Account')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Account
+                        <ArrowRight className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go('Sessions')}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        My Sessions
+                        <ArrowRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div className="border-t border-border p-2">
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-center rounded-lg bg-foreground px-3 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSignIn}
+                  disabled={auth.isLoading}
+                  aria-label="Sign in with Google"
+                  className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
+                >
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
+                  <span>{authLabel}</span>
+                </button>
+              )}
+              <Sheet open={sessionsOpen} onOpenChange={setSessionsOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Booked Sessions"
+                    className="relative inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-lg transition-colors hover:bg-primary/90"
+                  >
+                    Book a Session
+                    {sessionCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-background text-[0.625rem] font-bold text-primary">
+                        {sessionCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Booked Sessions</SheetTitle>
+                    <SheetDescription>
+                      {sessionCount > 0
+                        ? `${sessionCount} session${sessionCount === 1 ? '' : 's'} ready for booking.`
+                        : 'No sessions booked yet.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {safeSessionLines.length ? (
+                      <div className="space-y-5">
+                        {safeSessionLines.map((item) => (
+                          <div
+                            key={item.id}
+                            className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                          >
+                            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                              <div className="flex h-full w-full items-center justify-center">
+                                <svg
+                                  className="h-12 w-12 text-muted-foreground"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
+                              </div>
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                    {item.planName}
+                                  </h3>
+                                </div>
+                                <p className="text-sm font-bold text-foreground">
+                                  {item.price}
+                                </p>
+                              </div>
+                              <div className="mt-4 flex items-center justify-between">
+                                <div className="inline-flex h-9 items-center rounded-full border border-border bg-background">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void updateSessionQuantity(
+                                        item.planName,
+                                        item.quantity - 1,
+                                      )
+                                    }
+                                    className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                    aria-label={`Decrease ${item.planName} quantity`}
+                                  >
+                                    -
+                                  </button>
+                                  <span className="min-w-8 text-center text-sm font-semibold">
+                                    {item.quantity}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void updateSessionQuantity(
+                                        item.planName,
+                                        item.quantity + 1,
+                                      )
+                                    }
+                                    className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                    aria-label={`Increase ${item.planName} quantity`}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => void removeSession(item.planName)}
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No sessions booked
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Select a pricing plan to book your first session.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Total Sessions</span>
+                        <span>{sessionCount}</span>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      disabled={!safeSessionLines.length}
+                      className="w-full rounded-full"
+                      onClick={() => go('Checkout')}
+                    >
+                      Proceed to Checkout
+                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full"
+                        onClick={() => void clearSessions()}
+                        disabled={!safeSessionLines.length}
+                      >
+                        Clear
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
             </div>
           </nav>
         </header>
@@ -1214,42 +1639,69 @@ export const TutoringKimiPage2 = defineCapsule({
                 </button>
               </div>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
-                {tutors.items.map((tutor) => (
-                  <article key={tutor.name} className="group">
-                    <div className="relative mb-4 overflow-hidden rounded-2xl bg-muted">
-                      <Image
-                        alt={tutor.avatarAlt}
-                        w={600}
-                        h={750}
-                        loading="lazy"
-                        className="aspect-[4/5] w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-background/95 px-2.5 py-1 shadow-sm backdrop-blur">
-                        <Star className="h-3.5 w-3.5 text-primary" />
-                        <span className="text-xs font-bold">{tutor.rating}</span>
-                      </div>
-                    </div>
-                    <h3 className="text-lg font-bold text-foreground">
-                      {tutor.name}
-                    </h3>
-                    <p className="mb-1 text-sm font-semibold text-primary">
-                      {tutor.subject}
-                    </p>
-                    <p className="mb-3 text-sm text-muted-foreground">
-                      {tutor.bio}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {tutor.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded bg-muted px-2 py-1 text-xs font-medium text-muted-foreground"
+                {displayTutors.map((tutor) => {
+                  const isFavorite =
+                    favoriteTutorNames?.has(tutor.name) ?? false
+                  const tutorTags =
+                    typeof tutor.tags === 'string'
+                      ? tutor.tags.split(',')
+                      : tutor.tags
+
+                  return (
+                    <article key={tutor.name} className="group">
+                      <div className="relative mb-4 overflow-hidden rounded-2xl bg-muted">
+                        <Image
+                          alt={tutor.avatarAlt}
+                          w={600}
+                          h={750}
+                          loading="lazy"
+                          className="aspect-[4/5] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-background/95 px-2.5 py-1 shadow-sm backdrop-blur">
+                          <Star className="h-3.5 w-3.5 text-primary" />
+                          <span className="text-xs font-bold">{tutor.rating}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavorite(tutor.name)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${tutor.name} from favorites`
+                              : `Add ${tutor.name} to favorites`
+                          }
+                          className={cn(
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                          )}
                         >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </article>
-                ))}
+                          <HeartIcon active={isFavorite} />
+                        </button>
+                      </div>
+                      <h3 className="text-lg font-bold text-foreground">
+                        {tutor.name}
+                      </h3>
+                      <p className="mb-1 text-sm font-semibold text-primary">
+                        {tutor.subject}
+                      </p>
+                      <p className="mb-3 text-sm text-muted-foreground">
+                        {tutor.bio}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {tutorTags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded bg-muted px-2 py-1 text-xs font-medium text-muted-foreground"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -1367,7 +1819,10 @@ export const TutoringKimiPage2 = defineCapsule({
                     </ul>
                     <button
                       type="button"
-                      onClick={() => go(plan.cta)}
+                      onClick={() => {
+                        void bookSession(plan.name, plan.price)
+                        setSessionsOpen(true)
+                      }}
                       className={cn(
                         "block rounded-full px-6 py-3.5 text-center text-sm font-bold transition-colors",
                         plan.featured
