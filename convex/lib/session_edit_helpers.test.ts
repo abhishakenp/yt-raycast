@@ -48,12 +48,12 @@ describe('session edit helpers', () => {
     })
   })
 
-  it('replaces matching image src attributes only', () => {
+  it('replaces image src attributes by alt and occurrence', () => {
     const html =
-      '<img alt="first" src="/old.png"><img alt="second" src="/other.png">'
+      '<img alt="product" src="/old-a.png"><img alt="product" src="/old-b.png"><img alt="second" src="/other.png">'
 
-    expect(applyImageSwap(html, '/old.png', '/new.png')).toEqual({
-      html: '<img alt="first" src="/new.png"><img alt="second" src="/other.png">',
+    expect(applyImageSwap(html, 'product', '/new.png', 1)).toEqual({
+      html: '<img alt="product" src="/old-a.png"><img alt="product" src="/new.png"><img alt="second" src="/other.png">',
       replaced: true,
     })
   })

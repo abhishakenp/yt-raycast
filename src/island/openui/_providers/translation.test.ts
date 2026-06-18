@@ -11,11 +11,15 @@ describe('translation provider', () => {
       join(process.cwd(), 'src/island/openui/_providers/translation.tsx'),
       'utf8',
     )
-    
+
     // The shimmer removal should happen when we have data, regardless of whether it changed
-    const shimmerRemovalSection = source.slice(source.indexOf('} else if (data'))
-    expect(shimmerRemovalSection).toContain('parent.classList.remove("sf-shimmer-loading")')
-    
+    const shimmerRemovalSection = source.slice(
+      source.indexOf('} else if (data'),
+    )
+    expect(shimmerRemovalSection).toMatch(
+      /parent\.classList\.remove\(['"]sf-shimmer-loading['"]\)/,
+    )
+
     // Text content update should still only happen when data actually changed
     expect(shimmerRemovalSection).toContain('if (data !== text)')
     expect(shimmerRemovalSection).toContain('node.textContent = data')

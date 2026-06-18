@@ -56,20 +56,43 @@ const createMarkupTolerantTextPattern = (value: string): RegExp | null => {
 
 export const applyImageSwap = (
   html: string,
-  oldSrc: string | undefined,
+  altAnchor: string | undefined,
   newSrc: string | undefined,
+  occurrenceIndex?: number,
 ): { html: string; replaced: boolean } => {
-  const from = String(oldSrc ?? '')
+  const alt = String(altAnchor ?? '')
   const to = String(newSrc ?? '')
-  if (!html.trim() || !from.trim()) return { html, replaced: false }
+  if (!html.trim() || !alt.trim()) return { html, replaced: false }
 
-  const imgPattern = new RegExp(
-    `(<img[^>]*\\s)src=["']${escapeRegExp(from)}["']([^>]*>)`,
-    'gi',
-  )
-  const replaced = html.replace(imgPattern, `$1src="${to}"$2`)
+  const imgPattern = /<img\b[^>]*>/gi
+  const matches: Array<{ index: number; tag: string }> = []
+  let match: RegExpExecArray | null
+  while ((match = imgPattern.exec(html)) !== null) {
+    const tag = match[0]
+    const altMatch = tag.match(/\salt\s*=\s*(["'])(.*?)\1/i)
+    if (altMatch?.[2] === alt) {
+      matches.push({ index: match.index, tag })
+    }
+    if (tag.length === 0) imgPattern.lastIndex += 1
+  }
+  if (matches.length === 0) return { html, replaced: false }
 
-  return { html: replaced, replaced: replaced !== html }
+  const wanted =
+    occurrenceIndex !== undefined && occurrenceIndex >= 0
+      ? Math.min(occurrenceIndex, matches.length - 1)
+      : 0
+  const target = matches[wanted]
+  const escaped = to.replace(/"/g, '&quot;')
+  const srcAttrRe = /\ssrc\s*=\s*(["']).*?\1/i
+  const updatedTag = srcAttrRe.test(target.tag)
+    ? target.tag.replace(srcAttrRe, ` src="${escaped}"`)
+    : target.tag.replace(/>$/, ` src="${escaped}">`)
+  const edited =
+    html.slice(0, target.index) +
+    updatedTag +
+    html.slice(target.index + target.tag.length)
+
+  return { html: edited, replaced: edited !== html }
 }
 
 export const applyStyleEdit = (

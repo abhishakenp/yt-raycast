@@ -184,7 +184,12 @@ export const applySessionEdit = async (
     args.afterHtml !== undefined
       ? { html: args.afterHtml, replaced: true }
       : args.editType === 'image'
-        ? applyImageSwap(preview.html, args.beforeText, args.afterText)
+        ? applyImageSwap(
+            preview.html,
+            args.beforeText,
+            args.afterText,
+            args.occurrenceIndex,
+          )
         : args.editType === 'style'
           ? applyStyleEdit(
               preview.html,
@@ -213,7 +218,11 @@ export const applySessionEdit = async (
 
   let openUiSource: string | undefined
   let siteSpecJson: string | undefined
-  if (args.afterHtml === undefined && args.editType !== 'style') {
+  if (
+    args.afterHtml === undefined &&
+    args.editType !== 'style' &&
+    args.editType !== 'image'
+  ) {
     const artifactSnapshot = await applyTextEditToCurrentArtifacts(
       ctx,
       sessionId,
@@ -251,20 +260,21 @@ export const applySessionEdit = async (
     createdAt: now,
   })
 
-  if (args.editType !== 'image') {
-    await ctx.db.insert('edits', {
-      sessionId,
-      previewVersion: nextPreviewVersion,
-      editType: args.editType,
-      targetLabel: args.targetLabel,
-      beforeText: args.beforeText,
-      afterText: args.afterText,
-      afterHtml: args.afterHtml,
-      instruction: args.instruction,
-      createdAt: now,
-      userId: session.userId,
-    })
-  }
+  // Record edit history for all edit types so client-side override maps can
+  // rebuild image and style edits after preview reloads.
+  await ctx.db.insert('edits', {
+    sessionId,
+    previewVersion: nextPreviewVersion,
+    editType: args.editType,
+    targetLabel: args.targetLabel,
+    beforeText: args.beforeText,
+    afterText: args.afterText,
+    afterHtml: args.afterHtml,
+    instruction: args.instruction,
+    occurrenceIndex: args.occurrenceIndex,
+    createdAt: now,
+    userId: session.userId,
+  })
 
   return {
     sessionId,

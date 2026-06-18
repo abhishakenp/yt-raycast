@@ -38,6 +38,7 @@ export const serializeSessionEdit = (edit: Doc<'edits'>) => ({
   afterText: edit.afterText,
   afterHtml: edit.afterHtml,
   instruction: edit.instruction,
+  occurrenceIndex: edit.occurrenceIndex,
   previewVersion: edit.previewVersion,
   createdAt: edit.createdAt,
   userId: edit.userId,
