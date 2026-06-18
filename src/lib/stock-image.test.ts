@@ -117,7 +117,7 @@ describe('resolveStockImage', () => {
       query: 'medical clinic healthcare luxury dental reception',
     })
     expect(warn).toHaveBeenCalledWith(
-      'No stock image API keys configured (PEXELS_API_KEY / UNSPLASH_ACCESS_KEY); using picsum fallback',
+      'No stock image API keys configured (PEXELS_API_KEY / VITE_PEXELS_API_KEY / UNSPLASH_ACCESS_KEY / VITE_UNSPLASH_ACCESS_KEY); using picsum fallback',
     )
   })
 

@@ -616,7 +616,11 @@ export function Dashboard({
 
   const styleOverrides = useMemo(() => {
     const seen = new Set<string>()
-    const overrides: Array<{ classAnchor: string; occurrenceIndex: number; style: string }> = []
+    const overrides: Array<{
+      classAnchor: string
+      occurrenceIndex: number
+      style: string
+    }> = []
     for (const edit of editController.edits ?? []) {
       if (
         edit.editType === 'style' &&
@@ -628,7 +632,11 @@ export function Dashboard({
         // edits are newest-first, so the first seen class+occurrence wins.
         if (seen.has(key)) continue
         seen.add(key)
-        overrides.push({ classAnchor: edit.beforeText, occurrenceIndex, style: edit.afterText })
+        overrides.push({
+          classAnchor: edit.beforeText,
+          occurrenceIndex,
+          style: edit.afterText,
+        })
       }
     }
     return overrides

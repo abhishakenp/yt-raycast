@@ -42,7 +42,9 @@ describe('inline text edit — structure-preserving, no double-submit', () => {
     // structure. Caret placement keeps edits surgical.
     expect(src).toContain('caretRangeFromPoint')
     const handleClick = sliceAfter(src, 'const handleClick =', 2000)
-    expect(handleClick).not.toContain('range.selectNodeContents(textEl)\n      const sel')
+    expect(handleClick).not.toContain(
+      'range.selectNodeContents(textEl)\n      const sel',
+    )
   })
 })
 
@@ -81,37 +83,51 @@ describe('inline edit — overrides applied at render', () => {
   })
 
   it('GeneratedModulePreview threads both override maps down', () => {
-    const src = read('src/features/generation/components/GeneratedModulePreview.tsx')
+    const src = read(
+      'src/features/generation/components/GeneratedModulePreview.tsx',
+    )
     expect(src).toContain('imageOverrides')
     expect(src).toContain('styleOverrides')
   })
 })
 
 describe('inline edit — server anchors & persistence (convex)', () => {
-  const src = read('convex/sessions.ts')
+  const editHelpers = read('convex/lib/session_edit_helpers.ts')
+  const editMutationHelpers = read(
+    'convex/lib/session_edit_mutation_helpers.ts',
+  )
+  const previewHistoryHelpers = read(
+    'convex/lib/session_preview_history_helpers.ts',
+  )
 
   it('image swaps anchor on the alt attribute, not the (context-dependent) src', () => {
-    const fn = sliceAfter(src, 'const applyImageSwap = (')
+    const fn = sliceAfter(editHelpers, 'const applyImageSwap = (')
     expect(fn).toContain('altAnchor')
     expect(fn).toContain('altMatch')
-    expect(src).not.toContain('normalizeImageSrc')
+    expect(editHelpers).not.toContain('normalizeImageSrc')
   })
 
   it('style edits anchor on the class attribute', () => {
-    const fn = sliceAfter(src, 'const applyStyleEdit = (')
+    const fn = sliceAfter(editHelpers, 'const applyStyleEdit = (')
     expect(fn).toContain('classAnchor')
     expect(fn).toContain('class="')
   })
 
   it('style and image edits skip the text-artifact update path', () => {
-    expect(src).toContain("args.editType !== 'style'")
-    expect(src).toContain("args.editType !== 'image'")
+    expect(editMutationHelpers).toContain("args.editType !== 'style'")
+    expect(editMutationHelpers).toContain("args.editType !== 'image'")
   })
 
   it('records every edit (incl. image) with its occurrenceIndex for override rebuild', () => {
-    expect(src).toContain('Record edit history for all edit types')
-    expect(src).toContain('occurrenceIndex: args.occurrenceIndex')
-    expect(src).toContain('occurrenceIndex: edit.occurrenceIndex')
+    expect(editMutationHelpers).toContain(
+      'Record edit history for all edit types',
+    )
+    expect(editMutationHelpers).toContain(
+      'occurrenceIndex: args.occurrenceIndex',
+    )
+    expect(previewHistoryHelpers).toContain(
+      'occurrenceIndex: edit.occurrenceIndex',
+    )
   })
 
   it('edits schema stores occurrenceIndex and the image edit type', () => {

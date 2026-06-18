@@ -4,8 +4,8 @@ import {
   searchQueryFromAlt,
   seedFromAlt,
   slugifyAlt,
-} from "./image-query"
-import { generateContextAwareQuery, type ImageContext } from "./image-context"
+} from './image-query'
+import { generateContextAwareQuery, type ImageContext } from './image-context'
 
 type ResolveInput = {
   alt?: string
@@ -17,7 +17,7 @@ type ResolveInput = {
 
 type ResolveResult = {
   imageUrl: string
-  source: "pexels" | "unsplash" | "picsum"
+  source: 'pexels' | 'unsplash' | 'picsum'
   query: string
 }
 
@@ -115,14 +115,21 @@ export const resolveStockImage = async ({
   h = 600,
   context,
 }: ResolveInput): Promise<ResolveResult> => {
-  const seed = (alt ?? query ?? "image").trim() || "image"
+  const seed = (alt ?? query ?? 'image').trim() || 'image'
 
   // Use context-aware query generation if context is provided, otherwise fall back to simple query
   let resolvedQuery: string
-  if (context && (context.section || context.siteType || context.prompt || context.brandContext)) {
-    resolvedQuery = generateContextAwareQuery(alt || query || "image", context)
+  if (
+    context &&
+    (context.section ||
+      context.siteType ||
+      context.prompt ||
+      context.brandContext)
+  ) {
+    resolvedQuery = generateContextAwareQuery(alt || query || 'image', context)
   } else {
-    resolvedQuery = (query?.trim() || searchQueryFromAlt(seed)).trim() || "nature"
+    resolvedQuery =
+      (query?.trim() || searchQueryFromAlt(seed)).trim() || 'nature'
   }
 
   const key = cacheKey(resolvedQuery, w, h)
@@ -130,8 +137,14 @@ export const resolveStockImage = async ({
   const cached = cache.get(key)
   if (cached) return cached
 
-  const pexelsKey = process.env.PEXELS_API_KEY || process.env.VITE_PEXELS_API_KEY || import.meta.env.VITE_PEXELS_API_KEY
-  const unsplashKey = process.env.UNSPLASH_ACCESS_KEY || process.env.VITE_UNSPLASH_ACCESS_KEY || import.meta.env.VITE_UNSPLASH_ACCESS_KEY
+  const pexelsKey =
+    process.env.PEXELS_API_KEY ||
+    process.env.VITE_PEXELS_API_KEY ||
+    import.meta.env.VITE_PEXELS_API_KEY
+  const unsplashKey =
+    process.env.UNSPLASH_ACCESS_KEY ||
+    process.env.VITE_UNSPLASH_ACCESS_KEY ||
+    import.meta.env.VITE_UNSPLASH_ACCESS_KEY
 
   if (pexelsKey) {
     try {
@@ -139,43 +152,49 @@ export const resolveStockImage = async ({
       if (imageUrl) {
         const result: ResolveResult = {
           imageUrl,
-          source: "pexels",
+          source: 'pexels',
           query: resolvedQuery,
         }
         cache.set(key, result)
         return result
       }
     } catch (error) {
-      console.error("Pexels API error:", error)
+      console.error('Pexels API error:', error)
     }
   }
 
   if (unsplashKey) {
     try {
-      const imageUrl = await searchUnsplash(resolvedQuery, w, h, seed, unsplashKey)
+      const imageUrl = await searchUnsplash(
+        resolvedQuery,
+        w,
+        h,
+        seed,
+        unsplashKey,
+      )
       if (imageUrl) {
         const result: ResolveResult = {
           imageUrl,
-          source: "unsplash",
+          source: 'unsplash',
           query: resolvedQuery,
         }
         cache.set(key, result)
         return result
       }
     } catch (error) {
-      console.error("Unsplash API error:", error)
+      console.error('Unsplash API error:', error)
     }
   }
 
   if (!pexelsKey && !unsplashKey) {
     console.warn(
-      "No stock image API keys configured (VITE_PEXELS_API_KEY / VITE_UNSPLASH_ACCESS_KEY); using picsum fallback",
+      'No stock image API keys configured (PEXELS_API_KEY / VITE_PEXELS_API_KEY / UNSPLASH_ACCESS_KEY / VITE_UNSPLASH_ACCESS_KEY); using picsum fallback',
     )
   }
 
   const fallback: ResolveResult = {
     imageUrl: picsumUrl(slugifyAlt(seed), w, h),
-    source: "picsum",
+    source: 'picsum',
     query: resolvedQuery,
   }
   cache.set(key, fallback)

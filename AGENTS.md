@@ -41,6 +41,13 @@ This rule exists because claiming unverified fixes wastes time and breaks trust.
 3. Run `bun test` and fix any failures BEFORE claiming the work is done
 4. NEVER push without all tests passing
 
+**WHEN TESTS FAIL:**
+
+1. Treat the failing test as evidence of a product/code regression first, not as text to rewrite.
+2. Fix production code, wiring, generated artifacts, or test setup unless you can prove the test assertion is stale or incorrect.
+3. Only change a test when the product requirement changed, the test asserts the wrong contract, or the test points at an old module boundary after a verified refactor.
+4. If changing a test, explain the proof that the test was wrong and preserve equivalent coverage for the intended behavior.
+
 **Test patterns for this project:**
 
 - Use `vitest` with `describe`/`it`/`expect`
