@@ -1,17 +1,35 @@
-import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
+import {
+  HeadContent,
+  Outlet,
+  Scripts,
+  createRootRoute,
+} from '@tanstack/react-router'
+import { ClerkProvider } from '@clerk/tanstack-react-start'
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 import { Toaster } from 'sonner'
 
 import { AppProviders } from '@/app/providers/AppProviders'
+import { clerkFrostedGlassAppearance } from '@/app/providers/clerk-appearance'
 import { installDynamicImportRecovery } from '@/lib/chunk-load-recovery'
 
 import appCss from '../styles.css?url'
 
+const clerkPublishableKey =
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ??
+  import.meta.env.CLERK_PUBLISHABLE_KEY
+const configuredClerkPublishableKey =
+  typeof clerkPublishableKey === 'string' &&
+  clerkPublishableKey.trim().length > 0
+    ? clerkPublishableKey
+    : null
+
 const RootDocument = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
-    const isDark = localStorage.getItem('theme') === 'dark' ||
-      (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    const isDark =
+      localStorage.getItem('theme') === 'dark' ||
+      (!localStorage.getItem('theme') &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches)
     document.documentElement.classList.toggle('dark', isDark)
   }, [])
 
@@ -31,11 +49,26 @@ const RootDocument = ({ children }: { children: ReactNode }) => {
   )
 }
 
+const RootClerkProvider = ({ children }: { children: ReactNode }) =>
+  configuredClerkPublishableKey ? (
+    <ClerkProvider
+      publishableKey={configuredClerkPublishableKey}
+      afterSignOutUrl="/"
+      appearance={clerkFrostedGlassAppearance}
+    >
+      {children}
+    </ClerkProvider>
+  ) : (
+    children
+  )
+
 const RootComponent = () => (
   <RootDocument>
-    <AppProviders>
-      <Outlet />
-    </AppProviders>
+    <RootClerkProvider>
+      <AppProviders>
+        <Outlet />
+      </AppProviders>
+    </RootClerkProvider>
   </RootDocument>
 )
 

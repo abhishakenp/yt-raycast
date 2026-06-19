@@ -87,13 +87,15 @@ describe('homepage gallery deferral', () => {
     expect(examplePromptBlock).not.toContain('title={value}')
   })
 
-  it('loads Clerk auth controls only after explicit sign-in intent', () => {
+  it('mounts lazy Clerk auth controls so reloads can show signed-in state', () => {
     const source = readHomePageSource()
 
     expect(source).not.toContain('@clerk/tanstack-react-start')
     expect(source).toContain("import('@/components/HomepageAuthControls')")
-    expect(source).toContain('authRequested ? (')
-    expect(source).toContain('<LazyHomepageAuthControls autoOpen />')
+    expect(source).not.toContain('authRequested ? (')
+    expect(source).toContain(
+      '<LazyHomepageAuthControls autoOpen={authRequested} />',
+    )
   })
 
   it('keeps the heavy prompt language detector out of the initial homepage bundle', () => {

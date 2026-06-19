@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import {
+  areExportPaywallsDisabled,
   createSessionExport,
   exportTargetFileCount,
   getExportEntitlement,
@@ -11,6 +12,7 @@ import {
   loadOwnedExportForGitHubPush,
   loadExportRecord,
 } from './session_export_helpers'
+import { hashOwnerSecret } from './session_access_helpers'
 
 type CreditLedgerRecord = Doc<'creditLedger'>
 type CustomerCreditsRecord = Doc<'customerCredits'>
@@ -25,6 +27,8 @@ type SubscriptionRecord = Doc<'subscriptions'>
 const sessionId = 'session_export_helpers' as Id<'sessions'>
 const userId = 'user_export_helpers'
 const otherUserId = 'user_export_helpers_other'
+const openUiSource =
+  'root = SaasKimiPage("Preview", ["Home"], {"heading":"Preview"})'
 
 const exportDoc = (overrides: Partial<ExportRecord> = {}): ExportRecord =>
   ({
@@ -66,6 +70,7 @@ const previewDoc = (overrides: Partial<PreviewRecord> = {}): PreviewRecord =>
     sessionId,
     version: 2,
     html: '<main>Preview</main>',
+    openUiSource,
     source: 'generation',
     createdAt: 110,
     ...overrides,
@@ -422,6 +427,7 @@ const workflowCtxFor = (input: {
 
 afterEach(() => {
   vi.useRealTimers()
+  vi.unstubAllEnvs()
 })
 
 describe('exportTargetFileCount', () => {
@@ -429,6 +435,7 @@ describe('exportTargetFileCount', () => {
     expect(exportTargetFileCount('html')).toBe(5)
     expect(exportTargetFileCount('react')).toBe(7)
     expect(exportTargetFileCount('next')).toBe(7)
+    expect(exportTargetFileCount('lakebed')).toBe(12)
   })
 })
 
@@ -449,6 +456,28 @@ describe('loadExportRecord', () => {
     })
   })
 
+  it('treats payment-required export records as ready when the paywall is disabled', async () => {
+    vi.stubEnv('DISABLE_PAYWALL', 'true')
+
+    await expect(
+      loadExportRecord(
+        queryCtxFor([
+          exportDoc({
+            status: 'payment_required',
+            requiresPayment: true,
+            errorMessage: 'Subscribe first',
+          }),
+        ]),
+        sessionId,
+        'html',
+      ),
+    ).resolves.toMatchObject({
+      status: 'ready',
+      requiresPayment: false,
+      errorMessage: undefined,
+    })
+  })
+
   it('returns null when no export exists for the target', async () => {
     await expect(
       loadExportRecord(
@@ -461,6 +490,44 @@ describe('loadExportRecord', () => {
 })
 
 describe('getExportEntitlement', () => {
+  it('detects the Convex DISABLE_PAYWALL env flag', () => {
+    expect(areExportPaywallsDisabled({ DISABLE_PAYWALL: 'true' })).toBe(true)
+    expect(areExportPaywallsDisabled({ DISABLE_PAYWALL: ' TRUE ' })).toBe(true)
+    expect(areExportPaywallsDisabled({ DISABLE_PAYWALL: 'false' })).toBe(false)
+    expect(areExportPaywallsDisabled({})).toBe(false)
+  })
+
+  it('unlocks exports for anonymous users when the paywall is disabled', async () => {
+    vi.stubEnv('DISABLE_PAYWALL', 'true')
+    const { ctx } = ctxFor({})
+
+    await expect(
+      getExportEntitlement(ctx, undefined, sessionId),
+    ).resolves.toEqual({
+      status: 'ready',
+      requiresPayment: false,
+      entitlement: 'disabled_paywall',
+    })
+  })
+
+  it('does not consume credits when the paywall is disabled', async () => {
+    vi.stubEnv('DISABLE_PAYWALL', 'true')
+    const { ctx, customerCredits, creditLedger } = ctxFor({
+      subscriptions: [subscriptionDoc({ status: 'cancelled' })],
+      customerCredits: [creditDoc({ remaining: 2 })],
+    })
+
+    await expect(getExportEntitlement(ctx, userId, sessionId)).resolves.toEqual(
+      {
+        status: 'ready',
+        requiresPayment: false,
+        entitlement: 'disabled_paywall',
+      },
+    )
+    expect(customerCredits[0].remaining).toBe(2)
+    expect(creditLedger).toHaveLength(0)
+  })
+
   it('requires payment for anonymous users', async () => {
     const { ctx } = ctxFor({})
 
@@ -643,7 +710,7 @@ describe('loadOwnedExportDownload', () => {
         status: 'ready',
         requiresPayment: false,
       }),
-      source: 'export const Home = () => <main />',
+      source: openUiSource,
       siteSpecJson: '{"title":"Preview"}',
       previewHtml: '<main>Preview</main>',
       latestPreviewVersion: 2,
@@ -673,6 +740,58 @@ describe('loadOwnedExportDownload', () => {
       }),
     })
   })
+
+  it('returns ready export artifacts for payment-required records when the paywall is disabled', async () => {
+    vi.stubEnv('DISABLE_PAYWALL', 'true')
+    const { ctx } = workflowCtxFor({
+      identityUserId: userId,
+      exports: [
+        exportDoc({
+          status: 'payment_required',
+          requiresPayment: true,
+          errorMessage: 'Subscribe first',
+        }),
+      ],
+    })
+
+    await expect(
+      loadOwnedExportDownload(ctx, { sessionId, target: 'html' }),
+    ).resolves.toMatchObject({
+      export: expect.objectContaining({
+        status: 'ready',
+        requiresPayment: false,
+        errorMessage: undefined,
+      }),
+      source: openUiSource,
+      previewHtml: '<main>Preview</main>',
+    })
+  })
+
+  it('falls back to site-spec OpenUI when generated module source is TSX', async () => {
+    const siteSpecOpenUi =
+      'root = SaasKimiPage("Site Spec", ["Home"], {"heading":"Site Spec"})'
+    const { ctx } = workflowCtxFor({
+      identityUserId: userId,
+      previews: [previewDoc({ openUiSource: undefined })],
+      generatedModules: [
+        generatedModuleDoc({
+          source: 'export const Home = () => <main>Subscribers</main>',
+        }),
+      ],
+      siteSpecs: [
+        siteSpecDoc({
+          specJson: JSON.stringify({ pages: { home: siteSpecOpenUi } }),
+        }),
+      ],
+      exports: [exportDoc()],
+    })
+
+    await expect(
+      loadOwnedExportDownload(ctx, { sessionId, target: 'html' }),
+    ).resolves.toMatchObject({
+      source: siteSpecOpenUi,
+    })
+  })
 })
 
 describe('loadOwnedExportForGitHubPush', () => {
@@ -690,7 +809,61 @@ describe('loadOwnedExportForGitHubPush', () => {
       target: 'html',
       previewVersion: 2,
       html: '<main>Preview</main>',
+      source: openUiSource,
+      siteSpecJson: '{"title":"Preview"}',
+      previewHtml: '<main>Preview</main>',
+      themeName: undefined,
+      isDark: true,
       includeBadge: false,
+    })
+  })
+
+  it('allows a signed-in caller to push an anonymous-owned session with the owner secret', async () => {
+    const ownerSecret = 'owner-secret'
+    const { ctx } = workflowCtxFor({
+      identityUserId: userId,
+      sessions: [
+        sessionDoc({
+          userId: undefined,
+          anonOwnerSecretHash: await hashOwnerSecret(ownerSecret),
+        }),
+      ],
+      exports: [exportDoc()],
+    })
+
+    await expect(
+      loadOwnedExportForGitHubPush(ctx, {
+        sessionId,
+        target: 'html',
+        anonymousOwnerSecret: ownerSecret,
+      }),
+    ).resolves.toMatchObject({
+      sessionId,
+      target: 'html',
+      prompt: 'Build a polished landing page',
+    })
+  })
+
+  it('allows GitHub push for payment-required export records when the paywall is disabled', async () => {
+    vi.stubEnv('DISABLE_PAYWALL', 'true')
+    const { ctx } = workflowCtxFor({
+      identityUserId: userId,
+      exports: [
+        exportDoc({
+          status: 'payment_required',
+          requiresPayment: true,
+          errorMessage: 'Subscribe first',
+        }),
+      ],
+    })
+
+    await expect(
+      loadOwnedExportForGitHubPush(ctx, { sessionId, target: 'html' }),
+    ).resolves.toMatchObject({
+      sessionId,
+      target: 'html',
+      html: '<main>Preview</main>',
+      includeBadge: true,
     })
   })
 
@@ -748,10 +921,14 @@ describe('loadOwnedExportForGitHubPush', () => {
 })
 
 describe('sessions export delegation', () => {
-  it('keeps public export functions delegated to export helpers', () => {
+  it('keeps owned export functions delegated with ownership-aware validators', () => {
     const source = readFileSync(
       new URL('../sessions.ts', import.meta.url),
       'utf8',
+    )
+    const githubPushBlock = source.slice(
+      source.indexOf('export const getOwnedExportForGitHubPush = query({'),
+      source.indexOf('export const createEdit = mutation({'),
     )
 
     expect(source).toContain(
@@ -763,8 +940,27 @@ describe('sessions export delegation', () => {
     expect(source).toContain(
       'handler: (ctx, args) => loadOwnedExportForGitHubPush(ctx, args)',
     )
+    expect(githubPushBlock).toContain('args: ownedExportArgs')
+    expect(githubPushBlock).not.toContain('args: exportRecordArgs')
     expect(source).not.toContain(
       'Generate this export before pushing it to GitHub.',
     )
+  })
+})
+
+describe('export paywall env wiring', () => {
+  it('uses DISABLE_PAYWALL and keeps DISABLE_LIMIT out of export entitlement', () => {
+    const source = readFileSync(
+      new URL('./session_export_helpers.ts', import.meta.url),
+      'utf8',
+    )
+    const entitlementBlock = source.slice(
+      source.indexOf('export const getExportEntitlement = async'),
+      source.indexOf('export const createSessionExport = async'),
+    )
+
+    expect(source).toContain('DISABLE_PAYWALL')
+    expect(entitlementBlock).toContain('areExportPaywallsDisabled()')
+    expect(source).not.toContain('DISABLE_LIMIT')
   })
 })

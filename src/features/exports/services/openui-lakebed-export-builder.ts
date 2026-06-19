@@ -134,6 +134,13 @@ const isHtmlDocumentSource = (source: string): boolean => {
   return /^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)
 }
 
+const isHtmlLikeSource = (source: string): boolean => {
+  const trimmed = source.trim()
+  return (
+    isHtmlDocumentSource(trimmed) || /^<[a-z][\w:-]*(?:\s|>|\/>)/i.test(trimmed)
+  )
+}
+
 const decodeHtmlAttribute = (value: string): string =>
   value
     .replace(/&quot;/g, '"')
@@ -173,15 +180,39 @@ const choosePexelsPhotoUrl = (
 ): string | null => {
   if (!photo?.src) return null
   if (w > 1200 || h > 1200) {
-    return photo.src.original ?? photo.src.large2x ?? photo.src.large ?? photo.src.medium ?? null
+    return (
+      photo.src.original ??
+      photo.src.large2x ??
+      photo.src.large ??
+      photo.src.medium ??
+      null
+    )
   }
   if (w > 800 || h > 800) {
-    return photo.src.large2x ?? photo.src.large ?? photo.src.original ?? photo.src.medium ?? null
+    return (
+      photo.src.large2x ??
+      photo.src.large ??
+      photo.src.original ??
+      photo.src.medium ??
+      null
+    )
   }
   if (w > 400 || h > 400) {
-    return photo.src.large ?? photo.src.large2x ?? photo.src.medium ?? photo.src.original ?? null
+    return (
+      photo.src.large ??
+      photo.src.large2x ??
+      photo.src.medium ??
+      photo.src.original ??
+      null
+    )
   }
-  return photo.src.medium ?? photo.src.large ?? photo.src.large2x ?? photo.src.original ?? null
+  return (
+    photo.src.medium ??
+    photo.src.large ??
+    photo.src.large2x ??
+    photo.src.original ??
+    null
+  )
 }
 
 const resolvePexelsImageForLakebed = async (
@@ -249,12 +280,18 @@ const fallbackLakebedImageUrlFor = (
 const isLikelyImageAltKey = (key: string): boolean => {
   const normalized = key.toLowerCase().replace(/[^a-z0-9]/g, '')
   if (normalized === 'alt') return true
-  if (normalized.endsWith('imagealt') || normalized.endsWith('imagealts')) return true
-  if (normalized.endsWith('photoalt') || normalized.endsWith('photoalts')) return true
-  if (normalized.endsWith('avataralt') || normalized.endsWith('avataralts')) return true
-  if (normalized.endsWith('headshotalt') || normalized.endsWith('headshotalts')) return true
-  if (normalized.endsWith('coveralt') || normalized.endsWith('coveralts')) return true
-  if (normalized.endsWith('logoalt') || normalized.endsWith('logoalts')) return true
+  if (normalized.endsWith('imagealt') || normalized.endsWith('imagealts'))
+    return true
+  if (normalized.endsWith('photoalt') || normalized.endsWith('photoalts'))
+    return true
+  if (normalized.endsWith('avataralt') || normalized.endsWith('avataralts'))
+    return true
+  if (normalized.endsWith('headshotalt') || normalized.endsWith('headshotalts'))
+    return true
+  if (normalized.endsWith('coveralt') || normalized.endsWith('coveralts'))
+    return true
+  if (normalized.endsWith('logoalt') || normalized.endsWith('logoalts'))
+    return true
   return false
 }
 
@@ -591,9 +628,9 @@ const getManifestSourceIndex = (): Record<
     )
   }
   manifestSourceIndex = JSON.parse(
-    brotliDecompressSync(Buffer.from(reactExportSourcesBase64, 'base64')).toString(
-      'utf8',
-    ),
+    brotliDecompressSync(
+      Buffer.from(reactExportSourcesBase64, 'base64'),
+    ).toString('utf8'),
   ) as Record<string, ReactExportSourceEntry | undefined>
   return manifestSourceIndex
 }
@@ -606,9 +643,9 @@ const getBlockSourceFileIndex = (): Record<string, string | undefined> => {
     )
   }
   blockSourceFileIndex = JSON.parse(
-    brotliDecompressSync(Buffer.from(blockSourceFilesBase64, 'base64')).toString(
-      'utf8',
-    ),
+    brotliDecompressSync(
+      Buffer.from(blockSourceFilesBase64, 'base64'),
+    ).toString('utf8'),
   ) as Record<string, string | undefined>
   return blockSourceFileIndex
 }
@@ -621,9 +658,9 @@ const getVendorSourceFileIndex = (): Record<string, string | undefined> => {
     )
   }
   vendorSourceFileIndex = JSON.parse(
-    brotliDecompressSync(Buffer.from(vendorSourceFilesBase64, 'base64')).toString(
-      'utf8',
-    ),
+    brotliDecompressSync(
+      Buffer.from(vendorSourceFilesBase64, 'base64'),
+    ).toString('utf8'),
   ) as Record<string, string | undefined>
   return vendorSourceFileIndex
 }
@@ -634,11 +671,15 @@ const normalizeBlockSourceRelPath = (sourceRelPath: string): string =>
     .replace(/^src\//, '')
     .replace(/\.(ts|tsx|js|jsx|mjs|json|css)$/, '')
 
-const resolveBlockSourceManifestPath = (sourceRelPath: string): string | null => {
+const resolveBlockSourceManifestPath = (
+  sourceRelPath: string,
+): string | null => {
   const normalizedRel = normalizeBlockSourceRelPath(sourceRelPath)
   const sourceFiles = getBlockSourceFileIndex()
   const candidates = sourcePathCandidates(`src/${normalizedRel}`)
-  return candidates.find((candidate) => sourceFiles[candidate] !== undefined) ?? null
+  return (
+    candidates.find((candidate) => sourceFiles[candidate] !== undefined) ?? null
+  )
 }
 
 const resolveRelativeBlockSourcePath = (
@@ -837,12 +878,15 @@ const transformClientComponentImports = (
       continue
     }
 
-    const rewritten = rewriteLakebedClientImports(statement.getText(sourceFile), {
-      outPath,
-      files,
-      seenVendorFiles,
-      seenBlockFiles,
-    })
+    const rewritten = rewriteLakebedClientImports(
+      statement.getText(sourceFile),
+      {
+        outPath,
+        files,
+        seenVendorFiles,
+        seenBlockFiles,
+      },
+    )
     imports.push(rewritten)
   }
 
@@ -857,7 +901,9 @@ const transformClientComponentImports = (
 
   return {
     imports: [...new Set(imports)],
-    vendorFiles: new Set(Object.keys(files).filter((path) => !before.has(path))),
+    vendorFiles: new Set(
+      Object.keys(files).filter((path) => !before.has(path)),
+    ),
   }
 }
 
@@ -934,7 +980,9 @@ const collectDefinitions = (componentNames: string[]): LakebedDefinition[] => {
       const entry = manifest[componentName]
       return entry ? readLakebedDefinition(componentName, entry) : null
     })
-    .filter((definition): definition is LakebedDefinition => definition !== null)
+    .filter(
+      (definition): definition is LakebedDefinition => definition !== null,
+    )
 }
 
 const collectClientComponents = (
@@ -969,7 +1017,11 @@ const buildRoutes = (
   const used = new Set<string>()
   return parsed.pages.map((page, index) => ({
     label: parsed.routes[index] ?? `Page ${index + 1}`,
-    path: uniqueRoutePath(parsed.routes[index] ?? `Page ${index + 1}`, index, used),
+    path: uniqueRoutePath(
+      parsed.routes[index] ?? `Page ${index + 1}`,
+      index,
+      used,
+    ),
     componentName: page.typeName,
     props: (page.props ?? {}) as Record<string, unknown>,
   }))
@@ -985,17 +1037,20 @@ const firstString = (
   for (const key of keys) {
     const value = source[key]
     if (typeof value === 'string' && value.trim()) return value.trim()
-    if (typeof value === 'number' && Number.isFinite(value)) return String(value)
+    if (typeof value === 'number' && Number.isFinite(value))
+      return String(value)
   }
   return undefined
 }
 
 const sanitizeSharedText = (value: string): string =>
-  value.replace(/\bprocesses\b/gi, (match) =>
-    match[0] === match[0]?.toUpperCase() ? 'Workflows' : 'workflows',
-  ).replace(/\bprocess\b/gi, (match) =>
-    match[0] === match[0]?.toUpperCase() ? 'Workflow' : 'workflow',
-  )
+  value
+    .replace(/\bprocesses\b/gi, (match) =>
+      match[0] === match[0]?.toUpperCase() ? 'Workflows' : 'workflows',
+    )
+    .replace(/\bprocess\b/gi, (match) =>
+      match[0] === match[0]?.toUpperCase() ? 'Workflow' : 'workflow',
+    )
 
 const sectionTitleKeys = [
   'title',
@@ -1063,7 +1118,11 @@ const collectContentSections = (
 }
 
 const stripOuterBraces = (source: string): string =>
-  source.trim().replace(/^\{\s*/, '').replace(/\s*\}$/, '').trim()
+  source
+    .trim()
+    .replace(/^\{\s*/, '')
+    .replace(/\s*\}$/, '')
+    .trim()
 
 const mergeObjectSources = (
   sources: Array<string | null>,
@@ -1141,21 +1200,27 @@ const resolvePackageExportTarget = (
   return null
 }
 
-const resolveVendorSourceManifestPath = (sourceRelPath: string): string | null => {
+const resolveVendorSourceManifestPath = (
+  sourceRelPath: string,
+): string | null => {
   const normalizedRel = toPosixPath(sourceRelPath)
     .replace(/^node_modules\//, '')
     .replace(/^client\/vendor\//, '')
     .replace(/^\.\//, '')
   const sourceFiles = getVendorSourceFileIndex()
   const candidates = sourcePathCandidates(normalizedRel)
-  return candidates.find((candidate) => sourceFiles[candidate] !== undefined) ?? null
+  return (
+    candidates.find((candidate) => sourceFiles[candidate] !== undefined) ?? null
+  )
 }
 
 const resolveRelativeVendorSourcePath = (
   sourcePath: string,
   moduleName: string,
 ): string | null =>
-  resolveVendorSourceManifestPath(toPosixPath(join(dirname(sourcePath), moduleName)))
+  resolveVendorSourceManifestPath(
+    toPosixPath(join(dirname(sourcePath), moduleName)),
+  )
 
 const resolveBareImportFile = (specifier: string): string => {
   const packageName = readPublicPackageName(specifier)
@@ -1184,7 +1249,7 @@ const resolveBareImportFile = (specifier: string): string => {
   const exported = exportedPackagePath(exportTarget, subpath)
   const candidate =
     exported ??
-    (subpath === '.' ? packageJson.module ?? packageJson.main : subpath)
+    (subpath === '.' ? (packageJson.module ?? packageJson.main) : subpath)
   if (!candidate) {
     throw new Error(`Cannot resolve vendored package import: ${specifier}`)
   }
@@ -1204,7 +1269,9 @@ const resolveBareImportFile = (specifier: string): string => {
       nestedPackageJson['jsnext:main'] ??
       nestedPackageJson.main
     const nestedResolved = nestedCandidate
-      ? resolveVendorSourceManifestPath(join(dirname(resolved), nestedCandidate))
+      ? resolveVendorSourceManifestPath(
+          join(dirname(resolved), nestedCandidate),
+        )
       : null
     if (!nestedResolved) {
       throw new Error(`Missing vendored package source for ${specifier}`)
@@ -1414,10 +1481,7 @@ const copyVendorSourceFile = (
   if (vendorSource === undefined) {
     throw new Error(`Cannot find vendored dependency source: ${sourcePath}`)
   }
-  const source = applyLakebedVendorCompatibility(
-    vendorSource,
-    manifestPath,
-  )
+  const source = applyLakebedVendorCompatibility(vendorSource, manifestPath)
   files[outPath] = rewriteLakebedClientImports(source, {
     outPath,
     sourcePath: manifestPath,
@@ -1432,7 +1496,8 @@ const copyBareVendorImport = (
   specifier: string,
   files: Record<string, string>,
   seenVendorFiles: Set<string>,
-): string => copyVendorSourceFile(resolveBareImportFile(specifier), files, seenVendorFiles)
+): string =>
+  copyVendorSourceFile(resolveBareImportFile(specifier), files, seenVendorFiles)
 
 const rewriteNamedBareImport = (
   statement: ts.ImportDeclaration,
@@ -1463,7 +1528,8 @@ const rewriteNamedBareImport = (
         context.seenVendorFiles,
       )
       const importPath = relativeImportPath(context.outPath, vendorPath)
-      if (target.namespace) return `import * as ${localName} from "${importPath}";`
+      if (target.namespace)
+        return `import * as ${localName} from "${importPath}";`
       if (target.importName === 'default') {
         return `import { default as ${localName} } from "${importPath}";`
       }
@@ -1473,7 +1539,6 @@ const rewriteNamedBareImport = (
       return `import { ${target.importName} as ${localName} } from "${importPath}";`
     })
     .join('\n')
-
 }
 
 function rewriteLakebedClientImports(
@@ -1513,7 +1578,9 @@ function rewriteLakebedClientImports(
       return relativeImportPath(context.outPath, targetOut)
     }
     if (moduleName.startsWith('#/')) {
-      throw new Error(`Lakebed export cannot rewrite private import ${moduleName}`)
+      throw new Error(
+        `Lakebed export cannot rewrite private import ${moduleName}`,
+      )
     }
     if (moduleName.startsWith('.')) {
       if (!context.sourcePath) return moduleName
@@ -1530,9 +1597,16 @@ function rewriteLakebedClientImports(
         )
         return relativeImportPath(context.outPath, targetOut)
       }
-      const target = resolveRelativeVendorSourcePath(context.sourcePath, moduleName)
+      const target = resolveRelativeVendorSourcePath(
+        context.sourcePath,
+        moduleName,
+      )
       if (!target) return moduleName
-      const vendorPath = copyVendorSourceFile(target, context.files, context.seenVendorFiles)
+      const vendorPath = copyVendorSourceFile(
+        target,
+        context.files,
+        context.seenVendorFiles,
+      )
       return relativeImportPath(context.outPath, vendorPath)
     }
 
@@ -1556,7 +1630,10 @@ function rewriteLakebedClientImports(
         continue
       }
     }
-    if (!ts.isImportDeclaration(statement) && !ts.isExportDeclaration(statement)) {
+    if (
+      !ts.isImportDeclaration(statement) &&
+      !ts.isExportDeclaration(statement)
+    ) {
       continue
     }
     const specifier = statement.moduleSpecifier
@@ -1570,7 +1647,10 @@ function rewriteLakebedClientImports(
     })
   }
 
-  return replaceRanges(source, ranges).replace(/^['"]use client['"];?\n\n?/g, '')
+  return replaceRanges(source, ranges).replace(
+    /^['"]use client['"];?\n\n?/g,
+    '',
+  )
 }
 
 function copyBlocksClientSourceForLakebed(
@@ -1658,7 +1738,10 @@ const transformHandler = (
 
   const normalizeHandlerSource = (value: string) =>
     normalizeNumericFieldWrites(
-      value.replace(/\.orderBy\((['"])createdAt\1\)/g, '.orderBy("createdAt", "desc")'),
+      value.replace(
+        /\.orderBy\((['"])createdAt\1\)/g,
+        '.orderBy("createdAt", "desc")',
+      ),
       numericFieldNames,
     )
 
@@ -1730,12 +1813,17 @@ const renderSharedContent = (
   routes: LakebedRoute[],
 ): string => {
   const pages = routes.map((route, index) => {
-    const hero = route.props.hero as Record<string, unknown> | string | undefined
+    const hero = route.props.hero as
+      | Record<string, unknown>
+      | string
+      | undefined
     const title =
       (typeof hero === 'object' && typeof hero.title === 'string'
         ? hero.title
         : undefined) ??
-      (typeof route.props.heading === 'string' ? route.props.heading : undefined) ??
+      (typeof route.props.heading === 'string'
+        ? route.props.heading
+        : undefined) ??
       (typeof route.props.title === 'string' ? route.props.title : undefined) ??
       route.label
     const description =
@@ -1847,7 +1935,9 @@ export const generatedImageSources = ${JSON.stringify(imageSources, null, 2)} sa
 `
 }
 
-const renderClientTheme = (themeCss: string): string => `import { useEffect } from "preact/hooks";
+const renderClientTheme = (
+  themeCss: string,
+): string => `import { useEffect } from "preact/hooks";
 
 export const generatedThemeCss = ${JSON.stringify(themeCss)};
 
@@ -1866,7 +1956,8 @@ export function StyleRuntime() {
 }
 `
 
-const renderClientNavigation = (): string => `import { useNavigate as useLakebedNavigate } from "lakebed/client";
+const renderClientNavigation =
+  (): string => `import { useNavigate as useLakebedNavigate } from "lakebed/client";
 import { generatedRouteByLabel } from "../routes";
 
 function slugFragment(value: string): string {
@@ -1893,7 +1984,8 @@ export function useNavigate() {
 }
 `
 
-const renderClientImage = (): string => `import { generatedImageSources } from "../routes";
+const renderClientImage =
+  (): string => `import { generatedImageSources } from "../routes";
 
 const imageSourcesByAlt = new Map(
   generatedImageSources.map((image) => [image.alt, image.src]),
@@ -2122,7 +2214,10 @@ export function App() {
 `
 }
 
-const renderStaticClientIndex = (projectName: string, html: string): string => `import { useState } from "preact/hooks";
+const renderStaticClientIndex = (
+  projectName: string,
+  html: string,
+): string => `import { useState } from "preact/hooks";
 import { projectName } from "../shared/content";
 
 const html = ${JSON.stringify(html)};
@@ -2172,7 +2267,7 @@ const renderServerIndex = (
     articleTitle: string(),
     ownerId: string(),
   }),
-}`
+}`,
   )
   const queriesSource = mergeHandlers(
     definitions,
@@ -2182,7 +2277,7 @@ const renderServerIndex = (
   articles: query((ctx) =>
     ctx.db.articles.orderBy("createdAt", "desc").all()
   ),
-}`
+}`,
   )
   const mutationsSource = mergeHandlers(
     definitions,
@@ -2196,7 +2291,7 @@ const renderServerIndex = (
     }
     return ctx.db.readingList.all()
   }),
-}`
+}`,
   )
   const imports = [
     'capsule',
@@ -2225,7 +2320,9 @@ export default capsule({
 `
 }
 
-const renderStaticServerIndex = (projectName: string): string => `import { capsule, endpoint, text } from "lakebed/server";
+const renderStaticServerIndex = (
+  projectName: string,
+): string => `import { capsule, endpoint, text } from "lakebed/server";
 
 export default capsule({
   name: ${JSON.stringify(toProjectSlug(projectName))},
@@ -2338,10 +2435,13 @@ const buildStaticLakebedProjectFiles = async (
 export async function buildOpenUILakebedProjectFiles(
   input: OpenUIExportInput,
 ): Promise<LakebedProjectFiles> {
-  if (isHtmlDocumentSource(input.source)) {
+  if (isHtmlLikeSource(input.source)) {
     return await buildStaticLakebedProjectFiles(
       input,
-      readProjectName(input.siteSpecJson, readHtmlTitle(input.source) ?? 'Lakebed Site'),
+      readProjectName(
+        input.siteSpecJson,
+        readHtmlTitle(input.source) ?? 'Lakebed Site',
+      ),
     )
   }
 
@@ -2369,7 +2469,10 @@ export async function buildOpenUILakebedProjectFiles(
     resolveThemeStyles(themeName),
     input.isDark ?? true,
   )
-  const imageSources = await resolveLakebedImageSources(routes, input.previewHtml)
+  const imageSources = await resolveLakebedImageSources(
+    routes,
+    input.previewHtml,
+  )
   Object.assign(files, {
     'AGENTS.md': renderAgents(),
     'CLAUDE.md': renderAgents(),

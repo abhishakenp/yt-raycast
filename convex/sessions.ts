@@ -364,7 +364,7 @@ export const getOwnedExportDownload = query({
 })
 
 export const getOwnedExportForGitHubPush = query({
-  args: exportRecordArgs,
+  args: ownedExportArgs,
   handler: (ctx, args) => loadOwnedExportForGitHubPush(ctx, args),
 })
 

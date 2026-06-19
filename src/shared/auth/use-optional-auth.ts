@@ -19,7 +19,7 @@ const isClerkConfigured =
 type OptionalAuth = Pick<ReturnType<typeof useAuth>, 'getToken' | 'isSignedIn'>
 type OptionalClerk = Pick<
   ReturnType<typeof useClerk>,
-  'openSignIn' | 'session' | 'user'
+  'openSignIn' | 'openUserProfile' | 'session' | 'user'
 >
 
 const anonymousAuth: OptionalAuth = {
@@ -28,6 +28,7 @@ const anonymousAuth: OptionalAuth = {
 }
 const anonymousClerk: OptionalClerk = {
   openSignIn: () => undefined,
+  openUserProfile: () => undefined,
   session: null,
   user: null,
 }

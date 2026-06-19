@@ -130,27 +130,18 @@ const TopActions = () => {
           Pricing
         </GlassPillAnchor>
         {isClerkConfigured ? (
-          authRequested ? (
-            <Suspense
-              fallback={
-                <GlassPillButton
-                  className="pill--top-actions min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5"
-                  disabled
-                >
-                  Sign in
-                </GlassPillButton>
-              }
-            >
-              <LazyHomepageAuthControls autoOpen />
-            </Suspense>
-          ) : (
-            <GlassPillButton
-              className="pill--top-actions min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5"
-              onClick={() => setAuthRequested(true)}
-            >
-              Sign in
-            </GlassPillButton>
-          )
+          <Suspense
+            fallback={
+              <GlassPillButton
+                className="pill--top-actions min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5"
+                onClick={() => setAuthRequested(true)}
+              >
+                Sign in
+              </GlassPillButton>
+            }
+          >
+            <LazyHomepageAuthControls autoOpen={authRequested} />
+          </Suspense>
         ) : null}
       </div>
     </nav>

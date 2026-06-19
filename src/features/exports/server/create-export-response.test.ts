@@ -6,6 +6,7 @@ const queryMock = vi.fn()
 const setAuthMock = vi.fn()
 const buildOpenUIHtmlExportMock = vi.hoisted(() => vi.fn())
 const buildOpenUIExportMock = vi.hoisted(() => vi.fn())
+const buildOpenUILakebedExportMock = vi.hoisted(() => vi.fn())
 const fakeClient = { query: queryMock, setAuth: setAuthMock } as never
 const openUiSource = `root = SaasKimiPage("Paid export", ["Home"], {"heading": "Paid export", "highlight": "export"})`
 const siteSpecJson = JSON.stringify({ projectName: 'Paid export' })
@@ -16,6 +17,10 @@ vi.mock('../services/openui-html-export-builder', () => ({
 
 vi.mock('../services/openui-export-builder', () => ({
   buildOpenUIExport: buildOpenUIExportMock,
+}))
+
+vi.mock('../services/openui-lakebed-export-builder', () => ({
+  buildOpenUILakebedExport: buildOpenUILakebedExportMock,
 }))
 
 describe('createExportResponse', () => {
@@ -33,6 +38,12 @@ describe('createExportResponse', () => {
       body: new Uint8Array([1, 2, 3]),
       contentType: 'application/zip',
       filename: 'paid-export-next.zip',
+    })
+    buildOpenUILakebedExportMock.mockReset()
+    buildOpenUILakebedExportMock.mockResolvedValue({
+      body: new Uint8Array([4, 5, 6]),
+      contentType: 'application/zip',
+      filename: 'paid-export-lakebed.zip',
     })
   })
 
@@ -112,6 +123,32 @@ describe('createExportResponse', () => {
     expect(buildOpenUIExportMock).toHaveBeenCalledWith(
       expect.objectContaining({ target: 'next' }),
     )
+    expect(buildOpenUIHtmlExportMock).not.toHaveBeenCalled()
+  })
+
+  it('routes Lakebed downloads through the Lakebed project builder', async () => {
+    queryMock.mockResolvedValueOnce({
+      export: {
+        status: 'ready',
+        requiresPayment: false,
+      },
+      source: openUiSource,
+      siteSpecJson,
+      latestPreviewVersion: 1,
+    })
+
+    const response = await createExportResponse(
+      'session_123',
+      'lakebed',
+      fakeClient,
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toBe('application/zip')
+    expect(buildOpenUILakebedExportMock).toHaveBeenCalledWith(
+      expect.objectContaining({ target: 'lakebed' }),
+    )
+    expect(buildOpenUIExportMock).not.toHaveBeenCalled()
     expect(buildOpenUIHtmlExportMock).not.toHaveBeenCalled()
   })
 

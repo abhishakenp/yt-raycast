@@ -55,15 +55,16 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
   if (shouldLoadClerk) {
     return (
       <Suspense fallback={<ProviderFallback />}>
-        <LazyClerkConvexProvider
-          clerkPublishableKey={clerkPublishableKey}
-          convexClient={convex}
-        >
+        <LazyClerkConvexProvider convexClient={convex}>
           {children}
         </LazyClerkConvexProvider>
       </Suspense>
     )
   }
 
-  return convex ? <ConvexProvider client={convex}>{children}</ConvexProvider> : children
+  return convex ? (
+    <ConvexProvider client={convex}>{children}</ConvexProvider>
+  ) : (
+    children
+  )
 }
