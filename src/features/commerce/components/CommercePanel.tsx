@@ -10,6 +10,22 @@ type CommercePanelProps = {
   onTransformingChange?: (isTransforming: boolean) => void
 }
 
+type CommerceConfig = {
+  adminUrl?: string
+  backendUrl?: string
+  status?: string
+  storefrontUrl?: string
+}
+
+type CommerceHandoff = {
+  adminEmail?: string
+  adminPassword?: string
+  adminUrl: string
+  backendUrl: string
+  storefrontUrl: string
+  tenantId: string
+}
+
 const minimumTransformMs = 1800
 
 const wait = (ms: number) =>
@@ -32,6 +48,19 @@ const readCommerceWarning = (
   }
 }
 
+const createPersistedCommerceHandoff = (
+  sessionId: string,
+  config: CommerceConfig | null | undefined,
+): CommerceHandoff | undefined =>
+  config?.status === 'ready' && config.adminUrl && config.storefrontUrl
+    ? {
+        adminUrl: config.adminUrl,
+        backendUrl: config.backendUrl ?? '',
+        storefrontUrl: config.storefrontUrl,
+        tenantId: sessionId,
+      }
+    : undefined
+
 export const CommercePanel = ({
   sessionId,
   onTransformingChange,
@@ -47,6 +76,8 @@ export const CommercePanel = ({
   const isReady = config?.status === 'ready'
   const liveCheckoutWarning =
     config?.errorMessage ?? readCommerceWarning(config?.configJson)
+  const visibleCommerceHandoff =
+    commerceHandoff ?? createPersistedCommerceHandoff(sessionId, config)
 
   const handleSave = async () => {
     setIsTransforming(true)
@@ -123,7 +154,7 @@ export const CommercePanel = ({
           Commerce enabled. Live checkout needs Medusa Store API configuration.
         </p>
       )}
-      {commerceHandoff !== undefined && (
+      {visibleCommerceHandoff !== undefined && (
         <div className="mt-3 rounded-[var(--radius-md)] border border-[var(--border-primary)] bg-[var(--bg-input)] p-3 text-sm text-[var(--text-primary)]">
           <p className="m-0 text-xs font-semibold uppercase tracking-[0.1em] text-[var(--text-muted)]">
             Medusa handoff
@@ -131,7 +162,7 @@ export const CommercePanel = ({
           <div className="mt-3 grid gap-2">
             <a
               className="inline-flex items-center justify-center rounded-full bg-cyan-300 px-3 py-2 text-xs font-bold text-slate-950"
-              href={commerceHandoff.storefrontUrl}
+              href={visibleCommerceHandoff.storefrontUrl}
               rel="noreferrer"
               target="_blank"
             >
@@ -139,24 +170,26 @@ export const CommercePanel = ({
             </a>
             <a
               className="inline-flex items-center justify-center rounded-full border border-white/10 px-3 py-2 text-xs font-semibold text-[var(--text-primary)]"
-              href={commerceHandoff.adminUrl}
+              href={visibleCommerceHandoff.adminUrl}
               rel="noreferrer"
               target="_blank"
             >
               Open admin
             </a>
           </div>
-          {commerceHandoff.adminEmail !== undefined && (
+          {visibleCommerceHandoff.adminEmail !== undefined && (
             <dl className="mt-3 grid gap-1 text-xs">
               <div className="flex items-center justify-between gap-3">
                 <dt className="text-[var(--text-muted)]">Email</dt>
-                <dd className="m-0 font-mono">{commerceHandoff.adminEmail}</dd>
+                <dd className="m-0 font-mono">
+                  {visibleCommerceHandoff.adminEmail}
+                </dd>
               </div>
-              {commerceHandoff.adminPassword !== undefined && (
+              {visibleCommerceHandoff.adminPassword !== undefined && (
                 <div className="flex items-center justify-between gap-3">
                   <dt className="text-[var(--text-muted)]">Password</dt>
                   <dd className="m-0 font-mono">
-                    {commerceHandoff.adminPassword}
+                    {visibleCommerceHandoff.adminPassword}
                   </dd>
                 </div>
               )}
@@ -164,7 +197,7 @@ export const CommercePanel = ({
           )}
         </div>
       )}
-      {isReady && commerceHandoff === undefined && (
+      {isReady && visibleCommerceHandoff === undefined && (
         <p className="mt-3 rounded-[var(--radius-sm)] border border-white/10 bg-white/[0.04] p-3 text-xs text-[var(--text-muted)]">
           Set Medusa backend, admin, and storefront URLs to unlock links.
         </p>

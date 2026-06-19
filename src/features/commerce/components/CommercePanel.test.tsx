@@ -5,6 +5,18 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { CommercePanel } from './CommercePanel'
 
 const commerceState = vi.hoisted(() => ({
+  config: {
+    errorMessage: 'Medusa Store API is unavailable: fetch failed',
+    productCount: 0,
+    status: 'ready',
+  } as {
+    adminUrl?: string
+    backendUrl?: string
+    errorMessage?: string
+    productCount: number
+    status: string
+    storefrontUrl?: string
+  },
   handoff: undefined as
     | {
         adminEmail: string
@@ -21,11 +33,7 @@ vi.mock('../hooks/useCommerceController', () => ({
   useCommerceController: () => ({
     commerceError: undefined,
     commerceHandoff: commerceState.handoff,
-    config: {
-      errorMessage: 'Medusa Store API is unavailable: fetch failed',
-      productCount: 0,
-      status: 'ready',
-    },
+    config: commerceState.config,
     isSaving: false,
     provisionCommerce: vi.fn(),
   }),
@@ -34,6 +42,11 @@ vi.mock('../hooks/useCommerceController', () => ({
 describe('CommercePanel', () => {
   afterEach(() => {
     cleanup()
+    commerceState.config = {
+      errorMessage: 'Medusa Store API is unavailable: fetch failed',
+      productCount: 0,
+      status: 'ready',
+    }
     commerceState.handoff = undefined
   })
 
@@ -71,6 +84,32 @@ describe('CommercePanel', () => {
     ).toBe('https://admin.medusa.test')
     expect(screen.getByText('admin@store.test')).toBeTruthy()
     expect(screen.getByText('secret-password')).toBeTruthy()
+  })
+
+  it('keeps Medusa studio links available from persisted tenant config', () => {
+    commerceState.config = {
+      adminUrl: 'https://admin.persisted-medusa.test/app',
+      backendUrl: 'https://backend.persisted-medusa.test',
+      productCount: 3,
+      status: 'ready',
+      storefrontUrl: 'https://store.persisted-medusa.test',
+    }
+
+    render(<CommercePanel sessionId="session_123" />)
+
+    expect(
+      screen
+        .getByRole('link', { name: 'Open storefront' })
+        .getAttribute('href'),
+    ).toBe('https://store.persisted-medusa.test')
+    expect(
+      screen.getByRole('link', { name: 'Open admin' }).getAttribute('href'),
+    ).toBe('https://admin.persisted-medusa.test/app')
+    expect(
+      screen.queryByText(
+        'Set Medusa backend, admin, and storefront URLs to unlock links.',
+      ),
+    ).toBeNull()
   })
 
   it('does not show dead handoff links when no Medusa handoff exists', () => {
