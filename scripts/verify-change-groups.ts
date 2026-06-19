@@ -53,6 +53,7 @@ export const changeGroups: ChangeGroup[] = [
     id: 'quality-gates-local-enforcement',
     title: 'Quality gates and local enforcement',
     patterns: [
+      /^\.claude\/skills\/gitnexus\//,
       /^\.github\/workflows\/ci\.yml$/,
       /^\.githooks\//,
       /^\.gitignore$/,
