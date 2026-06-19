@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 import { readFileSync } from 'node:fs'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -105,7 +111,9 @@ vi.mock('@/features/cms/components/CmsPanel', () => ({
   CmsPanel: () => null,
 }))
 vi.mock('@/features/commerce/components/CommercePanel', () => ({
-  CommercePanel: () => null,
+  CommercePanel: ({ sessionId }: { sessionId: string }) => (
+    <div>Medusa commerce panel {sessionId}</div>
+  ),
 }))
 vi.mock('@/features/commerce/components/EcommercifyTransformOverlay', () => ({
   EcommercifyTransformOverlay: () => null,
@@ -413,6 +421,32 @@ describe('Dashboard missing session state', () => {
     )
   })
 
+  it('opens the Medusa commerce panel from the e-commerce rail action', async () => {
+    getConvexState().generationView = {
+      session: {
+        sessionId: 'ready-commerce-session',
+        status: 'preview_ready',
+        prompt: 'A ready commerce website',
+        preferredLanguage: 'en',
+        isPrivate: false,
+      },
+      tasks: [{ status: 'succeeded' }],
+      events: [],
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+      },
+      siteSpec: null,
+    }
+
+    render(<Dashboard sessionId="ready-commerce-session" />)
+
+    fireEvent.click(screen.getByRole('button', { name: /E-commerce/i }))
+
+    expect(
+      await screen.findByText('Medusa commerce panel ready-commerce-session'),
+    ).toBeTruthy()
+  })
+
   it('removes the old rail mode editor path while keeping popover tools wired', () => {
     const source = readFileSync(
       'src/features/dashboard/components/Dashboard.tsx',
@@ -430,10 +464,10 @@ describe('Dashboard missing session state', () => {
       "import('@/features/chat/components/ChatPanel')",
     )
     expect(source).not.toContain(
-      "import('@/features/commerce/components/CommercePanel')",
-    )
-    expect(source).not.toContain(
       "import('@/features/dashboard/components/ActivityPanel')",
+    )
+    expect(source).toContain(
+      "import('@/features/commerce/components/CommercePanel')",
     )
     expect(source).toContain('data-rail-action="export"')
     expect(source).toContain('data-rail-action="github"')

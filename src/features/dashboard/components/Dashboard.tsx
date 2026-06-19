@@ -72,6 +72,11 @@ const GitHubPanel = lazy(() =>
     default: module.GitHubPanel,
   })),
 )
+const CommercePanel = lazy(() =>
+  import('@/features/commerce/components/CommercePanel').then((module) => ({
+    default: module.CommercePanel,
+  })),
+)
 interface DashboardProps {
   sessionId: string
   initialAdminView?: boolean
@@ -1365,28 +1370,45 @@ export function Dashboard({
                       </span>
                       <span className="min-w-0 flex-1 truncate">Activity</span>
                     </button>
-                    <button
-                      type="button"
-                      className={railRowClass}
-                      data-rail-action="ecommerce"
-                    >
-                      <span className={railIconClass} aria-hidden="true">
-                        <Package className="size-3.5" strokeWidth={1.9} />
-                      </span>
-                      <span className="min-w-0 flex-1 truncate">
-                        E-commerce
-                      </span>
-                      <span className={newBadgeClass}>
-                        {commerceConfig?.status === 'ready' ? 'READY' : 'NEW'}
-                      </span>
-                      <span
-                        className={premiumBadgeClass}
-                        aria-label="Pro only - upgrade to unlock"
-                        tabIndex={0}
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className={railRowClass}
+                          data-rail-action="ecommerce"
+                          aria-haspopup="dialog"
+                        >
+                          <span className={railIconClass} aria-hidden="true">
+                            <Package className="size-3.5" strokeWidth={1.9} />
+                          </span>
+                          <span className="min-w-0 flex-1 truncate">
+                            E-commerce
+                          </span>
+                          <span className={newBadgeClass}>
+                            {commerceConfig?.status === 'ready'
+                              ? 'READY'
+                              : 'NEW'}
+                          </span>
+                          <span
+                            className={premiumBadgeClass}
+                            aria-label="Pro only - upgrade to unlock"
+                            tabIndex={0}
+                          >
+                            {crownIcon}
+                          </span>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        align="start"
+                        side="left"
+                        sideOffset={12}
+                        className="z-[140] w-[min(360px,calc(100vw-24px))] border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
                       >
-                        {crownIcon}
-                      </span>
-                    </button>
+                        <Suspense fallback={<ToolPopoverFallback />}>
+                          <CommercePanel sessionId={activeSessionId} />
+                        </Suspense>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <div className="grid gap-2">
                     <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">
