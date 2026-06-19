@@ -10,15 +10,23 @@ import {
   loadDeploymentBySlug,
   loadDeploymentStatus,
   normalizeDeploymentSlug,
+  prepareLakebedSessionDeployment,
   publishSessionPreview,
+  recordLakebedSessionDeploymentSuccess,
 } from './session_deployment_helpers'
 
-type TableName = 'sessions' | 'deployments' | 'previews' | 'generationEvents'
+type TableName =
+  | 'sessions'
+  | 'deployments'
+  | 'previews'
+  | 'generationEvents'
+  | 'generatedModules'
 type Row =
   | Doc<'sessions'>
   | Doc<'deployments'>
   | Doc<'previews'>
   | Doc<'generationEvents'>
+  | Doc<'generatedModules'>
 
 const sessionId = 'session_deployment' as Id<'sessions'>
 
@@ -72,6 +80,7 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
     deployments: [...(input.deployments ?? [])],
     previews: [...(input.previews ?? [])],
     generationEvents: [...(input.generationEvents ?? [])],
+    generatedModules: [...(input.generatedModules ?? [])],
   }
 
   const rowsFor = (table: TableName) => tables[table]
@@ -109,6 +118,22 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
 
           return builder
         },
+        order: (direction: 'asc' | 'desc') => {
+          rows = [...rows].sort((left, right) => {
+            const leftVersion =
+              typeof (left as Record<string, unknown>).version === 'number'
+                ? ((left as Record<string, unknown>).version as number)
+                : 0
+            const rightVersion =
+              typeof (right as Record<string, unknown>).version === 'number'
+                ? ((right as Record<string, unknown>).version as number)
+                : 0
+            return direction === 'desc'
+              ? rightVersion - leftVersion
+              : leftVersion - rightVersion
+          })
+          return builder
+        },
         first: async () => rows[0] ?? null,
       }
 
@@ -116,7 +141,15 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
     },
   } as unknown as Pick<QueryCtx, 'db'>['db']
 
-  return { db }
+  return {
+    db,
+    auth: {
+      getUserIdentity: async () => ({
+        tokenIdentifier: 'user_1',
+        subject: 'user_1',
+      }),
+    },
+  }
 }
 
 const mutationCtxFor = (input: Partial<Record<TableName, Row[]>>) => {
@@ -125,6 +158,7 @@ const mutationCtxFor = (input: Partial<Record<TableName, Row[]>>) => {
     deployments: [...(input.deployments ?? [])],
     previews: [...(input.previews ?? [])],
     generationEvents: [...(input.generationEvents ?? [])],
+    generatedModules: [...(input.generatedModules ?? [])],
   }
   const patches: Array<{ id: string; patch: Record<string, unknown> }> = []
   const inserted: Array<{ table: TableName; value: Record<string, unknown> }> =
@@ -310,6 +344,112 @@ describe('session deployment helpers', () => {
     ).resolves.toBeNull()
   })
 
+  it('prepares static Lakebed deployments from preview HTML for HTML sessions', async () => {
+    const ctx = ctxFor({
+      sessions: [
+        sessionDoc({
+          openuiReady: false,
+          preferredExportTarget: 'html',
+          userId: 'user_1',
+        }),
+      ],
+      previews: [
+        previewDoc({
+          html: '<!doctype html><html><body><h1>Static Preview</h1></body></html>',
+          openUiSource: undefined,
+          siteSpecJson: '{"themeName":"vintage-paper"}',
+          version: 9,
+        }),
+      ],
+      generatedModules: [
+        {
+          _id: 'generated_module_home' as Id<'generatedModules'>,
+          _creationTime: 1,
+          sessionId,
+          moduleKey: 'home',
+          source: 'root = ShouldNotUseForHtmlSession()',
+          status: 'succeeded',
+          createdAt: 100,
+          updatedAt: 110,
+        } as Doc<'generatedModules'>,
+      ],
+    }) as QueryCtx
+
+    await expect(
+      prepareLakebedSessionDeployment(ctx, { sessionId }),
+    ).resolves.toMatchObject({
+      source: '<!doctype html><html><body><h1>Static Preview</h1></body></html>',
+      sourceKind: 'html',
+      previewHtml:
+        '<!doctype html><html><body><h1>Static Preview</h1></body></html>',
+      previewVersion: 9,
+      siteSpecJson: '{"themeName":"vintage-paper"}',
+    })
+  })
+
+  it('records Lakebed deployment metadata without using the local build folder', async () => {
+    const { ctx, inserted } = mutationCtxFor({
+      sessions: [sessionDoc({ userId: 'user_1' })],
+    })
+
+    await expect(
+      recordLakebedSessionDeploymentSuccess(ctx, {
+        sessionId,
+        requestedSlug: 'Lakebed Launch',
+        previewVersion: 7,
+        url: 'https://lakebed-launch.lakebed.app',
+        deployId: 'dep_lakebed',
+        claimUrl: 'https://lakebed.app/claim/dep_lakebed/token',
+        artifactHash: 'sha256:artifact',
+        clientBundleHash: 'sha256:client',
+        clientBundleBytes: 1234,
+        requestBodyBytes: 4567,
+        serverBundleBytes: 321,
+        sourceFileCount: 9,
+        expiresAt: '2026-06-25T00:00:00.000Z',
+      }),
+    ).resolves.toMatchObject({
+      provider: 'lakebed',
+      slug: 'lakebed-launch',
+      url: 'https://lakebed-launch.lakebed.app',
+      deployId: 'dep_lakebed',
+    })
+
+    expect(inserted).toEqual([
+      {
+        table: 'deployments',
+        value: expect.objectContaining({
+          provider: 'lakebed',
+          slug: 'lakebed-launch',
+          url: 'https://lakebed-launch.lakebed.app',
+          lakebedDeployId: 'dep_lakebed',
+          lakebedClientBundleBytes: 1234,
+          lakebedRequestBodyBytes: 4567,
+          lakebedServerBundleBytes: 321,
+          lakebedSourceFileCount: 9,
+        }),
+      },
+      {
+        table: 'generationEvents',
+        value: expect.objectContaining({
+          sessionId,
+          eventType: 'published',
+          message: 'Published Lakebed app to https://lakebed-launch.lakebed.app',
+          previewVersion: 7,
+        }),
+      },
+    ])
+
+    await expect(loadDeploymentStatus(ctx, sessionId)).resolves.toMatchObject({
+      provider: 'lakebed',
+      lakebedDeployId: 'dep_lakebed',
+      lakebedClientBundleBytes: 1234,
+      lakebedRequestBodyBytes: 4567,
+      lakebedServerBundleBytes: 321,
+      lakebedSourceFileCount: 9,
+    })
+  })
+
   it('publishes the latest ready public preview and records lifecycle events', async () => {
     const { ctx, inserted } = mutationCtxFor({
       sessions: [sessionDoc({ userId: 'user_1' })],
@@ -461,5 +601,48 @@ describe('session deployment helpers', () => {
     expect(sessionsSource).not.toContain(
       "message: 'Private sessions cannot be published'",
     )
+  })
+
+  it('wires dashboard deployment to ShipFast and Lakebed publish targets', () => {
+    const actionSource = readFileSync('convex/lakebed_deploy.ts', 'utf8')
+    const panelSource = readFileSync(
+      'src/features/deployments/components/DeploymentPanel.tsx',
+      'utf8',
+    )
+
+    expect(actionSource).toContain('buildOpenUILakebedProjectFiles')
+    expect(actionSource).toContain('deployLakebedProjectFiles')
+    expect(actionSource).toContain('recordLakebedDeploymentSuccess')
+    expect(actionSource).toContain('[lakebed_deploy:deploy]')
+    expect(actionSource).toContain('prepare:stored')
+    expect(actionSource).toContain('payloadBytes')
+    expect(actionSource).not.toContain(
+      'readPreparedLakebedDeploymentChunkByBatch',
+    )
+    expect(actionSource).toContain('project-build:start')
+    expect(actionSource).toContain('log: (message, details) =>')
+    expect(actionSource).toContain('`lakebed-api:${message}`')
+    expect(readFileSync('convex/lib/session_deployment_helpers.ts', 'utf8')).toContain(
+      'const lakebedPayloadChunkSize = 200_000',
+    )
+    expect(panelSource).toContain('publishLakebedViaApi')
+    expect(panelSource).toContain('/deploy/lakebed')
+    expect(panelSource).toContain('api.sessions.publishPreview')
+    expect(panelSource).toContain("target === 'shipfast'")
+    expect(panelSource).toContain("onClick={() => void publish('shipfast')}")
+    expect(panelSource).toContain("onClick={() => void publish('lakebed')}")
+    expect(panelSource).toContain(
+      "window.open(result.url, '_blank', 'noopener,noreferrer')",
+    )
+    expect(
+      readFileSync(
+        'src/features/deployments/server/lakebed-publish-response.ts',
+        'utf8',
+      ),
+    ).toContain('api.lakebed_deploy.deploy')
+    expect(panelSource).not.toContain('getDeploymentStatus')
+    expect(panelSource).not.toContain('deploymentStatus?.url')
+    expect(panelSource).not.toContain('requestedSlug:')
+    expect(panelSource).not.toContain('Public slug')
   })
 })

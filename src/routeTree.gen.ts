@@ -63,6 +63,7 @@ import { Route as ApiAgentationSyncAnnotationsAnnotationIdRouteImport } from './
 import { Route as ApiSessionsSessionIdProvisionMedusaRouteImport } from './routes/api/sessions.$sessionId.provision.medusa'
 import { Route as ApiSessionsSessionIdGithubPushRouteImport } from './routes/api/sessions.$sessionId.github.push'
 import { Route as ApiSessionsSessionIdDownloadTargetRouteImport } from './routes/api/sessions.$sessionId.download.$target'
+import { Route as ApiSessionsSessionIdDeployLakebedRouteImport } from './routes/api/sessions.$sessionId.deploy.lakebed'
 import { Route as ApiAgentationSyncSessionsAgentationSessionKeyEventsRouteImport } from './routes/api/agentation-sync.sessions.$agentationSessionKey.events'
 import { Route as ApiAgentationSyncSessionsAgentationSessionKeyAnnotationsRouteImport } from './routes/api/agentation-sync.sessions.$agentationSessionKey.annotations'
 import { Route as ApiSessionsSessionIdHistoryVersionRestoreRouteImport } from './routes/api/sessions.$sessionId.history.$version.restore'
@@ -356,6 +357,12 @@ const ApiSessionsSessionIdDownloadTargetRoute =
     path: '/download/$target',
     getParentRoute: () => ApiSessionsSessionIdRoute,
   } as any)
+const ApiSessionsSessionIdDeployLakebedRoute =
+  ApiSessionsSessionIdDeployLakebedRouteImport.update({
+    id: '/deploy/lakebed',
+    path: '/deploy/lakebed',
+    getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
 const ApiAgentationSyncSessionsAgentationSessionKeyEventsRoute =
   ApiAgentationSyncSessionsAgentationSessionKeyEventsRouteImport.update({
     id: '/events',
@@ -429,6 +436,7 @@ export interface FileRoutesByFullPath {
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
   '/api/agentation-sync/sessions/$agentationSessionKey/annotations': typeof ApiAgentationSyncSessionsAgentationSessionKeyAnnotationsRoute
   '/api/agentation-sync/sessions/$agentationSessionKey/events': typeof ApiAgentationSyncSessionsAgentationSessionKeyEventsRoute
+  '/api/sessions/$sessionId/deploy/lakebed': typeof ApiSessionsSessionIdDeployLakebedRoute
   '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
   '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
@@ -488,6 +496,7 @@ export interface FileRoutesByTo {
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
   '/api/agentation-sync/sessions/$agentationSessionKey/annotations': typeof ApiAgentationSyncSessionsAgentationSessionKeyAnnotationsRoute
   '/api/agentation-sync/sessions/$agentationSessionKey/events': typeof ApiAgentationSyncSessionsAgentationSessionKeyEventsRoute
+  '/api/sessions/$sessionId/deploy/lakebed': typeof ApiSessionsSessionIdDeployLakebedRoute
   '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
   '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
@@ -548,6 +557,7 @@ export interface FileRoutesById {
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
   '/api/agentation-sync/sessions/$agentationSessionKey/annotations': typeof ApiAgentationSyncSessionsAgentationSessionKeyAnnotationsRoute
   '/api/agentation-sync/sessions/$agentationSessionKey/events': typeof ApiAgentationSyncSessionsAgentationSessionKeyEventsRoute
+  '/api/sessions/$sessionId/deploy/lakebed': typeof ApiSessionsSessionIdDeployLakebedRoute
   '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
   '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
@@ -609,6 +619,7 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/stream'
     | '/api/agentation-sync/sessions/$agentationSessionKey/annotations'
     | '/api/agentation-sync/sessions/$agentationSessionKey/events'
+    | '/api/sessions/$sessionId/deploy/lakebed'
     | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
     | '/api/sessions/$sessionId/provision/medusa'
@@ -668,6 +679,7 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/stream'
     | '/api/agentation-sync/sessions/$agentationSessionKey/annotations'
     | '/api/agentation-sync/sessions/$agentationSessionKey/events'
+    | '/api/sessions/$sessionId/deploy/lakebed'
     | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
     | '/api/sessions/$sessionId/provision/medusa'
@@ -727,6 +739,7 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/stream'
     | '/api/agentation-sync/sessions/$agentationSessionKey/annotations'
     | '/api/agentation-sync/sessions/$agentationSessionKey/events'
+    | '/api/sessions/$sessionId/deploy/lakebed'
     | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
     | '/api/sessions/$sessionId/provision/medusa'
@@ -1149,6 +1162,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSessionsSessionIdDownloadTargetRouteImport
       parentRoute: typeof ApiSessionsSessionIdRoute
     }
+    '/api/sessions/$sessionId/deploy/lakebed': {
+      id: '/api/sessions/$sessionId/deploy/lakebed'
+      path: '/deploy/lakebed'
+      fullPath: '/api/sessions/$sessionId/deploy/lakebed'
+      preLoaderRoute: typeof ApiSessionsSessionIdDeployLakebedRouteImport
+      parentRoute: typeof ApiSessionsSessionIdRoute
+    }
     '/api/agentation-sync/sessions/$agentationSessionKey/events': {
       id: '/api/agentation-sync/sessions/$agentationSessionKey/events'
       path: '/events'
@@ -1273,6 +1293,7 @@ interface ApiSessionsSessionIdRouteChildren {
   ApiSessionsSessionIdPreviewInlineTextRoute: typeof ApiSessionsSessionIdPreviewInlineTextRoute
   ApiSessionsSessionIdPreviewRawRoute: typeof ApiSessionsSessionIdPreviewRawRoute
   ApiSessionsSessionIdStreamRoute: typeof ApiSessionsSessionIdStreamRoute
+  ApiSessionsSessionIdDeployLakebedRoute: typeof ApiSessionsSessionIdDeployLakebedRoute
   ApiSessionsSessionIdDownloadTargetRoute: typeof ApiSessionsSessionIdDownloadTargetRoute
   ApiSessionsSessionIdGithubPushRoute: typeof ApiSessionsSessionIdGithubPushRoute
   ApiSessionsSessionIdProvisionMedusaRoute: typeof ApiSessionsSessionIdProvisionMedusaRoute
@@ -1295,6 +1316,8 @@ const ApiSessionsSessionIdRouteChildren: ApiSessionsSessionIdRouteChildren = {
     ApiSessionsSessionIdPreviewInlineTextRoute,
   ApiSessionsSessionIdPreviewRawRoute: ApiSessionsSessionIdPreviewRawRoute,
   ApiSessionsSessionIdStreamRoute: ApiSessionsSessionIdStreamRoute,
+  ApiSessionsSessionIdDeployLakebedRoute:
+    ApiSessionsSessionIdDeployLakebedRoute,
   ApiSessionsSessionIdDownloadTargetRoute:
     ApiSessionsSessionIdDownloadTargetRoute,
   ApiSessionsSessionIdGithubPushRoute: ApiSessionsSessionIdGithubPushRoute,

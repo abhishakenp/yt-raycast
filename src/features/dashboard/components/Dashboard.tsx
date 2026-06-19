@@ -39,6 +39,11 @@ import { useEditController } from '@/features/editing/hooks/useEditController'
 import { ImageSwapPopover } from '@/features/editing/components/ImageSwapPopover'
 import { InlineEditToolbar } from '@/features/editing/components/InlineEditToolbar'
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import {
   useOptionalAuth,
   useOptionalClerk,
 } from '@/shared/auth/use-optional-auth'
@@ -1633,22 +1638,36 @@ export function Dashboard({
                         <span className="text-[#0a0a0b]">Pro only</span>
                       </div>
                     </button>
-                    <button
-                      type="button"
-                      className={railRowClass}
-                      data-rail-action="domain"
-                      onClick={() => setRailMode('deployment')}
-                    >
-                      <span className={railIconClass} aria-hidden="true">
-                        <Globe2 className="size-3.5" strokeWidth={1.9} />
-                      </span>
-                      <span className="grid min-w-0 flex-1 gap-0.5">
-                        <span className="truncate">Deployment URL</span>
-                        <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
-                          {deploymentStatus?.slug ?? 'publish slug'}
-                        </span>
-                      </span>
-                    </button>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className={railRowClass}
+                          data-rail-action="domain"
+                          aria-haspopup="dialog"
+                        >
+                          <span className={railIconClass} aria-hidden="true">
+                            <Globe2 className="size-3.5" strokeWidth={1.9} />
+                          </span>
+                          <span className="grid min-w-0 flex-1 gap-0.5">
+                            <span className="truncate">Deployment URL</span>
+                            <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
+                              {deploymentStatus?.slug ?? 'publish slug'}
+                            </span>
+                          </span>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        align="end"
+                        side="left"
+                        sideOffset={12}
+                        className="z-[140] w-80 border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+                      >
+                        <Suspense fallback={<RailPanelFallback />}>
+                          <DeploymentPanel sessionId={sessionId} />
+                        </Suspense>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <div className="grid gap-2">
                     <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">

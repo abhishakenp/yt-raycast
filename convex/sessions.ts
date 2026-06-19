@@ -6,6 +6,7 @@ import {
   mutation,
   query,
 } from './_generated/server'
+import { v } from 'convex/values'
 import { listSessionChatMessages } from './lib/chat_refinement_helpers'
 import {
   claimAnonymousSession,
@@ -61,7 +62,13 @@ import {
 import {
   loadDeploymentBySlug,
   loadDeploymentStatus,
+  deletePreparedLakebedDeploymentChunks,
+  prepareLakebedSessionDeployment,
   publishSessionPreview,
+  readPreparedLakebedDeploymentChunk,
+  recordLakebedSessionDeploymentFailure,
+  recordLakebedSessionDeploymentSuccess,
+  storePreparedLakebedSessionDeployment,
 } from './lib/session_deployment_helpers'
 import {
   createSessionExport,
@@ -120,6 +127,8 @@ import {
   generationViewArgs,
   insertCmsBindingArgs,
   listCmsRevisionsArgs,
+  lakebedDeploymentFailureArgs,
+  lakebedDeploymentSuccessArgs,
   lookupArgs,
   operationalNotificationArgs,
   ownedAnnotationArgs,
@@ -247,6 +256,46 @@ export const getPublicPreview = query({
 export const publishPreview = mutation({
   args: publishPreviewArgs,
   handler: (ctx, args) => publishSessionPreview(ctx, args),
+})
+
+export const prepareLakebedDeployment = internalQuery({
+  args: publishPreviewArgs,
+  handler: (ctx, args) => prepareLakebedSessionDeployment(ctx, args),
+})
+
+export const prepareLakebedDeploymentForPublish = query({
+  args: publishPreviewArgs,
+  handler: (ctx, args) => prepareLakebedSessionDeployment(ctx, args),
+})
+
+export const storePreparedLakebedDeployment = internalMutation({
+  args: publishPreviewArgs,
+  handler: (ctx, args) => storePreparedLakebedSessionDeployment(ctx, args),
+})
+
+export const readPreparedLakebedDeploymentChunkByBatch = internalQuery({
+  args: {
+    batchId: v.string(),
+    index: v.number(),
+  },
+  handler: (ctx, args) => readPreparedLakebedDeploymentChunk(ctx, args),
+})
+
+export const deletePreparedLakebedDeploymentChunksByBatch = internalMutation({
+  args: {
+    batchId: v.string(),
+  },
+  handler: (ctx, args) => deletePreparedLakebedDeploymentChunks(ctx, args),
+})
+
+export const recordLakebedDeploymentSuccess = internalMutation({
+  args: lakebedDeploymentSuccessArgs,
+  handler: (ctx, args) => recordLakebedSessionDeploymentSuccess(ctx, args),
+})
+
+export const recordLakebedDeploymentFailure = internalMutation({
+  args: lakebedDeploymentFailureArgs,
+  handler: (ctx, args) => recordLakebedSessionDeploymentFailure(ctx, args),
 })
 
 export const completeGeneration = internalAction({

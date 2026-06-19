@@ -8,7 +8,7 @@ import {
   getUserId,
 } from './session_access_helpers'
 
-export type ExportTarget = 'html' | 'react' | 'next'
+export type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
 
 export type ExportEntitlement =
   | {
@@ -54,8 +54,15 @@ export const exportTargetFileCount = (target: ExportTarget): number => {
     case 'react':
     case 'next':
       return 7
+    case 'lakebed':
+      return 12
   }
 }
+
+const exportArtifactPath = (target: ExportTarget, previewVersion: number) =>
+  target === 'html'
+    ? `preview-${previewVersion}.html`
+    : `preview-${previewVersion}.${target}.zip`
 
 export const loadExportRecord = async (
   ctx: Pick<QueryCtx, 'db'>,
@@ -248,7 +255,7 @@ export const createSessionExport = async (
           sessionId: args.sessionId,
           target: args.target,
           status: entitlement.status,
-          artifactPath: `preview-${preview.version}.html`,
+          artifactPath: exportArtifactPath(args.target, preview.version),
           previewVersion: preview.version,
           fileCount,
           requiresPayment: entitlement.requiresPayment,
@@ -263,7 +270,7 @@ export const createSessionExport = async (
   if (existingExport !== null) {
     await ctx.db.patch(exportId, {
       status: entitlement.status,
-      artifactPath: `preview-${preview.version}.html`,
+      artifactPath: exportArtifactPath(args.target, preview.version),
       previewVersion: preview.version,
       fileCount,
       requiresPayment: entitlement.requiresPayment,

@@ -1,18 +1,44 @@
 import { brotliCompressSync, constants } from 'node:zlib'
-import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
+import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import prettier from 'prettier'
+import ts from 'typescript'
 
 const root = join(fileURLToPath(new URL('..', import.meta.url)))
+const repoRoot = join(root, '..', '..')
+const nodeModulesRoot = join(repoRoot, 'node_modules')
 const registryRoot = join(root, 'src', 'registry')
 const capsulesRoot = join(root, 'src', 'capsules')
+const blockSourceRoots = [
+  join(root, 'src', 'components'),
+  join(root, 'src', 'hooks'),
+  join(root, 'src', 'lib'),
+]
 const outFile = join(root, 'src', 'generated', 'react-export-sources.json')
 const compressedOutFile = join(
   root,
   'src',
   'generated',
   'react-export-sources.compressed.ts',
+)
+const compressedSourceFilesOutFile = join(
+  root,
+  'src',
+  'generated',
+  'block-source-files.compressed.ts',
+)
+const compressedVendorSourceFilesOutFile = join(
+  root,
+  'src',
+  'generated',
+  'vendor-source-files.compressed.ts',
 )
 const runtimeLoadersOutFile = join(
   root,
@@ -91,6 +117,332 @@ const walk = (dir, files = []) => {
   return files
 }
 
+const walkSourceFiles = (dir, files = []) => {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name)
+    if (entry.isDirectory()) {
+      walkSourceFiles(path, files)
+    } else if (
+      entry.isFile() &&
+      /\.(?:css|tsx?|jsx?|json)$/.test(entry.name) &&
+      !/\.(?:test|spec)\.(?:tsx?|jsx?)$/.test(entry.name)
+    ) {
+      files.push(path)
+    }
+  }
+  return files
+}
+
+const toPosixPath = (value) => value.replaceAll('\\', '/')
+
+const fileWithExtension = (base) => {
+  const candidates = [
+    base,
+    `${base}.ts`,
+    `${base}.tsx`,
+    `${base}.js`,
+    `${base}.jsx`,
+    `${base}.mjs`,
+    `${base}.cjs`,
+    `${base}.json`,
+    join(base, 'index.ts'),
+    join(base, 'index.tsx'),
+    join(base, 'index.js'),
+    join(base, 'index.jsx'),
+    join(base, 'index.mjs'),
+    join(base, 'index.cjs'),
+    join(base, 'package.json'),
+  ]
+  return (
+    candidates.find((path) => {
+      try {
+        return statSync(path).isFile()
+      } catch {
+        return false
+      }
+    }) ?? null
+  )
+}
+
+const readPublicPackageName = (specifier) => {
+  if (specifier.startsWith('.') || specifier.startsWith('/')) return null
+  if (specifier.startsWith('@')) {
+    const [scope, name] = specifier.split('/')
+    return scope && name ? `${scope}/${name}` : null
+  }
+  return specifier.split('/')[0] ?? null
+}
+
+const packageSubpath = (specifier, packageName) =>
+  specifier === packageName ? '.' : `.${specifier.slice(packageName.length)}`
+
+const exportedPackagePath = (exportTarget, subpath = '.') => {
+  if (typeof exportTarget === 'string') {
+    if (exportTarget.includes('*') && subpath.startsWith('./')) {
+      return exportTarget.replace('*', subpath.slice(2))
+    }
+    return exportTarget
+  }
+  if (!exportTarget || typeof exportTarget !== 'object') return null
+  return (
+    exportedPackagePath(exportTarget.import, subpath) ??
+    exportedPackagePath(exportTarget.default, subpath) ??
+    exportedPackagePath(exportTarget.browser, subpath) ??
+    null
+  )
+}
+
+const resolvePackageExportTarget = (exports, subpath) => {
+  if (subpath === '.') {
+    return typeof exports === 'object' ? exports['.'] : exports
+  }
+  if (!exports || typeof exports !== 'object') return null
+  if (exports[subpath]) return exports[subpath]
+  for (const [key, value] of Object.entries(exports)) {
+    if (!key.includes('*')) continue
+    const [prefix, suffix = ''] = key.split('*')
+    if (subpath.startsWith(prefix) && subpath.endsWith(suffix)) return value
+  }
+  return null
+}
+
+const resolveBareImportFile = (specifier) => {
+  const packageName = readPublicPackageName(specifier)
+  if (!packageName) return null
+  const packageJsonPath = join(nodeModulesRoot, packageName, 'package.json')
+  if (!existsSync(packageJsonPath)) return null
+  const packageRoot = dirname(packageJsonPath)
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
+  const subpath = packageSubpath(specifier, packageName)
+  const exportTarget = resolvePackageExportTarget(packageJson.exports, subpath)
+  const exported = exportedPackagePath(exportTarget, subpath)
+  const candidate =
+    exported ??
+    (subpath === '.' ? packageJson.module ?? packageJson.main : subpath)
+  if (!candidate) return null
+  const resolved = fileWithExtension(join(packageRoot, candidate))
+  if (resolved && !resolved.endsWith('/package.json')) return resolved
+
+  if (resolved?.endsWith('/package.json')) {
+    storeVendorSourceFile(resolved)
+    const nestedPackageJson = JSON.parse(readFileSync(resolved, 'utf8'))
+    const nestedCandidate =
+      nestedPackageJson.module ??
+      nestedPackageJson['jsnext:main'] ??
+      nestedPackageJson.main
+    return nestedCandidate
+      ? fileWithExtension(join(dirname(resolved), nestedCandidate))
+      : null
+  }
+
+  const nestedPackageJsonPath = join(packageRoot, candidate, 'package.json')
+  if (!existsSync(nestedPackageJsonPath)) return null
+  storeVendorSourceFile(nestedPackageJsonPath)
+  const nestedPackageJson = JSON.parse(
+    readFileSync(nestedPackageJsonPath, 'utf8'),
+  )
+  const nestedCandidate =
+    nestedPackageJson.module ??
+    nestedPackageJson['jsnext:main'] ??
+    nestedPackageJson.main
+  return nestedCandidate
+    ? fileWithExtension(join(dirname(nestedPackageJsonPath), nestedCandidate))
+    : null
+}
+
+const allowedRuntimeBareImports = new Set([
+  'react',
+  'react-dom',
+  'react-dom/client',
+  'react/jsx-runtime',
+  'react/jsx-dev-runtime',
+  'preact',
+  'preact/hooks',
+  'preact/compat',
+  'preact/jsx-runtime',
+  'preact/jsx-dev-runtime',
+  'lakebed/client',
+  'lakebed/server',
+])
+const ignoredSourceBareImports = new Set([
+  ...allowedRuntimeBareImports,
+  '@openuidev/react-lang',
+  '@ship-fast/lakebed/server',
+  'zod',
+  'zod/v4',
+])
+
+const vendorSourceManifest = {}
+const seenVendorSourceFiles = new Set()
+const storedVendorSourceFiles = new Set()
+
+const parseSourceFile = (path, source) =>
+  ts.createSourceFile(
+    path,
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    /\.(tsx|jsx)$/.test(path) ? ts.ScriptKind.TSX : ts.ScriptKind.JS,
+  )
+
+const importRequestsFromSource = (path, source) => {
+  const sourceFile = parseSourceFile(path, source)
+  const requests = []
+
+  for (const statement of sourceFile.statements) {
+    if (ts.isImportDeclaration(statement)) {
+      const specifier = statement.moduleSpecifier
+      if (!ts.isStringLiteral(specifier)) continue
+      const clause = statement.importClause
+      const namedBindings = clause?.namedBindings
+      const named =
+        namedBindings && ts.isNamedImports(namedBindings)
+          ? namedBindings.elements.map(
+              (element) => (element.propertyName ?? element.name).text,
+            )
+          : null
+      requests.push({
+        moduleName: specifier.text,
+        names: clause?.name || !named ? null : named,
+      })
+      continue
+    }
+
+    if (ts.isExportDeclaration(statement)) {
+      const specifier = statement.moduleSpecifier
+      if (!specifier || !ts.isStringLiteral(specifier)) continue
+      const exportClause = statement.exportClause
+      const names =
+        exportClause && ts.isNamedExports(exportClause)
+          ? exportClause.elements.map(
+              (element) => (element.propertyName ?? element.name).text,
+            )
+          : null
+      requests.push({ moduleName: specifier.text, names })
+    }
+  }
+
+  return requests
+}
+
+const resolveRelativeVendorFile = (sourcePath, moduleName) =>
+  fileWithExtension(join(dirname(sourcePath), moduleName))
+
+const storeVendorSourceFile = (file) => {
+  const sourcePath = fileWithExtension(file) ?? file
+  if (!existsSync(sourcePath)) return null
+  const rel = toPosixPath(relative(nodeModulesRoot, sourcePath))
+  if (rel.startsWith('..')) return null
+  if (!storedVendorSourceFiles.has(rel)) {
+    vendorSourceManifest[rel] = readFileSync(sourcePath, 'utf8')
+    storedVendorSourceFiles.add(rel)
+  }
+  return { rel, sourcePath }
+}
+
+const includeVendorImport = (specifier, names = null) => {
+  const packageName = readPublicPackageName(specifier)
+  if (!packageName) return
+  const packageJsonPath = join(nodeModulesRoot, packageName, 'package.json')
+  if (existsSync(packageJsonPath)) includeVendorSourceFile(packageJsonPath)
+  const entry = resolveBareImportFile(specifier)
+  if (!entry) return
+
+  if (!names || names.length === 0) {
+    includeVendorSourceFile(entry)
+    return
+  }
+
+  storeVendorSourceFile(entry)
+  if (!includeVendorNamedExports(entry, new Set(names))) {
+    includeVendorSourceFile(entry)
+  }
+}
+
+const includeVendorSourceFile = (file) => {
+  const stored = storeVendorSourceFile(file)
+  if (!stored || seenVendorSourceFiles.has(stored.rel)) return
+  const { rel, sourcePath } = stored
+  seenVendorSourceFiles.add(rel)
+
+  const source = vendorSourceManifest[rel]
+  if (!/\.(?:cjs|mjs|js|jsx|ts|tsx)$/.test(rel)) return
+
+  for (const { moduleName, names } of importRequestsFromSource(rel, source)) {
+    if (allowedRuntimeBareImports.has(moduleName)) continue
+    if (moduleName.startsWith('.')) {
+      const target = resolveRelativeVendorFile(sourcePath, moduleName)
+      if (target) includeVendorSourceFile(target)
+      continue
+    }
+    includeVendorImport(moduleName, names)
+  }
+}
+
+const includeVendorNamedExports = (entry, requestedNames, seen = new Set()) => {
+  const sourcePath = fileWithExtension(entry)
+  if (!sourcePath || seen.has(sourcePath)) return false
+  seen.add(sourcePath)
+
+  const source = readFileSync(sourcePath, 'utf8')
+  const sourceFile = parseSourceFile(sourcePath, source)
+  const namespaceImports = new Map()
+  const unresolved = new Set(requestedNames)
+
+  for (const statement of sourceFile.statements) {
+    if (!ts.isImportDeclaration(statement)) continue
+    const specifier = statement.moduleSpecifier
+    const bindings = statement.importClause?.namedBindings
+    if (!ts.isStringLiteral(specifier) || !bindings || !ts.isNamespaceImport(bindings)) {
+      continue
+    }
+    namespaceImports.set(bindings.name.text, specifier.text)
+  }
+
+  for (const statement of sourceFile.statements) {
+    if (!ts.isExportDeclaration(statement)) continue
+    const exportClause = statement.exportClause
+
+    if (!exportClause && statement.moduleSpecifier && ts.isStringLiteral(statement.moduleSpecifier)) {
+      const moduleName = statement.moduleSpecifier.text
+      const target = moduleName.startsWith('.')
+        ? resolveRelativeVendorFile(sourcePath, moduleName)
+        : resolveBareImportFile(moduleName)
+      if (target && includeVendorNamedExports(target, unresolved, seen)) {
+        unresolved.clear()
+        break
+      }
+      continue
+    }
+
+    if (!exportClause || !ts.isNamedExports(exportClause)) continue
+
+    for (const element of exportClause.elements) {
+      const exportedName = element.name.text
+      if (!unresolved.has(exportedName)) continue
+      const localName = (element.propertyName ?? element.name).text
+      const moduleSpecifier = statement.moduleSpecifier
+
+      if (moduleSpecifier && ts.isStringLiteral(moduleSpecifier)) {
+        const moduleName = moduleSpecifier.text
+        const target = moduleName.startsWith('.')
+          ? resolveRelativeVendorFile(sourcePath, moduleName)
+          : resolveBareImportFile(moduleName)
+        if (target) includeVendorSourceFile(target)
+        unresolved.delete(exportedName)
+        continue
+      }
+
+      const namespaceModule = namespaceImports.get(localName)
+      if (namespaceModule) {
+        includeVendorImport(namespaceModule)
+        unresolved.delete(exportedName)
+      }
+    }
+  }
+  return unresolved.size === 0
+}
+
 const componentRe =
   /export\s+const\s+([A-Za-z_$][\w$]*)\s*=\s*define(?:Component|Capsule)\s*\(/g
 const manifest = {}
@@ -119,11 +471,61 @@ const manifestJson = `${JSON.stringify(manifest, null, 2)}\n`
 const compressedManifest = brotliCompressSync(Buffer.from(manifestJson), {
   params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
 }).toString('base64')
+const sourceFileManifest = {}
+for (const sourceRoot of blockSourceRoots) {
+  for (const file of walkSourceFiles(sourceRoot)) {
+    sourceFileManifest[relative(root, file).replaceAll('\\', '/')] =
+      readFileSync(file, 'utf8')
+  }
+}
+const sourceFileManifestJson = `${JSON.stringify(sourceFileManifest, null, 2)}\n`
+const compressedSourceFileManifest = brotliCompressSync(
+  Buffer.from(sourceFileManifestJson),
+  {
+    params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
+  },
+).toString('base64')
+const sourceManifestSources = [
+  ...Object.values(manifest).map((entry) => entry.source),
+  ...Object.values(sourceFileManifest),
+]
+
+for (const source of sourceManifestSources) {
+  for (const { moduleName, names } of importRequestsFromSource(
+    'ship-fast-source.tsx',
+    source,
+  )) {
+    if (
+      moduleName.startsWith('.') ||
+      moduleName.startsWith('#/') ||
+      ignoredSourceBareImports.has(moduleName)
+    ) {
+      continue
+    }
+    includeVendorImport(moduleName, names)
+  }
+}
+
+const vendorSourceFileManifestJson = `${JSON.stringify(vendorSourceManifest, null, 2)}\n`
+const compressedVendorSourceFileManifest = brotliCompressSync(
+  Buffer.from(vendorSourceFileManifestJson),
+  {
+    params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
+  },
+).toString('base64')
 
 queueWrite(outFile, manifestJson)
 queueWrite(
   compressedOutFile,
   `// This file is generated by ${generatorPath}.\nexport const reactExportSourcesEncoding = 'br+base64' as const\nexport const reactExportSourcesBase64 = '${compressedManifest}' as const\n`,
+)
+queueWrite(
+  compressedSourceFilesOutFile,
+  `// This file is generated by ${generatorPath}.\nexport const blockSourceFilesEncoding = 'br+base64' as const\nexport const blockSourceFilesBase64 = '${compressedSourceFileManifest}' as const\n`,
+)
+queueWrite(
+  compressedVendorSourceFilesOutFile,
+  `// This file is generated by ${generatorPath}.\nexport const vendorSourceFilesEncoding = 'br+base64' as const\nexport const vendorSourceFilesBase64 = '${compressedVendorSourceFileManifest}' as const\n`,
 )
 const runtimeEntries = loaderEntries.sort((a, b) =>
   a.name.localeCompare(b.name),
@@ -131,6 +533,8 @@ const runtimeEntries = loaderEntries.sort((a, b) =>
 const generatedOutputs = [
   relative(root, outFile),
   relative(root, compressedOutFile),
+  relative(root, compressedSourceFilesOutFile),
+  relative(root, compressedVendorSourceFilesOutFile),
   relative(root, runtimeLoadersOutFile),
   relative(root, runtimeNamesOutFile),
   relative(root, provenanceOutFile),
@@ -192,6 +596,12 @@ if (!isCheckMode) {
   )
   console.log(
     `Wrote compressed component sources to ${relative(root, compressedOutFile)}`,
+  )
+  console.log(
+    `Wrote compressed block source files to ${relative(root, compressedSourceFilesOutFile)}`,
+  )
+  console.log(
+    `Wrote compressed vendor source files to ${relative(root, compressedVendorSourceFilesOutFile)}`,
   )
   console.log(
     `Wrote runtime component names to ${relative(root, runtimeNamesOutFile)}`,
