@@ -60,22 +60,27 @@ class RendererErrorBoundary extends Component<
 
 function OpenUIRenderFallback({
   isStreaming,
-  message = 'Composing the layout…',
+  message,
 }: {
   isStreaming?: boolean
   message?: string
 }) {
-  if (!isStreaming) return null
+  const displayMessage =
+    message ?? (isStreaming ? 'Composing the layout…' : 'Loading preview…')
+
   return (
     <div
       style={{
+        minHeight: '100%',
         padding: 24,
         color: 'rgba(255,255,255,0.45)',
         fontSize: 13,
+        display: 'grid',
+        placeItems: 'center',
         textAlign: 'center',
       }}
     >
-      {message}
+      {displayMessage}
     </div>
   )
 }
@@ -267,7 +272,7 @@ export default function OpenUIViewer({
                         message={
                           runtimeLibraryState.error
                             ? 'Unable to load preview components.'
-                            : 'Composing the layout…'
+                            : undefined
                         }
                       />
                     )}
