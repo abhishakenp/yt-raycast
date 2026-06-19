@@ -203,8 +203,8 @@ Overall average: **60-90% token reduction** on common development operations.
 ## Production (Ship Fast)
 
 - **Live site:** [https://ship-fast.io/](https://ship-fast.io/)
-- **Hosting:** [Coolify](https://coolify.io) on `159.195.70.194`
-- **Operations:** Deployments and services are managed via the [Coolify CLI](https://coolify.io/docs/installation); configure the CLI against that Coolify instance per upstream docs.
+- **Hosting:** [Dokploy](https://dokploy.com) on **exodus** (`ssh exodus`), panel [https://dokploy.devliv.io](https://dokploy.devliv.io). The `ship-fast` Dokploy project holds the `ship-fast-free` and `ship-fast-develop` applications plus the `convex` compose (self-hosted Convex).
+- **Operations:** Deployments and services are managed via the local Dokploy CLI (`dokploy ...`, config `~/.dokploy/config.json`): `dokploy project all`, `dokploy application deploy|redeploy|save-github-provider|read-logs`, `dokploy compose update|deploy`.
 
 ## Environment
 
