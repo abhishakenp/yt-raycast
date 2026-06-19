@@ -1,20 +1,20 @@
 import {
-  Code2,
+  ExternalLink,
   Github,
   LoaderCircle,
   Lock,
-  PackageCheck,
-  PanelsTopLeft,
-  Server,
   TriangleAlert,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useMutation, useQuery } from 'convex/react'
+import { useEffect, useMemo, useState } from 'react'
 
+import { api } from '../../../../convex/_generated/api'
 import {
   useOptionalAuth,
   useOptionalClerk,
 } from '@/shared/auth/use-optional-auth'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import { HtmlIcon, ReactIcon, NextIcon, LakebedIcon } from '@/features/exports/components/ExportIcons'
 
 type GitHubTarget = {
   target: 'html' | 'react' | 'next' | 'lakebed'
@@ -23,8 +23,13 @@ type GitHubTarget = {
   status: string
   requiresPayment: boolean
   fileCount: number | null
+  artifactReady?: boolean
+  artifactStatus?: string
+  artifactError?: string
   previewVersion?: number | null
   currentPreviewVersion?: number | null
+  githubUrl?: string | null
+  githubRepoUrl?: string | null
 }
 
 type ExportTargetResponse = GitHubTarget | { target: string }
@@ -34,6 +39,12 @@ type GitHubPanelProps = {
 }
 
 const GITHUB_PENDING_PUSH_KEY = 'ship-fast:github-pending-push'
+const githubTargets: Array<GitHubTarget['target']> = [
+  'html',
+  'react',
+  'next',
+  'lakebed',
+]
 
 const targetLabel = (target: GitHubTarget['target']): string =>
   target === 'html'
@@ -53,6 +64,17 @@ const targetSummary = (target: GitHubTarget['target']): string =>
         ? 'Next.js full-stack project'
         : 'Lakebed full-stack repository'
 
+const loadingTargets: GitHubTarget[] = githubTargets.map((target) => ({
+  target,
+  label: targetLabel(target),
+  ready: false,
+  status: 'loading',
+  requiresPayment: false,
+  fileCount: null,
+  artifactReady: false,
+  artifactStatus: 'loading',
+}))
+
 const statusLabel = (target: GitHubTarget): string => {
   if (target.requiresPayment) return 'Payment required'
   if (target.status === 'stale') {
@@ -61,11 +83,22 @@ const statusLabel = (target: GitHubTarget): string => {
       ? 'Regenerate export first'
       : `Regenerate for preview v${target.currentPreviewVersion}`
   }
-  if (target.ready) return `${target.fileCount ?? 0} files ready`
+  if (target.ready) return ''
   return target.status.replaceAll('_', ' ')
 }
 
-const githubTargets = ['html', 'react', 'next', 'lakebed'] as const
+const artifactProgressPercent = (target: GitHubTarget) =>
+  target.artifactReady
+    ? 100
+    : target.artifactStatus === 'building'
+      ? 72
+      : target.artifactStatus === 'queued'
+        ? 26
+        : target.artifactStatus === 'loading'
+          ? 12
+          : target.ready
+            ? 100
+            : 0
 
 const isGitHubTarget = (target: ExportTargetResponse): target is GitHubTarget =>
   target.target === 'html' ||
@@ -77,6 +110,11 @@ const readOwnerSecret = (sessionId: string): string | undefined =>
   typeof window === 'undefined'
     ? undefined
     : readAnonymousOwnerSecret(window.localStorage, sessionId)
+
+const isPendingPushRecord = (
+  value: unknown,
+): value is { sessionId?: unknown; target?: unknown } =>
+  value !== null && typeof value === 'object' && !Array.isArray(value)
 
 const pendingPushPayload = (
   sessionId: string,
@@ -103,7 +141,8 @@ const consumePendingPush = (
   window.sessionStorage.removeItem(GITHUB_PENDING_PUSH_KEY)
 
   try {
-    const parsed = JSON.parse(raw) as { sessionId?: unknown; target?: unknown }
+    const parsed = JSON.parse(raw)
+    if (!isPendingPushRecord(parsed)) return null
     if (
       parsed.sessionId === sessionId &&
       (parsed.target === 'html' ||
@@ -123,35 +162,36 @@ const consumePendingPush = (
 export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
   const auth = useOptionalAuth()
   const clerk = useOptionalClerk()
-  const [targets, setTargets] = useState<GitHubTarget[]>([])
+  const exportTargets = useQuery(api.sessions.getExportTargets, {
+    lookup: sessionId,
+  })
+  const ensureExportArtifact = useMutation(
+    api.sessions.ensureExportArtifactByLookup,
+  )
   const [activeTarget, setActiveTarget] = useState<GitHubTarget['target']>()
   const [pendingRetryTarget, setPendingRetryTarget] = useState<
     GitHubTarget['target'] | null
   >(null)
   const [error, setError] = useState<string>()
-  const [repoUrl, setRepoUrl] = useState<string>()
-
-  const loadTargets = async () => {
-    setError(undefined)
-    const response = await fetch(`/api/sessions/${sessionId}/export-targets`)
-    const data = await response.json()
-    if (!response.ok) throw new Error(data?.error ?? 'Unable to load exports')
-    setTargets((data.targets ?? []).filter(isGitHubTarget))
-  }
-
-  useEffect(() => {
-    void loadTargets().catch((loadError) => {
-      setError(
-        loadError instanceof Error
-          ? loadError.message
-          : 'Unable to load exports',
-      )
-    })
-  }, [sessionId])
+  const [waitingTarget, setWaitingTarget] = useState<GitHubTarget['target']>()
+  const [repoUrlsByTarget, setRepoUrlsByTarget] = useState(() => ({
+    html: '',
+    react: '',
+    next: '',
+    lakebed: '',
+  }))
 
   useEffect(() => {
     setPendingRetryTarget(consumePendingPush(sessionId))
   }, [sessionId])
+
+  const visibleTargets = useMemo(
+    () =>
+      exportTargets?.targets && exportTargets.targets.length > 0
+        ? exportTargets.targets.filter(isGitHubTarget)
+        : loadingTargets,
+    [exportTargets?.targets],
+  )
 
   const startGitHubConnection = async (
     target: GitHubTarget['target'],
@@ -204,12 +244,19 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
     })
     const data = await response.json()
     if (!response.ok) throw new Error(data?.error ?? 'Export failed')
-    await loadTargets()
   }
 
-  const pushTarget = async (item: GitHubTarget) => {
+  const pushTarget = async (targetConfig: GitHubTarget) => {
     setError(undefined)
-    setRepoUrl(undefined)
+
+    const existingRepoUrl =
+      targetConfig.githubUrl ??
+      targetConfig.githubRepoUrl ??
+      repoUrlsByTarget[targetConfig.target]
+    if (existingRepoUrl) {
+      window.open(existingRepoUrl, '_blank', 'noopener,noreferrer')
+      return
+    }
 
     if (!auth.isSignedIn) {
       void clerk.openSignIn?.()
@@ -217,19 +264,47 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
       return
     }
 
-    if (item.requiresPayment || item.status === 'payment_required') {
+    if (!targetConfig.artifactReady) {
+      setWaitingTarget(targetConfig.target)
+      try {
+        const result = await ensureExportArtifact({
+          lookup: sessionId,
+          target: targetConfig.target,
+          anonymousOwnerSecret: readOwnerSecret(sessionId),
+        })
+        if (result.status !== 'ready') return
+        setWaitingTarget(undefined)
+      } catch (ensureError) {
+        setWaitingTarget(undefined)
+        setError(
+          ensureError instanceof Error
+            ? ensureError.message
+            : 'GitHub push failed',
+        )
+        return
+      }
+    }
+
+    if (
+      targetConfig.requiresPayment ||
+      targetConfig.status === 'payment_required'
+    ) {
       setError('Subscribe to Pro or use a download credit before pushing.')
       return
     }
 
-    setActiveTarget(item.target)
+    setActiveTarget(targetConfig.target)
     try {
       const appToken = await auth.getToken({ template: 'convex' })
       if (!appToken) throw new Error('Sign in before pushing to GitHub.')
       const anonymousOwnerSecret = readOwnerSecret(sessionId)
 
-      if (!item.ready) {
-        await createExportForGitHub(item.target, appToken, anonymousOwnerSecret)
+      if (!targetConfig.ready) {
+        await createExportForGitHub(
+          targetConfig.target,
+          appToken,
+          anonymousOwnerSecret,
+        )
       }
 
       const pushExport = async () =>
@@ -240,7 +315,7 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            target: item.target,
+            target: targetConfig.target,
             anonymousOwnerSecret,
           }),
         })
@@ -253,13 +328,20 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
         (data?.code === 'GITHUB_NOT_CONNECTED' ||
           data?.code === 'GITHUB_REPO_SCOPE_REQUIRED')
       ) {
-        await startGitHubConnection(item.target, appToken)
+        await startGitHubConnection(targetConfig.target, appToken)
         return
       }
       if (!response.ok) {
         throw new Error(data?.error ?? 'GitHub push failed')
       }
-      setRepoUrl(data.repoUrl)
+      if (typeof data.repoUrl === 'string' && data.repoUrl.trim()) {
+        const nextRepoUrl = data.repoUrl
+        setRepoUrlsByTarget((current) => ({
+          ...current,
+          [targetConfig.target]: nextRepoUrl,
+        }))
+        window.open(nextRepoUrl, '_blank', 'noopener,noreferrer')
+      }
     } catch (pushError) {
       setError(
         pushError instanceof Error ? pushError.message : 'GitHub push failed',
@@ -270,31 +352,38 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
   }
 
   useEffect(() => {
+    if (waitingTarget === undefined) return
+    const item = visibleTargets.find((target) => target.target === waitingTarget)
+    if (item === undefined) {
+      setWaitingTarget(undefined)
+      return
+    }
+    if (item.artifactReady) {
+      setWaitingTarget(undefined)
+      void pushTarget(item)
+      return
+    }
+    if (item.artifactStatus === 'failed' || item.status === 'stale') {
+      setWaitingTarget(undefined)
+    }
+  }, [visibleTargets, waitingTarget])
+
+  useEffect(() => {
     if (
       !pendingRetryTarget ||
       activeTarget !== undefined ||
-      targets.length === 0
+      visibleTargets.length === 0
     ) {
       return
     }
 
-    const item = targets.find((target) => target.target === pendingRetryTarget)
+    const item = visibleTargets.find(
+      (target) => target.target === pendingRetryTarget,
+    )
     if (!item) return
     setPendingRetryTarget(null)
     void pushTarget(item)
-  }, [activeTarget, pendingRetryTarget, targets])
-
-  const visibleTargets =
-    targets.length > 0
-      ? targets
-      : githubTargets.map((target) => ({
-          target,
-          label: targetLabel(target),
-          ready: false,
-          status: 'loading',
-          requiresPayment: false,
-          fileCount: null,
-        }))
+  }, [activeTarget, pendingRetryTarget, visibleTargets])
 
   return (
     <div className="grid gap-3">
@@ -312,21 +401,38 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
         {visibleTargets.map((item) => {
           const Icon =
             item.target === 'html'
-              ? Github
+              ? HtmlIcon
               : item.target === 'react'
-                ? Code2
+                ? ReactIcon
                 : item.target === 'next'
-                  ? PanelsTopLeft
-                  : Server
-          const isBusy = activeTarget === item.target
-          const actionLabel = item.requiresPayment
-            ? 'Check Access'
-            : item.ready
-              ? 'Push To GitHub'
-              : 'Build Export'
-          const statusText = isBusy
+                  ? NextIcon
+                  : LakebedIcon
+          const isBusy =
+            activeTarget === item.target || waitingTarget === item.target
+          const isBuildPending =
+            !item.artifactReady &&
+            (item.artifactStatus === 'queued' ||
+              item.artifactStatus === 'building' ||
+              item.artifactStatus === 'loading' ||
+              item.artifactStatus === 'not_ready')
+          const progressPercent = artifactProgressPercent(item)
+          const showProgress =
+            waitingTarget === item.target && isBuildPending
+          const progressBackground =
+            showProgress && progressPercent > 0
+              ? `linear-gradient(110deg, rgba(34, 211, 238, 0.16) 0%, rgba(34, 211, 238, 0.08) ${progressPercent}%, transparent ${progressPercent}%, transparent 100%)`
+              : undefined
+          const existingRepoUrl =
+            item.githubUrl ?? item.githubRepoUrl ?? repoUrlsByTarget[item.target]
+          const statusText = showProgress
+            ? `${progressPercent}%`
+            : activeTarget === item.target
             ? 'Pushing Repository...'
-            : statusLabel(item)
+            : item.artifactStatus === 'failed'
+              ? (item.artifactError ?? 'Export failed')
+              : isBuildPending
+                ? ''
+                : statusLabel(item)
 
           return (
             <button
@@ -335,20 +441,14 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
               disabled={activeTarget !== undefined}
               key={item.target}
               onClick={() => void pushTarget(item)}
+              style={{ backgroundImage: progressBackground }}
               type="button"
             >
               <span
-                className="export-target-glyph grid size-[42px] shrink-0 place-items-center rounded-[10px] border border-white/10 bg-black/24 text-white/70 transition-colors group-hover/github:border-white/16 group-hover/github:bg-white/[0.06] group-hover/github:text-white"
+                className="export-target-glyph grid size-[42px] shrink-0 place-items-center rounded-[10px] transition-colors group-hover/github:text-white"
                 aria-hidden="true"
               >
-                {isBusy ? (
-                  <LoaderCircle
-                    className="size-4 animate-spin"
-                    strokeWidth={1.8}
-                  />
-                ) : (
-                  <Icon className="size-4" strokeWidth={1.8} />
-                )}
+                <Icon className="size-8" />
               </span>
               <span className="grid min-w-0 gap-0.5">
                 <span className="truncate text-sm font-semibold text-white">
@@ -361,39 +461,34 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
                   {statusText}
                 </span>
               </span>
-              <span className="export-target-state flex items-center gap-2">
-                {item.requiresPayment ? (
-                  <Lock className="size-4 text-amber-300" />
-                ) : item.status === 'stale' ? (
-                  <TriangleAlert className="size-4 text-amber-200" />
-                ) : (
-                  <PackageCheck
-                    className={
-                      item.ready
-                        ? 'size-4 text-emerald-300'
-                        : 'size-4 text-white/28'
-                    }
+              <span
+                aria-hidden="true"
+                className="export-target-action grid size-9 place-items-center rounded-lg border border-white/10 bg-white/[0.06] text-white/48 transition-colors group-hover/github:border-cyan-200/30 group-hover/github:bg-cyan-200/10 group-hover/github:text-cyan-100"
+                data-github-action={item.target}
+              >
+                {isBusy ? (
+                  <LoaderCircle
+                    className="size-4 animate-spin"
+                    strokeWidth={1.8}
                   />
+                ) : item.requiresPayment ? (
+                  <Lock className="size-4 text-amber-300" strokeWidth={1.8} />
+                ) : item.status === 'stale' ? (
+                  <TriangleAlert
+                    className="size-4 text-amber-200"
+                    strokeWidth={1.8}
+                  />
+                ) : existingRepoUrl ? (
+                  <ExternalLink className="size-4" strokeWidth={1.8} />
+                ) : (
+                  <Github className="size-4" strokeWidth={1.8} />
                 )}
-                <span className="hidden rounded-md border border-white/10 bg-white/[0.06] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-white/46 sm:inline">
-                  {actionLabel}
-                </span>
               </span>
             </button>
           )
         })}
       </div>
 
-      {repoUrl && (
-        <a
-          className="rounded-xl border border-emerald-400/25 bg-emerald-400/10 p-3 text-sm text-emerald-100 no-underline"
-          href={repoUrl}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {repoUrl}
-        </a>
-      )}
       {error && (
         <p className="m-0 rounded-xl border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-200">
           {error}

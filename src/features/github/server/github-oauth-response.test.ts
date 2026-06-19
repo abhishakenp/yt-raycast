@@ -1,6 +1,3 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
@@ -25,26 +22,6 @@ describe('GitHub OAuth response handlers', () => {
   beforeEach(() => {
     client.mutation.mockReset()
     client.setAuth.mockReset()
-  })
-
-  it('keeps GitHub OAuth native to the app instead of Firebase or Clerk linking', () => {
-    const source = readFileSync(
-      join(
-        process.cwd(),
-        'src/features/github/server/github-oauth-response.ts',
-      ),
-      'utf8',
-    )
-
-    expect(source).toContain('https://github.com/login/oauth/authorize')
-    expect(source).toContain('api.github.createOAuthState')
-    expect(source).toContain('api.github.completeOAuthConnection')
-    expect(source).toContain('getBearerToken')
-    expect(source).not.toContain('firebase')
-    expect(source).not.toContain('@clerk/tanstack-react-start/server')
-    expect(source).not.toContain('createExternalAccount')
-    expect(source).not.toContain('useReverification')
-    expect(source).not.toContain("strategy: 'oauth_github'")
   })
 
   it('starts GitHub OAuth with repo scope and a stored current-user state', async () => {

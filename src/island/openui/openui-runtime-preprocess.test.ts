@@ -21,6 +21,27 @@ describe('preprocessOpenUIRuntimeResponse', () => {
     expect(result).toContain('Image("https://images.example.com/")')
   })
 
+  it('repairs malformed quoted object keys before runtime parsing', () => {
+    const source =
+      'root = SaasKimiPage("StrideFit", ["Home"], {items:[{"name":"Darius K.", tag:"Verified Buyer"},{"name:"Maya S.", tag:"Verified Buyer"}]})'
+
+    const result = preprocessOpenUIRuntimeResponse(source)
+
+    expect(result).toContain('{"name":"Darius K."')
+    expect(result).toContain('{name:"Maya S."')
+    expect(result).not.toContain('{"name:"Maya S."')
+  })
+
+  it('repairs object boundaries before trailing null arguments', () => {
+    const source =
+      'root = ProductDetailKimiPage("StrideFit", ["Home"], ["Home"], {}, {}, {}, {}, {footer:{note:"Done"}, null)'
+
+    const result = preprocessOpenUIRuntimeResponse(source)
+
+    expect(result).toContain('{footer:{note:"Done"}}, null)')
+    expect(result).not.toContain('{footer:{note:"Done"}, null)')
+  })
+
   it('keeps OpenUIViewer independent from engine preprocessing metadata', () => {
     const source = readFileSync(
       join(process.cwd(), 'src/island/openui/OpenUIViewer.tsx'),

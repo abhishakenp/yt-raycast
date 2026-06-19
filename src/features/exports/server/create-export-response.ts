@@ -7,6 +7,23 @@ import type { ExportTarget } from '../services/openui-export-types'
 type ExportConvexClient = Pick<ConvexHttpClient, 'query'> &
   Partial<Pick<ConvexHttpClient, 'setAuth'>>
 
+type ArtifactDownloadPayload = {
+  export: {
+    status: string
+    requiresPayment?: boolean
+    errorMessage?: string
+    previewVersion?: number
+  }
+  artifact?: {
+    status: string
+    filename?: string
+    contentType?: string
+    previewVersion?: number
+  } | null
+  storageUrl?: string | null
+  latestPreviewVersion?: number
+}
+
 const normalizeTarget = (target: string): ExportTarget | null => {
   if (
     target === 'html' ||
@@ -24,29 +41,9 @@ const createDownloadHeaders = (contentType: string, filename: string) => ({
   'content-disposition': `attachment; filename="${filename}"`,
 })
 
-const toResponseBody = (body: string | Uint8Array): BodyInit => {
-  if (typeof body === 'string') return body
-  return body.buffer.slice(
-    body.byteOffset,
-    body.byteOffset + body.byteLength,
-  ) as ArrayBuffer
-}
-
 const isExportConvexClient = (
   value: Request | ExportConvexClient | undefined,
 ): value is ExportConvexClient => value !== undefined && 'query' in value
-
-const readExportThemeOptions = (request?: Request) => {
-  if (!request) return {}
-  const url = new URL(request.url)
-  const themeName = url.searchParams.get('theme')?.trim() || undefined
-  const mode = url.searchParams.get('mode')?.trim().toLowerCase()
-
-  return {
-    themeName,
-    isDark: mode === 'dark' ? true : mode === 'light' ? false : undefined,
-  }
-}
 
 const getBearerToken = (request: Request): string | null => {
   const auth = request.headers.get('authorization') ?? ''
@@ -62,6 +59,40 @@ const getOwnerSecret = (request?: Request): string | undefined => {
     url.searchParams.get('anonymousOwnerSecret') ??
     url.searchParams.get('anonOwnerSecret') ??
     undefined
+  )
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === 'object' && !Array.isArray(value)
+
+const isArtifactDownloadPayload = (
+  value: unknown,
+): value is ArtifactDownloadPayload => {
+  if (!isRecord(value) || !isRecord(value.export)) return false
+  const artifact = value.artifact
+  return (
+    typeof value.export.status === 'string' &&
+    (value.export.requiresPayment === undefined ||
+      typeof value.export.requiresPayment === 'boolean') &&
+    (value.export.errorMessage === undefined ||
+      typeof value.export.errorMessage === 'string') &&
+    (value.export.previewVersion === undefined ||
+      typeof value.export.previewVersion === 'number') &&
+    (artifact === undefined ||
+      artifact === null ||
+      (isRecord(artifact) &&
+        typeof artifact.status === 'string' &&
+        (artifact.filename === undefined ||
+          typeof artifact.filename === 'string') &&
+        (artifact.contentType === undefined ||
+          typeof artifact.contentType === 'string') &&
+        (artifact.previewVersion === undefined ||
+          typeof artifact.previewVersion === 'number'))) &&
+    (value.storageUrl === undefined ||
+      value.storageUrl === null ||
+      typeof value.storageUrl === 'string') &&
+    (value.latestPreviewVersion === undefined ||
+      typeof value.latestPreviewVersion === 'number')
   )
 }
 
@@ -90,6 +121,18 @@ const textErrorResponse = (error: unknown) =>
     },
   )
 
+const buildingResponse = (artifactStatus?: string) =>
+  new Response(
+    JSON.stringify({
+      status: artifactStatus ?? 'queued',
+      message: 'Export is still being prepared.',
+    }),
+    {
+      status: 202,
+      headers: { 'content-type': 'application/json' },
+    },
+  )
+
 export const createExportResponse = async (
   sessionId: string,
   target: string,
@@ -112,11 +155,20 @@ export const createExportResponse = async (
       ? undefined
       : requestOrClient
     setClientAuth(client, request)
-    const download = await client.query(api.sessions.getOwnedExportDownload, {
-      sessionId: sessionId as any,
-      target: normalizedTarget,
-      anonymousOwnerSecret: getOwnerSecret(request),
-    })
+    const downloadResult = await client.query(
+      api.sessions.getOwnedExportArtifactDownloadByLookup,
+      {
+        lookup: sessionId,
+        target: normalizedTarget,
+        anonymousOwnerSecret: getOwnerSecret(request),
+      },
+    )
+    const download =
+      downloadResult === null
+        ? null
+        : isArtifactDownloadPayload(downloadResult)
+          ? downloadResult
+          : null
 
     if (download === null) {
       return new Response('Export not found. Generate the export first.', {
@@ -141,18 +193,7 @@ export const createExportResponse = async (
     }
 
     if (exportRecord.status !== 'ready') {
-      return new Response('Export is not ready yet', {
-        status: 202,
-        headers: { 'content-type': 'text/plain' },
-      })
-    }
-
-    const source = download.source
-    if (typeof source !== 'string' || source.trim().length === 0) {
-      return new Response('OpenUI source not found', {
-        status: 404,
-        headers: { 'content-type': 'text/plain' },
-      })
+      return buildingResponse(exportRecord.status)
     }
 
     if (
@@ -166,32 +207,19 @@ export const createExportResponse = async (
       })
     }
 
-    const exportInput = {
-      source,
-      siteSpecJson: download.siteSpecJson,
-      previewHtml: download.previewHtml,
-      sessionId,
-      target: normalizedTarget,
-      includeBadge: exportRecord.requiresPayment !== false,
-      ...readExportThemeOptions(request),
+    if (download.artifact?.status !== 'ready' || !download.storageUrl) {
+      return buildingResponse(download.artifact?.status)
     }
-    const exportResult =
-      normalizedTarget === 'html'
-        ? await (
-            await import('../services/openui-html-export-builder')
-          ).buildOpenUIHtmlExport(exportInput)
-        : normalizedTarget === 'lakebed'
-          ? await (
-              await import('../services/openui-lakebed-export-builder')
-            ).buildOpenUILakebedExport(exportInput)
-          : await (
-              await import('../services/openui-export-builder')
-            ).buildOpenUIExport(exportInput)
 
-    return new Response(toResponseBody(exportResult.body), {
+    const artifactResponse = await fetch(download.storageUrl)
+    if (!artifactResponse.ok || artifactResponse.body === null) {
+      return buildingResponse('queued')
+    }
+
+    return new Response(artifactResponse.body, {
       headers: createDownloadHeaders(
-        exportResult.contentType,
-        exportResult.filename,
+        download.artifact.contentType ?? 'application/octet-stream',
+        download.artifact.filename ?? `ship-fast-${sessionId}-${normalizedTarget}.zip`,
       ),
     })
   } catch (error) {

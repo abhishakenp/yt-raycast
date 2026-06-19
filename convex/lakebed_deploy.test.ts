@@ -16,9 +16,17 @@ describe('lakebed_deploy action logging', () => {
     expect(source).toContain("sourceKind === 'html'")
     expect(source).toContain('buildStaticLakebedProjectFiles')
     expect(source).toContain('buildOpenUILakebedProjectFiles')
-    expect(source).toContain(
-      "logLakebedDeploy(prepared.sessionId, 'project-build:start', { sourceKind })",
+    expect(source).not.toContain('staticBuilder, openUIBuilder')
+    expect(source).not.toContain(
+      "import('../src/features/exports/services/openui-lakebed-export-builder'),",
     )
+    expect(
+      source.indexOf(
+        "'../src/features/exports/services/openui-lakebed-export-builder'",
+      ),
+    ).toBeGreaterThan(source.indexOf("if (sourceKind === 'html')"))
+    expect(source).toContain("'project-build:start'")
+    expect(source).toContain('sourceKind')
     expect(source).toContain("logLakebedDeploy(prepared.sessionId, 'record:start')")
     expect(source).toContain(
       "logLakebedDeploy(prepared?.sessionId ?? args.sessionId, 'failed'",

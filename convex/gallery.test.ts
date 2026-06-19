@@ -73,11 +73,11 @@ test('listPublicSessions returns only public visible sessions with gallery metad
     cost: 0,
     homepageReady: null,
     siteSpecReady: null,
-    openuiReady: null,
+    openuiReady: true,
     readiness: {
       homepageReady: null,
       siteSpecReady: null,
-      openuiReady: null,
+      openuiReady: true,
       previewReady: true,
     },
   })

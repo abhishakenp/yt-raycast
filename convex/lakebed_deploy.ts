@@ -2,12 +2,13 @@
 
 import { api, internal } from './_generated/api'
 import { action } from './_generated/server'
-import type { ActionCtx } from './_generated/server'
+import { v } from 'convex/values'
+import type { Id } from './_generated/dataModel'
 import type { LakebedDeployResult } from '../src/features/deployments/server/lakebed-deploy-service'
 import { publishPreviewArgs } from './lib/session_validators'
 
 type PreparedLakebedDeployment = {
-  sessionId: string
+  sessionId: Id<'sessions'>
   source: string
   sourceKind?: 'html' | 'openui'
   siteSpecJson?: string
@@ -17,15 +18,11 @@ type PreparedLakebedDeployment = {
   isDark?: boolean
 }
 
-type InternalLakebedDeploymentReferences = {
-  sessions: {
-    recordLakebedDeploymentSuccess: Parameters<ActionCtx['runMutation']>[0]
-    recordLakebedDeploymentFailure: Parameters<ActionCtx['runMutation']>[0]
-  }
+type LakebedProjectFiles = {
+  files: Record<string, string>
+  fileCount: number
+  projectName: string
 }
-
-const internalReferences =
-  internal as unknown as InternalLakebedDeploymentReferences
 
 const errorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error)
@@ -49,7 +46,7 @@ const successArgs = (
   requestedSlug: string | undefined,
   deployed: LakebedDeployResult,
 ) => ({
-  sessionId: prepared.sessionId as any,
+  sessionId: prepared.sessionId,
   requestedSlug,
   previewVersion: prepared.previewVersion,
   url: deployed.url,
@@ -65,15 +62,94 @@ const successArgs = (
   inspectPolicy: deployed.inspectPolicy,
 })
 
+const isPrebuiltLakebedArtifact = (
+  value: unknown,
+): value is {
+  sessionId: Id<'sessions'>
+  prompt: string
+  previewVersion: number
+  status: string
+  filesUrl?: string | null
+} =>
+  value !== null &&
+  typeof value === 'object' &&
+  !Array.isArray(value) &&
+  'sessionId' in value &&
+  'prompt' in value &&
+  'previewVersion' in value &&
+  'status' in value &&
+  typeof value.sessionId === 'string' &&
+  typeof value.prompt === 'string' &&
+  typeof value.previewVersion === 'number' &&
+  typeof value.status === 'string' &&
+  (!('filesUrl' in value) ||
+    typeof value.filesUrl === 'string' ||
+    value.filesUrl === null)
+
+const readProjectFiles = async (
+  url: string,
+): Promise<Record<string, string> | null> => {
+  const response = await fetch(url)
+  if (!response.ok) return null
+  const parsed = (await response.json()) as unknown
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return null
+  }
+  const files: Record<string, string> = {}
+  for (const [path, contents] of Object.entries(parsed)) {
+    if (typeof contents !== 'string') return null
+    files[path] = contents
+  }
+  return files
+}
+
 export const deploy = action({
   args: publishPreviewArgs,
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<unknown> => {
     const startedAt = Date.now()
     let prepared: PreparedLakebedDeployment | null = null
     try {
       logLakebedDeploy(args.sessionId, 'action:start', {
         requestedSlug: args.requestedSlug,
       })
+      const artifactResult = await ctx.runQuery(
+        api.sessions.getOwnedLakebedDeploymentArtifact,
+        args,
+      )
+      const artifact = isPrebuiltLakebedArtifact(artifactResult)
+        ? artifactResult
+        : null
+      if (artifact?.status === 'ready' && artifact.filesUrl) {
+        const files = await readProjectFiles(artifact.filesUrl)
+        if (files !== null) {
+          prepared = {
+            sessionId: artifact.sessionId,
+            source: '',
+            previewVersion: artifact.previewVersion,
+            sourceKind: 'openui',
+          }
+          logLakebedDeploy(artifact.sessionId, 'prebuilt:loaded', {
+            fileCount: Object.keys(files).length,
+          })
+          const { deployLakebedProjectFiles } = await import(
+            '../src/features/deployments/server/lakebed-deploy-service'
+          )
+          const deployed = await deployLakebedProjectFiles({
+            files,
+            log: (message, details) =>
+              logLakebedDeploy(artifact.sessionId, `lakebed-api:${message}`, details),
+          })
+          const result: unknown = await ctx.runMutation(
+            internal.sessions.recordLakebedDeploymentSuccess,
+            successArgs(prepared, args.requestedSlug, deployed),
+          )
+          logLakebedDeploy(artifact.sessionId, 'prebuilt:deployed', {
+            totalElapsedMs: Date.now() - startedAt,
+          })
+          return result
+        }
+      }
+
       logLakebedDeploy(args.sessionId, 'prepare:start')
       prepared = (await ctx.runQuery(
         api.sessions.prepareLakebedDeploymentForPublish,
@@ -101,28 +177,30 @@ export const deploy = action({
       logLakebedDeploy(prepared.sessionId, 'project-build:start', {
         sourceKind,
       })
-      const [{ deployLakebedProjectFiles }, staticBuilder, openUIBuilder] =
-        await Promise.all([
-          import('../src/features/deployments/server/lakebed-deploy-service'),
-          import('../src/features/deployments/server/lakebed-static-project-builder'),
-          import('../src/features/exports/services/openui-lakebed-export-builder'),
-        ])
-      const project =
-        sourceKind === 'html'
-          ? await staticBuilder.buildStaticLakebedProjectFiles({
-              source: prepared.source,
-              siteSpecJson: prepared.siteSpecJson,
-              previewHtml: prepared.previewHtml,
-            })
-          : await openUIBuilder.buildOpenUILakebedProjectFiles({
-              source: prepared.source,
-              siteSpecJson: prepared.siteSpecJson,
-              previewHtml: prepared.previewHtml,
-              sessionId: prepared.sessionId,
-              target: 'lakebed',
-              themeName: prepared.themeName,
-              isDark: prepared.isDark,
-            })
+      let project: LakebedProjectFiles
+      if (sourceKind === 'html') {
+        const { buildStaticLakebedProjectFiles } = await import(
+          '../src/features/deployments/server/lakebed-static-project-builder'
+        )
+        project = await buildStaticLakebedProjectFiles({
+          source: prepared.source,
+          siteSpecJson: prepared.siteSpecJson,
+          previewHtml: prepared.previewHtml,
+        })
+      } else {
+        const { buildOpenUILakebedProjectFiles } = await import(
+          '../src/features/exports/services/openui-lakebed-export-builder'
+        )
+        project = await buildOpenUILakebedProjectFiles({
+          source: prepared.source,
+          siteSpecJson: prepared.siteSpecJson,
+          previewHtml: prepared.previewHtml,
+          sessionId: prepared.sessionId,
+          target: 'lakebed',
+          themeName: prepared.themeName,
+          isDark: prepared.isDark,
+        })
+      }
       logLakebedDeploy(prepared.sessionId, 'project-build:complete', {
         fileCount: project.fileCount,
         projectName: project.projectName,
@@ -134,6 +212,13 @@ export const deploy = action({
       })
 
       const deployStartedAt = Date.now()
+      logLakebedDeploy(prepared.sessionId, 'lakebed-api:module-import:start')
+      const { deployLakebedProjectFiles } = await import(
+        '../src/features/deployments/server/lakebed-deploy-service'
+      )
+      logLakebedDeploy(prepared.sessionId, 'lakebed-api:module-import:complete', {
+        elapsedMs: Date.now() - deployStartedAt,
+      })
       logLakebedDeploy(prepared.sessionId, 'lakebed-api:start', {
         fileCount: project.fileCount,
       })
@@ -158,8 +243,8 @@ export const deploy = action({
 
       const recordStartedAt = Date.now()
       logLakebedDeploy(prepared.sessionId, 'record:start')
-      const result = await ctx.runMutation(
-        internalReferences.sessions.recordLakebedDeploymentSuccess,
+      const result: unknown = await ctx.runMutation(
+        internal.sessions.recordLakebedDeploymentSuccess,
         successArgs(prepared, args.requestedSlug, deployed),
       )
       logLakebedDeploy(prepared.sessionId, 'record:complete', {
@@ -175,7 +260,7 @@ export const deploy = action({
         elapsedMs: Date.now() - startedAt,
       })
       await ctx.runMutation(
-        internalReferences.sessions.recordLakebedDeploymentFailure,
+        internal.sessions.recordLakebedDeploymentFailure,
         {
           sessionId: args.sessionId,
           requestedSlug: args.requestedSlug,
@@ -184,5 +269,30 @@ export const deploy = action({
       )
       throw error
     }
+  },
+})
+
+export const deployByLookup = action({
+  args: {
+    lookup: v.string(),
+    anonymousOwnerSecret: v.optional(v.string()),
+    requestedSlug: v.optional(v.string()),
+  },
+  handler: async (ctx, args): Promise<unknown> => {
+    const artifactResult = await ctx.runQuery(
+      api.sessions.getOwnedLakebedDeploymentArtifactByLookup,
+      args,
+    )
+    const artifact = isPrebuiltLakebedArtifact(artifactResult)
+      ? artifactResult
+      : null
+    if (artifact === null) {
+      throw new Error('Session not found')
+    }
+    return await ctx.runAction(api.lakebed_deploy.deploy, {
+      sessionId: artifact.sessionId,
+      anonymousOwnerSecret: args.anonymousOwnerSecret,
+      requestedSlug: args.requestedSlug,
+    })
   },
 })

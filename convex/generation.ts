@@ -8,6 +8,7 @@ import type { Doc, Id } from './_generated/dataModel'
 import type { ActionCtx } from './_generated/server'
 import type { EngineWorkspaceTask } from '../src/features/generation/server/engine-workspace'
 import { getModelConfigurationFailure } from './generationConfig'
+import { buildOpenUiHandoffHtml } from './lib/openui_handoff_html'
 
 const internalFunctions = internal as any
 
@@ -54,93 +55,18 @@ const createGenerationTimeoutController = () => {
   }
 }
 
-const escapeHtml = (value: string): string =>
-  value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-
-const buildOpenUiHandoffHtml = (
-  source: string,
-  locale: string,
-  brand: string,
-  prompt: string,
-): string => `<!doctype html>
-<html lang="${escapeHtml(locale)}">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${escapeHtml(brand || 'Generated Site')}</title>
-  <script src="/scripts/tailwind-browser.js"></script>
-</head>
-<body class="min-h-screen bg-background text-foreground">
-  <main id="openui-root" data-openui-ready="source" class="min-h-screen p-6">
-    <section class="mx-auto max-w-4xl rounded-lg border border-border bg-card p-6 text-card-foreground">
-      <p class="text-sm font-semibold text-muted-foreground">Generated OpenUI source is ready.</p>
-      <h1 class="mt-3 text-3xl font-bold">${escapeHtml(brand || 'Generated Site')}</h1>
-      <p class="mt-3 text-base text-muted-foreground">${escapeHtml(prompt)}</p>
-    </section>
-  </main>
-  <script type="application/json" id="ship-fast-openui-source">${escapeHtml(JSON.stringify(source))}</script>
-</body>
-</html>`
-
-const buildRenderedOpenUiPreviewHtml = async ({
+const buildRenderedOpenUiPreviewHtml = ({
   source,
   locale,
   brand,
   prompt,
-  theme,
 }: {
   source: string
   locale: string
   brand: string
   prompt: string
-  theme?: string | null
-}): Promise<string> => {
-  try {
-    const [{ renderOpenUIToHTMLWithTheme }, { buildThemeHead }] =
-      await Promise.all([
-        import('../packages/ship-fast-engine/src/openui-ssr.js'),
-        import('../packages/ship-fast-engine/src/renderers/index.ts'),
-      ])
-    const { html, cssVars } = (await renderOpenUIToHTMLWithTheme(
-      source,
-      undefined,
-      locale,
-      undefined,
-      {
-        prompt,
-        brandContext: [brand, prompt].filter(Boolean).join(' '),
-      },
-    )) as { html: string; cssVars?: string }
-    const themeHead = buildThemeHead(
-      `${brand}\n${prompt}\n${source}`,
-      theme ?? null,
-    )
-
-    return `<!doctype html>
-<html lang="${escapeHtml(locale)}">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${escapeHtml(brand || 'Generated Site')}</title>
-  <script src="/scripts/tailwind-browser.js"></script>
-${themeHead}
-  <style>#openui-root { ${cssVars || ''} }</style>
-</head>
-<body class="min-h-screen bg-background text-foreground">
-  <div id="openui-root">${html}</div>
-</body>
-</html>`
-  } catch (error) {
-    console.error('[generation] failed to render final OpenUI preview', {
-      error: error instanceof Error ? error.message : String(error),
-    })
-    return buildOpenUiHandoffHtml(source, locale, brand, prompt)
-  }
+}): string => {
+  return buildOpenUiHandoffHtml({ source, locale, brand, prompt })
 }
 
 const eventMessage = (event: GenUIEvent): string | undefined => {
@@ -530,7 +456,6 @@ export const startGeneration = internalAction({
         locale,
         brand: result.brand,
         prompt: session.prompt,
-        theme: result.theme,
       })
 
       await completeGenerationFromNode(ctx, {

@@ -28,6 +28,24 @@ const getBearerToken = (request: Request): string | null => {
 const normalizeError = (error: unknown): string =>
   error instanceof Error ? error.message : 'Lakebed publish failed'
 
+const isLakebedPublishBody = (value: unknown): value is LakebedPublishBody =>
+  value !== null &&
+  typeof value === 'object' &&
+  !Array.isArray(value) &&
+  (!('anonymousOwnerSecret' in value) ||
+    typeof value.anonymousOwnerSecret === 'string')
+
+const isLakebedArtifactStatus = (
+  value: unknown,
+): value is { status?: string; filesUrl?: string | null } =>
+  value !== null &&
+  typeof value === 'object' &&
+  !Array.isArray(value) &&
+  (!('status' in value) || typeof value.status === 'string') &&
+  (!('filesUrl' in value) ||
+    typeof value.filesUrl === 'string' ||
+    value.filesUrl === null)
+
 export const createLakebedPublishResponse = async (
   request: Request,
   sessionId: string,
@@ -36,7 +54,8 @@ export const createLakebedPublishResponse = async (
   let body: LakebedPublishBody = {}
 
   try {
-    body = (await request.json()) as LakebedPublishBody
+    const parsed = await request.json()
+    body = isLakebedPublishBody(parsed) ? parsed : {}
   } catch {
     body = {}
   }
@@ -46,8 +65,8 @@ export const createLakebedPublishResponse = async (
     const token = getBearerToken(request)
     if (token !== null) client.setAuth?.(token)
 
-    const existing = await client.query(api.sessions.getDeploymentStatus, {
-      sessionId: sessionId as any,
+    const existing = await client.query(api.sessions.getDeploymentStatusByLookup, {
+      lookup: sessionId,
     })
     if (
       existing?.provider === 'lakebed' &&
@@ -57,8 +76,25 @@ export const createLakebedPublishResponse = async (
       return json(existing)
     }
 
-    const result = await client.action(api.lakebed_deploy.deploy, {
-      sessionId: sessionId as any,
+    const artifactResult = await client.query(
+      api.sessions.getOwnedLakebedDeploymentArtifactByLookup,
+      {
+        lookup: sessionId,
+        anonymousOwnerSecret: body.anonymousOwnerSecret,
+      },
+    )
+    const artifact = isLakebedArtifactStatus(artifactResult)
+      ? artifactResult
+      : { status: 'queued', filesUrl: null }
+    if (artifact.status !== 'ready' || !artifact.filesUrl) {
+      return json(
+        { status: artifact.status ?? 'queued', error: 'Lakebed app is still being prepared.' },
+        { status: 202 },
+      )
+    }
+
+    const result = await client.action(api.lakebed_deploy.deployByLookup, {
+      lookup: sessionId,
       anonymousOwnerSecret: body.anonymousOwnerSecret,
     })
 

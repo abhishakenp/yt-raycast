@@ -29,7 +29,7 @@ describe('createSessionExportResponse', () => {
     expect(response.status).toBe(200)
     expect(client.setAuth).toHaveBeenCalledWith('token_123')
     expect(client.mutation).toHaveBeenCalledWith(expect.anything(), {
-      sessionId: 'session_123',
+      lookup: 'session_123',
       target: 'html',
       anonymousOwnerSecret: undefined,
     })
@@ -64,7 +64,7 @@ describe('createSessionExportResponse', () => {
 
     expect(client.setAuth).not.toHaveBeenCalled()
     expect(client.mutation).toHaveBeenCalledWith(expect.anything(), {
-      sessionId: 'session_123',
+      lookup: 'session_123',
       target: 'react',
       anonymousOwnerSecret: 'owner-secret',
     })

@@ -1,12 +1,14 @@
-import { internal } from './_generated/api'
+import { Debouncer } from '@ikhrustalev/convex-debouncer'
+import { components, internal } from './_generated/api'
+import type { Id } from './_generated/dataModel'
 import {
   internalAction,
   internalMutation,
   internalQuery,
   mutation,
   query,
+  type MutationCtx,
 } from './_generated/server'
-import { v } from 'convex/values'
 import { listSessionChatMessages } from './lib/chat_refinement_helpers'
 import {
   claimAnonymousSession,
@@ -62,19 +64,26 @@ import {
 import {
   loadDeploymentBySlug,
   loadDeploymentStatus,
-  deletePreparedLakebedDeploymentChunks,
+  loadOwnedLakebedDeploymentArtifact,
   prepareLakebedSessionDeployment,
   publishSessionPreview,
-  readPreparedLakebedDeploymentChunk,
   recordLakebedSessionDeploymentFailure,
   recordLakebedSessionDeploymentSuccess,
-  storePreparedLakebedSessionDeployment,
 } from './lib/session_deployment_helpers'
 import {
   createSessionExport,
-  loadOwnedExportDownload,
+  ensureExportArtifactBuild,
+  loadOwnedExportArtifactDownload,
   loadOwnedExportForGitHubPush,
   loadExportRecord,
+  loadSessionExportTargets,
+  markExportArtifactBuilding,
+  prepareExportArtifactBuild,
+  queueSessionExportArtifactBuilds,
+  recordExportArtifactFailure,
+  recordExportArtifactReady,
+  recordExportArtifactStalled,
+  recordGitHubExportRepository,
 } from './lib/session_export_helpers'
 import { loadSessionEventStream } from './lib/session_event_stream_helpers'
 import {
@@ -119,12 +128,18 @@ import {
   deleteMineArgs,
   cmsEntryRevisionsArgs,
   deploymentSlugArgs,
+  editedSessionExportRebuildArgs,
   eventStreamArgs,
   extractCmsBindingsArgs,
   exportRecordArgs,
+  exportArtifactBuildArgs,
+  exportArtifactFailureArgs,
+  exportArtifactReadyArgs,
+  exportArtifactStalledArgs,
   failGenerationArgs,
   forkSessionArgs,
   generationViewArgs,
+  githubExportRepositoryLookupArgs,
   insertCmsBindingArgs,
   listCmsRevisionsArgs,
   lakebedDeploymentFailureArgs,
@@ -133,11 +148,13 @@ import {
   operationalNotificationArgs,
   ownedAnnotationArgs,
   ownedExportArgs,
+  ownedExportLookupArgs,
   ownedSessionArgs,
   provisionMedusaTenantArgs,
   publicGallerySessionArgs,
   publicGallerySessionsArgs,
   publishPreviewArgs,
+  publishPreviewLookupArgs,
   recordOperationalEventArgs,
   recordUsageMetricArgs,
   restoreCmsContentRevisionArgs,
@@ -160,6 +177,26 @@ import {
   userUsageMetricsArgs,
 } from './lib/session_validators'
 import { loadSessionWorkspace } from './lib/session_workspace_helpers'
+
+const editedSessionExportDebouncer = new Debouncer(components.debouncer, {
+  delay: 10_000,
+  mode: 'sliding',
+})
+
+const scheduleEditedSessionExportAutomation = async (
+  ctx: MutationCtx,
+  args: {
+    sessionId: Id<'sessions'>
+    previewVersion: number
+  },
+) =>
+  await editedSessionExportDebouncer.schedule(
+    ctx,
+    'edited-session-export-rebuild',
+    args.sessionId,
+    internal.sessions.rebuildEditedSessionExports,
+    args,
+  )
 
 // Gallery Easter egg: delete the hovered generation, scoped by authenticated
 // userId or stable anonymousClientId.
@@ -258,34 +295,9 @@ export const publishPreview = mutation({
   handler: (ctx, args) => publishSessionPreview(ctx, args),
 })
 
-export const prepareLakebedDeployment = internalQuery({
-  args: publishPreviewArgs,
-  handler: (ctx, args) => prepareLakebedSessionDeployment(ctx, args),
-})
-
 export const prepareLakebedDeploymentForPublish = query({
   args: publishPreviewArgs,
   handler: (ctx, args) => prepareLakebedSessionDeployment(ctx, args),
-})
-
-export const storePreparedLakebedDeployment = internalMutation({
-  args: publishPreviewArgs,
-  handler: (ctx, args) => storePreparedLakebedSessionDeployment(ctx, args),
-})
-
-export const readPreparedLakebedDeploymentChunkByBatch = internalQuery({
-  args: {
-    batchId: v.string(),
-    index: v.number(),
-  },
-  handler: (ctx, args) => readPreparedLakebedDeploymentChunk(ctx, args),
-})
-
-export const deletePreparedLakebedDeploymentChunksByBatch = internalMutation({
-  args: {
-    batchId: v.string(),
-  },
-  handler: (ctx, args) => deletePreparedLakebedDeploymentChunks(ctx, args),
 })
 
 export const recordLakebedDeploymentSuccess = internalMutation({
@@ -324,6 +336,7 @@ export const completeGenerationInternal = internalMutation({
       now,
       sendOperationalNotification:
         sessionInternalReferences.sendOperationalNotification,
+      buildExportArtifact: sessionInternalReferences.buildExportArtifact,
     })
   },
 })
@@ -352,15 +365,108 @@ export const createExport = mutation({
   handler: (ctx, args) => createSessionExport(ctx, args),
 })
 
+export const createExportByLookup = mutation({
+  args: ownedExportLookupArgs,
+  handler: (ctx, args) => {
+    const sessionId = ctx.db.normalizeId('sessions', args.lookup)
+    if (sessionId === null) {
+      throw new Error('Session not found')
+    }
+    return createSessionExport(ctx, {
+      sessionId,
+      target: args.target,
+      anonymousOwnerSecret: args.anonymousOwnerSecret,
+    })
+  },
+})
+
+export const ensureExportArtifactByLookup = mutation({
+  args: ownedExportLookupArgs,
+  handler: (ctx, args) => {
+    const sessionId = ctx.db.normalizeId('sessions', args.lookup)
+    if (sessionId === null) {
+      throw new Error('Session not found')
+    }
+    return ensureExportArtifactBuild(ctx, {
+      sessionId,
+      target: args.target,
+      anonymousOwnerSecret: args.anonymousOwnerSecret,
+      buildExportArtifact: sessionInternalReferences.buildExportArtifact,
+    })
+  },
+})
+
+export const recordGitHubExportRepositoryByLookup = mutation({
+  args: githubExportRepositoryLookupArgs,
+  handler: (ctx, args) => {
+    const sessionId = ctx.db.normalizeId('sessions', args.lookup)
+    if (sessionId === null) {
+      throw new Error('Session not found')
+    }
+    return recordGitHubExportRepository(ctx, {
+      sessionId,
+      target: args.target,
+      anonymousOwnerSecret: args.anonymousOwnerSecret,
+      repoUrl: args.repoUrl,
+    })
+  },
+})
+
 export const getExport = query({
   args: exportRecordArgs,
   handler: async (ctx, args) =>
     loadExportRecord(ctx, args.sessionId, args.target),
 })
 
-export const getOwnedExportDownload = query({
+export const getExportTargets = query({
+  args: lookupArgs,
+  handler: (ctx, args) => {
+    const sessionId = ctx.db.normalizeId('sessions', args.lookup)
+    return sessionId === null
+      ? { sessionId: args.lookup, previewReady: false, isPrivate: null, targets: [] }
+      : loadSessionExportTargets(ctx, sessionId)
+  },
+})
+
+export const getDeploymentStatusByLookup = query({
+  args: lookupArgs,
+  handler: (ctx, args) => {
+    const sessionId = ctx.db.normalizeId('sessions', args.lookup)
+    return sessionId === null ? null : loadDeploymentStatus(ctx, sessionId)
+  },
+})
+
+export const publishPreviewByLookup = mutation({
+  args: publishPreviewLookupArgs,
+  handler: (ctx, args) => {
+    const sessionId = ctx.db.normalizeId('sessions', args.lookup)
+    if (sessionId === null) {
+      throw new Error('Session not found')
+    }
+    return publishSessionPreview(ctx, {
+      sessionId,
+      anonymousOwnerSecret: args.anonymousOwnerSecret,
+      requestedSlug: args.requestedSlug,
+    })
+  },
+})
+
+export const getOwnedExportArtifactDownload = query({
   args: ownedExportArgs,
-  handler: (ctx, args) => loadOwnedExportDownload(ctx, args),
+  handler: (ctx, args) => loadOwnedExportArtifactDownload(ctx, args),
+})
+
+export const getOwnedExportArtifactDownloadByLookup = query({
+  args: ownedExportLookupArgs,
+  handler: (ctx, args) => {
+    const sessionId = ctx.db.normalizeId('sessions', args.lookup)
+    if (sessionId === null) return null
+    return loadOwnedExportArtifactDownload(ctx, {
+      sessionId,
+      target: args.target,
+      anonymousOwnerSecret: args.anonymousOwnerSecret,
+    })
+  },
 })
 
 export const getOwnedExportForGitHubPush = query({
@@ -368,9 +474,79 @@ export const getOwnedExportForGitHubPush = query({
   handler: (ctx, args) => loadOwnedExportForGitHubPush(ctx, args),
 })
 
+export const getOwnedExportForGitHubPushByLookup = query({
+  args: ownedExportLookupArgs,
+  handler: (ctx, args) => {
+    const sessionId = ctx.db.normalizeId('sessions', args.lookup)
+    if (sessionId === null) {
+      throw new Error('Session not found')
+    }
+    return loadOwnedExportForGitHubPush(ctx, {
+      sessionId,
+      target: args.target,
+      anonymousOwnerSecret: args.anonymousOwnerSecret,
+    })
+  },
+})
+
+export const prepareExportArtifactBuildInput = internalQuery({
+  args: exportArtifactBuildArgs,
+  handler: (ctx, args) => prepareExportArtifactBuild(ctx, args),
+})
+
+export const markExportArtifactBuildStarted = internalMutation({
+  args: exportArtifactBuildArgs,
+  handler: (ctx, args) =>
+    markExportArtifactBuilding(ctx, {
+      ...args,
+      stallExportArtifactBuild:
+        sessionInternalReferences.stallExportArtifactBuild,
+    }),
+})
+
+export const recordExportArtifactBuildReady = internalMutation({
+  args: exportArtifactReadyArgs,
+  handler: (ctx, args) => recordExportArtifactReady(ctx, args),
+})
+
+export const recordExportArtifactBuildFailure = internalMutation({
+  args: exportArtifactFailureArgs,
+  handler: (ctx, args) => recordExportArtifactFailure(ctx, args),
+})
+
+export const markExportArtifactBuildStalled = internalMutation({
+  args: exportArtifactStalledArgs,
+  handler: (ctx, args) => recordExportArtifactStalled(ctx, args),
+})
+
+export const rebuildEditedSessionExports = internalMutation({
+  args: editedSessionExportRebuildArgs,
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId)
+
+    if (session === null || session.previewVersion !== args.previewVersion) {
+      return { status: 'stale' }
+    }
+
+    await queueSessionExportArtifactBuilds(ctx, {
+      sessionId: args.sessionId,
+      previewVersion: args.previewVersion,
+      isPrivate: session.isPrivate,
+      now: Date.now(),
+      buildExportArtifact: sessionInternalReferences.buildExportArtifact,
+    })
+
+    return { status: 'queued' }
+  },
+})
+
 export const createEdit = mutation({
   args: createEditArgs,
-  handler: (ctx, args) => createSessionEdit(ctx, args),
+  handler: async (ctx, args) => {
+    const result = await createSessionEdit(ctx, args)
+    await scheduleEditedSessionExportAutomation(ctx, result)
+    return result
+  },
 })
 
 // Fork a session the caller does not own into a fresh copy they DO own, then
@@ -379,12 +555,20 @@ export const createEdit = mutation({
 // user on their own editable copy with the change already applied.
 export const forkSession = mutation({
   args: forkSessionArgs,
-  handler: (ctx, args) =>
-    forkSessionForOwner(
+  handler: async (ctx, args) => {
+    const result = await forkSessionForOwner(
       ctx,
       args,
       sessionInternalReferences.sendOperationalNotification,
-    ),
+    )
+    if (result.editPreviewVersion !== undefined) {
+      await scheduleEditedSessionExportAutomation(ctx, {
+        sessionId: result.sessionId,
+        previewVersion: result.editPreviewVersion,
+      })
+    }
+    return result
+  },
 })
 
 export const listEdits = query({
@@ -505,6 +689,26 @@ export const getDeploymentBySlug = query({
 export const getDeploymentStatus = query({
   args: sessionIdArgs,
   handler: async (ctx, args) => loadDeploymentStatus(ctx, args.sessionId),
+})
+
+export const getOwnedLakebedDeploymentArtifact = query({
+  args: publishPreviewArgs,
+  handler: async (ctx, args) => loadOwnedLakebedDeploymentArtifact(ctx, args),
+})
+
+export const getOwnedLakebedDeploymentArtifactByLookup = query({
+  args: publishPreviewLookupArgs,
+  handler: (ctx, args) => {
+    const sessionId = ctx.db.normalizeId('sessions', args.lookup)
+    if (sessionId === null) {
+      throw new Error('Session not found')
+    }
+    return loadOwnedLakebedDeploymentArtifact(ctx, {
+      sessionId,
+      anonymousOwnerSecret: args.anonymousOwnerSecret,
+      requestedSlug: args.requestedSlug,
+    })
+  },
 })
 
 export const extractCmsBindings = internalMutation({

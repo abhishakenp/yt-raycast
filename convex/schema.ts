@@ -26,6 +26,13 @@ const exportTarget = v.union(
   v.literal('lakebed'),
 )
 
+const exportArtifactStatus = v.union(
+  v.literal('queued'),
+  v.literal('building'),
+  v.literal('ready'),
+  v.literal('failed'),
+)
+
 const provider = v.union(v.literal('stripe'), v.literal('razorpay'))
 
 const integrationStatus = v.union(
@@ -214,6 +221,9 @@ export default defineSchema({
     artifactPath: v.optional(v.string()),
     previewVersion: v.optional(v.number()),
     url: v.optional(v.string()),
+    downloadUrl: v.optional(v.string()),
+    githubUrl: v.optional(v.string()),
+    deployedUrl: v.optional(v.string()),
     fileCount: v.optional(v.number()),
     requiresPayment: v.optional(v.boolean()),
     error: v.optional(v.string()),
@@ -221,6 +231,29 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index('by_sessionId_target', ['sessionId', 'target']),
+
+  exportArtifacts: defineTable({
+    sessionId: v.id('sessions'),
+    target: exportTarget,
+    previewVersion: v.number(),
+    status: exportArtifactStatus,
+    storageId: v.optional(v.id('_storage')),
+    filesStorageId: v.optional(v.id('_storage')),
+    filename: v.optional(v.string()),
+    contentType: v.optional(v.string()),
+    fileCount: v.optional(v.number()),
+    byteLength: v.optional(v.number()),
+    hash: v.optional(v.string()),
+    errorMessage: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_sessionId_target', ['sessionId', 'target'])
+    .index('by_sessionId_target_previewVersion', [
+      'sessionId',
+      'target',
+      'previewVersion',
+    ]),
 
   githubConnections: defineTable({
     clerkTokenIdentifier: v.string(),
@@ -271,14 +304,6 @@ export default defineSchema({
   })
     .index('by_sessionId', ['sessionId'])
     .index('by_slug', ['slug']),
-
-  lakebedDeploymentPayloadChunks: defineTable({
-    batchId: v.string(),
-    chunk: v.string(),
-    createdAt: v.number(),
-    index: v.number(),
-    sessionId: v.id('sessions'),
-  }).index('by_batchId_index', ['batchId', 'index']),
 
   cmsConfigs: defineTable({
     sessionId: v.id('sessions'),

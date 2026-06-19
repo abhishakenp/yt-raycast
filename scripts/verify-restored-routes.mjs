@@ -59,10 +59,9 @@ assert(stream.body.includes('event: preview_ready'), 'stream did not replay prev
 assert(stream.body.includes('event: replay_complete'), 'stream did not replay replay_complete')
 assertNoBackendLeak(stream.body)
 
-const targetsBefore = await requestJson(`/api/sessions/${sessionId}/export-targets`)
-assert(targetsBefore.status === 200, `export-targets returned ${targetsBefore.status}`)
-assert(targetsBefore.json.previewReady === true, 'export targets did not see ready preview')
-assert(Array.isArray(targetsBefore.json.targets), 'export targets did not return targets')
+const targetsBefore = convexRun('sessions:getExportTargets', { lookup: sessionId })
+assert(targetsBefore.previewReady === true, 'export targets did not see ready preview')
+assert(Array.isArray(targetsBefore.targets), 'export targets did not return targets')
 
 const editedPrompt = `${prompt} edited`
 const edit = await requestJson(`/api/sessions/${sessionId}/preview-inline-text`, {

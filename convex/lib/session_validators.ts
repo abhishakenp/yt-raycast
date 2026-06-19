@@ -141,6 +141,58 @@ export const ownedExportArgs = {
   target: exportTarget,
 }
 
+export const ownedExportLookupArgs = {
+  lookup: v.string(),
+  target: exportTarget,
+  anonymousOwnerSecret: v.optional(v.string()),
+}
+
+export const githubExportRepositoryLookupArgs = {
+  ...ownedExportLookupArgs,
+  repoUrl: v.string(),
+}
+
+export const publishPreviewLookupArgs = {
+  lookup: v.string(),
+  anonymousOwnerSecret: v.optional(v.string()),
+  requestedSlug: v.optional(v.string()),
+}
+
+export const exportArtifactBuildArgs = {
+  sessionId: v.id('sessions'),
+  target: exportTarget,
+  previewVersion: v.number(),
+  autoDeployPublic: v.optional(v.boolean()),
+}
+
+export const exportArtifactStalledArgs = {
+  sessionId: v.id('sessions'),
+  target: exportTarget,
+  previewVersion: v.number(),
+  buildStartedAt: v.number(),
+}
+
+export const editedSessionExportRebuildArgs = {
+  sessionId: v.id('sessions'),
+  previewVersion: v.number(),
+}
+
+export const exportArtifactReadyArgs = {
+  ...exportArtifactBuildArgs,
+  storageId: v.id('_storage'),
+  filesStorageId: v.optional(v.id('_storage')),
+  filename: v.string(),
+  contentType: v.string(),
+  fileCount: v.number(),
+  byteLength: v.number(),
+  hash: v.string(),
+}
+
+export const exportArtifactFailureArgs = {
+  ...exportArtifactBuildArgs,
+  errorMessage: v.string(),
+}
+
 export const sessionEditFields = {
   editType,
   targetLabel: v.optional(v.string()),

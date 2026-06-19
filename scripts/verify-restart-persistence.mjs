@@ -78,10 +78,9 @@ try {
   await assertStreamReplay(sessionId, 'after restart')
   await assertHistoryVersions(sessionId, [1, 2], 'after restart')
 
-  const targets = await requestJson(`/api/sessions/${sessionId}/export-targets`)
-  assert(targets.status === 200, `post-restart export-targets returned ${targets.status}`)
-  assert(targets.json.previewReady === true, 'post-restart export targets did not see ready preview')
-  assert(Array.isArray(targets.json.targets), 'post-restart export targets did not return targets')
+  const targets = convexRun('sessions:getExportTargets', { lookup: sessionId })
+  assert(targets.previewReady === true, 'post-restart export targets did not see ready preview')
+  assert(Array.isArray(targets.targets), 'post-restart export targets did not return targets')
 
   const restore = await requestJson(`/api/sessions/${sessionId}/history/1/restore`, {
     method: 'POST',

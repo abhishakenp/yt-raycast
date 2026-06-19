@@ -1,6 +1,6 @@
 import { Buffer } from 'node:buffer'
 import { readdirSync, readFileSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { dirname, join, relative } from 'node:path'
 import { brotliDecompressSync } from 'node:zlib'
 import ts from 'typescript'
 import { createParser, type ElementNode } from '@openuidev/lang-core'
@@ -14,6 +14,11 @@ import { zipSync, strToU8 } from 'fflate'
 import { preprocessOpenUIResponse } from '@ship-fast/engine'
 import { resolveThemeStyles } from '@/genui/theme-apply'
 import type { ThemeStyles } from '@/genui/theme-presets'
+import {
+  getBlockSourceFile,
+  resolveBlockSourceManifestPath,
+  resolveRelativeBlockSourcePath,
+} from './block-source-manifest'
 import type { BuiltExport, OpenUIExportInput } from './openui-export-types'
 
 type ParsedOpenUIProgram = {
@@ -34,6 +39,7 @@ type ExtractedComponent = {
   name: string
   source: string
   dependencies: Set<string>
+  blockSources: Set<string>
 }
 
 type ExportStack = 'react' | 'next'
@@ -43,14 +49,15 @@ type ReactExportSourceEntry = {
   source: string
 }
 
+type ImportTransformResult = {
+  imports: string[]
+  dependencies: Set<string>
+  blockSources: Set<string>
+}
+
 const textDecoder = new TextDecoder()
-const blocksRegistryPath = join(
-  process.cwd(),
-  'packages',
-  'ship-fast-blocks',
-  'src',
-  'registry',
-)
+const blocksSourcePath = join(process.cwd(), 'packages', 'ship-fast-blocks')
+const blocksRegistryPath = join(blocksSourcePath, 'src', 'registry')
 const forbiddenExportTokens = [
   '@openuidev',
   'defineComponent',
@@ -243,6 +250,41 @@ const readPublicPackageName = (specifier: string): string | null => {
   return specifier.split('/')[0] ?? null
 }
 
+const stripTsExtension = (value: string): string =>
+  value.replace(/\.(?:tsx?|jsx?)$/, '')
+
+const toPosixPath = (value: string): string => value.replaceAll('\\', '/')
+
+const relativeImportPath = (fromFile: string, toFile: string): string => {
+  let path = toPosixPath(relative(dirname(fromFile), toFile))
+  if (!path.startsWith('.')) path = `./${path}`
+  return stripTsExtension(path)
+}
+
+const blockAliasSourcePath = (moduleName: string): string | null => {
+  if (!moduleName.startsWith('#/')) return null
+  return resolveBlockSourceManifestPath(`src/${moduleName.slice(2)}`)
+}
+
+const exportedBlockSourceOutPath = (sourcePath: string): string => {
+  if (sourcePath === 'src/lib/utils.ts') return 'src/lib/cn.ts'
+  if (sourcePath === 'src/lib/img.tsx') return 'src/lib/image.tsx'
+  if (sourcePath.startsWith('src/components/')) return sourcePath
+  if (sourcePath.startsWith('src/hooks/')) return sourcePath
+  if (sourcePath.startsWith('src/lib/')) return sourcePath
+  throw new Error(`Unsupported block dependency source path: ${sourcePath}`)
+}
+
+const sourceFileScriptKind = (sourcePath: string): ts.ScriptKind => {
+  if (sourcePath.endsWith('.tsx')) return ts.ScriptKind.TSX
+  if (sourcePath.endsWith('.jsx')) return ts.ScriptKind.JSX
+  if (sourcePath.endsWith('.js')) return ts.ScriptKind.JS
+  return ts.ScriptKind.TS
+}
+
+const shouldTransformSourceImports = (sourcePath: string): boolean =>
+  /\.(tsx?|jsx?)$/.test(sourcePath)
+
 const normalizeRouteTarget = (value: string): string =>
   value.trim().toLowerCase()
 
@@ -418,25 +460,84 @@ const printNode = (node: ts.Node, sourceFile: ts.SourceFile): string =>
     .createPrinter({ newLine: ts.NewLineKind.LineFeed, removeComments: true })
     .printNode(ts.EmitHint.Unspecified, node, sourceFile)
 
+const replaceRanges = (
+  source: string,
+  ranges: Array<{ start: number; end: number; text: string }>,
+): string => {
+  let next = source
+  for (const range of ranges.sort((a, b) => b.start - a.start)) {
+    next = `${next.slice(0, range.start)}${range.text}${next.slice(range.end)}`
+  }
+  return next
+}
+
+const rewriteImportModule = (
+  statement: ts.ImportDeclaration,
+  sourceFile: ts.SourceFile,
+  moduleName: string,
+  nextModuleName: string,
+): string =>
+  statement
+    .getText(sourceFile)
+    .replace(
+      new RegExp(`(['"])${escapeRegExp(moduleName)}\\1`),
+      (_match, quote: string) => `${quote}${nextModuleName}${quote}`,
+    )
+
+const prependImports = (source: string, imports: string[]): string => {
+  const importText = imports.join('\n')
+  if (!importText) return source.trimStart()
+
+  const body = source.trimStart()
+  const directiveMatch = body.match(/^((?:['"][^'"]+['"];?\s*)+)/)
+  if (directiveMatch?.[1].includes('use client')) {
+    const directive = directiveMatch[1].trimEnd()
+    return `${directive}\n\n${importText}\n${body.slice(directiveMatch[1].length).trimStart()}`
+  }
+  return `${importText}\n${body}`
+}
+
+const removeImportDeclarations = (
+  source: string,
+  sourceFile: ts.SourceFile,
+): string =>
+  replaceRanges(
+    source,
+    sourceFile.statements.filter(ts.isImportDeclaration).map((statement) => ({
+      start: statement.getFullStart(),
+      end: statement.end,
+      text: '',
+    })),
+  )
+
 const transformComponentImports = (
   sourceFile: ts.SourceFile,
   componentName: string,
   stack: ExportStack,
-): { imports: string[]; dependencies: Set<string> } => {
+  generatedFilePath: string,
+  sourcePath?: string,
+  includeZod = true,
+): ImportTransformResult => {
   const imports: string[] = []
-  const dependencies = new Set<string>(['zod'])
+  const dependencies = new Set<string>(includeZod ? ['zod'] : [])
+  const blockSources = new Set<string>()
   for (const statement of sourceFile.statements) {
     if (!ts.isImportDeclaration(statement)) continue
     const specifier = statement.moduleSpecifier
     if (!ts.isStringLiteral(specifier)) continue
     const moduleName = specifier.text
-    const clause = statement.importClause
-    if (!clause) continue
 
     if (moduleName === '@openuidev/react-lang') continue
     if (moduleName === './openui.ts') continue
     if (moduleName === '#/lib/utils.ts') {
-      imports.push("import { cn } from '../lib/cn'")
+      imports.push(
+        rewriteImportModule(
+          statement,
+          sourceFile,
+          moduleName,
+          relativeImportPath(generatedFilePath, 'src/lib/cn.ts'),
+        ),
+      )
       continue
     }
     if (moduleName === '#/lib/use-navigate.tsx') {
@@ -450,25 +551,67 @@ const transformComponentImports = (
       continue
     }
     if (moduleName === '#/lib/img.tsx') {
-      imports.push("import { Image } from '../lib/image'")
+      imports.push(
+        rewriteImportModule(
+          statement,
+          sourceFile,
+          moduleName,
+          relativeImportPath(generatedFilePath, 'src/lib/image.tsx'),
+        ),
+      )
       continue
     }
-    if (moduleName.startsWith('#/components/ui/')) {
-      throw new Error(
-        `React export does not yet support UI primitive dependency in ${componentName}: ${moduleName}`,
+    const aliasSourcePath = blockAliasSourcePath(moduleName)
+    if (aliasSourcePath) {
+      blockSources.add(aliasSourcePath)
+      imports.push(
+        rewriteImportModule(
+          statement,
+          sourceFile,
+          moduleName,
+          relativeImportPath(
+            generatedFilePath,
+            exportedBlockSourceOutPath(aliasSourcePath),
+          ),
+        ),
       )
+      continue
     }
     if (moduleName.startsWith('#/')) {
       throw new Error(
         `React export does not support private helper import in ${componentName}: ${moduleName}`,
       )
     }
+    if (moduleName.startsWith('.') && sourcePath) {
+      const relativeSourcePath = resolveRelativeBlockSourcePath(
+        sourcePath,
+        moduleName,
+      )
+      if (!relativeSourcePath) {
+        throw new Error(
+          `React export cannot resolve relative block import in ${componentName}: ${moduleName}`,
+        )
+      }
+      blockSources.add(relativeSourcePath)
+      imports.push(
+        rewriteImportModule(
+          statement,
+          sourceFile,
+          moduleName,
+          relativeImportPath(
+            generatedFilePath,
+            exportedBlockSourceOutPath(relativeSourcePath),
+          ),
+        ),
+      )
+      continue
+    }
 
     const packageName = readPublicPackageName(moduleName)
     if (packageName) dependencies.add(packageName)
     imports.push(statement.getText(sourceFile))
   }
-  return { imports: [...new Set(imports)], dependencies }
+  return { imports: [...new Set(imports)], dependencies, blockSources }
 }
 
 const findDefineComponentParts = (
@@ -623,10 +766,12 @@ const extractComponent = (
 
   const { sourceFile, propsSchema, body, isExpressionBody } =
     findDefineComponentParts(componentName, entry)
-  const { imports, dependencies } = transformComponentImports(
+  const generatedFilePath = `src/components/${componentName}.tsx`
+  const { imports, dependencies, blockSources } = transformComponentImports(
     sourceFile,
     componentName,
     stack,
+    generatedFilePath,
   )
   const functionBody = isExpressionBody ? `return ${body}` : body
   const rewrittenNavigation = rewriteNavigationCalls(
@@ -655,7 +800,60 @@ ${rewrittenNavigation.body
     name: componentName,
     source,
     dependencies,
+    blockSources,
   }
+}
+
+const collectBlockSourceFiles = (
+  sourcePaths: Iterable<string>,
+  stack: ExportStack,
+): { files: Record<string, string>; dependencies: Set<string> } => {
+  const pending = [...new Set(sourcePaths)]
+  const seen = new Set<string>()
+  const files: Record<string, string> = {}
+  const dependencies = new Set<string>()
+
+  for (let index = 0; index < pending.length; index += 1) {
+    const sourcePath = pending[index]
+    if (!sourcePath || seen.has(sourcePath)) continue
+    seen.add(sourcePath)
+
+    const source = getBlockSourceFile(sourcePath)
+    const sourceFile = ts.createSourceFile(
+      sourcePath,
+      source,
+      ts.ScriptTarget.Latest,
+      true,
+      sourceFileScriptKind(sourcePath),
+    )
+    const outPath = exportedBlockSourceOutPath(sourcePath)
+    if (!shouldTransformSourceImports(sourcePath)) {
+      files[outPath] = source
+      continue
+    }
+    const transformed = transformComponentImports(
+      sourceFile,
+      sourcePath,
+      stack,
+      outPath,
+      sourcePath,
+      false,
+    )
+
+    for (const dependency of transformed.dependencies) {
+      dependencies.add(dependency)
+    }
+    for (const nestedSourcePath of transformed.blockSources) {
+      if (!seen.has(nestedSourcePath)) pending.push(nestedSourcePath)
+    }
+
+    files[outPath] = prependImports(
+      removeImportDeclarations(source, sourceFile),
+      transformed.imports,
+    )
+  }
+
+  return { files, dependencies }
 }
 
 const buildRoutes = (parsed: ParsedOpenUIProgram): ExportRoute[] => {
@@ -692,6 +890,9 @@ const dependencyVersions: Record<string, string> = {
   'lucide-react': '^0.577.0',
   clsx: '^2.1.1',
   'tailwind-merge': '^3.5.0',
+  '@radix-ui/react-slot': '^1.2.4',
+  'class-variance-authority': '^0.7.1',
+  'radix-ui': '^1.4.3',
 }
 
 const toDependencyRecord = (names: Iterable<string>): Record<string, string> =>
@@ -947,7 +1148,7 @@ const renderReadme = (
 
   return `# ${projectName}
 
-This project was generated by Ship Fast.
+Generated by [ShipFast](https://ship-fast.io) 🚀.
 
 ## Run locally
 
@@ -1133,8 +1334,15 @@ const buildReactExport = (
   const routes = buildRoutes(parsed)
   const routeTargets = buildRouteTargetMap(routes)
   const components = collectExportComponents(routes, 'react', routeTargets)
+  const blockSources = collectBlockSourceFiles(
+    components.flatMap((component) => [...component.blockSources]),
+    'react',
+  )
   const { dependencies, devDependencies } = resolveDependencyVersions(
-    components.flatMap((component) => [...component.dependencies]),
+    [
+      ...components.flatMap((component) => [...component.dependencies]),
+      ...blockSources.dependencies,
+    ],
     'react',
   )
   const componentNames = components.map((component) => component.name)
@@ -1160,6 +1368,7 @@ const buildReactExport = (
   for (const component of components) {
     files[`src/components/${component.name}.tsx`] = component.source
   }
+  Object.assign(files, blockSources.files)
 
   return {
     body: zipFiles(files),
@@ -1176,8 +1385,15 @@ const buildNextExport = (
   const routes = buildRoutes(parsed)
   const routeTargets = buildRouteTargetMap(routes)
   const components = collectExportComponents(routes, 'next', routeTargets)
+  const blockSources = collectBlockSourceFiles(
+    components.flatMap((component) => [...component.blockSources]),
+    'next',
+  )
   const { dependencies, devDependencies } = resolveDependencyVersions(
-    components.flatMap((component) => [...component.dependencies]),
+    [
+      ...components.flatMap((component) => [...component.dependencies]),
+      ...blockSources.dependencies,
+    ],
     'next',
   )
   const componentNames = components.map((component) => component.name)
@@ -1213,6 +1429,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       component.source,
     )
   }
+  Object.assign(files, blockSources.files)
 
   for (const route of routes) {
     if (route.path === '/') {
@@ -1263,6 +1480,8 @@ const buildRawHtmlExport = (input: OpenUIExportInput): BuiltExport => {
     'README.md': `# ${projectName}
 
 This export contains the generated single-file HTML website from Ship Fast v2.
+
+Generated by [ShipFast](https://ship-fast.io) 🚀.
 
 Open index.html directly, or serve this folder with any static host.
 `,

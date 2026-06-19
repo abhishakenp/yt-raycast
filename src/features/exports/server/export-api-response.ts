@@ -4,11 +4,12 @@ import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { createExportResponse } from './create-export-response'
 
-type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
 type ExportApiClient = Pick<ConvexHttpClient, 'query' | 'mutation'> &
   Partial<Pick<ConvexHttpClient, 'setAuth'>>
+type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
 
-const EXPORT_TARGETS: ExportTarget[] = ['html', 'react', 'next', 'lakebed']
+const isJsonObject = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === 'object' && !Array.isArray(value)
 
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), {
@@ -24,16 +25,21 @@ const readJsonBody = async (
 ): Promise<Record<string, unknown>> => {
   const text = await request.text()
   if (!text.trim()) return {}
-  const parsed = JSON.parse(text) as unknown
-  return parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)
-    ? (parsed as Record<string, unknown>)
-    : {}
+  const parsed: unknown = JSON.parse(text)
+  return isJsonObject(parsed) ? parsed : {}
 }
 
-const normalizeTarget = (value: unknown): ExportTarget | null =>
-  typeof value === 'string' && EXPORT_TARGETS.includes(value as ExportTarget)
-    ? (value as ExportTarget)
-    : null
+const normalizeTarget = (value: unknown): ExportTarget | null => {
+  switch (value) {
+    case 'html':
+    case 'react':
+    case 'next':
+    case 'lakebed':
+      return value
+    default:
+      return null
+  }
+}
 
 const getOwnerSecret = (
   request: Request,
@@ -76,64 +82,6 @@ const errorResponse = (error: unknown) =>
     { status: errorStatus(error) },
   )
 
-export const createExportTargetsResponse = async (
-  sessionId: string,
-  clientOverride?: ExportApiClient,
-): Promise<Response> => {
-  try {
-    const client = createClient(clientOverride)
-    const view = await client.query(api.sessions.getGenerationView, {
-      lookup: sessionId,
-    })
-    const previewReady = view?.session.status === 'preview_ready'
-    const currentPreviewVersion = view?.session.previewVersion
-    const targets = await Promise.all(
-      EXPORT_TARGETS.map(async (target) => {
-        const record = await client.query(api.sessions.getExport, {
-          sessionId: sessionId as any,
-          target,
-        })
-        const isStale =
-          record?.previewVersion !== undefined &&
-          currentPreviewVersion !== undefined &&
-          record.previewVersion !== currentPreviewVersion
-        const ready = record?.status === 'ready' && !isStale
-
-        return {
-          target,
-          label:
-            target === 'html'
-              ? 'HTML'
-              : target === 'react'
-                ? 'React'
-                : target === 'next'
-                  ? 'Next.js'
-                  : 'Lakebed',
-          ready,
-          status: isStale
-            ? 'stale'
-            : (record?.status ?? (previewReady ? 'available' : 'not_ready')),
-          requiresPayment: record?.requiresPayment ?? false,
-          fileCount: record?.fileCount ?? null,
-          previewVersion: record?.previewVersion ?? null,
-          currentPreviewVersion: currentPreviewVersion ?? null,
-          downloadUrl: ready
-            ? `/api/sessions/${sessionId}/download/${target}`
-            : null,
-        }
-      }),
-    )
-
-    return json({
-      sessionId,
-      previewReady,
-      targets,
-    })
-  } catch (error) {
-    return errorResponse(error)
-  }
-}
-
 export const createSessionExportResponse = async (
   sessionId: string,
   request: Request,
@@ -151,8 +99,8 @@ export const createSessionExportResponse = async (
 
     const client = createClient(clientOverride)
     setClientAuth(client, request)
-    const result = await client.mutation(api.sessions.createExport, {
-      sessionId: sessionId as any,
+    const result = await client.mutation(api.sessions.createExportByLookup, {
+      lookup: sessionId,
       target,
       anonymousOwnerSecret: getOwnerSecret(request, body),
     })

@@ -17,6 +17,102 @@ function sanitizePartialImages(code: string): string {
   return replaced === code ? code : stripNullsFromArrays(replaced)
 }
 
+function repairMalformedQuotedObjectKeys(code: string) {
+  let result = ''
+  const stack: string[] = []
+  let inString = false
+  let stringChar = ''
+  let escaped = false
+
+  for (let index = 0; index < code.length; index++) {
+    const char = code[index]
+
+    if (inString) {
+      result += char
+      if (escaped) {
+        escaped = false
+      } else if (char === '\\') {
+        escaped = true
+      } else if (char === stringChar) {
+        inString = false
+        stringChar = ''
+      }
+      continue
+    }
+
+    if (char === '"' && stack[stack.length - 1] === '{') {
+      const rest = code.slice(index + 1)
+      const malformedKey = rest.match(/^([A-Za-z_$][\w$]*):/)
+      if (malformedKey) {
+        result += `${malformedKey[1]}:`
+        index += malformedKey[0].length
+        continue
+      }
+    }
+
+    result += char
+
+    if (char === '"' || char === "'") {
+      inString = true
+      stringChar = char
+    } else if (char === '(' || char === '[' || char === '{') {
+      stack.push(char)
+    } else if ((char === ')' || char === ']' || char === '}') && stack.length) {
+      stack.pop()
+    }
+  }
+
+  return result
+}
+
+function repairObjectNullArgumentBoundaries(code: string) {
+  let result = ''
+  const stack: string[] = []
+  let inString = false
+  let stringChar = ''
+  let escaped = false
+
+  for (let index = 0; index < code.length; index++) {
+    const char = code[index]
+
+    if (inString) {
+      result += char
+      if (escaped) {
+        escaped = false
+      } else if (char === '\\') {
+        escaped = true
+      } else if (char === stringChar) {
+        inString = false
+        stringChar = ''
+      }
+      continue
+    }
+
+    if (char === ',' && stack[stack.length - 1] === '{') {
+      const nullArgument = code.slice(index).match(/^,\s*null(?=\s*\))/)
+      if (nullArgument) {
+        result += '}, null'
+        stack.pop()
+        index += nullArgument[0].length - 1
+        continue
+      }
+    }
+
+    result += char
+
+    if (char === '"' || char === "'") {
+      inString = true
+      stringChar = char
+    } else if (char === '(' || char === '[' || char === '{') {
+      stack.push(char)
+    } else if ((char === ')' || char === ']' || char === '}') && stack.length) {
+      stack.pop()
+    }
+  }
+
+  return result
+}
+
 function balanceSegment(segment: string): string {
   const trailingWhitespace = segment.match(/\s*$/)?.[0] || ''
   let source = segment.slice(0, segment.length - trailingWhitespace.length)
@@ -132,5 +228,13 @@ export function preprocessOpenUIRuntimeResponse(source: string): string {
     .replace(/\n?```\s*$/, '')
     .replace(/Action\([^)]*\)/g, 'null')
 
-  return balancePartial(sanitizePartialImages(balanceStatements(withoutFences)))
+  return balancePartial(
+    sanitizePartialImages(
+      balanceStatements(
+        repairObjectNullArgumentBoundaries(
+          repairMalformedQuotedObjectKeys(withoutFences),
+        ),
+      ),
+    ),
+  )
 }

@@ -15,4 +15,25 @@ describe('preprocessOpenUIResponse', () => {
     expect(result).toContain('{label: "Featured In"}')
     expect(result).toContain('{heading: "Why Kerala"')
   })
+
+  it('repairs malformed quoted object keys without changing valid JSON keys', () => {
+    const source =
+      'root = SaasKimiPage("StrideFit", ["Home"], {items:[{"name":"Darius K.", tag:"Verified Buyer"},{"name:"Maya S.", tag:"Verified Buyer"}]})'
+
+    const result = preprocessOpenUIResponse(source, { resolveRefs: false })
+
+    expect(result).toContain('{"name":"Darius K."')
+    expect(result).toContain('{name:"Maya S."')
+    expect(result).not.toContain('{"name:"Maya S."')
+  })
+
+  it('repairs object boundaries before trailing null arguments', () => {
+    const source =
+      'root = ProductDetailKimiPage("StrideFit", ["Home"], ["Home"], {}, {}, {}, {}, {footer:{note:"Done"}, null)'
+
+    const result = preprocessOpenUIResponse(source, { resolveRefs: false })
+
+    expect(result).toContain('{footer:{note:"Done"}}, null)')
+    expect(result).not.toContain('{footer:{note:"Done"}, null)')
+  })
 })

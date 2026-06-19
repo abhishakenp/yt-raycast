@@ -7,11 +7,15 @@ import {
   upsertSiteSpec,
 } from './session_artifact_helpers'
 import { seedCmsBindingsForGeneratedArtifacts } from './session_cms_binding_helpers'
+import { queueSessionExportArtifactBuilds } from './session_export_helpers'
 import { scheduleOperationalNotification } from './session_operational_notifications'
 import { type EngineTaskInput, upsertTask } from './session_task_helpers'
 
 type GenerationStateCtx = Pick<MutationCtx, 'db' | 'scheduler'>
 type OperationalNotificationReference = Parameters<
+  MutationCtx['scheduler']['runAfter']
+>[1]
+type ExportArtifactBuildReference = Parameters<
   MutationCtx['scheduler']['runAfter']
 >[1]
 
@@ -42,6 +46,7 @@ export const completeGeneratedSession = async (
     provider?: string
     now: number
     sendOperationalNotification: OperationalNotificationReference
+    buildExportArtifact: ExportArtifactBuildReference
   },
 ) => {
   const session = assertSessionExists(await ctx.db.get(args.sessionId))
@@ -125,8 +130,18 @@ export const completeGeneratedSession = async (
     args.sendOperationalNotification,
   )
 
+  await queueSessionExportArtifactBuilds(ctx, {
+    sessionId: args.sessionId,
+    previewVersion,
+    isPrivate: session.isPrivate,
+    now: args.now,
+    buildExportArtifact: args.buildExportArtifact,
+  })
+
   await ctx.db.patch(args.sessionId, {
     status: 'preview_ready',
+    openuiReady:
+      typeof args.openUiSource === 'string' && args.openUiSource.trim().length > 0,
     previewVersion,
     elapsed: args.elapsed,
     cost,

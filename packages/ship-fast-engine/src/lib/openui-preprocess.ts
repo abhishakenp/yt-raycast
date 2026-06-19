@@ -116,6 +116,102 @@ function stripTopLevelSectionArgLabels(code: string): string {
     .join('\n')
 }
 
+function repairMalformedQuotedObjectKeys(code: string): string {
+  let result = ''
+  const stack: string[] = []
+  let inString = false
+  let quote = ''
+  let escaped = false
+
+  for (let index = 0; index < code.length; index++) {
+    const char = code[index]
+
+    if (inString) {
+      result += char
+      if (escaped) {
+        escaped = false
+      } else if (char === '\\') {
+        escaped = true
+      } else if (char === quote) {
+        inString = false
+        quote = ''
+      }
+      continue
+    }
+
+    if (char === '"' && stack[stack.length - 1] === '{') {
+      const rest = code.slice(index + 1)
+      const malformedKey = rest.match(/^([A-Za-z_$][\w$]*):/)
+      if (malformedKey) {
+        result += `${malformedKey[1]}:`
+        index += malformedKey[0].length
+        continue
+      }
+    }
+
+    result += char
+
+    if (char === '"' || char === "'") {
+      inString = true
+      quote = char
+    } else if (char === '(' || char === '[' || char === '{') {
+      stack.push(char)
+    } else if (char === ')' || char === ']' || char === '}') {
+      stack.pop()
+    }
+  }
+
+  return result
+}
+
+function repairObjectNullArgumentBoundaries(code: string): string {
+  let result = ''
+  const stack: string[] = []
+  let inString = false
+  let quote = ''
+  let escaped = false
+
+  for (let index = 0; index < code.length; index++) {
+    const char = code[index]
+
+    if (inString) {
+      result += char
+      if (escaped) {
+        escaped = false
+      } else if (char === '\\') {
+        escaped = true
+      } else if (char === quote) {
+        inString = false
+        quote = ''
+      }
+      continue
+    }
+
+    if (char === ',' && stack[stack.length - 1] === '{') {
+      const nullArgument = code.slice(index).match(/^,\s*null(?=\s*\))/)
+      if (nullArgument) {
+        result += '}, null'
+        stack.pop()
+        index += nullArgument[0].length - 1
+        continue
+      }
+    }
+
+    result += char
+
+    if (char === '"' || char === "'") {
+      inString = true
+      quote = char
+    } else if (char === '(' || char === '[' || char === '{') {
+      stack.push(char)
+    } else if (char === ')' || char === ']' || char === '}') {
+      stack.pop()
+    }
+  }
+
+  return result
+}
+
 function extractExpr(str: string, start: number): string {
   let i = start
   while (i < str.length && (str[i] === ' ' || str[i] === '\t')) i++
@@ -373,6 +469,8 @@ export function preprocessOpenUIResponse(
 
   // Repair truncated mid-program statements before any ref resolution so a
   // broken statement can't swallow the ones after it (which leak as raw text).
+  result = repairMalformedQuotedObjectKeys(result)
+  result = repairObjectNullArgumentBoundaries(result)
   result = balanceStatements(result)
   result = stripTopLevelSectionArgLabels(result)
 

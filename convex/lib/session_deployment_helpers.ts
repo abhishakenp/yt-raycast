@@ -6,6 +6,10 @@ import {
   assertCanMutateSession,
   assertCanReadOwnedSession,
 } from './session_access_helpers'
+import {
+  exportDownloadUrl,
+  exportTargetFileCount,
+} from './session_export_helpers'
 
 type DeploymentReadCtx = Pick<QueryCtx, 'db'>
 
@@ -38,15 +42,7 @@ export type LakebedDeploymentFailureInput = {
   errorMessage: string
 }
 
-export type LakebedDeploymentPayloadChunkRef = {
-  batchId: string
-  chunkCount: number
-  payload: string
-}
-
 export type LakebedPreparedSourceKind = 'html' | 'openui'
-
-const lakebedPayloadChunkSize = 200_000
 
 export const normalizeDeploymentSlug = (value: string): string =>
   value
@@ -122,6 +118,19 @@ const readLakebedThemeName = (
     return undefined
   }
 }
+
+const isLikelyOpenUiSource = (source: string | undefined): source is string => {
+  const trimmed = source?.trim()
+  if (!trimmed) return false
+  if (/^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)) {
+    return false
+  }
+  return /(?:^|\n)\s*root\s*=/.test(trimmed)
+}
+
+const isOpenUiErrorHtml = (html: string): boolean =>
+  /class=["'][^"']*\bopenui-error\b/i.test(html) ||
+  /Failed to render:/i.test(html)
 
 const lakebedDeploymentMetadata = (deployment: {
   provider?: 'ship-fast' | 'lakebed'
@@ -209,6 +218,46 @@ export const loadDeploymentStatus = async (
       }
 }
 
+export const loadOwnedLakebedDeploymentArtifact = async (
+  ctx: QueryCtx,
+  args: PublishSessionPreviewInput,
+) => {
+  const session = await ctx.db.get(args.sessionId)
+
+  session !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Session not found',
+      })
+    })()
+
+  await assertCanReadOwnedSession(ctx, session, args.anonymousOwnerSecret)
+
+  const artifact = await ctx.db
+    .query('exportArtifacts')
+    .withIndex('by_sessionId_target_previewVersion', (index) =>
+      index
+        .eq('sessionId', args.sessionId)
+        .eq('target', 'lakebed')
+        .eq('previewVersion', session.previewVersion ?? 0),
+    )
+    .first()
+  const filesUrl =
+    artifact?.status === 'ready' && artifact.filesStorageId !== undefined
+      ? await ctx.storage.getUrl(artifact.filesStorageId)
+      : null
+
+  return {
+    sessionId: args.sessionId,
+    prompt: session.prompt,
+    previewVersion: session.previewVersion ?? 0,
+    status: artifact?.status ?? 'queued',
+    filesUrl,
+    isPrivate: session.isPrivate,
+  }
+}
+
 export const prepareLakebedSessionDeployment = async (
   ctx: QueryCtx,
   args: PublishSessionPreviewInput,
@@ -236,14 +285,6 @@ export const prepareLakebedSessionDeployment = async (
     })()
 
   await assertCanReadOwnedSession(ctx, session, args.anonymousOwnerSecret)
-
-  session.isPrivate === false ||
-    (() => {
-      throw new ConvexError({
-        code: 'PRIVATE_SESSION',
-        message: 'Private sessions cannot be published',
-      })
-    })()
 
   session.status === 'preview_ready' ||
     (() => {
@@ -286,12 +327,21 @@ export const prepareLakebedSessionDeployment = async (
       })
     })()
 
-  const openUiSource =
+  const previewOpenUiSource =
     typeof preview.openUiSource === 'string' && preview.openUiSource.trim()
       ? preview.openUiSource
-      : homeModule?.source
+      : undefined
+  const homeModuleOpenUiSource = isLikelyOpenUiSource(homeModule?.source)
+    ? homeModule.source
+    : undefined
+  const previewHasOpenUiError = isOpenUiErrorHtml(preview.html)
+  const openUiSource =
+    previewOpenUiSource ?? homeModuleOpenUiSource ?? homeModule?.source
   const shouldUseOpenUiSource =
-    session.openuiReady === true || session.preferredExportTarget !== 'html'
+    previewOpenUiSource !== undefined ||
+    (previewHasOpenUiError && homeModuleOpenUiSource !== undefined) ||
+    session.openuiReady === true ||
+    session.preferredExportTarget !== 'html'
   if (shouldUseOpenUiSource && !openUiSource?.trim()) {
     throw new ConvexError({
       code: 'ARTIFACT_NOT_READY',
@@ -309,6 +359,9 @@ export const prepareLakebedSessionDeployment = async (
       sessionId: args.sessionId,
       sourceBytes: source.length,
       sourceKind,
+      hasPreviewOpenUiSource: previewOpenUiSource !== undefined,
+      hasHomeModuleOpenUiSource: homeModuleOpenUiSource !== undefined,
+      previewHasOpenUiError,
       previewHtmlBytes: preview.html.length,
       previewVersion: preview.version,
     }),
@@ -325,67 +378,6 @@ export const prepareLakebedSessionDeployment = async (
     themeName: readLakebedThemeName(preview.siteSpecJson, session.genuiTheme),
     isDark: true,
   }
-}
-
-export const storePreparedLakebedSessionDeployment = async (
-  ctx: MutationCtx,
-  args: PublishSessionPreviewInput,
-): Promise<LakebedDeploymentPayloadChunkRef> => {
-  const prepared = await prepareLakebedSessionDeployment(
-    ctx as unknown as QueryCtx,
-    args,
-  )
-  console.log(
-    '[lakebed_deploy:prepare] serialize:start',
-    JSON.stringify({
-      sessionId: args.sessionId,
-      sourceBytes: prepared.source.length,
-      previewHtmlBytes: prepared.previewHtml?.length ?? 0,
-      previewVersion: prepared.previewVersion,
-    }),
-  )
-  const payload = JSON.stringify(prepared)
-  const batchId = `${args.sessionId}-${Date.now()}-${Math.random()
-    .toString(36)
-    .slice(2)}`
-  const chunkCount = Math.ceil(payload.length / lakebedPayloadChunkSize)
-  console.log(
-    '[lakebed_deploy:prepare] serialize:complete',
-    JSON.stringify({
-      sessionId: args.sessionId,
-      payloadBytes: payload.length,
-      chunkCount,
-    }),
-  )
-
-  return { batchId, chunkCount, payload }
-}
-
-export const readPreparedLakebedDeploymentChunk = async (
-  ctx: QueryCtx,
-  args: { batchId: string; index: number },
-) => {
-  const chunk = await ctx.db
-    .query('lakebedDeploymentPayloadChunks')
-    .withIndex('by_batchId_index', (index) =>
-      index.eq('batchId', args.batchId).eq('index', args.index),
-    )
-    .first()
-
-  return chunk?.chunk ?? null
-}
-
-export const deletePreparedLakebedDeploymentChunks = async (
-  ctx: MutationCtx,
-  args: { batchId: string },
-) => {
-  const chunks = await ctx.db
-    .query('lakebedDeploymentPayloadChunks')
-    .withIndex('by_batchId_index', (index) => index.eq('batchId', args.batchId))
-    .collect()
-
-  await Promise.all(chunks.map((chunk) => ctx.db.delete(chunk._id)))
-  return { deleted: chunks.length }
 }
 
 const deploymentSlugForRecord = async (
@@ -480,6 +472,39 @@ export const recordLakebedSessionDeploymentSuccess = async (
       })
     : await ctx.db.patch(existingDeployment._id, deploymentPatch)
 
+  const exportRecord = await ctx.db
+    .query('exports')
+    .withIndex('by_sessionId_target', (index) =>
+      index.eq('sessionId', args.sessionId).eq('target', 'lakebed'),
+    )
+    .first()
+  const exportPatch = {
+    previewVersion: args.previewVersion,
+    downloadUrl: exportDownloadUrl(args.sessionId, 'lakebed'),
+    deployedUrl: args.url,
+    fileCount: exportTargetFileCount('lakebed'),
+    errorMessage: undefined,
+    updatedAt: now,
+  }
+
+  exportRecord === null
+    ? await ctx.db.insert('exports', {
+        sessionId: args.sessionId,
+        target: 'lakebed',
+        status: 'available',
+        requiresPayment: false,
+        ...exportPatch,
+        createdAt: now,
+      })
+    : await ctx.db.patch(exportRecord._id, exportPatch)
+
+  if (session.isPrivate) {
+    await ctx.db.patch(args.sessionId, {
+      isPrivate: false,
+      updatedAt: now,
+    })
+  }
+
   await ctx.db.insert('generationEvents', {
     sessionId: args.sessionId,
     eventType: 'published',
@@ -567,14 +592,6 @@ export const publishSessionPreview = async (
     message: 'Persisting generated homepage',
     createdAt: now,
   })
-
-  session.isPrivate === false ||
-    (() => {
-      throw new ConvexError({
-        code: 'PRIVATE_SESSION',
-        message: 'Private sessions cannot be published',
-      })
-    })()
 
   session.status === 'preview_ready' ||
     (() => {
@@ -670,6 +687,13 @@ export const publishSessionPreview = async (
         lakebedInspectPolicy: undefined,
         updatedAt: now,
       })
+
+  if (session.isPrivate) {
+    await ctx.db.patch(args.sessionId, {
+      isPrivate: false,
+      updatedAt: now,
+    })
+  }
 
   await ctx.db.insert('generationEvents', {
     sessionId: args.sessionId,
