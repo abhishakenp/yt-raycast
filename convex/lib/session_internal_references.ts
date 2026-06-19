@@ -9,11 +9,15 @@ type RunQueryReference = Parameters<ActionCtx['runQuery']>[0]
 type RunMutationReference = Parameters<ActionCtx['runMutation']>[0]
 
 type InternalSessionReferences = {
+  export_artifacts: {
+    build: ScheduledFunctionReference
+  }
   session_completion: {
     completeGeneration: RunActionReference
   }
   sessions: {
     sendOperationalNotification: ScheduledFunctionReference
+    markExportArtifactBuildStalled: ScheduledFunctionReference
     getGenerationSession: RunQueryReference
     completeGenerationInternal: RunMutationReference
   }
@@ -21,11 +25,16 @@ type InternalSessionReferences = {
 
 type SessionInternalReferences = InternalSessionReferences['sessions'] & {
   completeGenerationNode: RunActionReference
+  buildExportArtifact: ScheduledFunctionReference
+  stallExportArtifactBuild: ScheduledFunctionReference
 }
 
 const internalReferences = internal as unknown as InternalSessionReferences
 
 export const sessionInternalReferences: SessionInternalReferences = {
+  buildExportArtifact: internalReferences.export_artifacts.build,
+  stallExportArtifactBuild:
+    internalReferences.sessions.markExportArtifactBuildStalled,
   sendOperationalNotification:
     internalReferences.sessions.sendOperationalNotification,
   getGenerationSession: internalReferences.sessions.getGenerationSession,

@@ -1,19 +1,17 @@
 import {
-  Code2,
   Download,
-  FileArchive,
   LoaderCircle,
   Lock,
-  PackageCheck,
-  PanelsTopLeft,
-  Server,
   TriangleAlert,
 } from 'lucide-react'
+import { useMutation, useQuery } from 'convex/react'
 import { useEffect, useState } from 'react'
 
+import { api } from '../../../../convex/_generated/api'
 import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import { HtmlIcon, ReactIcon, NextIcon, LakebedIcon } from './ExportIcons'
 
 type ExportTarget = {
   target: 'html' | 'react' | 'next' | 'lakebed'
@@ -22,6 +20,9 @@ type ExportTarget = {
   status: string
   requiresPayment: boolean
   fileCount: number | null
+  artifactReady?: boolean
+  artifactStatus?: string
+  artifactError?: string
   previewVersion?: number | null
   currentPreviewVersion?: number | null
   downloadUrl: string | null
@@ -49,6 +50,25 @@ const targetSummary = (target: ExportTarget['target']): string =>
         ? 'Next.js full-stack project'
         : 'Lakebed project bundle'
 
+const exportTargetNames: Array<ExportTarget['target']> = [
+  'html',
+  'react',
+  'next',
+  'lakebed',
+]
+
+const loadingTargets: ExportTarget[] = exportTargetNames.map((target) => ({
+    target,
+    label: targetLabel(target),
+    ready: false,
+    status: 'loading',
+    requiresPayment: false,
+    fileCount: null,
+    artifactReady: false,
+    artifactStatus: 'loading',
+    downloadUrl: null,
+  }))
+
 const statusLabel = (target: ExportTarget): string => {
   if (target.requiresPayment) return 'Payment required'
   if (target.status === 'stale') {
@@ -57,9 +77,22 @@ const statusLabel = (target: ExportTarget): string => {
       ? 'Regenerate for latest preview'
       : `Regenerate for preview v${target.currentPreviewVersion}`
   }
-  if (target.ready) return `${target.fileCount ?? 0} files ready`
+  if (target.ready) return ''
   return target.status.replaceAll('_', ' ')
 }
+
+const artifactProgressPercent = (target: ExportTarget) =>
+  target.artifactReady
+    ? 100
+    : target.artifactStatus === 'building'
+      ? 72
+      : target.artifactStatus === 'queued'
+        ? 26
+        : target.artifactStatus === 'loading'
+          ? 12
+          : target.ready
+            ? 100
+            : 0
 
 const readOwnerSecret = (sessionId: string): string | undefined =>
   typeof window === 'undefined'
@@ -72,12 +105,22 @@ const readDownloadFilename = (response: Response, fallback: string): string => {
   return match?.[1] ?? fallback
 }
 
+const isDownloadResult = (
+  value: unknown,
+): value is { downloadUrl?: unknown } =>
+  value !== null && typeof value === 'object' && !Array.isArray(value)
+
 export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
   const { getToken, isSignedIn } = useOptionalAuth()
-  const [targets, setTargets] = useState<ExportTarget[]>([])
+  const exportTargets = useQuery(api.sessions.getExportTargets, {
+    lookup: sessionId,
+  })
+  const ensureExportArtifact = useMutation(
+    api.sessions.ensureExportArtifactByLookup,
+  )
   const [error, setError] = useState<string>()
-  const [isLoading, setIsLoading] = useState(false)
   const [activeTarget, setActiveTarget] = useState<ExportTarget['target']>()
+  const [waitingTarget, setWaitingTarget] = useState<ExportTarget['target']>()
   const [downloadingTarget, setDownloadingTarget] =
     useState<ExportTarget['target']>()
 
@@ -93,24 +136,6 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
 
     return headers
   }
-
-  const loadTargets = async () => {
-    setError(undefined)
-    const response = await fetch(`/api/sessions/${sessionId}/export-targets`)
-    const data = await response.json()
-    if (!response.ok) throw new Error(data?.error ?? 'Unable to load exports')
-    setTargets(data.targets ?? [])
-  }
-
-  useEffect(() => {
-    void loadTargets().catch((loadError) => {
-      setError(
-        loadError instanceof Error
-          ? loadError.message
-          : 'Unable to load exports',
-      )
-    })
-  }, [sessionId])
 
   const downloadFromUrl = async (
     downloadUrl: string,
@@ -145,7 +170,6 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
 
   const createExport = async (target: ExportTarget['target']) => {
     setError(undefined)
-    setIsLoading(true)
     setActiveTarget(target)
     try {
       const response = await fetch(`/api/sessions/${sessionId}/export`, {
@@ -161,25 +185,23 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data?.error ?? 'Export failed')
-      await loadTargets()
-      return data as { downloadUrl?: unknown }
+      return isDownloadResult(data) ? data : {}
     } catch (exportError) {
       setError(
         exportError instanceof Error ? exportError.message : 'Export failed',
       )
       return {}
     } finally {
-      setIsLoading(false)
       setActiveTarget(undefined)
     }
   }
 
-  const downloadExport = async (item: ExportTarget) => {
-    if (!item.downloadUrl || item.requiresPayment) return
+  const downloadExport = async (targetConfig: ExportTarget) => {
+    if (!targetConfig.downloadUrl || targetConfig.requiresPayment) return
 
     setError(undefined)
     try {
-      await downloadFromUrl(item.downloadUrl, item.target)
+      await downloadFromUrl(targetConfig.downloadUrl, targetConfig.target)
     } catch (downloadError) {
       setError(
         downloadError instanceof Error
@@ -189,33 +211,63 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
     }
   }
 
-  const runTargetAction = async (item: ExportTarget) => {
-    if (item.requiresPayment) {
-      await createExport(item.target)
+  const runTargetAction = async (targetConfig: ExportTarget) => {
+    if (!targetConfig.artifactReady) {
+      setWaitingTarget(targetConfig.target)
+      setError(undefined)
+      try {
+        const result = await ensureExportArtifact({
+          lookup: sessionId,
+          target: targetConfig.target,
+          anonymousOwnerSecret: readOwnerSecret(sessionId),
+        })
+        if (result.status !== 'ready') return
+        setWaitingTarget(undefined)
+      } catch (ensureError) {
+        setWaitingTarget(undefined)
+        setError(
+          ensureError instanceof Error
+            ? ensureError.message
+            : 'Export failed',
+        )
+        return
+      }
+    }
+    if (targetConfig.requiresPayment) {
+      await createExport(targetConfig.target)
       return
     }
-    if (item.ready && item.downloadUrl) {
-      await downloadExport(item)
+    if (targetConfig.ready && targetConfig.downloadUrl) {
+      await downloadExport(targetConfig)
       return
     }
-    const result = await createExport(item.target)
+    const result = await createExport(targetConfig.target)
     if (typeof result.downloadUrl === 'string') {
-      await downloadFromUrl(result.downloadUrl, item.target)
+      await downloadFromUrl(result.downloadUrl, targetConfig.target)
     }
   }
 
   const visibleTargets =
-    targets.length > 0
-      ? targets
-      : (['html', 'react', 'next', 'lakebed'] as const).map((target) => ({
-          target,
-          label: targetLabel(target),
-          ready: false,
-          status: 'loading',
-          requiresPayment: false,
-          fileCount: null,
-          downloadUrl: null,
-        }))
+    exportTargets?.targets && exportTargets.targets.length > 0
+      ? exportTargets.targets
+      : loadingTargets
+
+  useEffect(() => {
+    if (waitingTarget === undefined) return
+    const item = visibleTargets.find((target) => target.target === waitingTarget)
+    if (item === undefined) {
+      setWaitingTarget(undefined)
+      return
+    }
+    if (item.artifactReady) {
+      setWaitingTarget(undefined)
+      void runTargetAction(item)
+      return
+    }
+    if (item.artifactStatus === 'failed' || item.status === 'stale') {
+      setWaitingTarget(undefined)
+    }
+  }, [visibleTargets, waitingTarget])
 
   return (
     <div className="grid gap-3">
@@ -235,45 +287,54 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
         {visibleTargets.map((item) => {
           const Icon =
             item.target === 'html'
-              ? FileArchive
+              ? HtmlIcon
               : item.target === 'react'
-                ? Code2
+                ? ReactIcon
                 : item.target === 'next'
-                  ? PanelsTopLeft
-                  : Server
+                  ? NextIcon
+                  : LakebedIcon
           const isBusy =
-            (isLoading && activeTarget === item.target) ||
+            activeTarget === item.target ||
+            waitingTarget === item.target ||
             downloadingTarget === item.target
-          const actionLabel = item.requiresPayment
-            ? 'Check Access'
-            : item.ready
-              ? 'Ready To Download'
-              : 'Build Export'
-          const statusText = isBusy
-            ? 'Building Downloads...'
-            : statusLabel(item)
+          const isBuildPending =
+            !item.artifactReady &&
+            (item.artifactStatus === 'queued' ||
+              item.artifactStatus === 'building' ||
+              item.artifactStatus === 'loading' ||
+              item.artifactStatus === 'not_ready')
+          const progressPercent = artifactProgressPercent(item)
+          const showProgress =
+            waitingTarget === item.target && isBuildPending
+          const progressBackground =
+            showProgress && progressPercent > 0
+              ? `linear-gradient(110deg, rgba(34, 211, 238, 0.16) 0%, rgba(34, 211, 238, 0.08) ${progressPercent}%, transparent ${progressPercent}%, transparent 100%)`
+              : undefined
+          const statusText = showProgress
+            ? `${progressPercent}%`
+            : activeTarget === item.target || downloadingTarget === item.target
+              ? 'Working...'
+              : item.artifactStatus === 'failed'
+              ? (item.artifactError ?? 'Export failed')
+              : isBuildPending
+                ? ''
+                : statusLabel(item)
 
           return (
             <button
               className="group/export grid min-h-16 w-full grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-white/8 bg-white/[0.04] p-2.5 text-left transition-colors hover:border-white/14 hover:bg-white/[0.075] disabled:cursor-wait disabled:opacity-60"
               data-export-target={item.target}
-              disabled={isLoading || downloadingTarget !== undefined}
+              disabled={downloadingTarget !== undefined}
               key={item.target}
               onClick={() => void runTargetAction(item)}
+              style={{ backgroundImage: progressBackground }}
               type="button"
             >
               <span
-                className="export-target-glyph grid size-[42px] shrink-0 place-items-center rounded-[10px] border border-white/10 bg-black/24 text-white/70 transition-colors group-hover/export:border-white/16 group-hover/export:bg-white/[0.06] group-hover/export:text-white"
+                className="export-target-glyph grid size-[42px] shrink-0 place-items-center rounded-[10px] transition-colors group-hover/export:text-white"
                 aria-hidden="true"
               >
-                {isBusy ? (
-                  <LoaderCircle
-                    className="size-4 animate-spin"
-                    strokeWidth={1.8}
-                  />
-                ) : (
-                  <Icon className="size-4" strokeWidth={1.8} />
-                )}
+                <Icon className="size-8" />
               </span>
               <span className="grid min-w-0 gap-0.5">
                 <span className="truncate text-sm font-semibold text-white">
@@ -286,23 +347,26 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
                   {statusText}
                 </span>
               </span>
-              <span className="export-target-state flex items-center gap-2">
-                {item.requiresPayment ? (
-                  <Lock className="size-4 text-amber-300" />
-                ) : item.status === 'stale' ? (
-                  <TriangleAlert className="size-4 text-amber-200" />
-                ) : (
-                  <PackageCheck
-                    className={
-                      item.ready
-                        ? 'size-4 text-emerald-300'
-                        : 'size-4 text-white/28'
-                    }
+              <span
+                aria-hidden="true"
+                className="export-target-action grid size-9 place-items-center rounded-lg border border-white/10 bg-white/[0.06] text-white/48 transition-colors group-hover/export:border-cyan-200/30 group-hover/export:bg-cyan-200/10 group-hover/export:text-cyan-100"
+                data-export-action={item.target}
+              >
+                {isBusy ? (
+                  <LoaderCircle
+                    className="size-4 animate-spin"
+                    strokeWidth={1.8}
                   />
+                ) : item.requiresPayment ? (
+                  <Lock className="size-4 text-amber-300" strokeWidth={1.8} />
+                ) : item.status === 'stale' ? (
+                  <TriangleAlert
+                    className="size-4 text-amber-200"
+                    strokeWidth={1.8}
+                  />
+                ) : (
+                  <Download className="size-4" strokeWidth={1.8} />
                 )}
-                <span className="hidden rounded-md border border-white/10 bg-white/[0.06] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-white/46 sm:inline">
-                  {actionLabel}
-                </span>
               </span>
             </button>
           )

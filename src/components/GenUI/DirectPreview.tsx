@@ -8,6 +8,7 @@ import {
 import type { ThemeStyles } from '../../genui/theme-presets'
 import { observeGeneratedMobileNavs } from './generated-mobile-nav'
 import { useTextEdit } from '@/features/editing/hooks/useTextEdit'
+import { applyPreviewTextEdit } from '@/lib/edit-helpers'
 
 export type PreviewToolMode = 'select' | 'annotate' | null
 
@@ -104,6 +105,9 @@ const DirectPreview = forwardRef<
     /** Inline style/align edits to re-apply on render, since openUiSource can't
      *  hold inline styles. Keyed by the element's exact class + occurrence. */
     styleOverrides?: Array<{ classAnchor: string; occurrenceIndex: number; style: string }>
+    /** Inline text edits to re-apply on render, since openUiSource can't hold
+     *  text edits. Keyed by beforeText -> afterText with occurrence. */
+    textOverrides?: Array<{ beforeText: string; afterText: string; occurrenceIndex?: number }>
   }
 >(({
   children,
@@ -117,6 +121,7 @@ const DirectPreview = forwardRef<
   onImageChange,
   onElementActivate,
   styleOverrides,
+  textOverrides,
 }, ref) => {
   const internalRef = useRef<HTMLDivElement | null>(null)
   const selectedElementRef = useRef<HTMLElement | null>(null)
@@ -176,6 +181,36 @@ const DirectPreview = forwardRef<
     observer.observe(root, { childList: true, subtree: true })
     return () => observer.disconnect()
   }, [styleOverrides, children])
+
+  // Re-apply saved text edits after every render. The preview renders from
+  // openUiSource (the DSL), which can't store text edits, so text edits would
+  // otherwise vanish on reload. We re-apply them imperatively using the same
+  // applyPreviewTextEdit function used server-side, and re-run on subtree mutations.
+  useEffect(() => {
+    const root = internalRef.current
+    if (!root || !textOverrides || textOverrides.length === 0) return
+
+    const apply = () => {
+      for (const override of textOverrides) {
+        const result = applyPreviewTextEdit(
+          root.innerHTML,
+          override.beforeText,
+          override.afterText,
+          override.occurrenceIndex,
+        )
+        if (result.replaced) {
+          root.innerHTML = result.html
+        }
+      }
+    }
+
+    apply()
+    // childList/subtree only (NOT attributes) — apply() mutates innerHTML,
+    // so observing attributes would loop; node replacements from re-render do not.
+    const observer = new MutationObserver(() => apply())
+    observer.observe(root, { childList: true, subtree: true })
+    return () => observer.disconnect()
+  }, [textOverrides, children])
 
   useEffect(() => {
     const currentRoot = internalRef.current

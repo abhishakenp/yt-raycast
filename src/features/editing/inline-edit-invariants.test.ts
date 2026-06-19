@@ -58,12 +58,15 @@ describe('inline edit — preview does not remount per edit (Dashboard key)', ()
     expect(src).toContain('key={`${homeModule.updatedAt')
   })
 
-  it('builds image and style override maps from recorded edits', () => {
+  it('builds image, style, and text override maps from recorded edits', () => {
     expect(src).toContain('const imageOverrides = useMemo(')
     expect(src).toContain('const styleOverrides = useMemo(')
+    expect(src).toContain('const textOverrides = useMemo(')
     expect(src).toContain("edit.editType === 'style'")
+    expect(src).toContain("edit.editType === 'text'")
     expect(src).toContain('imageOverrides={imageOverrides}')
     expect(src).toContain('styleOverrides={styleOverrides}')
+    expect(src).toContain('textOverrides={textOverrides}')
   })
 })
 
@@ -75,24 +78,27 @@ describe('inline edit — overrides applied at render', () => {
     expect(imageSrc).toContain('overrideSrc')
   })
 
-  it('DirectPreview re-applies style overrides and re-runs on subtree mutations', () => {
+  it('DirectPreview re-applies style and text overrides and re-runs on subtree mutations', () => {
     const src = read('src/components/GenUI/DirectPreview.tsx')
     expect(src).toContain('styleOverrides')
+    expect(src).toContain('textOverrides')
     expect(src).toContain('setProperty')
+    expect(src).toContain('applyPreviewTextEdit')
     expect(src).toContain('MutationObserver')
   })
 
-  it('GeneratedModulePreview threads both override maps down', () => {
+  it('GeneratedModulePreview threads all override maps down', () => {
     const src = read(
       'src/features/generation/components/GeneratedModulePreview.tsx',
     )
     expect(src).toContain('imageOverrides')
     expect(src).toContain('styleOverrides')
+    expect(src).toContain('textOverrides')
   })
 })
 
 describe('inline edit — server anchors & persistence (convex)', () => {
-  const editHelpers = read('convex/lib/session_edit_helpers.ts')
+  const editHelpers = read('src/lib/edit-helpers.ts')
   const editMutationHelpers = read(
     'convex/lib/session_edit_mutation_helpers.ts',
   )
@@ -101,21 +107,23 @@ describe('inline edit — server anchors & persistence (convex)', () => {
   )
 
   it('image swaps anchor on the alt attribute, not the (context-dependent) src', () => {
-    const fn = sliceAfter(editHelpers, 'const applyImageSwap = (')
+    const fn = sliceAfter(editHelpers, 'export const applyImageSwap = (')
     expect(fn).toContain('altAnchor')
     expect(fn).toContain('altMatch')
     expect(editHelpers).not.toContain('normalizeImageSrc')
   })
 
   it('style edits anchor on the class attribute', () => {
-    const fn = sliceAfter(editHelpers, 'const applyStyleEdit = (')
+    const fn = sliceAfter(editHelpers, 'export const applyStyleEdit = (')
     expect(fn).toContain('classAnchor')
     expect(fn).toContain('class="')
   })
 
-  it('style and image edits skip the text-artifact update path', () => {
-    expect(editMutationHelpers).toContain("args.editType !== 'style'")
-    expect(editMutationHelpers).toContain("args.editType !== 'image'")
+  it('all edit types (text, image, style) skip artifact mutation and use override pattern', () => {
+    expect(editMutationHelpers).toContain('All edit types now use the same pattern')
+    expect(editMutationHelpers).toContain('snapshotCurrentArtifacts')
+    // The function still exists for legacy reasons but is no longer called
+    expect(editMutationHelpers).toContain('artifactSnapshot = await snapshotCurrentArtifacts')
   })
 
   it('records every edit (incl. image) with its occurrenceIndex for override rebuild', () => {
@@ -135,5 +143,13 @@ describe('inline edit — server anchors & persistence (convex)', () => {
     const edits = sliceAfter(schema, 'edits: defineTable(', 600)
     expect(edits).toContain("v.literal('image')")
     expect(edits).toContain('occurrenceIndex: v.optional(v.number())')
+  })
+
+  it('export helpers apply edits to source before export', () => {
+    const exportHelpers = read('convex/lib/session_export_helpers.ts')
+    expect(exportHelpers).toContain('applyEditsToSource')
+    expect(exportHelpers).toContain('applyPreviewTextEdit')
+    expect(exportHelpers).toContain('applyImageSwap')
+    expect(exportHelpers).toContain('applyStyleEdit')
   })
 })

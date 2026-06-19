@@ -1,10 +1,17 @@
 import { convexTest } from 'convex-test'
 import { expect, test } from 'vitest'
-import { api, internal } from './_generated/api'
+import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
+import { api, components, internal } from './_generated/api'
 import type { Id } from './_generated/dataModel'
 import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
+
+const generationConvexTest = () => {
+  const t = convexTest(schema, modules)
+  registerDebouncer(t)
+  return t
+}
 
 const requireEventStream = <T>(stream: T | null): T => {
   if (stream === null) throw new Error('Expected event stream')
@@ -30,7 +37,7 @@ const persistGeneratedPreview = (
   })
 
 test('getGenerationView accepts lookup-only session ids', async () => {
-  const t = convexTest(schema, modules)
+  const t = generationConvexTest()
 
   const { sessionId } = await t.mutation(api.sessions.create, {
     prompt: 'Build a concise product site',
@@ -64,7 +71,7 @@ test('create fails fast when model configuration is missing', async () => {
   delete process.env.GROQ_MODEL
 
   try {
-    const t = convexTest(schema, modules)
+    const t = generationConvexTest()
 
     const { sessionId } = await t.mutation(api.sessions.create, {
       prompt: 'Build a fast failure site',
@@ -108,7 +115,7 @@ test('create fails fast when model configuration is missing', async () => {
 })
 
 test('public prompt cache is scoped by preferred language', async () => {
-  const t = convexTest(schema, modules)
+  const t = generationConvexTest()
   const prompt = 'Build a bakery homepage with catering menus'
 
   const english = await t.mutation(api.sessions.create, {
@@ -146,7 +153,7 @@ test('public prompt cache is scoped by preferred language', async () => {
 })
 
 test('public prompt cache can replay a ready session without creating an owned clone', async () => {
-  const t = convexTest(schema, modules)
+  const t = generationConvexTest()
   const prompt = 'Build a replayable public prompt site'
 
   const ready = await t.mutation(api.sessions.create, {
@@ -189,7 +196,7 @@ test('public prompt cache can replay a ready session without creating an owned c
 })
 
 test('workspace idempotency returns the same queued session for a retried create', async () => {
-  const t = convexTest(schema, modules)
+  const t = generationConvexTest()
   const request = {
     prompt: 'Build an idempotent retry site',
     preferredLanguage: 'en',
@@ -216,7 +223,7 @@ test('workspace idempotency returns the same queued session for a retried create
 })
 
 test('workspace idempotency rejects conflicting reuse of a workspace key', async () => {
-  const t = convexTest(schema, modules)
+  const t = generationConvexTest()
 
   await t.mutation(api.sessions.create, {
     prompt: 'Build the original workspace site',
@@ -242,7 +249,7 @@ test('workspace idempotency rejects conflicting reuse of a workspace key', async
 })
 
 test('v2 generation does not reuse a default-engine prompt cache entry', async () => {
-  const t = convexTest(schema, modules)
+  const t = generationConvexTest()
   const prompt = 'Build a v2 isolated cache prompt site'
 
   const defaultEngine = await t.mutation(api.sessions.create, {
@@ -269,7 +276,7 @@ test('v2 generation does not reuse a default-engine prompt cache entry', async (
 })
 
 test('public prompt cache skips newer incomplete duplicate sessions', async () => {
-  const t = convexTest(schema, modules)
+  const t = generationConvexTest()
   const prompt = 'Build a durable cached prompt site'
 
   const ready = await t.mutation(api.sessions.create, {
@@ -308,7 +315,7 @@ test('public prompt cache skips newer incomplete duplicate sessions', async () =
 })
 
 test('inline preview edits and history restore keep dashboard source artifacts aligned', async () => {
-  const t = convexTest(schema, modules)
+  const t = generationConvexTest()
 
   const { sessionId } = await t.mutation(api.sessions.create, {
     prompt: 'Dashboard artifact alignment site',
@@ -384,7 +391,7 @@ test('inline preview edits and history restore keep dashboard source artifacts a
 })
 
 test('inline preview edits update dashboard artifacts when rendered text normalizes whitespace', async () => {
-  const t = convexTest(schema, modules)
+  const t = generationConvexTest()
 
   const { sessionId } = await t.mutation(api.sessions.create, {
     prompt: 'Build a rental homepage',
@@ -432,8 +439,53 @@ test('inline preview edits update dashboard artifacts when rendered text normali
   expect(editedView?.siteSpec?.specJson).not.toContain('Luxury   Car Rental')
 })
 
+test('inline preview edits use one sliding debounce entry for export rebuild automation', async () => {
+  const t = generationConvexTest()
+
+  const { sessionId } = await t.mutation(api.sessions.create, {
+    prompt: 'Build an editable homepage',
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    isPrivate: false,
+    workspace: 'workspace_dashboard_debounced_exports',
+    anonymousClientId: 'anon-dashboard-debounced-exports',
+    anonymousOwnerSecret: 'owner-secret',
+  })
+
+  await persistGeneratedPreview(t, sessionId, 'Build an editable homepage')
+
+  await t.mutation(api.sessions.createEdit, {
+    sessionId,
+    anonymousOwnerSecret: 'owner-secret',
+    editType: 'text',
+    targetLabel: 'Hero headline',
+    beforeText: 'Build an editable homepage',
+    afterText: 'Edited export debounce headline',
+  })
+
+  await t.mutation(api.sessions.createEdit, {
+    sessionId,
+    anonymousOwnerSecret: 'owner-secret',
+    editType: 'text',
+    targetLabel: 'Hero headline',
+    beforeText: 'Edited export debounce headline',
+    afterText: 'Final export debounce headline',
+  })
+
+  const status = await t.query(components.debouncer.lib.status, {
+    namespace: 'edited-session-export-rebuild',
+    key: sessionId,
+  })
+
+  expect(status).toMatchObject({
+    pending: true,
+    mode: 'sliding',
+    retriggerCount: 2,
+  })
+})
+
 test('inline preview edits reject missing text without creating edit history', async () => {
-  const t = convexTest(schema, modules)
+  const t = generationConvexTest()
 
   const { sessionId } = await t.mutation(api.sessions.create, {
     prompt: 'Build a simple homepage',
@@ -468,7 +520,7 @@ test('inline preview edits reject missing text without creating edit history', a
 })
 
 test('late generation jobs cannot clobber an existing preview', async () => {
-  const t = convexTest(schema, modules)
+  const t = generationConvexTest()
 
   const { sessionId } = await t.mutation(api.sessions.create, {
     prompt: 'Already ready generated site',
@@ -548,7 +600,7 @@ test('late generation jobs cannot clobber an existing preview', async () => {
 test('duplicate generation actions cannot start the same queued session twice', async () => {
   const previousGroq = process.env.GROQ_API_KEY
   process.env.GROQ_API_KEY = 'test-groq-key'
-  const t = convexTest(schema, modules)
+  const t = generationConvexTest()
 
   try {
     const { sessionId } = await t.mutation(api.sessions.create, {

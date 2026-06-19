@@ -5,14 +5,17 @@ import { zipSync, strToU8 } from 'fflate'
 import { format } from 'prettier'
 import ts from 'typescript'
 import {
-  blockSourceFilesBase64,
-  blockSourceFilesEncoding,
   reactExportSourcesBase64,
   reactExportSourcesEncoding,
   vendorSourceFilesBase64,
   vendorSourceFilesEncoding,
 } from '@ship-fast/blocks/generated'
 
+import {
+  getBlockSourceFile,
+  resolveBlockSourceManifestPath,
+  resolveRelativeBlockSourcePath,
+} from './block-source-manifest'
 import { resolveThemeStyles } from '../../../genui/theme-apply'
 import type { ThemeStyles } from '../../../genui/theme-presets'
 import {
@@ -53,6 +56,7 @@ type LakebedDefinition = {
 
 type ClientComponentDefinition = {
   name: string
+  preludeSources: string[]
   source: string
   imports: string[]
   vendorFiles: Set<string>
@@ -79,7 +83,6 @@ let manifestSourceIndex: Record<
   string,
   ReactExportSourceEntry | undefined
 > | null = null
-let blockSourceFileIndex: Record<string, string | undefined> | null = null
 let vendorSourceFileIndex: Record<string, string | undefined> | null = null
 
 const toPosixPath = (value: string): string => value.replaceAll('\\', '/')
@@ -635,21 +638,6 @@ const getManifestSourceIndex = (): Record<
   return manifestSourceIndex
 }
 
-const getBlockSourceFileIndex = (): Record<string, string | undefined> => {
-  if (blockSourceFileIndex) return blockSourceFileIndex
-  if (blockSourceFilesEncoding !== 'br+base64') {
-    throw new Error(
-      `Unsupported block source file manifest encoding: ${blockSourceFilesEncoding}`,
-    )
-  }
-  blockSourceFileIndex = JSON.parse(
-    brotliDecompressSync(
-      Buffer.from(blockSourceFilesBase64, 'base64'),
-    ).toString('utf8'),
-  ) as Record<string, string | undefined>
-  return blockSourceFileIndex
-}
-
 const getVendorSourceFileIndex = (): Record<string, string | undefined> => {
   if (vendorSourceFileIndex) return vendorSourceFileIndex
   if (vendorSourceFilesEncoding !== 'br+base64') {
@@ -665,36 +653,6 @@ const getVendorSourceFileIndex = (): Record<string, string | undefined> => {
   return vendorSourceFileIndex
 }
 
-const normalizeBlockSourceRelPath = (sourceRelPath: string): string =>
-  toPosixPath(sourceRelPath)
-    .replace(/^packages\/ship-fast-blocks\//, '')
-    .replace(/^src\//, '')
-    .replace(/\.(ts|tsx|js|jsx|mjs|json|css)$/, '')
-
-const resolveBlockSourceManifestPath = (
-  sourceRelPath: string,
-): string | null => {
-  const normalizedRel = normalizeBlockSourceRelPath(sourceRelPath)
-  const sourceFiles = getBlockSourceFileIndex()
-  const candidates = sourcePathCandidates(`src/${normalizedRel}`)
-  return (
-    candidates.find((candidate) => sourceFiles[candidate] !== undefined) ?? null
-  )
-}
-
-const resolveRelativeBlockSourcePath = (
-  sourcePath: string,
-  moduleName: string,
-): string | null => {
-  const normalizedSourcePath = toPosixPath(sourcePath).replace(
-    /^packages\/ship-fast-blocks\//,
-    '',
-  )
-  return resolveBlockSourceManifestPath(
-    toPosixPath(join(dirname(normalizedSourcePath), moduleName)),
-  )
-}
-
 const printNode = (node: ts.Node, sourceFile: ts.SourceFile): string =>
   ts
     .createPrinter({ newLine: ts.NewLineKind.LineFeed, removeComments: true })
@@ -706,6 +664,89 @@ const isExportableFactory = (expression: string): boolean =>
 const propertyNameText = (name: ts.PropertyName, sourceFile: ts.SourceFile) => {
   if (ts.isIdentifier(name) || ts.isStringLiteral(name)) return name.text
   return name.getText(sourceFile)
+}
+
+const bindingIdentifierNames = (name: ts.BindingName) => {
+  if (ts.isIdentifier(name)) return [name.text]
+  return name.elements.flatMap((element) =>
+    element.name ? bindingIdentifierNames(element.name) : [],
+  )
+}
+
+const topLevelDeclarationNames = (statement: ts.Statement) => {
+  if (ts.isVariableStatement(statement)) {
+    return statement.declarationList.declarations.flatMap((declaration) =>
+      bindingIdentifierNames(declaration.name),
+    )
+  }
+  if (
+    (ts.isFunctionDeclaration(statement) ||
+      ts.isClassDeclaration(statement) ||
+      ts.isEnumDeclaration(statement) ||
+      ts.isInterfaceDeclaration(statement) ||
+      ts.isTypeAliasDeclaration(statement)) &&
+    statement.name
+  ) {
+    return [statement.name.text]
+  }
+  return []
+}
+
+const collectIdentifierTexts = (node: ts.Node) => {
+  const identifiers = new Set<string>()
+  const visit = (current: ts.Node) => {
+    if (ts.isIdentifier(current)) {
+      identifiers.add(current.text)
+    }
+    ts.forEachChild(current, visit)
+  }
+  visit(node)
+  return identifiers
+}
+
+const collectClientComponentPreludeSources = (
+  sourceFile: ts.SourceFile,
+  targetStatement: ts.Statement,
+  componentSource: ts.Node,
+) => {
+  const declarationByName = new Map<string, ts.Statement>()
+  for (const statement of sourceFile.statements) {
+    if (
+      statement === targetStatement ||
+      ts.isImportDeclaration(statement) ||
+      ts.isExportDeclaration(statement)
+    ) {
+      continue
+    }
+    for (const name of topLevelDeclarationNames(statement)) {
+      declarationByName.set(name, statement)
+    }
+  }
+
+  const requiredNames = new Set<string>()
+  const queuedNames = [...collectIdentifierTexts(componentSource)]
+  for (const name of queuedNames) {
+    if (requiredNames.has(name)) continue
+    const statement = declarationByName.get(name)
+    if (!statement) continue
+
+    requiredNames.add(name)
+    for (const identifier of collectIdentifierTexts(statement)) {
+      if (!requiredNames.has(identifier)) {
+        queuedNames.push(identifier)
+      }
+    }
+  }
+
+  return sourceFile.statements
+    .filter((statement) =>
+      topLevelDeclarationNames(statement).some((name) =>
+        requiredNames.has(name),
+      ),
+    )
+    .map((statement) =>
+      normalizeClientComponentSource(printNode(statement, sourceFile)),
+    )
 }
 
 const objectRecord = (
@@ -961,6 +1002,11 @@ const readClientComponentDefinition = (
 
       return {
         name: componentName,
+        preludeSources: collectClientComponentPreludeSources(
+          sourceFile,
+          statement,
+          componentProperty.initializer,
+        ),
         source: normalizeClientComponentSource(
           printNode(componentProperty.initializer, sourceFile),
         ),
@@ -1282,9 +1328,11 @@ const resolveBareImportFile = (specifier: string): string => {
     const nestedPackageJsonPath = resolveVendorSourceManifestPath(
       join(packageRoot, candidate, 'package.json'),
     )
-    const nestedPackageJsonSource = nestedPackageJsonPath
-      ? getVendorSourceFileIndex()[nestedPackageJsonPath]
-      : undefined
+    if (!nestedPackageJsonPath) {
+      throw new Error(`Missing vendored package source for ${specifier}`)
+    }
+    const nestedPackageJsonSource =
+      getVendorSourceFileIndex()[nestedPackageJsonPath]
     if (!nestedPackageJsonSource) {
       throw new Error(`Missing vendored package source for ${specifier}`)
     }
@@ -1567,8 +1615,15 @@ function rewriteLakebedClientImports(
     if (moduleName.startsWith('#/lib/img')) {
       return relativeImportPath(context.outPath, 'client/lib/image.tsx')
     }
-    if (moduleName.startsWith('#/components/ui/')) {
-      const targetRel = `src/${moduleName.slice(2).replace(/\.(ts|tsx|js|jsx)$/, '')}`
+    if (moduleName.startsWith('#/')) {
+      const targetRel = resolveBlockSourceManifestPath(
+        `src/${moduleName.slice(2)}`,
+      )
+      if (!targetRel) {
+        throw new Error(
+          `Lakebed export cannot rewrite private import ${moduleName}`,
+        )
+      }
       const targetOut = copyBlocksClientSourceForLakebed(
         targetRel,
         context.files,
@@ -1576,11 +1631,6 @@ function rewriteLakebedClientImports(
         context.seenBlockFiles,
       )
       return relativeImportPath(context.outPath, targetOut)
-    }
-    if (moduleName.startsWith('#/')) {
-      throw new Error(
-        `Lakebed export cannot rewrite private import ${moduleName}`,
-      )
     }
     if (moduleName.startsWith('.')) {
       if (!context.sourcePath) return moduleName
@@ -1672,10 +1722,7 @@ function copyBlocksClientSourceForLakebed(
         : `client/vendor/ship-fast-blocks/${blocksRel}`
   if (seenBlockFiles.has(outPath)) return outPath
   seenBlockFiles.add(outPath)
-  const source = getBlockSourceFileIndex()[sourcePath]
-  if (source === undefined) {
-    throw new Error(`Cannot find block dependency source: ${sourceRelPath}`)
-  }
+  const source = getBlockSourceFile(sourcePath)
   files[outPath] = rewriteLakebedClientImports(source, {
     outPath,
     sourcePath,
@@ -1795,6 +1842,8 @@ npx lakebed dev
 \`\`\`
 
 The exported app has one client entry, one server entry, and shared TypeScript.
+
+Generated by [ShipFast](https://ship-fast.io) 🚀.
 `
 
 const renderAgents = (): string => `# Lakebed App Instructions
@@ -2090,6 +2139,8 @@ export function useLakebedAdapter() {
 const renderClientComponentModule = (
   component: ClientComponentDefinition,
 ): string => `${component.imports.join('\n')}
+
+${component.preludeSources.join('\n\n')}
 
 export const ${toIdentifier(component.name)}Block: (input: {
   props: Record<string, unknown>;

@@ -78,6 +78,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^5.4.0",
     "@iconify/react": "^6.0.2",
+    "@ikhrustalev/convex-debouncer": "^0.1.2",
     "@legendapp/state": "3.0.0-beta.47",
     "@openuidev/lang-core": "^0.2.5",
     "@openuidev/react-headless": "^0.8.2",

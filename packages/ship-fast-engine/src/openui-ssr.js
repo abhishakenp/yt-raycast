@@ -9,6 +9,7 @@ import { createElement } from 'react'
 import {
   Renderer,
   ImageContextProvider,
+  extractOpenUIRuntimeComponentNames,
   loadOpenUIRuntimeLibrary,
 } from '@ship-fast/blocks/runtime'
 import { ConvexProvider } from 'convex/react'
@@ -64,6 +65,32 @@ function withSSRProviders(tree, imageContext) {
 
 const { renderToString } = await import('react-dom/server')
 
+const openUiErrorMessage = (error) =>
+  error instanceof Error ? error.message : String(error)
+
+const openUiErrorStack = (error) =>
+  error instanceof Error && typeof error.stack === 'string'
+    ? error.stack
+    : undefined
+
+const openUiRenderDiagnostics = (source, preprocessed) => {
+  try {
+    return {
+      sourceLength: source.length,
+      preprocessedLength:
+        typeof preprocessed === 'string' ? preprocessed.length : null,
+      components: extractOpenUIRuntimeComponentNames(
+        typeof preprocessed === 'string' ? preprocessed : source,
+      ).slice(0, 40),
+    }
+  } catch (diagnosticError) {
+    return {
+      sourceLength: source.length,
+      diagnosticError: openUiErrorMessage(diagnosticError),
+    }
+  }
+}
+
 /**
  * Render OpenUI source to HTML string.
  * @param {string} source - OpenUI source code
@@ -80,8 +107,9 @@ export async function renderOpenUIToHTML(
   integrations = null,
   imageContext = null,
 ) {
+  let preprocessed = null
   try {
-    const preprocessed = preprocessOpenUIResponse(source, {
+    preprocessed = preprocessOpenUIResponse(source, {
       resolveRefs: false,
     })
     const library = await loadOpenUIRuntimeLibrary(preprocessed)
@@ -99,8 +127,12 @@ export async function renderOpenUIToHTML(
 
     return html
   } catch (error) {
-    console.error('[OpenUI SSR] Rendering error:', error)
-    return `<div class="openui-error">Failed to render: ${error.message}</div>`
+    console.error('[OpenUI SSR] Rendering error', {
+      error: openUiErrorMessage(error),
+      stack: openUiErrorStack(error),
+      ...openUiRenderDiagnostics(source, preprocessed),
+    })
+    return `<div class="openui-error">Failed to render: ${openUiErrorMessage(error)}</div>`
   }
 }
 

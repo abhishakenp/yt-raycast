@@ -1,15 +1,12 @@
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
-import type { Id } from '../../../../convex/_generated/dataModel'
-import {
-  createHtmlExportFiles,
-  createReactExportFiles,
-  createNextExportFiles,
-} from '@/features/exports/services/html-export-files'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
-type GitHubPushConvexClient = Pick<ConvexHttpClient, 'query' | 'setAuth'>
+type GitHubPushConvexClient = Pick<
+  ConvexHttpClient,
+  'mutation' | 'query' | 'setAuth'
+>
 type GitHubPushEnv = NodeJS.ProcessEnv
 type FetchFn = typeof fetch
 type GitHubTokenResolver = (
@@ -67,8 +64,26 @@ const json = (body: unknown, init?: ResponseInit) =>
     },
   })
 
+const readUnknownJson = async (response: Response): Promise<unknown> =>
+  await response.json()
+
 const normalizeString = (value: unknown): string =>
   typeof value === 'string' ? value.trim() : ''
+
+const isGitHubPushBody = (value: unknown): value is GitHubPushBody =>
+  value !== null && typeof value === 'object' && !Array.isArray(value)
+
+const normalizeTarget = (value: unknown): GitHubExportTarget | null => {
+  switch (value) {
+    case 'html':
+    case 'react':
+    case 'next':
+    case 'lakebed':
+      return value
+    default:
+      return null
+  }
+}
 
 const getBearerToken = (request: Request): string | null => {
   const match = (request.headers.get('authorization') ?? '').match(
@@ -105,6 +120,24 @@ const responseError = (
   error.status = status
   error.code = code
   return error
+}
+
+const loadPrebuiltFiles = async (
+  url: string | null | undefined,
+): Promise<Record<string, string> | null> => {
+  if (!url) return null
+  const response = await fetch(url)
+  if (!response.ok) return null
+  const parsed = await readUnknownJson(response)
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return null
+  }
+  const files: Record<string, string> = {}
+  for (const [path, contents] of Object.entries(parsed)) {
+    if (typeof contents !== 'string') return null
+    files[path] = contents
+  }
+  return files
 }
 
 const defaultGitHubTokenResolver: GitHubTokenResolver = async (
@@ -384,13 +417,14 @@ export async function createGitHubPushResponse(
 
   let body: GitHubPushBody
   try {
-    body = (await request.json()) as GitHubPushBody
+    const parsed = await request.json()
+    body = isGitHubPushBody(parsed) ? parsed : {}
   } catch {
     return json({ error: 'Invalid JSON body.' }, { status: 400 })
   }
 
-  const target = normalizeString(body.target) || 'html'
-  if (!VALID_TARGETS.has(target as GitHubExportTarget)) {
+  const exportTarget = normalizeTarget(body.target) ?? 'html'
+  if (!VALID_TARGETS.has(exportTarget)) {
     return json(
       {
         error:
@@ -399,16 +433,15 @@ export async function createGitHubPushResponse(
       { status: 400 },
     )
   }
-  const exportTarget = target as GitHubExportTarget
   const anonymousOwnerSecret = normalizeString(body.anonymousOwnerSecret)
 
   try {
     const client = clientOverride ?? createRuntimeConvexHttpClient()
     client.setAuth(authToken)
     const exportData = await client.query(
-      api.sessions.getOwnedExportForGitHubPush,
+      api.sessions.getOwnedExportForGitHubPushByLookup,
       {
-        sessionId: sessionId as Id<'sessions'>,
+        lookup: sessionId,
         target: exportTarget,
         anonymousOwnerSecret: anonymousOwnerSecret || undefined,
       },
@@ -466,56 +499,25 @@ export async function createGitHubPushResponse(
       throw new Error('GitHub branch is not ready for commits.')
     }
 
-    let files: Record<string, string>
+    if (
+      exportData.artifact?.status !== 'ready' ||
+      typeof exportData.filesUrl !== 'string'
+    ) {
+      return json(
+        { error: 'Export is still being prepared.', status: 'building' },
+        { status: 202 },
+      )
+    }
 
-    if (exportTarget === 'html') {
-      files = createHtmlExportFiles(
-        String(exportData.sessionId),
-        'html',
-        exportData.html,
-        {
-          includeBadge: exportData.includeBadge,
-        },
+    const files = await loadPrebuiltFiles(exportData.filesUrl)
+    if (files === null) {
+      return json(
+        { error: 'Export is still being prepared.', status: 'building' },
+        { status: 202 },
       )
-    } else if (exportTarget === 'react') {
-      files = createReactExportFiles(
-        String(exportData.sessionId),
-        'react',
-        exportData.html,
-        {
-          includeBadge: exportData.includeBadge,
-        },
-      )
-    } else if (exportTarget === 'next') {
-      files = createNextExportFiles(
-        String(exportData.sessionId),
-        'next',
-        exportData.html,
-        {
-          includeBadge: exportData.includeBadge,
-        },
-      )
-    } else if (exportTarget === 'lakebed') {
-      const source =
-        typeof exportData.source === 'string' &&
-        exportData.source.trim().length > 0
-          ? exportData.source
-          : exportData.html
-      const { buildOpenUILakebedProjectFiles } =
-        await import('@/features/exports/services/openui-lakebed-export-builder')
-      files = (
-        await buildOpenUILakebedProjectFiles({
-          source,
-          siteSpecJson: exportData.siteSpecJson,
-          previewHtml: exportData.previewHtml ?? exportData.html,
-          sessionId: String(exportData.sessionId),
-          target: 'lakebed',
-          includeBadge: exportData.includeBadge,
-          themeName: exportData.themeName,
-          isDark: exportData.isDark,
-        })
-      ).files
-    } else {
+    }
+
+    if (!VALID_TARGETS.has(exportTarget)) {
       return json(
         { error: 'Unsupported export target for GitHub push.' },
         { status: 400 },
@@ -549,6 +551,13 @@ export async function createGitHubPushResponse(
       branch,
       commit.sha,
     )
+
+    await client.mutation(api.sessions.recordGitHubExportRepositoryByLookup, {
+      lookup: sessionId,
+      target: exportTarget,
+      anonymousOwnerSecret: anonymousOwnerSecret || undefined,
+      repoUrl: repo.html_url,
+    })
 
     return json({
       ok: true,

@@ -4,47 +4,29 @@ import { createExportResponse } from './create-export-response'
 
 const queryMock = vi.fn()
 const setAuthMock = vi.fn()
-const buildOpenUIHtmlExportMock = vi.hoisted(() => vi.fn())
-const buildOpenUIExportMock = vi.hoisted(() => vi.fn())
-const buildOpenUILakebedExportMock = vi.hoisted(() => vi.fn())
-const fakeClient = { query: queryMock, setAuth: setAuthMock } as never
-const openUiSource = `root = SaasKimiPage("Paid export", ["Home"], {"heading": "Paid export", "highlight": "export"})`
-const siteSpecJson = JSON.stringify({ projectName: 'Paid export' })
+const fakeClient = { query: queryMock, setAuth: setAuthMock }
 
-vi.mock('../services/openui-html-export-builder', () => ({
-  buildOpenUIHtmlExport: buildOpenUIHtmlExportMock,
-}))
-
-vi.mock('../services/openui-export-builder', () => ({
-  buildOpenUIExport: buildOpenUIExportMock,
-}))
-
-vi.mock('../services/openui-lakebed-export-builder', () => ({
-  buildOpenUILakebedExport: buildOpenUILakebedExportMock,
-}))
+const readyArtifactResult = (target = 'html') => ({
+  export: {
+    status: 'ready',
+    requiresPayment: false,
+    previewVersion: 1,
+  },
+  artifact: {
+    status: 'ready',
+    filename: `paid-export-${target}.zip`,
+    contentType: 'application/zip',
+    previewVersion: 1,
+  },
+  storageUrl: `https://storage.test/${target}.zip`,
+  latestPreviewVersion: 1,
+})
 
 describe('createExportResponse', () => {
   beforeEach(() => {
     queryMock.mockReset()
     setAuthMock.mockReset()
-    buildOpenUIHtmlExportMock.mockReset()
-    buildOpenUIExportMock.mockReset()
-    buildOpenUIHtmlExportMock.mockResolvedValue({
-      body: '<html><body><h1>Paid export</h1></body></html>',
-      contentType: 'text/html; charset=utf-8',
-      filename: 'index.html',
-    })
-    buildOpenUIExportMock.mockResolvedValue({
-      body: new Uint8Array([1, 2, 3]),
-      contentType: 'application/zip',
-      filename: 'paid-export-next.zip',
-    })
-    buildOpenUILakebedExportMock.mockReset()
-    buildOpenUILakebedExportMock.mockResolvedValue({
-      body: new Uint8Array([4, 5, 6]),
-      contentType: 'application/zip',
-      filename: 'paid-export-lakebed.zip',
-    })
+    vi.unstubAllGlobals()
   })
 
   it('blocks payment-required exports before reading public preview HTML', async () => {
@@ -67,48 +49,40 @@ describe('createExportResponse', () => {
     expect(queryMock).toHaveBeenCalledTimes(1)
   })
 
-  it('returns badge-free standalone HTML for ready entitled exports', async () => {
-    queryMock.mockResolvedValueOnce({
-      export: {
-        status: 'ready',
-        requiresPayment: false,
-      },
-      source: openUiSource,
-      siteSpecJson,
-      previewHtml: '<html><body><h1>Paid export</h1></body></html>',
-      latestPreviewVersion: 1,
-    })
+  it('streams the stored artifact for ready entitled exports', async () => {
+    queryMock.mockResolvedValueOnce(readyArtifactResult('html'))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('stored-html-bytes')),
+    )
 
     const response = await createExportResponse(
       'session_123',
       'html',
       fakeClient,
     )
-    const html = await response.text()
 
     expect(response.status).toBe(200)
-    expect(response.headers.get('content-type')).toBe(
-      'text/html; charset=utf-8',
+    expect(response.headers.get('content-type')).toBe('application/zip')
+    expect(response.headers.get('content-disposition')).toBe(
+      'attachment; filename="paid-export-html.zip"',
     )
-    expect(html).toContain('Paid export')
-    expect(html).not.toContain('data-ship-fast-export-badge="1"')
-    expect(buildOpenUIHtmlExportMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        target: 'html',
-        includeBadge: false,
-      }),
-    )
-    expect(buildOpenUIExportMock).not.toHaveBeenCalled()
+    expect(await response.text()).toBe('stored-html-bytes')
+    expect(fetch).toHaveBeenCalledWith('https://storage.test/html.zip')
   })
 
-  it('uses the full package builder only for app export targets', async () => {
+  it('returns 202 while the artifact is still building', async () => {
     queryMock.mockResolvedValueOnce({
       export: {
         status: 'ready',
         requiresPayment: false,
+        previewVersion: 1,
       },
-      source: openUiSource,
-      siteSpecJson,
+      artifact: {
+        status: 'building',
+        previewVersion: 1,
+      },
+      storageUrl: null,
       latestPreviewVersion: 1,
     })
 
@@ -118,24 +92,18 @@ describe('createExportResponse', () => {
       fakeClient,
     )
 
-    expect(response.status).toBe(200)
-    expect(response.headers.get('content-type')).toBe('application/zip')
-    expect(buildOpenUIExportMock).toHaveBeenCalledWith(
-      expect.objectContaining({ target: 'next' }),
-    )
-    expect(buildOpenUIHtmlExportMock).not.toHaveBeenCalled()
+    expect(response.status).toBe(202)
+    await expect(response.json()).resolves.toMatchObject({
+      status: 'building',
+    })
   })
 
-  it('routes Lakebed downloads through the Lakebed project builder', async () => {
-    queryMock.mockResolvedValueOnce({
-      export: {
-        status: 'ready',
-        requiresPayment: false,
-      },
-      source: openUiSource,
-      siteSpecJson,
-      latestPreviewVersion: 1,
-    })
+  it('streams Lakebed artifacts through the same prebuilt artifact path', async () => {
+    queryMock.mockResolvedValueOnce(readyArtifactResult('lakebed'))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(new Uint8Array([4, 5, 6]))),
+    )
 
     const response = await createExportResponse(
       'session_123',
@@ -145,11 +113,10 @@ describe('createExportResponse', () => {
 
     expect(response.status).toBe(200)
     expect(response.headers.get('content-type')).toBe('application/zip')
-    expect(buildOpenUILakebedExportMock).toHaveBeenCalledWith(
-      expect.objectContaining({ target: 'lakebed' }),
+    expect(response.headers.get('content-disposition')).toBe(
+      'attachment; filename="paid-export-lakebed.zip"',
     )
-    expect(buildOpenUIExportMock).not.toHaveBeenCalled()
-    expect(buildOpenUIHtmlExportMock).not.toHaveBeenCalled()
+    expect(fetch).toHaveBeenCalledWith('https://storage.test/lakebed.zip')
   })
 
   it('forwards bearer auth and owner secret to the owned download query', async () => {
@@ -157,8 +124,10 @@ describe('createExportResponse', () => {
       export: {
         status: 'ready',
         requiresPayment: false,
+        previewVersion: 1,
       },
-      source: openUiSource,
+      artifact: { status: 'building', previewVersion: 1 },
+      storageUrl: null,
       latestPreviewVersion: 1,
     })
 
@@ -179,7 +148,7 @@ describe('createExportResponse', () => {
 
     expect(setAuthMock).toHaveBeenCalledWith('token_123')
     expect(queryMock).toHaveBeenCalledWith(expect.anything(), {
-      sessionId: 'session_123',
+      lookup: 'session_123',
       target: 'html',
       anonymousOwnerSecret: 'owner-secret',
     })

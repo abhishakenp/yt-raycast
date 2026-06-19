@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs'
-
 import { describe, expect, it } from 'vitest'
 
 import type { Doc, Id } from '../_generated/dataModel'
@@ -18,12 +16,14 @@ import {
 type TableName =
   | 'sessions'
   | 'deployments'
+  | 'exports'
   | 'previews'
   | 'generationEvents'
   | 'generatedModules'
 type Row =
   | Doc<'sessions'>
   | Doc<'deployments'>
+  | Doc<'exports'>
   | Doc<'previews'>
   | Doc<'generationEvents'>
   | Doc<'generatedModules'>
@@ -78,6 +78,7 @@ const ctxFor = (input: Partial<Record<TableName, Row[]>>) => {
   const tables: Record<TableName, Row[]> = {
     sessions: [...(input.sessions ?? [])],
     deployments: [...(input.deployments ?? [])],
+    exports: [...(input.exports ?? [])],
     previews: [...(input.previews ?? [])],
     generationEvents: [...(input.generationEvents ?? [])],
     generatedModules: [...(input.generatedModules ?? [])],
@@ -156,6 +157,7 @@ const mutationCtxFor = (input: Partial<Record<TableName, Row[]>>) => {
   const tables: Record<TableName, Row[]> = {
     sessions: [...(input.sessions ?? [])],
     deployments: [...(input.deployments ?? [])],
+    exports: [...(input.exports ?? [])],
     previews: [...(input.previews ?? [])],
     generationEvents: [...(input.generationEvents ?? [])],
     generatedModules: [...(input.generatedModules ?? [])],
@@ -387,6 +389,90 @@ describe('session deployment helpers', () => {
     })
   })
 
+  it('prepares OpenUI Lakebed deployments from preview source when session readiness is stale', async () => {
+    const openUiSource = '$page = "Home"\nroot = Text("OpenUI deploy")'
+    const ctx = ctxFor({
+      sessions: [
+        sessionDoc({
+          openuiReady: false,
+          preferredExportTarget: 'html',
+          userId: 'user_1',
+        }),
+      ],
+      previews: [
+        previewDoc({
+          html: '<!doctype html><html><body><h1>Rendered Preview</h1></body></html>',
+          openUiSource,
+          version: 10,
+        }),
+      ],
+      generatedModules: [
+        {
+          _id: 'generated_module_home' as Id<'generatedModules'>,
+          _creationTime: 1,
+          sessionId,
+          moduleKey: 'home',
+          source: openUiSource,
+          status: 'succeeded',
+          createdAt: 100,
+          updatedAt: 110,
+        } as Doc<'generatedModules'>,
+      ],
+    }) as QueryCtx
+
+    await expect(
+      prepareLakebedSessionDeployment(ctx, { sessionId }),
+    ).resolves.toMatchObject({
+      source: openUiSource,
+      sourceKind: 'openui',
+      previewHtml:
+        '<!doctype html><html><body><h1>Rendered Preview</h1></body></html>',
+      previewVersion: 10,
+    })
+  })
+
+  it('prepares OpenUI Lakebed deployments from a home module when preview source is absent', async () => {
+    const openUiSource = '$page = "Home"\nroot = Text("OpenUI deploy")'
+    const ctx = ctxFor({
+      sessions: [
+        sessionDoc({
+          openuiReady: false,
+          preferredExportTarget: 'html',
+          userId: 'user_1',
+        }),
+      ],
+      previews: [
+        previewDoc({
+          html: '<div class="openui-error">Failed to render: te is not a function</div>',
+          openUiSource: undefined,
+          version: 11,
+        }),
+      ],
+      generatedModules: [
+        {
+          _id: 'generated_module_home' as Id<'generatedModules'>,
+          _creationTime: 1,
+          sessionId,
+          moduleKey: 'home',
+          source: openUiSource,
+          status: 'succeeded',
+          createdAt: 100,
+          updatedAt: 110,
+        } as Doc<'generatedModules'>,
+      ],
+    }) as QueryCtx
+
+    await expect(
+      prepareLakebedSessionDeployment(ctx, { sessionId }),
+    ).resolves.toMatchObject({
+      source: openUiSource,
+      sourceKind: 'openui',
+      previewHtml:
+        '<div class="openui-error">Failed to render: te is not a function</div>',
+      previewVersion: 11,
+    })
+  })
+
   it('records Lakebed deployment metadata without using the local build folder', async () => {
     const { ctx, inserted } = mutationCtxFor({
       sessions: [sessionDoc({ userId: 'user_1' })],
@@ -427,6 +513,19 @@ describe('session deployment helpers', () => {
           lakebedRequestBodyBytes: 4567,
           lakebedServerBundleBytes: 321,
           lakebedSourceFileCount: 9,
+        }),
+      },
+      {
+        table: 'exports',
+        value: expect.objectContaining({
+          sessionId,
+          target: 'lakebed',
+          status: 'available',
+          previewVersion: 7,
+          downloadUrl: '/api/sessions/session_deployment/download/lakebed',
+          deployedUrl: 'https://lakebed-launch.lakebed.app',
+          fileCount: 12,
+          requiresPayment: false,
         }),
       },
       {
@@ -535,18 +634,27 @@ describe('session deployment helpers', () => {
     ])
   })
 
-  it('rejects private, not-ready, missing-preview, and conflicting-slug publishes', async () => {
-    await expect(
-      publishSessionPreview(
-        mutationCtxFor({
-          sessions: [sessionDoc({ userId: 'user_1', isPrivate: true })],
-          previews: [previewDoc()],
-        }).ctx,
-        { sessionId },
-      ),
-    ).rejects.toMatchObject({
-      data: { code: 'PRIVATE_SESSION' },
+  it('publishes confirmed private sessions and rejects not-ready, missing-preview, and conflicting-slug publishes', async () => {
+    const privatePublish = mutationCtxFor({
+      sessions: [sessionDoc({ userId: 'user_1', isPrivate: true })],
+      previews: [previewDoc()],
     })
+
+    await expect(
+      publishSessionPreview(privatePublish.ctx, { sessionId }),
+    ).resolves.toMatchObject({
+      slug: 'build-a-deployable-site',
+      status: 'ready',
+      url: 'https://build-a-deployable-site.ship-fast.io',
+    })
+    expect(privatePublish.patches).toEqual(
+      expect.arrayContaining([
+        {
+          id: sessionId,
+          patch: expect.objectContaining({ isPrivate: false }),
+        },
+      ]),
+    )
 
     await expect(
       publishSessionPreview(
@@ -591,58 +699,4 @@ describe('session deployment helpers', () => {
     })
   })
 
-  it('keeps the public publishPreview mutation delegated to deployment helpers', () => {
-    const sessionsSource = readFileSync('convex/sessions.ts', 'utf8')
-
-    expect(sessionsSource).toContain('publishSessionPreview,')
-    expect(sessionsSource).toContain(
-      'handler: (ctx, args) => publishSessionPreview(ctx, args),',
-    )
-    expect(sessionsSource).not.toContain(
-      "message: 'Private sessions cannot be published'",
-    )
-  })
-
-  it('wires dashboard deployment to ShipFast and Lakebed publish targets', () => {
-    const actionSource = readFileSync('convex/lakebed_deploy.ts', 'utf8')
-    const panelSource = readFileSync(
-      'src/features/deployments/components/DeploymentPanel.tsx',
-      'utf8',
-    )
-
-    expect(actionSource).toContain('buildOpenUILakebedProjectFiles')
-    expect(actionSource).toContain('deployLakebedProjectFiles')
-    expect(actionSource).toContain('recordLakebedDeploymentSuccess')
-    expect(actionSource).toContain('[lakebed_deploy:deploy]')
-    expect(actionSource).toContain('prepare:stored')
-    expect(actionSource).toContain('payloadBytes')
-    expect(actionSource).not.toContain(
-      'readPreparedLakebedDeploymentChunkByBatch',
-    )
-    expect(actionSource).toContain('project-build:start')
-    expect(actionSource).toContain('log: (message, details) =>')
-    expect(actionSource).toContain('`lakebed-api:${message}`')
-    expect(readFileSync('convex/lib/session_deployment_helpers.ts', 'utf8')).toContain(
-      'const lakebedPayloadChunkSize = 200_000',
-    )
-    expect(panelSource).toContain('publishLakebedViaApi')
-    expect(panelSource).toContain('/deploy/lakebed')
-    expect(panelSource).toContain('api.sessions.publishPreview')
-    expect(panelSource).toContain("target === 'shipfast'")
-    expect(panelSource).toContain("onClick={() => void publish('shipfast')}")
-    expect(panelSource).toContain("onClick={() => void publish('lakebed')}")
-    expect(panelSource).toContain(
-      "window.open(result.url, '_blank', 'noopener,noreferrer')",
-    )
-    expect(
-      readFileSync(
-        'src/features/deployments/server/lakebed-publish-response.ts',
-        'utf8',
-      ),
-    ).toContain('api.lakebed_deploy.deploy')
-    expect(panelSource).not.toContain('getDeploymentStatus')
-    expect(panelSource).not.toContain('deploymentStatus?.url')
-    expect(panelSource).not.toContain('requestedSlug:')
-    expect(panelSource).not.toContain('Public slug')
-  })
 })

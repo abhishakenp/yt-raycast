@@ -607,6 +607,29 @@ export function Dashboard({
     return overrides
   }, [editController.edits])
 
+  const textOverrides = useMemo(() => {
+    const overrides: Array<{
+      beforeText: string
+      afterText: string
+      occurrenceIndex?: number
+    }> = []
+    for (const edit of editController.edits ?? []) {
+      if (
+        edit.editType === 'text' &&
+        typeof edit.beforeText === 'string' &&
+        typeof edit.afterText === 'string'
+      ) {
+        // edits are newest-first, so the first seen text wins (latest edit).
+        overrides.push({
+          beforeText: edit.beforeText,
+          afterText: edit.afterText,
+          occurrenceIndex: edit.occurrenceIndex,
+        })
+      }
+    }
+    return overrides
+  }, [editController.edits])
+
   const aiTheme = useMemo(
     () => readSiteThemeName(generationView?.siteSpec?.specJson),
     [generationView?.siteSpec?.specJson],
@@ -1268,6 +1291,7 @@ export function Dashboard({
                             prompt={generationView.session.prompt}
                             imageOverrides={imageOverrides}
                             styleOverrides={styleOverrides}
+                            textOverrides={textOverrides}
                             isDark={isDark}
                             themeStyles={themeStyles}
                             deviceMode={currentDevice}

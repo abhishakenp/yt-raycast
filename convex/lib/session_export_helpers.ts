@@ -7,8 +7,41 @@ import {
   assertCanReadOwnedSession,
   getUserId,
 } from './session_access_helpers'
+import {
+  applyPreviewTextEdit,
+  applyImageSwap,
+  applyStyleEdit,
+} from './session_edit_helpers'
 
 export type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
+export type ExportArtifactStatus = 'queued' | 'building' | 'ready' | 'failed'
+const exportTargets: ExportTarget[] = ['html', 'react', 'next', 'lakebed']
+const exportArtifactBuildStallMs = 2 * 60 * 1000
+const stalledExportArtifactMessage =
+  'Export build stalled before completion. Click to retry.'
+
+const logPrepareExportStage = (
+  stage: string,
+  args: ExportArtifactBuildInput,
+  details: {
+    elapsedMs?: number
+    previewVersion?: number
+    sourceLength?: number
+    canonicalSourceLength?: number
+    editCount?: number
+    htmlLength?: number
+    siteSpecLength?: number
+    homeModuleHasSource?: boolean
+  } = {},
+) => {
+  console.log('[session_export_helpers:prepareExportArtifactBuild] stage', {
+    stage,
+    target: args.target,
+    sessionId: args.sessionId,
+    requestedPreviewVersion: args.previewVersion,
+    ...details,
+  })
+}
 
 export type ExportEntitlement =
   | {
@@ -50,6 +83,55 @@ export type OwnedExportForGitHubPushInput = {
   anonymousOwnerSecret?: string
 }
 
+export type RecordGitHubExportRepositoryInput = {
+  sessionId: Id<'sessions'>
+  target: ExportTarget
+  anonymousOwnerSecret?: string
+  repoUrl: string
+}
+
+export type EnsureExportArtifactBuildInput = {
+  sessionId: Id<'sessions'>
+  target: ExportTarget
+  anonymousOwnerSecret?: string
+  buildExportArtifact: ExportArtifactBuildReference
+}
+
+export type ExportArtifactBuildInput = {
+  sessionId: Id<'sessions'>
+  target: ExportTarget
+  previewVersion: number
+  autoDeployPublic?: boolean
+}
+
+export type ExportArtifactStalledInput = {
+  sessionId: Id<'sessions'>
+  target: ExportTarget
+  previewVersion: number
+  buildStartedAt: number
+}
+
+export type ExportArtifactReadyInput = ExportArtifactBuildInput & {
+  storageId: Id<'_storage'>
+  filesStorageId?: Id<'_storage'>
+  filename: string
+  contentType: string
+  fileCount: number
+  byteLength: number
+  hash: string
+}
+
+export type ExportArtifactFailureInput = ExportArtifactBuildInput & {
+  errorMessage: string
+}
+
+type ExportArtifactBuildReference = Parameters<
+  MutationCtx['scheduler']['runAfter']
+>[1]
+type ExportArtifactStalledReference = Parameters<
+  MutationCtx['scheduler']['runAfter']
+>[1]
+
 const activeExportSubscriptionStatuses = new Set([
   'active',
   'trialing',
@@ -72,6 +154,11 @@ const exportArtifactPath = (target: ExportTarget, previewVersion: number) =>
   target === 'html'
     ? `preview-${previewVersion}.html`
     : `preview-${previewVersion}.${target}.zip`
+
+export const exportDownloadUrl = (
+  sessionId: Id<'sessions'>,
+  target: ExportTarget,
+) => `/api/sessions/${sessionId}/download/${target}`
 
 const isLikelyOpenUISource = (source: string | undefined): boolean => {
   if (source === undefined) return false
@@ -127,6 +214,58 @@ const resolveExportOpenUISource = (
       preview?.html ??
       '')
 
+/** Apply edit overrides to source before export. */
+const applyEditsToSource = (
+  source: string,
+  edits:
+    | Array<{
+        editType: string
+        beforeText?: string
+        afterText?: string
+        occurrenceIndex?: number
+      }>
+    | undefined,
+): string => {
+  if (!edits || edits.length === 0) return source
+
+  let result = source
+  // Apply edits in reverse order (oldest first) so newer edits take precedence
+  for (const edit of [...edits].reverse()) {
+    if (edit.editType === 'text' && edit.beforeText && edit.afterText) {
+      const textResult = applyPreviewTextEdit(
+        result,
+        edit.beforeText,
+        edit.afterText,
+        edit.occurrenceIndex,
+      )
+      if (textResult.replaced) {
+        result = textResult.html
+      }
+    } else if (edit.editType === 'image' && edit.beforeText && edit.afterText) {
+      const imageResult = applyImageSwap(
+        result,
+        edit.beforeText,
+        edit.afterText,
+        edit.occurrenceIndex,
+      )
+      if (imageResult.replaced) {
+        result = imageResult.html
+      }
+    } else if (edit.editType === 'style' && edit.beforeText && edit.afterText) {
+      const styleResult = applyStyleEdit(
+        result,
+        edit.beforeText,
+        edit.afterText,
+        edit.occurrenceIndex,
+      )
+      if (styleResult.replaced) {
+        result = styleResult.html
+      }
+    }
+  }
+  return result
+}
+
 export const loadExportRecord = async (
   ctx: Pick<QueryCtx, 'db'>,
   sessionId: Id<'sessions'>,
@@ -159,6 +298,394 @@ const toExportPayload = (exportRecord: Doc<'exports'>) => {
     createdAt: exportRecord.createdAt,
     updatedAt: exportRecord.updatedAt,
   }
+}
+
+const isStalledExportArtifact = (artifact: Doc<'exportArtifacts'>) =>
+  artifact.status === 'building' &&
+  Date.now() - artifact.updatedAt > exportArtifactBuildStallMs
+
+const toArtifactPayload = (artifact: Doc<'exportArtifacts'> | null) => {
+  if (artifact === null) return null
+  const stalled = isStalledExportArtifact(artifact)
+  return {
+    artifactId: artifact._id,
+    target: artifact.target,
+    status: stalled ? 'failed' : artifact.status,
+    previewVersion: artifact.previewVersion,
+    filename: artifact.filename,
+    contentType: artifact.contentType,
+    fileCount: artifact.fileCount,
+    byteLength: artifact.byteLength,
+    hash: artifact.hash,
+    errorMessage: stalled
+      ? stalledExportArtifactMessage
+      : artifact.errorMessage,
+    createdAt: artifact.createdAt,
+    updatedAt: artifact.updatedAt,
+  }
+}
+
+const loadExportArtifactRecord = async (
+  ctx: Pick<QueryCtx, 'db'>,
+  sessionId: Id<'sessions'>,
+  target: ExportTarget,
+  previewVersion?: number,
+) => {
+  const query =
+    previewVersion === undefined
+      ? ctx.db
+          .query('exportArtifacts')
+          .withIndex('by_sessionId_target', (index) =>
+            index.eq('sessionId', sessionId).eq('target', target),
+          )
+      : ctx.db
+          .query('exportArtifacts')
+          .withIndex('by_sessionId_target_previewVersion', (index) =>
+            index
+              .eq('sessionId', sessionId)
+              .eq('target', target)
+              .eq('previewVersion', previewVersion),
+          )
+
+  return await query.order('desc').first()
+}
+
+export const loadSessionExportTargets = async (
+  ctx: QueryCtx,
+  sessionId: Id<'sessions'>,
+) => {
+  const session = await ctx.db.get(sessionId)
+  const previewReady = session?.status === 'preview_ready'
+  const currentPreviewVersion = session?.previewVersion
+
+  const targets = await Promise.all(
+    exportTargets.map(async (target) => {
+      const [record, artifact] = await Promise.all([
+        ctx.db
+          .query('exports')
+          .withIndex('by_sessionId_target', (index) =>
+            index.eq('sessionId', sessionId).eq('target', target),
+          )
+          .first(),
+        currentPreviewVersion === undefined
+          ? Promise.resolve(null)
+          : loadExportArtifactRecord(
+              ctx,
+              sessionId,
+              target,
+              currentPreviewVersion,
+            ),
+      ])
+      const isStale =
+        record?.previewVersion !== undefined &&
+        currentPreviewVersion !== undefined &&
+        record.previewVersion !== currentPreviewVersion
+      const ready = record?.status === 'ready' && !isStale
+      const artifactPayload = toArtifactPayload(artifact)
+
+      return {
+        target,
+        label:
+          target === 'html'
+            ? 'HTML'
+            : target === 'react'
+              ? 'React'
+              : target === 'next'
+                ? 'Next.js'
+                : 'Lakebed',
+        ready,
+        status: isStale
+          ? 'stale'
+          : (record?.status ?? (previewReady ? 'available' : 'not_ready')),
+        requiresPayment: record?.requiresPayment ?? false,
+        fileCount: record?.fileCount ?? artifactPayload?.fileCount ?? null,
+        previewVersion: record?.previewVersion ?? null,
+        currentPreviewVersion: currentPreviewVersion ?? null,
+        downloadUrl:
+          ready && artifactPayload?.status === 'ready'
+            ? (record.downloadUrl ?? exportDownloadUrl(sessionId, target))
+            : null,
+        githubUrl: record?.githubUrl ?? record?.url ?? null,
+        githubRepoUrl: record?.githubUrl ?? record?.url ?? null,
+        deployedUrl: record?.deployedUrl ?? null,
+        artifact: artifactPayload,
+        artifactReady: artifactPayload?.status === 'ready',
+        artifactStatus:
+          artifactPayload?.status ?? (previewReady ? 'queued' : 'not_ready'),
+        artifactError: artifactPayload?.errorMessage,
+      }
+    }),
+  )
+
+  return {
+    sessionId,
+    previewReady,
+    isPrivate: session?.isPrivate ?? null,
+    targets,
+  }
+}
+
+export const queueSessionExportArtifactBuilds = async (
+  ctx: Pick<MutationCtx, 'db' | 'scheduler'>,
+  args: {
+    sessionId: Id<'sessions'>
+    previewVersion: number
+    isPrivate: boolean
+    now: number
+    buildExportArtifact: ExportArtifactBuildReference
+    delayMs?: number
+  },
+) => {
+  const delayMs = args.delayMs ?? 0
+
+  await Promise.all(
+    exportTargets.map((target) =>
+      queueSessionExportArtifactBuild(ctx, {
+        sessionId: args.sessionId,
+        target,
+        previewVersion: args.previewVersion,
+        isPrivate: args.isPrivate,
+        now: args.now,
+        buildExportArtifact: args.buildExportArtifact,
+        delayMs,
+        force: true,
+      }),
+    ),
+  )
+}
+
+export const queueSessionExportArtifactBuild = async (
+  ctx: Pick<MutationCtx, 'db' | 'scheduler'>,
+  args: {
+    sessionId: Id<'sessions'>
+    target: ExportTarget
+    previewVersion: number
+    isPrivate: boolean
+    now: number
+    buildExportArtifact: ExportArtifactBuildReference
+    delayMs?: number
+    force?: boolean
+  },
+) => {
+  const existing = await ctx.db
+    .query('exportArtifacts')
+    .withIndex('by_sessionId_target_previewVersion', (index) =>
+      index
+        .eq('sessionId', args.sessionId)
+        .eq('target', args.target)
+        .eq('previewVersion', args.previewVersion),
+    )
+    .first()
+
+  if (existing?.status === 'ready' && args.force !== true) {
+    return toArtifactPayload(existing)
+  }
+
+  existing === null
+    ? await ctx.db.insert('exportArtifacts', {
+        sessionId: args.sessionId,
+        target: args.target,
+        previewVersion: args.previewVersion,
+        status: 'queued',
+        createdAt: args.now,
+        updatedAt: args.now,
+      })
+    : await ctx.db.patch(existing._id, {
+        status: 'queued',
+        errorMessage: undefined,
+        updatedAt: args.now,
+      })
+
+  await ctx.scheduler.runAfter(args.delayMs ?? 0, args.buildExportArtifact, {
+    sessionId: args.sessionId,
+    target: args.target,
+    previewVersion: args.previewVersion,
+    autoDeployPublic: args.target === 'lakebed' && args.isPrivate === false,
+  })
+
+  return {
+    target: args.target,
+    status: 'queued',
+    previewVersion: args.previewVersion,
+    updatedAt: args.now,
+  }
+}
+
+export const markExportArtifactBuilding = async (
+  ctx: MutationCtx,
+  args: ExportArtifactBuildInput & {
+    stallExportArtifactBuild?: ExportArtifactStalledReference
+  },
+) => {
+  const now = Date.now()
+  const existing = await loadExportArtifactRecord(
+    ctx,
+    args.sessionId,
+    args.target,
+    args.previewVersion,
+  )
+
+  if (existing?.status === 'ready') return toArtifactPayload(existing)
+
+  const status = 'building'
+  const patch = {
+    sessionId: args.sessionId,
+    target: args.target,
+    previewVersion: args.previewVersion,
+    status,
+    errorMessage: undefined,
+    updatedAt: now,
+  }
+
+  const artifactId =
+    existing === null
+      ? await ctx.db.insert('exportArtifacts', {
+          ...patch,
+          createdAt: now,
+        })
+      : (await ctx.db.patch(existing._id, patch), existing._id)
+
+  await ctx.db.insert('generationEvents', {
+    sessionId: args.sessionId,
+    eventType: 'export_artifact_building',
+    message: `Preparing ${args.target} export`,
+    previewVersion: args.previewVersion,
+    createdAt: now,
+  })
+
+  if (args.stallExportArtifactBuild !== undefined) {
+    await ctx.scheduler.runAfter(
+      exportArtifactBuildStallMs,
+      args.stallExportArtifactBuild,
+      {
+        sessionId: args.sessionId,
+        target: args.target,
+        previewVersion: args.previewVersion,
+        buildStartedAt: now,
+      },
+    )
+  }
+
+  return {
+    artifactId,
+    target: args.target,
+    status,
+    previewVersion: args.previewVersion,
+    updatedAt: now,
+  }
+}
+
+export const recordExportArtifactStalled = async (
+  ctx: MutationCtx,
+  args: ExportArtifactStalledInput,
+) => {
+  const existing = await loadExportArtifactRecord(
+    ctx,
+    args.sessionId,
+    args.target,
+    args.previewVersion,
+  )
+
+  if (
+    existing === null ||
+    existing.status !== 'building' ||
+    existing.updatedAt !== args.buildStartedAt
+  ) {
+    return toArtifactPayload(existing)
+  }
+
+  return await recordExportArtifactFailure(ctx, {
+    sessionId: args.sessionId,
+    target: args.target,
+    previewVersion: args.previewVersion,
+    errorMessage: stalledExportArtifactMessage,
+  })
+}
+
+export const recordExportArtifactReady = async (
+  ctx: MutationCtx,
+  args: ExportArtifactReadyInput,
+) => {
+  const now = Date.now()
+  const existing = await loadExportArtifactRecord(
+    ctx,
+    args.sessionId,
+    args.target,
+    args.previewVersion,
+  )
+  const status = 'ready'
+  const patch = {
+    sessionId: args.sessionId,
+    target: args.target,
+    previewVersion: args.previewVersion,
+    status,
+    storageId: args.storageId,
+    filesStorageId: args.filesStorageId,
+    filename: args.filename,
+    contentType: args.contentType,
+    fileCount: args.fileCount,
+    byteLength: args.byteLength,
+    hash: args.hash,
+    errorMessage: undefined,
+    updatedAt: now,
+  }
+
+  const artifactId =
+    existing === null
+      ? await ctx.db.insert('exportArtifacts', {
+          ...patch,
+          createdAt: now,
+        })
+      : (await ctx.db.patch(existing._id, patch), existing._id)
+
+  await ctx.db.insert('generationEvents', {
+    sessionId: args.sessionId,
+    eventType: 'export_artifact_ready',
+    message: `${args.target} export prepared`,
+    previewVersion: args.previewVersion,
+    createdAt: now,
+  })
+
+  return { artifactId, target: args.target, status }
+}
+
+export const recordExportArtifactFailure = async (
+  ctx: MutationCtx,
+  args: ExportArtifactFailureInput,
+) => {
+  const now = Date.now()
+  const existing = await loadExportArtifactRecord(
+    ctx,
+    args.sessionId,
+    args.target,
+    args.previewVersion,
+  )
+  const status = 'failed'
+  const patch = {
+    sessionId: args.sessionId,
+    target: args.target,
+    previewVersion: args.previewVersion,
+    status,
+    errorMessage: args.errorMessage,
+    updatedAt: now,
+  }
+
+  existing === null
+    ? await ctx.db.insert('exportArtifacts', {
+        ...patch,
+        createdAt: now,
+      })
+    : await ctx.db.patch(existing._id, patch)
+
+  await ctx.db.insert('generationEvents', {
+    sessionId: args.sessionId,
+    eventType: 'export_artifact_failed',
+    message: `${args.target} export failed: ${args.errorMessage}`,
+    previewVersion: args.previewVersion,
+    createdAt: now,
+  })
+
+  return { target: args.target, status }
 }
 
 export const getExportEntitlement = async (
@@ -302,15 +829,19 @@ export const createSessionExport = async (
     .first()
 
   const fileCount = exportTargetFileCount(args.target)
+  const downloadUrl = exportDownloadUrl(args.sessionId, args.target)
   const alreadyReadyForCurrentPreview =
     existingExport?.status === 'ready' &&
     existingExport.requiresPayment === false &&
     existingExport.previewVersion === preview.version
+  const existingExportStatus = 'ready'
+  const existingExportRequiresPayment = false
+  const existingExportEntitlement = 'existing'
   const entitlement = alreadyReadyForCurrentPreview
     ? {
-        status: 'ready' as const,
-        requiresPayment: false as const,
-        entitlement: 'existing' as const,
+        status: existingExportStatus,
+        requiresPayment: existingExportRequiresPayment,
+        entitlement: existingExportEntitlement,
       }
     : await getExportEntitlement(ctx, session.userId, args.sessionId)
 
@@ -323,6 +854,7 @@ export const createSessionExport = async (
           status: entitlement.status,
           artifactPath: exportArtifactPath(args.target, preview.version),
           previewVersion: preview.version,
+          downloadUrl: entitlement.status === 'ready' ? downloadUrl : undefined,
           fileCount,
           requiresPayment: entitlement.requiresPayment,
           errorMessage:
@@ -338,6 +870,7 @@ export const createSessionExport = async (
       status: entitlement.status,
       artifactPath: exportArtifactPath(args.target, preview.version),
       previewVersion: preview.version,
+      downloadUrl: entitlement.status === 'ready' ? downloadUrl : undefined,
       fileCount,
       requiresPayment: entitlement.requiresPayment,
       errorMessage:
@@ -367,6 +900,7 @@ export const createSessionExport = async (
     target: args.target,
     status: entitlement.status,
     previewVersion: preview.version,
+    downloadUrl: entitlement.status === 'ready' ? downloadUrl : undefined,
     fileCount,
     requiresPayment: entitlement.requiresPayment,
     entitlement: entitlement.entitlement,
@@ -377,7 +911,271 @@ export const createSessionExport = async (
   }
 }
 
-export const loadOwnedExportDownload = async (
+export const recordGitHubExportRepository = async (
+  ctx: MutationCtx,
+  args: RecordGitHubExportRepositoryInput,
+) => {
+  const session = await ctx.db.get(args.sessionId)
+  session !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Session not found',
+      })
+    })()
+
+  await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
+
+  const exportRecord = await ctx.db
+    .query('exports')
+    .withIndex('by_sessionId_target', (index) =>
+      index.eq('sessionId', args.sessionId).eq('target', args.target),
+    )
+    .first()
+
+  exportRecord !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Export not found',
+      })
+    })()
+
+  const now = Date.now()
+  await ctx.db.patch(exportRecord._id, {
+    githubUrl: args.repoUrl,
+    url: args.repoUrl,
+    updatedAt: now,
+  })
+
+  return {
+    target: args.target,
+    githubUrl: args.repoUrl,
+    updatedAt: now,
+  }
+}
+
+export const ensureExportArtifactBuild = async (
+  ctx: MutationCtx,
+  args: EnsureExportArtifactBuildInput,
+) => {
+  const session = await ctx.db.get(args.sessionId)
+  const now = Date.now()
+
+  session !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Session not found',
+      })
+    })()
+
+  await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
+
+  session.status === 'preview_ready' ||
+    (() => {
+      throw new ConvexError({
+        code: 'PREVIEW_NOT_READY',
+        message: 'Preview is not ready to export',
+      })
+    })()
+
+  const preview = await ctx.db
+    .query('previews')
+    .withIndex('by_sessionId_version', (index) =>
+      index.eq('sessionId', args.sessionId),
+    )
+    .order('desc')
+    .first()
+
+  preview !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'PREVIEW_NOT_READY',
+        message: 'Preview is not ready to export',
+      })
+    })()
+
+  const homeModule = await ctx.db
+    .query('generatedModules')
+    .withIndex('by_sessionId_moduleKey', (index) =>
+      index.eq('sessionId', args.sessionId).eq('moduleKey', 'home'),
+    )
+    .first()
+
+  homeModule?.source.trim().length ||
+    (() => {
+      throw new ConvexError({
+        code: 'ARTIFACT_NOT_READY',
+        message: 'Generated source is not ready to export',
+      })
+    })()
+
+  return await queueSessionExportArtifactBuild(ctx, {
+    sessionId: args.sessionId,
+    target: args.target,
+    previewVersion: preview.version,
+    isPrivate: session.isPrivate,
+    now,
+    buildExportArtifact: args.buildExportArtifact,
+    force: false,
+  })
+}
+
+export const prepareExportArtifactBuild = async (
+  ctx: QueryCtx,
+  args: ExportArtifactBuildInput,
+) => {
+  const startedAt = Date.now()
+  logPrepareExportStage('session:get:start', args)
+  const session = await ctx.db.get(args.sessionId)
+  logPrepareExportStage('session:get:done', args, {
+    elapsedMs: Date.now() - startedAt,
+  })
+
+  session !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Session not found',
+      })
+    })()
+
+  session.status === 'preview_ready' ||
+    (() => {
+      throw new ConvexError({
+        code: 'PREVIEW_NOT_READY',
+        message: 'Preview is not ready to export',
+      })
+    })()
+
+  logPrepareExportStage('preview:latest:start', args, {
+    elapsedMs: Date.now() - startedAt,
+  })
+  const preview = await ctx.db
+    .query('previews')
+    .withIndex('by_sessionId_version', (index) =>
+      index.eq('sessionId', args.sessionId),
+    )
+    .order('desc')
+    .first()
+  logPrepareExportStage('preview:latest:done', args, {
+    elapsedMs: Date.now() - startedAt,
+    previewVersion: preview?.version,
+    htmlLength: preview?.html.length ?? 0,
+    siteSpecLength: preview?.siteSpecJson?.length ?? 0,
+  })
+
+  if (preview === null) {
+    throw new ConvexError({
+      code: 'PREVIEW_NOT_READY',
+      message: 'Preview is not ready to export',
+    })
+  }
+
+  if (preview.version !== args.previewVersion) return null
+
+  logPrepareExportStage('home-module:get:start', args, {
+    elapsedMs: Date.now() - startedAt,
+  })
+  const homeModule = await ctx.db
+    .query('generatedModules')
+    .withIndex('by_sessionId_moduleKey', (index) =>
+      index.eq('sessionId', args.sessionId).eq('moduleKey', 'home'),
+    )
+    .first()
+  logPrepareExportStage('home-module:get:done', args, {
+    elapsedMs: Date.now() - startedAt,
+    homeModuleHasSource: (homeModule?.source.trim().length ?? 0) > 0,
+  })
+
+  logPrepareExportStage('site-spec:get:start', args, {
+    elapsedMs: Date.now() - startedAt,
+  })
+  const siteSpec = await ctx.db
+    .query('siteSpecs')
+    .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+    .first()
+  logPrepareExportStage('site-spec:get:done', args, {
+    elapsedMs: Date.now() - startedAt,
+    siteSpecLength: siteSpec?.specJson?.length ?? siteSpec?.spec?.length ?? 0,
+  })
+
+  logPrepareExportStage('edits:collect:start', args, {
+    elapsedMs: Date.now() - startedAt,
+  })
+  const edits = await ctx.db
+    .query('edits')
+    .withIndex('by_sessionId_createdAt', (index) =>
+      index.eq('sessionId', args.sessionId),
+    )
+    .collect()
+  logPrepareExportStage('edits:collect:done', args, {
+    elapsedMs: Date.now() - startedAt,
+    editCount: edits.length,
+  })
+
+  logPrepareExportStage('source:resolve:start', args, {
+    elapsedMs: Date.now() - startedAt,
+  })
+  const canonicalSource = resolveExportOpenUISource(
+    preview,
+    homeModule,
+    siteSpec,
+  )
+  logPrepareExportStage('source:resolve:done', args, {
+    elapsedMs: Date.now() - startedAt,
+    canonicalSourceLength: canonicalSource.length,
+  })
+  logPrepareExportStage('source:apply-edits:start', args, {
+    elapsedMs: Date.now() - startedAt,
+    editCount: edits.length,
+  })
+  const source = applyEditsToSource(canonicalSource, edits)
+  logPrepareExportStage('source:apply-edits:done', args, {
+    elapsedMs: Date.now() - startedAt,
+    canonicalSourceLength: canonicalSource.length,
+    sourceLength: source.length,
+    editCount: edits.length,
+  })
+
+  source.trim().length > 0 ||
+    (() => {
+      throw new ConvexError({
+        code: 'ARTIFACT_NOT_READY',
+        message: 'Generated source is not ready to export',
+      })
+    })()
+
+  logPrepareExportStage('return:ready', args, {
+    elapsedMs: Date.now() - startedAt,
+    previewVersion: preview.version,
+    sourceLength: source.length,
+    canonicalSourceLength: canonicalSource.length,
+    editCount: edits.length,
+    htmlLength: preview.html.length,
+    siteSpecLength:
+      preview.siteSpecJson?.length ?? siteSpec?.specJson?.length ?? 0,
+  })
+
+  const html = args.target === 'lakebed' ? undefined : preview.html
+
+  return {
+    sessionId: args.sessionId,
+    prompt: session.prompt,
+    target: args.target,
+    previewVersion: preview.version,
+    source,
+    ...(html === undefined ? {} : { html }),
+    siteSpecJson: preview.siteSpecJson ?? siteSpec?.specJson ?? siteSpec?.spec,
+    previewHtml: preview.html,
+    themeName: session.genuiTheme,
+    isDark: true,
+    isPrivate: session.isPrivate,
+  }
+}
+
+export const loadOwnedExportArtifactDownload = async (
   ctx: QueryCtx,
   args: OwnedExportDownloadInput,
 ) => {
@@ -403,11 +1201,6 @@ export const loadOwnedExportDownload = async (
   if (exportRecord === null) return null
 
   const exportPayload = toExportPayload(exportRecord)
-
-  if (exportPayload.status !== 'ready') {
-    return { export: exportPayload }
-  }
-
   const latestPreview = await ctx.db
     .query('previews')
     .withIndex('by_sessionId_version', (index) =>
@@ -415,24 +1208,33 @@ export const loadOwnedExportDownload = async (
     )
     .order('desc')
     .first()
-  const homeModule = await ctx.db
-    .query('generatedModules')
-    .withIndex('by_sessionId_moduleKey', (index) =>
-      index.eq('sessionId', args.sessionId).eq('moduleKey', 'home'),
-    )
-    .first()
-  const siteSpec = await ctx.db
-    .query('siteSpecs')
-    .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
-    .first()
+  const latestPreviewVersion = latestPreview?.version
+
+  const artifact =
+    latestPreviewVersion === undefined
+      ? null
+      : await loadExportArtifactRecord(
+          ctx,
+          args.sessionId,
+          args.target,
+          latestPreviewVersion,
+        )
+  const artifactPayload = toArtifactPayload(artifact)
+  const storageUrl =
+    artifact?.status === 'ready' && artifact.storageId !== undefined
+      ? await ctx.storage.getUrl(artifact.storageId)
+      : null
+  const filesUrl =
+    artifact?.status === 'ready' && artifact.filesStorageId !== undefined
+      ? await ctx.storage.getUrl(artifact.filesStorageId)
+      : null
 
   return {
     export: exportPayload,
-    source: resolveExportOpenUISource(latestPreview, homeModule, siteSpec),
-    siteSpecJson:
-      latestPreview?.siteSpecJson ?? siteSpec?.specJson ?? siteSpec?.spec,
-    previewHtml: latestPreview?.html,
-    latestPreviewVersion: latestPreview?.version,
+    artifact: artifactPayload,
+    storageUrl,
+    filesUrl,
+    latestPreviewVersion,
   }
 }
 
@@ -541,6 +1343,17 @@ export const loadOwnedExportForGitHubPush = async (
     })
   }
 
+  const artifact = await loadExportArtifactRecord(
+    ctx,
+    args.sessionId,
+    args.target,
+    preview.version,
+  )
+  const filesUrl =
+    artifact?.status === 'ready' && artifact.filesStorageId !== undefined
+      ? await ctx.storage.getUrl(artifact.filesStorageId)
+      : null
+
   return {
     sessionId: args.sessionId,
     prompt: session.prompt,
@@ -553,5 +1366,7 @@ export const loadOwnedExportForGitHubPush = async (
     themeName: session.genuiTheme,
     isDark: true,
     includeBadge: exportRecord.requiresPayment !== false,
+    artifact: toArtifactPayload(artifact),
+    filesUrl,
   }
 }

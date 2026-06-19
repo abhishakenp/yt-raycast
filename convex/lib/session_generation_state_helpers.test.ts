@@ -9,6 +9,7 @@ import {
 
 type CmsBindingRecord = Doc<'cmsBindings'>
 type CmsEntryRecord = Doc<'cmsEntries'>
+type ExportArtifactRecord = Doc<'exportArtifacts'>
 type GeneratedModuleRecord = Doc<'generatedModules'>
 type GenerationEventRecord = Doc<'generationEvents'>
 type PreviewRecord = Doc<'previews'>
@@ -29,6 +30,7 @@ const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
     createdAt: 1,
     userId: 'user-1',
     anonymousClientIdHash: 'anon-hash',
+    isPrivate: false,
     ...overrides,
   }) as SessionRecord
 
@@ -58,6 +60,7 @@ const ctxFor = (input: {
   const tasks = [...(input.tasks ?? [])]
   const siteSpecs = [...(input.siteSpecs ?? [])]
   const generatedModules = [...(input.generatedModules ?? [])]
+  const exportArtifacts: ExportArtifactRecord[] = []
   const previews: PreviewRecord[] = []
   const generationEvents: GenerationEventRecord[] = []
   const usageMetrics: UsageMetricRecord[] = []
@@ -79,6 +82,8 @@ const ctxFor = (input: {
         return siteSpecs
       case 'generatedModules':
         return generatedModules
+      case 'exportArtifacts':
+        return exportArtifacts
       case 'previews':
         return previews
       case 'generationEvents':
@@ -140,6 +145,7 @@ const ctxFor = (input: {
         tasks,
         siteSpecs,
         generatedModules,
+        exportArtifacts,
         previews,
         generationEvents,
         usageMetrics,
@@ -172,6 +178,7 @@ const ctxFor = (input: {
     tasks,
     siteSpecs,
     generatedModules,
+    exportArtifacts,
     previews,
     generationEvents,
     usageMetrics,
@@ -193,6 +200,7 @@ describe('session generation state helpers', () => {
       generationEvents,
       usageMetrics,
       schedulerCalls,
+      exportArtifacts,
     } = ctxFor({ sessions: [sessionDoc({ previewVersion: 2 })] })
 
     await expect(
@@ -210,6 +218,9 @@ describe('session generation state helpers', () => {
           'sendOperationalNotification' as unknown as Parameters<
             MutationCtx['scheduler']['runAfter']
           >[1],
+        buildExportArtifact: 'buildExportArtifact' as unknown as Parameters<
+          MutationCtx['scheduler']['runAfter']
+        >[1],
       }),
     ).resolves.toEqual({ sessionId, previewVersion: 3 })
 
@@ -282,10 +293,37 @@ describe('session generation state helpers', () => {
       expect.objectContaining({
         _id: sessionId,
         status: 'preview_ready',
+        openuiReady: true,
         previewVersion: 3,
         elapsed: 1234,
         cost: 0.42,
         updatedAt: 500,
+      }),
+    ])
+    expect(exportArtifacts).toEqual([
+      expect.objectContaining({
+        sessionId,
+        target: 'html',
+        previewVersion: 3,
+        status: 'queued',
+      }),
+      expect.objectContaining({
+        sessionId,
+        target: 'react',
+        previewVersion: 3,
+        status: 'queued',
+      }),
+      expect.objectContaining({
+        sessionId,
+        target: 'next',
+        previewVersion: 3,
+        status: 'queued',
+      }),
+      expect.objectContaining({
+        sessionId,
+        target: 'lakebed',
+        previewVersion: 3,
+        status: 'queued',
       }),
     ])
     expect(schedulerCalls).toEqual([
@@ -295,6 +333,38 @@ describe('session generation state helpers', () => {
           eventType: 'run_completed',
           cost: 0.42,
           provider: 'groq',
+        }),
+      }),
+      expect.objectContaining({
+        delayMs: 0,
+        event: expect.objectContaining({
+          target: 'html',
+          previewVersion: 3,
+          autoDeployPublic: false,
+        }),
+      }),
+      expect.objectContaining({
+        delayMs: 0,
+        event: expect.objectContaining({
+          target: 'react',
+          previewVersion: 3,
+          autoDeployPublic: false,
+        }),
+      }),
+      expect.objectContaining({
+        delayMs: 0,
+        event: expect.objectContaining({
+          target: 'next',
+          previewVersion: 3,
+          autoDeployPublic: false,
+        }),
+      }),
+      expect.objectContaining({
+        delayMs: 0,
+        event: expect.objectContaining({
+          target: 'lakebed',
+          previewVersion: 3,
+          autoDeployPublic: true,
         }),
       }),
     ])

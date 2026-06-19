@@ -24,6 +24,12 @@ type GeneratedModulePreviewProps = {
     occurrenceIndex: number
     style: string
   }>
+  /** Inline text edits to re-apply on render (beforeText -> afterText). */
+  textOverrides?: Array<{
+    beforeText: string
+    afterText: string
+    occurrenceIndex?: number
+  }>
   isDark?: boolean
   themeStyles?: ThemeStyles | null
   deviceMode?: 'desktop' | 'tablet' | 'mobile'
@@ -154,6 +160,7 @@ export function GeneratedModulePreview({
   prompt,
   imageOverrides,
   styleOverrides,
+  textOverrides,
   isDark = true,
   themeStyles = null,
   deviceMode = 'desktop',
@@ -186,6 +193,7 @@ export function GeneratedModulePreview({
         onImageChange={onImageChange}
         onElementActivate={onElementActivate}
         styleOverrides={styleOverrides}
+        textOverrides={textOverrides}
       >
         {isHtmlDocumentSource(source) ? (
           <HtmlModuleRenderer source={source} />

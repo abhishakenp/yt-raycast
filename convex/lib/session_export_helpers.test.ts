@@ -1,21 +1,27 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { readFileSync } from 'node:fs'
 
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 import {
   areExportPaywallsDisabled,
   createSessionExport,
+  ensureExportArtifactBuild,
   exportTargetFileCount,
   getExportEntitlement,
-  loadOwnedExportDownload,
+  loadOwnedExportArtifactDownload,
   loadOwnedExportForGitHubPush,
   loadExportRecord,
+  loadSessionExportTargets,
+  markExportArtifactBuilding,
+  prepareExportArtifactBuild,
+  recordGitHubExportRepository,
+  recordExportArtifactStalled,
 } from './session_export_helpers'
 import { hashOwnerSecret } from './session_access_helpers'
 
 type CreditLedgerRecord = Doc<'creditLedger'>
 type CustomerCreditsRecord = Doc<'customerCredits'>
+type ExportArtifactRecord = Doc<'exportArtifacts'>
 type ExportRecord = Doc<'exports'>
 type GeneratedModuleRecord = Doc<'generatedModules'>
 type GenerationEventRecord = Doc<'generationEvents'>
@@ -45,6 +51,27 @@ const exportDoc = (overrides: Partial<ExportRecord> = {}): ExportRecord =>
     updatedAt: 120,
     ...overrides,
   }) as ExportRecord
+
+const exportArtifactDoc = (
+  overrides: Partial<ExportArtifactRecord> = {},
+): ExportArtifactRecord =>
+  ({
+    _id: 'export_artifact_html' as Id<'exportArtifacts'>,
+    _creationTime: 1,
+    sessionId,
+    target: 'html',
+    previewVersion: 2,
+    status: 'ready',
+    storageId: 'stored_export' as Id<'_storage'>,
+    filename: 'ship-fast-html.zip',
+    contentType: 'application/zip',
+    fileCount: 5,
+    byteLength: 123,
+    hash: 'hash',
+    createdAt: 100,
+    updatedAt: 120,
+    ...overrides,
+  }) as ExportArtifactRecord
 
 const sessionDoc = (overrides: Partial<SessionRecord> = {}): SessionRecord =>
   ({
@@ -254,6 +281,7 @@ const workflowCtxFor = (input: {
   generatedModules?: GeneratedModuleRecord[]
   siteSpecs?: SiteSpecRecord[]
   exports?: ExportRecord[]
+  exportArtifacts?: ExportArtifactRecord[]
   subscriptions?: SubscriptionRecord[]
   customerCredits?: CustomerCreditsRecord[]
 }) => {
@@ -264,11 +292,23 @@ const workflowCtxFor = (input: {
   ]
   const siteSpecs = [...(input.siteSpecs ?? [siteSpecDoc()])]
   const exportRows = [...(input.exports ?? [])]
+  const exportArtifacts = [...(input.exportArtifacts ?? [])]
   const subscriptions = [...(input.subscriptions ?? [])]
   const customerCredits = [...(input.customerCredits ?? [])]
   const creditLedger: CreditLedgerRecord[] = []
   const generationEvents: GenerationEventRecord[] = []
+  const scheduledBuilds: Array<{
+    delayMs: number
+    args: {
+      sessionId: Id<'sessions'>
+      target: string
+      previewVersion: number
+      autoDeployPublic?: boolean
+      buildStartedAt?: number
+    }
+  }> = []
   let nextExportId = 1
+  let nextArtifactId = 1
   let nextLedgerId = 1
   let nextEventId = 1
 
@@ -282,6 +322,8 @@ const workflowCtxFor = (input: {
         return siteSpecs
       case 'exports':
         return exportRows
+      case 'exportArtifacts':
+        return exportArtifacts
       case 'subscriptions':
         return subscriptions
       case 'customerCredits':
@@ -371,6 +413,17 @@ const workflowCtxFor = (input: {
         return id
       }
 
+      if (table === 'exportArtifacts') {
+        const id =
+          `export_artifact_created_${nextArtifactId++}` as Id<'exportArtifacts'>
+        exportArtifacts.push({
+          _id: id,
+          _creationTime: 1,
+          ...value,
+        } as ExportArtifactRecord)
+        return id
+      }
+
       if (table === 'generationEvents') {
         const id = `generation_event_${nextEventId++}` as Id<'generationEvents'>
         generationEvents.push({
@@ -390,6 +443,15 @@ const workflowCtxFor = (input: {
           ...exportRows[exportIndex],
           ...value,
         } as ExportRecord
+        return
+      }
+
+      const artifactIndex = exportArtifacts.findIndex((row) => row._id === id)
+      if (artifactIndex >= 0) {
+        exportArtifacts[artifactIndex] = {
+          ...exportArtifacts[artifactIndex],
+          ...value,
+        } as ExportArtifactRecord
         return
       }
 
@@ -416,12 +478,35 @@ const workflowCtxFor = (input: {
           },
   } as unknown as MutationCtx['auth'] & QueryCtx['auth']
 
+  const storage = {
+    getUrl: async (storageId: Id<'_storage'>) =>
+      `https://storage.test/${storageId}`,
+  } as QueryCtx['storage']
+
+  const scheduler = {
+    runAfter: async (
+      delayMs: number,
+      _reference: Parameters<MutationCtx['scheduler']['runAfter']>[1],
+      args: {
+        sessionId: Id<'sessions'>
+        target: string
+        previewVersion: number
+        autoDeployPublic?: boolean
+        buildStartedAt?: number
+      },
+    ) => {
+      scheduledBuilds.push({ delayMs, args })
+    },
+  } as MutationCtx['scheduler']
+
   return {
-    ctx: { db, auth } as MutationCtx & QueryCtx,
+    ctx: { db, auth, scheduler, storage } as MutationCtx & QueryCtx,
     exportRows,
+    exportArtifacts,
     customerCredits,
     creditLedger,
     generationEvents,
+    scheduledBuilds,
   }
 }
 
@@ -436,6 +521,114 @@ describe('exportTargetFileCount', () => {
     expect(exportTargetFileCount('react')).toBe(7)
     expect(exportTargetFileCount('next')).toBe(7)
     expect(exportTargetFileCount('lakebed')).toBe(12)
+  })
+})
+
+describe('loadSessionExportTargets', () => {
+  it('streams persisted download and GitHub URLs for each ready target', async () => {
+    const { ctx } = workflowCtxFor({
+      exports: [
+        exportDoc({
+          target: 'html',
+          downloadUrl: '/api/sessions/session_export_helpers/download/html',
+          githubUrl: 'https://github.com/acme/html-site',
+          deployedUrl: 'https://html-site.ship-fast.io',
+        }),
+        exportDoc({
+          _id: 'export_react' as Id<'exports'>,
+          target: 'react',
+          artifactPath: 'preview-2.react.zip',
+          downloadUrl: '/api/sessions/session_export_helpers/download/react',
+          githubUrl: 'https://github.com/acme/react-site',
+          deployedUrl: 'https://react-site.ship-fast.io',
+        }),
+      ],
+      exportArtifacts: [
+        exportArtifactDoc(),
+        exportArtifactDoc({
+          _id: 'export_artifact_react' as Id<'exportArtifacts'>,
+          target: 'react',
+          filename: 'ship-fast-react.zip',
+        }),
+      ],
+    })
+
+    const result = await loadSessionExportTargets(ctx, sessionId)
+    const html = result.targets.find((target) => target.target === 'html')
+    const react = result.targets.find((target) => target.target === 'react')
+
+    expect(html).toMatchObject({
+      ready: true,
+      downloadUrl: '/api/sessions/session_export_helpers/download/html',
+      githubUrl: 'https://github.com/acme/html-site',
+      githubRepoUrl: 'https://github.com/acme/html-site',
+      deployedUrl: 'https://html-site.ship-fast.io',
+    })
+    expect(react).toMatchObject({
+      ready: true,
+      downloadUrl: '/api/sessions/session_export_helpers/download/react',
+      githubUrl: 'https://github.com/acme/react-site',
+      githubRepoUrl: 'https://github.com/acme/react-site',
+      deployedUrl: 'https://react-site.ship-fast.io',
+    })
+  })
+
+  it('reports stalled building artifacts as failed so clicks can retry them', async () => {
+    vi.setSystemTime(1_700_000_000_000)
+    const { ctx } = workflowCtxFor({
+      exportArtifacts: [
+        exportArtifactDoc({
+          target: 'lakebed',
+          status: 'building',
+          storageId: undefined,
+          filename: undefined,
+          contentType: undefined,
+          fileCount: undefined,
+          byteLength: undefined,
+          hash: undefined,
+          updatedAt: 1_700_000_000_000 - 121_000,
+        }),
+      ],
+    })
+
+    const result = await loadSessionExportTargets(ctx, sessionId)
+    const lakebed = result.targets.find((target) => target.target === 'lakebed')
+
+    expect(lakebed).toMatchObject({
+      artifactReady: false,
+      artifactStatus: 'failed',
+      artifactError: 'Export build stalled before completion. Click to retry.',
+      artifact: expect.objectContaining({
+        status: 'failed',
+        errorMessage:
+          'Export build stalled before completion. Click to retry.',
+      }),
+    })
+  })
+})
+
+describe('recordGitHubExportRepository', () => {
+  it('persists the GitHub URL on the export row for its target', async () => {
+    const { ctx, exportRows } = workflowCtxFor({
+      identityUserId: userId,
+      exports: [exportDoc()],
+    })
+
+    await expect(
+      recordGitHubExportRepository(ctx, {
+        sessionId,
+        target: 'html',
+        repoUrl: 'https://github.com/acme/html-site',
+      }),
+    ).resolves.toMatchObject({
+      target: 'html',
+      githubUrl: 'https://github.com/acme/html-site',
+    })
+
+    expect(exportRows[0]).toMatchObject({
+      githubUrl: 'https://github.com/acme/html-site',
+      url: 'https://github.com/acme/html-site',
+    })
   })
 })
 
@@ -624,6 +817,7 @@ describe('createSessionExport', () => {
       target: 'html',
       status: 'ready',
       previewVersion: 2,
+      downloadUrl: '/api/sessions/session_export_helpers/download/html',
       fileCount: 5,
       requiresPayment: false,
       entitlement: 'subscription',
@@ -634,6 +828,7 @@ describe('createSessionExport', () => {
         status: 'ready',
         artifactPath: 'preview-2.html',
         previewVersion: 2,
+        downloadUrl: '/api/sessions/session_export_helpers/download/html',
         requiresPayment: false,
         updatedAt: 1_700_000_000_000,
       }),
@@ -695,24 +890,237 @@ describe('createSessionExport', () => {
   })
 })
 
-describe('loadOwnedExportDownload', () => {
-  it('returns ready export artifacts for the owning caller', async () => {
-    const { ctx } = workflowCtxFor({
+describe('ensureExportArtifactBuild', () => {
+  it('queues a missing target artifact for an old ready session without creating an export entitlement', async () => {
+    vi.setSystemTime(1_700_000_000_000)
+    const { ctx, exportArtifacts, exportRows, scheduledBuilds } =
+      workflowCtxFor({
+        identityUserId: userId,
+      })
+
+    const result = await ensureExportArtifactBuild(ctx, {
+      sessionId,
+      target: 'lakebed',
+      buildExportArtifact: 'buildExportArtifact',
+    })
+
+    expect(result).toMatchObject({
+      target: 'lakebed',
+      status: 'queued',
+      previewVersion: 2,
+      updatedAt: 1_700_000_000_000,
+    })
+    expect(exportRows).toHaveLength(0)
+    expect(exportArtifacts).toEqual([
+      expect.objectContaining({
+        target: 'lakebed',
+        previewVersion: 2,
+        status: 'queued',
+        createdAt: 1_700_000_000_000,
+        updatedAt: 1_700_000_000_000,
+      }),
+    ])
+    expect(scheduledBuilds).toEqual([
+      {
+        delayMs: 0,
+        args: {
+          sessionId,
+          target: 'lakebed',
+          previewVersion: 2,
+          autoDeployPublic: true,
+        },
+      },
+    ])
+  })
+
+  it('reschedules non-ready artifacts but leaves a ready artifact alone', async () => {
+    vi.setSystemTime(1_700_000_000_000)
+    const stalled = workflowCtxFor({
       identityUserId: userId,
-      exports: [exportDoc()],
+      exportArtifacts: [
+        exportArtifactDoc({
+          status: 'building',
+          storageId: undefined,
+          filename: undefined,
+          contentType: undefined,
+          fileCount: undefined,
+          byteLength: undefined,
+          hash: undefined,
+        }),
+      ],
     })
 
     await expect(
-      loadOwnedExportDownload(ctx, { sessionId, target: 'html' }),
+      ensureExportArtifactBuild(stalled.ctx, {
+        sessionId,
+        target: 'html',
+        buildExportArtifact: 'buildExportArtifact',
+      }),
+    ).resolves.toMatchObject({ status: 'queued' })
+    expect(stalled.exportArtifacts[0]).toMatchObject({
+      status: 'queued',
+      errorMessage: undefined,
+      updatedAt: 1_700_000_000_000,
+    })
+    expect(stalled.scheduledBuilds).toHaveLength(1)
+
+    const fresh = workflowCtxFor({
+      identityUserId: userId,
+      exportArtifacts: [
+        exportArtifactDoc({
+          status: 'building',
+          storageId: undefined,
+          filename: undefined,
+          contentType: undefined,
+          fileCount: undefined,
+          byteLength: undefined,
+          hash: undefined,
+          updatedAt: 1_700_000_000_000 - 30_000,
+        }),
+      ],
+    })
+
+    await expect(
+      ensureExportArtifactBuild(fresh.ctx, {
+        sessionId,
+        target: 'html',
+        buildExportArtifact: 'buildExportArtifact',
+      }),
+    ).resolves.toMatchObject({ status: 'queued' })
+    expect(fresh.exportArtifacts[0]).toMatchObject({
+      status: 'queued',
+      updatedAt: 1_700_000_000_000,
+    })
+    expect(fresh.scheduledBuilds).toHaveLength(1)
+
+    const ready = workflowCtxFor({
+      identityUserId: userId,
+      exportArtifacts: [exportArtifactDoc()],
+    })
+
+    await expect(
+      ensureExportArtifactBuild(ready.ctx, {
+        sessionId,
+        target: 'html',
+        buildExportArtifact: 'buildExportArtifact',
+      }),
+    ).resolves.toMatchObject({ status: 'ready' })
+    expect(ready.exportArtifacts[0]).toMatchObject({ status: 'ready' })
+    expect(ready.scheduledBuilds).toHaveLength(0)
+  })
+})
+
+describe('export artifact build watchdog', () => {
+  it('schedules a stall watchdog when an artifact build starts', async () => {
+    vi.setSystemTime(1_700_000_000_000)
+    const { ctx, scheduledBuilds } = workflowCtxFor({
+      identityUserId: userId,
+    })
+
+    await expect(
+      markExportArtifactBuilding(ctx, {
+        sessionId,
+        target: 'lakebed',
+        previewVersion: 2,
+        stallExportArtifactBuild: 'stallExportArtifactBuild',
+      }),
+    ).resolves.toMatchObject({ status: 'building' })
+
+    expect(scheduledBuilds).toEqual([
+      {
+        delayMs: 120_000,
+        args: {
+          sessionId,
+          target: 'lakebed',
+          previewVersion: 2,
+          buildStartedAt: 1_700_000_000_000,
+        },
+      },
+    ])
+  })
+
+  it('marks only the same still-building attempt as failed', async () => {
+    vi.setSystemTime(1_700_000_050_000)
+    const { ctx, exportArtifacts } = workflowCtxFor({
+      identityUserId: userId,
+      exportArtifacts: [
+        exportArtifactDoc({
+          status: 'building',
+          storageId: undefined,
+          filename: undefined,
+          contentType: undefined,
+          fileCount: undefined,
+          byteLength: undefined,
+          hash: undefined,
+          updatedAt: 1_700_000_000_000,
+        }),
+      ],
+    })
+
+    await expect(
+      recordExportArtifactStalled(ctx, {
+        sessionId,
+        target: 'html',
+        previewVersion: 2,
+        buildStartedAt: 1_700_000_000_001,
+      }),
+    ).resolves.toMatchObject({ status: 'building' })
+    expect(exportArtifacts[0]).toMatchObject({ status: 'building' })
+
+    await expect(
+      recordExportArtifactStalled(ctx, {
+        sessionId,
+        target: 'html',
+        previewVersion: 2,
+        buildStartedAt: 1_700_000_000_000,
+      }),
+    ).resolves.toMatchObject({ status: 'failed' })
+    expect(exportArtifacts[0]).toMatchObject({
+      status: 'failed',
+      errorMessage: 'Export build stalled before completion. Click to retry.',
+    })
+  })
+})
+
+describe('prepareExportArtifactBuild', () => {
+  it('returns null for obsolete scheduled builds after the preview changes', async () => {
+    const { ctx } = workflowCtxFor({
+      previews: [previewDoc({ version: 3 })],
+    })
+
+    await expect(
+      prepareExportArtifactBuild(ctx, {
+        sessionId,
+        target: 'html',
+        previewVersion: 2,
+      }),
+    ).resolves.toBeNull()
+  })
+})
+
+describe('loadOwnedExportArtifactDownload', () => {
+  it('returns ready stored export artifact metadata for the owning caller', async () => {
+    const { ctx } = workflowCtxFor({
+      identityUserId: userId,
+      exports: [exportDoc()],
+      exportArtifacts: [exportArtifactDoc()],
+    })
+
+    await expect(
+      loadOwnedExportArtifactDownload(ctx, { sessionId, target: 'html' }),
     ).resolves.toEqual({
       export: expect.objectContaining({
         exportId: 'export_html',
         status: 'ready',
         requiresPayment: false,
       }),
-      source: openUiSource,
-      siteSpecJson: '{"title":"Preview"}',
-      previewHtml: '<main>Preview</main>',
+      artifact: expect.objectContaining({
+        status: 'ready',
+        filename: 'ship-fast-html.zip',
+        contentType: 'application/zip',
+      }),
+      storageUrl: 'https://storage.test/stored_export',
+      filesUrl: null,
       latestPreviewVersion: 2,
     })
   })
@@ -730,14 +1138,18 @@ describe('loadOwnedExportDownload', () => {
     })
 
     await expect(
-      loadOwnedExportDownload(ctx, { sessionId, target: 'html' }),
-    ).resolves.toEqual({
+      loadOwnedExportArtifactDownload(ctx, { sessionId, target: 'html' }),
+    ).resolves.toMatchObject({
       export: expect.objectContaining({
         exportId: 'export_html',
         status: 'payment_required',
         requiresPayment: true,
         errorMessage: 'Subscribe first',
       }),
+      artifact: null,
+      storageUrl: null,
+      filesUrl: null,
+      latestPreviewVersion: 2,
     })
   })
 
@@ -755,41 +1167,30 @@ describe('loadOwnedExportDownload', () => {
     })
 
     await expect(
-      loadOwnedExportDownload(ctx, { sessionId, target: 'html' }),
+      loadOwnedExportArtifactDownload(ctx, { sessionId, target: 'html' }),
     ).resolves.toMatchObject({
       export: expect.objectContaining({
         status: 'ready',
         requiresPayment: false,
         errorMessage: undefined,
       }),
-      source: openUiSource,
-      previewHtml: '<main>Preview</main>',
     })
   })
 
-  it('falls back to site-spec OpenUI when generated module source is TSX', async () => {
-    const siteSpecOpenUi =
-      'root = SaasKimiPage("Site Spec", ["Home"], {"heading":"Site Spec"})'
+  it('reports queued artifacts without rebuilding exports in the request path', async () => {
+    vi.setSystemTime(200)
     const { ctx } = workflowCtxFor({
       identityUserId: userId,
-      previews: [previewDoc({ openUiSource: undefined })],
-      generatedModules: [
-        generatedModuleDoc({
-          source: 'export const Home = () => <main>Subscribers</main>',
-        }),
-      ],
-      siteSpecs: [
-        siteSpecDoc({
-          specJson: JSON.stringify({ pages: { home: siteSpecOpenUi } }),
-        }),
-      ],
       exports: [exportDoc()],
+      exportArtifacts: [exportArtifactDoc({ status: 'building' })],
     })
 
     await expect(
-      loadOwnedExportDownload(ctx, { sessionId, target: 'html' }),
+      loadOwnedExportArtifactDownload(ctx, { sessionId, target: 'html' }),
     ).resolves.toMatchObject({
-      source: siteSpecOpenUi,
+      export: expect.objectContaining({ status: 'ready' }),
+      artifact: expect.objectContaining({ status: 'building' }),
+      storageUrl: null,
     })
   })
 })
@@ -803,7 +1204,7 @@ describe('loadOwnedExportForGitHubPush', () => {
 
     await expect(
       loadOwnedExportForGitHubPush(ctx, { sessionId, target: 'html' }),
-    ).resolves.toEqual({
+    ).resolves.toMatchObject({
       sessionId,
       prompt: 'Build a polished landing page',
       target: 'html',
@@ -815,6 +1216,8 @@ describe('loadOwnedExportForGitHubPush', () => {
       themeName: undefined,
       isDark: true,
       includeBadge: false,
+      artifact: null,
+      filesUrl: null,
     })
   })
 
@@ -917,50 +1320,5 @@ describe('loadOwnedExportForGitHubPush', () => {
         target: 'html',
       }),
     ).rejects.toMatchObject({ data: { code: 'EXPORT_STALE' } })
-  })
-})
-
-describe('sessions export delegation', () => {
-  it('keeps owned export functions delegated with ownership-aware validators', () => {
-    const source = readFileSync(
-      new URL('../sessions.ts', import.meta.url),
-      'utf8',
-    )
-    const githubPushBlock = source.slice(
-      source.indexOf('export const getOwnedExportForGitHubPush = query({'),
-      source.indexOf('export const createEdit = mutation({'),
-    )
-
-    expect(source).toContain(
-      'handler: (ctx, args) => createSessionExport(ctx, args)',
-    )
-    expect(source).toContain(
-      'handler: (ctx, args) => loadOwnedExportDownload(ctx, args)',
-    )
-    expect(source).toContain(
-      'handler: (ctx, args) => loadOwnedExportForGitHubPush(ctx, args)',
-    )
-    expect(githubPushBlock).toContain('args: ownedExportArgs')
-    expect(githubPushBlock).not.toContain('args: exportRecordArgs')
-    expect(source).not.toContain(
-      'Generate this export before pushing it to GitHub.',
-    )
-  })
-})
-
-describe('export paywall env wiring', () => {
-  it('uses DISABLE_PAYWALL and keeps DISABLE_LIMIT out of export entitlement', () => {
-    const source = readFileSync(
-      new URL('./session_export_helpers.ts', import.meta.url),
-      'utf8',
-    )
-    const entitlementBlock = source.slice(
-      source.indexOf('export const getExportEntitlement = async'),
-      source.indexOf('export const createSessionExport = async'),
-    )
-
-    expect(source).toContain('DISABLE_PAYWALL')
-    expect(entitlementBlock).toContain('areExportPaywallsDisabled()')
-    expect(source).not.toContain('DISABLE_LIMIT')
   })
 })

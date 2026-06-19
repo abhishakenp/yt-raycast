@@ -113,17 +113,19 @@ export const forkSessionForOwner = async (
   }
 
   let editApplied = false
+  let editPreviewVersion: number | undefined
   if (args.edit !== undefined) {
     const target = await ctx.db.get(targetSessionId)
     if (target !== null) {
       try {
-        await applySessionEdit(ctx, target, args.edit, now)
+        const editResult = await applySessionEdit(ctx, target, args.edit, now)
         editApplied = true
+        editPreviewVersion = editResult.previewVersion
       } catch (error) {
         if (!(error instanceof ConvexError)) throw error
       }
     }
   }
 
-  return { sessionId: targetSessionId, editApplied }
+  return { sessionId: targetSessionId, editApplied, editPreviewVersion }
 }

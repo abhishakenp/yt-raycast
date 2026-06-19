@@ -76,9 +76,12 @@ describe('convex generation action', () => {
       'internalFunctions.sessions.completeGenerationInternal',
     )
     expect(source).toContain(
+      "import { buildOpenUiHandoffHtml } from './lib/openui_handoff_html'",
+    )
+    expect(source).not.toContain(
       "import('../packages/ship-fast-engine/src/openui-ssr.js')",
     )
-    expect(source).toContain('renderOpenUIToHTMLWithTheme')
+    expect(source).not.toContain('renderOpenUIToHTMLWithTheme')
     expect(source).not.toMatch(
       /internalFunctions\.sessions\.completeGeneration(?!Internal)/,
     )
