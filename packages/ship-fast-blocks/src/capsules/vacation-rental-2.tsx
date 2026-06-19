@@ -826,9 +826,9 @@ export const VacationRentalKimiPage2 = defineCapsule({
                     <div className="flex-1 overflow-y-auto px-6 py-5">
                       {bookings && bookings.length ? (
                         <div className="space-y-5">
-                          {bookings.map((booking: { id: string; propertyTitle: string; totalAmount: string; checkInDate: string; checkOutDate: string; guests: string }) => (
+                          {bookings.map((bookingItem: { id: string; propertyTitle: string; totalAmount: string; checkInDate: string; checkOutDate: string; guests: string }) => (
                             <div
-                              key={booking.id}
+                              key={bookingItem.id}
                               className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
                             >
                               <div className="aspect-square overflow-hidden rounded-lg bg-muted">
@@ -846,17 +846,17 @@ export const VacationRentalKimiPage2 = defineCapsule({
                                       {brand}
                                     </p>
                                     <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
-                                      {booking.propertyTitle}
+                                      {bookingItem.propertyTitle}
                                     </h3>
                                   </div>
                                   <p className="text-sm font-bold text-foreground">
-                                    {booking.totalAmount}
+                                    {bookingItem.totalAmount}
                                   </p>
                                 </div>
                                 <div className="mt-4 space-y-1 text-sm text-muted-foreground">
-                                  <p>Check in: {booking.checkInDate}</p>
-                                  <p>Check out: {booking.checkOutDate}</p>
-                                  <p>Guests: {booking.guests}</p>
+                                  <p>Check in: {bookingItem.checkInDate}</p>
+                                  <p>Check out: {bookingItem.checkOutDate}</p>
+                                  <p>Guests: {bookingItem.guests}</p>
                                 </div>
                                 <div className="mt-4">
                                   <Button
@@ -864,7 +864,7 @@ export const VacationRentalKimiPage2 = defineCapsule({
                                     variant="outline"
                                     size="sm"
                                     className="w-full rounded-full"
-                                    onClick={() => void cancelBooking(booking.id)}
+                                    onClick={() => void cancelBooking(bookingItem.id)}
                                   >
                                     Cancel Booking
                                   </Button>

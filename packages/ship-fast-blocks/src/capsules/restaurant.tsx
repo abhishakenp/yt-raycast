@@ -549,7 +549,7 @@ export const RestaurantKimiPage = defineCapsule({
       </svg>
     )
 
-    const ChevronDown = () => (
+    const ChevronDownIcon = () => (
       <svg
         className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
         fill="none"
@@ -727,7 +727,7 @@ export const RestaurantKimiPage = defineCapsule({
                       <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
                         {authDisplayName}
                       </span>
-                      <ChevronDown />
+                      <ChevronDownIcon />
                     </button>
                   </PopoverTrigger>
                   <PopoverContent
@@ -1054,7 +1054,7 @@ export const RestaurantKimiPage = defineCapsule({
               className="absolute bottom-8 left-1/2 flex -translate-x-1/2 animate-bounce flex-col items-center gap-2 text-xs font-medium tracking-wider text-background/50 uppercase"
             >
               <span>Scroll</span>
-              <ChevronDown className="size-4" />
+              <ChevronDownIcon className="size-4" />
             </button>
           </section>
 

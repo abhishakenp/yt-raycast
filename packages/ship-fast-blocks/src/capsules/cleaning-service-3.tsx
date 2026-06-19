@@ -663,7 +663,7 @@ export const CleaningServiceKimiPage3 = defineCapsule({
                   <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
-                      {section.items.map((item, index) => (
+                      {section.items.map((item, itemIndex) => (
                         <div
                           key={item}
                           className="flex items-center justify-between rounded-md border border-border bg-background p-3"
@@ -679,15 +679,15 @@ export const CleaningServiceKimiPage3 = defineCapsule({
                             type="button"
                             onClick={() =>
                               handleAddToBooking(
-                                index === 1
+                                itemIndex === 1
                                   ? "Recurring Maid Service"
-                                  : index === 2
+                                  : itemIndex === 2
                                     ? "Deep & Spring Cleaning"
                                     : item,
                                 section.body,
-                                index === 1
+                                itemIndex === 1
                                   ? "$129"
-                                  : index === 2
+                                  : itemIndex === 2
                                     ? "$189"
                                     : "$149",
                                 hero.imageAlt,
