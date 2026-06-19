@@ -253,11 +253,11 @@ export const DocsKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [activityOpen, setActivityOpen] = useState(false)
-    const goToBrand = nav[0]
     const brand = props.brand ?? "StackForge"
     const nav = props.nav?.length
       ? props.nav
       : ["Getting Started", "API Reference", "SDKs", "Changelog"]
+    const goToBrand = nav[0]
 
     const auth = lakebed.useAuth()
     const isSignedIn = auth.isAuthenticated && !auth.isGuest

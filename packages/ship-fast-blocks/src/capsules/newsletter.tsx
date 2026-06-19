@@ -316,7 +316,7 @@ export const NewsletterKimiPage = defineCapsule({
         ]
 
     const displayStats =
-      subscriberCount !== undefined
+      typeof subscriberCount === "number"
         ? [
             { value: `${subscriberCount.toLocaleString()}+`, label: "Subscribers" },
             ...staticStats.slice(1),

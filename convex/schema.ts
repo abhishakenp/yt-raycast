@@ -23,6 +23,7 @@ const exportTarget = v.union(
   v.literal('html'),
   v.literal('react'),
   v.literal('next'),
+  v.literal('lakebed'),
 )
 
 const provider = v.union(v.literal('stripe'), v.literal('razorpay'))
@@ -226,13 +227,32 @@ export default defineSchema({
     slug: v.string(),
     url: v.string(),
     status: v.union(v.literal('ready'), v.literal('failed')),
+    provider: v.optional(v.union(v.literal('ship-fast'), v.literal('lakebed'))),
     previewVersion: v.optional(v.number()),
+    lakebedDeployId: v.optional(v.string()),
+    lakebedClaimUrl: v.optional(v.string()),
+    lakebedArtifactHash: v.optional(v.string()),
+    lakebedClientBundleHash: v.optional(v.string()),
+    lakebedClientBundleBytes: v.optional(v.number()),
+    lakebedRequestBodyBytes: v.optional(v.number()),
+    lakebedServerBundleBytes: v.optional(v.number()),
+    lakebedSourceFileCount: v.optional(v.number()),
+    lakebedExpiresAt: v.optional(v.string()),
+    lakebedInspectPolicy: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
     errorMessage: v.optional(v.string()),
   })
     .index('by_sessionId', ['sessionId'])
     .index('by_slug', ['slug']),
+
+  lakebedDeploymentPayloadChunks: defineTable({
+    batchId: v.string(),
+    chunk: v.string(),
+    createdAt: v.number(),
+    index: v.number(),
+    sessionId: v.id('sessions'),
+  }).index('by_batchId_index', ['batchId', 'index']),
 
   cmsConfigs: defineTable({
     sessionId: v.id('sessions'),

@@ -217,45 +217,6 @@ export const MenuKimiPage5 = defineCapsule({
       lakebed.signOut()
     }
 
-    const normalizedMenuItems = sections
-      .flatMap((section) =>
-        (section.items ?? []).map((item) => ({
-          name: item,
-          category: section.title,
-          description: section.body,
-          alt: hero.imageAlt,
-          image: '',
-          price: '$8.99',
-        })),
-      )
-      .concat(
-        gallery.map((item) => ({
-          name: item.title,
-          category: 'Gallery',
-          description: item.caption ?? '',
-          alt: item.alt,
-          image: '',
-          price: '$12.99',
-        })),
-      )
-
-    const displayMenuItems =
-      storedMenuItems && storedMenuItems.length > 0
-        ? storedMenuItems
-        : normalizedMenuItems
-
-    const safeOrderLines = orderLines ?? []
-    const orderItemCount = safeOrderLines.reduce(
-      (total, item) => total + item.quantity,
-      0,
-    )
-    const orderSubtotal = safeOrderLines.reduce(
-      (total, item) => total + priceAmount(item.menuItem.price) * item.quantity,
-      0,
-    )
-    const deliveryFee = orderSubtotal > 0 && orderSubtotal < 25 ? 5 : 0
-    const orderTotal = orderSubtotal + deliveryFee
-
     const ChevronDown = () => (
       <svg
         className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
@@ -382,6 +343,45 @@ export const MenuKimiPage5 = defineCapsule({
     "caption": "Menu generated page detail"
   }
 ]
+
+    const normalizedMenuItems = sections
+      .flatMap((section) =>
+        (section.items ?? []).map((item) => ({
+          name: item,
+          category: section.title,
+          description: section.body,
+          alt: hero.imageAlt,
+          image: '',
+          price: '$8.99',
+        })),
+      )
+      .concat(
+        gallery.map((item) => ({
+          name: item.title,
+          category: 'Gallery',
+          description: item.caption ?? '',
+          alt: item.alt,
+          image: '',
+          price: '$12.99',
+        })),
+      )
+
+    const displayMenuItems =
+      storedMenuItems && storedMenuItems.length > 0
+        ? storedMenuItems
+        : normalizedMenuItems
+
+    const safeOrderLines = orderLines ?? []
+    const orderItemCount = safeOrderLines.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+    const orderSubtotal = safeOrderLines.reduce(
+      (total, item) => total + priceAmount(item.menuItem.price) * item.quantity,
+      0,
+    )
+    const deliveryFee = orderSubtotal > 0 && orderSubtotal < 25 ? 5 : 0
+    const orderTotal = orderSubtotal + deliveryFee
 
     return (
       <div className={cn("min-h-screen bg-background text-foreground", props.className)}>

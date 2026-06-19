@@ -228,15 +228,14 @@ export const AnalyticsKimiPage = defineCapsule({
           "Notifications",
           "Settings",
         ]
-    const notificationCount =
-      (unreadNotificationCount ?? 0) > 0
-        ? String(unreadNotificationCount)
-        : props.notificationCount ?? "3"
-
     // Lakebed queries and mutations
     const storedTransactions = lakebed.useQuery('transactions')
     const storedNotifications = lakebed.useQuery('notifications')
     const unreadNotificationCount = lakebed.useQuery('unreadNotificationCount')
+    const notificationCount =
+      (unreadNotificationCount ?? 0) > 0
+        ? String(unreadNotificationCount)
+        : props.notificationCount ?? "3"
     const markNotificationRead = lakebed.useMutation('markNotificationRead')
     const clearAllNotifications = lakebed.useMutation('clearAllNotifications')
     const addTransaction = lakebed.useMutation('addTransaction')

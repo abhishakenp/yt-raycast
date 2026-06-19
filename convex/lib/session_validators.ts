@@ -4,6 +4,7 @@ export const exportTarget = v.union(
   v.literal('html'),
   v.literal('react'),
   v.literal('next'),
+  v.literal('lakebed'),
 )
 
 export const engineTaskStatus = v.union(
@@ -105,6 +106,29 @@ export const claimAnonymousArgs = {
 export const publishPreviewArgs = {
   ...ownedSessionArgs,
   requestedSlug: v.optional(v.string()),
+}
+
+export const lakebedDeploymentSuccessArgs = {
+  sessionId: v.id('sessions'),
+  requestedSlug: v.optional(v.string()),
+  previewVersion: v.number(),
+  url: v.string(),
+  deployId: v.string(),
+  claimUrl: v.optional(v.string()),
+  artifactHash: v.string(),
+  clientBundleHash: v.string(),
+  clientBundleBytes: v.number(),
+  requestBodyBytes: v.number(),
+  serverBundleBytes: v.number(),
+  sourceFileCount: v.number(),
+  expiresAt: v.optional(v.string()),
+  inspectPolicy: v.optional(v.string()),
+}
+
+export const lakebedDeploymentFailureArgs = {
+  sessionId: v.id('sessions'),
+  requestedSlug: v.optional(v.string()),
+  errorMessage: v.string(),
 }
 
 export const exportRecordArgs = {

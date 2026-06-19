@@ -45,6 +45,8 @@ describe('generated OpenUI artifact provenance', () => {
     expect(provenance.outputs).toEqual([
       'src/generated/react-export-sources.json',
       'src/generated/react-export-sources.compressed.ts',
+      'src/generated/block-source-files.compressed.ts',
+      'src/generated/vendor-source-files.compressed.ts',
       'src/generated/runtime-component-loaders.ts',
       'src/generated/runtime-component-names.ts',
       'src/generated/react-export-sources.provenance.json',
@@ -72,6 +74,8 @@ describe('generated OpenUI artifact provenance', () => {
   it('marks generated TypeScript artifacts with the generator that owns them', () => {
     for (const output of [
       'src/generated/react-export-sources.compressed.ts',
+      'src/generated/block-source-files.compressed.ts',
+      'src/generated/vendor-source-files.compressed.ts',
       'src/generated/runtime-component-loaders.ts',
       'src/generated/runtime-component-names.ts',
     ]) {

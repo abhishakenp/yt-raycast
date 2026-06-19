@@ -220,7 +220,7 @@ export const BlogPostKimiPage3 = defineCapsule({
     const bookmarkedTitles = new Set(bookmarks?.map((b) => b.sectionTitle) ?? [])
     const safeBookmarks = bookmarks ?? []
     const bookmarkCount = safeBookmarks.length
-    const readProgressMap = new Map(readProgress?.map((rp) => [rp.sectionTitle, rp.completed]) ?? {})
+    const readProgressMap = new Map(readProgress?.map((rp) => [rp.sectionTitle, rp.completed]) ?? [])
 
     const ChevronDown = () => (
       <svg

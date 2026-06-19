@@ -13,6 +13,7 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
+  SheetTrigger,
 } from "#/components/ui/sheet.tsx"
 
 const priceAmount = (price: string) => {
