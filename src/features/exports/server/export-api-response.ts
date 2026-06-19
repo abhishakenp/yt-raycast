@@ -4,11 +4,11 @@ import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { createExportResponse } from './create-export-response'
 
-type ExportTarget = 'html' | 'react' | 'next'
+type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
 type ExportApiClient = Pick<ConvexHttpClient, 'query' | 'mutation'> &
   Partial<Pick<ConvexHttpClient, 'setAuth'>>
 
-const EXPORT_TARGETS: ExportTarget[] = ['html', 'react', 'next']
+const EXPORT_TARGETS: ExportTarget[] = ['html', 'react', 'next', 'lakebed']
 
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), {
@@ -106,7 +106,9 @@ export const createExportTargetsResponse = async (
               ? 'HTML'
               : target === 'react'
                 ? 'React'
-                : 'Next.js',
+                : target === 'next'
+                  ? 'Next.js'
+                  : 'Lakebed',
           ready,
           status: isStale
             ? 'stale'
@@ -142,7 +144,7 @@ export const createSessionExportResponse = async (
     const target = normalizeTarget(body.target ?? body.exportTarget)
     if (target === null) {
       return json(
-        { error: 'Export target must be html, react, or next.' },
+        { error: 'Export target must be html, react, next, or lakebed.' },
         { status: 400 },
       )
     }

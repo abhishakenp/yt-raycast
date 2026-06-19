@@ -9,7 +9,6 @@ export const PROMPT_SUGGEST_MIN_CHARS = 2
 export const PROMPT_SUGGEST_MAX_SHOW = 4
 export const PROMPT_SUGGEST_DEBOUNCE_MS = 380
 export const PREFERRED_LANGUAGE_KEY = 'sf_preferred_language'
-export const GITHUB_TOKEN_STORAGE_KEY = 'sf_github_access_token'
 export const SUBMIT_BTN_DEFAULT_LABEL = 'Generate'
 
 export const isLocalDevHost = () =>

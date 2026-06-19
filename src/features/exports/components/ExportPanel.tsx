@@ -1,8 +1,12 @@
 import {
+  Code2,
   Download,
+  FileArchive,
+  LoaderCircle,
   Lock,
   PackageCheck,
-  RefreshCw,
+  PanelsTopLeft,
+  Server,
   TriangleAlert,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -12,7 +16,7 @@ import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 
 type ExportTarget = {
-  target: 'html' | 'react' | 'next'
+  target: 'html' | 'react' | 'next' | 'lakebed'
   label: string
   ready: boolean
   status: string
@@ -28,7 +32,22 @@ type ExportPanelProps = {
 }
 
 const targetLabel = (target: ExportTarget['target']): string =>
-  target === 'html' ? 'HTML' : target === 'react' ? 'React' : 'Next.js'
+  target === 'html'
+    ? 'HTML'
+    : target === 'react'
+      ? 'React'
+      : target === 'next'
+        ? 'Next.js'
+        : 'Lakebed'
+
+const targetSummary = (target: ExportTarget['target']): string =>
+  target === 'html'
+    ? 'Static site bundle'
+    : target === 'react'
+      ? 'React client-only app'
+      : target === 'next'
+        ? 'Next.js full-stack project'
+        : 'Lakebed project bundle'
 
 const statusLabel = (target: ExportTarget): string => {
   if (target.requiresPayment) return 'Payment required'
@@ -68,7 +87,7 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
     if (ownerSecret) headers['x-ship-fast-owner-secret'] = ownerSecret
 
     if (isSignedIn) {
-      const token = await getToken()
+      const token = await getToken({ template: 'convex' })
       if (token) headers.Authorization = `Bearer ${token}`
     }
 
@@ -93,6 +112,37 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
     })
   }, [sessionId])
 
+  const downloadFromUrl = async (
+    downloadUrl: string,
+    target: ExportTarget['target'],
+  ) => {
+    setDownloadingTarget(target)
+    try {
+      const response = await fetch(downloadUrl, {
+        headers: await createAuthHeaders(),
+      })
+      if (!response.ok) {
+        const message = await response.text()
+        throw new Error(message || 'Download failed')
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const anchor = document.createElement('a')
+      anchor.href = url
+      anchor.download = readDownloadFilename(
+        response,
+        `ship-fast-${sessionId}-${target}.zip`,
+      )
+      document.body.append(anchor)
+      anchor.click()
+      anchor.remove()
+      window.URL.revokeObjectURL(url)
+    } finally {
+      setDownloadingTarget(undefined)
+    }
+  }
+
   const createExport = async (target: ExportTarget['target']) => {
     setError(undefined)
     setIsLoading(true)
@@ -112,10 +162,12 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
       const data = await response.json()
       if (!response.ok) throw new Error(data?.error ?? 'Export failed')
       await loadTargets()
+      return data as { downloadUrl?: unknown }
     } catch (exportError) {
       setError(
         exportError instanceof Error ? exportError.message : 'Export failed',
       )
+      return {}
     } finally {
       setIsLoading(false)
       setActiveTarget(undefined)
@@ -126,44 +178,36 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
     if (!item.downloadUrl || item.requiresPayment) return
 
     setError(undefined)
-    setDownloadingTarget(item.target)
-
     try {
-      const response = await fetch(item.downloadUrl, {
-        headers: await createAuthHeaders(),
-      })
-      if (!response.ok) {
-        const message = await response.text()
-        throw new Error(message || 'Download failed')
-      }
-
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const anchor = document.createElement('a')
-      anchor.href = url
-      anchor.download = readDownloadFilename(
-        response,
-        `ship-fast-${sessionId}-${item.target}.zip`,
-      )
-      document.body.append(anchor)
-      anchor.click()
-      anchor.remove()
-      window.URL.revokeObjectURL(url)
+      await downloadFromUrl(item.downloadUrl, item.target)
     } catch (downloadError) {
       setError(
         downloadError instanceof Error
           ? downloadError.message
           : 'Download failed',
       )
-    } finally {
-      setDownloadingTarget(undefined)
+    }
+  }
+
+  const runTargetAction = async (item: ExportTarget) => {
+    if (item.requiresPayment) {
+      await createExport(item.target)
+      return
+    }
+    if (item.ready && item.downloadUrl) {
+      await downloadExport(item)
+      return
+    }
+    const result = await createExport(item.target)
+    if (typeof result.downloadUrl === 'string') {
+      await downloadFromUrl(result.downloadUrl, item.target)
     }
   }
 
   const visibleTargets =
     targets.length > 0
       ? targets
-      : (['html', 'react', 'next'] as const).map((target) => ({
+      : (['html', 'react', 'next', 'lakebed'] as const).map((target) => ({
           target,
           label: targetLabel(target),
           ready: false,
@@ -174,96 +218,95 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
         }))
 
   return (
-    <div className="grid gap-4">
-      <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3">
+    <div className="grid gap-3">
+      <div className="grid gap-1 px-1">
         <div className="flex items-center gap-2">
           <Download className="size-4 text-cyan-200" />
-          <div>
-            <h2 className="m-0 text-sm font-semibold uppercase tracking-[0.1em] text-white">
-              Export
-            </h2>
-            <p className="m-0 mt-1 text-xs leading-5 text-white/48">
-              Generate downloadable ZIP bundles from this preview.
-            </p>
-          </div>
+          <h2 className="m-0 text-sm font-semibold text-white">
+            Project Export
+          </h2>
         </div>
-        <button
-          className="grid size-9 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-white/62 hover:bg-white/[0.08] hover:text-white"
-          onClick={() => void loadTargets()}
-          type="button"
-          aria-label="Refresh export targets"
-        >
-          <RefreshCw className="size-4" />
-        </button>
+        <p className="m-0 text-xs leading-5 text-white/52">
+          Ship this exact UI in the stack you need.
+        </p>
       </div>
 
-      <div className="grid gap-3">
-        {visibleTargets.map((item) => (
-          <section
-            className="grid gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-3"
-            key={item.target}
-          >
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h3 className="m-0 text-sm font-semibold text-white">
+      <div className="grid gap-1.5">
+        {visibleTargets.map((item) => {
+          const Icon =
+            item.target === 'html'
+              ? FileArchive
+              : item.target === 'react'
+                ? Code2
+                : item.target === 'next'
+                  ? PanelsTopLeft
+                  : Server
+          const isBusy =
+            (isLoading && activeTarget === item.target) ||
+            downloadingTarget === item.target
+          const actionLabel = item.requiresPayment
+            ? 'Check Access'
+            : item.ready
+              ? 'Ready To Download'
+              : 'Build Export'
+          const statusText = isBusy
+            ? 'Building Downloads...'
+            : statusLabel(item)
+
+          return (
+            <button
+              className="group/export grid min-h-16 w-full grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-white/8 bg-white/[0.04] p-2.5 text-left transition-colors hover:border-white/14 hover:bg-white/[0.075] disabled:cursor-wait disabled:opacity-60"
+              data-export-target={item.target}
+              disabled={isLoading || downloadingTarget !== undefined}
+              key={item.target}
+              onClick={() => void runTargetAction(item)}
+              type="button"
+            >
+              <span
+                className="export-target-glyph grid size-[42px] shrink-0 place-items-center rounded-[10px] border border-white/10 bg-black/24 text-white/70 transition-colors group-hover/export:border-white/16 group-hover/export:bg-white/[0.06] group-hover/export:text-white"
+                aria-hidden="true"
+              >
+                {isBusy ? (
+                  <LoaderCircle
+                    className="size-4 animate-spin"
+                    strokeWidth={1.8}
+                  />
+                ) : (
+                  <Icon className="size-4" strokeWidth={1.8} />
+                )}
+              </span>
+              <span className="grid min-w-0 gap-0.5">
+                <span className="truncate text-sm font-semibold text-white">
                   {item.label}
-                </h3>
-                <p className="m-0 mt-1 font-mono text-[10px] uppercase tracking-[0.08em] text-white/42">
-                  {statusLabel(item)}
-                </p>
-              </div>
-              {item.requiresPayment ? (
-                <Lock className="size-5 text-amber-300" />
-              ) : item.status === 'stale' ? (
-                <TriangleAlert className="size-5 text-amber-200" />
-              ) : (
-                <PackageCheck
-                  className={
-                    item.ready
-                      ? 'size-5 text-emerald-300'
-                      : 'size-5 text-white/28'
-                  }
-                />
-              )}
-            </div>
-            {item.requiresPayment && (
-              <p className="m-0 rounded-xl border border-amber-300/18 bg-amber-300/10 px-3 py-2 text-xs leading-5 text-amber-100/82">
-                Subscribe to Pro or use a download credit to unlock a badge-free
-                ZIP.
-              </p>
-            )}
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                className="min-h-9 rounded-full bg-cyan-300 px-3 py-2 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-45"
-                disabled={isLoading}
-                onClick={() => void createExport(item.target)}
-                type="button"
-              >
-                {isLoading && activeTarget === item.target
-                  ? 'Generating...'
-                  : item.requiresPayment
-                    ? 'Check access'
-                    : item.ready
-                      ? 'Regenerate'
-                      : 'Generate'}
-              </button>
-              <button
-                className="grid min-h-9 place-items-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-white/70 disabled:cursor-not-allowed disabled:opacity-40"
-                disabled={
-                  !item.downloadUrl ||
-                  item.requiresPayment ||
-                  downloadingTarget === item.target
-                }
-                onClick={() => void downloadExport(item)}
-                type="button"
-              >
-                {downloadingTarget === item.target
-                  ? 'Downloading...'
-                  : 'Download'}
-              </button>
-            </div>
-          </section>
-        ))}
+                </span>
+                <span className="truncate text-xs text-white/46">
+                  {targetSummary(item.target)}
+                </span>
+                <span className="truncate font-mono text-[10px] uppercase tracking-[0.08em] text-white/36">
+                  {statusText}
+                </span>
+              </span>
+              <span className="export-target-state flex items-center gap-2">
+                {item.requiresPayment ? (
+                  <Lock className="size-4 text-amber-300" />
+                ) : item.status === 'stale' ? (
+                  <TriangleAlert className="size-4 text-amber-200" />
+                ) : (
+                  <PackageCheck
+                    className={
+                      item.ready
+                        ? 'size-4 text-emerald-300'
+                        : 'size-4 text-white/28'
+                    }
+                  />
+                )}
+                <span className="hidden rounded-md border border-white/10 bg-white/[0.06] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-white/46 sm:inline">
+                  {actionLabel}
+                </span>
+              </span>
+            </button>
+          )
+        })}
       </div>
 
       {error && (

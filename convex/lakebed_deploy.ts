@@ -98,25 +98,23 @@ export const deploy = action({
 
       const buildStartedAt = Date.now()
       const sourceKind = prepared.sourceKind ?? 'openui'
-      logLakebedDeploy(prepared.sessionId, 'project-build:start', { sourceKind })
-      const [{ deployLakebedProjectFiles }, projectBuilder] = await Promise.all([
-        import('../src/features/deployments/server/lakebed-deploy-service'),
-        sourceKind === 'html'
-          ? import(
-              '../src/features/deployments/server/lakebed-static-project-builder'
-            )
-          : import(
-              '../src/features/exports/services/openui-lakebed-export-builder'
-            ),
-      ])
+      logLakebedDeploy(prepared.sessionId, 'project-build:start', {
+        sourceKind,
+      })
+      const [{ deployLakebedProjectFiles }, staticBuilder, openUIBuilder] =
+        await Promise.all([
+          import('../src/features/deployments/server/lakebed-deploy-service'),
+          import('../src/features/deployments/server/lakebed-static-project-builder'),
+          import('../src/features/exports/services/openui-lakebed-export-builder'),
+        ])
       const project =
         sourceKind === 'html'
-          ? await projectBuilder.buildStaticLakebedProjectFiles({
+          ? await staticBuilder.buildStaticLakebedProjectFiles({
               source: prepared.source,
               siteSpecJson: prepared.siteSpecJson,
               previewHtml: prepared.previewHtml,
             })
-          : await projectBuilder.buildOpenUILakebedProjectFiles({
+          : await openUIBuilder.buildOpenUILakebedProjectFiles({
               source: prepared.source,
               siteSpecJson: prepared.siteSpecJson,
               previewHtml: prepared.previewHtml,
@@ -129,7 +127,7 @@ export const deploy = action({
         fileCount: project.fileCount,
         projectName: project.projectName,
         totalBytes: Object.values(project.files).reduce(
-          (sum, contents) => sum + contents.length,
+          (sum, contents) => sum + (contents as string).length,
           0,
         ),
         elapsedMs: Date.now() - buildStartedAt,
@@ -142,7 +140,11 @@ export const deploy = action({
       const deployed = await deployLakebedProjectFiles({
         files: project.files,
         log: (message, details) =>
-          logLakebedDeploy(prepared.sessionId, `lakebed-api:${message}`, details),
+          logLakebedDeploy(
+            prepared!.sessionId,
+            `lakebed-api:${message}`,
+            details,
+          ),
       })
       logLakebedDeploy(prepared.sessionId, 'lakebed-api:complete', {
         clientBundleBytes: deployed.clientBundleBytes,

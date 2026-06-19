@@ -13,7 +13,6 @@ import {
   Github,
   Globe2,
   Languages,
-  List,
   MessageSquare,
   Package,
   Palette,
@@ -51,46 +50,6 @@ import ThemePicker from '@/genui/components/ThemePicker'
 import { resolveThemeStyles } from '@/genui/theme-apply'
 import { cn } from '#/lib/utils'
 
-const ActivityPanel = lazy(() =>
-  import('@/features/dashboard/components/ActivityPanel').then((module) => ({
-    default: module.ActivityPanel,
-  })),
-)
-const AgentationPanel = lazy(() =>
-  import('@/features/agentation/components/AgentationPanel').then((module) => ({
-    default: module.AgentationPanel,
-  })),
-)
-const BillingPanel = lazy(() =>
-  import('@/features/billing/components/BillingPanel').then((module) => ({
-    default: module.BillingPanel,
-  })),
-)
-const BrandMediaPanel = lazy(() =>
-  import('@/features/brand/components/BrandMediaPanel').then((module) => ({
-    default: module.BrandMediaPanel,
-  })),
-)
-const ChatPanel = lazy(() =>
-  import('@/features/chat/components/ChatPanel').then((module) => ({
-    default: module.ChatPanel,
-  })),
-)
-const CmsPanel = lazy(() =>
-  import('@/features/cms/components/CmsPanel').then((module) => ({
-    default: module.CmsPanel,
-  })),
-)
-const CommercePanel = lazy(() =>
-  import('@/features/commerce/components/CommercePanel').then((module) => ({
-    default: module.CommercePanel,
-  })),
-)
-const EcommercifyTransformOverlay = lazy(() =>
-  import('@/features/commerce/components/EcommercifyTransformOverlay').then(
-    (module) => ({ default: module.EcommercifyTransformOverlay }),
-  ),
-)
 const LakebedAdminPanel = lazy(() =>
   import('@/features/admin/components/LakebedAdminPanel').then((module) => ({
     default: module.LakebedAdminPanel,
@@ -113,14 +72,6 @@ const GitHubPanel = lazy(() =>
     default: module.GitHubPanel,
   })),
 )
-const LocalizationPanel = lazy(() =>
-  import('@/features/localization/components/LocalizationPanel').then(
-    (module) => ({
-      default: module.LocalizationPanel,
-    }),
-  ),
-)
-
 interface DashboardProps {
   sessionId: string
   initialAdminView?: boolean
@@ -180,20 +131,6 @@ type DashboardGenerationView = {
     updatedAt?: number
   }>
 }
-
-type RailMode =
-  | 'tools'
-  | 'cms'
-  | 'chat'
-  | 'annotations'
-  | 'activity'
-  | 'brand'
-  | 'localization'
-  | 'commerce'
-  | 'deployment'
-  | 'export'
-  | 'billing'
-  | 'github'
 
 const crownIcon = (
   <Crown className="size-3" strokeWidth={2.2} aria-hidden="true" />
@@ -272,7 +209,7 @@ const readSiteThemeName = (specJson: string | undefined): string | null => {
   }
 }
 
-const RailPanelFallback = () => (
+const ToolPopoverFallback = () => (
   <div className="grid gap-3" aria-hidden="true">
     <div className="h-7 w-1/2 rounded-lg bg-white/[0.08]" />
     <div className="h-24 rounded-xl border border-white/8 bg-white/[0.045]" />
@@ -369,7 +306,6 @@ export function Dashboard({
     'desktop' | 'tablet' | 'mobile'
   >('desktop')
   const [editMode, setEditMode] = useState(false)
-  const [railMode, setRailMode] = useState<RailMode>('tools')
   const [agentationEnabled] = useState(false)
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
   const [imageSwapState, setImageSwapState] = useState<{
@@ -395,7 +331,6 @@ export function Dashboard({
   const [isDark, setIsDark] = useState(true)
   const [isAdminActive, setIsAdminActive] = useState(initialAdminView)
   const [isPublishing, setIsPublishing] = useState(false)
-  const [isCommerceTransforming, setIsCommerceTransforming] = useState(false)
   const [publishError, setPublishError] = useState<string>()
   const liveGenerationView = useQuery(api.sessions.getGenerationView, {
     lookup: sessionId,
@@ -717,28 +652,6 @@ export function Dashboard({
   const currentUrl = isAdminActive
     ? `${basePreviewUrl.replace(/\/+$/, '')}/admin`
     : basePreviewUrl
-  const railModeTitle =
-    railMode === 'cms'
-      ? 'Content'
-      : railMode === 'chat'
-        ? 'Chat refine'
-        : railMode === 'annotations'
-          ? 'Annotations'
-          : railMode === 'activity'
-            ? 'Activity'
-            : railMode === 'brand'
-              ? 'Brand and media'
-              : railMode === 'localization'
-                ? 'Localization'
-                : railMode === 'commerce'
-                  ? 'Medusa commerce'
-                  : railMode === 'deployment'
-                    ? 'Deployment'
-                    : railMode === 'billing'
-                      ? 'Billing'
-                      : railMode === 'github'
-                        ? 'GitHub'
-                        : 'Export'
 
   const handlePublish = async () => {
     if (resolvedSessionId === undefined) return
@@ -1313,7 +1226,7 @@ export function Dashboard({
                       anonymousOwnerSecret={activeAnonymousOwnerSecret}
                       sessionId={activeSessionId}
                     >
-                      <Suspense fallback={<RailPanelFallback />}>
+                      <Suspense fallback={<ToolPopoverFallback />}>
                         <LakebedAdminPanel />
                       </Suspense>
                     </LakebedSessionProvider>
@@ -1361,11 +1274,6 @@ export function Dashboard({
                             onElementActivate={handleElementActivate}
                           />
                         ) : null}
-                        {isCommerceTransforming ? (
-                          <Suspense fallback={null}>
-                            <EcommercifyTransformOverlay />
-                          </Suspense>
-                        ) : null}
                       </div>
                     </div>
                   )}
@@ -1374,18 +1282,12 @@ export function Dashboard({
               <aside
                 className={cn(
                   'relative flex min-h-0 flex-col border-l border-white/10 bg-[#0c1018]/92 max-[1100px]:hidden',
-                  railMode !== 'tools' && 'bg-[#0d111b]/96',
                   (isAdminActive || isMissingSession) && 'hidden',
                 )}
                 id="preview-site-rail"
                 aria-label="Site tools"
               >
-                <div
-                  className={cn(
-                    'flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto p-4',
-                    railMode !== 'tools' && 'hidden',
-                  )}
-                >
+                <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto p-4">
                   <div className="grid gap-2">
                     <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">
                       Manage content
@@ -1397,7 +1299,6 @@ export function Dashboard({
                         'border-white/20 bg-[linear-gradient(135deg,#ff7a68_0%,#ef3e2d_55%,#b9251a_100%)] text-white shadow-[0_8px_20px_-10px_rgba(239,62,45,0.55)] hover:border-white/30 hover:bg-[linear-gradient(135deg,#ff8876_0%,#f04d3c_55%,#c62b20_100%)]',
                       )}
                       data-rail-action="cms-studio"
-                      onClick={() => setRailMode('cms')}
                     >
                       <span
                         className="grid size-7 shrink-0 place-items-center text-white transition-transform duration-150 group-hover:-translate-y-px"
@@ -1433,7 +1334,6 @@ export function Dashboard({
                       type="button"
                       className={railRowClass}
                       data-rail-action="chat"
-                      onClick={() => setRailMode('chat')}
                     >
                       <span className={railIconClass} aria-hidden="true">
                         <MessageSquare className="size-3.5" strokeWidth={1.9} />
@@ -1447,7 +1347,6 @@ export function Dashboard({
                       type="button"
                       className={railRowClass}
                       data-rail-action="annotations"
-                      onClick={() => setRailMode('annotations')}
                     >
                       <span className={railIconClass} aria-hidden="true">
                         <Bot className="size-3.5" strokeWidth={1.9} />
@@ -1460,7 +1359,6 @@ export function Dashboard({
                       type="button"
                       className={railRowClass}
                       data-rail-action="activity"
-                      onClick={() => setRailMode('activity')}
                     >
                       <span className={railIconClass} aria-hidden="true">
                         <Activity className="size-3.5" strokeWidth={1.9} />
@@ -1471,7 +1369,6 @@ export function Dashboard({
                       type="button"
                       className={railRowClass}
                       data-rail-action="ecommerce"
-                      onClick={() => setRailMode('commerce')}
                     >
                       <span className={railIconClass} aria-hidden="true">
                         <Package className="size-3.5" strokeWidth={1.9} />
@@ -1547,7 +1444,6 @@ export function Dashboard({
                       type="button"
                       className={railRowClass}
                       data-rail-action="brand-media"
-                      onClick={() => setRailMode('brand')}
                     >
                       <span className={railIconClass} aria-hidden="true">
                         <Building2 className="size-3.5" strokeWidth={1.9} />
@@ -1563,7 +1459,6 @@ export function Dashboard({
                       type="button"
                       className={railRowClass}
                       data-rail-action="localization"
-                      onClick={() => setRailMode('localization')}
                     >
                       <span className={railIconClass} aria-hidden="true">
                         <Languages className="size-3.5" strokeWidth={1.9} />
@@ -1576,29 +1471,44 @@ export function Dashboard({
                         </span>
                       </span>
                     </button>
-                    <button
-                      type="button"
-                      className={railRowClass}
-                      data-rail-action="github"
-                      onClick={() => setRailMode('github')}
-                    >
-                      <span className={railIconClass} aria-hidden="true">
-                        <Github className="size-3.5" strokeWidth={1.9} />
-                      </span>
-                      <span className="min-w-0 flex-1 truncate">GitHub</span>
-                      <span
-                        className={premiumBadgeClass}
-                        aria-label="Pro only - upgrade to unlock"
-                        tabIndex={0}
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className={railRowClass}
+                          data-rail-action="github"
+                          aria-haspopup="dialog"
+                        >
+                          <span className={railIconClass} aria-hidden="true">
+                            <Github className="size-3.5" strokeWidth={1.9} />
+                          </span>
+                          <span className="min-w-0 flex-1 truncate">
+                            GitHub
+                          </span>
+                          <span
+                            className={premiumBadgeClass}
+                            aria-label="Pro only - upgrade to unlock"
+                            tabIndex={0}
+                          >
+                            {crownIcon}
+                          </span>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        align="start"
+                        side="left"
+                        sideOffset={12}
+                        className="z-[140] w-[min(360px,calc(100vw-24px))] border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
                       >
-                        {crownIcon}
-                      </span>
-                    </button>
+                        <Suspense fallback={<ToolPopoverFallback />}>
+                          <GitHubPanel sessionId={sessionId} />
+                        </Suspense>
+                      </PopoverContent>
+                    </Popover>
                     <button
                       type="button"
                       className={railRowClass}
                       data-rail-action="billing"
-                      onClick={() => setRailMode('billing')}
                     >
                       <span className={railIconClass} aria-hidden="true">
                         <CreditCard className="size-3.5" strokeWidth={1.9} />
@@ -1612,32 +1522,45 @@ export function Dashboard({
                         {crownIcon}
                       </span>
                     </button>
-                    <button
-                      type="button"
-                      className={railRowClass}
-                      data-rail-action="export"
-                      aria-haspopup="dialog"
-                      onClick={() => setRailMode('export')}
-                    >
-                      <span className={railIconClass} aria-hidden="true">
-                        <Download className="size-3.5" strokeWidth={1.9} />
-                      </span>
-                      <span className="grid min-w-0 flex-1 gap-0.5">
-                        <span className="truncate">Export</span>
-                        <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
-                          HTML / React / Next.js
-                        </span>
-                      </span>
-                      <div
-                        className={cn(
-                          stateBadgeClass,
-                          'bg-[linear-gradient(135deg,#f5d0a8_0%,#e8b86d_100%)]',
-                        )}
-                        data-state="premium"
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className={railRowClass}
+                          data-rail-action="export"
+                          aria-haspopup="dialog"
+                        >
+                          <span className={railIconClass} aria-hidden="true">
+                            <Download className="size-3.5" strokeWidth={1.9} />
+                          </span>
+                          <span className="grid min-w-0 flex-1 gap-0.5">
+                            <span className="truncate">Export</span>
+                            <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
+                              HTML / React / Next.js
+                            </span>
+                          </span>
+                          <div
+                            className={cn(
+                              stateBadgeClass,
+                              'bg-[linear-gradient(135deg,#f5d0a8_0%,#e8b86d_100%)]',
+                            )}
+                            data-state="premium"
+                          >
+                            <span className="text-[#0a0a0b]">Pro only</span>
+                          </div>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        align="start"
+                        side="left"
+                        sideOffset={12}
+                        className="z-[140] w-[min(360px,calc(100vw-24px))] border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
                       >
-                        <span className="text-[#0a0a0b]">Pro only</span>
-                      </div>
-                    </button>
+                        <Suspense fallback={<ToolPopoverFallback />}>
+                          <ExportPanel sessionId={sessionId} />
+                        </Suspense>
+                      </PopoverContent>
+                    </Popover>
                     <Popover>
                       <PopoverTrigger asChild>
                         <button
@@ -1663,7 +1586,7 @@ export function Dashboard({
                         sideOffset={12}
                         className="z-[140] w-80 border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
                       >
-                        <Suspense fallback={<RailPanelFallback />}>
+                        <Suspense fallback={<ToolPopoverFallback />}>
                           <DeploymentPanel sessionId={sessionId} />
                         </Suspense>
                       </PopoverContent>
@@ -1700,143 +1623,6 @@ export function Dashboard({
                       >
                         SOON
                       </span>
-                    </button>
-                  </div>
-                </div>
-                <div
-                  className={cn(
-                    'min-h-0 flex-1 flex-col p-4',
-                    railMode === 'tools' ? 'hidden' : 'flex',
-                  )}
-                  id="preview-site-rail-editor"
-                >
-                  <div className="mb-4 flex items-center gap-3">
-                    <div
-                      className="size-10 rounded-2xl bg-cyan-300/14"
-                      id="rail-editor-thumb"
-                    ></div>
-                    <div className="min-w-0">
-                      <div
-                        className="truncate text-sm font-semibold text-white"
-                        id="rail-editor-label-title"
-                      >
-                        {railModeTitle}
-                      </div>
-                      <div
-                        className="truncate text-xs text-white/42"
-                        id="rail-editor-label-sub"
-                      >
-                        {generationView?.session.status.replaceAll('_', ' ') ??
-                          'loading'}
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    className="mb-4 flex items-center gap-2 text-xs text-white/42"
-                    id="rail-editor-breadcrumb"
-                  >
-                    <button
-                      type="button"
-                      className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-white/70"
-                      data-active="true"
-                      onClick={() => setRailMode('tools')}
-                    >
-                      tools
-                    </button>
-                    <span>/</span>
-                    <span
-                      className="rounded-full border border-cyan-300/16 bg-cyan-300/10 px-3 py-1 text-cyan-100"
-                      data-active="true"
-                    >
-                      {railMode}
-                    </span>
-                  </div>
-                  <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-white/10 bg-black/18">
-                    <div
-                      className="border-b border-white/10 p-2"
-                      id="rail-editor-tabs"
-                    >
-                      <button
-                        type="button"
-                        className="grid size-9 place-items-center rounded-xl bg-cyan-300/12 text-cyan-100"
-                        data-active="true"
-                        aria-label={railMode}
-                      >
-                        <List className="size-[18px]" strokeWidth={1.8} />
-                      </button>
-                    </div>
-                    <div
-                      className="max-h-[calc(100vh-260px)] overflow-y-auto p-4"
-                      id="rail-editor-body"
-                    >
-                      <Suspense fallback={<RailPanelFallback />}>
-                        {railMode === 'cms' ? (
-                          <CmsPanel
-                            sessionId={sessionId}
-                            prompt={generationView?.session.prompt}
-                          />
-                        ) : railMode === 'chat' ? (
-                          <ChatPanel sessionId={sessionId} />
-                        ) : railMode === 'annotations' ? (
-                          <AgentationPanel sessionId={sessionId} />
-                        ) : railMode === 'activity' ? (
-                          <ActivityPanel
-                            status={generationView?.session.status}
-                            elapsed={generationView?.session.elapsed}
-                            tasks={generationView?.tasks}
-                            events={generationView?.events}
-                          />
-                        ) : railMode === 'brand' ? (
-                          <BrandMediaPanel
-                            prompt={generationView?.session.prompt}
-                            cloneUrl={generationView?.session.cloneUrl}
-                            designReferenceNotes={
-                              generationView?.session.designReferenceNotes
-                            }
-                            designReferenceUrls={
-                              generationView?.session.designReferenceUrls
-                            }
-                          />
-                        ) : railMode === 'localization' ? (
-                          <LocalizationPanel
-                            preferredLanguage={
-                              generationView?.session.preferredLanguage
-                            }
-                            prompt={generationView?.session.prompt}
-                          />
-                        ) : railMode === 'commerce' ? (
-                          <CommercePanel
-                            sessionId={sessionId}
-                            onTransformingChange={setIsCommerceTransforming}
-                          />
-                        ) : railMode === 'deployment' ? (
-                          <DeploymentPanel sessionId={sessionId} />
-                        ) : railMode === 'github' ? (
-                          <GitHubPanel sessionId={sessionId} />
-                        ) : railMode === 'billing' ? (
-                          <BillingPanel sessionId={sessionId} />
-                        ) : (
-                          <ExportPanel sessionId={sessionId} />
-                        )}
-                      </Suspense>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex items-center justify-end gap-2">
-                    <button
-                      type="button"
-                      className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/62 transition-colors hover:bg-white/[0.08] hover:text-white"
-                      id="rail-editor-cancel"
-                      onClick={() => setRailMode('tools')}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-full bg-cyan-300 px-4 py-2 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px"
-                      id="rail-editor-done"
-                      onClick={() => setRailMode('tools')}
-                    >
-                      Done
                     </button>
                   </div>
                 </div>

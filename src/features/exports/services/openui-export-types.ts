@@ -1,4 +1,4 @@
-export type ExportTarget = 'html' | 'react' | 'next'
+export type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
 
 export type OpenUIExportInput = {
   source: string

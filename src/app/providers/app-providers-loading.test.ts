@@ -6,15 +6,30 @@ const readProjectFile = (path: string): string =>
   readFileSync(join(process.cwd(), path), 'utf8')
 
 describe('app provider loading', () => {
-  it('does not statically load Clerk from the root or anonymous app provider', () => {
+  it('hydrates Clerk at the root while keeping Convex auth mode route-gated', () => {
     const rootSource = readProjectFile('src/routes/__root.tsx')
-    const appProvidersSource = readProjectFile('src/app/providers/AppProviders.tsx')
-    const providerConfigSource = readProjectFile('src/app/providers/provider-config.ts')
+    const appProvidersSource = readProjectFile(
+      'src/app/providers/AppProviders.tsx',
+    )
+    const clerkConvexProviderSource = readProjectFile(
+      'src/app/providers/ClerkConvexProvider.tsx',
+    )
+    const providerConfigSource = readProjectFile(
+      'src/app/providers/provider-config.ts',
+    )
 
-    expect(rootSource).not.toContain('@clerk/tanstack-react-start')
+    expect(rootSource).toContain('@clerk/tanstack-react-start')
+    expect(rootSource).toContain('<ClerkProvider')
+    expect(rootSource).toContain('<RootClerkProvider>')
     expect(appProvidersSource).not.toContain('@clerk/tanstack-react-start')
     expect(providerConfigSource).not.toContain('@clerk/')
-    expect(appProvidersSource).toContain("import('@/app/providers/ClerkConvexProvider')")
-    expect(appProvidersSource).toContain('shouldUseAuthenticatedProviders(pathname)')
+    expect(appProvidersSource).toContain(
+      "import('@/app/providers/ClerkConvexProvider')",
+    )
+    expect(appProvidersSource).toContain(
+      'shouldUseAuthenticatedProviders(pathname)',
+    )
+    expect(clerkConvexProviderSource).not.toContain('<ClerkProvider')
+    expect(clerkConvexProviderSource).toContain('<ConvexProviderWithClerk')
   })
 })

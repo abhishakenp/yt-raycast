@@ -222,6 +222,32 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index('by_sessionId_target', ['sessionId', 'target']),
 
+  githubConnections: defineTable({
+    clerkTokenIdentifier: v.string(),
+    clerkUserId: v.string(),
+    githubUserId: v.number(),
+    githubLogin: v.string(),
+    accessToken: v.string(),
+    scopes: v.array(v.string()),
+    connectedAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_clerkTokenIdentifier', ['clerkTokenIdentifier'])
+    .index('by_githubUserId', ['githubUserId']),
+
+  githubOAuthStates: defineTable({
+    state: v.string(),
+    clerkTokenIdentifier: v.string(),
+    clerkUserId: v.string(),
+    sessionId: v.optional(v.string()),
+    target: v.optional(exportTarget),
+    returnTo: v.string(),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index('by_state', ['state'])
+    .index('by_clerkTokenIdentifier', ['clerkTokenIdentifier']),
+
   deployments: defineTable({
     sessionId: v.id('sessions'),
     slug: v.string(),
@@ -270,7 +296,12 @@ export default defineSchema({
   cmsBindings: defineTable({
     sessionId: v.id('sessions'),
     selector: v.string(),
-    type: v.union(v.literal('text'), v.literal('richtext'), v.literal('image'), v.literal('link')),
+    type: v.union(
+      v.literal('text'),
+      v.literal('richtext'),
+      v.literal('image'),
+      v.literal('link'),
+    ),
     field: v.optional(v.string()),
     createdAt: v.number(),
   })

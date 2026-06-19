@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 
 import {
+  buildOpenUILakebedProjectFiles,
   collectRouteImageAlts,
   resolveLakebedImageSources,
 } from './openui-lakebed-export-builder'
@@ -18,6 +19,21 @@ afterEach(() => {
 })
 
 describe('openui lakebed image source generation', () => {
+  it('packages rendered HTML fragments as static Lakebed projects instead of parsing page text as OpenUI', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source:
+        '<main><h1>PurrSpecs</h1><p>Subscribers value Satisfaction Readers cat lovers.</p></main>',
+      siteSpecJson: JSON.stringify({ projectName: 'PurrSpecs' }),
+      sessionId: 'demo',
+      target: 'lakebed',
+    })
+
+    expect(built.projectName).toBe('PurrSpecs')
+    expect(built.files['client/index.tsx']).toContain('PurrSpecs')
+    expect(Object.values(built.files).join('\n')).not.toContain('root =')
+    expect(Object.values(built.files).join('\n')).not.toContain('@openuidev')
+  })
+
   it('collects image alt text from generated route props', () => {
     const alts = collectRouteImageAlts([
       {
@@ -91,9 +107,9 @@ describe('openui lakebed image source generation', () => {
     expect(requests).toHaveLength(1)
     expect(requests[0]).toContain('api.pexels.com/v1/search')
     expect(requests[0]).toContain('golden')
-    expect(
-      sources.every((source) => !source.src.includes('/api/pexels')),
-    ).toBe(true)
+    expect(sources.every((source) => !source.src.includes('/api/pexels'))).toBe(
+      true,
+    )
     expect(
       sources.every((source) => !source.src.startsWith('data:image/')),
     ).toBe(true)

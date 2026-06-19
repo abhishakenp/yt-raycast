@@ -76,6 +76,13 @@ const isHtmlDocumentSource = (source: string): boolean => {
   return /^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)
 }
 
+const isHtmlLikeSource = (source: string): boolean => {
+  const trimmed = source.trim()
+  return (
+    isHtmlDocumentSource(trimmed) || /^<[a-z][\w:-]*(?:\s|>|\/>)/i.test(trimmed)
+  )
+}
+
 const readHtmlTitle = (html: string): string | undefined => {
   const match = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)
   const title = match?.[1]
@@ -1297,7 +1304,7 @@ export async function buildOpenUIExport(
     return buildOpenUIHtmlExport(input)
   }
 
-  if (isHtmlDocumentSource(input.source)) {
+  if (isHtmlLikeSource(input.source)) {
     return buildRawHtmlExport(input)
   }
 

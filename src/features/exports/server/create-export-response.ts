@@ -8,7 +8,12 @@ type ExportConvexClient = Pick<ConvexHttpClient, 'query'> &
   Partial<Pick<ConvexHttpClient, 'setAuth'>>
 
 const normalizeTarget = (target: string): ExportTarget | null => {
-  if (target === 'html' || target === 'react' || target === 'next')
+  if (
+    target === 'html' ||
+    target === 'react' ||
+    target === 'next' ||
+    target === 'lakebed'
+  )
     return target
   if (target === 'nextjs') return 'next'
   return null
@@ -175,9 +180,13 @@ export const createExportResponse = async (
         ? await (
             await import('../services/openui-html-export-builder')
           ).buildOpenUIHtmlExport(exportInput)
-        : await (
-            await import('../services/openui-export-builder')
-          ).buildOpenUIExport(exportInput)
+        : normalizedTarget === 'lakebed'
+          ? await (
+              await import('../services/openui-lakebed-export-builder')
+            ).buildOpenUILakebedExport(exportInput)
+          : await (
+              await import('../services/openui-export-builder')
+            ).buildOpenUIExport(exportInput)
 
     return new Response(toResponseBody(exportResult.body), {
       headers: createDownloadHeaders(

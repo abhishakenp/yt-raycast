@@ -1,4 +1,13 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+const buildOpenUILakebedProjectFilesMock = vi.hoisted(() => vi.fn())
+
+vi.mock('@/features/exports/services/openui-lakebed-export-builder', () => ({
+  buildOpenUILakebedProjectFiles: buildOpenUILakebedProjectFilesMock,
+}))
 
 import { createGitHubPushResponse } from './github-push-response'
 
@@ -11,6 +20,10 @@ const client = {
   setAuth: vi.fn(),
 }
 
+const tokenResolver = vi.fn(async () => [
+  { token: 'ghp_test', scopes: ['repo'] },
+])
+
 const exportData = {
   sessionId: 'session_123',
   prompt: 'A product website for Atlas Notes',
@@ -19,6 +32,13 @@ const exportData = {
   html: '<html><body><h1>Atlas Notes</h1></body></html>',
   includeBadge: false,
 }
+
+const jwtFor = (sub = 'user_123') =>
+  [
+    Buffer.from(JSON.stringify({ alg: 'none' })).toString('base64url'),
+    Buffer.from(JSON.stringify({ sub })).toString('base64url'),
+    'signature',
+  ].join('.')
 
 function createGitHubFetch() {
   const requests: Array<{ method: string; path: string; body: unknown }> = []
@@ -85,11 +105,40 @@ function createGitHubFetch() {
 
 describe('createGitHubPushResponse', () => {
   beforeEach(() => {
-    client.query.mockReset().mockResolvedValue(exportData)
+    client.query.mockReset().mockImplementation(async (_ref, args) => {
+      if (args && 'sessionId' in args) return exportData
+      return null
+    })
     client.setAuth.mockReset()
+    tokenResolver
+      .mockReset()
+      .mockResolvedValue([{ token: 'ghp_test', scopes: ['repo'] }])
+    buildOpenUILakebedProjectFilesMock.mockReset().mockResolvedValue({
+      files: {
+        'README.md': '# Lakebed',
+        'client/index.tsx': 'export const App = () => null',
+        'server/index.ts': 'export default {}',
+      },
+      fileCount: 3,
+      filename: 'atlas-notes-lakebed.zip',
+      projectName: 'Atlas Notes',
+    })
   })
 
-  it('requires app authentication and a GitHub token', async () => {
+  it('resolves GitHub tokens from Convex integration state, not Clerk', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/features/github/server/github-push-response.ts'),
+      'utf8',
+    )
+
+    expect(source).toContain('api.github.getConnectionForCurrentUser')
+    expect(source).not.toContain('createClerkClient')
+    expect(source).not.toContain('getUserOauthAccessToken')
+    expect(source).not.toContain('decodeClerkUserId')
+    expect(source).not.toContain('CLERK_SECRET_REQUIRED')
+  })
+
+  it('requires app authentication and connected GitHub', async () => {
     const unauthenticated = await createGitHubPushResponse(
       new Request(
         'https://ship-fast.test/api/sessions/session_123/github/push',
@@ -104,20 +153,62 @@ describe('createGitHubPushResponse', () => {
     )
     expect(unauthenticated.status).toBe(401)
 
-    const missingGitHubToken = await createGitHubPushResponse(
+    tokenResolver.mockResolvedValueOnce([])
+    const missingConnection = await createGitHubPushResponse(
       new Request(
         'https://ship-fast.test/api/sessions/session_123/github/push',
         {
           method: 'POST',
-          headers: { authorization: 'Bearer app-token' },
-          body: JSON.stringify({ target: 'html' }),
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({
+            target: 'html',
+            anonymousOwnerSecret: 'owner-secret',
+          }),
         },
       ),
       'session_123',
       env,
       client,
+      undefined,
+      tokenResolver,
     )
-    expect(missingGitHubToken.status).toBe(400)
+    expect(missingConnection.status).toBe(409)
+    expect(await missingConnection.json()).toMatchObject({
+      code: 'GITHUB_NOT_CONNECTED',
+      error: 'Connect GitHub before pushing.',
+    })
+    expect(tokenResolver).toHaveBeenCalledWith(jwtFor(), env, client)
+  })
+
+  it('requires GitHub repo scope before pushing', async () => {
+    tokenResolver.mockResolvedValueOnce([
+      { token: 'ghp_readonly', scopes: ['read:user'] },
+    ])
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/session_123/github/push',
+        {
+          method: 'POST',
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({
+            target: 'html',
+            anonymousOwnerSecret: 'owner-secret',
+          }),
+        },
+      ),
+      'session_123',
+      env,
+      client,
+      undefined,
+      tokenResolver,
+    )
+
+    expect(response.status).toBe(409)
+    expect(await response.json()).toMatchObject({
+      code: 'GITHUB_REPO_SCOPE_REQUIRED',
+      error: 'Connect GitHub with repo access before pushing.',
+    })
   })
 
   it('pushes owner export files to a private GitHub repository', async () => {
@@ -128,10 +219,10 @@ describe('createGitHubPushResponse', () => {
         'https://ship-fast.test/api/sessions/session_123/github/push',
         {
           method: 'POST',
-          headers: { authorization: 'Bearer app-token' },
+          headers: { authorization: `Bearer ${jwtFor()}` },
           body: JSON.stringify({
             target: 'html',
-            githubAccessToken: 'ghp_test',
+            anonymousOwnerSecret: 'owner-secret',
           }),
         },
       ),
@@ -139,14 +230,17 @@ describe('createGitHubPushResponse', () => {
       env,
       client,
       fetchMock as never,
+      tokenResolver,
     )
 
     expect(response.status).toBe(200)
-    expect(client.setAuth).toHaveBeenCalledWith('app-token')
+    expect(client.setAuth).toHaveBeenCalledWith(jwtFor())
     expect(client.query).toHaveBeenCalledWith(expect.anything(), {
       sessionId: 'session_123',
       target: 'html',
+      anonymousOwnerSecret: 'owner-secret',
     })
+    expect(tokenResolver).toHaveBeenCalledWith(jwtFor(), env, client)
     expect(await response.json()).toMatchObject({
       ok: true,
       target: 'html',
@@ -205,23 +299,22 @@ describe('createGitHubPushResponse', () => {
         'https://ship-fast.test/api/sessions/session_123/github/push',
         {
           method: 'POST',
-          headers: { authorization: 'Bearer app-token' },
-          body: JSON.stringify({
-            target: 'react',
-            githubAccessToken: 'ghp_test',
-          }),
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({ target: 'react' }),
         },
       ),
       'session_123',
       env,
       client,
       fetchMock as never,
+      tokenResolver,
     )
 
     expect(response.status).toBe(200)
     expect(client.query).toHaveBeenCalledWith(expect.anything(), {
       sessionId: 'session_123',
       target: 'react',
+      anonymousOwnerSecret: undefined,
     })
     expect(await response.json()).toMatchObject({
       ok: true,
@@ -254,6 +347,79 @@ describe('createGitHubPushResponse', () => {
     })
   })
 
+  it('pushes Lakebed project files from the in-memory Lakebed builder', async () => {
+    const { fetchMock, requests } = createGitHubFetch()
+    const lakebedExport = {
+      ...exportData,
+      target: 'lakebed',
+      source: 'root = SaasKimiPage("Atlas Notes")',
+      siteSpecJson: '{"projectName":"Atlas Notes"}',
+      previewHtml: '<main>Atlas Notes</main>',
+      themeName: 'graphite',
+      isDark: true,
+    }
+
+    client.query.mockResolvedValueOnce(lakebedExport)
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/session_123/github/push',
+        {
+          method: 'POST',
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({ target: 'lakebed' }),
+        },
+      ),
+      'session_123',
+      env,
+      client,
+      fetchMock as never,
+      tokenResolver,
+    )
+
+    expect(response.status).toBe(200)
+    expect(client.query).toHaveBeenCalledWith(expect.anything(), {
+      sessionId: 'session_123',
+      target: 'lakebed',
+      anonymousOwnerSecret: undefined,
+    })
+    expect(buildOpenUILakebedProjectFilesMock).toHaveBeenCalledWith({
+      source: lakebedExport.source,
+      siteSpecJson: lakebedExport.siteSpecJson,
+      previewHtml: lakebedExport.previewHtml,
+      sessionId: 'session_123',
+      target: 'lakebed',
+      includeBadge: false,
+      themeName: 'graphite',
+      isDark: true,
+    })
+    expect(await response.json()).toMatchObject({
+      ok: true,
+      target: 'lakebed',
+      repoFullName: 'shipfast-test-user/a-product-website-for-atlas-lakebed',
+      files: ['README.md', 'client/index.tsx', 'server/index.ts'],
+      fileCount: 3,
+    })
+
+    const treeRequest = requests.find((request) =>
+      request.path.endsWith('/git/trees'),
+    )
+    const treeEntries = (treeRequest?.body as { tree: Array<{ path: string }> })
+      .tree
+    expect(treeEntries.map((entry) => entry.path).sort()).toEqual([
+      'README.md',
+      'client/index.tsx',
+      'server/index.ts',
+    ])
+
+    const commitRequest = requests.find((request) =>
+      request.path.endsWith('/git/commits'),
+    )
+    expect(commitRequest?.body).toMatchObject({
+      message: 'Ship Fast export (lakebed)',
+    })
+  })
+
   it('maps Convex ownership errors to forbidden responses', async () => {
     client.query.mockRejectedValueOnce(
       new Error('FORBIDDEN: You do not own this session'),
@@ -264,11 +430,8 @@ describe('createGitHubPushResponse', () => {
         'https://ship-fast.test/api/sessions/session_123/github/push',
         {
           method: 'POST',
-          headers: { authorization: 'Bearer app-token' },
-          body: JSON.stringify({
-            target: 'html',
-            githubAccessToken: 'ghp_test',
-          }),
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({ target: 'html' }),
         },
       ),
       'session_123',
@@ -290,11 +453,8 @@ describe('createGitHubPushResponse', () => {
         'https://ship-fast.test/api/sessions/session_123/github/push',
         {
           method: 'POST',
-          headers: { authorization: 'Bearer app-token' },
-          body: JSON.stringify({
-            target: 'html',
-            githubAccessToken: 'ghp_test',
-          }),
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({ target: 'html' }),
         },
       ),
       'session_123',

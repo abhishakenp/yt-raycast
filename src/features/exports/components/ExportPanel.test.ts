@@ -19,8 +19,11 @@ describe('ExportPanel', () => {
     expect(source).toContain('onClick={() => void runTargetAction(item)}')
     expect(source).toContain('const result = await createExport(item.target)')
     expect(source).toContain('await downloadExport(item)')
-    expect(source).toContain('await downloadFromUrl(result.downloadUrl, item.target)')
+    expect(source).toContain(
+      'await downloadFromUrl(result.downloadUrl, item.target)',
+    )
     expect(source).toContain("typeof result.downloadUrl === 'string'")
+    expect(source).toContain("await getToken({ template: 'convex' })")
     expect(source).toContain('Lakebed project bundle')
     expect(source).toContain("'html', 'react', 'next', 'lakebed'")
     expect(source).not.toContain('runSelectedAction')

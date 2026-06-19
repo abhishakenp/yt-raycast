@@ -58,6 +58,8 @@ import { Route as ApiSessionsSessionIdExportRouteImport } from './routes/api/ses
 import { Route as ApiSessionsSessionIdChatRouteImport } from './routes/api/sessions.$sessionId.chat'
 import { Route as ApiMedusaStoreCartLineItemsRouteImport } from './routes/api/medusa-store.cart.line-items'
 import { Route as ApiMedusaStoreCartIdRouteImport } from './routes/api/medusa-store.cart.$id'
+import { Route as ApiGithubConnectStartRouteImport } from './routes/api/github.connect.start'
+import { Route as ApiGithubConnectCallbackRouteImport } from './routes/api/github.connect.callback'
 import { Route as ApiAgentationSyncSessionsAgentationSessionKeyRouteImport } from './routes/api/agentation-sync.sessions.$agentationSessionKey'
 import { Route as ApiAgentationSyncAnnotationsAnnotationIdRouteImport } from './routes/api/agentation-sync.annotations.$annotationId'
 import { Route as ApiSessionsSessionIdProvisionMedusaRouteImport } from './routes/api/sessions.$sessionId.provision.medusa'
@@ -327,6 +329,17 @@ const ApiMedusaStoreCartIdRoute = ApiMedusaStoreCartIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => ApiMedusaStoreCartRoute,
 } as any)
+const ApiGithubConnectStartRoute = ApiGithubConnectStartRouteImport.update({
+  id: '/api/github/connect/start',
+  path: '/api/github/connect/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGithubConnectCallbackRoute =
+  ApiGithubConnectCallbackRouteImport.update({
+    id: '/api/github/connect/callback',
+    path: '/api/github/connect/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiAgentationSyncSessionsAgentationSessionKeyRoute =
   ApiAgentationSyncSessionsAgentationSessionKeyRouteImport.update({
     id: '/$agentationSessionKey',
@@ -421,6 +434,8 @@ export interface FileRoutesByFullPath {
   '/preview/$slug/sitemap.xml': typeof PreviewSlugSitemapDotxmlRoute
   '/api/agentation-sync/annotations/$annotationId': typeof ApiAgentationSyncAnnotationsAnnotationIdRoute
   '/api/agentation-sync/sessions/$agentationSessionKey': typeof ApiAgentationSyncSessionsAgentationSessionKeyRouteWithChildren
+  '/api/github/connect/callback': typeof ApiGithubConnectCallbackRoute
+  '/api/github/connect/start': typeof ApiGithubConnectStartRoute
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
   '/api/sessions/$sessionId/chat': typeof ApiSessionsSessionIdChatRoute
@@ -481,6 +496,8 @@ export interface FileRoutesByTo {
   '/preview/$slug/sitemap.xml': typeof PreviewSlugSitemapDotxmlRoute
   '/api/agentation-sync/annotations/$annotationId': typeof ApiAgentationSyncAnnotationsAnnotationIdRoute
   '/api/agentation-sync/sessions/$agentationSessionKey': typeof ApiAgentationSyncSessionsAgentationSessionKeyRouteWithChildren
+  '/api/github/connect/callback': typeof ApiGithubConnectCallbackRoute
+  '/api/github/connect/start': typeof ApiGithubConnectStartRoute
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
   '/api/sessions/$sessionId/chat': typeof ApiSessionsSessionIdChatRoute
@@ -542,6 +559,8 @@ export interface FileRoutesById {
   '/preview/$slug/sitemap.xml': typeof PreviewSlugSitemapDotxmlRoute
   '/api/agentation-sync/annotations/$annotationId': typeof ApiAgentationSyncAnnotationsAnnotationIdRoute
   '/api/agentation-sync/sessions/$agentationSessionKey': typeof ApiAgentationSyncSessionsAgentationSessionKeyRouteWithChildren
+  '/api/github/connect/callback': typeof ApiGithubConnectCallbackRoute
+  '/api/github/connect/start': typeof ApiGithubConnectStartRoute
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
   '/api/sessions/$sessionId/chat': typeof ApiSessionsSessionIdChatRoute
@@ -604,6 +623,8 @@ export interface FileRouteTypes {
     | '/preview/$slug/sitemap.xml'
     | '/api/agentation-sync/annotations/$annotationId'
     | '/api/agentation-sync/sessions/$agentationSessionKey'
+    | '/api/github/connect/callback'
+    | '/api/github/connect/start'
     | '/api/medusa-store/cart/$id'
     | '/api/medusa-store/cart/line-items'
     | '/api/sessions/$sessionId/chat'
@@ -664,6 +685,8 @@ export interface FileRouteTypes {
     | '/preview/$slug/sitemap.xml'
     | '/api/agentation-sync/annotations/$annotationId'
     | '/api/agentation-sync/sessions/$agentationSessionKey'
+    | '/api/github/connect/callback'
+    | '/api/github/connect/start'
     | '/api/medusa-store/cart/$id'
     | '/api/medusa-store/cart/line-items'
     | '/api/sessions/$sessionId/chat'
@@ -724,6 +747,8 @@ export interface FileRouteTypes {
     | '/preview/$slug/sitemap.xml'
     | '/api/agentation-sync/annotations/$annotationId'
     | '/api/agentation-sync/sessions/$agentationSessionKey'
+    | '/api/github/connect/callback'
+    | '/api/github/connect/start'
     | '/api/medusa-store/cart/$id'
     | '/api/medusa-store/cart/line-items'
     | '/api/sessions/$sessionId/chat'
@@ -780,6 +805,8 @@ export interface RootRouteChildren {
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   ExportSessionIdTargetRoute: typeof ExportSessionIdTargetRoute
   ApiAgentationSyncAnnotationsAnnotationIdRoute: typeof ApiAgentationSyncAnnotationsAnnotationIdRoute
+  ApiGithubConnectCallbackRoute: typeof ApiGithubConnectCallbackRoute
+  ApiGithubConnectStartRoute: typeof ApiGithubConnectStartRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1127,6 +1154,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMedusaStoreCartIdRouteImport
       parentRoute: typeof ApiMedusaStoreCartRoute
     }
+    '/api/github/connect/start': {
+      id: '/api/github/connect/start'
+      path: '/api/github/connect/start'
+      fullPath: '/api/github/connect/start'
+      preLoaderRoute: typeof ApiGithubConnectStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/github/connect/callback': {
+      id: '/api/github/connect/callback'
+      path: '/api/github/connect/callback'
+      fullPath: '/api/github/connect/callback'
+      preLoaderRoute: typeof ApiGithubConnectCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/agentation-sync/sessions/$agentationSessionKey': {
       id: '/api/agentation-sync/sessions/$agentationSessionKey'
       path: '/$agentationSessionKey'
@@ -1363,6 +1404,8 @@ const rootRouteChildren: RootRouteChildren = {
   ExportSessionIdTargetRoute: ExportSessionIdTargetRoute,
   ApiAgentationSyncAnnotationsAnnotationIdRoute:
     ApiAgentationSyncAnnotationsAnnotationIdRoute,
+  ApiGithubConnectCallbackRoute: ApiGithubConnectCallbackRoute,
+  ApiGithubConnectStartRoute: ApiGithubConnectStartRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

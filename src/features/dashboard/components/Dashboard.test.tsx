@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { readFileSync } from 'node:fs'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
@@ -56,7 +57,11 @@ const ensureWindowStorage = () => {
 }
 
 vi.mock('@clerk/tanstack-react-start', () => ({
-  useAuth: () => ({ isSignedIn: false, userId: null, getToken: async () => null }),
+  useAuth: () => ({
+    isSignedIn: false,
+    userId: null,
+    getToken: async () => null,
+  }),
   useClerk: () => ({ session: null, user: null }),
 }))
 
@@ -70,7 +75,7 @@ vi.mock('convex/react', () => ({
     ).__shipFastDashboardConvexState
     state?.queryArgs.push(args)
     return args && typeof args === 'object' && 'lookup' in args
-      ? state?.generationView ?? null
+      ? (state?.generationView ?? null)
       : null
   },
 }))
@@ -254,9 +259,9 @@ describe('Dashboard missing session state', () => {
 
     const { rerender } = render(<Dashboard sessionId="editable-session" />)
 
-    expect(screen.getByTestId('generated-module-preview').textContent).toContain(
-      'Original',
-    )
+    expect(
+      screen.getByTestId('generated-module-preview').textContent,
+    ).toContain('Original')
 
     getConvexState().generationView = {
       session: {
@@ -394,7 +399,9 @@ describe('Dashboard missing session state', () => {
     render(<Dashboard sessionId="ready-side-panel-session" />)
 
     const sidePanelArgs = state.queryArgs.filter(
-      (args) => args === 'skip' || (args && typeof args === 'object' && 'sessionId' in args),
+      (args) =>
+        args === 'skip' ||
+        (args && typeof args === 'object' && 'sessionId' in args),
     )
     expect(sidePanelArgs.length).toBeGreaterThanOrEqual(2)
     expect(sidePanelArgs).not.toContain('skip')
@@ -404,5 +411,36 @@ describe('Dashboard missing session state', () => {
         { sessionId: 'ready-side-panel-session' },
       ]),
     )
+  })
+
+  it('removes the old rail mode editor path while keeping popover tools wired', () => {
+    const source = readFileSync(
+      'src/features/dashboard/components/Dashboard.tsx',
+      'utf8',
+    )
+
+    expect(source).not.toContain('type RailMode')
+    expect(source).not.toContain('railMode')
+    expect(source).not.toContain('setRailMode')
+    expect(source).not.toContain('RailPanelFallback')
+    expect(source).not.toContain('preview-site-rail-editor')
+    expect(source).not.toContain('rail-editor-')
+    expect(source).not.toContain("import('@/features/cms/components/CmsPanel')")
+    expect(source).not.toContain(
+      "import('@/features/chat/components/ChatPanel')",
+    )
+    expect(source).not.toContain(
+      "import('@/features/commerce/components/CommercePanel')",
+    )
+    expect(source).not.toContain(
+      "import('@/features/dashboard/components/ActivityPanel')",
+    )
+    expect(source).toContain('data-rail-action="export"')
+    expect(source).toContain('data-rail-action="github"')
+    expect(source).toContain('data-rail-action="domain"')
+    expect(source).toContain('const ToolPopoverFallback')
+    expect(source).toContain('<ExportPanel sessionId={sessionId} />')
+    expect(source).toContain('<GitHubPanel sessionId={sessionId} />')
+    expect(source).toContain('<DeploymentPanel sessionId={sessionId} />')
   })
 })

@@ -1,6 +1,7 @@
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
 import {
   createHtmlExportFiles,
   createReactExportFiles,
@@ -11,16 +12,18 @@ import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 type GitHubPushConvexClient = Pick<ConvexHttpClient, 'query' | 'setAuth'>
 type GitHubPushEnv = NodeJS.ProcessEnv
 type FetchFn = typeof fetch
+type GitHubTokenResolver = (
+  appToken: string,
+  env: GitHubPushEnv,
+  client: GitHubPushConvexClient,
+) => Promise<GitHubOAuthToken[]>
 
 type GitHubPushBody = {
   target?: unknown
-  githubAccessToken?: unknown
-  repoFullName?: unknown
-  repoName?: unknown
-  branch?: unknown
+  anonymousOwnerSecret?: unknown
 }
 
-type GitHubExportTarget = 'html' | 'react' | 'next'
+type GitHubExportTarget = 'html' | 'react' | 'next' | 'lakebed'
 
 type GitHubRepo = {
   id?: number
@@ -36,10 +39,24 @@ type GitHubRef = {
   object?: { sha?: string }
 }
 
+type GitHubOAuthToken = {
+  token: string
+  scopes?: string[]
+}
+
+type GitHubPushErrorCode =
+  | 'AUTH_REQUIRED'
+  | 'GITHUB_NOT_CONNECTED'
+  | 'GITHUB_REPO_SCOPE_REQUIRED'
+
 const DEFAULT_GITHUB_API_BASE = 'https://api.github.com'
-const VALID_TARGETS = new Set<GitHubExportTarget>(['html', 'react', 'next'])
-const REPO_FULL_NAME_RE = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/
-const BRANCH_RE = /^[A-Za-z0-9][A-Za-z0-9._/-]{0,99}$/
+const GITHUB_REPO_SCOPE = 'repo'
+const VALID_TARGETS = new Set<GitHubExportTarget>([
+  'html',
+  'react',
+  'next',
+  'lakebed',
+])
 
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), {
@@ -71,28 +88,66 @@ const sanitizeRepoName = (value: string): string =>
     .replace(/^[.-]+|[.-]+$/g, '')
     .slice(0, 90)
 
-const deriveRepoName = (
-  body: GitHubPushBody,
-  prompt: string,
-  target: GitHubExportTarget,
-): string => {
-  const explicit = sanitizeRepoName(normalizeString(body.repoName))
-  if (explicit) return explicit
-
+const deriveRepoName = (prompt: string, target: GitHubExportTarget): string => {
   const fromPrompt = sanitizeRepoName(prompt).split('-').slice(0, 5).join('-')
   return fromPrompt ? `${fromPrompt}-${target}` : `ship-fast-export-${target}`
 }
 
-const normalizeBranch = (value: unknown, fallback: string): string => {
-  const branch = normalizeString(value) || fallback
-  if (
-    !BRANCH_RE.test(branch) ||
-    branch.includes('..') ||
-    branch.endsWith('/')
-  ) {
-    throw new Error('Invalid GitHub branch name.')
+const responseError = (
+  code: GitHubPushErrorCode,
+  message: string,
+  status: number,
+) => {
+  const error = new Error(message) as Error & {
+    status?: number
+    code?: GitHubPushErrorCode
   }
-  return branch
+  error.status = status
+  error.code = code
+  return error
+}
+
+const defaultGitHubTokenResolver: GitHubTokenResolver = async (
+  _appToken,
+  _env,
+  client,
+) => {
+  const connection = await client.query(
+    api.github.getConnectionForCurrentUser,
+    {},
+  )
+  return connection
+    ? [{ token: connection.accessToken, scopes: connection.scopes }]
+    : []
+}
+
+const resolveGitHubAccessToken = async (
+  appToken: string,
+  env: GitHubPushEnv,
+  tokenResolver: GitHubTokenResolver,
+  client: GitHubPushConvexClient,
+): Promise<string> => {
+  const tokens = await tokenResolver(appToken, env, client)
+  if (tokens.length === 0) {
+    throw responseError(
+      'GITHUB_NOT_CONNECTED',
+      'Connect GitHub before pushing.',
+      409,
+    )
+  }
+
+  const tokenWithRepoScope = tokens.find(
+    (token) => token.token && token.scopes?.includes(GITHUB_REPO_SCOPE),
+  )
+  if (!tokenWithRepoScope) {
+    throw responseError(
+      'GITHUB_REPO_SCOPE_REQUIRED',
+      'Connect GitHub with repo access before pushing.',
+      409,
+    )
+  }
+
+  return tokenWithRepoScope.token
 }
 
 async function githubRequest<T>(
@@ -144,19 +199,6 @@ async function githubRequest<T>(
 
   return response.status === 404 ? null : (data as T)
 }
-
-const getRepository = async (
-  env: GitHubPushEnv,
-  fetchFn: FetchFn,
-  token: string,
-  repoFullName: string,
-) =>
-  await githubRequest<GitHubRepo>(`/repos/${repoFullName}`, {
-    env,
-    fetchFn,
-    token,
-    expectedStatus: [200, 404],
-  })
 
 const createRepository = async (
   env: GitHubPushEnv,
@@ -289,29 +331,32 @@ const ensureRepository = async (
   env: GitHubPushEnv,
   fetchFn: FetchFn,
   token: string,
-  body: GitHubPushBody,
   prompt: string,
   target: GitHubExportTarget,
+  sessionId: string,
 ): Promise<{ repo: GitHubRepo; created: boolean }> => {
-  const requestedRepo = normalizeString(body.repoFullName)
-  if (requestedRepo) {
-    if (!REPO_FULL_NAME_RE.test(requestedRepo)) {
-      throw new Error('Invalid GitHub repository. Use owner/repo.')
+  const baseRepoName = deriveRepoName(prompt, target)
+  const attempts = [
+    baseRepoName,
+    `${baseRepoName}-${sessionId}`,
+    `${baseRepoName}-${sessionId.slice(0, 4)}`,
+  ].map(sanitizeRepoName)
+  const seen = new Set<string>()
+
+  for (const repoName of attempts) {
+    if (!repoName || seen.has(repoName)) continue
+    seen.add(repoName)
+    try {
+      const repo = await createRepository(env, fetchFn, token, repoName, target)
+      if (repo === null) break
+      return { repo, created: true }
+    } catch (error) {
+      if ((error as Error & { status?: number }).status === 422) continue
+      throw error
     }
-    const repo = await getRepository(env, fetchFn, token, requestedRepo)
-    if (repo === null) throw new Error('GitHub repository not found.')
-    return { repo, created: false }
   }
 
-  const repo = await createRepository(
-    env,
-    fetchFn,
-    token,
-    deriveRepoName(body, prompt, target),
-    target,
-  )
-  if (repo === null) throw new Error('Unable to create GitHub repository.')
-  return { repo, created: true }
+  throw new Error('Unable to create a GitHub repository for this export.')
 }
 
 const convexStatus = (error: unknown): number => {
@@ -330,6 +375,7 @@ export async function createGitHubPushResponse(
   env: GitHubPushEnv = process.env,
   clientOverride?: GitHubPushConvexClient,
   fetchOverride?: FetchFn,
+  tokenResolver: GitHubTokenResolver = defaultGitHubTokenResolver,
 ): Promise<Response> {
   const authToken = getBearerToken(request)
   if (authToken === null) {
@@ -346,16 +392,15 @@ export async function createGitHubPushResponse(
   const target = normalizeString(body.target) || 'html'
   if (!VALID_TARGETS.has(target as GitHubExportTarget)) {
     return json(
-      { error: 'Only HTML, React, and Next.js GitHub push is supported.' },
+      {
+        error:
+          'Only HTML, React, Next.js, and Lakebed GitHub push is supported.',
+      },
       { status: 400 },
     )
   }
   const exportTarget = target as GitHubExportTarget
-
-  const githubAccessToken = normalizeString(body.githubAccessToken)
-  if (!githubAccessToken) {
-    return json({ error: 'GitHub access token is required.' }, { status: 400 })
-  }
+  const anonymousOwnerSecret = normalizeString(body.anonymousOwnerSecret)
 
   try {
     const client = clientOverride ?? createRuntimeConvexHttpClient()
@@ -363,11 +408,18 @@ export async function createGitHubPushResponse(
     const exportData = await client.query(
       api.sessions.getOwnedExportForGitHubPush,
       {
-        sessionId: sessionId as any,
+        sessionId: sessionId as Id<'sessions'>,
         target: exportTarget,
+        anonymousOwnerSecret: anonymousOwnerSecret || undefined,
       },
     )
     const fetchFn = fetchOverride ?? fetch
+    const githubAccessToken = await resolveGitHubAccessToken(
+      authToken,
+      env,
+      tokenResolver,
+      client,
+    )
 
     await githubRequest('/user', {
       env,
@@ -380,11 +432,11 @@ export async function createGitHubPushResponse(
       env,
       fetchFn,
       githubAccessToken,
-      body,
       exportData.prompt,
       exportTarget,
+      sessionId,
     )
-    const branch = normalizeBranch(body.branch, repo.default_branch || 'main')
+    const branch = repo.default_branch || 'main'
     let ref = await getBranchRef(
       env,
       fetchFn,
@@ -443,6 +495,26 @@ export async function createGitHubPushResponse(
           includeBadge: exportData.includeBadge,
         },
       )
+    } else if (exportTarget === 'lakebed') {
+      const source =
+        typeof exportData.source === 'string' &&
+        exportData.source.trim().length > 0
+          ? exportData.source
+          : exportData.html
+      const { buildOpenUILakebedProjectFiles } =
+        await import('@/features/exports/services/openui-lakebed-export-builder')
+      files = (
+        await buildOpenUILakebedProjectFiles({
+          source,
+          siteSpecJson: exportData.siteSpecJson,
+          previewHtml: exportData.previewHtml ?? exportData.html,
+          sessionId: String(exportData.sessionId),
+          target: 'lakebed',
+          includeBadge: exportData.includeBadge,
+          themeName: exportData.themeName,
+          isDark: exportData.isDark,
+        })
+      ).files
     } else {
       return json(
         { error: 'Unsupported export target for GitHub push.' },
@@ -492,6 +564,10 @@ export async function createGitHubPushResponse(
       previewVersion: exportData.previewVersion,
     })
   } catch (error) {
+    const code =
+      error instanceof Error && 'code' in error
+        ? (error as Error & { code?: string }).code
+        : undefined
     const status =
       error instanceof Error && 'status' in error
         ? ((error as Error & { status?: number }).status ?? 400)
@@ -502,6 +578,7 @@ export async function createGitHubPushResponse(
           error instanceof Error
             ? error.message
             : 'Unable to push export to GitHub.',
+        ...(code ? { code } : {}),
       },
       { status },
     )

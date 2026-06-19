@@ -1,16 +1,5 @@
-import {
-  ClerkProvider,
-  Show,
-  SignInButton,
-  UserButton,
-} from '@clerk/tanstack-react-start'
+import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import { useEffect } from 'react'
-
-import { clerkFrostedGlassAppearance } from '@/app/providers/clerk-appearance'
-
-const clerkPublishableKey =
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ??
-  import.meta.env.CLERK_PUBLISHABLE_KEY
 
 type HomepageAuthControlsProps = {
   autoOpen?: boolean
@@ -72,13 +61,4 @@ const HomepageAuthInner = ({ autoOpen = false }: HomepageAuthControlsProps) => {
 
 export const HomepageAuthControls = ({
   autoOpen = false,
-}: HomepageAuthControlsProps) =>
-  typeof clerkPublishableKey === 'string' && clerkPublishableKey.trim() ? (
-    <ClerkProvider
-      publishableKey={clerkPublishableKey}
-      afterSignOutUrl="/"
-      appearance={clerkFrostedGlassAppearance}
-    >
-      <HomepageAuthInner autoOpen={autoOpen} />
-    </ClerkProvider>
-  ) : null
+}: HomepageAuthControlsProps) => <HomepageAuthInner autoOpen={autoOpen} />

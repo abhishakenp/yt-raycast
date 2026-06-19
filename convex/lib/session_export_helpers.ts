@@ -14,7 +14,7 @@ export type ExportEntitlement =
   | {
       status: 'ready'
       requiresPayment: false
-      entitlement: 'subscription' | 'credits'
+      entitlement: 'disabled_paywall' | 'subscription' | 'credits'
       remainingCredits?: number
     }
   | {
@@ -23,6 +23,14 @@ export type ExportEntitlement =
       entitlement: 'anonymous' | 'payment_required'
       message: string
     }
+
+type ExportPaywallEnv = {
+  DISABLE_PAYWALL?: string
+}
+
+export const areExportPaywallsDisabled = (
+  env: ExportPaywallEnv = process.env,
+): boolean => (env.DISABLE_PAYWALL ?? '').trim().toLowerCase() === 'true'
 
 export type CreateSessionExportInput = {
   sessionId: Id<'sessions'>
@@ -39,6 +47,7 @@ export type OwnedExportDownloadInput = {
 export type OwnedExportForGitHubPushInput = {
   sessionId: Id<'sessions'>
   target: ExportTarget
+  anonymousOwnerSecret?: string
 }
 
 const activeExportSubscriptionStatuses = new Set([
@@ -64,6 +73,60 @@ const exportArtifactPath = (target: ExportTarget, previewVersion: number) =>
     ? `preview-${previewVersion}.html`
     : `preview-${previewVersion}.${target}.zip`
 
+const isLikelyOpenUISource = (source: string | undefined): boolean => {
+  if (source === undefined) return false
+  const trimmed = source.trim()
+  if (!trimmed) return false
+  if (/^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)) {
+    return true
+  }
+  return /(?:^|\n)\s*root\s*=/.test(trimmed)
+}
+
+const readOpenUISourceFromSiteSpec = (
+  siteSpec: Doc<'siteSpecs'> | null,
+): string | undefined => {
+  const candidates = [siteSpec?.specJson, siteSpec?.spec]
+
+  for (const candidate of candidates) {
+    if (typeof candidate !== 'string' || !candidate.trim()) continue
+
+    try {
+      const parsed = JSON.parse(candidate) as unknown
+      if (
+        parsed !== null &&
+        typeof parsed === 'object' &&
+        'pages' in parsed &&
+        parsed.pages !== null &&
+        typeof parsed.pages === 'object'
+      ) {
+        const home = (parsed.pages as Record<string, unknown>).home
+        if (typeof home === 'string' && isLikelyOpenUISource(home)) return home
+      }
+    } catch {
+      if (isLikelyOpenUISource(candidate)) return candidate
+    }
+  }
+
+  return undefined
+}
+
+const resolveExportOpenUISource = (
+  preview: Doc<'previews'> | null,
+  homeModule: Doc<'generatedModules'> | null,
+  siteSpec: Doc<'siteSpecs'> | null,
+): string =>
+  preview && preview.openUiSource && isLikelyOpenUISource(preview.openUiSource)
+    ? preview.openUiSource
+    : (readOpenUISourceFromSiteSpec(siteSpec) ??
+      (homeModule &&
+      homeModule.source &&
+      isLikelyOpenUISource(homeModule.source)
+        ? homeModule.source
+        : undefined) ??
+      preview?.html ??
+      '')
+
 export const loadExportRecord = async (
   ctx: Pick<QueryCtx, 'db'>,
   sessionId: Id<'sessions'>,
@@ -76,38 +139,41 @@ export const loadExportRecord = async (
     )
     .first()
 
-  return exportRecord === null
-    ? null
-    : {
-        exportId: exportRecord._id,
-        target: exportRecord.target,
-        status: exportRecord.status,
-        fileCount: exportRecord.fileCount,
-        previewVersion: exportRecord.previewVersion,
-        requiresPayment: exportRecord.requiresPayment,
-        errorMessage: exportRecord.errorMessage,
-        createdAt: exportRecord.createdAt,
-        updatedAt: exportRecord.updatedAt,
-      }
+  return exportRecord === null ? null : toExportPayload(exportRecord)
 }
 
-const toExportPayload = (exportRecord: Doc<'exports'>) => ({
-  exportId: exportRecord._id,
-  target: exportRecord.target,
-  status: exportRecord.status,
-  fileCount: exportRecord.fileCount,
-  previewVersion: exportRecord.previewVersion,
-  requiresPayment: exportRecord.requiresPayment,
-  errorMessage: exportRecord.errorMessage,
-  createdAt: exportRecord.createdAt,
-  updatedAt: exportRecord.updatedAt,
-})
+const toExportPayload = (exportRecord: Doc<'exports'>) => {
+  const paymentBypassed =
+    areExportPaywallsDisabled() &&
+    (exportRecord.status === 'payment_required' ||
+      exportRecord.requiresPayment === true)
+
+  return {
+    exportId: exportRecord._id,
+    target: exportRecord.target,
+    status: paymentBypassed ? ('ready' as const) : exportRecord.status,
+    fileCount: exportRecord.fileCount,
+    previewVersion: exportRecord.previewVersion,
+    requiresPayment: paymentBypassed ? false : exportRecord.requiresPayment,
+    errorMessage: paymentBypassed ? undefined : exportRecord.errorMessage,
+    createdAt: exportRecord.createdAt,
+    updatedAt: exportRecord.updatedAt,
+  }
+}
 
 export const getExportEntitlement = async (
   ctx: Pick<MutationCtx, 'db'>,
   userId: string | undefined,
   sessionId: Id<'sessions'>,
 ): Promise<ExportEntitlement> => {
+  if (areExportPaywallsDisabled()) {
+    return {
+      status: 'ready',
+      requiresPayment: false,
+      entitlement: 'disabled_paywall',
+    }
+  }
+
   if (userId === undefined) {
     return {
       status: 'payment_required',
@@ -338,11 +404,7 @@ export const loadOwnedExportDownload = async (
 
   const exportPayload = toExportPayload(exportRecord)
 
-  if (
-    exportRecord.status === 'payment_required' ||
-    exportRecord.requiresPayment === true ||
-    exportRecord.status !== 'ready'
-  ) {
+  if (exportPayload.status !== 'ready') {
     return { export: exportPayload }
   }
 
@@ -366,8 +428,9 @@ export const loadOwnedExportDownload = async (
 
   return {
     export: exportPayload,
-    source: homeModule?.source,
-    siteSpecJson: siteSpec?.specJson,
+    source: resolveExportOpenUISource(latestPreview, homeModule, siteSpec),
+    siteSpecJson:
+      latestPreview?.siteSpecJson ?? siteSpec?.specJson ?? siteSpec?.spec,
     previewHtml: latestPreview?.html,
     latestPreviewVersion: latestPreview?.version,
   }
@@ -396,13 +459,7 @@ export const loadOwnedExportForGitHubPush = async (
       })
     })()
 
-  session.userId === userId ||
-    (() => {
-      throw new ConvexError({
-        code: 'FORBIDDEN',
-        message: 'You do not own this session',
-      })
-    })()
+  await assertCanReadOwnedSession(ctx, session, args.anonymousOwnerSecret)
 
   const exportRecord = await ctx.db
     .query('exports')
@@ -419,7 +476,9 @@ export const loadOwnedExportForGitHubPush = async (
       })
     })()
 
-  exportRecord.status === 'ready' ||
+  const exportPayload = toExportPayload(exportRecord)
+
+  exportPayload.status === 'ready' ||
     (() => {
       throw new ConvexError({
         code:
@@ -434,7 +493,7 @@ export const loadOwnedExportForGitHubPush = async (
       })
     })()
 
-  exportRecord.requiresPayment !== true ||
+  exportPayload.requiresPayment !== true ||
     (() => {
       throw new ConvexError({
         code: 'PAYMENT_REQUIRED',
@@ -460,6 +519,17 @@ export const loadOwnedExportForGitHubPush = async (
       })
     })()
 
+  const homeModule = await ctx.db
+    .query('generatedModules')
+    .withIndex('by_sessionId_moduleKey', (index) =>
+      index.eq('sessionId', args.sessionId).eq('moduleKey', 'home'),
+    )
+    .first()
+  const siteSpec = await ctx.db
+    .query('siteSpecs')
+    .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+    .first()
+
   const exportPreviewVersion = exportRecord.previewVersion
   if (
     exportPreviewVersion !== undefined &&
@@ -474,9 +544,14 @@ export const loadOwnedExportForGitHubPush = async (
   return {
     sessionId: args.sessionId,
     prompt: session.prompt,
-    target: exportRecord.target,
+    target: exportPayload.target,
     previewVersion: preview.version,
     html: preview.html,
+    source: resolveExportOpenUISource(preview, homeModule, siteSpec),
+    siteSpecJson: preview.siteSpecJson ?? siteSpec?.specJson ?? siteSpec?.spec,
+    previewHtml: preview.html,
+    themeName: session.genuiTheme,
+    isDark: true,
     includeBadge: exportRecord.requiresPayment !== false,
   }
 }
