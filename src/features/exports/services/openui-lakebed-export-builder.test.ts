@@ -82,7 +82,10 @@ render(h(EcommerceKimiPageBlock, { props: {}, lakebed }), document.getElementByI
                 path: 'lakebed/client',
               }))
               pluginBuild.onLoad(
-                { filter: /^lakebed\/client$/, namespace: 'lakebed-client-stub' },
+                {
+                  filter: /^lakebed\/client$/,
+                  namespace: 'lakebed-client-stub',
+                },
                 () => ({
                   contents: `export const Link = ({ children }) => children;
 export const Route = ({ element }) => element;
@@ -132,6 +135,27 @@ export function signOut() {}
     expect(built.files['client/index.tsx']).toContain('PurrSpecs')
     expect(Object.values(built.files).join('\n')).not.toContain('root =')
     expect(Object.values(built.files).join('\n')).not.toContain('@openuidev')
+  })
+
+  it('builds Lakebed projects when a generated object argument is closed with a parenthesis before the next argument', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source:
+        'root = EcommerceKimiPage("ShopifyLite", ["Home"], {chip:"New Arrival", heading:"Launch Your Online Store", imageAlt:"Boutique storefront"), "Trusted by Leading Brands", {heading:"Shop by Category"})',
+      siteSpecJson: JSON.stringify({ projectName: 'ShopifyLite' }),
+      sessionId: 'demo',
+      target: 'lakebed',
+    })
+
+    expect(built.projectName).toBe('ShopifyLite')
+    expect(built.files['client/routes.ts']).toContain(
+      'Launch Your Online Store',
+    )
+    expect(built.files['client/routes.ts']).toContain(
+      'Trusted by Leading Brands',
+    )
+    expect(built.files['client/components/EcommerceKimiPage.tsx']).toContain(
+      'EcommerceKimiPageBlock',
+    )
   })
 
   it('does not embed stale OpenUI SSR error HTML when deploying OpenUI source', async () => {

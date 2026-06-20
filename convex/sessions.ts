@@ -74,6 +74,7 @@ import {
   createSessionExport,
   ensureExportArtifactBuild,
   loadOwnedExportArtifactDownload,
+  loadOwnedExportBuildInput,
   loadOwnedExportForGitHubPush,
   loadExportRecord,
   loadSessionExportTargets,
@@ -423,7 +424,12 @@ export const getExportTargets = query({
   handler: (ctx, args) => {
     const sessionId = ctx.db.normalizeId('sessions', args.lookup)
     return sessionId === null
-      ? { sessionId: args.lookup, previewReady: false, isPrivate: null, targets: [] }
+      ? {
+          sessionId: args.lookup,
+          previewReady: false,
+          isPrivate: null,
+          targets: [],
+        }
       : loadSessionExportTargets(ctx, sessionId)
   },
 })
@@ -462,6 +468,21 @@ export const getOwnedExportArtifactDownloadByLookup = query({
     const sessionId = ctx.db.normalizeId('sessions', args.lookup)
     if (sessionId === null) return null
     return loadOwnedExportArtifactDownload(ctx, {
+      sessionId,
+      target: args.target,
+      anonymousOwnerSecret: args.anonymousOwnerSecret,
+    })
+  },
+})
+
+export const getOwnedExportBuildInputByLookup = query({
+  args: ownedExportLookupArgs,
+  handler: (ctx, args) => {
+    const sessionId = ctx.db.normalizeId('sessions', args.lookup)
+    if (sessionId === null) {
+      throw new Error('Session not found')
+    }
+    return loadOwnedExportBuildInput(ctx, {
       sessionId,
       target: args.target,
       anonymousOwnerSecret: args.anonymousOwnerSecret,

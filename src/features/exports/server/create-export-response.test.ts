@@ -72,19 +72,21 @@ describe('createExportResponse', () => {
   })
 
   it('returns 202 while the artifact is still building', async () => {
-    queryMock.mockResolvedValueOnce({
-      export: {
-        status: 'ready',
-        requiresPayment: false,
-        previewVersion: 1,
-      },
-      artifact: {
-        status: 'building',
-        previewVersion: 1,
-      },
-      storageUrl: null,
-      latestPreviewVersion: 1,
-    })
+    queryMock
+      .mockResolvedValueOnce({
+        export: {
+          status: 'ready',
+          requiresPayment: false,
+          previewVersion: 1,
+        },
+        artifact: {
+          status: 'building',
+          previewVersion: 1,
+        },
+        storageUrl: null,
+        latestPreviewVersion: 1,
+      })
+      .mockResolvedValueOnce(null)
 
     const response = await createExportResponse(
       'session_123',
@@ -96,6 +98,45 @@ describe('createExportResponse', () => {
     await expect(response.json()).resolves.toMatchObject({
       status: 'building',
     })
+  })
+
+  it('builds the download on demand when the stored artifact is not ready', async () => {
+    queryMock
+      .mockResolvedValueOnce({
+        export: {
+          status: 'ready',
+          requiresPayment: false,
+          previewVersion: 1,
+        },
+        artifact: {
+          status: 'building',
+          previewVersion: 1,
+        },
+        storageUrl: null,
+        latestPreviewVersion: 1,
+      })
+      .mockResolvedValueOnce({
+        sessionId: 'session_123',
+        target: 'html',
+        source: '<main>Generated fallback</main>',
+        html: '<!doctype html><html><head><title>Fallback Site</title></head><body><main>Generated fallback</main></body></html>',
+      })
+
+    const response = await createExportResponse(
+      'session_123',
+      'html',
+      fakeClient,
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toBe(
+      'text/html; charset=utf-8',
+    )
+    expect(response.headers.get('content-disposition')).toBe(
+      'attachment; filename="index.html"',
+    )
+    expect(await response.text()).toContain('Generated fallback')
+    expect(queryMock).toHaveBeenCalledTimes(2)
   })
 
   it('streams Lakebed artifacts through the same prebuilt artifact path', async () => {

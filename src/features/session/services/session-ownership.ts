@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 
 import { createAppError } from '@/shared/errors/app-error'
+import { devFlags } from '@/lib/dev-flags'
 
 export type SessionOwnerState = {
   userId?: string
@@ -21,6 +22,8 @@ export const canReadSession = (session: SessionOwnerState, actor: SessionActor):
   session.anonOwnerSecretHash === hashOwnerSecret(actor.anonOwnerSecret ?? '')
 
 export const assertCanMutateSession = (session: SessionOwnerState, actor: SessionActor): void => {
+  if (devFlags.disablePaywall) return
+
   const isUserOwner = session.userId !== undefined && session.userId === actor.userId
   const isAnonymousOwner =
     session.userId === undefined &&

@@ -125,6 +125,14 @@ const ensureDetachedTailwindRuntime = (html: string): string => {
   )
 }
 
+const stripShipFastOpenUIMetadata = (html: string): string =>
+  html
+    .replace(
+      /\s*<script\b[^>]*\bid=(["'])ship-fast-openui-source\1[^>]*>[\s\S]*?<\/script>/gi,
+      '',
+    )
+    .replace(/\bGenerated OpenUI source is ready\./g, 'Generated site is ready.')
+
 const renderReadme = (projectName: string): string => `# ${projectName}
 
 Run this Lakebed app:
@@ -213,8 +221,12 @@ const assertNoOpenUITrace = (files: Record<string, string>) => {
 export async function buildStaticLakebedProjectFiles(
   input: StaticLakebedProjectInput,
 ): Promise<LakebedProjectFiles> {
-  const html = ensureDetachedTailwindRuntime(
-    rewriteDetachedPreviewImageUrls(input.previewHtml?.trim() || input.source.trim()),
+  const html = stripShipFastOpenUIMetadata(
+    ensureDetachedTailwindRuntime(
+      rewriteDetachedPreviewImageUrls(
+        input.previewHtml?.trim() || input.source.trim(),
+      ),
+    ),
   )
   const projectName = readProjectName(
     input.siteSpecJson,

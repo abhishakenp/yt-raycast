@@ -3,6 +3,11 @@ import { ConvexHttpClient } from 'convex/browser'
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import type { ExportTarget } from '../services/openui-export-types'
+import {
+  buildDownloadFromArtifactFiles,
+  buildOpenUIArtifactFiles,
+} from '../services/openui-artifact-files'
+import type { OpenUIExportInput } from '../services/openui-export-types'
 
 type ExportConvexClient = Pick<ConvexHttpClient, 'query'> &
   Partial<Pick<ConvexHttpClient, 'setAuth'>>
@@ -22,6 +27,16 @@ type ArtifactDownloadPayload = {
   } | null
   storageUrl?: string | null
   latestPreviewVersion?: number
+}
+
+type ExportBuildInputPayload = {
+  sessionId: string
+  target: ExportTarget
+  source: string
+  html: string
+  siteSpecJson?: string
+  themeName?: string
+  isDark?: boolean
 }
 
 const normalizeTarget = (target: string): ExportTarget | null => {
@@ -96,6 +111,20 @@ const isArtifactDownloadPayload = (
   )
 }
 
+const isExportBuildInputPayload = (
+  value: unknown,
+): value is ExportBuildInputPayload =>
+  isRecord(value) &&
+  typeof value.sessionId === 'string' &&
+  typeof value.target === 'string' &&
+  normalizeTarget(value.target) !== null &&
+  typeof value.source === 'string' &&
+  typeof value.html === 'string' &&
+  (value.siteSpecJson === undefined ||
+    typeof value.siteSpecJson === 'string') &&
+  (value.themeName === undefined || typeof value.themeName === 'string') &&
+  (value.isDark === undefined || typeof value.isDark === 'boolean')
+
 const setClientAuth = (client: ExportConvexClient, request?: Request) => {
   if (!request) return
   const token = getBearerToken(request)
@@ -132,6 +161,59 @@ const buildingResponse = (artifactStatus?: string) =>
       headers: { 'content-type': 'application/json' },
     },
   )
+
+const responseFromBuiltExport = (download: {
+  body: string | Uint8Array
+  contentType: string
+  filename: string
+}): Response => {
+  const body = (() => {
+    if (typeof download.body === 'string') return download.body
+    const arrayBuffer = new ArrayBuffer(download.body.byteLength)
+    new Uint8Array(arrayBuffer).set(download.body)
+    return arrayBuffer
+  })()
+
+  return new Response(body, {
+    headers: createDownloadHeaders(download.contentType, download.filename),
+  })
+}
+
+const buildExportOnDemand = async (
+  client: ExportConvexClient,
+  sessionId: string,
+  target: ExportTarget,
+  anonymousOwnerSecret?: string,
+): Promise<Response | null> => {
+  const buildInputResult = await client.query(
+    api.sessions.getOwnedExportBuildInputByLookup,
+    {
+      lookup: sessionId,
+      target,
+      anonymousOwnerSecret,
+    },
+  )
+
+  if (!isExportBuildInputPayload(buildInputResult)) return null
+
+  const input: OpenUIExportInput = {
+    source: buildInputResult.source,
+    siteSpecJson: buildInputResult.siteSpecJson,
+    previewHtml: buildInputResult.html,
+    sessionId: buildInputResult.sessionId,
+    target,
+    includeBadge: false,
+    themeName: buildInputResult.themeName,
+    isDark: buildInputResult.isDark,
+  }
+  const artifact = await buildOpenUIArtifactFiles(input)
+  const download = await buildDownloadFromArtifactFiles(
+    input,
+    artifact.files,
+    artifact.download,
+  )
+  return responseFromBuiltExport(download)
+}
 
 export const createExportResponse = async (
   sessionId: string,
@@ -208,12 +290,24 @@ export const createExportResponse = async (
     }
 
     if (download.artifact?.status !== 'ready' || !download.storageUrl) {
-      return buildingResponse(download.artifact?.status)
+      const fallback = await buildExportOnDemand(
+        client,
+        sessionId,
+        normalizedTarget,
+        getOwnerSecret(request),
+      )
+      return fallback ?? buildingResponse(download.artifact?.status)
     }
 
     const artifactResponse = await fetch(download.storageUrl)
     if (!artifactResponse.ok || artifactResponse.body === null) {
-      return buildingResponse('queued')
+      const fallback = await buildExportOnDemand(
+        client,
+        sessionId,
+        normalizedTarget,
+        getOwnerSecret(request),
+      )
+      return fallback ?? buildingResponse('queued')
     }
 
     return new Response(artifactResponse.body, {

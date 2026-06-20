@@ -263,9 +263,7 @@ describe('openui-export-builder', () => {
         expect(files['src/components/ui/portal-container.tsx']).toContain(
           'usePortalContainer',
         )
-        expect(Object.values(files).join('\n')).not.toContain(
-          '#/components/ui',
-        )
+        expect(Object.values(files).join('\n')).not.toContain('#/components/ui')
         expect(Object.values(files).join('\n')).not.toContain('#/hooks/')
       }
     } finally {
