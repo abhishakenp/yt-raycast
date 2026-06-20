@@ -38,48 +38,75 @@ describe('openui artifact files', () => {
     expect(files['next.config.js']).toBeUndefined()
   })
 
-  it('falls back to static React files when OpenUI source has unresolved references', async () => {
+  it('builds HTML artifact files from OpenUI source instead of debug fallback preview HTML', async () => {
     const { files, download } = await buildOpenUIArtifactFiles({
-      source: 'root = MissingBlock("Fallback Demo", UnknownReference)',
+      source,
       previewHtml:
-        '<!doctype html><html><head><title>Fallback Demo</title></head><body><main>Rendered fallback</main></body></html>',
+        '<!doctype html><html><body><p>Generated OpenUI source is ready.</p><script type="application/json" id="ship-fast-openui-source">"root = Debug()"</script></body></html>',
       siteSpecJson,
       sessionId: 'demo',
-      target: 'react',
+      target: 'html',
+      includeBadge: false,
     })
 
-    expect(download).toBeUndefined()
-    expect(files['vite.config.js']).toContain('defineConfig')
-    expect(files['index.html']).toContain('Rendered fallback')
+    expect(download?.filename).toBe('index.html')
+    expect(files['index.html']).toContain('Hello artifact')
+    expect(files['index.html']).not.toContain(
+      'Generated OpenUI source is ready',
+    )
+    expect(files['index.html']).not.toContain('ship-fast-openui-source')
+    expect(files['index.html']).not.toContain('root = Debug')
   })
 
-  it('falls back to static Next files when OpenUI source has unresolved references', async () => {
-    const { files, download } = await buildOpenUIArtifactFiles({
-      source: 'root = MissingBlock("Fallback Demo", UnknownReference)',
-      previewHtml:
-        '<!doctype html><html><head><title>Fallback Demo</title></head><body><main>Rendered fallback</main></body></html>',
-      siteSpecJson,
-      sessionId: 'demo',
-      target: 'next',
-    })
-
-    expect(download).toBeUndefined()
-    expect(files['next.config.js']).toContain('nextConfig')
-    expect(files['app/page.tsx']).toContain('Rendered fallback')
+  it('fails HTML artifacts when source rendering fails instead of packaging preview fallback', async () => {
+    await expect(
+      buildOpenUIArtifactFiles({
+        source: 'root = MissingBlock("Fallback Demo", UnknownReference)',
+        previewHtml:
+          '<!doctype html><html><body><p>Generated OpenUI source is ready.</p><script id="ship-fast-openui-source">"root = Debug()"</script></body></html>',
+        siteSpecJson,
+        sessionId: 'demo',
+        target: 'html',
+      }),
+    ).rejects.toThrow()
   })
 
-  it('falls back to static Lakebed files when OpenUI source has unresolved references', async () => {
-    const { files, download } = await buildOpenUIArtifactFiles({
-      source: 'root = MissingBlock("Fallback Demo", UnknownReference)',
-      previewHtml:
-        '<!doctype html><html><head><title>Fallback Demo</title></head><body><main>Rendered fallback</main></body></html>',
-      siteSpecJson,
-      sessionId: 'demo',
-      target: 'lakebed',
-    })
+  it('fails React artifacts when native OpenUI translation fails', async () => {
+    await expect(
+      buildOpenUIArtifactFiles({
+        source: 'root = MissingBlock("Fallback Demo", UnknownReference)',
+        previewHtml:
+          '<!doctype html><html><head><title>Fallback Demo</title></head><body><main>Rendered fallback</main></body></html>',
+        siteSpecJson,
+        sessionId: 'demo',
+        target: 'react',
+      }),
+    ).rejects.toThrow()
+  })
 
-    expect(download).toBeUndefined()
-    expect(files['client/preview.ts']).toContain('Rendered fallback')
-    expect(files['server/index.ts']).toContain('lakebed/server')
+  it('fails Next artifacts when native OpenUI translation fails', async () => {
+    await expect(
+      buildOpenUIArtifactFiles({
+        source: 'root = MissingBlock("Fallback Demo", UnknownReference)',
+        previewHtml:
+          '<!doctype html><html><head><title>Fallback Demo</title></head><body><main>Rendered fallback</main></body></html>',
+        siteSpecJson,
+        sessionId: 'demo',
+        target: 'next',
+      }),
+    ).rejects.toThrow()
+  })
+
+  it('fails Lakebed artifacts when native OpenUI translation fails', async () => {
+    await expect(
+      buildOpenUIArtifactFiles({
+        source: 'root = MissingBlock("Fallback Demo", UnknownReference)',
+        previewHtml:
+          '<!doctype html><html><head><title>Fallback Demo</title></head><body><main>Rendered fallback</main></body></html>',
+        siteSpecJson,
+        sessionId: 'demo',
+        target: 'lakebed',
+      }),
+    ).rejects.toThrow()
   })
 })

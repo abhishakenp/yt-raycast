@@ -31,6 +31,7 @@ describe('session serialization helpers', () => {
       designReferenceUrls: [],
       designReferenceNotes: '',
       themeOverride: null,
+      themeMode: null,
     })
   })
 
@@ -60,6 +61,7 @@ describe('session serialization helpers', () => {
           designReferenceUrls: ['https://example.com/ref'],
           designReferenceNotes: 'Use the reference',
           themeOverride: 'dark',
+          themeMode: 'light',
         }),
       ),
     ).toMatchObject({
@@ -70,6 +72,7 @@ describe('session serialization helpers', () => {
       designReferenceUrls: ['https://example.com/ref'],
       designReferenceNotes: 'Use the reference',
       themeOverride: 'dark',
+      themeMode: 'light',
     })
   })
 

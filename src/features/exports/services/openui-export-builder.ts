@@ -40,6 +40,26 @@ type ExtractedComponent = {
   source: string
   dependencies: Set<string>
   blockSources: Set<string>
+  usesLakebed: boolean
+}
+
+type LakebedEndpointDefinition = {
+  componentName: string
+  method: string
+  name: string
+  path: string
+  source: string
+}
+
+type ImageSource = {
+  alt: string
+  src: string
+}
+
+type StyleOverride = {
+  classAnchor: string
+  occurrenceIndex: number
+  style: string
 }
 
 type ExportStack = 'react' | 'next'
@@ -78,6 +98,9 @@ const toProjectSlug = (value: string): string =>
     .replace(/^-+|-+$/g, '')
     .slice(0, 60) || 'ship-fast-export'
 
+const toIdentifier = (value: string): string =>
+  value.replace(/[^A-Za-z0-9_$]/g, '_').replace(/^[^A-Za-z_$]/, '_$&')
+
 const isHtmlDocumentSource = (source: string): boolean => {
   const trimmed = source.trim()
   return /^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)
@@ -97,6 +120,65 @@ const readHtmlTitle = (html: string): string | undefined => {
     .replace(/\s+/g, ' ')
     .trim()
   return title || undefined
+}
+
+const readHtmlAttribute = (tag: string, name: string): string | null => {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const quoted = tag.match(
+    new RegExp(`${escaped}\\s*=\\s*(["'])([\\s\\S]*?)\\1`, 'i'),
+  )
+  if (quoted?.[2]) return quoted[2].trim()
+
+  const unquoted = tag.match(new RegExp(`${escaped}\\s*=\\s*([^\\s>]+)`, 'i'))
+  return unquoted?.[1]?.trim() || null
+}
+
+const normalizePreviewImageSource = (src: string): string => {
+  if (/^https?:\/\/[^/]+\/api\//i.test(src)) {
+    try {
+      const url = new URL(src)
+      return `${url.pathname}${url.search}${url.hash}`
+    } catch {
+      return src
+    }
+  }
+  return src
+}
+
+const extractImageSources = (html: string | undefined): ImageSource[] => {
+  if (!html) return []
+  const byAlt = new Map<string, string>()
+  for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
+    const tag = match[0]
+    const alt = readHtmlAttribute(tag, 'alt')
+    const src = readHtmlAttribute(tag, 'src')
+    if (!alt || !src || byAlt.has(alt)) continue
+    if (
+      /^(https?:)?\/\//i.test(src) ||
+      src.startsWith('/') ||
+      src.startsWith('data:image/')
+    ) {
+      byAlt.set(alt, normalizePreviewImageSource(src))
+    }
+  }
+  return [...byAlt].map(([alt, src]) => ({ alt, src }))
+}
+
+const extractStyleOverrides = (html: string | undefined): StyleOverride[] => {
+  if (!html) return []
+  const classCounts = new Map<string, number>()
+  const overrides: StyleOverride[] = []
+  for (const match of html.matchAll(/<[a-zA-Z][\w:-]*\b[^>]*>/g)) {
+    const tag = match[0]
+    const classAnchor = readHtmlAttribute(tag, 'class')
+    if (!classAnchor) continue
+    const occurrenceIndex = classCounts.get(classAnchor) ?? 0
+    classCounts.set(classAnchor, occurrenceIndex + 1)
+    const style = readHtmlAttribute(tag, 'style')
+    if (!style) continue
+    overrides.push({ classAnchor, occurrenceIndex, style })
+  }
+  return overrides
 }
 
 const parseSiteSpec = (
@@ -192,11 +274,40 @@ const buildThemeStyle = (
   if (!styles) return ''
   const merged = { ...styles.light, ...(isDark ? styles.dark : {}) }
   return themeVarKeys
-    .flatMap((key) => {
+    .map((key) => {
       const value = merged[key]
-      return value == null ? [] : [`--${key}: ${String(value)};`]
+      return value == null ? null : `--${key}: ${String(value)};`
+    })
+    .filter((declaration): declaration is string => declaration !== null)
+    .join(' ')
+}
+
+const buildTailwindThemeStyle = (styles: ThemeStyles | null): string => {
+  if (!styles) return ''
+  const merged = { ...styles.light, ...styles.dark }
+  const declarations = themeVarKeys
+    .flatMap((key) => {
+      if (merged[key] == null) return []
+      if (key.startsWith('font-')) return [`--${key}: var(--${key});`]
+      if (key === 'radius') {
+        return [
+          '--radius-sm: calc(var(--radius) - 4px);',
+          '--radius-md: calc(var(--radius) - 2px);',
+          '--radius-lg: var(--radius);',
+          '--radius-xl: calc(var(--radius) + 4px);',
+        ]
+      }
+      if (
+        key.startsWith('shadow-') ||
+        key === 'letter-spacing' ||
+        key === 'spacing'
+      ) {
+        return []
+      }
+      return [`--color-${key}: var(--${key});`]
     })
     .join(' ')
+  return declarations
 }
 
 const assertNoOpenUIInternals = (files: Record<string, string>): void => {
@@ -460,6 +571,105 @@ const printNode = (node: ts.Node, sourceFile: ts.SourceFile): string =>
     .createPrinter({ newLine: ts.NewLineKind.LineFeed, removeComments: true })
     .printNode(ts.EmitHint.Unspecified, node, sourceFile)
 
+const propertyNameText = (name: ts.PropertyName, sourceFile: ts.SourceFile) => {
+  if (ts.isIdentifier(name) || ts.isStringLiteral(name)) return name.text
+  return name.getText(sourceFile)
+}
+
+const stringPropertyValue = (
+  object: ts.ObjectLiteralExpression,
+  name: string,
+): string | null => {
+  const property = object.properties.find(
+    (item): item is ts.PropertyAssignment =>
+      ts.isPropertyAssignment(item) &&
+      ((ts.isIdentifier(item.name) && item.name.text === name) ||
+        (ts.isStringLiteral(item.name) && item.name.text === name)),
+  )
+  const value = property?.initializer
+  return value &&
+    (ts.isStringLiteral(value) || ts.isNoSubstitutionTemplateLiteral(value))
+    ? value.text
+    : null
+}
+
+const bindingIdentifierNames = (name: ts.BindingName): string[] => {
+  if (ts.isIdentifier(name)) return [name.text]
+  return name.elements.flatMap((element) =>
+    ts.isOmittedExpression(element) ? [] : bindingIdentifierNames(element.name),
+  )
+}
+
+const topLevelDeclarationNames = (statement: ts.Statement): string[] => {
+  if (ts.isVariableStatement(statement)) {
+    return statement.declarationList.declarations.flatMap((declaration) =>
+      bindingIdentifierNames(declaration.name),
+    )
+  }
+  if (
+    (ts.isFunctionDeclaration(statement) ||
+      ts.isClassDeclaration(statement) ||
+      ts.isEnumDeclaration(statement) ||
+      ts.isInterfaceDeclaration(statement) ||
+      ts.isTypeAliasDeclaration(statement)) &&
+    statement.name
+  ) {
+    return [statement.name.text]
+  }
+  return []
+}
+
+const collectIdentifierTexts = (node: ts.Node): Set<string> => {
+  const identifiers = new Set<string>()
+  const visit = (current: ts.Node) => {
+    if (ts.isIdentifier(current)) identifiers.add(current.text)
+    ts.forEachChild(current, visit)
+  }
+  visit(node)
+  return identifiers
+}
+
+const collectComponentPreludeSources = (
+  sourceFile: ts.SourceFile,
+  targetStatement: ts.Statement,
+  componentSource: ts.Node,
+): string[] => {
+  const declarationByName = new Map<string, ts.Statement>()
+  for (const statement of sourceFile.statements) {
+    if (
+      statement === targetStatement ||
+      ts.isImportDeclaration(statement) ||
+      ts.isExportDeclaration(statement)
+    ) {
+      continue
+    }
+    for (const name of topLevelDeclarationNames(statement)) {
+      declarationByName.set(name, statement)
+    }
+  }
+
+  const requiredNames = new Set<string>()
+  const queuedNames = [...collectIdentifierTexts(componentSource)]
+  for (const name of queuedNames) {
+    if (requiredNames.has(name)) continue
+    const statement = declarationByName.get(name)
+    if (!statement) continue
+
+    requiredNames.add(name)
+    for (const identifier of collectIdentifierTexts(statement)) {
+      if (!requiredNames.has(identifier)) queuedNames.push(identifier)
+    }
+  }
+
+  return sourceFile.statements
+    .filter((statement) =>
+      topLevelDeclarationNames(statement).some((name) =>
+        requiredNames.has(name),
+      ),
+    )
+    .map((statement) => printNode(statement, sourceFile))
+}
+
 const replaceRanges = (
   source: string,
   ranges: Array<{ start: number; end: number; text: string }>,
@@ -497,6 +707,21 @@ const prependImports = (source: string, imports: string[]): string => {
   return `${importText}\n${body}`
 }
 
+const ensureReactNodeImport = (imports: string[], source: string): string[] => {
+  if (!/\bReactNode\b/.test(source)) return imports
+  if (
+    imports.some(
+      (line) =>
+        /\bReactNode\b/.test(line) ||
+        /\*\s+as\s+React\b/.test(line) ||
+        /import\s+React\b/.test(line),
+    )
+  ) {
+    return imports
+  }
+  return [`import type { ReactNode } from 'react'`, ...imports]
+}
+
 const removeImportDeclarations = (
   source: string,
   sourceFile: ts.SourceFile,
@@ -516,10 +741,9 @@ const transformComponentImports = (
   stack: ExportStack,
   generatedFilePath: string,
   sourcePath?: string,
-  includeZod = true,
 ): ImportTransformResult => {
   const imports: string[] = []
-  const dependencies = new Set<string>(includeZod ? ['zod'] : [])
+  const dependencies = new Set<string>()
   const blockSources = new Set<string>()
   for (const statement of sourceFile.statements) {
     if (!ts.isImportDeclaration(statement)) continue
@@ -528,7 +752,9 @@ const transformComponentImports = (
     const moduleName = specifier.text
 
     if (moduleName === '@openuidev/react-lang') continue
+    if (moduleName === 'zod' || moduleName.startsWith('zod/')) continue
     if (moduleName === './openui.ts') continue
+    if (moduleName === '@ship-fast/lakebed/server') continue
     if (moduleName === '#/lib/utils.ts') {
       imports.push(
         rewriteImportModule(
@@ -614,12 +840,163 @@ const transformComponentImports = (
   return { imports: [...new Set(imports)], dependencies, blockSources }
 }
 
+const unwrapZodCall = (
+  expression: ts.Expression,
+): { expression: ts.Expression; optional: boolean; nullable: boolean } => {
+  let current = expression
+  let optional = false
+  let nullable = false
+  const passthroughMethods = new Set([
+    'describe',
+    'email',
+    'int',
+    'max',
+    'min',
+    'nonempty',
+    'regex',
+    'trim',
+    'url',
+    'uuid',
+  ])
+
+  while (
+    ts.isCallExpression(current) &&
+    ts.isPropertyAccessExpression(current.expression)
+  ) {
+    const method = current.expression.name.text
+    if (method === 'optional' || method === 'default') {
+      optional = true
+      current = current.expression.expression
+      continue
+    }
+    if (method === 'nullable') {
+      nullable = true
+      current = current.expression.expression
+      continue
+    }
+    if (passthroughMethods.has(method)) {
+      current = current.expression.expression
+      continue
+    }
+    break
+  }
+
+  return { expression: current, optional, nullable }
+}
+
+const zodBaseCallName = (expression: ts.Expression): string | null => {
+  if (!ts.isCallExpression(expression)) return null
+  const callee = expression.expression
+  if (!ts.isPropertyAccessExpression(callee)) return null
+  const receiver = callee.expression
+  return ts.isIdentifier(receiver) && receiver.text === 'z'
+    ? callee.name.text
+    : null
+}
+
+const renderPropertyName = (name: ts.PropertyName): string | null => {
+  if (ts.isIdentifier(name)) return name.text
+  if (ts.isStringLiteral(name) || ts.isNumericLiteral(name)) {
+    return JSON.stringify(name.text)
+  }
+  return null
+}
+
+const renderZodType = (
+  expression: ts.Expression,
+  sourceFile: ts.SourceFile,
+  depth = 0,
+): string => {
+  const unwrapped = unwrapZodCall(expression)
+  const baseExpression = unwrapped.expression
+  const baseName = zodBaseCallName(baseExpression)
+  let rendered = 'unknown'
+
+  if (baseName && ts.isCallExpression(baseExpression)) {
+    if (baseName === 'string') rendered = 'string'
+    else if (baseName === 'number' || baseName === 'int') rendered = 'number'
+    else if (baseName === 'boolean') rendered = 'boolean'
+    else if (baseName === 'any') rendered = 'any'
+    else if (baseName === 'unknown') rendered = 'unknown'
+    else if (baseName === 'array') {
+      const item = baseExpression.arguments[0]
+      rendered = item
+        ? `Array<${renderZodType(item, sourceFile, depth + 1)}>`
+        : 'unknown[]'
+    } else if (baseName === 'enum') {
+      const values = baseExpression.arguments[0]
+      rendered =
+        values && ts.isArrayLiteralExpression(values)
+          ? values.elements
+              .map((element) =>
+                ts.isStringLiteral(element)
+                  ? JSON.stringify(element.text)
+                  : element.getText(sourceFile),
+              )
+              .join(' | ') || 'string'
+          : 'string'
+    } else if (baseName === 'literal') {
+      const literal = baseExpression.arguments[0]
+      rendered = literal ? literal.getText(sourceFile) : 'unknown'
+    } else if (baseName === 'union') {
+      const options = baseExpression.arguments[0]
+      rendered =
+        options && ts.isArrayLiteralExpression(options)
+          ? options.elements
+              .map((element) => renderZodType(element, sourceFile, depth))
+              .join(' | ') || 'unknown'
+          : 'unknown'
+    } else if (baseName === 'record') {
+      const value =
+        baseExpression.arguments[baseExpression.arguments.length - 1]
+      rendered = `Record<string, ${value ? renderZodType(value, sourceFile, depth + 1) : 'unknown'}>`
+    } else if (baseName === 'object') {
+      const shape = baseExpression.arguments[0]
+      if (shape && ts.isObjectLiteralExpression(shape)) {
+        const indent = '  '.repeat(depth + 1)
+        const closeIndent = '  '.repeat(depth)
+        const properties = shape.properties
+          .map((property) => {
+            if (!ts.isPropertyAssignment(property)) return null
+            const propertyName = renderPropertyName(property.name)
+            if (!propertyName) return null
+            const value = unwrapZodCall(property.initializer)
+            const type = renderZodType(
+              property.initializer,
+              sourceFile,
+              depth + 1,
+            )
+            return `${indent}${propertyName}${value.optional ? '?' : ''}: ${type}`
+          })
+          .filter((line): line is string => Boolean(line))
+        rendered = properties.length
+          ? `{\n${properties.join('\n')}\n${closeIndent}}`
+          : 'Record<string, never>'
+      }
+    }
+  }
+
+  return unwrapped.nullable ? `${rendered} | null` : rendered
+}
+
+const renderPropsType = (
+  componentName: string,
+  propsSchema: ts.Expression,
+  sourceFile: ts.SourceFile,
+): string => {
+  const type = renderZodType(propsSchema, sourceFile)
+  return type.startsWith('{\n')
+    ? `export type ${componentName}Props = ${type}`
+    : `export type ${componentName}Props = ${type}`
+}
+
 const findDefineComponentParts = (
   componentName: string,
   entry: ReactExportSourceEntry,
 ): {
   sourceFile: ts.SourceFile
-  propsSchema: string
+  propsSchema: ts.Expression
+  preludeSources: string[]
   body: string
   isExpressionBody: boolean
 } => {
@@ -679,7 +1056,12 @@ const findDefineComponentParts = (
       }
       return {
         sourceFile,
-        propsSchema: printNode(propsProperty.initializer, sourceFile),
+        propsSchema: propsProperty.initializer,
+        preludeSources: collectComponentPreludeSources(
+          sourceFile,
+          statement,
+          component,
+        ),
         body: ts.isBlock(component.body)
           ? component.body.statements
               .map((bodyStatement) => printNode(bodyStatement, sourceFile))
@@ -690,6 +1072,157 @@ const findDefineComponentParts = (
     }
   }
   throw new Error(`Component source not found for ${componentName}`)
+}
+
+const findComponentLakebedProperty = (
+  componentName: string,
+  entry: ReactExportSourceEntry,
+): {
+  lakebed: ts.ObjectLiteralExpression
+  sourceFile: ts.SourceFile
+} | null => {
+  const sourceFile = ts.createSourceFile(
+    entry.file,
+    entry.source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
+  )
+
+  for (const statement of sourceFile.statements) {
+    if (!ts.isVariableStatement(statement)) continue
+    for (const declaration of statement.declarationList.declarations) {
+      if (
+        !ts.isIdentifier(declaration.name) ||
+        declaration.name.text !== componentName
+      ) {
+        continue
+      }
+      const call = declaration.initializer
+      if (
+        !call ||
+        !ts.isCallExpression(call) ||
+        !isExportableComponentFactory(call.expression.getText(sourceFile))
+      ) {
+        continue
+      }
+      const config = call.arguments[0]
+      if (!config || !ts.isObjectLiteralExpression(config)) continue
+      const lakebedProperty = config.properties.find(
+        (property): property is ts.PropertyAssignment =>
+          ts.isPropertyAssignment(property) &&
+          ts.isIdentifier(property.name) &&
+          property.name.text === 'lakebed',
+      )
+      const lakebed = lakebedProperty?.initializer
+      if (lakebed && ts.isObjectLiteralExpression(lakebed)) {
+        return { lakebed, sourceFile }
+      }
+    }
+  }
+
+  return null
+}
+
+const readLakebedEndpointDefinitions = (
+  componentName: string,
+  entry: ReactExportSourceEntry,
+): LakebedEndpointDefinition[] => {
+  const found = findComponentLakebedProperty(componentName, entry)
+  if (!found) return []
+  const endpointsProperty = found.lakebed.properties.find(
+    (property): property is ts.PropertyAssignment =>
+      ts.isPropertyAssignment(property) &&
+      ts.isIdentifier(property.name) &&
+      property.name.text === 'endpoints',
+  )
+  const endpoints = endpointsProperty?.initializer
+  if (!endpoints || !ts.isObjectLiteralExpression(endpoints)) return []
+
+  return endpoints.properties
+    .filter((property): property is ts.PropertyAssignment =>
+      ts.isPropertyAssignment(property),
+    )
+    .map((property) => {
+      const initializer = property.initializer
+      const route =
+        ts.isCallExpression(initializer) &&
+        initializer.expression.getText(found.sourceFile) === 'endpoint' &&
+        initializer.arguments[0] &&
+        ts.isObjectLiteralExpression(initializer.arguments[0])
+          ? initializer.arguments[0]
+          : null
+      const method = route ? stringPropertyValue(route, 'method') : null
+      const path = route ? stringPropertyValue(route, 'path') : null
+      if (!method || !path) return null
+      return {
+        componentName,
+        method: method.toUpperCase(),
+        name: propertyNameText(property.name, found.sourceFile),
+        path,
+        source: printNode(initializer, found.sourceFile),
+      }
+    })
+    .filter(
+      (definition): definition is LakebedEndpointDefinition =>
+        definition !== null,
+    )
+}
+
+const sourceEndpointName = (
+  method: string,
+  path: string,
+  index: number,
+): string => {
+  const slug =
+    path.split(/[?#]/)[0]?.split('/').filter(Boolean).join('_') || 'root'
+  return `${method.toLowerCase()}_${slug}_${index + 1}`.replace(
+    /[^A-Za-z0-9_$]+/g,
+    '_',
+  )
+}
+
+const readSourceEndpointDefinitions = (
+  source: string,
+): LakebedEndpointDefinition[] => {
+  const sourceFile = ts.createSourceFile(
+    'openui-source.ts',
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
+  )
+  const endpoints: LakebedEndpointDefinition[] = []
+
+  const visit = (node: ts.Node) => {
+    if (
+      ts.isCallExpression(node) &&
+      node.expression.getText(sourceFile) === 'endpoint'
+    ) {
+      const route = node.arguments[0]
+      const method =
+        route && ts.isObjectLiteralExpression(route)
+          ? stringPropertyValue(route, 'method')
+          : null
+      const path =
+        route && ts.isObjectLiteralExpression(route)
+          ? stringPropertyValue(route, 'path')
+          : null
+      if (method && path) {
+        endpoints.push({
+          componentName: 'Source',
+          method: method.toUpperCase(),
+          name: sourceEndpointName(method, path, endpoints.length),
+          path,
+          source: printNode(node, sourceFile),
+        })
+      }
+    }
+    ts.forEachChild(node, visit)
+  }
+
+  visit(sourceFile)
+  return endpoints
 }
 
 const navigationVarPattern =
@@ -753,6 +1286,124 @@ const rewriteNavigationCalls = (
   return { body: nextBody, usesNavigation: true }
 }
 
+const lakebedDataImport = `import {
+  applySiteMutation,
+  defaultSiteQueryValue,
+  guestAuth,
+  invalidateSiteQueries,
+  readSiteAuth,
+  readSiteData,
+  readSiteDataSnapshot,
+  runSiteMutation,
+  signInWithGoogle,
+  signOut,
+  siteAuthQueryKey,
+  siteMutationKey,
+  siteQueryKey,
+  updateSiteQueries,
+} from '../lib/site-data'`
+
+const renderTranslatedQuery = (variableName: string, queryName: string) =>
+  `const { data: ${variableName} = defaultSiteQueryValue(${queryName}) as any } = useQuery({
+    queryKey: siteQueryKey(${queryName}),
+    queryFn: () => readSiteData(${queryName}),
+    initialData: () => readSiteDataSnapshot(${queryName}),
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });`
+
+const renderTranslatedMutation = (variableName: string, mutationName: string) =>
+  `const ${variableName}Mutation = useMutation({
+    mutationKey: siteMutationKey(${mutationName}),
+    mutationFn: (args: unknown[]) => runSiteMutation(${mutationName}, args),
+    onSuccess: () => invalidateSiteQueries(queryClient, ${mutationName}),
+  });
+  const ${variableName} = (...args: any[]) => {
+    const result = applySiteMutation(${mutationName}, args);
+    updateSiteQueries(queryClient, ${mutationName});
+    ${variableName}Mutation.mutate(args);
+    return result;
+  };`
+
+const translateLakebedRuntimeCalls = (body: string) => {
+  let usesQuery = false
+  let usesMutation = false
+  let usesAuth = false
+  const usesSignIn = /\blakebed\.signInWithGoogle\(\)/.test(body)
+  const usesSignOut = /\blakebed\.signOut\(\)/.test(body)
+
+  let nextBody = body.replace(
+    /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*lakebed\.useQuery\(([^;\n]+)\);?/g,
+    (_match, variableName: string, queryName: string) => {
+      usesQuery = true
+      return renderTranslatedQuery(variableName, queryName.trim())
+    },
+  )
+
+  nextBody = nextBody.replace(
+    /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*lakebed\.useMutation\(([^;\n]+)\);?/g,
+    (_match, variableName: string, mutationName: string) => {
+      usesMutation = true
+      return renderTranslatedMutation(variableName, mutationName.trim())
+    },
+  )
+
+  nextBody = nextBody.replace(
+    /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*lakebed\.useAuth\(\);?/g,
+    (_match, variableName: string) => {
+      usesAuth = true
+      return `const { data: ${variableName} = guestAuth } = useQuery({
+    queryKey: siteAuthQueryKey,
+    queryFn: readSiteAuth,
+    initialData: guestAuth,
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });`
+    },
+  )
+
+  nextBody = nextBody
+    .replace(
+      /\blakebed\.signInWithGoogle\(\)/g,
+      'signInWithGoogleMutation.mutateAsync()',
+    )
+    .replace(/\blakebed\.signOut\(\)/g, 'signOutMutation.mutate()')
+
+  const authMutationPrelude =
+    usesSignIn || usesSignOut
+      ? `${
+          usesSignIn
+            ? `const signInWithGoogleMutation = useMutation({
+    mutationKey: ['site-auth', 'sign-in'],
+    mutationFn: signInWithGoogle,
+    onSuccess: (auth) => queryClient.setQueryData(siteAuthQueryKey, auth),
+  });`
+            : ''
+        }
+  ${
+    usesSignOut
+      ? `const signOutMutation = useMutation({
+    mutationKey: ['site-auth', 'sign-out'],
+    mutationFn: signOut,
+    onSuccess: (auth) => queryClient.setQueryData(siteAuthQueryKey, auth),
+  });`
+      : ''
+  }`
+      : ''
+
+  if (authMutationPrelude) {
+    nextBody = `${authMutationPrelude}\n${nextBody}`
+  }
+
+  return {
+    body: nextBody,
+    needsQueryClient: usesMutation || usesSignIn || usesSignOut,
+    usesAuth,
+    usesMutation,
+    usesQuery,
+  }
+}
+
 const extractComponent = (
   componentName: string,
   stack: ExportStack,
@@ -764,7 +1415,7 @@ const extractComponent = (
       `React export does not support unknown component: ${componentName}`,
     )
 
-  const { sourceFile, propsSchema, body, isExpressionBody } =
+  const { sourceFile, propsSchema, preludeSources, body, isExpressionBody } =
     findDefineComponentParts(componentName, entry)
   const generatedFilePath = `src/components/${componentName}.tsx`
   const { imports, dependencies, blockSources } = transformComponentImports(
@@ -774,21 +1425,37 @@ const extractComponent = (
     generatedFilePath,
   )
   const functionBody = isExpressionBody ? `return ${body}` : body
+  const usesLakebed = /\blakebed\./.test(functionBody)
+  const translatedLakebed = usesLakebed
+    ? translateLakebedRuntimeCalls(functionBody)
+    : {
+        body: functionBody,
+        needsQueryClient: false,
+        usesAuth: false,
+        usesMutation: false,
+        usesQuery: false,
+      }
   const rewrittenNavigation = rewriteNavigationCalls(
-    functionBody,
+    translatedLakebed.body,
     stack,
     routeTargets,
   )
   const routePaths = rewrittenNavigation.usesNavigation
     ? `\nconst routePaths: Record<string, string> = ${JSON.stringify(routeTargets, null, 2)}\n`
     : ''
-  const source = `${imports.join('\n')}${routePaths}
+  const queryHookImport = usesLakebed
+    ? `\nimport { useMutation, useQuery${translatedLakebed.needsQueryClient ? ', useQueryClient' : ''} } from '@tanstack/react-query'`
+    : ''
+  const componentSource = `${preludeSources.join('\n\n')}\n${rewrittenNavigation.body}`
+  const componentImports = ensureReactNodeImport(imports, componentSource)
+  const source = `${componentImports.join('\n')}${queryHookImport}${usesLakebed ? `\n${lakebedDataImport}` : ''}${routePaths}
 
-export const ${componentName}PropsSchema = ${propsSchema}
+${preludeSources.join('\n\n')}
 
-export type ${componentName}Props = z.infer<typeof ${componentName}PropsSchema>
+${renderPropsType(componentName, propsSchema, sourceFile)}
 
 export function ${componentName}(props: ${componentName}Props) {
+${translatedLakebed.needsQueryClient ? '  const queryClient = useQueryClient()\n' : ''}
 ${rewrittenNavigation.body
   .split('\n')
   .map((line) => `  ${line}`)
@@ -801,6 +1468,7 @@ ${rewrittenNavigation.body
     source,
     dependencies,
     blockSources,
+    usesLakebed,
   }
 }
 
@@ -813,8 +1481,10 @@ const collectBlockSourceFiles = (
   const files: Record<string, string> = {}
   const dependencies = new Set<string>()
 
-  for (let index = 0; index < pending.length; index += 1) {
+  let index = 0
+  while (index < pending.length) {
     const sourcePath = pending[index]
+    index += 1
     if (!sourcePath || seen.has(sourcePath)) continue
     seen.add(sourcePath)
 
@@ -837,7 +1507,6 @@ const collectBlockSourceFiles = (
       stack,
       outPath,
       sourcePath,
-      false,
     )
 
     for (const dependency of transformed.dependencies) {
@@ -878,7 +1547,10 @@ const dependencyVersions: Record<string, string> = {
   '@types/node': '^22.10.2',
   '@types/react': '^19.2.0',
   '@types/react-dom': '^19.2.0',
+  '@tailwindcss/postcss': '^4.1.18',
+  '@tailwindcss/vite': '^4.1.18',
   '@vitejs/plugin-react': '^6.0.1',
+  postcss: '^8.5.6',
   vite: '^8.0.0',
   typescript: '^6.0.2',
   react: '^19.2.0',
@@ -886,13 +1558,13 @@ const dependencyVersions: Record<string, string> = {
   'react-router-dom': '^7.10.1',
   next: '^16.0.8',
   tailwindcss: '^4.1.18',
-  zod: '^4.4.3',
   'lucide-react': '^0.577.0',
   clsx: '^2.1.1',
   'tailwind-merge': '^3.5.0',
   '@radix-ui/react-slot': '^1.2.4',
   'class-variance-authority': '^0.7.1',
   'radix-ui': '^1.4.3',
+  '@tanstack/react-query': '^5.90.19',
 }
 
 const toDependencyRecord = (names: Iterable<string>): Record<string, string> =>
@@ -918,15 +1590,17 @@ const resolveDependencyVersions = (
   ])
   names.add('react')
   names.add('react-dom')
-  names.add('zod')
   names.add('clsx')
   names.add('tailwind-merge')
   if (target === 'react') {
     devNames.add('@vitejs/plugin-react')
+    devNames.add('@tailwindcss/vite')
     devNames.add('vite')
     names.add('react-router-dom')
   } else {
+    devNames.add('@tailwindcss/postcss')
     devNames.add('@types/node')
+    devNames.add('postcss')
     names.add('next')
   }
   for (const name of devNames) names.delete(name)
@@ -940,13 +1614,20 @@ const renderThemeCss = (input: OpenUIExportInput): string => {
   const siteSpec = parseSiteSpec(input.siteSpecJson)
   const themeName = readThemeName(siteSpec, input.themeName)
   const isDark = input.isDark ?? true
-  const themeStyles = resolveThemeStyles(themeName)
+  const themeStyles =
+    resolveThemeStyles(themeName) ?? resolveThemeStyles('modern-minimal')
   const themeStyle = buildThemeStyle(themeStyles, isDark)
+  const tailwindThemeStyle = buildTailwindThemeStyle(themeStyles)
 
   return `@import "tailwindcss";
 
+@theme {
+  ${tailwindThemeStyle.replaceAll('; ', ';\n  ')}
+}
+
 :root {
   ${themeStyle.replaceAll('; ', ';\n  ')}
+  color-scheme: ${isDark ? 'dark' : 'light'};
 }
 
 html,
@@ -971,7 +1652,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 `
 
-const renderImageHelper = (target: 'react' | 'next'): string => {
+const renderImageHelper = (
+  target: 'react' | 'next',
+  imageSources: ImageSource[],
+): string => {
   const envName =
     target === 'react'
       ? 'import.meta.env.VITE_SERVER_URL'
@@ -979,6 +1663,8 @@ const renderImageHelper = (target: 'react' | 'next'): string => {
   return `import type { ImgHTMLAttributes } from 'react'
 
 const serverUrl = (${envName} || 'https://ship-fast.io').replace(/\\/$/, '')
+const previewImageSources = ${JSON.stringify(imageSources, null, 2)} satisfies Array<{ alt: string; src: string }>
+const previewImageSourceByAlt = new Map(previewImageSources.map((image) => [image.alt, image.src]))
 
 function normalizeAlt(alt: unknown): string {
   if (typeof alt === 'string') return alt.trim() || 'image'
@@ -1015,9 +1701,10 @@ export function Image({
   h?: number
 } & Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt' | 'width' | 'height'>) {
   const normalizedAlt = normalizeAlt(alt)
-  const imageSrc = typeof src === 'string' && src.trim()
+  const previewSrc = previewImageSourceByAlt.get(normalizedAlt)
+  const imageSrc = previewSrc || (typeof src === 'string' && src.trim()
     ? src
-    : \`\${serverUrl}/api/pexels?query=\${encodeURIComponent(slugify(normalizedAlt))}&w=\${w}&h=\${h}\`
+    : \`\${serverUrl}/api/pexels?query=\${encodeURIComponent(slugify(normalizedAlt))}&w=\${w}&h=\${h}\`)
 
   return (
     <img
@@ -1033,6 +1720,1140 @@ export function Image({
 }
 `
 }
+
+const renderStyleOverridesRuntime = (
+  styleOverrides: StyleOverride[],
+): string => `'use client'
+
+import { useEffect } from 'react'
+
+const styleOverrides = ${JSON.stringify(styleOverrides, null, 2)} satisfies Array<{
+  classAnchor: string
+  occurrenceIndex: number
+  style: string
+}>
+
+function applyStyleOverrides() {
+  for (const override of styleOverrides) {
+    if (!override.classAnchor) continue
+    const matches = Array.from(document.querySelectorAll<HTMLElement>('*')).filter(
+      (element) => element.getAttribute('class') === override.classAnchor,
+    )
+    const element = matches[override.occurrenceIndex] ?? matches[0]
+    if (!element) continue
+    for (const declaration of override.style.split(';')) {
+      const colon = declaration.indexOf(':')
+      if (colon === -1) continue
+      const property = declaration.slice(0, colon).trim()
+      const value = declaration.slice(colon + 1).trim()
+      if (property) element.style.setProperty(property, value)
+    }
+  }
+}
+
+export function StyleOverrides() {
+  useEffect(() => {
+    if (styleOverrides.length === 0) return
+    applyStyleOverrides()
+    const observer = new MutationObserver(() => applyStyleOverrides())
+    observer.observe(document.body, { childList: true, subtree: true })
+    return () => observer.disconnect()
+  }, [])
+
+  return null
+}
+`
+
+const renderSiteDataRuntime = (target: 'react' | 'next'): string => {
+  const nextActionImport =
+    target === 'next'
+      ? `import {
+  runSiteMutationAction,
+  signInWithGoogleAction,
+  signOutAction,
+} from './site-data-actions'
+`
+      : ''
+  const transport =
+    target === 'next'
+      ? `async function readRemote(name: string): Promise<unknown> {
+  const response = await fetch(\`/api/data?query=\${encodeURIComponent(name)}\`, {
+    cache: 'no-store',
+  })
+  if (!response.ok) throw new Error(\`Failed to read \${name}\`)
+  const payload = (await response.json()) as { value?: unknown }
+  return payload.value
+}
+
+async function writeRemote(name: string, args: unknown[]): Promise<unknown> {
+  if (name === 'auth:signIn') return signInWithGoogleAction()
+  if (name === 'auth:signOut') return signOutAction()
+  return runSiteMutationAction(name, args)
+}
+`
+      : `async function readRemote(name: string): Promise<unknown> {
+  if (name === 'auth') return localAuth
+  return readQueryValue(localStore, name)
+}
+
+async function writeRemote(name: string, args: unknown[]): Promise<unknown> {
+  if (name === 'auth:signIn') {
+    localAuth = createDemoAuth()
+    return localAuth
+  }
+  if (name === 'auth:signOut') {
+    localAuth = guestAuth
+    return localAuth
+  }
+  return mutationResult(localStore, name)
+}
+`
+
+  return `import type { QueryClient } from '@tanstack/react-query'
+import { routes } from '../data/pages'
+${nextActionImport}
+
+type Store = Record<string, unknown>
+type AuthState = {
+  displayName: string | null
+  email: string | null
+  isAuthenticated: boolean
+  isGuest: boolean
+  isLoading: boolean
+  picture: string | null
+  user: {
+    displayName: string
+    email: string
+    picture: string | null
+  } | null
+  userId: string
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+
+function collectionItems(name: string): Array<Record<string, unknown>> {
+  const items: Array<Record<string, unknown>> = []
+  const visit = (value: unknown) => {
+    if (!isRecord(value)) return
+    const collection = value[name]
+    if (Array.isArray(collection)) {
+      items.push(...collection.filter(isRecord))
+    } else if (isRecord(collection) && Array.isArray(collection.items)) {
+      items.push(...collection.items.filter(isRecord))
+    }
+    for (const nested of Object.values(value)) {
+      if (Array.isArray(nested)) nested.forEach(visit)
+      else visit(nested)
+    }
+  }
+  routes.forEach((route) => visit(route.props))
+  return items
+}
+
+const defaultCommerceProducts: Array<Record<string, unknown>> = [
+  {
+    alt: 'Featured product on a clean studio background',
+    badge: 'New',
+    brand: 'Featured',
+    image: '',
+    name: 'Signature Series',
+    oldPrice: '$230',
+    price: '$195',
+  },
+  {
+    alt: 'Lifestyle product photography on a neutral background',
+    badge: '',
+    brand: 'Featured',
+    image: '',
+    name: 'Everyday Essential',
+    oldPrice: '',
+    price: '$250',
+  },
+  {
+    alt: 'Close-up product detail on a neutral background',
+    badge: 'Sale',
+    brand: 'Featured',
+    image: '',
+    name: 'Classic Edition',
+    oldPrice: '$210',
+    price: '$175',
+  },
+  {
+    alt: 'Featured product on a clean studio background',
+    badge: '',
+    brand: 'Featured',
+    image: '',
+    name: 'Studio Collection',
+    oldPrice: '',
+    price: '$160',
+  },
+]
+
+function productsCollection(): Array<Record<string, unknown>> {
+  const products = collectionItems('products')
+  if (products.length > 0) return products
+  const hasCommerceRoute = routes.some((route) =>
+    /commerce|ecommerce|shop|store|marketplace/i.test(String(route.component)),
+  )
+  return hasCommerceRoute ? defaultCommerceProducts : products
+}
+
+const initialStore: Store = {
+  cartLines: [],
+  orderLines: [],
+  favoriteProductNames: new Set<string>(),
+  wishlistTitles: new Set<string>(),
+  favoriteTitles: new Set<string>(),
+  favoriteRestaurantNames: new Set<string>(),
+  favoriteMemberNames: new Set<string>(),
+  subscriberEmails: new Set<string>(),
+  orders: [],
+  inquiries: [],
+  products: productsCollection(),
+  restaurants: collectionItems('restaurants'),
+  subscribers: [],
+}
+
+export const guestAuth: AuthState = {
+  displayName: null,
+  email: null,
+  isAuthenticated: false,
+  isGuest: true,
+  isLoading: false,
+  picture: null,
+  user: null,
+  userId: 'guest',
+}
+
+function createDemoAuth(): AuthState {
+  return {
+    displayName: 'Demo Shopper',
+    email: 'demo@ship-fast.local',
+    isAuthenticated: true,
+    isGuest: false,
+    isLoading: false,
+    picture: null,
+    user: {
+      displayName: 'Demo Shopper',
+      email: 'demo@ship-fast.local',
+      picture: null,
+    },
+    userId: 'demo-user',
+  }
+}
+
+let localStore = initialStore
+let localAuth = guestAuth
+
+${transport}
+const readList = (store: Store, name: string): unknown[] =>
+  store[name] instanceof Set
+    ? [...(store[name] as Set<unknown>)]
+    : Array.isArray(store[name])
+      ? [...(store[name] as unknown[])]
+      : []
+
+const emptyQueryValue = (name: string): unknown =>
+  /(?:Names|Titles|Emails)$/.test(name) ? new Set<string>() : []
+
+const normalizeQueryValue = (name: string, value: unknown): unknown => {
+  if (!/(?:Names|Titles|Emails)$/.test(name)) return value ?? []
+  if (value instanceof Set) return value
+  if (Array.isArray(value)) return new Set(value.filter((item): item is string => typeof item === 'string'))
+  if (isRecord(value)) {
+    return new Set(
+      Object.values(value).filter((item): item is string => typeof item === 'string'),
+    )
+  }
+  return new Set<string>()
+}
+
+const readQueryValue = (store: Store, name: string): unknown =>
+  normalizeQueryValue(name, store[name] ?? emptyQueryValue(name))
+
+const productNameFromArgs = (args: unknown[]) =>
+  typeof args[0] === 'string' ? args[0] : 'Item'
+
+const stableId = (prefix: string, value: unknown): string =>
+  \`\${prefix}-\${String(value || 'item')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'item'}\`
+
+const lineName = (item: Record<string, unknown>): unknown =>
+  item.name ??
+  (item.product && typeof item.product === 'object'
+    ? (item.product as { name?: unknown }).name
+    : undefined) ??
+  (item.restaurant && typeof item.restaurant === 'object'
+    ? (item.restaurant as { name?: unknown }).name
+    : undefined)
+
+const lineMatches = (item: Record<string, unknown>, value: unknown): boolean =>
+  item.id === value ||
+  item.productId === value ||
+  item.restaurantId === value ||
+  lineName(item) === value
+
+const productFromStore = (store: Store, itemName: string): Record<string, unknown> | null =>
+  (readList(store, 'products') as Array<Record<string, unknown>>).find(
+    (item) => item.name === itemName,
+  ) ?? null
+
+const restaurantFromStore = (
+  store: Store,
+  itemName: string,
+): Record<string, unknown> | null =>
+  (readList(store, 'restaurants') as Array<Record<string, unknown>>).find(
+    (item) => item.name === itemName,
+  ) ?? null
+
+function applyMutation(store: Store, name: string, args: unknown[]): Store {
+  const next = { ...store }
+
+  if (/clear/i.test(name)) {
+    if (/cart/i.test(name)) next.cartLines = []
+    if (/order/i.test(name)) next.orderLines = []
+    if (/wishlist|favorite/i.test(name)) next.favoriteProductNames = []
+    return next
+  }
+
+  if (/remove/i.test(name)) {
+    const itemName = productNameFromArgs(args)
+    if (/order/i.test(name)) {
+      next.orderLines = readList(next, 'orderLines').filter(
+        (item) => !isRecord(item) || !lineMatches(item, itemName),
+      )
+    } else {
+      next.cartLines = readList(next, 'cartLines').filter(
+        (item) => !isRecord(item) || !lineMatches(item, itemName),
+      )
+      next.favoriteProductNames = new Set(
+        readList(next, 'favoriteProductNames').filter((item) => item !== itemName),
+      )
+    }
+    return next
+  }
+
+  if (/favorite|wishlist|saved/i.test(name) && /toggle/i.test(name)) {
+    const itemName = productNameFromArgs(args)
+    const list = readList(next, 'favoriteProductNames')
+    next.favoriteProductNames = new Set(
+      list.includes(itemName)
+        ? list.filter((item) => item !== itemName)
+        : [...list, itemName],
+    )
+    return next
+  }
+
+  if (/cart|bag/i.test(name) && /add/i.test(name)) {
+    const [nameArg, price, alt, image, category, badge, oldPrice] = args
+    const itemName = typeof nameArg === 'string' ? nameArg : 'Item'
+    const productId = stableId('product', itemName)
+    const product = productFromStore(next, itemName) ?? {
+      alt: typeof alt === 'string' ? alt : itemName,
+      badge: typeof badge === 'string' ? badge : '',
+      category: typeof category === 'string' ? category : '',
+      image: typeof image === 'string' ? image : '',
+      name: itemName,
+      oldPrice: typeof oldPrice === 'string' ? oldPrice : '',
+      price: typeof price === 'string' ? price : '',
+    }
+    const productRecord = { ...product, id: String(product.id ?? productId) }
+    const cart = readList(next, 'cartLines') as Array<Record<string, unknown>>
+    const existing = cart.find((item) => lineMatches(item, productRecord.id) || lineMatches(item, itemName))
+    next.cartLines = existing
+      ? cart.map((item) =>
+          lineMatches(item, productRecord.id) || lineMatches(item, itemName)
+            ? { ...item, quantity: Number(item.quantity ?? 1) + 1 }
+            : item,
+        )
+      : [
+          ...cart,
+          {
+            ...productRecord,
+            product: productRecord,
+            productId: productRecord.id,
+            quantity: 1,
+          },
+        ]
+    return next
+  }
+
+  if (/order/i.test(name) && /add/i.test(name)) {
+    const itemName = productNameFromArgs(args)
+    const restaurantId = stableId('restaurant', itemName)
+    const restaurant = restaurantFromStore(next, itemName) ?? { name: itemName }
+    const restaurantRecord = { ...restaurant, id: String(restaurant.id ?? restaurantId) }
+    const lines = readList(next, 'orderLines') as Array<Record<string, unknown>>
+    const existing = lines.find(
+      (item) => lineMatches(item, restaurantRecord.id) || lineMatches(item, itemName),
+    )
+    next.orderLines = existing
+      ? lines.map((item) =>
+          lineMatches(item, restaurantRecord.id) || lineMatches(item, itemName)
+            ? { ...item, quantity: Number(item.quantity ?? 1) + 1 }
+            : item,
+        )
+      : [
+          ...lines,
+          {
+            ...restaurantRecord,
+            restaurant: restaurantRecord,
+            restaurantId: restaurantRecord.id,
+            quantity: 1,
+          },
+        ]
+    return next
+  }
+
+  if (/quantity/i.test(name)) {
+    const [nameArg, quantityArg] = args
+    const itemName = typeof nameArg === 'string' ? nameArg : ''
+    const quantity = Math.max(1, Number(quantityArg) || 1)
+    const listName = /order/i.test(name) ? 'orderLines' : 'cartLines'
+    next[listName] = (readList(next, listName) as Array<Record<string, unknown>>).map((item) =>
+      lineMatches(item, itemName) ? { ...item, quantity } : item,
+    )
+    return next
+  }
+
+  if (/subscribe/i.test(name)) {
+    next.subscribers = [...readList(next, 'subscribers'), { email: args[0] }]
+    return next
+  }
+
+  if (/submit|create|add|book|reserve|register/i.test(name)) {
+    const key = /inquir|contact|message/i.test(name) ? 'inquiries' : 'orders'
+    next[key] = [...readList(next, key), { id: Date.now().toString(36), values: args }]
+    return next
+  }
+
+  return next
+}
+
+const mutationResult = (store: Store, name: string): unknown => {
+  if (/favorite|wishlist|saved/i.test(name)) return readQueryValue(store, 'favoriteProductNames')
+  if (/order/i.test(name)) return readQueryValue(store, 'orderLines')
+  if (/cart|bag|quantity|remove|clear/i.test(name)) return readQueryValue(store, 'cartLines')
+  if (/subscribe/i.test(name)) return readQueryValue(store, 'subscribers')
+  if (/inquir|contact|message/i.test(name)) return readQueryValue(store, 'inquiries')
+  return true
+}
+
+const affectedQueryNames = (name: string): string[] => {
+  const names = new Set<string>()
+  if (/favorite|wishlist|saved/i.test(name)) names.add('favoriteProductNames')
+  if (/cart|bag|quantity|remove|clear/i.test(name)) names.add('cartLines')
+  if (/order/i.test(name)) names.add('orderLines')
+  if (/subscribe/i.test(name)) {
+    names.add('subscribers')
+    names.add('subscriberEmails')
+  }
+  if (/inquir|contact|message/i.test(name)) names.add('inquiries')
+  if (/order/i.test(name)) names.add('orders')
+  return [...names]
+}
+
+export const siteAuthQueryKey = ['site-auth'] as const
+
+export const siteQueryKey = (name: string) => ['site-data', name] as const
+
+export const siteMutationKey = (name: string) => ['site-mutation', name] as const
+
+export const defaultSiteQueryValue = (name: string): any =>
+  emptyQueryValue(name) as any
+
+export async function readSiteAuth(): Promise<AuthState> {
+  return (await readRemote('auth')) as AuthState
+}
+
+export async function signInWithGoogle(): Promise<AuthState> {
+  return (await writeRemote('auth:signIn', [])) as AuthState
+}
+
+export async function signOut(): Promise<AuthState> {
+  return (await writeRemote('auth:signOut', [])) as AuthState
+}
+
+export async function readSiteData<T = any>(name: string): Promise<T> {
+  return normalizeQueryValue(name, await readRemote(name)) as T
+}
+
+export function readSiteDataSnapshot<T = any>(name: string): T {
+  return readQueryValue(localStore, name) as T
+}
+
+export async function runSiteMutation<Result = any>(
+  name: string,
+  args: unknown[],
+): Promise<Result> {
+  return (await writeRemote(name, args)) as Result
+}
+
+export function applySiteMutation<Result = any>(
+  name: string,
+  args: unknown[],
+): Result {
+  localStore = applyMutation(localStore, name, args)
+  return mutationResult(localStore, name) as Result
+}
+
+export function updateSiteQueries(queryClient: QueryClient, name: string) {
+  for (const queryName of affectedQueryNames(name)) {
+    queryClient.setQueryData(siteQueryKey(queryName), readQueryValue(localStore, queryName))
+  }
+}
+
+export function invalidateSiteQueries(queryClient: QueryClient, name: string) {
+  for (const queryName of affectedQueryNames(name)) {
+    void queryClient.invalidateQueries({ queryKey: siteQueryKey(queryName) })
+  }
+}
+`
+}
+
+const renderNextDataStore =
+  (): string => `import { routes } from '../data/pages'
+
+type Store = Record<string, unknown>
+type AuthState = {
+  displayName: string | null
+  email: string | null
+  isAuthenticated: boolean
+  isGuest: boolean
+  isLoading: boolean
+  picture: string | null
+  user: {
+    displayName: string
+    email: string
+    picture: string | null
+  } | null
+  userId: string
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+
+function collectionItems(name: string): Array<Record<string, unknown>> {
+  const items: Array<Record<string, unknown>> = []
+  const visit = (value: unknown) => {
+    if (!isRecord(value)) return
+    const collection = value[name]
+    if (Array.isArray(collection)) {
+      items.push(...collection.filter(isRecord))
+    } else if (isRecord(collection) && Array.isArray(collection.items)) {
+      items.push(...collection.items.filter(isRecord))
+    }
+    for (const nested of Object.values(value)) {
+      if (Array.isArray(nested)) nested.forEach(visit)
+      else visit(nested)
+    }
+  }
+  routes.forEach((route) => visit(route.props))
+  return items
+}
+
+const defaultCommerceProducts: Array<Record<string, unknown>> = [
+  {
+    alt: 'Featured product on a clean studio background',
+    badge: 'New',
+    brand: 'Featured',
+    image: '',
+    name: 'Signature Series',
+    oldPrice: '$230',
+    price: '$195',
+  },
+  {
+    alt: 'Lifestyle product photography on a neutral background',
+    badge: '',
+    brand: 'Featured',
+    image: '',
+    name: 'Everyday Essential',
+    oldPrice: '',
+    price: '$250',
+  },
+  {
+    alt: 'Close-up product detail on a neutral background',
+    badge: 'Sale',
+    brand: 'Featured',
+    image: '',
+    name: 'Classic Edition',
+    oldPrice: '$210',
+    price: '$175',
+  },
+  {
+    alt: 'Featured product on a clean studio background',
+    badge: '',
+    brand: 'Featured',
+    image: '',
+    name: 'Studio Collection',
+    oldPrice: '',
+    price: '$160',
+  },
+]
+
+function productsCollection(): Array<Record<string, unknown>> {
+  const products = collectionItems('products')
+  if (products.length > 0) return products
+  const hasCommerceRoute = routes.some((route) =>
+    /commerce|ecommerce|shop|store|marketplace/i.test(String(route.component)),
+  )
+  return hasCommerceRoute ? defaultCommerceProducts : products
+}
+
+const siteDataGlobal = globalThis as typeof globalThis & {
+  __shipFastSiteDataDatabase?: Store
+}
+
+const database: Store = siteDataGlobal.__shipFastSiteDataDatabase ??= {
+  cartLines: [],
+  orderLines: [],
+  favoriteProductNames: [],
+  inquiries: [],
+  orders: [],
+  products: productsCollection(),
+  restaurants: collectionItems('restaurants'),
+  subscribers: [],
+}
+
+const guestAuth: AuthState = {
+  displayName: null,
+  email: null,
+  isAuthenticated: false,
+  isGuest: true,
+  isLoading: false,
+  picture: null,
+  user: null,
+  userId: 'guest',
+}
+
+function createDemoAuth(): AuthState {
+  return {
+    displayName: 'Demo Shopper',
+    email: 'demo@ship-fast.local',
+    isAuthenticated: true,
+    isGuest: false,
+    isLoading: false,
+    picture: null,
+    user: {
+      displayName: 'Demo Shopper',
+      email: 'demo@ship-fast.local',
+      picture: null,
+    },
+    userId: 'demo-user',
+  }
+}
+
+const siteAuthGlobal = globalThis as typeof globalThis & {
+  __shipFastSiteDataAuth?: AuthState
+}
+
+if (!siteAuthGlobal.__shipFastSiteDataAuth) {
+  siteAuthGlobal.__shipFastSiteDataAuth = guestAuth
+}
+
+const readAuth = (): AuthState => siteAuthGlobal.__shipFastSiteDataAuth ?? guestAuth
+
+const writeAuth = (nextAuth: AuthState): AuthState => {
+  siteAuthGlobal.__shipFastSiteDataAuth = nextAuth
+  return nextAuth
+}
+
+const readList = (name: string): unknown[] =>
+  Array.isArray(database[name]) ? [...(database[name] as unknown[])] : []
+
+const itemNameFromArgs = (args: unknown[]) =>
+  typeof args[0] === 'string' ? args[0] : 'Item'
+
+const stableId = (prefix: string, value: unknown): string =>
+  \`\${prefix}-\${String(value || 'item')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'item'}\`
+
+const lineName = (item: Record<string, unknown>): unknown =>
+  item.name ??
+  (item.product && typeof item.product === 'object'
+    ? (item.product as { name?: unknown }).name
+    : undefined) ??
+  (item.restaurant && typeof item.restaurant === 'object'
+    ? (item.restaurant as { name?: unknown }).name
+    : undefined)
+
+const lineMatches = (item: Record<string, unknown>, value: unknown): boolean =>
+  item.id === value ||
+  item.productId === value ||
+  item.restaurantId === value ||
+  lineName(item) === value
+
+const productFromDatabase = (itemName: string): Record<string, unknown> | null =>
+  (readList('products') as Array<Record<string, unknown>>).find(
+    (item) => item.name === itemName,
+  ) ?? null
+
+const restaurantFromDatabase = (itemName: string): Record<string, unknown> | null =>
+  (readList('restaurants') as Array<Record<string, unknown>>).find(
+    (item) => item.name === itemName,
+  ) ?? null
+
+function applyMutation(name: string, args: unknown[]): unknown {
+  if (name === 'auth:signIn') {
+    return writeAuth(createDemoAuth())
+  }
+
+  if (name === 'auth:signOut') {
+    return writeAuth(guestAuth)
+  }
+
+  if (/clear/i.test(name)) {
+    if (/cart/i.test(name)) database.cartLines = []
+    if (/order/i.test(name)) database.orderLines = []
+    if (/wishlist|favorite/i.test(name)) database.favoriteProductNames = []
+    return true
+  }
+
+  if (/remove/i.test(name)) {
+    const itemName = itemNameFromArgs(args)
+    if (/order/i.test(name)) {
+      database.orderLines = readList('orderLines').filter(
+        (item) => !isRecord(item) || !lineMatches(item, itemName),
+      )
+    } else {
+      database.cartLines = readList('cartLines').filter(
+        (item) => !isRecord(item) || !lineMatches(item, itemName),
+      )
+      database.favoriteProductNames = readList('favoriteProductNames').filter((item) => item !== itemName)
+    }
+    return true
+  }
+
+  if (/favorite|wishlist|saved/i.test(name) && /toggle/i.test(name)) {
+    const itemName = itemNameFromArgs(args)
+    const list = readList('favoriteProductNames')
+    database.favoriteProductNames = list.includes(itemName)
+      ? list.filter((item) => item !== itemName)
+      : [...list, itemName]
+    return database.favoriteProductNames
+  }
+
+  if (/cart|bag/i.test(name) && /add/i.test(name)) {
+    const [nameArg, price, alt, image, category, badge, oldPrice] = args
+    const itemName = typeof nameArg === 'string' ? nameArg : 'Item'
+    const productId = stableId('product', itemName)
+    const product = productFromDatabase(itemName) ?? {
+      alt: typeof alt === 'string' ? alt : itemName,
+      badge: typeof badge === 'string' ? badge : '',
+      category: typeof category === 'string' ? category : '',
+      image: typeof image === 'string' ? image : '',
+      name: itemName,
+      oldPrice: typeof oldPrice === 'string' ? oldPrice : '',
+      price: typeof price === 'string' ? price : '',
+    }
+    const productRecord = { ...product, id: String(product.id ?? productId) }
+    const cart = readList('cartLines') as Array<Record<string, unknown>>
+    const existing = cart.find((item) => lineMatches(item, productRecord.id) || lineMatches(item, itemName))
+    database.cartLines = existing
+      ? cart.map((item) =>
+          lineMatches(item, productRecord.id) || lineMatches(item, itemName)
+            ? { ...item, quantity: Number(item.quantity ?? 1) + 1 }
+            : item,
+        )
+      : [
+          ...cart,
+          {
+            ...productRecord,
+            product: productRecord,
+            productId: productRecord.id,
+            quantity: 1,
+          },
+        ]
+    return database.cartLines
+  }
+
+  if (/order/i.test(name) && /add/i.test(name)) {
+    const itemName = itemNameFromArgs(args)
+    const restaurantId = stableId('restaurant', itemName)
+    const restaurant = restaurantFromDatabase(itemName) ?? { name: itemName }
+    const restaurantRecord = { ...restaurant, id: String(restaurant.id ?? restaurantId) }
+    const lines = readList('orderLines') as Array<Record<string, unknown>>
+    const existing = lines.find(
+      (item) => lineMatches(item, restaurantRecord.id) || lineMatches(item, itemName),
+    )
+    database.orderLines = existing
+      ? lines.map((item) =>
+          lineMatches(item, restaurantRecord.id) || lineMatches(item, itemName)
+            ? { ...item, quantity: Number(item.quantity ?? 1) + 1 }
+            : item,
+        )
+      : [
+          ...lines,
+          {
+            ...restaurantRecord,
+            restaurant: restaurantRecord,
+            restaurantId: restaurantRecord.id,
+            quantity: 1,
+          },
+        ]
+    return database.orderLines
+  }
+
+  if (/quantity/i.test(name)) {
+    const [nameArg, quantityArg] = args
+    const itemName = typeof nameArg === 'string' ? nameArg : ''
+    const quantity = Math.max(1, Number(quantityArg) || 1)
+    const listName = /order/i.test(name) ? 'orderLines' : 'cartLines'
+    database[listName] = (readList(listName) as Array<Record<string, unknown>>).map((item) =>
+      lineMatches(item, itemName) ? { ...item, quantity } : item,
+    )
+    return database[listName]
+  }
+
+  if (/subscribe/i.test(name)) {
+    database.subscribers = [...readList('subscribers'), { email: args[0] }]
+    return database.subscribers
+  }
+
+  if (/submit|create|add|book|reserve|register/i.test(name)) {
+    const key = /inquir|contact|message/i.test(name) ? 'inquiries' : 'orders'
+    database[key] = [...readList(key), { id: Date.now().toString(36), values: args }]
+    return database[key]
+  }
+
+  return null
+}
+
+export function readSiteDataValue(name: string): unknown {
+  if (name === 'auth') return readAuth()
+  return database[name] ?? []
+}
+
+export function runSiteMutationValue(name: string, args: unknown[]): unknown {
+  return applyMutation(name, args)
+}
+
+type EndpointResponse = {
+  body: string
+  headers: Record<string, string>
+  kind: 'response'
+  status: number
+}
+
+type EndpointResponseOptions = {
+  headers?: Record<string, string>
+  status?: number
+}
+
+type SiteEndpointHandler = (
+  ctx: ReturnType<typeof createSiteEndpointContext>,
+  request: ReturnType<typeof toEndpointRequest>,
+) => unknown | Promise<unknown>
+
+const endpointResponse = (
+  body: string,
+  { headers = {}, status = 200 }: EndpointResponseOptions = {},
+): EndpointResponse => ({
+  body,
+  headers,
+  kind: 'response',
+  status,
+})
+
+export function json(value: unknown, options: EndpointResponseOptions = {}) {
+  return endpointResponse(JSON.stringify(value ?? null), {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      ...(options.headers ?? {}),
+    },
+  })
+}
+
+export function text(value: unknown, options: EndpointResponseOptions = {}) {
+  return endpointResponse(String(value ?? ''), {
+    ...options,
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      ...(options.headers ?? {}),
+    },
+  })
+}
+
+export function empty(options: EndpointResponseOptions = {}) {
+  return endpointResponse('', { status: 204, ...options })
+}
+
+export function redirect(url: string, options: EndpointResponseOptions = {}) {
+  return endpointResponse('', {
+    status: 302,
+    ...options,
+    headers: {
+      Location: String(url),
+      ...(options.headers ?? {}),
+    },
+  })
+}
+
+export function endpoint(route: { method: string; path: string }, handler: SiteEndpointHandler) {
+  return {
+    handler,
+    method: String(route.method || '').toUpperCase(),
+    path: String(route.path || ''),
+  }
+}
+
+const rowWithMeta = (value: Record<string, unknown>) => {
+  const now = new Date().toISOString()
+  return {
+    id: String(value.id ?? Date.now().toString(36)),
+    createdAt: String(value.createdAt ?? now),
+    updatedAt: String(value.updatedAt ?? now),
+    ...value,
+  }
+}
+
+const tableRows = (name: string): Array<Record<string, unknown>> => {
+  if (!Array.isArray(database[name])) database[name] = []
+  return database[name] as Array<Record<string, unknown>>
+}
+
+const queryBuilder = (
+  name: string,
+  filters: Array<[string, unknown]> = [],
+  order: [string, 'asc' | 'desc'] | null = null,
+  limitCount: number | null = null,
+) => ({
+  where(field: string, value: unknown) {
+    return queryBuilder(name, [...filters, [field, value]], order, limitCount)
+  },
+  orderBy(field: string, direction: 'asc' | 'desc' = 'asc') {
+    return queryBuilder(name, filters, [field, direction], limitCount)
+  },
+  limit(count: number) {
+    return queryBuilder(name, filters, order, count)
+  },
+  all() {
+    let rows = tableRows(name).map(rowWithMeta)
+    for (const [field, value] of filters) {
+      rows = rows.filter((row) => row[field] === value)
+    }
+    if (order) {
+      const [field, direction] = order
+      rows = [...rows].sort((left, right) => {
+        const a = String(left[field] ?? '')
+        const b = String(right[field] ?? '')
+        return direction === 'desc' ? b.localeCompare(a) : a.localeCompare(b)
+      })
+    }
+    return typeof limitCount === 'number' ? rows.slice(0, limitCount) : rows
+  },
+})
+
+const tableApi = (name: string) => ({
+  ...queryBuilder(name),
+  get(id: string) {
+    return tableRows(name).map(rowWithMeta).find((row) => row.id === id) ?? null
+  },
+  insert(value: Record<string, unknown>) {
+    const row = rowWithMeta(value)
+    database[name] = [...tableRows(name), row]
+    return row
+  },
+  update(id: string, patch: Record<string, unknown>) {
+    database[name] = tableRows(name).map((row) =>
+      rowWithMeta(row).id === id ? { ...row, ...patch, updatedAt: new Date().toISOString() } : row,
+    )
+  },
+  delete(id: string) {
+    database[name] = tableRows(name).filter((row) => rowWithMeta(row).id !== id)
+  },
+})
+
+export function createSiteEndpointContext() {
+  return {
+    auth: readAuth(),
+    db: new Proxy({} as Record<string, ReturnType<typeof tableApi>>, {
+      get(_target, property) {
+        return tableApi(String(property))
+      },
+    }),
+    env: process.env,
+    log: console,
+  }
+}
+
+export function toEndpointRequest(request: Request) {
+  const url = new URL(request.url)
+  return {
+    method: request.method,
+    path: url.pathname,
+    url: request.url,
+    headers: request.headers,
+    query: url.searchParams,
+    text: () => request.clone().text(),
+    json: <T = any>() => request.clone().json() as Promise<T>,
+    bytes: async () => new Uint8Array(await request.clone().arrayBuffer()),
+  }
+}
+
+export function toEndpointResponse(value: unknown): Response {
+  if (value instanceof Response) return value
+  if (
+    value &&
+    typeof value === 'object' &&
+    (value as { kind?: unknown }).kind === 'response'
+  ) {
+    const response = value as EndpointResponse
+    return new Response(response.body, {
+      headers: response.headers,
+      status: response.status,
+    })
+  }
+  return Response.json(value ?? null)
+}
+`
+
+const renderNextDataApiRoute = (): string => `import {
+  readSiteDataValue,
+  runSiteMutationValue,
+} from '../../../src/lib/site-data-store'
+
+export async function GET(request: Request) {
+  const url = new URL(request.url)
+  const name = url.searchParams.get('query') ?? ''
+  return Response.json({ value: readSiteDataValue(name) })
+}
+
+export async function POST(request: Request) {
+  const payload = (await request.json().catch(() => null)) as {
+    name?: unknown
+    args?: unknown
+  } | null
+  const name = typeof payload?.name === 'string' ? payload.name : ''
+  const args = Array.isArray(payload?.args) ? payload.args : []
+  return Response.json({ ok: true, value: runSiteMutationValue(name, args) })
+}
+`
+
+const endpointRouteFilePath = (path: string): string => {
+  const cleaned = path.split(/[?#]/)[0]?.trim() || '/'
+  const segments = cleaned
+    .split('/')
+    .filter(Boolean)
+    .map((segment) => {
+      if (segment.startsWith(':')) {
+        const name = segment
+          .slice(1)
+          .replace(/[^A-Za-z0-9_$-]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+        return `[${name || 'param'}]`
+      }
+      if (segment === '*') return '[...path]'
+      return (
+        segment.replace(/[^A-Za-z0-9_$.-]+/g, '-').replace(/^-+|-+$/g, '') ||
+        'endpoint'
+      )
+    })
+  return `app/${segments.length > 0 ? segments.join('/') : 'api'}/route.ts`
+}
+
+const endpointConstName = (
+  endpointDefinition: LakebedEndpointDefinition,
+  index: number,
+) =>
+  `${toIdentifier(endpointDefinition.componentName)}${toIdentifier(
+    endpointDefinition.name,
+  )}Endpoint${index + 1}`
+
+export const renderNextEndpointRouteFiles = (
+  endpoints: LakebedEndpointDefinition[],
+): Record<string, string> => {
+  const byRoute = new Map<string, LakebedEndpointDefinition[]>()
+  for (const endpointDefinition of endpoints) {
+    const routePath = endpointRouteFilePath(endpointDefinition.path)
+    byRoute.set(routePath, [
+      ...(byRoute.get(routePath) ?? []),
+      endpointDefinition,
+    ])
+  }
+
+  return Object.fromEntries(
+    [...byRoute.entries()].map(([routePath, routeEndpoints]) => {
+      const importPath = relativeImportPath(
+        routePath,
+        'src/lib/site-data-store.ts',
+      )
+      const declarations = routeEndpoints
+        .map(
+          (endpointDefinition, index) =>
+            `const ${endpointConstName(endpointDefinition, index)} = ${endpointDefinition.source}`,
+        )
+        .join('\n\n')
+      const handlers = routeEndpoints
+        .map((endpointDefinition, index) => {
+          const method = endpointDefinition.method.toUpperCase()
+          return `export async function ${method}(request: Request) {
+  return runEndpoint(${endpointConstName(endpointDefinition, index)}, request)
+}`
+        })
+        .join('\n\n')
+      return [
+        routePath,
+        `import {
+  createSiteEndpointContext,
+  empty,
+  endpoint,
+  json,
+  redirect,
+  text,
+  toEndpointRequest,
+  toEndpointResponse,
+} from '${importPath}'
+
+${declarations}
+
+async function runEndpoint(
+  endpointDefinition: {
+    handler: (ctx: ReturnType<typeof createSiteEndpointContext>, request: ReturnType<typeof toEndpointRequest>) => unknown | Promise<unknown>
+  },
+  request: Request,
+) {
+  const result = await endpointDefinition.handler(
+    createSiteEndpointContext(),
+    toEndpointRequest(request),
+  )
+  return toEndpointResponse(result)
+}
+
+${handlers}
+`,
+      ]
+    }),
+  )
+}
+
+const renderNextDataActions = (): string => `'use server'
+
+import { runSiteMutationValue } from './site-data-store'
+
+export async function runSiteMutationAction(
+  name: string,
+  args: unknown[],
+): Promise<unknown> {
+  return runSiteMutationValue(name, args)
+}
+
+export async function signInWithGoogleAction(): Promise<unknown> {
+  return runSiteMutationValue('auth:signIn', [])
+}
+
+export async function signOutAction(): Promise<unknown> {
+  return runSiteMutationValue('auth:signOut', [])
+}
+`
 
 export function parseOpenUIForExport(
   source: string,
@@ -1137,6 +2958,25 @@ const renderNextPackageJson = (
     2,
   )
 
+const renderViteConfig =
+  (): string => `import tailwindcss from '@tailwindcss/vite'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+})
+`
+
+const renderNextPostcssConfig = (): string => `const config = {
+  plugins: {
+    '@tailwindcss/postcss': {},
+  },
+}
+
+export default config
+`
+
 const renderReadme = (
   projectName: string,
   target: 'react' | 'next',
@@ -1148,7 +2988,7 @@ const renderReadme = (
 
   return `# ${projectName}
 
-Generated by [ShipFast](https://ship-fast.io) 🚀.
+Built with [ShipFast](https://ship-fast.io).
 
 ## Run locally
 
@@ -1183,6 +3023,7 @@ const renderTsConfig = (
         esModuleInterop: true,
         allowSyntheticDefaultImports: true,
         strict: true,
+        noImplicitAny: false,
         forceConsistentCasingInFileNames: true,
         module: 'ESNext',
         moduleResolution: 'Bundler',
@@ -1205,6 +3046,9 @@ const renderNextEnv = (): string => `/// <reference types="next" />
 // This file is generated by Next.js conventions for TypeScript projects.
 `
 
+const renderViteEnv = (): string => `/// <reference types="vite/client" />
+`
+
 const renderRouteData = (
   routes: ExportRoute[],
   componentNames: string[],
@@ -1221,16 +3065,16 @@ const renderRouteData = (
     'Record<string, never>'
   return `${typeImports}
 
-export type GeneratedPageProps = ${propsUnion}
+export type PageProps = ${propsUnion}
 
-export type GeneratedRoute = {
+export type SiteRoute = {
   label: string
   path: string
   component: ${componentNames.map((name) => JSON.stringify(name)).join(' | ') || 'never'}
   props: Record<string, unknown>
 }
 
-export const routes = ${JSON.stringify(serializedRoutes, null, 2)} satisfies GeneratedRoute[]
+export const routes = ${JSON.stringify(serializedRoutes, null, 2)} satisfies SiteRoute[]
 `
 }
 
@@ -1248,7 +3092,7 @@ const components = {
 ${mapEntries}
 }
 
-function GeneratedPage({ route }: { route: (typeof routes)[number] }) {
+function RoutePage({ route }: { route: (typeof routes)[number] }) {
   const Page = components[route.component] as ComponentType<any>
   return <Page {...route.props} />
 }
@@ -1258,7 +3102,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         {routes.map((route) => (
-          <Route key={route.path} path={route.path} element={<GeneratedPage route={route} />} />
+          <Route key={route.path} path={route.path} element={<RoutePage route={route} />} />
         ))}
         <Route path="*" element={<Navigate to={routes[0]?.path ?? '/'} replace />} />
       </Routes>
@@ -1268,16 +3112,58 @@ export default function App() {
 `
 }
 
-const renderReactMain = (): string => `import React from 'react'
+const renderReactMain = (usesLakebed: boolean): string => {
+  const queryImports = usesLakebed
+    ? `import { QueryClient, QueryClientProvider } from '@tanstack/react-query'\n`
+    : ''
+  const queryClient = usesLakebed
+    ? `\nconst queryClient = new QueryClient({\n  defaultOptions: {\n    queries: {\n      gcTime: 1000 * 60 * 60,\n      refetchOnWindowFocus: false,\n      staleTime: Infinity,\n    },\n  },\n})\n`
+    : ''
+  const app = usesLakebed
+    ? `<QueryClientProvider client={queryClient}>\n      <App />\n    </QueryClientProvider>`
+    : '<App />'
+
+  return `import React from 'react'
 import { createRoot } from 'react-dom/client'
-import App from './App'
+${queryImports}import App from './App'
+import { StyleOverrides } from './lib/style-overrides'
 import './styles.css'
+${queryClient}
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <StyleOverrides />
+    ${app}
   </React.StrictMode>,
 )
+`
+}
+
+const renderNextSiteDataProvider = (): string => `'use client'
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useState, type ReactNode } from 'react'
+
+export function SiteDataProvider({ children }: { children: ReactNode }) {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            gcTime: 1000 * 60 * 60,
+            refetchOnWindowFocus: false,
+            staleTime: Infinity,
+          },
+        },
+      }),
+  )
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
+  )
+}
 `
 
 const renderNextRoutePage = (
@@ -1327,6 +3213,22 @@ const collectExportComponents = (
   return names.map((name) => extractComponent(name, stack, routeTargets))
 }
 
+const collectLakebedEndpoints = (
+  componentNames: string[],
+): LakebedEndpointDefinition[] =>
+  componentNames.flatMap((name) => {
+    const entry = getComponentSourceIndex().get(name)
+    return entry ? readLakebedEndpointDefinitions(name, entry) : []
+  })
+
+const collectNextEndpoints = (
+  componentNames: string[],
+  source: string,
+): LakebedEndpointDefinition[] => [
+  ...collectLakebedEndpoints(componentNames),
+  ...readSourceEndpointDefinitions(source),
+]
+
 const buildReactExport = (
   input: OpenUIExportInput,
   parsed: ParsedOpenUIProgram,
@@ -1346,6 +3248,13 @@ const buildReactExport = (
     'react',
   )
   const componentNames = components.map((component) => component.name)
+  const usesLakebed = components.some((component) => component.usesLakebed)
+  const imageSources = extractImageSources(input.previewHtml)
+  const styleOverrides = extractStyleOverrides(input.previewHtml)
+  if (usesLakebed) {
+    dependencies['@tanstack/react-query'] =
+      dependencyVersions['@tanstack/react-query']
+  }
   const files: Record<string, string> = {
     'package.json': renderReactPackageJson(
       parsed.projectName,
@@ -1356,14 +3265,19 @@ const buildReactExport = (
       '<!doctype html><html><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Ship Fast Export</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n',
     '.env.local': 'VITE_SERVER_URL=https://ship-fast.io\n',
     'tsconfig.json': renderTsConfig(),
-    'src/main.tsx': renderReactMain(),
+    'src/vite-env.d.ts': renderViteEnv(),
+    'vite.config.ts': renderViteConfig(),
+    'src/main.tsx': renderReactMain(usesLakebed),
     'src/App.tsx': renderReactApp(componentNames),
     'src/data/pages.ts': renderRouteData(routes, componentNames),
     'src/lib/cn.ts': renderLibCn(),
-    'src/lib/image.tsx': renderImageHelper('react'),
+    'src/lib/image.tsx': renderImageHelper('react', imageSources),
+    'src/lib/style-overrides.tsx': renderStyleOverridesRuntime(styleOverrides),
     'src/styles.css': renderThemeCss(input),
     'README.md': renderReadme(parsed.projectName, 'react'),
   }
+  if (usesLakebed)
+    files['src/lib/site-data.ts'] = renderSiteDataRuntime('react')
 
   for (const component of components) {
     files[`src/components/${component.name}.tsx`] = component.source
@@ -1397,6 +3311,20 @@ const buildNextExport = (
     'next',
   )
   const componentNames = components.map((component) => component.name)
+  const usesLakebed = components.some((component) => component.usesLakebed)
+  const endpoints = collectNextEndpoints(componentNames, input.source)
+  const imageSources = extractImageSources(input.previewHtml)
+  const styleOverrides = extractStyleOverrides(input.previewHtml)
+  if (usesLakebed) {
+    dependencies['@tanstack/react-query'] =
+      dependencyVersions['@tanstack/react-query']
+  }
+  const layoutImport = usesLakebed
+    ? "import { SiteDataProvider } from '../src/lib/site-data-provider'\n"
+    : ''
+  const layoutChildren = usesLakebed
+    ? '<SiteDataProvider>{children}</SiteDataProvider>'
+    : '{children}'
   const files: Record<string, string> = {
     'package.json': renderNextPackageJson(
       parsed.projectName,
@@ -1404,25 +3332,38 @@ const buildNextExport = (
       devDependencies,
     ),
     '.env.local': 'NEXT_PUBLIC_SERVER_URL=https://ship-fast.io\n',
+    'postcss.config.mjs': renderNextPostcssConfig(),
     'next.config.mjs':
-      '/** @type {import("next").NextConfig} */\nconst nextConfig = {}\n\nexport default nextConfig\n',
+      'import { dirname } from "node:path"\nimport { fileURLToPath } from "node:url"\n\nconst projectRoot = dirname(fileURLToPath(import.meta.url))\n\n/** @type {import("next").NextConfig} */\nconst nextConfig = {\n  images: {\n    remotePatterns: [\n      { protocol: "https", hostname: "images.pexels.com" },\n      { protocol: "https", hostname: "picsum.photos" },\n      { protocol: "https", hostname: "ship-fast.io" },\n    ],\n  },\n  turbopack: {\n    root: projectRoot,\n  },\n}\n\nexport default nextConfig\n',
     'next-env.d.ts': renderNextEnv(),
     'tsconfig.json': renderTsConfig('preserve'),
     'app/layout.tsx': `import type { ReactNode } from 'react'
+${layoutImport}import { StyleOverrides } from '../src/lib/style-overrides'
 import './globals.css'
 
 export const metadata = { title: ${JSON.stringify(parsed.projectName)} }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  return <html lang="en"><body>{children}</body></html>
+  return <html lang="en"><body><StyleOverrides />${layoutChildren}</body></html>
 }
 `,
     'app/globals.css': renderThemeCss(input),
     'src/data/pages.ts': renderRouteData(routes, componentNames),
     'src/lib/cn.ts': renderLibCn(),
-    'src/lib/image.tsx': renderImageHelper('next'),
+    'src/lib/image.tsx': renderImageHelper('next', imageSources),
+    'src/lib/style-overrides.tsx': renderStyleOverridesRuntime(styleOverrides),
     'README.md': renderReadme(parsed.projectName, 'next'),
   }
+  if (usesLakebed) {
+    files['src/lib/site-data.ts'] = renderSiteDataRuntime('next')
+    files['src/lib/site-data-actions.ts'] = renderNextDataActions()
+    files['src/lib/site-data-provider.tsx'] = renderNextSiteDataProvider()
+    files['app/api/data/route.ts'] = renderNextDataApiRoute()
+  }
+  if (usesLakebed || endpoints.length > 0) {
+    files['src/lib/site-data-store.ts'] = renderNextDataStore()
+  }
+  Object.assign(files, renderNextEndpointRouteFiles(endpoints))
 
   for (const component of components) {
     files[`src/components/${component.name}.tsx`] = asClientComponent(
@@ -1479,9 +3420,9 @@ const buildRawHtmlExport = (input: OpenUIExportInput): BuiltExport => {
   const files = {
     'README.md': `# ${projectName}
 
-This export contains the generated single-file HTML website from Ship Fast v2.
+This export contains a static single-file HTML website from Ship Fast v2.
 
-Generated by [ShipFast](https://ship-fast.io) 🚀.
+Built with [ShipFast](https://ship-fast.io).
 
 Open index.html directly, or serve this folder with any static host.
 `,

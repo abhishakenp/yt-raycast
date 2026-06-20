@@ -36,6 +36,63 @@ const userId = 'user_export_helpers'
 const otherUserId = 'user_export_helpers_other'
 const openUiSource =
   'root = SaasKimiPage("Preview", ["Home"], {"heading":"Preview"})'
+const buildExportArtifactReference =
+  'buildExportArtifact' as unknown as Parameters<
+    MutationCtx['scheduler']['runAfter']
+  >[1]
+const stallExportArtifactBuildReference =
+  'stallExportArtifactBuild' as unknown as Parameters<
+    MutationCtx['scheduler']['runAfter']
+  >[1]
+const originalDateNow = Date.now
+const originalEnv = { ...process.env }
+delete originalEnv.DISABLE_PAYWALL
+delete process.env.DISABLE_PAYWALL
+type VitestBunCompat = {
+  setSystemTime?: (time: string | number | Date) => unknown
+  stubEnv?: (name: string, value: string | boolean | undefined) => unknown
+  unstubAllEnvs?: () => unknown
+}
+const viCompat = vi as unknown as VitestBunCompat
+
+const restoreEnv = () => {
+  for (const key of Object.keys(process.env)) {
+    if (!(key in originalEnv)) delete process.env[key]
+  }
+  for (const [key, value] of Object.entries(originalEnv)) {
+    process.env[key] = value
+  }
+}
+
+if (viCompat.setSystemTime === undefined) {
+  viCompat.setSystemTime = (time: string | number | Date) => {
+    const timestamp =
+      time instanceof Date
+        ? time.getTime()
+        : typeof time === 'string'
+          ? Date.parse(time)
+          : time
+    Date.now = () => timestamp
+    return vi
+  }
+}
+if (viCompat.stubEnv === undefined) {
+  viCompat.stubEnv = (name: string, value: string | boolean | undefined) => {
+    if (value === undefined) {
+      delete process.env[name]
+    } else {
+      process.env[name] = String(value)
+    }
+    return vi
+  }
+}
+if (viCompat.unstubAllEnvs === undefined) {
+  viCompat.unstubAllEnvs = () => {
+    Date.now = originalDateNow
+    restoreEnv()
+    return vi
+  }
+}
 
 const exportDoc = (overrides: Partial<ExportRecord> = {}): ExportRecord =>
   ({
@@ -129,6 +186,19 @@ const siteSpecDoc = (overrides: Partial<SiteSpecRecord> = {}): SiteSpecRecord =>
     updatedAt: 120,
     ...overrides,
   }) as SiteSpecRecord
+
+const editDoc = (overrides: Partial<EditRecord> = {}): EditRecord =>
+  ({
+    _id: 'edit_export_helpers' as Id<'edits'>,
+    _creationTime: 1,
+    sessionId,
+    previewVersion: 2,
+    editType: 'text',
+    beforeText: 'Preview',
+    afterText: 'Launch',
+    createdAt: 130,
+    ...overrides,
+  }) as EditRecord
 
 const subscriptionDoc = (
   overrides: Partial<SubscriptionRecord> = {},
@@ -503,7 +573,7 @@ const workflowCtxFor = (input: {
     ) => {
       scheduledBuilds.push({ delayMs, args })
     },
-  } as MutationCtx['scheduler']
+  } as unknown as MutationCtx['scheduler']
 
   return {
     ctx: { db, auth, scheduler, storage } as MutationCtx & QueryCtx,
@@ -906,7 +976,7 @@ describe('ensureExportArtifactBuild', () => {
     const result = await ensureExportArtifactBuild(ctx, {
       sessionId,
       target: 'lakebed',
-      buildExportArtifact: 'buildExportArtifact',
+      buildExportArtifact: buildExportArtifactReference,
     })
 
     expect(result).toMatchObject({
@@ -959,7 +1029,7 @@ describe('ensureExportArtifactBuild', () => {
       ensureExportArtifactBuild(stalled.ctx, {
         sessionId,
         target: 'html',
-        buildExportArtifact: 'buildExportArtifact',
+        buildExportArtifact: buildExportArtifactReference,
       }),
     ).resolves.toMatchObject({ status: 'queued' })
     expect(stalled.exportArtifacts[0]).toMatchObject({
@@ -989,7 +1059,7 @@ describe('ensureExportArtifactBuild', () => {
       ensureExportArtifactBuild(fresh.ctx, {
         sessionId,
         target: 'html',
-        buildExportArtifact: 'buildExportArtifact',
+        buildExportArtifact: buildExportArtifactReference,
       }),
     ).resolves.toMatchObject({ status: 'queued' })
     expect(fresh.exportArtifacts[0]).toMatchObject({
@@ -1007,7 +1077,7 @@ describe('ensureExportArtifactBuild', () => {
       ensureExportArtifactBuild(ready.ctx, {
         sessionId,
         target: 'html',
-        buildExportArtifact: 'buildExportArtifact',
+        buildExportArtifact: buildExportArtifactReference,
       }),
     ).resolves.toMatchObject({ status: 'ready' })
     expect(ready.exportArtifacts[0]).toMatchObject({ status: 'ready' })
@@ -1027,7 +1097,7 @@ describe('export artifact build watchdog', () => {
         sessionId,
         target: 'lakebed',
         previewVersion: 2,
-        stallExportArtifactBuild: 'stallExportArtifactBuild',
+        stallExportArtifactBuild: stallExportArtifactBuildReference,
       }),
     ).resolves.toMatchObject({ status: 'building' })
 
@@ -1137,6 +1207,32 @@ describe('prepareExportArtifactBuild', () => {
     })
     expect(result).not.toHaveProperty('previewHtml')
   })
+
+  it('prepares exports with applied theme, mode, and inline edits', async () => {
+    const { ctx } = workflowCtxFor({
+      sessions: [
+        sessionDoc({
+          genuiTheme: 'modern-minimal',
+          themeOverride: 'noir',
+          themeMode: 'light',
+        }),
+      ],
+      edits: [editDoc()],
+    })
+
+    const result = await prepareExportArtifactBuild(ctx, {
+      sessionId,
+      target: 'react',
+      previewVersion: 2,
+    })
+
+    expect(result).toMatchObject({
+      themeName: 'noir',
+      isDark: false,
+      source:
+        'root = SaasKimiPage("Launch", ["Home"], {"heading":"Preview"})',
+    })
+  })
 })
 
 describe('loadOwnedExportArtifactDownload', () => {
@@ -1240,7 +1336,15 @@ describe('loadOwnedExportForGitHubPush', () => {
   it('returns the latest ready export payload for the owning signed-in user', async () => {
     const { ctx } = workflowCtxFor({
       identityUserId: userId,
+      sessions: [
+        sessionDoc({
+          genuiTheme: 'modern-minimal',
+          themeOverride: 'noir',
+          themeMode: 'light',
+        }),
+      ],
       exports: [exportDoc()],
+      edits: [editDoc()],
     })
 
     await expect(
@@ -1251,11 +1355,11 @@ describe('loadOwnedExportForGitHubPush', () => {
       target: 'html',
       previewVersion: 2,
       html: '<main>Preview</main>',
-      source: openUiSource,
+      source: 'root = SaasKimiPage("Launch", ["Home"], {"heading":"Preview"})',
       siteSpecJson: '{"title":"Preview"}',
       previewHtml: '<main>Preview</main>',
-      themeName: undefined,
-      isDark: true,
+      themeName: 'noir',
+      isDark: false,
       includeBadge: false,
       artifact: null,
       filesUrl: null,

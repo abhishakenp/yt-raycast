@@ -368,10 +368,14 @@ describe('session access helpers', () => {
     await expect(
       setSessionThemeOverride(ctx, { sessionId, themeOverride: null }),
     ).resolves.toBeUndefined()
+    await expect(
+      setSessionThemeOverride(ctx, { sessionId, themeMode: 'light' }),
+    ).resolves.toBeUndefined()
 
     expect(patches).toEqual([
       { id: sessionId, patch: { themeOverride: 'noir' } },
       { id: sessionId, patch: { themeOverride: undefined } },
+      { id: sessionId, patch: { themeMode: 'light' } },
     ])
   })
 

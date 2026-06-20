@@ -1,4 +1,5 @@
 import { convexTest } from 'convex-test'
+import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
 import { expect, test } from 'vitest'
 import { api, internal } from './_generated/api'
 import type { Id } from './_generated/dataModel'
@@ -38,8 +39,14 @@ const persistGeneratedPreview = (
     elapsed: 1000,
   })
 
-test('getDeploymentBySlug returns deployment with session metadata', async () => {
+const deploymentTest = () => {
   const t = convexTest(schema, modules)
+  registerDebouncer(t)
+  return t
+}
+
+test('getDeploymentBySlug returns deployment with session metadata', async () => {
+  const t = deploymentTest()
 
   const { sessionId } = await createTestSession(t)
 
@@ -62,7 +69,7 @@ test('getDeploymentBySlug returns deployment with session metadata', async () =>
 })
 
 test('getDeploymentStatus returns deployment status', async () => {
-  const t = convexTest(schema, modules)
+  const t = deploymentTest()
 
   const { sessionId } = await createTestSession(t)
 
@@ -84,7 +91,7 @@ test('getDeploymentStatus returns deployment status', async () => {
 })
 
 test('owner-secret sessions clone cached public previews without reusing another owner session', async () => {
-  const t = convexTest(schema, modules)
+  const t = deploymentTest()
   const prompt = 'Cache-safe deployment preview'
 
   const first = await t.mutation(api.sessions.create, {
@@ -144,7 +151,7 @@ test('owner-secret sessions clone cached public previews without reusing another
 })
 
 test('publishPreview repoints an existing deployment to the latest preview version', async () => {
-  const t = convexTest(schema, modules)
+  const t = deploymentTest()
 
   const { sessionId } = await createTestSession(t)
 
@@ -176,7 +183,7 @@ test('publishPreview repoints an existing deployment to the latest preview versi
 })
 
 test('public preview by deployment slug serves the published preview version until republished', async () => {
-  const t = convexTest(schema, modules)
+  const t = deploymentTest()
 
   const { sessionId } = await createTestSession(t)
 

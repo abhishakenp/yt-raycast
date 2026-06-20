@@ -52,6 +52,13 @@ type LakebedDefinition = {
   numericFieldNames: string[]
   queries: Record<string, string>
   mutations: Record<string, string>
+  endpoints: Record<string, LakebedEndpointDefinition>
+}
+
+type LakebedEndpointDefinition = {
+  method: string | null
+  path: string | null
+  source: string
 }
 
 type ClientComponentDefinition = {
@@ -65,6 +72,12 @@ type ClientComponentDefinition = {
 type ImageSource = {
   alt: string
   src: string
+}
+
+type StyleOverride = {
+  classAnchor: string
+  occurrenceIndex: number
+  style: string
 }
 
 type ImageDimensions = {
@@ -360,6 +373,23 @@ const extractImageSources = (html: string | undefined): ImageSource[] => {
   return [...byAlt].map(([alt, src]) => ({ alt, src }))
 }
 
+const extractStyleOverrides = (html: string | undefined): StyleOverride[] => {
+  if (!html) return []
+  const classCounts = new Map<string, number>()
+  const overrides: StyleOverride[] = []
+  for (const match of html.matchAll(/<[a-zA-Z][\w:-]*\b[^>]*>/g)) {
+    const tag = match[0]
+    const classAnchor = readHtmlAttribute(tag, 'class')
+    if (!classAnchor) continue
+    const occurrenceIndex = classCounts.get(classAnchor) ?? 0
+    classCounts.set(classAnchor, occurrenceIndex + 1)
+    const style = readHtmlAttribute(tag, 'style')
+    if (!style) continue
+    overrides.push({ classAnchor, occurrenceIndex, style })
+  }
+  return overrides
+}
+
 export const resolveLakebedImageSources = async (
   routes: LakebedRoute[],
   previewHtml: string | undefined,
@@ -538,6 +568,7 @@ const buildLakebedThemeCss = (
 
   return `:root {
 ${declarations}
+  color-scheme: ${isDark ? 'dark' : 'light'};
 }
 
 html,
@@ -666,14 +697,14 @@ const propertyNameText = (name: ts.PropertyName, sourceFile: ts.SourceFile) => {
   return name.getText(sourceFile)
 }
 
-const bindingIdentifierNames = (name: ts.BindingName) => {
+const bindingIdentifierNames = (name: ts.BindingName): string[] => {
   if (ts.isIdentifier(name)) return [name.text]
   return name.elements.flatMap((element) =>
-    element.name ? bindingIdentifierNames(element.name) : [],
+    ts.isOmittedExpression(element) ? [] : bindingIdentifierNames(element.name),
   )
 }
 
-const topLevelDeclarationNames = (statement: ts.Statement) => {
+const topLevelDeclarationNames = (statement: ts.Statement): string[] => {
   if (ts.isVariableStatement(statement)) {
     return statement.declarationList.declarations.flatMap((declaration) =>
       bindingIdentifierNames(declaration.name),
@@ -766,6 +797,54 @@ const objectRecord = (
   )
 }
 
+const stringPropertyValue = (
+  object: ts.ObjectLiteralExpression,
+  name: string,
+): string | null => {
+  const property = object.properties.find(
+    (item): item is ts.PropertyAssignment =>
+      ts.isPropertyAssignment(item) &&
+      ((ts.isIdentifier(item.name) && item.name.text === name) ||
+        (ts.isStringLiteral(item.name) && item.name.text === name)),
+  )
+  const value = property?.initializer
+  return value &&
+    (ts.isStringLiteral(value) || ts.isNoSubstitutionTemplateLiteral(value))
+    ? value.text
+    : null
+}
+
+const readEndpointRecord = (
+  object: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+): Record<string, LakebedEndpointDefinition> => {
+  if (!object || !ts.isObjectLiteralExpression(object)) return {}
+  return Object.fromEntries(
+    object.properties
+      .filter((property): property is ts.PropertyAssignment =>
+        ts.isPropertyAssignment(property),
+      )
+      .map((property) => {
+        const initializer = property.initializer
+        const route =
+          ts.isCallExpression(initializer) &&
+          initializer.expression.getText(sourceFile) === 'endpoint' &&
+          initializer.arguments[0] &&
+          ts.isObjectLiteralExpression(initializer.arguments[0])
+            ? initializer.arguments[0]
+            : null
+        return [
+          propertyNameText(property.name, sourceFile),
+          {
+            method: route ? stringPropertyValue(route, 'method') : null,
+            path: route ? stringPropertyValue(route, 'path') : null,
+            source: printNode(initializer, sourceFile),
+          },
+        ]
+      }),
+  )
+}
+
 const readNumericSchemaFields = (
   schema: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
@@ -804,7 +883,7 @@ const readNumericSchemaFields = (
 const normalizeLakebedSchemaSource = (source: string | null): string | null =>
   source?.replace(/\bnumber\s*\(\s*\)/g, 'string()') ?? null
 
-const readLakebedDefinition = (
+export const readLakebedDefinition = (
   componentName: string,
   entry: ReactExportSourceEntry,
 ): LakebedDefinition | null => {
@@ -864,6 +943,7 @@ const readLakebedDefinition = (
         numericFieldNames: readNumericSchemaFields(schema, sourceFile),
         queries: objectRecord(prop('queries'), sourceFile),
         mutations: objectRecord(prop('mutations'), sourceFile),
+        endpoints: readEndpointRecord(prop('endpoints'), sourceFile),
       }
     }
   }
@@ -1163,23 +1243,270 @@ const collectContentSections = (
   return sections
 }
 
-const stripOuterBraces = (source: string): string =>
-  source
-    .trim()
-    .replace(/^\{\s*/, '')
-    .replace(/\s*\}$/, '')
-    .trim()
+type ServerSchemaRender = {
+  source: string
+  tableFields: Map<string, string[]>
+}
 
-const mergeObjectSources = (
+const collectTableFieldsFromSchemaSource = (
+  source: string,
+  tableFields: Map<string, Map<string, string>>,
+) => {
+  const sourceFile = ts.createSourceFile(
+    'merged-schema.ts',
+    `const schema = ${source}`,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  )
+  const declaration = sourceFile.statements
+    .filter(ts.isVariableStatement)
+    .flatMap((statement) => [...statement.declarationList.declarations])[0]
+  const schema = declaration?.initializer
+  if (!schema || !ts.isObjectLiteralExpression(schema)) return
+
+  for (const tableProperty of schema.properties) {
+    if (!ts.isPropertyAssignment(tableProperty)) continue
+    const tableName = propertyNameText(tableProperty.name, sourceFile)
+    const tableCall = tableProperty.initializer
+    if (
+      !ts.isCallExpression(tableCall) ||
+      tableCall.expression.getText(sourceFile) !== 'table'
+    ) {
+      continue
+    }
+    const shape = tableCall.arguments[0]
+    if (!shape || !ts.isObjectLiteralExpression(shape)) continue
+
+    const fields = tableFields.get(tableName) ?? new Map<string, string>()
+    for (const fieldProperty of shape.properties) {
+      if (!ts.isPropertyAssignment(fieldProperty)) continue
+      fields.set(
+        propertyNameText(fieldProperty.name, sourceFile),
+        printNode(fieldProperty.initializer, sourceFile),
+      )
+    }
+    tableFields.set(tableName, fields)
+  }
+}
+
+const renderMergedSchema = (
   sources: Array<string | null>,
   fallback: string,
+): ServerSchemaRender => {
+  const schemaSources = sources.filter((source): source is string =>
+    Boolean(source?.trim()),
+  )
+  const sourceForFields = schemaSources.length > 0 ? schemaSources : [fallback]
+  const tableFieldsByName = new Map<string, Map<string, string>>()
+
+  for (const source of sourceForFields) {
+    collectTableFieldsFromSchemaSource(source, tableFieldsByName)
+  }
+
+  if (tableFieldsByName.size === 0) {
+    return { source: fallback, tableFields: new Map() }
+  }
+
+  const tableFields = new Map<string, string[]>()
+  const tableSources = [...tableFieldsByName.entries()].map(
+    ([tableName, fields]) => {
+      tableFields.set(tableName, [...fields.keys()])
+      const fieldSource = [...fields.entries()]
+        .map(([fieldName, initializer]) => `    ${fieldName}: ${initializer}`)
+        .join(',\n')
+      return `  ${tableName}: table({\n${fieldSource}\n  })`
+    },
+  )
+
+  return {
+    source: `{\n${tableSources.join(',\n')}\n}`,
+    tableFields,
+  }
+}
+
+const singularTableName = (tableName: string): string => {
+  if (tableName.endsWith('ies')) return `${tableName.slice(0, -3)}y`
+  if (tableName.endsWith('s')) return tableName.slice(0, -1)
+  return tableName
+}
+
+const isPlainRecord = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+
+const collectionItemsForTable = (
+  props: Record<string, unknown>,
+  tableName: string,
+): Record<string, unknown>[] => {
+  const candidates = [tableName, singularTableName(tableName)]
+  const items: Record<string, unknown>[] = []
+  const seen = new Set<unknown>()
+
+  const visit = (value: unknown) => {
+    if (!isPlainRecord(value) || seen.has(value)) return
+    seen.add(value)
+
+    for (const key of candidates) {
+      const collection = value[key]
+      if (Array.isArray(collection)) {
+        items.push(...collection.filter(isPlainRecord))
+        continue
+      }
+      if (isPlainRecord(collection) && Array.isArray(collection.items)) {
+        items.push(...collection.items.filter(isPlainRecord))
+      }
+    }
+
+    for (const nested of Object.values(value)) {
+      if (isPlainRecord(nested)) {
+        visit(nested)
+      } else if (Array.isArray(nested)) {
+        for (const entry of nested) visit(entry)
+      }
+    }
+  }
+
+  visit(props)
+  return items
+}
+
+const DEFAULT_COMMERCE_PRODUCTS: Record<string, string>[] = [
+  {
+    brand: 'Featured',
+    name: 'Signature Series',
+    alt: 'Featured product on a clean studio background',
+    price: '$195',
+    oldPrice: '$230',
+    badge: 'New',
+    image: '',
+  },
+  {
+    brand: 'Featured',
+    name: 'Everyday Essential',
+    alt: 'Lifestyle product photography on a neutral background',
+    price: '$250',
+    oldPrice: '',
+    badge: '',
+    image: '',
+  },
+  {
+    brand: 'Featured',
+    name: 'Classic Edition',
+    alt: 'Close-up product detail on a neutral background',
+    price: '$175',
+    oldPrice: '$210',
+    badge: 'Sale',
+    image: '',
+  },
+  {
+    brand: 'Featured',
+    name: 'Studio Collection',
+    alt: 'Featured product on a clean studio background',
+    price: '$160',
+    oldPrice: '',
+    badge: '',
+    image: '',
+  },
+]
+
+const usesDefaultCommerceProducts = (route: LakebedRoute): boolean => {
+  if (!/commerce|ecommerce|shop|store|marketplace/i.test(route.componentName)) {
+    return false
+  }
+
+  return collectionItemsForTable(route.props, 'products').length === 0
+}
+
+const defaultRowsForTable = (
+  tableName: string,
+  fields: string[],
+  routes: LakebedRoute[],
+): Record<string, unknown>[] => {
+  const fieldSet = new Set(fields)
+  if (
+    tableName !== 'products' ||
+    !fieldSet.has('name') ||
+    !fieldSet.has('price') ||
+    !routes.some(usesDefaultCommerceProducts)
+  ) {
+    return []
+  }
+
+  return DEFAULT_COMMERCE_PRODUCTS
+}
+
+const seedRowsForTable = (
+  tableName: string,
+  fields: string[],
+  routes: LakebedRoute[],
+): Array<Record<string, string>> => {
+  const rowsByKey = new Map<string, Record<string, string>>()
+  for (const route of routes) {
+    const items = collectionItemsForTable(route.props, tableName)
+    for (const item of items) {
+      const row: Record<string, string> = {}
+      let hasFieldValue = false
+      for (const field of fields) {
+        const raw = item[field]
+        const value = raw == null ? '' : String(raw)
+        row[field] = value
+        if (value) hasFieldValue = true
+      }
+      if (!hasFieldValue) continue
+      rowsByKey.set(JSON.stringify(row), row)
+    }
+  }
+
+  if (rowsByKey.size === 0) {
+    for (const item of defaultRowsForTable(tableName, fields, routes)) {
+      const row: Record<string, string> = {}
+      let hasFieldValue = false
+      for (const field of fields) {
+        const raw = item[field]
+        const value = raw == null ? '' : String(raw)
+        row[field] = value
+        if (value) hasFieldValue = true
+      }
+      if (!hasFieldValue) continue
+      rowsByKey.set(JSON.stringify(row), row)
+    }
+  }
+
+  return [...rowsByKey.values()]
+}
+
+const renderSeedData = (
+  routes: LakebedRoute[],
+  tableFields: Map<string, string[]>,
 ): string => {
-  const parts = sources
-    .filter((source): source is string => Boolean(source?.trim()))
-    .map(stripOuterBraces)
-    .map((source) => source.replace(/,+\s*$/, '').trim())
-    .filter(Boolean)
-  return parts.length > 0 ? `{\n${parts.join(',\n')}\n}` : fallback
+  const seedRows = Object.fromEntries(
+    [...tableFields.entries()]
+      .map(([tableName, fields]) => [
+        tableName,
+        seedRowsForTable(tableName, fields, routes),
+      ])
+      .filter(([, rows]) => rows.length > 0),
+  )
+
+  return `const seedRows = ${JSON.stringify(seedRows, null, 2)};
+
+const seededTables = new Set<string>();
+
+function ensureSeedData(db: Record<string, any>) {
+  for (const [tableName, rows] of Object.entries(seedRows)) {
+    if (seededTables.has(tableName)) continue;
+    const table = db[tableName];
+    if (!table || table.all().length > 0) {
+      seededTables.add(tableName);
+      continue;
+    }
+    for (const row of rows as Array<Record<string, string>>) {
+      table.insert(row);
+    }
+    seededTables.add(tableName);
+  }
+}
+`
 }
 
 const escapeRegExp = (value: string): string =>
@@ -1741,6 +2068,10 @@ const normalizeNumericFieldWrites = (
   for (const fieldName of numericFieldNames) {
     const field = escapeRegExp(fieldName)
     normalized = normalized.replace(
+      new RegExp(`\\b([A-Za-z_$][\\w$]*\\.${field})\\s*\\+\\s*(\\d+)`, 'g'),
+      (_match, left: string, right: string) => `Number(${left}) + ${right}`,
+    )
+    normalized = normalized.replace(
       new RegExp(`([,{]\\s*)${field}(\\s*[,}])`, 'g'),
       `$1${fieldName}: String(${fieldName})$2`,
     )
@@ -1774,7 +2105,10 @@ const transformHandler = (
     .flatMap((statement) => [...statement.declarationList.declarations])[0]
   const initializer = declaration?.initializer
   if (!initializer || !ts.isArrowFunction(initializer)) {
-    return `${name}: ${wrapper}((ctx) => ({ ok: true, userId: ctx.auth.userId }))`
+    return `${name}: ${wrapper}((ctx) => {
+  ensureSeedData(ctx.db);
+  return { ok: true, userId: ctx.auth.userId };
+})`
   }
 
   const args = initializer.parameters
@@ -1797,6 +2131,7 @@ const transformHandler = (
       .map((statement) => printNode(statement, sourceFile))
       .join('\n')
     return `${name}: ${wrapper}((${prefix}) => {
+  ensureSeedData(ctx.db);
   const db = ctx.db
 ${normalizeHandlerSource(body)
   .split('\n')
@@ -1808,7 +2143,10 @@ ${normalizeHandlerSource(body)
   const expression = normalizeHandlerSource(
     printNode(initializer.body, sourceFile),
   ).replace(/\bdb\./g, 'ctx.db.')
-  return `${name}: ${wrapper}((${prefix}) => ${expression})`
+  return `${name}: ${wrapper}((${prefix}) => {
+  ensureSeedData(ctx.db);
+  return ${expression};
+})`
 }
 
 const mergeHandlers = (
@@ -1820,17 +2158,43 @@ const mergeHandlers = (
   const numericFieldNames = new Set(
     definitions.flatMap((definition) => definition.numericFieldNames),
   )
-  const handlers = definitions.flatMap((definition) =>
-    Object.entries(definition[key]).map(([name, source]) =>
-      transformHandler(toIdentifier(name), source, wrapper, numericFieldNames),
-    ),
-  )
+  const handlersByName = new Map<string, string>()
+  for (const definition of definitions) {
+    for (const [name, source] of Object.entries(definition[key])) {
+      const identifier = toIdentifier(name)
+      handlersByName.set(
+        identifier,
+        transformHandler(identifier, source, wrapper, numericFieldNames),
+      )
+    }
+  }
+  const handlers = [...handlersByName.values()]
   return handlers.length > 0 ? `{\n${handlers.join(',\n')}\n}` : fallback
+}
+
+const mergeEndpointHandlers = (definitions: LakebedDefinition[]): string => {
+  const handlersByName = new Map<string, string>()
+  for (const definition of definitions) {
+    for (const [name, endpointDefinition] of Object.entries(
+      definition.endpoints,
+    )) {
+      handlersByName.set(toIdentifier(name), endpointDefinition.source)
+    }
+  }
+  const handlers = [...handlersByName.entries()].map(
+    ([name, source]) => `${name}: ${source}`,
+  )
+  return handlers.length > 0 ? `{\n${handlers.join(',\n')}\n}` : '{}'
 }
 
 const primitiveImportsFor = (schemaSource: string): string[] =>
   ['boolean', 'string', 'table'].filter((name) =>
     new RegExp(`\\b${name}\\s*\\(`).test(schemaSource),
+  )
+
+const lakebedEndpointImportsFor = (endpointsSource: string): string[] =>
+  ['endpoint', 'empty', 'json', 'redirect', 'text'].filter((name) =>
+    new RegExp(`\\b${name}\\s*\\(`).test(endpointsSource),
   )
 
 const renderReadme = (projectName: string): string => `# ${projectName}
@@ -1843,7 +2207,7 @@ npx lakebed dev
 
 The exported app has one client entry, one server entry, and shared TypeScript.
 
-Generated by [ShipFast](https://ship-fast.io) 🚀.
+Built with [ShipFast](https://ship-fast.io).
 `
 
 const renderAgents = (): string => `# Lakebed App Instructions
@@ -1882,7 +2246,7 @@ const renderSharedContent = (
       (typeof route.props.description === 'string'
         ? route.props.description
         : undefined) ??
-      `Generated page for ${route.label}.`
+      `${route.label} page for ${projectName}.`
     const routeId = slugifyRoute(route.label || `page-${index + 1}`)
     const sections = collectContentSections(route.props, routeId)
 
@@ -1967,20 +2331,20 @@ const renderClientRoutes = (
     componentName: route.componentName,
     props: route.props,
   }))
-  return `export type GeneratedPage = {
+  return `export type SitePage = {
   label: string
   path: string
   componentName: string
   props: Record<string, unknown>
 }
 
-export const generatedPages = ${JSON.stringify(routeData, null, 2)} satisfies GeneratedPage[]
+export const pages = ${JSON.stringify(routeData, null, 2)} satisfies SitePage[]
 
-export const generatedRouteByLabel = new Map(
-  generatedPages.map((page) => [page.label, page.path]),
+export const routeByLabel = new Map(
+  pages.map((page) => [page.label, page.path]),
 )
 
-export const generatedImageSources = ${JSON.stringify(imageSources, null, 2)} satisfies Array<{ alt: string; src: string }>
+export const imageSources = ${JSON.stringify(imageSources, null, 2)} satisfies Array<{ alt: string; src: string }>
 `
 }
 
@@ -1988,17 +2352,58 @@ const renderClientTheme = (
   themeCss: string,
 ): string => `import { useEffect } from "preact/hooks";
 
-export const generatedThemeCss = ${JSON.stringify(themeCss)};
+export const themeCss = ${JSON.stringify(themeCss)};
 
 export function StyleRuntime() {
   useEffect(() => {
-    let style = document.getElementById("ship-fast-generated-theme");
+    let style = document.getElementById("site-theme");
     if (!style) {
       style = document.createElement("style");
-      style.id = "ship-fast-generated-theme";
+      style.id = "site-theme";
       document.head.appendChild(style);
     }
-    style.textContent = generatedThemeCss;
+    style.textContent = themeCss;
+  }, []);
+
+  return null;
+}
+`
+
+const renderClientStyleOverrides = (
+  styleOverrides: StyleOverride[],
+): string => `import { useEffect } from "preact/hooks";
+
+const styleOverrides = ${JSON.stringify(styleOverrides, null, 2)} satisfies Array<{
+  classAnchor: string;
+  occurrenceIndex: number;
+  style: string;
+}>;
+
+function applyStyleOverrides() {
+  for (const override of styleOverrides) {
+    if (!override.classAnchor) continue;
+    const matches = Array.from(document.querySelectorAll<HTMLElement>("*")).filter(
+      (element) => element.getAttribute("class") === override.classAnchor,
+    );
+    const element = matches[override.occurrenceIndex] ?? matches[0];
+    if (!element) continue;
+    for (const declaration of override.style.split(";")) {
+      const colon = declaration.indexOf(":");
+      if (colon === -1) continue;
+      const property = declaration.slice(0, colon).trim();
+      const value = declaration.slice(colon + 1).trim();
+      if (property) element.style.setProperty(property, value);
+    }
+  }
+}
+
+export function StyleOverrides() {
+  useEffect(() => {
+    if (styleOverrides.length === 0) return;
+    applyStyleOverrides();
+    const observer = new MutationObserver(() => applyStyleOverrides());
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
   }, []);
 
   return null;
@@ -2006,8 +2411,7 @@ export function StyleRuntime() {
 `
 
 const renderClientNavigation =
-  (): string => `import { useNavigate as useLakebedNavigate } from "lakebed/client";
-import { generatedRouteByLabel } from "../routes";
+  (): string => `import { routeByLabel } from "../routes";
 
 function slugFragment(value: string): string {
   return value
@@ -2017,15 +2421,19 @@ function slugFragment(value: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-export function useNavigate() {
-  const navigate = useLakebedNavigate();
+function navigateTo(path: string) {
+  window.history.pushState({}, "", path);
+  window.dispatchEvent(new PopStateEvent("popstate"));
+  window.scrollTo({ top: 0 });
+}
 
+export function useNavigate() {
   return (target: unknown) => {
     if (typeof target !== "string" || !target.trim()) return;
     const value = target.trim();
-    const route = generatedRouteByLabel.get(value) ?? (value.startsWith("/") ? value : null);
+    const route = routeByLabel.get(value) ?? (value.startsWith("/") ? value : null);
     if (route) {
-      navigate(route);
+      navigateTo(route);
       return;
     }
     window.location.hash = slugFragment(value);
@@ -2034,10 +2442,10 @@ export function useNavigate() {
 `
 
 const renderClientImage =
-  (): string => `import { generatedImageSources } from "../routes";
+  (): string => `import { imageSources } from "../routes";
 
 const imageSourcesByAlt = new Map(
-  generatedImageSources.map((image) => [image.alt, image.src]),
+  imageSources.map((image) => [image.alt, image.src]),
 );
 
 function fallbackImageUrl(alt: unknown): string {
@@ -2103,6 +2511,26 @@ const renderClientLakebed = (): string => `import {
 
 export type LakebedAdapter = ReturnType<typeof useLakebedAdapter>;
 
+function normalizeQueryValue(name: string, value: unknown) {
+  if (!/(Names|Titles|Emails)$/.test(name)) return value;
+  if (value instanceof Set) return value;
+  if (Array.isArray(value)) return new Set(value);
+  if (value && typeof value === "object") return new Set(Object.values(value));
+  if (value == null) return new Set<string>();
+  return value;
+}
+
+function normalizeEntityListValue(name: string, value: unknown) {
+  if (!/(Items|Lines)$/.test(name) || !Array.isArray(value)) return value;
+  return value.map((item) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return item;
+    const record = item as Record<string, unknown>;
+    if (typeof record.quantity !== "string") return item;
+    const quantity = Number(record.quantity);
+    return Number.isFinite(quantity) ? { ...record, quantity } : item;
+  });
+}
+
 export function AuthRuntime() {
   useAuth();
   return null;
@@ -2113,7 +2541,8 @@ export function useLakebedAdapter() {
 
   return {
     useQuery<T = unknown>(name: string): T {
-      return useQuery<T>(name);
+      const value = useQuery<unknown>(name);
+      return normalizeQueryValue(name, normalizeEntityListValue(name, value)) as T;
     },
     useMutation<Args extends unknown[] = unknown[], Result = unknown>(
       name: string,
@@ -2168,64 +2597,35 @@ const renderClientIndex = (
 
   return `import { Link, Route, Router, Routes } from "lakebed/client";
 import type { ComponentChildren } from "preact";
-import { useState } from "preact/hooks";
-import { generatedPages, type GeneratedPage } from "./routes";
+import { pages, type SitePage } from "./routes";
 import { AuthRuntime, useLakebedAdapter, type LakebedAdapter } from "./lib/lakebed";
+import { StyleOverrides } from "./lib/style-overrides";
 import { StyleRuntime } from "./lib/theme";
 ${componentImports}
 
-type GeneratedBlock = (input: {
+type PageComponent = (input: {
   props: Record<string, unknown>;
   lakebed: LakebedAdapter;
 }) => ComponentChildren;
 
-const generatedBlocks = {
+const pageComponents = {
 ${componentEntries}
-} satisfies Record<string, GeneratedBlock>;
+} satisfies Record<string, PageComponent>;
 
-function FallbackGeneratedPage({ page }: { page: GeneratedPage }) {
-  return (
-    <main className="min-h-screen bg-background px-6 py-16 text-foreground">
-      <section className="mx-auto max-w-4xl">
-        <p className="text-sm uppercase tracking-[0.25em] text-muted-foreground">
-          {page.label}
-        </p>
-        <h1 className="mt-4 text-5xl font-bold tracking-tight">
-          {page.label}
-        </h1>
-      </section>
-    </main>
-  );
-}
-
-function GeneratedRoute({ page }: { page: GeneratedPage }) {
+function PageView({ page }: { page: SitePage }) {
   const lakebed = useLakebedAdapter();
-  const Block = generatedBlocks[page.componentName];
-  return Block ? <Block props={page.props} lakebed={lakebed} /> : <FallbackGeneratedPage page={page} />;
+  const Page = pageComponents[page.componentName];
+  return Page ? <Page props={page.props} lakebed={lakebed} /> : <NotFoundPage />;
 }
 
-function StatusPage() {
-  const [status, setStatus] = useState("not checked");
-
-  async function checkStatus() {
-    const response = await fetch("/api/status");
-    setStatus(response.ok ? await response.text() : "error " + response.status);
-  }
-
+function NotFoundPage() {
   return (
     <main className="min-h-screen bg-background px-6 py-16 text-foreground">
       <section className="mx-auto max-w-4xl">
-        <h1 className="mb-4 text-4xl font-bold tracking-tight">Status</h1>
-        <button
-          className="border border-foreground px-4 py-2 font-medium"
-          type="button"
-          onClick={() => void checkStatus()}
-        >
-          Check endpoint
-        </button>
-        <p className="mt-4 font-mono text-sm text-muted-foreground">
-          endpoint: {status}
-        </p>
+        <h1 className="mb-4 text-4xl font-bold">Not found</h1>
+        <Link className="text-muted-foreground hover:text-foreground" to="/">
+          Back home
+        </Link>
       </section>
     </main>
   );
@@ -2235,29 +2635,17 @@ export function App() {
   return (
     <Router>
       <StyleRuntime />
+      <StyleOverrides />
       <AuthRuntime />
       <Routes>
-        {generatedPages.map((page) => (
+        {pages.map((page) => (
           <Route
-            element={<GeneratedRoute page={page} />}
+            element={<PageView page={page} />}
             key={page.path}
             path={page.path}
           />
         ))}
-        <Route path="/status" element={<StatusPage />} />
-        <Route
-          path="*"
-          element={
-            <main className="min-h-screen bg-background px-6 py-16 text-foreground">
-              <section className="mx-auto max-w-4xl">
-                <h1 className="mb-4 text-4xl font-bold">Not found</h1>
-                <Link className="text-muted-foreground hover:text-foreground" to="/">
-                  Back home
-                </Link>
-              </section>
-            </main>
-          }
-        />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>
   );
@@ -2268,32 +2656,32 @@ export function App() {
 const renderStaticClientIndex = (
   projectName: string,
   html: string,
-): string => `import { useState } from "preact/hooks";
+): string => `import { Route, Router, Routes } from "lakebed/client";
 import { projectName } from "../shared/content";
 
 const html = ${JSON.stringify(html)};
 
-export function App() {
-  const [status, setStatus] = useState("not checked");
-
-  async function checkStatus() {
-    const response = await fetch("/api/status");
-    setStatus(response.ok ? await response.text() : "error " + response.status);
-  }
-
+function StaticPage() {
   return (
     <main className="min-h-screen bg-black px-6 py-10 text-white">
       <section className="mx-auto max-w-5xl">
         <div className="mb-6 flex items-center justify-between gap-4">
           <h1 className="text-2xl font-bold tracking-tight">{projectName || ${JSON.stringify(projectName)}}</h1>
-          <button className="border border-white px-4 py-2 font-medium" type="button" onClick={() => void checkStatus()}>
-            Check endpoint
-          </button>
         </div>
-        <p className="mb-6 font-mono text-sm text-neutral-400">endpoint: {status}</p>
         <section className="overflow-hidden rounded border border-neutral-800 bg-white text-black" dangerouslySetInnerHTML={{ __html: html }} />
       </section>
     </main>
+  );
+}
+
+export function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<StaticPage />} />
+        <Route path="*" element={<StaticPage />} />
+      </Routes>
+    </Router>
   );
 }
 `
@@ -2301,8 +2689,9 @@ export function App() {
 const renderServerIndex = (
   projectName: string,
   definitions: LakebedDefinition[],
+  routes: LakebedRoute[],
 ): string => {
-  const schemaSource = mergeObjectSources(
+  const renderedSchema = renderMergedSchema(
     definitions.map((definition) => definition.schemaSource),
     `{
   articles: table({
@@ -2320,6 +2709,7 @@ const renderServerIndex = (
   }),
 }`,
   )
+  const schemaSource = renderedSchema.source
   const queriesSource = mergeHandlers(
     definitions,
     'queries',
@@ -2344,16 +2734,18 @@ const renderServerIndex = (
   }),
 }`,
   )
+  const endpointsSource = mergeEndpointHandlers(definitions)
   const imports = [
     'capsule',
-    'endpoint',
     'mutation',
     'query',
-    'text',
     ...primitiveImportsFor(schemaSource),
+    ...lakebedEndpointImportsFor(endpointsSource),
   ]
 
   return `import { ${[...new Set(imports)].sort().join(', ')} } from "lakebed/server";
+
+${renderSeedData(routes, renderedSchema.tableFields)}
 
 export default capsule({
   name: ${JSON.stringify(toProjectSlug(projectName))},
@@ -2364,25 +2756,21 @@ export default capsule({
 
   mutations: ${mutationsSource},
 
-  endpoints: {
-    status: endpoint({ method: "GET", path: "/api/status" }, () => text("ok"))
-  }
+  endpoints: ${endpointsSource}
 });
 `
 }
 
 const renderStaticServerIndex = (
   projectName: string,
-): string => `import { capsule, endpoint, text } from "lakebed/server";
+): string => `import { capsule } from "lakebed/server";
 
 export default capsule({
   name: ${JSON.stringify(toProjectSlug(projectName))},
   schema: {},
   queries: {},
   mutations: {},
-  endpoints: {
-    status: endpoint({ method: "GET", path: "/api/status" }, () => text("ok"))
-  }
+  endpoints: {}
 });
 `
 
@@ -2524,6 +2912,7 @@ export async function buildOpenUILakebedProjectFiles(
     routes,
     input.previewHtml,
   )
+  const styleOverrides = extractStyleOverrides(input.previewHtml)
   Object.assign(files, {
     'AGENTS.md': renderAgents(),
     'CLAUDE.md': renderAgents(),
@@ -2533,8 +2922,9 @@ export async function buildOpenUILakebedProjectFiles(
     'client/lib/image.tsx': renderClientImage(),
     'client/lib/lakebed.ts': renderClientLakebed(),
     'client/lib/navigation.tsx': renderClientNavigation(),
+    'client/lib/style-overrides.tsx': renderClientStyleOverrides(styleOverrides),
     'client/lib/theme.tsx': renderClientTheme(themeCss),
-    'server/index.ts': renderServerIndex(parsed.projectName, definitions),
+    'server/index.ts': renderServerIndex(parsed.projectName, definitions, routes),
     'shared/content.ts': renderSharedContent(parsed.projectName, routes),
   })
   for (const component of clientComponents) {

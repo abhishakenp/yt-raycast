@@ -36,11 +36,11 @@ const RootDocument = ({ children }: { children: ReactNode }) => {
   useEffect(() => installDynamicImportRecovery(window), [])
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <Toaster richColors />
         <Scripts />
@@ -67,6 +67,32 @@ const RootComponent = () => (
     <RootClerkProvider>
       <AppProviders>
         <Outlet />
+      </AppProviders>
+    </RootClerkProvider>
+  </RootDocument>
+)
+
+const NotFoundComponent = () => (
+  <RootDocument>
+    <RootClerkProvider>
+      <AppProviders>
+        <main className="grid min-h-screen place-items-center bg-background px-6 text-center text-foreground">
+          <div className="max-w-md space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              404
+            </p>
+            <h1 className="text-3xl font-bold">Page not found</h1>
+            <p className="text-muted-foreground">
+              The page you are looking for does not exist.
+            </p>
+            <a
+              className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
+              href="/"
+            >
+              Go home
+            </a>
+          </div>
+        </main>
       </AppProviders>
     </RootClerkProvider>
   </RootDocument>
@@ -186,4 +212,5 @@ export const Route = createRootRoute({
     ],
   }),
   component: RootComponent,
+  notFoundComponent: NotFoundComponent,
 })

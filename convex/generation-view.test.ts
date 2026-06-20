@@ -314,7 +314,7 @@ test('public prompt cache skips newer incomplete duplicate sessions', async () =
   })
 })
 
-test('inline preview edits and history restore keep dashboard source artifacts aligned', async () => {
+test('inline preview edits and history restore keep canonical dashboard source artifacts stable', async () => {
   const t = generationConvexTest()
 
   const { sessionId } = await t.mutation(api.sessions.create, {
@@ -352,10 +352,28 @@ test('inline preview edits and history restore keep dashboard source artifacts a
   expect(editedPreview?.previewVersion).toBe(2)
   expect(editedPreview?.html).toContain('Edited dashboard artifact headline')
   expect(editedView?.homeModule?.source).toContain(
+    'Dashboard artifact alignment site',
+  )
+  expect(editedView?.homeModule?.source).not.toContain(
     'Edited dashboard artifact headline',
   )
   expect(editedView?.siteSpec?.specJson).toContain(
+    'Dashboard artifact alignment site',
+  )
+  expect(editedView?.siteSpec?.specJson).not.toContain(
     'Edited dashboard artifact headline',
+  )
+  await expect(
+    t.query(api.sessions.listEdits, { sessionId }),
+  ).resolves.toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        editType: 'text',
+        beforeText: 'Dashboard artifact alignment site',
+        afterText: 'Edited dashboard artifact headline',
+        previewVersion: 2,
+      }),
+    ]),
   )
 
   await t.mutation(api.sessions.restorePreviewVersion, {
@@ -390,7 +408,7 @@ test('inline preview edits and history restore keep dashboard source artifacts a
   )
 })
 
-test('inline preview edits update dashboard artifacts when rendered text normalizes whitespace', async () => {
+test('inline preview edits preserve canonical artifacts when rendered text normalizes whitespace', async () => {
   const t = generationConvexTest()
 
   const { sessionId } = await t.mutation(api.sessions.create, {
@@ -433,10 +451,22 @@ test('inline preview edits update dashboard artifacts when rendered text normali
   })
 
   expect(editedPreview?.html).toContain('Premium Fleet Rentals')
-  expect(editedView?.homeModule?.source).toContain('Premium Fleet Rentals')
-  expect(editedView?.homeModule?.source).not.toContain('Luxury   Car Rental')
-  expect(editedView?.siteSpec?.specJson).toContain('Premium Fleet Rentals')
-  expect(editedView?.siteSpec?.specJson).not.toContain('Luxury   Car Rental')
+  expect(editedView?.homeModule?.source).toContain('Luxury   Car Rental')
+  expect(editedView?.homeModule?.source).not.toContain('Premium Fleet Rentals')
+  expect(editedView?.siteSpec?.specJson).toContain('Luxury   Car Rental')
+  expect(editedView?.siteSpec?.specJson).not.toContain('Premium Fleet Rentals')
+  await expect(
+    t.query(api.sessions.listEdits, { sessionId }),
+  ).resolves.toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        editType: 'text',
+        beforeText: 'Luxury Car Rental',
+        afterText: 'Premium Fleet Rentals',
+        previewVersion: 2,
+      }),
+    ]),
+  )
 })
 
 test('inline preview edits use one sliding debounce entry for export rebuild automation', async () => {

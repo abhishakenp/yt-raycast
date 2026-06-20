@@ -213,19 +213,19 @@ describe('session edit mutation helpers', () => {
     expect(patches).toEqual(
       expect.arrayContaining([
         {
-          id: homeModuleId,
-          value: expect.objectContaining({
-            source: '<Hero title="Updated headline" />',
-            status: 'succeeded',
-          }),
-        },
-        {
           id: sessionId,
           value: expect.objectContaining({
             previewVersion: 2,
             updatedAt: 10,
           }),
         },
+      ]),
+    )
+    expect(patches).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: homeModuleId,
+        }),
       ]),
     )
   })

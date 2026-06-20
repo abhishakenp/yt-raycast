@@ -29,7 +29,8 @@ export type ClaimAnonymousSessionInput = {
 export type SetSessionThemeOverrideInput = {
   sessionId: Id<'sessions'>
   anonymousOwnerSecret?: string
-  themeOverride: string | null
+  themeOverride?: string | null
+  themeMode?: 'light' | 'dark' | null
 }
 
 export const getUserId = async (ctx: AuthCtx) => {
@@ -215,6 +216,11 @@ export const setSessionThemeOverride = async (
   await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
 
   await ctx.db.patch(args.sessionId, {
-    themeOverride: args.themeOverride ?? undefined,
+    ...(args.themeOverride === undefined
+      ? {}
+      : { themeOverride: args.themeOverride ?? undefined }),
+    ...(args.themeMode === undefined
+      ? {}
+      : { themeMode: args.themeMode ?? undefined }),
   })
 }

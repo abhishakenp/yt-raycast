@@ -66,6 +66,7 @@ export default defineSchema({
     medusaConfig: v.optional(v.any()),
     alternativeDesign: v.optional(v.any()),
     themeOverride: v.optional(v.any()),
+    themeMode: v.optional(v.union(v.literal('light'), v.literal('dark'))),
     deploymentSlug: v.optional(v.string()),
     deploymentUrl: v.optional(v.string()),
     deployedAt: v.optional(v.number()),

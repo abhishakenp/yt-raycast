@@ -169,15 +169,15 @@ const GalleryPreview = ({ session }: { session: GallerySession }) => {
   const title = getPromptTitle(session.prompt)
   const moduleSource = getModuleSource(session.moduleSource)
   const previewDocument = getPreviewDocument(session.html)
-  const imageSrc = getGalleryImageUrl(session)
+  const imageSrc =
+    moduleSource === undefined && previewDocument === undefined
+      ? getGalleryImageUrl(session)
+      : ''
   const [resolvedImageSrc, setResolvedImageSrc] = useState(() =>
     imageSrc.startsWith('/api/sessions/') ? '' : imageSrc,
   )
-  const [imageFailed, setImageFailed] = useState(false)
 
   useEffect(() => {
-    setImageFailed(false)
-
     if (!imageSrc.startsWith('/api/sessions/')) {
       setResolvedImageSrc(imageSrc)
       return
@@ -195,7 +195,7 @@ const GalleryPreview = ({ session }: { session: GallerySession }) => {
         objectUrl = URL.createObjectURL(blob)
         setResolvedImageSrc(objectUrl)
       } catch {
-        if (!controller.signal.aborted) setImageFailed(true)
+        if (!controller.signal.aborted) setResolvedImageSrc('')
       }
     }
 
@@ -209,14 +209,7 @@ const GalleryPreview = ({ session }: { session: GallerySession }) => {
 
   return (
     <div className="relative aspect-[16/10] overflow-hidden border-b border-white/10 bg-[#050816]">
-      {resolvedImageSrc ? (
-        <img
-          src={resolvedImageSrc}
-          alt={title}
-          className="absolute inset-0 h-full w-full object-cover"
-          loading="lazy"
-        />
-      ) : imageFailed && moduleSource !== undefined ? (
+      {moduleSource !== undefined ? (
         <div className="pointer-events-none h-[250%] w-[250%] origin-top-left scale-[0.4] overflow-hidden bg-background text-foreground">
           <GeneratedModulePreview
             source={moduleSource}
@@ -227,13 +220,20 @@ const GalleryPreview = ({ session }: { session: GallerySession }) => {
             isDark
           />
         </div>
-      ) : imageFailed && previewDocument !== undefined ? (
+      ) : previewDocument !== undefined ? (
         <div className="pointer-events-none h-[250%] w-[250%] origin-top-left scale-[0.4] overflow-hidden bg-background text-foreground">
           <div
             className="size-full"
             dangerouslySetInnerHTML={{ __html: previewDocument }}
           />
         </div>
+      ) : resolvedImageSrc ? (
+        <img
+          src={resolvedImageSrc}
+          alt={title}
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="lazy"
+        />
       ) : (
         <div
           className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.16),transparent_34%),radial-gradient(circle_at_78%_30%,rgba(168,85,247,0.16),transparent_36%),linear-gradient(135deg,#050816,#111827)]"

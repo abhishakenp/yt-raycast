@@ -19,13 +19,19 @@ describe('Theme persistence', () => {
       resolve(__dirname, '../../../../convex/lib/session_readiness_helpers.ts'),
       'utf-8',
     )
+    const schemaSource = readFileSync(
+      resolve(__dirname, '../../../../convex/schema.ts'),
+      'utf-8',
+    )
 
-    it('serializeSession returns themeOverride field', () => {
+    it('serializeSession returns theme override and mode fields', () => {
       const serializeMatch = serializationHelpersSource.match(
         /export const serializeSession[\s\S]*?\n\}\)/,
       )
       expect(serializeMatch).not.toBeNull()
       expect(serializeMatch![0]).toContain('themeOverride')
+      expect(serializeMatch![0]).toContain('themeMode')
+      expect(schemaSource).toContain('themeMode')
     })
 
     it('session query helpers use the extracted serializer', () => {
@@ -67,8 +73,10 @@ describe('Theme persistence', () => {
       expect(mutationMatch![0]).toContain('setSessionThemeOverride(ctx, args)')
       expect(validatorsSource).toContain('export const setThemeOverrideArgs =')
       expect(validatorsSource).toContain('themeOverride')
+      expect(validatorsSource).toContain('themeMode')
       expect(accessHelpersSource).toContain('setSessionThemeOverride')
       expect(accessHelpersSource).toContain('themeOverride')
+      expect(accessHelpersSource).toContain('themeMode')
       expect(accessHelpersSource).toContain('ctx.db.patch')
     })
   })
@@ -90,6 +98,11 @@ describe('Theme persistence', () => {
 
     it('passes themeOverride when calling mutation on select', () => {
       expect(dashboardSource).toContain('themeOverride: theme')
+    })
+
+    it('persists the current light/dark mode when toggled', () => {
+      expect(dashboardSource).toContain('serverThemeMode')
+      expect(dashboardSource).toContain("themeMode: nextMode")
     })
   })
 })

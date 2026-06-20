@@ -227,7 +227,10 @@ export const sendChatMessageArgs = {
 
 export const setThemeOverrideArgs = {
   ...ownedSessionArgs,
-  themeOverride: v.union(v.string(), v.null()),
+  themeOverride: v.optional(v.union(v.string(), v.null())),
+  themeMode: v.optional(
+    v.union(v.literal('light'), v.literal('dark'), v.null()),
+  ),
 }
 
 export const upsertGenerationTaskArgs = {

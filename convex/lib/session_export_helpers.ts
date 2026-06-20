@@ -20,6 +20,14 @@ const exportArtifactBuildStallMs = 2 * 60 * 1000
 const stalledExportArtifactMessage =
   'Export build stalled before completion. Click to retry.'
 
+const readAppliedThemeName = (session: Doc<'sessions'>): string | undefined =>
+  typeof session.themeOverride === 'string'
+    ? session.themeOverride
+    : session.genuiTheme
+
+const readAppliedIsDark = (session: Doc<'sessions'>): boolean =>
+  session.themeMode !== 'light'
+
 export type ExportEntitlement =
   | {
       status: 'ready'
@@ -1074,7 +1082,8 @@ export const prepareExportArtifactBuild = async (
 
   const siteSpecJson =
     preview.siteSpecJson ?? siteSpec?.specJson ?? siteSpec?.spec
-  const themeName = session.genuiTheme
+  const themeName = readAppliedThemeName(session)
+  const isDark = readAppliedIsDark(session)
   const prepared = {
     sessionId: args.sessionId,
     prompt: session.prompt,
@@ -1084,7 +1093,7 @@ export const prepareExportArtifactBuild = async (
     html: preview.html,
     ...(siteSpecJson === undefined ? {} : { siteSpecJson }),
     ...(themeName === undefined ? {} : { themeName }),
-    isDark: true,
+    isDark,
     isPrivate: session.isPrivate === true,
   }
 
@@ -1290,6 +1299,18 @@ export const loadOwnedExportForGitHubPush = async (
     .query('siteSpecs')
     .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
     .first()
+  const edits = await ctx.db
+    .query('edits')
+    .withIndex('by_sessionId_createdAt', (index) =>
+      index.eq('sessionId', args.sessionId),
+    )
+    .collect()
+  const source = applyEditsToSource(
+    resolveExportOpenUISource(preview, homeModule, siteSpec),
+    edits,
+  )
+  const themeName = readAppliedThemeName(session)
+  const isDark = readAppliedIsDark(session)
 
   const exportPreviewVersion = exportRecord.previewVersion
   if (
@@ -1319,11 +1340,11 @@ export const loadOwnedExportForGitHubPush = async (
     target: exportPayload.target,
     previewVersion: preview.version,
     html: preview.html,
-    source: resolveExportOpenUISource(preview, homeModule, siteSpec),
+    source,
     siteSpecJson: preview.siteSpecJson ?? siteSpec?.specJson ?? siteSpec?.spec,
     previewHtml: preview.html,
-    themeName: session.genuiTheme,
-    isDark: true,
+    themeName,
+    isDark,
     includeBadge: exportRecord.requiresPayment !== false,
     artifact: toArtifactPayload(artifact),
     filesUrl,

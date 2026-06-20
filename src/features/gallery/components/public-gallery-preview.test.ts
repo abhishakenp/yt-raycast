@@ -6,7 +6,7 @@ const readProjectFile = (path: string): string =>
   readFileSync(join(process.cwd(), path), 'utf8')
 
 describe('public gallery preview cards', () => {
-  it('renders generated image thumbnails first and keeps live previews as fallback only', () => {
+  it('renders stored generated previews first and keeps generated thumbnails as fallback only', () => {
     const gallerySource = readProjectFile(
       'src/features/gallery/components/PublicGallery.tsx',
     )
@@ -18,8 +18,11 @@ describe('public gallery preview cards', () => {
     )
     expect(gallerySource).toContain('/gallery-thumb?v=')
     expect(gallerySource).toContain('URL.createObjectURL(blob)')
-    expect(gallerySource).toContain('imageFailed && moduleSource')
-    expect(gallerySource).toContain('imageFailed && previewDocument')
+    expect(gallerySource).toContain('moduleSource !== undefined ?')
+    expect(gallerySource).toContain('previewDocument !== undefined ?')
+    expect(gallerySource).toContain(
+      'moduleSource === undefined && previewDocument === undefined',
+    )
     expect(gallerySource).not.toContain('/preview-raw')
     expect(gallerySource).not.toContain('fallback=1')
     expect(gallerySource).not.toContain('<iframe')
