@@ -20,6 +20,7 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { useExportTargets } from '@/features/exports/hooks/use-export-targets'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 
 type DeploymentPanelProps = {
@@ -98,9 +99,8 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
   const ensureExportArtifact = useMutation(
     api.sessions.ensureExportArtifactByLookup,
   )
-  const exportTargets = useQuery(api.sessions.getExportTargets, {
-    lookup: sessionId,
-  })
+  const { data: exportTargets, refetch: refetchExportTargets } =
+    useExportTargets(sessionId)
   const deploymentStatus = useQuery(api.sessions.getDeploymentStatusByLookup, {
     lookup: sessionId,
   })
@@ -154,6 +154,7 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
         })
         if (result.status !== 'ready') return
         setWaitingTarget(undefined)
+        void refetchExportTargets()
       } catch (ensureError) {
         setWaitingTarget(undefined)
         setError(

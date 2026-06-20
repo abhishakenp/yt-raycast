@@ -5,7 +5,7 @@ import {
   Lock,
   TriangleAlert,
 } from 'lucide-react'
-import { useMutation, useQuery } from 'convex/react'
+import { useMutation } from 'convex/react'
 import { useEffect, useMemo, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
@@ -14,6 +14,7 @@ import {
   useOptionalClerk,
 } from '@/shared/auth/use-optional-auth'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import { useExportTargets } from '@/features/exports/hooks/use-export-targets'
 import { HtmlIcon, ReactIcon, NextIcon, LakebedIcon } from '@/features/exports/components/ExportIcons'
 
 type GitHubTarget = {
@@ -162,9 +163,8 @@ const consumePendingPush = (
 export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
   const auth = useOptionalAuth()
   const clerk = useOptionalClerk()
-  const exportTargets = useQuery(api.sessions.getExportTargets, {
-    lookup: sessionId,
-  })
+  const { data: exportTargets, refetch: refetchExportTargets } =
+    useExportTargets(sessionId)
   const ensureExportArtifact = useMutation(
     api.sessions.ensureExportArtifactByLookup,
   )
@@ -244,6 +244,7 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
     })
     const data = await response.json()
     if (!response.ok) throw new Error(data?.error ?? 'Export failed')
+    void refetchExportTargets()
   }
 
   const pushTarget = async (targetConfig: GitHubTarget) => {
@@ -272,8 +273,9 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
           target: targetConfig.target,
           anonymousOwnerSecret: readOwnerSecret(sessionId),
         })
-        if (result.status !== 'ready') return
+        if (result === null || result.status !== 'ready') return
         setWaitingTarget(undefined)
+        void refetchExportTargets()
       } catch (ensureError) {
         setWaitingTarget(undefined)
         setError(
