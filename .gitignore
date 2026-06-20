@@ -15,9 +15,6 @@ dist-ssr
 __unconfig*
 todos.json
 
-# GitNexus skill copies are synced from the canonical ~/.claude/skills source;
-# don't track their auto-generated churn in this repo.
-.claude/skills/
 .agents/skills/
 scripts/.lakebed-logs/
 scripts/.lakebed-conversion-report.json
