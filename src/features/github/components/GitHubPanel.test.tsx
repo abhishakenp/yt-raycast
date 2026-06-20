@@ -27,15 +27,6 @@ const exportTargetsState = vi.hoisted(() => ({
   value: {
     targets: Array<MockGitHubTarget>(),
   },
-  ensureExportArtifact: vi.fn(async () => ({
-    target: 'html',
-    status: 'queued',
-    previewVersion: 2,
-  })),
-}))
-
-vi.mock('convex/react', () => ({
-  useMutation: () => exportTargetsState.ensureExportArtifact,
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
@@ -93,7 +84,6 @@ describe('GitHubPanel', () => {
     installStorage()
     authState.getToken.mockClear()
     authState.openSignIn.mockClear()
-    exportTargetsState.ensureExportArtifact.mockClear()
     setExportTargets([])
     localStorage.clear()
     sessionStorage.clear()
@@ -105,7 +95,7 @@ describe('GitHubPanel', () => {
     vi.unstubAllGlobals()
   })
 
-  it('pushes after a clicked building artifact becomes ready', async () => {
+  it('builds and pushes a clicked building artifact through HTTP routes', async () => {
     setExportTargets([
       {
         target: 'html',
@@ -156,46 +146,7 @@ describe('GitHubPanel', () => {
     expect(
       document.querySelector('.export-target-glyph .animate-spin'),
     ).toBeNull()
-    expect(getByText('72%')).toBeTruthy()
-    expect(button?.style.backgroundImage).toContain('110deg')
 
-    await new Promise((resolve) => window.setTimeout(resolve, 650))
-
-    expect(exportTargetsState.ensureExportArtifact).toHaveBeenCalledWith({
-      lookup: 'session_123',
-      target: 'html',
-      anonymousOwnerSecret: 'owner-secret',
-    })
-    expect(fetchMock).not.toHaveBeenCalled()
-    expect(authState.getToken).not.toHaveBeenCalled()
-    expect(getByText('72%')).toBeTruthy()
-    expect(
-      document.querySelector('[data-github-action="html"] .animate-spin'),
-    ).toBeTruthy()
-    expect(document.body.textContent).not.toContain('Push To GitHub')
-    expect(document.body.textContent).not.toContain('Preparing')
-    expect(document.body.textContent).not.toContain('building')
-
-    setExportTargets([
-      {
-        target: 'html',
-        label: 'HTML',
-        ready: false,
-        status: 'available',
-        requiresPayment: false,
-        fileCount: null,
-        artifactReady: true,
-        artifactStatus: 'ready',
-      },
-    ])
-    view.rerender(<GitHubPanel sessionId="session_123" />)
-
-    await waitFor(() => {
-      expect(
-        document.querySelector('[data-github-action="html"] .animate-spin'),
-      ).toBeNull()
-    })
-    expect(view.queryByText('72%')).toBeNull()
     await waitFor(() =>
       expect(window.open).toHaveBeenCalledWith(
         'https://github.com/acme/site',
@@ -203,6 +154,7 @@ describe('GitHubPanel', () => {
         'noopener,noreferrer',
       ),
     )
+    expect(view.queryByText('72%')).toBeNull()
     expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
       '/api/sessions/session_123/export',
       '/api/sessions/session_123/github/push',
@@ -345,7 +297,7 @@ describe('GitHubPanel', () => {
     )
   })
 
-  it('continues the same click when Convex reports a pending artifact is ready', async () => {
+  it('continues the same click through export and push routes for pending artifacts', async () => {
     setExportTargets([
       {
         target: 'html',
@@ -358,11 +310,6 @@ describe('GitHubPanel', () => {
         artifactStatus: 'building',
       },
     ])
-    exportTargetsState.ensureExportArtifact.mockResolvedValueOnce({
-      target: 'html',
-      status: 'ready',
-      previewVersion: 2,
-    })
     const fetchMock = vi.fn(async (url: string | URL, init?: RequestInit) => {
       void init
       const path = String(url)
@@ -393,11 +340,6 @@ describe('GitHubPanel', () => {
         'noopener,noreferrer',
       ),
     )
-    expect(exportTargetsState.ensureExportArtifact).toHaveBeenCalledWith({
-      lookup: 'session_123',
-      target: 'html',
-      anonymousOwnerSecret: undefined,
-    })
     expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
       '/api/sessions/session_123/export',
       '/api/sessions/session_123/github/push',

@@ -25,15 +25,6 @@ const exportTargetsState = vi.hoisted(() => ({
   value: {
     targets: Array<MockExportTarget>(),
   },
-  ensureExportArtifact: vi.fn(async () => ({
-    target: 'html',
-    status: 'queued',
-    previewVersion: 2,
-  })),
-}))
-
-vi.mock('convex/react', () => ({
-  useMutation: () => exportTargetsState.ensureExportArtifact,
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
@@ -75,7 +66,6 @@ describe('ExportPanel', () => {
     installLocalStorage()
     authState.getToken.mockClear()
     authState.isSignedIn = true
-    exportTargetsState.ensureExportArtifact.mockClear()
     setExportTargets([])
     localStorage.clear()
   })
@@ -116,7 +106,7 @@ describe('ExportPanel', () => {
     expect(view.queryByText('queued')).toBeNull()
   })
 
-  it('downloads after a clicked building artifact becomes ready', async () => {
+  it('builds and downloads a clicked building artifact through the export route', async () => {
     setExportTargets([
       {
         target: 'html',
@@ -141,7 +131,16 @@ describe('ExportPanel', () => {
       configurable: true,
       value: vi.fn(),
     })
-    const fetchMock = vi.fn(async () => new Response('zip-bytes'))
+    const fetchMock = vi.fn(async (url: string | URL) => {
+      const path = String(url)
+      if (path.endsWith('/export')) {
+        return Response.json({ ok: true, downloadUrl: '/download/html' })
+      }
+      if (path === '/download/html') {
+        return new Response('zip-bytes')
+      }
+      return Response.json({ error: `Unexpected ${path}` }, { status: 500 })
+    })
     vi.stubGlobal('fetch', fetchMock)
 
     const view = render(<ExportPanel sessionId="session_123" />)
@@ -160,53 +159,17 @@ describe('ExportPanel', () => {
     expect(
       view.container.querySelector('.export-target-glyph .animate-spin'),
     ).toBeNull()
-    expect(view.getByText('72%')).toBeTruthy()
-    expect(button?.style.backgroundImage).toContain('110deg')
 
-    await new Promise((resolve) => window.setTimeout(resolve, 650))
-
-    expect(exportTargetsState.ensureExportArtifact).toHaveBeenCalledWith({
-      lookup: 'session_123',
-      target: 'html',
-      anonymousOwnerSecret: undefined,
-    })
-    expect(fetchMock).not.toHaveBeenCalled()
-    expect(authState.getToken).not.toHaveBeenCalled()
-    expect(
-      view.container.querySelector('[data-export-action="html"] .animate-spin'),
-    ).toBeTruthy()
-
-    setExportTargets([
-      {
-        target: 'html',
-        label: 'HTML',
-        ready: true,
-        status: 'ready',
-        requiresPayment: false,
-        fileCount: 4,
-        artifactReady: true,
-        artifactStatus: 'ready',
-        downloadUrl: '/api/sessions/session_123/download/html',
-      },
-    ])
-    view.rerender(<ExportPanel sessionId="session_123" />)
-
-    await waitFor(() => {
-      expect(
-        view.container.querySelector(
-          '[data-export-action="html"] .animate-spin',
-        ),
-      ).toBeNull()
-    })
+    await waitFor(() => expect(clickMock).toHaveBeenCalled())
     expect(view.queryByText('72%')).toBeNull()
-    expect(clickMock).toHaveBeenCalled()
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/api/sessions/session_123/download/html',
-      { headers: { Authorization: 'Bearer app-token' } },
-    )
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+      '/api/sessions/session_123/export',
+      '/download/html',
+    ])
+    expect(authState.getToken).toHaveBeenCalledWith({ template: 'convex' })
   })
 
-  it('continues the same click when a pending artifact is already ready', async () => {
+  it('uses the export route when a pending artifact is not locally ready', async () => {
     setExportTargets([
       {
         target: 'html',
@@ -220,11 +183,6 @@ describe('ExportPanel', () => {
         downloadUrl: null,
       },
     ])
-    exportTargetsState.ensureExportArtifact.mockResolvedValueOnce({
-      target: 'html',
-      status: 'ready',
-      previewVersion: 2,
-    })
     const clickMock = vi
       .spyOn(HTMLAnchorElement.prototype, 'click')
       .mockImplementation(() => {})
@@ -255,11 +213,6 @@ describe('ExportPanel', () => {
     if (button) fireEvent.click(button)
 
     await waitFor(() => expect(clickMock).toHaveBeenCalled())
-    expect(exportTargetsState.ensureExportArtifact).toHaveBeenCalledWith({
-      lookup: 'session_123',
-      target: 'html',
-      anonymousOwnerSecret: undefined,
-    })
     expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
       '/api/sessions/session_123/export',
       '/download/html',
