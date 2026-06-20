@@ -330,6 +330,7 @@ export const upsertCommerceConfigArgs = {
   storefrontUrl: v.optional(v.string()),
   configJson: v.optional(v.string()),
   errorMessage: v.optional(v.string()),
+  productCount: v.optional(v.number()),
 }
 
 export const publicGallerySessionsArgs = {

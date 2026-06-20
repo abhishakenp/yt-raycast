@@ -88,6 +88,9 @@ describe('createSessionMedusaProvisionResponse', () => {
         sessionId: 'session_123',
       }),
     )
+    const [, args] = mutation.mock.calls[0]
+    expect(args.adminUrl).toBeUndefined()
+    expect(args.storefrontUrl).toBeUndefined()
   })
 
   it('does not return localhost handoff links when Medusa backend is not configured', async () => {
@@ -110,6 +113,10 @@ describe('createSessionMedusaProvisionResponse', () => {
     const payload = await response.json()
     expect(payload.handoff).toBeUndefined()
     expect(payload.warning).toBe('Medusa Store API not configured.')
+    const [, args] = mutation.mock.calls[0]
+    expect(args.backendUrl).toBeUndefined()
+    expect(args.adminUrl).toBeUndefined()
+    expect(args.storefrontUrl).toBeUndefined()
   })
 
   it('provisions visual commerce with a warning when Medusa returns a non-ok response', async () => {
@@ -191,6 +198,7 @@ describe('createSessionMedusaProvisionResponse', () => {
       tenantId: 'session_123',
       tenantMode: 'session',
       liveStoreApiReady: false,
+      publishableKeyConfigured: true,
     })
   })
 
@@ -238,5 +246,369 @@ describe('createSessionMedusaProvisionResponse', () => {
     const [, args] = mutation.mock.calls[0]
     expect(args.configJson).not.toContain('secret-password')
     expect(args.configJson).not.toContain('admin@store.test')
+  })
+
+  it('syncs generated visual products to Medusa Admin and stores the synced count', async () => {
+    const mutation = vi.fn().mockResolvedValue({ sessionId: 'session_123' })
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ regions: [{ currency_code: 'eur', id: 'reg_1' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ token: 'admin-token' }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ shipping_profiles: [{ id: 'sp_default' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            sales_channels: [
+              { id: 'sc_tenant', name: 'Ship Fast session_123' },
+            ],
+          }),
+          {
+            status: 200,
+          },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            api_keys: [
+              {
+                id: 'apk_tenant',
+                sales_channels: [{ id: 'sc_tenant' }],
+                title: 'Ship Fast session_123',
+                token: 'pk_tenant_session',
+                type: 'publishable',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ products: [] }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ product: { id: 'prod_1' } }), {
+          status: 200,
+        }),
+      )
+
+    const response = await createSessionMedusaProvisionResponse(
+      'session_123',
+      new Request(
+        'http://ship-fast.test/api/sessions/session_123/provision/medusa',
+        {
+          body: JSON.stringify({
+            anonymousOwnerSecret: 'owner_secret',
+            products: [
+              { handle: 'truffle-box', price: 79, title: 'Truffle Box' },
+            ],
+          }),
+          method: 'POST',
+        },
+      ),
+      { mutation, query: vi.fn() },
+      {
+        env: {
+          MEDUSA_ADMIN_EMAIL: 'admin@test.com',
+          MEDUSA_ADMIN_PASSWORD: 'supersecret',
+          MEDUSA_ADMIN_URL: 'http://localhost:9000/app',
+          MEDUSA_BACKEND_URL: 'http://localhost:9000',
+          MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
+          MEDUSA_STOREFRONT_URL: 'http://localhost:8001',
+        },
+        fetch: fetchImpl,
+        metaEnv: {},
+      },
+    )
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({
+      liveStoreApiReady: true,
+      syncedProducts: 1,
+    })
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'http://localhost:9000/admin/products',
+      expect.objectContaining({ method: 'POST' }),
+    )
+    expect(mutation).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        productCount: 1,
+        sessionId: 'session_123',
+      }),
+    )
+    const [, args] = mutation.mock.calls[0]
+    expect(JSON.parse(args.configJson)).toMatchObject({
+      productSync: {
+        requested: 1,
+        synced: 1,
+      },
+      medusaTenant: {
+        apiKeyId: 'apk_tenant',
+        publishableKey: 'pk_tenant_session',
+        salesChannelId: 'sc_tenant',
+      },
+    })
+  })
+
+  it('returns Medusa handoff when products sync but ownerless Convex persistence is forbidden', async () => {
+    const mutation = vi.fn().mockRejectedValue(new Error('FORBIDDEN'))
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ regions: [{ currency_code: 'eur', id: 'reg_1' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ token: 'admin-token' }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ shipping_profiles: [{ id: 'sp_default' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            sales_channels: [
+              { id: 'sc_tenant', name: 'Ship Fast session_123' },
+            ],
+          }),
+          {
+            status: 200,
+          },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            api_keys: [
+              {
+                id: 'apk_tenant',
+                sales_channels: [{ id: 'sc_tenant' }],
+                title: 'Ship Fast session_123',
+                token: 'pk_tenant_session',
+                type: 'publishable',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ products: [] }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ product: { id: 'prod_1' } }), {
+          status: 200,
+        }),
+      )
+
+    const response = await createSessionMedusaProvisionResponse(
+      'session_123',
+      new Request(
+        'http://ship-fast.test/api/sessions/session_123/provision/medusa',
+        {
+          body: JSON.stringify({
+            products: [
+              { handle: 'truffle-box', price: 79, title: 'Truffle Box' },
+            ],
+          }),
+          method: 'POST',
+        },
+      ),
+      { mutation, query: vi.fn() },
+      {
+        env: {
+          MEDUSA_ADMIN_EMAIL: 'admin@test.com',
+          MEDUSA_ADMIN_PASSWORD: 'supersecret',
+          MEDUSA_ADMIN_URL: 'http://localhost:9000/app',
+          MEDUSA_BACKEND_URL: 'http://localhost:9000',
+          MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
+          MEDUSA_STOREFRONT_URL: 'http://localhost:8001',
+        },
+        fetch: fetchImpl,
+        metaEnv: {},
+      },
+    )
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({
+      handoff: {
+        adminUrl: 'http://localhost:9000/app',
+        backendUrl: 'http://localhost:9000',
+        storefrontUrl: 'http://localhost:8001',
+        tenantId: 'session_123',
+      },
+      liveStoreApiReady: true,
+      persisted: false,
+      syncedProducts: 1,
+    })
+  })
+
+  it('creates a tenant key before Store API is globally configured', async () => {
+    const mutation = vi.fn().mockRejectedValue(new Error('FORBIDDEN'))
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ token: 'admin-token' }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ shipping_profiles: [{ id: 'sp_default' }] }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ sales_channels: [] }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ api_keys: [] }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ sales_channel: { id: 'sc_tenant' } }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            api_key: {
+              id: 'apk_tenant',
+              token: 'pk_tenant_session',
+              title: 'Ship Fast session_123',
+              type: 'publishable',
+            },
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ api_key: { id: 'apk_tenant' } }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ products: [] }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ product: { id: 'prod_1' } }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ regions: [{ currency_code: 'eur', id: 'reg_1' }] }),
+          { status: 200 },
+        ),
+      )
+
+    const response = await createSessionMedusaProvisionResponse(
+      'session_123',
+      new Request(
+        'http://ship-fast.test/api/sessions/session_123/provision/medusa',
+        {
+          body: JSON.stringify({
+            products: [
+              { handle: 'truffle-box', price: 79, title: 'Truffle Box' },
+            ],
+          }),
+          method: 'POST',
+        },
+      ),
+      { mutation, query: vi.fn() },
+      {
+        env: {
+          MEDUSA_ADMIN_EMAIL: 'admin@test.com',
+          MEDUSA_ADMIN_PASSWORD: 'supersecret',
+          MEDUSA_ADMIN_URL: 'http://localhost:9000/app',
+          MEDUSA_BACKEND_URL: 'http://localhost:9000',
+          MEDUSA_STOREFRONT_URL: 'http://localhost:8001',
+        },
+        fetch: fetchImpl,
+        metaEnv: {},
+      },
+    )
+
+    expect(response.status).toBe(200)
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'http://localhost:9000/store/regions',
+      {
+        headers: { 'x-publishable-api-key': 'pk_tenant_session' },
+      },
+    )
+    expect(await response.json()).toMatchObject({
+      liveStoreApiReady: true,
+      persisted: false,
+      syncedProducts: 1,
+    })
+  })
+
+  it('retries the Convex config upsert without productCount for older validators', async () => {
+    const mutation = vi
+      .fn()
+      .mockRejectedValueOnce(
+        new Error('Object contains extra field `productCount`'),
+      )
+      .mockResolvedValueOnce({ sessionId: 'session_123' })
+
+    const response = await createSessionMedusaProvisionResponse(
+      'session_123',
+      new Request(
+        'http://ship-fast.test/api/sessions/session_123/provision/medusa',
+        {
+          body: JSON.stringify({
+            products: [
+              { handle: 'truffle-box', price: 79, title: 'Truffle Box' },
+            ],
+          }),
+          method: 'POST',
+        },
+      ),
+      { mutation, query: vi.fn() },
+      {
+        env: {
+          MEDUSA_BACKEND_URL: 'https://backend.medusa.test',
+          MEDUSA_PUBLISHABLE_API_KEY: 'pk_medusa',
+        },
+        fetch: vi
+          .fn()
+          .mockResolvedValue(
+            new Response(
+              JSON.stringify({ regions: [{ currency_code: 'eur' }] }),
+              { status: 200 },
+            ),
+          ),
+        metaEnv: {},
+      },
+    )
+
+    expect(response.status).toBe(200)
+    expect(mutation).toHaveBeenCalledTimes(2)
+    expect(mutation.mock.calls[0]?.[1]).toMatchObject({ productCount: 1 })
+    expect(mutation.mock.calls[1]?.[1]).not.toHaveProperty('productCount')
   })
 })

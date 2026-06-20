@@ -1,7 +1,11 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+
+const runtimeMock = vi.hoisted(() => ({
+  loadOpenUIRuntimeLibrary: vi.fn(() => new Promise(() => {})),
+}))
 
 vi.mock('@ship-fast/blocks/runtime', () => ({
   ImageContextProvider: ({ children }: { children: ReactNode }) => (
@@ -16,9 +20,14 @@ vi.mock('@ship-fast/blocks/runtime', () => ({
   QueryClientProvider: ({ children }: { children: ReactNode }) => (
     <>{children}</>
   ),
-  Renderer: () => <div>Rendered OpenUI</div>,
+  Renderer: () => (
+    <article>
+      <h3>Truffle Box</h3>
+      <strong>$79</strong>
+    </article>
+  ),
   getOpenUIRuntimeLibraryCacheKey: () => 'runtime-key',
-  loadOpenUIRuntimeLibrary: vi.fn(() => new Promise(() => {})),
+  loadOpenUIRuntimeLibrary: runtimeMock.loadOpenUIRuntimeLibrary,
 }))
 
 import OpenUIViewer from './OpenUIViewer'
@@ -26,11 +35,52 @@ import OpenUIViewer from './OpenUIViewer'
 describe('OpenUIViewer', () => {
   afterEach(() => {
     cleanup()
+    vi.restoreAllMocks()
+    runtimeMock.loadOpenUIRuntimeLibrary.mockImplementation(
+      () => new Promise(() => {}),
+    )
   })
 
   it('shows a visible fallback while a ready OpenUI runtime is loading', () => {
     render(<OpenUIViewer response='root = Text("Cocoa Luxe")' />)
 
     expect(screen.getByText('Loading preview…')).toBeTruthy()
+  })
+
+  it('overlays session-scoped Medusa product edits onto the rendered preview', async () => {
+    runtimeMock.loadOpenUIRuntimeLibrary.mockResolvedValue({} as never)
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          products: [
+            {
+              currencyCode: 'eur',
+              handle: 'ship-fast-session-truffle-box',
+              price: 89,
+              sourceHandle: 'truffle-box',
+              title: 'Medusa Edited Truffle Box',
+            },
+          ],
+        }),
+        { status: 200 },
+      ),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <OpenUIViewer
+        response='root = StorePage({ products: { items: [{ name: "Truffle Box", price: "$79" }] } })'
+        sessionId="session_123"
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('Medusa Edited Truffle Box')).toBeTruthy()
+      expect(screen.getByText('€89.00')).toBeTruthy()
+    })
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/sessions/session_123/medusa-products',
+      { headers: { Accept: 'application/json' } },
+    )
   })
 })

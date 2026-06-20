@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import type { GeneratedCommerceProduct } from '../services/generated-commerce-products'
 
 type CommerceHandoff = {
   adminEmail?: string
@@ -14,7 +15,10 @@ type CommerceHandoff = {
   tenantId: string
 }
 
-export const useCommerceController = (sessionId: string) => {
+export const useCommerceController = (
+  sessionId: string,
+  visualProducts: Array<GeneratedCommerceProduct> = [],
+) => {
   const config = useQuery(api.sessions.getCommerceConfig, {
     sessionId: sessionId as Id<'sessions'>,
   })
@@ -42,7 +46,10 @@ export const useCommerceController = (sessionId: string) => {
               ? {}
               : { 'x-ship-fast-owner-secret': anonymousOwnerSecret }),
           },
-          body: JSON.stringify({ anonymousOwnerSecret }),
+          body: JSON.stringify({
+            anonymousOwnerSecret,
+            products: visualProducts,
+          }),
         },
       )
 

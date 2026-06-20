@@ -15,6 +15,7 @@ export type UpsertSessionCommerceConfigInput = {
   storefrontUrl?: string
   configJson?: string
   errorMessage?: string
+  productCount?: number
 }
 
 export type ProvisionMedusaTenantInput = {
@@ -83,6 +84,7 @@ export const upsertSessionCommerceConfig = async (
       storefrontUrl: args.storefrontUrl,
       configJson: args.configJson,
       errorMessage: args.errorMessage,
+      productCount: args.productCount,
       status: 'ready',
       updatedAt: now,
     })
@@ -95,6 +97,7 @@ export const upsertSessionCommerceConfig = async (
       storefrontUrl: args.storefrontUrl,
       configJson: args.configJson,
       errorMessage: args.errorMessage,
+      productCount: args.productCount,
       createdAt: now,
       updatedAt: now,
     })
