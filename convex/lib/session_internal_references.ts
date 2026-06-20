@@ -23,7 +23,10 @@ type InternalSessionReferences = {
   }
 }
 
-type SessionInternalReferences = InternalSessionReferences['sessions'] & {
+type SessionInternalReferences = Omit<
+  InternalSessionReferences['sessions'],
+  'markExportArtifactBuildStalled'
+> & {
   completeGenerationNode: RunActionReference
   buildExportArtifact: ScheduledFunctionReference
   stallExportArtifactBuild: ScheduledFunctionReference
