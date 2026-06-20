@@ -59,12 +59,11 @@ const readProjectName = (
   return fallback
 }
 
-const readImageDimension = (
-  value: string | null,
-  fallback: number,
-): number => {
+const readImageDimension = (value: string | null, fallback: number): number => {
   const parsed = Number.parseInt(value ?? '', 10)
-  return Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, 2400) : fallback
+  return Number.isFinite(parsed) && parsed > 0
+    ? Math.min(parsed, 2400)
+    : fallback
 }
 
 const detachedPreviewImageUrl = (value: string): string | null => {
@@ -109,8 +108,7 @@ const rewriteDetachedPreviewImageUrls = (html: string): string =>
       },
     )
 
-const tailwindCdnScript =
-  '<script src="https://cdn.tailwindcss.com"></script>'
+const tailwindCdnScript = '<script src="https://cdn.tailwindcss.com"></script>'
 
 const ensureDetachedTailwindRuntime = (html: string): string => {
   const rewritten = html.replace(
@@ -119,10 +117,7 @@ const ensureDetachedTailwindRuntime = (html: string): string => {
   )
   if (rewritten !== html) return rewritten
 
-  return html.replace(
-    /<\/head>/i,
-    `  ${tailwindCdnScript}\n</head>`,
-  )
+  return html.replace(/<\/head>/i, `  ${tailwindCdnScript}\n</head>`)
 }
 
 const stripShipFastOpenUIMetadata = (html: string): string =>
@@ -131,7 +126,10 @@ const stripShipFastOpenUIMetadata = (html: string): string =>
       /\s*<script\b[^>]*\bid=(["'])ship-fast-openui-source\1[^>]*>[\s\S]*?<\/script>/gi,
       '',
     )
-    .replace(/\bGenerated OpenUI source is ready\./g, 'Generated site is ready.')
+    .replace(
+      /\bGenerated OpenUI source is ready\./g,
+      'Generated site is ready.',
+    )
 
 const renderReadme = (projectName: string): string => `# ${projectName}
 
@@ -143,7 +141,7 @@ npx lakebed dev
 
 The exported app has one client entry, one server entry, and shared TypeScript.
 
-Built with [ShipFast](https://ship-fast.io).
+Generated with [ShipFast](https://ship-fast.io) 🚀.
 `
 
 const renderAgents = (): string => `# Lakebed App Instructions
@@ -172,7 +170,8 @@ export const projectName = ${JSON.stringify(projectName)};
 export const pages = ${JSON.stringify([route], null, 2)} satisfies PageData[];
 `
 
-const renderClientIndex = (): string => `import { previewHtml } from "./preview";
+const renderClientIndex =
+  (): string => `import { previewHtml } from "./preview";
 
 export function App() {
   return (
@@ -190,7 +189,9 @@ export function App() {
 }
 `
 
-const renderServerIndex = (projectName: string): string => `import { capsule, endpoint, text } from "lakebed/server";
+const renderServerIndex = (
+  projectName: string,
+): string => `import { capsule, endpoint, text } from "lakebed/server";
 
 export default capsule({
   name: ${JSON.stringify(toProjectSlug(projectName))},
@@ -214,7 +215,8 @@ const assertNoOpenUITrace = (files: Record<string, string>) => {
   ]
   for (const [path, source] of Object.entries(files)) {
     const term = forbidden.find((candidate) => source.includes(candidate))
-    if (term) throw new Error(`Static Lakebed project contains ${term} in ${path}`)
+    if (term)
+      throw new Error(`Static Lakebed project contains ${term} in ${path}`)
   }
 }
 

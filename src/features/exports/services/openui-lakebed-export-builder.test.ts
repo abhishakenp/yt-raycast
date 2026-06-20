@@ -5,7 +5,10 @@ import { join } from 'node:path'
 import { build } from 'esbuild'
 // @ts-expect-error jsdom type declarations are not installed in this workspace.
 import { JSDOM } from 'jsdom'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+
+// esbuild bundling integration tests; raise timeout to avoid load-induced 5s flakes
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 })
 
 import {
   buildOpenUILakebedProjectFiles,
@@ -121,6 +124,101 @@ export function signOut() {}
     }
   })
 
+  it('renders generated commerce app with object-shaped Lakebed collection query results', async () => {
+    const built = await buildOpenUILakebedProjectFiles({
+      source:
+        'root = EcommerceKimiPage("CocoaCraft", ["Home"], {"brand":"CocoaCraft"})',
+      siteSpecJson: JSON.stringify({ projectName: 'CocoaCraft' }),
+      sessionId: 'demo',
+      target: 'lakebed',
+    })
+    const directory = mkdtempSync(join(tmpdir(), 'lakebed-commerce-app-'))
+
+    try {
+      for (const [path, source] of Object.entries(built.files)) {
+        const absolutePath = join(directory, path)
+        mkdirSync(join(absolutePath, '..'), { recursive: true })
+        writeFileSync(absolutePath, source)
+      }
+      const entryPath = join(directory, 'render-app.tsx')
+      writeFileSync(
+        entryPath,
+        `import { h, render } from "preact";
+import { App } from "./client/index";
+
+render(h(App, {}), document.getElementById("app"));
+`,
+      )
+      const bundled = await build({
+        bundle: true,
+        entryPoints: [entryPath],
+        format: 'iife',
+        jsx: 'automatic',
+        jsxImportSource: 'preact',
+        logLevel: 'silent',
+        nodePaths: [join(process.cwd(), 'node_modules')],
+        platform: 'browser',
+        plugins: [
+          {
+            name: 'lakebed-client-stub',
+            setup(pluginBuild) {
+              pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
+                namespace: 'lakebed-client-stub',
+                path: 'lakebed/client',
+              }))
+              pluginBuild.onLoad(
+                {
+                  filter: /^lakebed\/client$/,
+                  namespace: 'lakebed-client-stub',
+                },
+                () => ({
+                  contents: `export const Link = ({ children }) => children;
+export const Route = ({ element }) => element;
+export const Router = ({ children }) => children;
+export const Routes = ({ children }) => children;
+export function useNavigate() { return () => {}; }
+export function useAuth() { return { displayName: "Guest", isAuthenticated: false, isGuest: true, isLoading: false, user: null }; }
+export function useMutation() { return async () => undefined; }
+export function useQuery(name) {
+  if (name === "cartLines") {
+    return {
+      line_1: {
+        id: "line_1",
+        productId: "product_1",
+        quantity: "2",
+        product: { id: "product_1", name: "Truffle Box", price: "$12.50" },
+      },
+    };
+  }
+  if (name === "favoriteProductNames") return { favorite_1: "Truffle Box" };
+  if (name === "products") return [];
+  return undefined;
+}
+export function signInWithGoogle() {}
+export function signOut() {}
+`,
+                  loader: 'tsx',
+                }),
+              )
+            },
+          },
+        ],
+        write: false,
+      })
+      const dom = new JSDOM('<div id="app"></div>', {
+        runScripts: 'outside-only',
+        url: 'https://example.test/',
+      })
+
+      expect(() => dom.window.eval(bundled.outputFiles[0].text)).not.toThrow()
+      expect(dom.window.document.querySelector('#app')?.textContent).toContain(
+        'Shop by Category',
+      )
+    } finally {
+      rmSync(directory, { force: true, recursive: true })
+    }
+  })
+
   it('packages rendered HTML fragments as static Lakebed projects instead of parsing page text as OpenUI', async () => {
     const built = await buildOpenUILakebedProjectFiles({
       source:
@@ -132,7 +230,7 @@ export function signOut() {}
 
     expect(built.projectName).toBe('PurrSpecs')
     expect(built.files['README.md']).toContain(
-      'Built with [ShipFast](https://ship-fast.io).',
+      'Generated with [ShipFast](https://ship-fast.io) 🚀.',
     )
     expect(built.files['client/index.tsx']).toContain('PurrSpecs')
     expect(Object.values(built.files).join('\n')).not.toContain('root =')
@@ -201,11 +299,11 @@ export function signOut() {}
     expect(built.files['client/index.tsx']).toContain('<Router>')
     expect(built.files['client/index.tsx']).toContain('<Routes>')
     expect(built.files['client/index.tsx']).toContain('<Route')
-    expect(built.files['client/index.tsx']).toContain(
-      'pages.map((page) =>',
-    )
+    expect(built.files['client/index.tsx']).toContain('pages.map((page) =>')
     expect(built.files['client/index.tsx']).not.toContain('FallbackPage')
-    expect(built.files['client/index.tsx']).not.toContain('function routeForPath')
+    expect(built.files['client/index.tsx']).not.toContain(
+      'function routeForPath',
+    )
     expect(built.files['client/index.tsx']).not.toContain('StatusPage')
     expect(built.files['client/index.tsx']).not.toContain('/status')
     expect(built.files['client/index.tsx']).not.toContain('site:navigate')
@@ -233,18 +331,18 @@ export function signOut() {}
       'function normalizeEntityListValue',
     )
     expect(built.files['client/lib/lakebed.ts']).toContain(
-      'Number(record.quantity)',
+      'Number(item.quantity)',
     )
     expect(built.files['client/routes.ts']).toContain('export const pages')
-    expect(built.files['client/routes.ts']).toContain('export const routeByLabel')
-    expect(built.files['client/routes.ts']).toContain('export const imageSources')
+    expect(built.files['client/routes.ts']).toContain(
+      'export const routeByLabel',
+    )
+    expect(built.files['client/routes.ts']).toContain(
+      'export const imageSources',
+    )
     expect(built.files['client/lib/theme.tsx']).toContain('--background:')
-    expect(built.files['client/lib/theme.tsx']).toContain(
-      'color-scheme: dark;',
-    )
-    expect(built.files['client/lib/theme.tsx']).toContain(
-      'StyleRuntime',
-    )
+    expect(built.files['client/lib/theme.tsx']).toContain('color-scheme: dark;')
+    expect(built.files['client/lib/theme.tsx']).toContain('StyleRuntime')
     expect(built.files['client/index.tsx']).toContain(
       'import { StyleOverrides } from "./lib/style-overrides"',
     )
@@ -451,6 +549,51 @@ export const WebhookKimiPage = defineCapsule({
     expect(
       sources.every((source) => !source.src.startsWith('data:image/')),
     ).toBe(true)
+  })
+
+  it('resolves missing generated image alts concurrently', async () => {
+    process.env.PEXELS_API_KEY = 'pexels_test_key'
+    let activeRequests = 0
+    let maxActiveRequests = 0
+    globalThis.fetch = (async () => {
+      activeRequests += 1
+      maxActiveRequests = Math.max(maxActiveRequests, activeRequests)
+      await new Promise((resolve) => setTimeout(resolve, 20))
+      activeRequests -= 1
+      return new Response(
+        JSON.stringify({
+          photos: [
+            {
+              src: {
+                large: 'https://images.pexels.com/photos/lakebed.jpeg',
+              },
+            },
+          ],
+        }),
+        { headers: { 'content-type': 'application/json' }, status: 200 },
+      )
+    }) as typeof fetch
+
+    const sources = await resolveLakebedImageSources(
+      [
+        {
+          componentName: 'GalleryPage',
+          label: 'Home',
+          path: '/',
+          props: {
+            hero: { imageAlt: 'Bright storefront window' },
+            cards: [
+              { photoAlt: 'Chocolate gift box' },
+              { avatarAlt: 'Founder portrait' },
+            ],
+          },
+        },
+      ],
+      undefined,
+    )
+
+    expect(sources).toHaveLength(3)
+    expect(maxActiveRequests).toBeGreaterThan(1)
   })
 
   it('falls back to detached Picsum URLs when stock APIs are unavailable', async () => {

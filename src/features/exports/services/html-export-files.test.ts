@@ -7,7 +7,9 @@ import {
 } from './html-export-files'
 
 const expectShipFastReadme = (readme = '') => {
-  expect(readme).toContain('Built with [ShipFast](https://ship-fast.io).')
+  expect(readme).toContain(
+    'Generated with [ShipFast](https://ship-fast.io) 🚀.',
+  )
   expect(readme).not.toContain('Session:')
   expect(readme).not.toContain('Target:')
 }

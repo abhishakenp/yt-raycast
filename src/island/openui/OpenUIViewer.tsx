@@ -70,22 +70,142 @@ function OpenUIRenderFallback({
   isStreaming?: boolean
   message?: string
 }) {
-  const displayMessage =
-    message ?? (isStreaming ? 'Composing the layout…' : 'Loading preview…')
+  if (message) {
+    return (
+      <div
+        style={{
+          minHeight: '100%',
+          padding: 24,
+          color: 'rgba(255,255,255,0.45)',
+          fontSize: 13,
+          display: 'grid',
+          placeItems: 'center',
+          textAlign: 'center',
+        }}
+      >
+        {message}
+      </div>
+    )
+  }
 
   return (
     <div
+      aria-busy="true"
+      aria-label={isStreaming ? 'Preview composing' : 'Preview loading'}
+      role="status"
       style={{
         minHeight: '100%',
-        padding: 24,
-        color: 'rgba(255,255,255,0.45)',
-        fontSize: 13,
-        display: 'grid',
-        placeItems: 'center',
-        textAlign: 'center',
+        padding: 22,
+        background:
+          'linear-gradient(135deg, rgba(15,23,42,0.98), rgba(2,6,23,0.98))',
+        overflow: 'hidden',
       }}
     >
-      {displayMessage}
+      <div
+        aria-hidden="true"
+        style={{
+          height: '100%',
+          minHeight: 260,
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: 18,
+          background:
+            'radial-gradient(circle at 18% 18%, rgba(34,211,238,0.12), transparent 30%), radial-gradient(circle at 84% 16%, rgba(168,85,247,0.12), transparent 32%), rgba(255,255,255,0.035)',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.22)',
+          padding: 22,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            marginBottom: 28,
+          }}
+        >
+          <span
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: 999,
+              background: 'rgba(248,113,113,0.42)',
+            }}
+          />
+          <span
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: 999,
+              background: 'rgba(251,191,36,0.4)',
+            }}
+          />
+          <span
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: 999,
+              background: 'rgba(34,197,94,0.4)',
+            }}
+          />
+          <span
+            style={{
+              width: '34%',
+              height: 11,
+              borderRadius: 999,
+              background: 'rgba(255,255,255,0.1)',
+              marginLeft: 12,
+            }}
+          />
+        </div>
+        <div
+          style={{
+            width: '54%',
+            height: 34,
+            borderRadius: 10,
+            background: 'rgba(255,255,255,0.14)',
+            marginBottom: 14,
+          }}
+        />
+        <div
+          style={{
+            width: '76%',
+            height: 13,
+            borderRadius: 999,
+            background: 'rgba(255,255,255,0.09)',
+            marginBottom: 9,
+          }}
+        />
+        <div
+          style={{
+            width: '62%',
+            height: 13,
+            borderRadius: 999,
+            background: 'rgba(255,255,255,0.075)',
+            marginBottom: 26,
+          }}
+        />
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+            gap: 12,
+          }}
+        >
+          {Array.from({ length: 3 }, (_, index) => (
+            <span
+              key={index}
+              style={{
+                height: 96,
+                borderRadius: 14,
+                background:
+                  index === 0
+                    ? 'rgba(34,211,238,0.12)'
+                    : 'rgba(255,255,255,0.07)',
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

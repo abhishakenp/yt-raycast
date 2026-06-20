@@ -491,7 +491,7 @@ export const recordLakebedSessionDeploymentSuccess = async (
     ? await ctx.db.insert('exports', {
         sessionId: args.sessionId,
         target: 'lakebed',
-        status: 'available',
+        status: 'ready',
         requiresPayment: false,
         ...exportPatch,
         createdAt: now,

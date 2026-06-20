@@ -446,6 +446,34 @@ export async function createGitHubPushResponse(
         anonymousOwnerSecret: anonymousOwnerSecret || undefined,
       },
     )
+    if (exportData.artifact?.status === 'failed') {
+      return json(
+        {
+          error: exportData.artifact.errorMessage ?? 'Export failed.',
+          status: 'failed',
+        },
+        { status: 409 },
+      )
+    }
+
+    if (
+      exportData.artifact?.status !== 'ready' ||
+      typeof exportData.filesUrl !== 'string'
+    ) {
+      return json(
+        { error: 'Export is still being prepared.', status: 'building' },
+        { status: 202 },
+      )
+    }
+
+    const files = await loadPrebuiltFiles(exportData.filesUrl)
+    if (files === null) {
+      return json(
+        { error: 'Export is still being prepared.', status: 'building' },
+        { status: 202 },
+      )
+    }
+
     const fetchFn = fetchOverride ?? fetch
     const githubAccessToken = await resolveGitHubAccessToken(
       authToken,
@@ -497,31 +525,6 @@ export async function createGitHubPushResponse(
 
     if (ref?.object?.sha === undefined) {
       throw new Error('GitHub branch is not ready for commits.')
-    }
-
-    if (
-      exportData.artifact?.status !== 'ready' ||
-      typeof exportData.filesUrl !== 'string'
-    ) {
-      return json(
-        { error: 'Export is still being prepared.', status: 'building' },
-        { status: 202 },
-      )
-    }
-
-    const files = await loadPrebuiltFiles(exportData.filesUrl)
-    if (files === null) {
-      return json(
-        { error: 'Export is still being prepared.', status: 'building' },
-        { status: 202 },
-      )
-    }
-
-    if (!VALID_TARGETS.has(exportTarget)) {
-      return json(
-        { error: 'Unsupported export target for GitHub push.' },
-        { status: 400 },
-      )
     }
 
     const tree = await createTree(

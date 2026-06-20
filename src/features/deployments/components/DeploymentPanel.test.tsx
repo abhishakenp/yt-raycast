@@ -8,6 +8,7 @@ type MockDeploymentTarget = {
   target: 'html' | 'react' | 'next' | 'lakebed'
   artifactReady?: boolean
   artifactStatus?: string
+  artifactError?: string
   deployedUrl?: string | null
 }
 
@@ -202,6 +203,31 @@ describe('DeploymentPanel', () => {
     expect(convexState.publishPreview).not.toHaveBeenCalled()
   })
 
+  it('does not show stale artifact errors after Lakebed deployment succeeds', async () => {
+    setExportTargets([
+      {
+        target: 'lakebed',
+        artifactReady: false,
+        artifactStatus: 'failed',
+        artifactError:
+          'Export build stalled before completion. Click to retry.',
+      },
+    ])
+    setDeploymentStatus({
+      provider: 'lakebed',
+      url: 'https://lakebed-launch.lakebed.app',
+    })
+
+    const view = render(<DeploymentPanel sessionId="session_123" />)
+
+    expect(view.getByText('Open Lakebed')).toBeTruthy()
+    expect(
+      view.queryByText(
+        'Export build stalled before completion. Click to retry.',
+      ),
+    ).toBeNull()
+  })
+
   it('continues the same click when a pending Lakebed artifact is ready', async () => {
     setExportTargets([
       {
@@ -242,5 +268,99 @@ describe('DeploymentPanel', () => {
       expect.objectContaining({ method: 'POST' }),
     )
     expect(convexState.publishPreview).not.toHaveBeenCalled()
+  })
+
+  it('shows a Lakebed publish error when the deploy route returns no URL', async () => {
+    setExportTargets([
+      {
+        target: 'lakebed',
+        artifactReady: true,
+        artifactStatus: 'ready',
+      },
+    ])
+    const fetchMock = vi.fn(async () =>
+      Response.json(
+        {
+          status: 'building',
+          error: 'Lakebed app is still being prepared.',
+        },
+        { status: 202 },
+      ),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const view = render(<DeploymentPanel sessionId="session_123" />)
+    const button = view.getByText('Publish Lakebed').closest('button')
+    expect(button).toBeTruthy()
+    if (button) fireEvent.click(button)
+
+    await waitFor(() =>
+      expect(
+        view.getByText('Lakebed app is still being prepared.'),
+      ).toBeTruthy(),
+    )
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/sessions/session_123/deploy/lakebed',
+      expect.objectContaining({ method: 'POST' }),
+    )
+    expect(convexState.ensureExportArtifact).not.toHaveBeenCalled()
+    expect(window.open).not.toHaveBeenCalled()
+  })
+
+  it('surfaces failed Lakebed artifact builds instead of resetting silently', async () => {
+    setExportTargets([
+      {
+        target: 'lakebed',
+        artifactReady: false,
+        artifactStatus: 'building',
+      },
+    ])
+    const fetchMock = vi.fn(async () =>
+      Response.json({ url: 'https://lakebed-launch.lakebed.app' }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const view = render(<DeploymentPanel sessionId="session_123" />)
+    const button = view.getByText('Publish Lakebed').closest('button')
+    expect(button).toBeTruthy()
+    if (button) fireEvent.click(button)
+
+    await waitFor(() =>
+      expect(
+        view.container.querySelector(
+          '[data-deployment-action="lakebed"] .animate-spin',
+        ),
+      ).toBeTruthy(),
+    )
+
+    setExportTargets([
+      {
+        target: 'lakebed',
+        artifactReady: false,
+        artifactStatus: 'failed',
+        artifactError: 'OpenUI source is incomplete',
+      },
+    ])
+    view.rerender(<DeploymentPanel sessionId="session_123" />)
+
+    await waitFor(() =>
+      expect(view.getByText('OpenUI source is incomplete')).toBeTruthy(),
+    )
+    expect(
+      view.container.querySelector(
+        '[data-deployment-action="lakebed"] .animate-spin',
+      ),
+    ).toBeNull()
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(window.open).not.toHaveBeenCalled()
+
+    setDeploymentStatus({
+      provider: 'lakebed',
+      url: 'https://lakebed-launch.lakebed.app',
+    })
+    view.rerender(<DeploymentPanel sessionId="session_123" />)
+
+    expect(view.getByText('Open Lakebed')).toBeTruthy()
+    expect(view.queryByText('OpenUI source is incomplete')).toBeNull()
   })
 })

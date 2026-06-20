@@ -95,7 +95,7 @@ describe('GalleryGrid', () => {
     )
   })
 
-  it('prefers the generated gallery thumbnail image over live module rendering', () => {
+  it('uses generated gallery thumbnails only when no preview content is available', () => {
     const gallery: GalleryPayload = {
       ...emptyGallery,
       items: [
@@ -103,8 +103,6 @@ describe('GalleryGrid', () => {
           sessionId: 'thumbnail-session',
           prompt: 'AI image studio',
           imageUrl: 'https://cdn.example.test/generated-theme.png',
-          html: '<main><h1>Rendered product preview</h1></main>',
-          moduleSource: '$page = "Home"\nroot = Hero("LumenAI Studio")',
           previewVersion: 1,
         },
       ],
@@ -122,7 +120,8 @@ describe('GalleryGrid', () => {
     expect(container.querySelector('h1')).toBeNull()
   })
 
-  it('falls back to stored generated HTML when the thumbnail is unavailable', async () => {
+  it('renders stored generated HTML without waiting for thumbnail failure', () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(new Response('svg'))
     const gallery: GalleryPayload = {
       ...emptyGallery,
       items: [
@@ -141,15 +140,39 @@ describe('GalleryGrid', () => {
     expect(container.querySelector('.sf-gallery-grid')?.children).toHaveLength(
       1,
     )
-    await waitFor(() => {
-      expect(container.querySelector('h1')?.textContent).toBe(
-        'Rendered product preview',
-      )
-    })
+    expect(container.querySelector('h1')?.textContent).toBe(
+      'Rendered product preview',
+    )
     expect(container.querySelector('img')).toBeNull()
+    expect(globalThis.fetch).not.toHaveBeenCalled()
   })
 
-  it('falls back to generated module source over stored placeholder HTML', async () => {
+  it('prefers stored generated HTML over a gallery image URL', () => {
+    const gallery: GalleryPayload = {
+      ...emptyGallery,
+      items: [
+        {
+          sessionId: 'preview-with-image-session',
+          prompt: 'AI image studio',
+          imageUrl: 'https://cdn.example.test/generated-theme.png',
+          html: '<main><h1>Rendered stock HTML preview</h1></main>',
+          previewVersion: 1,
+        },
+      ],
+      total: 1,
+    }
+
+    const { container } = render(<GalleryGrid gallery={gallery} />)
+
+    expect(container.querySelector('h1')?.textContent).toBe(
+      'Rendered stock HTML preview',
+    )
+    expect(container.querySelector('img')).toBeNull()
+    expect(globalThis.fetch).not.toHaveBeenCalled()
+  })
+
+  it('renders generated module source over stored placeholder HTML without thumbnail fallback', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(new Response('svg'))
     const gallery: GalleryPayload = {
       ...emptyGallery,
       items: [
@@ -175,6 +198,7 @@ describe('GalleryGrid', () => {
       'Generated OpenUI source is ready.',
     )
     expect(container.querySelector('img')).toBeNull()
+    expect(globalThis.fetch).not.toHaveBeenCalled()
   })
 
   it('deletes the hovered gallery session when the physical D key is pressed', async () => {

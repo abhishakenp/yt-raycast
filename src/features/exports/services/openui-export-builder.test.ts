@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { strFromU8, unzipSync } from 'fflate'
 
 import {
@@ -14,6 +14,9 @@ import {
   buildOpenUIHtmlExport,
   parseOpenUIForHtmlExport,
 } from './openui-html-export-builder'
+
+// esbuild/parse-heavy export integration tests; avoid load-induced 5s flakes
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 })
 
 const source = `root = SaasKimiPage("Export Demo", ["Home"], {"heading": "Hello export", "highlight": "export"})`
 
@@ -196,7 +199,7 @@ describe('openui-export-builder', () => {
     expect(files['index.html']).toBe(rawHtmlSource)
     expect(files['README.md']).toContain('Export Demo')
     expect(files['README.md']).toContain(
-      'Built with [ShipFast](https://ship-fast.io).',
+      'Generated with [ShipFast](https://ship-fast.io) 🚀.',
     )
     expect(files['README.md']).not.toContain('Session:')
     expect(files['README.md']).not.toContain('Target:')
@@ -236,7 +239,7 @@ describe('openui-export-builder', () => {
     )
     expect(files['src/data/pages.ts']).toContain('Hello export')
     expect(files['README.md']).toContain(
-      'Built with [ShipFast](https://ship-fast.io).',
+      'Generated with [ShipFast](https://ship-fast.io) 🚀.',
     )
     expect(Object.values(files).join('\n')).not.toContain('@openuidev')
     expect(Object.values(files).join('\n')).not.toContain('defineComponent')

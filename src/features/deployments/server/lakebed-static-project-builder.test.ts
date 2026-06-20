@@ -23,7 +23,7 @@ describe('buildStaticLakebedProjectFiles', () => {
     expect(project.files['client/index.tsx']).toContain('srcDoc={previewHtml}')
     expect(project.files['client/preview.ts']).toContain('body{color:red}')
     expect(project.files['README.md']).toContain(
-      'Built with [ShipFast](https://ship-fast.io).',
+      'Generated with [ShipFast](https://ship-fast.io) 🚀.',
     )
     expect(Object.values(project.files).join('\n')).not.toMatch(
       /@ship-fast|@openuidev|OpenUI|defineCapsule|root =/,
