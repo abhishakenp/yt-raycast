@@ -54,6 +54,7 @@ import { Route as ApiSessionsSessionIdMedusaProductsRouteImport } from './routes
 import { Route as ApiSessionsSessionIdMedusaConfigRouteImport } from './routes/api/sessions.$sessionId.medusa-config'
 import { Route as ApiSessionsSessionIdHistoryRouteImport } from './routes/api/sessions.$sessionId.history'
 import { Route as ApiSessionsSessionIdGalleryThumbRouteImport } from './routes/api/sessions.$sessionId.gallery-thumb'
+import { Route as ApiSessionsSessionIdExportTargetsRouteImport } from './routes/api/sessions.$sessionId.export-targets'
 import { Route as ApiSessionsSessionIdExportRouteImport } from './routes/api/sessions.$sessionId.export'
 import { Route as ApiSessionsSessionIdChatRouteImport } from './routes/api/sessions.$sessionId.chat'
 import { Route as ApiMedusaStoreCartLineItemsRouteImport } from './routes/api/medusa-store.cart.line-items'
@@ -306,6 +307,12 @@ const ApiSessionsSessionIdGalleryThumbRoute =
     path: '/gallery-thumb',
     getParentRoute: () => ApiSessionsSessionIdRoute,
   } as any)
+const ApiSessionsSessionIdExportTargetsRoute =
+  ApiSessionsSessionIdExportTargetsRouteImport.update({
+    id: '/export-targets',
+    path: '/export-targets',
+    getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
 const ApiSessionsSessionIdExportRoute =
   ApiSessionsSessionIdExportRouteImport.update({
     id: '/export',
@@ -440,6 +447,7 @@ export interface FileRoutesByFullPath {
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
   '/api/sessions/$sessionId/chat': typeof ApiSessionsSessionIdChatRoute
   '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
+  '/api/sessions/$sessionId/export-targets': typeof ApiSessionsSessionIdExportTargetsRoute
   '/api/sessions/$sessionId/gallery-thumb': typeof ApiSessionsSessionIdGalleryThumbRoute
   '/api/sessions/$sessionId/history': typeof ApiSessionsSessionIdHistoryRouteWithChildren
   '/api/sessions/$sessionId/medusa-config': typeof ApiSessionsSessionIdMedusaConfigRoute
@@ -502,6 +510,7 @@ export interface FileRoutesByTo {
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
   '/api/sessions/$sessionId/chat': typeof ApiSessionsSessionIdChatRoute
   '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
+  '/api/sessions/$sessionId/export-targets': typeof ApiSessionsSessionIdExportTargetsRoute
   '/api/sessions/$sessionId/gallery-thumb': typeof ApiSessionsSessionIdGalleryThumbRoute
   '/api/sessions/$sessionId/history': typeof ApiSessionsSessionIdHistoryRouteWithChildren
   '/api/sessions/$sessionId/medusa-config': typeof ApiSessionsSessionIdMedusaConfigRoute
@@ -565,6 +574,7 @@ export interface FileRoutesById {
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
   '/api/sessions/$sessionId/chat': typeof ApiSessionsSessionIdChatRoute
   '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
+  '/api/sessions/$sessionId/export-targets': typeof ApiSessionsSessionIdExportTargetsRoute
   '/api/sessions/$sessionId/gallery-thumb': typeof ApiSessionsSessionIdGalleryThumbRoute
   '/api/sessions/$sessionId/history': typeof ApiSessionsSessionIdHistoryRouteWithChildren
   '/api/sessions/$sessionId/medusa-config': typeof ApiSessionsSessionIdMedusaConfigRoute
@@ -629,6 +639,7 @@ export interface FileRouteTypes {
     | '/api/medusa-store/cart/line-items'
     | '/api/sessions/$sessionId/chat'
     | '/api/sessions/$sessionId/export'
+    | '/api/sessions/$sessionId/export-targets'
     | '/api/sessions/$sessionId/gallery-thumb'
     | '/api/sessions/$sessionId/history'
     | '/api/sessions/$sessionId/medusa-config'
@@ -691,6 +702,7 @@ export interface FileRouteTypes {
     | '/api/medusa-store/cart/line-items'
     | '/api/sessions/$sessionId/chat'
     | '/api/sessions/$sessionId/export'
+    | '/api/sessions/$sessionId/export-targets'
     | '/api/sessions/$sessionId/gallery-thumb'
     | '/api/sessions/$sessionId/history'
     | '/api/sessions/$sessionId/medusa-config'
@@ -753,6 +765,7 @@ export interface FileRouteTypes {
     | '/api/medusa-store/cart/line-items'
     | '/api/sessions/$sessionId/chat'
     | '/api/sessions/$sessionId/export'
+    | '/api/sessions/$sessionId/export-targets'
     | '/api/sessions/$sessionId/gallery-thumb'
     | '/api/sessions/$sessionId/history'
     | '/api/sessions/$sessionId/medusa-config'
@@ -1126,6 +1139,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSessionsSessionIdGalleryThumbRouteImport
       parentRoute: typeof ApiSessionsSessionIdRoute
     }
+    '/api/sessions/$sessionId/export-targets': {
+      id: '/api/sessions/$sessionId/export-targets'
+      path: '/export-targets'
+      fullPath: '/api/sessions/$sessionId/export-targets'
+      preLoaderRoute: typeof ApiSessionsSessionIdExportTargetsRouteImport
+      parentRoute: typeof ApiSessionsSessionIdRoute
+    }
     '/api/sessions/$sessionId/export': {
       id: '/api/sessions/$sessionId/export'
       path: '/export'
@@ -1325,6 +1345,7 @@ const ApiSessionsSessionIdHistoryRouteWithChildren =
 interface ApiSessionsSessionIdRouteChildren {
   ApiSessionsSessionIdChatRoute: typeof ApiSessionsSessionIdChatRoute
   ApiSessionsSessionIdExportRoute: typeof ApiSessionsSessionIdExportRoute
+  ApiSessionsSessionIdExportTargetsRoute: typeof ApiSessionsSessionIdExportTargetsRoute
   ApiSessionsSessionIdGalleryThumbRoute: typeof ApiSessionsSessionIdGalleryThumbRoute
   ApiSessionsSessionIdHistoryRoute: typeof ApiSessionsSessionIdHistoryRouteWithChildren
   ApiSessionsSessionIdMedusaConfigRoute: typeof ApiSessionsSessionIdMedusaConfigRoute
@@ -1343,6 +1364,8 @@ interface ApiSessionsSessionIdRouteChildren {
 const ApiSessionsSessionIdRouteChildren: ApiSessionsSessionIdRouteChildren = {
   ApiSessionsSessionIdChatRoute: ApiSessionsSessionIdChatRoute,
   ApiSessionsSessionIdExportRoute: ApiSessionsSessionIdExportRoute,
+  ApiSessionsSessionIdExportTargetsRoute:
+    ApiSessionsSessionIdExportTargetsRoute,
   ApiSessionsSessionIdGalleryThumbRoute: ApiSessionsSessionIdGalleryThumbRoute,
   ApiSessionsSessionIdHistoryRoute:
     ApiSessionsSessionIdHistoryRouteWithChildren,

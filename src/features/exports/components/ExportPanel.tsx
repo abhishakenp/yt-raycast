@@ -4,13 +4,14 @@ import {
   Lock,
   TriangleAlert,
 } from 'lucide-react'
-import { useMutation, useQuery } from 'convex/react'
+import { useMutation } from 'convex/react'
 import { useEffect, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
 import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import { useExportTargets } from '@/features/exports/hooks/use-export-targets'
 import { HtmlIcon, ReactIcon, NextIcon, LakebedIcon } from './ExportIcons'
 
 type ExportTarget = {
@@ -112,9 +113,8 @@ const isDownloadResult = (
 
 export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
   const { getToken, isSignedIn } = useOptionalAuth()
-  const exportTargets = useQuery(api.sessions.getExportTargets, {
-    lookup: sessionId,
-  })
+  const { data: exportTargets, refetch: refetchExportTargets } =
+    useExportTargets(sessionId)
   const ensureExportArtifact = useMutation(
     api.sessions.ensureExportArtifactByLookup,
   )
@@ -185,6 +185,7 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data?.error ?? 'Export failed')
+      void refetchExportTargets()
       return isDownloadResult(data) ? data : {}
     } catch (exportError) {
       setError(
@@ -223,6 +224,7 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
         })
         if (result.status !== 'ready') return
         setWaitingTarget(undefined)
+        void refetchExportTargets()
       } catch (ensureError) {
         setWaitingTarget(undefined)
         setError(

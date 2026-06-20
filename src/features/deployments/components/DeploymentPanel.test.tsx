@@ -39,12 +39,16 @@ vi.mock('convex/react', () => ({
       ? convexState.publishPreview
       : convexState.ensureExportArtifact
   },
-  useQuery: () => {
-    convexState.queryCallCount += 1
-    return convexState.queryCallCount % 2 === 1
-      ? convexState.exportTargets
-      : (convexState.deploymentStatuses.get('current') ?? null)
-  },
+  useQuery: () => convexState.deploymentStatuses.get('current') ?? null,
+}))
+
+vi.mock('@/features/exports/hooks/use-export-targets', () => ({
+  useExportTargets: () => ({
+    data: convexState.exportTargets,
+    error: undefined,
+    isLoading: false,
+    refetch: vi.fn(),
+  }),
 }))
 
 const setExportTargets = (targets: MockDeploymentTarget[]) => {
@@ -52,17 +56,33 @@ const setExportTargets = (targets: MockDeploymentTarget[]) => {
     isPrivate: false,
     targets,
   }
-  convexState.queryCallCount = 0
 }
 
 const setDeploymentStatus = (status: MockDeploymentStatus | null) => {
   convexState.deploymentStatuses.clear()
   if (status) convexState.deploymentStatuses.set('current', status)
-  convexState.queryCallCount = 0
+}
+
+const installLocalStorage = () => {
+  const values = new Map<string, string>()
+  const storage = {
+    clear: vi.fn(() => values.clear()),
+    getItem: vi.fn((key: string) => values.get(key) ?? null),
+    removeItem: vi.fn((key: string) => values.delete(key)),
+    setItem: vi.fn((key: string, value: string) => {
+      values.set(key, value)
+    }),
+  }
+  Object.defineProperty(window, 'localStorage', {
+    configurable: true,
+    value: storage,
+  })
+  vi.stubGlobal('localStorage', storage)
 }
 
 describe('DeploymentPanel', () => {
   beforeEach(() => {
+    installLocalStorage()
     convexState.publishPreview.mockClear()
     convexState.ensureExportArtifact.mockClear()
     convexState.mutationCallCount = 0

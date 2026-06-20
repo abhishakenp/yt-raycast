@@ -7,6 +7,23 @@ import { createExportResponse } from './create-export-response'
 type ExportApiClient = Pick<ConvexHttpClient, 'query' | 'mutation'> &
   Partial<Pick<ConvexHttpClient, 'setAuth'>>
 type ExportTarget = 'html' | 'react' | 'next' | 'lakebed'
+type ExportRecord = {
+  status?: string
+  requiresPayment?: boolean
+  fileCount?: number | null
+  previewVersion?: number | null
+  downloadUrl?: string | null
+  githubUrl?: string | null
+  url?: string | null
+  deployedUrl?: string | null
+  artifact?: {
+    status?: string
+    fileCount?: number | null
+    errorMessage?: string
+  } | null
+}
+
+const EXPORT_TARGETS: ExportTarget[] = ['html', 'react', 'next', 'lakebed']
 
 const isJsonObject = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -40,6 +57,15 @@ const normalizeTarget = (value: unknown): ExportTarget | null => {
       return null
   }
 }
+
+const targetLabel = (target: ExportTarget): string =>
+  target === 'html'
+    ? 'HTML'
+    : target === 'react'
+      ? 'React'
+      : target === 'next'
+        ? 'Next.js'
+        : 'Lakebed'
 
 const getOwnerSecret = (
   request: Request,
@@ -81,6 +107,109 @@ const errorResponse = (error: unknown) =>
     },
     { status: errorStatus(error) },
   )
+
+const isUnsupportedExportTargetError = (error: unknown): boolean => {
+  const message = error instanceof Error ? error.message : String(error)
+  return /Path: \.target/i.test(message) && /Validator: v\.union/i.test(message)
+}
+
+const loadExportRecordForTarget = async (
+  client: ExportApiClient,
+  sessionId: string,
+  target: ExportTarget,
+): Promise<ExportRecord | null> => {
+  try {
+    return (await client.query(api.sessions.getExport, {
+      sessionId: sessionId as never,
+      target,
+    })) as ExportRecord | null
+  } catch (error) {
+    if (isUnsupportedExportTargetError(error)) return null
+    throw error
+  }
+}
+
+export const createExportTargetsResponse = async (
+  sessionId: string,
+  clientOverride?: ExportApiClient,
+): Promise<Response> => {
+  try {
+    const client = createClient(clientOverride)
+    const view = await client.query(api.sessions.getGenerationView, {
+      lookup: sessionId,
+    })
+    const session = view?.session
+    if (session === undefined || session === null) {
+      return json({
+        sessionId,
+        previewReady: false,
+        isPrivate: null,
+        targets: [],
+      })
+    }
+
+    const normalizedSessionId =
+      typeof session._id === 'string' ? session._id : sessionId
+    const previewReady = session.status === 'preview_ready'
+    const currentPreviewVersion =
+      typeof session.previewVersion === 'number'
+        ? session.previewVersion
+        : null
+
+    const targets = await Promise.all(
+      EXPORT_TARGETS.map(async (target) => {
+        const record = await loadExportRecordForTarget(
+          client,
+          normalizedSessionId,
+          target,
+        )
+        const artifact = record?.artifact ?? null
+        const isStale =
+          record?.previewVersion !== undefined &&
+          record.previewVersion !== null &&
+          currentPreviewVersion !== null &&
+          record.previewVersion !== currentPreviewVersion
+        const ready = record?.status === 'ready' && !isStale
+        const artifactStatus =
+          artifact?.status ?? (ready ? 'ready' : previewReady ? 'queued' : 'not_ready')
+        const artifactReady = artifactStatus === 'ready' || ready
+
+        return {
+          target,
+          label: targetLabel(target),
+          ready,
+          status: isStale
+            ? 'stale'
+            : (record?.status ?? (previewReady ? 'available' : 'not_ready')),
+          requiresPayment: record?.requiresPayment ?? false,
+          fileCount: record?.fileCount ?? artifact?.fileCount ?? null,
+          previewVersion: record?.previewVersion ?? null,
+          currentPreviewVersion,
+          downloadUrl: ready
+            ? (record?.downloadUrl ??
+              `/api/sessions/${encodeURIComponent(sessionId)}/download/${target}`)
+            : null,
+          githubUrl: record?.githubUrl ?? record?.url ?? null,
+          githubRepoUrl: record?.githubUrl ?? record?.url ?? null,
+          deployedUrl: record?.deployedUrl ?? null,
+          artifact,
+          artifactReady,
+          artifactStatus,
+          artifactError: artifact?.errorMessage,
+        }
+      }),
+    )
+
+    return json({
+      sessionId,
+      previewReady,
+      isPrivate: session.isPrivate ?? null,
+      targets,
+    })
+  } catch (error) {
+    return errorResponse(error)
+  }
+}
 
 export const createSessionExportResponse = async (
   sessionId: string,

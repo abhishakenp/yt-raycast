@@ -36,7 +36,6 @@ const exportTargetsState = vi.hoisted(() => ({
 
 vi.mock('convex/react', () => ({
   useMutation: () => exportTargetsState.ensureExportArtifact,
-  useQuery: () => exportTargetsState.value,
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
@@ -51,12 +50,47 @@ vi.mock('@/shared/auth/use-optional-auth', () => ({
   }),
 }))
 
+vi.mock('@/features/exports/hooks/use-export-targets', () => ({
+  useExportTargets: () => ({
+    data: exportTargetsState.value,
+    error: undefined,
+    isLoading: false,
+    refetch: vi.fn(),
+  }),
+}))
+
 const setExportTargets = (targets: MockGitHubTarget[]) => {
   exportTargetsState.value = { targets }
 }
 
+const installStorage = () => {
+  const localValues = new Map<string, string>()
+  const sessionValues = new Map<string, string>()
+  const createStorage = (values: Map<string, string>) => ({
+    clear: vi.fn(() => values.clear()),
+    getItem: vi.fn((key: string) => values.get(key) ?? null),
+    removeItem: vi.fn((key: string) => values.delete(key)),
+    setItem: vi.fn((key: string, value: string) => {
+      values.set(key, value)
+    }),
+  })
+  const local = createStorage(localValues)
+  const session = createStorage(sessionValues)
+  Object.defineProperty(window, 'localStorage', {
+    configurable: true,
+    value: local,
+  })
+  Object.defineProperty(window, 'sessionStorage', {
+    configurable: true,
+    value: session,
+  })
+  vi.stubGlobal('localStorage', local)
+  vi.stubGlobal('sessionStorage', session)
+}
+
 describe('GitHubPanel', () => {
   beforeEach(() => {
+    installStorage()
     authState.getToken.mockClear()
     authState.openSignIn.mockClear()
     exportTargetsState.ensureExportArtifact.mockClear()

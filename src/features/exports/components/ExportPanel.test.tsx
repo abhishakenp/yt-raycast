@@ -34,24 +34,50 @@ const exportTargetsState = vi.hoisted(() => ({
 
 vi.mock('convex/react', () => ({
   useMutation: () => exportTargetsState.ensureExportArtifact,
-  useQuery: () => exportTargetsState.value,
 }))
 
 vi.mock('@/shared/auth/use-optional-auth', () => ({
   useOptionalAuth: () => authState,
 }))
 
+vi.mock('@/features/exports/hooks/use-export-targets', () => ({
+  useExportTargets: () => ({
+    data: exportTargetsState.value,
+    error: undefined,
+    isLoading: false,
+    refetch: vi.fn(),
+  }),
+}))
+
 const setExportTargets = (targets: MockExportTarget[]) => {
   exportTargetsState.value = { targets }
 }
 
+const installLocalStorage = () => {
+  const values = new Map<string, string>()
+  const storage = {
+    clear: vi.fn(() => values.clear()),
+    getItem: vi.fn((key: string) => values.get(key) ?? null),
+    removeItem: vi.fn((key: string) => values.delete(key)),
+    setItem: vi.fn((key: string, value: string) => {
+      values.set(key, value)
+    }),
+  }
+  Object.defineProperty(window, 'localStorage', {
+    configurable: true,
+    value: storage,
+  })
+  vi.stubGlobal('localStorage', storage)
+}
+
 describe('ExportPanel', () => {
   beforeEach(() => {
+    installLocalStorage()
     authState.getToken.mockClear()
     authState.isSignedIn = true
     exportTargetsState.ensureExportArtifact.mockClear()
     setExportTargets([])
-    window.localStorage.clear()
+    localStorage.clear()
   })
 
   afterEach(() => {
