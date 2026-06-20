@@ -269,7 +269,11 @@ describe('forkSessionForOwner', () => {
       notifyFunction,
     )
 
-    expect(result).toEqual({ sessionId: targetSessionId, editApplied: true })
+    expect(result).toEqual({
+      sessionId: targetSessionId,
+      editApplied: true,
+      editPreviewVersion: 2,
+    })
     expect(store.sessions[1]).toMatchObject({
       status: 'preview_ready',
       previewVersion: 2,

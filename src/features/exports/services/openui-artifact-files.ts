@@ -2,14 +2,12 @@ import { strFromU8, unzipSync } from 'fflate'
 
 import {
   createHtmlExportFiles,
-  createNextExportFiles,
-  createReactExportFiles,
   extractExportMetadata,
 } from './html-export-files'
 import { buildOpenUIExport } from './openui-export-builder'
+import { buildOpenUIHtmlExport } from './openui-html-export-builder'
 import { buildOpenUILakebedProjectFiles } from './openui-lakebed-export-builder'
 import type { BuiltExport, OpenUIExportInput } from './openui-export-types'
-import { buildStaticLakebedProjectFiles } from '../../deployments/server/lakebed-static-project-builder'
 
 const unzipTextFiles = (body: Uint8Array) =>
   Object.fromEntries(
@@ -20,42 +18,28 @@ const unzipTextFiles = (body: Uint8Array) =>
   )
 
 export async function buildOpenUIArtifactFiles(input: OpenUIExportInput) {
-  const fallbackHtml = input.previewHtml ?? input.source
-
   if (input.target === 'html') {
-    const files = createHtmlExportFiles(
-      input.sessionId,
-      'html',
-      fallbackHtml,
-      { includeBadge: input.includeBadge },
-    )
-    return { files }
+    const download = await buildOpenUIHtmlExport(input)
+    if (typeof download?.body === 'string') {
+      const files = createHtmlExportFiles(
+        input.sessionId,
+        'html',
+        download.body,
+        {
+          includeBadge: input.includeBadge,
+        },
+      )
+      return { files, download }
+    }
+    throw new Error('HTML export did not produce an HTML document')
   }
 
   if (input.target === 'lakebed') {
-    const project = await buildOpenUILakebedProjectFiles(input).catch(() =>
-      buildStaticLakebedProjectFiles({
-        source: input.source,
-        siteSpecJson: input.siteSpecJson,
-        previewHtml: fallbackHtml,
-      }),
-    )
+    const project = await buildOpenUILakebedProjectFiles(input)
     return { files: project.files }
   }
 
-  const download = await buildOpenUIExport(input).catch(() => undefined)
-  if (download === undefined) {
-    const files =
-      input.target === 'react'
-        ? createReactExportFiles(input.sessionId, 'react', fallbackHtml, {
-            includeBadge: input.includeBadge,
-          })
-        : createNextExportFiles(input.sessionId, 'next', fallbackHtml, {
-            includeBadge: input.includeBadge,
-          })
-    return { files }
-  }
-
+  const download = await buildOpenUIExport(input)
   if (typeof download.body === 'string') {
     throw new Error(`${input.target} export did not produce a ZIP artifact`)
   }

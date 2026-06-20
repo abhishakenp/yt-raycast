@@ -53,10 +53,12 @@ describe('dashboard launch handoff', () => {
 
     expect(dashboardSource).toContain('import { lazy, Suspense')
     expect(dashboardSource).toContain('const CommercePanel = lazy(')
-    expect(dashboardSource).toContain('const CmsPanel = lazy(')
     expect(dashboardSource).toContain('const LakebedAdminPanel = lazy(')
+    expect(dashboardSource).toContain('const DeploymentPanel = lazy(')
+    expect(dashboardSource).toContain('const ExportPanel = lazy(')
+    expect(dashboardSource).toContain('const GitHubPanel = lazy(')
     expect(dashboardSource).toContain(
-      '<Suspense fallback={<RailPanelFallback />}>',
+      '<Suspense fallback={<ToolPopoverFallback />}>',
     )
     expect(dashboardSource).not.toContain('import { CommercePanel }')
     expect(dashboardSource).not.toContain('import { CmsPanel }')

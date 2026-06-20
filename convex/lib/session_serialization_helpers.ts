@@ -30,6 +30,10 @@ export const serializeSession = (session: Doc<'sessions'>) => ({
   designReferenceFingerprint: session.designReferenceFingerprint,
   engineVersion: session.engineVersion,
   themeOverride: (session.themeOverride as string | undefined) ?? null,
+  themeMode:
+    session.themeMode === 'light' || session.themeMode === 'dark'
+      ? session.themeMode
+      : null,
 })
 
 export const toTaskStatus = (status: EngineTaskStatus): SessionTaskStatus =>

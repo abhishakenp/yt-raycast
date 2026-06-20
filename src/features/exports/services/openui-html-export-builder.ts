@@ -84,9 +84,32 @@ const readPreviewCss = (): string => {
   }
 }
 
+const isUsablePreviewHtml = (html: string | undefined): html is string => {
+  const trimmed = html?.trim()
+  return Boolean(
+    trimmed &&
+      !/\bopenui-error\b/i.test(trimmed) &&
+      !/failed to render/i.test(trimmed) &&
+      !/\bship-fast-openui-source\b/i.test(trimmed) &&
+      !/generated openui source is ready/i.test(trimmed),
+  )
+}
+
 const isHtmlDocumentSource = (source: string): boolean => {
   const trimmed = source.trim()
   return /^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)
+}
+
+const isHtmlLikeSource = (source: string): boolean => /<[^>]+>/.test(source)
+
+const extractBodyMarkup = (html: string): string => {
+  const trimmed = html.trim()
+  const body = trimmed.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i)
+  const bodyMarkup = (body?.[1] ?? trimmed).trim()
+  const root = bodyMarkup.match(
+    /^<div\b(?=[^>]*\bid=(["'])openui-root\1)[^>]*>([\s\S]*)<\/div>$/i,
+  )
+  return (root?.[2] ?? bodyMarkup).trim()
 }
 
 const parseSiteSpec = (
@@ -323,7 +346,8 @@ const buildStandaloneHtmlDocument = async (
   const siteSpec = parseSiteSpec(input.siteSpecJson)
   const themeName = readThemeName(siteSpec, input.themeName)
   const isDark = input.isDark ?? true
-  const themeStyles = resolveThemeStyles(themeName)
+  const themeStyles =
+    resolveThemeStyles(themeName) ?? resolveThemeStyles('modern-minimal')
   const themeStyle = buildThemeStyle(themeStyles, isDark)
   const themeFontLinks = buildThemeFontLinks(themeStyles)
   const { cssVars } = (await renderOpenUIToHTMLWithTheme(
@@ -337,6 +361,9 @@ const buildStandaloneHtmlDocument = async (
   }
   const css = readPreviewCss()
   const pagesMarkup = absolutizeHtmlAssetUrls(await buildPagesMarkup(parsed))
+  const bodyMarkup = isUsablePreviewHtml(input.previewHtml)
+    ? extractBodyMarkup(input.previewHtml)
+    : pagesMarkup
 
   return buildHtmlExport(
     `<!doctype html>
@@ -354,7 +381,7 @@ ${css}
   </style>
 </head>
 <body class="min-h-screen bg-background text-foreground">
-  <div id="openui-root" class="genui-preview size-full bg-background${isDark ? ' dark' : ''}" style="${escapeAttribute(`${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}`)}">${pagesMarkup || input.previewHtml || ''}</div>
+  <div id="openui-root" class="genui-preview size-full bg-background${isDark ? ' dark' : ''}" style="${escapeAttribute(`${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}`)}">${bodyMarkup}</div>
   <script>
     window.__SHIP_FAST_EXPORT__ = ${stringifyJs({ routes: parsed.routes, projectName: parsed.projectName, themeName, mode: isDark ? 'dark' : 'light' })};
     ${buildRouteScript(parsed.routes)}
@@ -371,6 +398,19 @@ export async function buildOpenUIHtmlExport(
   if (isHtmlDocumentSource(input.source)) {
     return {
       body: input.source.trim(),
+      contentType: 'text/html; charset=utf-8',
+      filename: 'index.html',
+      fileCount: 1,
+    }
+  }
+  if (isHtmlLikeSource(input.source)) {
+    const html = isUsablePreviewHtml(input.previewHtml)
+      ? input.previewHtml.trim()
+      : input.source.trim()
+    return {
+      body: buildHtmlExport(html, {
+        includeBadge: input.includeBadge ?? true,
+      }),
       contentType: 'text/html; charset=utf-8',
       filename: 'index.html',
       fileCount: 1,

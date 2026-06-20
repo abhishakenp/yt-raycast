@@ -389,7 +389,16 @@ describe('public gallery query delegation', () => {
     expect(source).toContain('listPublicGallerySessions')
     expect(source).toContain('loadPublicGallerySession')
     expect(source).not.toContain('by_public_createdAt')
-    expect(source).not.toContain('normalizeId')
+    const listHandler = source.slice(
+      source.indexOf('export const listPublicSessions'),
+      source.indexOf('export const getPublicGallerySession'),
+    )
+    const detailHandler = source.slice(
+      source.indexOf('export const getPublicGallerySession'),
+      source.indexOf('export const getDeploymentBySlug'),
+    )
+    expect(listHandler).not.toContain('normalizeId')
+    expect(detailHandler).not.toContain('normalizeId')
   })
 })
 

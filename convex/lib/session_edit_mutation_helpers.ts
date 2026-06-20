@@ -216,28 +216,12 @@ export const applySessionEdit = async (
 
   const nextPreviewVersion = preview.version + 1
 
-  let openUiSource: string | undefined
-  let siteSpecJson: string | undefined
-  if (
-    args.afterHtml === undefined &&
-    args.editType !== 'style' &&
-    args.editType !== 'image'
-  ) {
-    const artifactSnapshot = await applyTextEditToCurrentArtifacts(
-      ctx,
-      sessionId,
-      args.beforeText,
-      args.afterText,
-      now,
-      args.occurrenceIndex,
-    )
-    openUiSource = artifactSnapshot.openUiSource
-    siteSpecJson = artifactSnapshot.siteSpecJson
-  } else {
-    const artifactSnapshot = await snapshotCurrentArtifacts(ctx, sessionId)
-    openUiSource = artifactSnapshot.openUiSource
-    siteSpecJson = artifactSnapshot.siteSpecJson
-  }
+  // All edit types now use the same pattern: store the edited preview and
+  // record the edit, but keep canonical generated artifacts unchanged. Exports
+  // replay recorded edits onto source through applyEditsToSource.
+  const artifactSnapshot = await snapshotCurrentArtifacts(ctx, sessionId)
+  const openUiSource = artifactSnapshot.openUiSource
+  const siteSpecJson = artifactSnapshot.siteSpecJson
 
   await ctx.db.insert('previews', {
     sessionId,

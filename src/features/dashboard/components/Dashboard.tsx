@@ -121,6 +121,7 @@ type DashboardGenerationView = {
     engineVersion?: string
     cloneUrl?: string
     themeOverride?: string | null
+    themeMode?: 'light' | 'dark' | null
     designReferenceUrls?: string[]
     designReferenceNotes?: string
   }
@@ -656,6 +657,12 @@ export function Dashboard({
       setSelectedTheme(serverThemeOverride)
     }
   }, [serverThemeOverride])
+  const serverThemeMode = generationView?.session.themeMode
+  useEffect(() => {
+    if (serverThemeMode) {
+      setIsDark(serverThemeMode === 'dark')
+    }
+  }, [serverThemeMode])
   const effectiveTheme = selectedTheme ?? aiTheme
   const themeStyles = resolveThemeStyles(effectiveTheme)
   const activeThemeLabel = useMemo(
@@ -1468,10 +1475,23 @@ export function Dashboard({
                             sessionId: resolvedSessionId,
                             anonymousOwnerSecret: activeAnonymousOwnerSecret,
                             themeOverride: theme,
+                            themeMode: isDark ? 'dark' : 'light',
                           })
                         }
                       }}
-                      onToggleMode={() => setIsDark((dark) => !dark)}
+                      onToggleMode={() => {
+                        setIsDark((dark) => {
+                          const nextMode = dark ? 'light' : 'dark'
+                          if (resolvedSessionId) {
+                            setThemeOverrideMutation({
+                              sessionId: resolvedSessionId,
+                              anonymousOwnerSecret: activeAnonymousOwnerSecret,
+                              themeMode: nextMode,
+                            })
+                          }
+                          return !dark
+                        })
+                      }}
                       trigger={
                         <button
                           type="button"

@@ -5,7 +5,9 @@ const originalEnv = { ...process.env }
 const loadStockImage = async (env: Record<string, string | undefined> = {}) => {
   vi.resetModules()
   delete process.env.PEXELS_API_KEY
+  delete process.env.VITE_PEXELS_API_KEY
   delete process.env.UNSPLASH_ACCESS_KEY
+  delete process.env.VITE_UNSPLASH_ACCESS_KEY
   Object.assign(process.env, env)
   return import('./stock-image')
 }

@@ -21,3 +21,4 @@ todos.json
 .agents/skills/
 scripts/.lakebed-logs/
 scripts/.lakebed-conversion-report.json
+/.forge
