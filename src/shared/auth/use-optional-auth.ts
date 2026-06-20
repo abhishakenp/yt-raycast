@@ -33,6 +33,11 @@ const anonymousClerk: OptionalClerk = {
   user: null,
 }
 
+const isMissingJwtTemplateError = (error: unknown): boolean => {
+  const message = error instanceof Error ? error.message : String(error)
+  return /No JWT template exists with name/i.test(message)
+}
+
 /**
  * Clerk's `useAuth` throws if called outside a `<ClerkProvider>`. Anonymous
  * routes can intentionally avoid that provider even when a Clerk key exists, so
@@ -42,7 +47,18 @@ export const useOptionalAuth = (): OptionalAuth => {
   if (!isClerkConfigured) return anonymousAuth
 
   try {
-    return useAuth()
+    const auth = useAuth()
+    return {
+      ...auth,
+      getToken: async (...args) => {
+        try {
+          return await auth.getToken(...args)
+        } catch (error) {
+          if (!isMissingJwtTemplateError(error)) throw error
+          return await auth.getToken()
+        }
+      },
+    }
   } catch {
     return anonymousAuth
   }
