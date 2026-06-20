@@ -108,6 +108,14 @@ const errorResponse = (error: unknown) =>
     { status: errorStatus(error) },
   )
 
+const isMissingPublicFunctionError = (
+  error: unknown,
+  functionName: string,
+): boolean => {
+  const message = error instanceof Error ? error.message : String(error)
+  return message.includes(`Could not find public function for '${functionName}'`)
+}
+
 const isUnsupportedExportTargetError = (error: unknown): boolean => {
   const message = error instanceof Error ? error.message : String(error)
   return /Path: \.target/i.test(message) && /Validator: v\.union/i.test(message)
@@ -126,6 +134,39 @@ const loadExportRecordForTarget = async (
   } catch (error) {
     if (isUnsupportedExportTargetError(error)) return null
     throw error
+  }
+}
+
+const createExportWithCompatibleMutation = async (
+  client: ExportApiClient,
+  sessionId: string,
+  target: ExportTarget,
+  anonymousOwnerSecret: string | undefined,
+) => {
+  try {
+    return await client.mutation(api.sessions.createExportByLookup, {
+      lookup: sessionId,
+      target,
+      anonymousOwnerSecret,
+    })
+  } catch (error) {
+    if (!isMissingPublicFunctionError(error, 'sessions:createExportByLookup')) {
+      throw error
+    }
+
+    const view = await client.query(api.sessions.getGenerationView, {
+      lookup: sessionId,
+    })
+    const normalizedSessionId = view?.session?.sessionId
+    if (typeof normalizedSessionId !== 'string') {
+      throw new Error('Session not found')
+    }
+
+    return await client.mutation(api.sessions.createExport, {
+      sessionId: normalizedSessionId as never,
+      target,
+      anonymousOwnerSecret,
+    })
   }
 }
 
@@ -149,7 +190,7 @@ export const createExportTargetsResponse = async (
     }
 
     const normalizedSessionId =
-      typeof session._id === 'string' ? session._id : sessionId
+      typeof session.sessionId === 'string' ? session.sessionId : sessionId
     const previewReady = session.status === 'preview_ready'
     const currentPreviewVersion =
       typeof session.previewVersion === 'number'
@@ -228,11 +269,12 @@ export const createSessionExportResponse = async (
 
     const client = createClient(clientOverride)
     setClientAuth(client, request)
-    const result = await client.mutation(api.sessions.createExportByLookup, {
-      lookup: sessionId,
+    const result = await createExportWithCompatibleMutation(
+      client,
+      sessionId,
       target,
-      anonymousOwnerSecret: getOwnerSecret(request, body),
-    })
+      getOwnerSecret(request, body),
+    )
 
     return json({
       ...result,

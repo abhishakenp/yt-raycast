@@ -13,7 +13,7 @@ describe('createSessionExportResponse', () => {
         .fn()
         .mockResolvedValueOnce({
           session: {
-            _id: 'session_123',
+            sessionId: 'session_123',
             status: 'preview_ready',
             previewVersion: 3,
             isPrivate: true,
@@ -79,7 +79,7 @@ describe('createSessionExportResponse', () => {
         if ('lookup' in args) {
           return {
             session: {
-              _id: 'session_123',
+              sessionId: 'session_123',
               status: 'preview_ready',
               previewVersion: 3,
               isPrivate: false,
@@ -138,6 +138,52 @@ describe('createSessionExportResponse', () => {
     expect(await response.json()).toMatchObject({
       status: 'ready',
       downloadUrl: '/api/sessions/session_123/download/html',
+    })
+  })
+
+  it('falls back to createExport when the deployed backend lacks createExportByLookup', async () => {
+    const missingLookupMutation = new Error(
+      "Could not find public function for 'sessions:createExportByLookup'. Did you forget to run `npx convex dev` or `npx convex deploy`?",
+    )
+    const client = {
+      mutation: vi
+        .fn()
+        .mockRejectedValueOnce(missingLookupMutation)
+        .mockResolvedValueOnce({
+          status: 'ready',
+          target: 'html',
+        }),
+      query: vi.fn().mockResolvedValue({
+        session: {
+          sessionId: 'real_session_id',
+        },
+      }),
+      setAuth: vi.fn(),
+    }
+
+    const response = await createSessionExportResponse(
+      'public-session-id',
+      new Request('https://ship-fast.test/api/sessions/public-session-id/export', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ target: 'html' }),
+      }),
+      client,
+    )
+
+    expect(response.status).toBe(200)
+    expect(client.mutation).toHaveBeenNthCalledWith(1, expect.anything(), {
+      lookup: 'public-session-id',
+      target: 'html',
+      anonymousOwnerSecret: undefined,
+    })
+    expect(client.query).toHaveBeenCalledWith(expect.anything(), {
+      lookup: 'public-session-id',
+    })
+    expect(client.mutation).toHaveBeenNthCalledWith(2, expect.anything(), {
+      sessionId: 'real_session_id',
+      target: 'html',
+      anonymousOwnerSecret: undefined,
     })
   })
 
