@@ -322,6 +322,78 @@ function stripNullsFromArrays(code: string): string {
   return result
 }
 
+function nextNonWhitespaceChar(code: string, start: number): string {
+  for (let index = start; index < code.length; index++) {
+    const char = code[index]
+    if (char !== ' ' && char !== '\t' && char !== '\n' && char !== '\r') {
+      return char
+    }
+  }
+  return ''
+}
+
+function repairObjectParenthesisArgumentBoundaries(code: string): string {
+  let result = ''
+  const stack: string[] = []
+  let inString = false
+  let quote = ''
+  let escaped = false
+  const matchingOpeners: Record<string, string> = {
+    ')': '(',
+    ']': '[',
+    '}': '{',
+  }
+
+  for (let index = 0; index < code.length; index++) {
+    const char = code[index]
+
+    if (inString) {
+      result += char
+      if (escaped) {
+        escaped = false
+      } else if (char === '\\') {
+        escaped = true
+      } else if (char === quote) {
+        inString = false
+        quote = ''
+      }
+      continue
+    }
+
+    if (char === '"' || char === "'") {
+      result += char
+      inString = true
+      quote = char
+      continue
+    }
+
+    if (
+      char === ')' &&
+      stack[stack.length - 1] === '{' &&
+      nextNonWhitespaceChar(code, index + 1) === ','
+    ) {
+      result += '}'
+      stack.pop()
+      continue
+    }
+
+    result += char
+
+    if (char === '(' || char === '[' || char === '{') {
+      stack.push(char)
+      continue
+    }
+
+    const expected = matchingOpeners[char]
+    if (expected === undefined) continue
+    if (stack[stack.length - 1] === expected) {
+      stack.pop()
+    }
+  }
+
+  return result
+}
+
 /**
  * Repair a single top-level statement segment whose delimiters never closed
  * (truncated mid-program LLM output, e.g. `p3 = Faq(... , {tag` followed by a
@@ -471,6 +543,7 @@ export function preprocessOpenUIResponse(
   // broken statement can't swallow the ones after it (which leak as raw text).
   result = repairMalformedQuotedObjectKeys(result)
   result = repairObjectNullArgumentBoundaries(result)
+  result = repairObjectParenthesisArgumentBoundaries(result)
   result = balanceStatements(result)
   result = stripTopLevelSectionArgLabels(result)
 

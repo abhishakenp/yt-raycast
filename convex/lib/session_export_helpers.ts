@@ -20,34 +20,11 @@ const exportArtifactBuildStallMs = 2 * 60 * 1000
 const stalledExportArtifactMessage =
   'Export build stalled before completion. Click to retry.'
 
-const logPrepareExportStage = (
-  stage: string,
-  args: ExportArtifactBuildInput,
-  details: {
-    elapsedMs?: number
-    previewVersion?: number
-    sourceLength?: number
-    canonicalSourceLength?: number
-    editCount?: number
-    htmlLength?: number
-    siteSpecLength?: number
-    homeModuleHasSource?: boolean
-  } = {},
-) => {
-  console.log('[session_export_helpers:prepareExportArtifactBuild] stage', {
-    stage,
-    target: args.target,
-    sessionId: args.sessionId,
-    requestedPreviewVersion: args.previewVersion,
-    ...details,
-  })
-}
-
 export type ExportEntitlement =
   | {
       status: 'ready'
       requiresPayment: false
-      entitlement: 'disabled_paywall' | 'subscription' | 'credits'
+      entitlement: 'disabled_paywall' | 'subscription' | 'credits' | 'existing'
       remainingCredits?: number
     }
   | {
@@ -527,7 +504,7 @@ export const markExportArtifactBuilding = async (
 
   if (existing?.status === 'ready') return toArtifactPayload(existing)
 
-  const status = 'building'
+  const status = 'building' as const
   const patch = {
     sessionId: args.sessionId,
     target: args.target,
@@ -613,7 +590,7 @@ export const recordExportArtifactReady = async (
     args.target,
     args.previewVersion,
   )
-  const status = 'ready'
+  const status = 'ready' as const
   const patch = {
     sessionId: args.sessionId,
     target: args.target,
@@ -660,7 +637,7 @@ export const recordExportArtifactFailure = async (
     args.target,
     args.previewVersion,
   )
-  const status = 'failed'
+  const status = 'failed' as const
   const patch = {
     sessionId: args.sessionId,
     target: args.target,
@@ -834,9 +811,9 @@ export const createSessionExport = async (
     existingExport?.status === 'ready' &&
     existingExport.requiresPayment === false &&
     existingExport.previewVersion === preview.version
-  const existingExportStatus = 'ready'
-  const existingExportRequiresPayment = false
-  const existingExportEntitlement = 'existing'
+  const existingExportStatus = 'ready' as const
+  const existingExportRequiresPayment = false as const
+  const existingExportEntitlement = 'existing' as const
   const entitlement = alreadyReadyForCurrentPreview
     ? {
         status: existingExportStatus,
@@ -1015,7 +992,7 @@ export const ensureExportArtifactBuild = async (
     sessionId: args.sessionId,
     target: args.target,
     previewVersion: preview.version,
-    isPrivate: session.isPrivate,
+    isPrivate: session.isPrivate === true,
     now,
     buildExportArtifact: args.buildExportArtifact,
     force: false,
@@ -1026,12 +1003,7 @@ export const prepareExportArtifactBuild = async (
   ctx: QueryCtx,
   args: ExportArtifactBuildInput,
 ) => {
-  const startedAt = Date.now()
-  logPrepareExportStage('session:get:start', args)
   const session = await ctx.db.get(args.sessionId)
-  logPrepareExportStage('session:get:done', args, {
-    elapsedMs: Date.now() - startedAt,
-  })
 
   session !== null ||
     (() => {
@@ -1049,9 +1021,6 @@ export const prepareExportArtifactBuild = async (
       })
     })()
 
-  logPrepareExportStage('preview:latest:start', args, {
-    elapsedMs: Date.now() - startedAt,
-  })
   const preview = await ctx.db
     .query('previews')
     .withIndex('by_sessionId_version', (index) =>
@@ -1059,12 +1028,6 @@ export const prepareExportArtifactBuild = async (
     )
     .order('desc')
     .first()
-  logPrepareExportStage('preview:latest:done', args, {
-    elapsedMs: Date.now() - startedAt,
-    previewVersion: preview?.version,
-    htmlLength: preview?.html.length ?? 0,
-    siteSpecLength: preview?.siteSpecJson?.length ?? 0,
-  })
 
   if (preview === null) {
     throw new ConvexError({
@@ -1075,69 +1038,31 @@ export const prepareExportArtifactBuild = async (
 
   if (preview.version !== args.previewVersion) return null
 
-  logPrepareExportStage('home-module:get:start', args, {
-    elapsedMs: Date.now() - startedAt,
-  })
   const homeModule = await ctx.db
     .query('generatedModules')
     .withIndex('by_sessionId_moduleKey', (index) =>
       index.eq('sessionId', args.sessionId).eq('moduleKey', 'home'),
     )
     .first()
-  logPrepareExportStage('home-module:get:done', args, {
-    elapsedMs: Date.now() - startedAt,
-    homeModuleHasSource: (homeModule?.source.trim().length ?? 0) > 0,
-  })
 
-  logPrepareExportStage('site-spec:get:start', args, {
-    elapsedMs: Date.now() - startedAt,
-  })
   const siteSpec = await ctx.db
     .query('siteSpecs')
     .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
     .first()
-  logPrepareExportStage('site-spec:get:done', args, {
-    elapsedMs: Date.now() - startedAt,
-    siteSpecLength: siteSpec?.specJson?.length ?? siteSpec?.spec?.length ?? 0,
-  })
 
-  logPrepareExportStage('edits:collect:start', args, {
-    elapsedMs: Date.now() - startedAt,
-  })
   const edits = await ctx.db
     .query('edits')
     .withIndex('by_sessionId_createdAt', (index) =>
       index.eq('sessionId', args.sessionId),
     )
     .collect()
-  logPrepareExportStage('edits:collect:done', args, {
-    elapsedMs: Date.now() - startedAt,
-    editCount: edits.length,
-  })
 
-  logPrepareExportStage('source:resolve:start', args, {
-    elapsedMs: Date.now() - startedAt,
-  })
   const canonicalSource = resolveExportOpenUISource(
     preview,
     homeModule,
     siteSpec,
   )
-  logPrepareExportStage('source:resolve:done', args, {
-    elapsedMs: Date.now() - startedAt,
-    canonicalSourceLength: canonicalSource.length,
-  })
-  logPrepareExportStage('source:apply-edits:start', args, {
-    elapsedMs: Date.now() - startedAt,
-    editCount: edits.length,
-  })
   const source = applyEditsToSource(canonicalSource, edits)
-  logPrepareExportStage('source:apply-edits:done', args, {
-    elapsedMs: Date.now() - startedAt,
-    canonicalSourceLength: canonicalSource.length,
-    sourceLength: source.length,
-    editCount: edits.length,
-  })
 
   source.trim().length > 0 ||
     (() => {
@@ -1147,32 +1072,64 @@ export const prepareExportArtifactBuild = async (
       })
     })()
 
-  logPrepareExportStage('return:ready', args, {
-    elapsedMs: Date.now() - startedAt,
-    previewVersion: preview.version,
-    sourceLength: source.length,
-    canonicalSourceLength: canonicalSource.length,
-    editCount: edits.length,
-    htmlLength: preview.html.length,
-    siteSpecLength:
-      preview.siteSpecJson?.length ?? siteSpec?.specJson?.length ?? 0,
-  })
-
-  const html = args.target === 'lakebed' ? undefined : preview.html
-
-  return {
+  const siteSpecJson =
+    preview.siteSpecJson ?? siteSpec?.specJson ?? siteSpec?.spec
+  const themeName = session.genuiTheme
+  const prepared = {
     sessionId: args.sessionId,
     prompt: session.prompt,
     target: args.target,
     previewVersion: preview.version,
     source,
-    ...(html === undefined ? {} : { html }),
-    siteSpecJson: preview.siteSpecJson ?? siteSpec?.specJson ?? siteSpec?.spec,
-    previewHtml: preview.html,
-    themeName: session.genuiTheme,
+    html: preview.html,
+    ...(siteSpecJson === undefined ? {} : { siteSpecJson }),
+    ...(themeName === undefined ? {} : { themeName }),
     isDark: true,
-    isPrivate: session.isPrivate,
+    isPrivate: session.isPrivate === true,
   }
+
+  return prepared
+}
+
+export const loadOwnedExportBuildInput = async (
+  ctx: QueryCtx,
+  args: OwnedExportDownloadInput,
+) => {
+  const session = await ctx.db.get(args.sessionId)
+
+  session !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Session not found',
+      })
+    })()
+
+  if (!areExportPaywallsDisabled()) {
+    await assertCanReadOwnedSession(ctx, session, args.anonymousOwnerSecret)
+  }
+
+  const latestPreview = await ctx.db
+    .query('previews')
+    .withIndex('by_sessionId_version', (index) =>
+      index.eq('sessionId', args.sessionId),
+    )
+    .order('desc')
+    .first()
+
+  latestPreview !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'PREVIEW_NOT_READY',
+        message: 'Preview is not ready to export',
+      })
+    })()
+
+  return await prepareExportArtifactBuild(ctx, {
+    sessionId: args.sessionId,
+    target: args.target,
+    previewVersion: latestPreview.version,
+  })
 }
 
 export const loadOwnedExportArtifactDownload = async (
@@ -1189,7 +1146,9 @@ export const loadOwnedExportArtifactDownload = async (
       })
     })()
 
-  await assertCanReadOwnedSession(ctx, session, args.anonymousOwnerSecret)
+  if (!areExportPaywallsDisabled()) {
+    await assertCanReadOwnedSession(ctx, session, args.anonymousOwnerSecret)
+  }
 
   const exportRecord = await ctx.db
     .query('exports')

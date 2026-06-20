@@ -24,6 +24,7 @@ type CustomerCreditsRecord = Doc<'customerCredits'>
 type ExportArtifactRecord = Doc<'exportArtifacts'>
 type ExportRecord = Doc<'exports'>
 type GeneratedModuleRecord = Doc<'generatedModules'>
+type EditRecord = Doc<'edits'>
 type GenerationEventRecord = Doc<'generationEvents'>
 type PreviewRecord = Doc<'previews'>
 type SessionRecord = Doc<'sessions'>
@@ -280,6 +281,7 @@ const workflowCtxFor = (input: {
   previews?: PreviewRecord[]
   generatedModules?: GeneratedModuleRecord[]
   siteSpecs?: SiteSpecRecord[]
+  edits?: EditRecord[]
   exports?: ExportRecord[]
   exportArtifacts?: ExportArtifactRecord[]
   subscriptions?: SubscriptionRecord[]
@@ -291,6 +293,7 @@ const workflowCtxFor = (input: {
     ...(input.generatedModules ?? [generatedModuleDoc()]),
   ]
   const siteSpecs = [...(input.siteSpecs ?? [siteSpecDoc()])]
+  const edits = [...(input.edits ?? [])]
   const exportRows = [...(input.exports ?? [])]
   const exportArtifacts = [...(input.exportArtifacts ?? [])]
   const subscriptions = [...(input.subscriptions ?? [])]
@@ -320,6 +323,8 @@ const workflowCtxFor = (input: {
         return generatedModules
       case 'siteSpecs':
         return siteSpecs
+      case 'edits':
+        return edits
       case 'exports':
         return exportRows
       case 'exportArtifacts':
@@ -368,6 +373,7 @@ const workflowCtxFor = (input: {
         const queryResult = {
           first: async () => matchingRows()[0] ?? null,
           take: async (limit: number) => matchingRows().slice(0, limit),
+          collect: async () => matchingRows(),
           order: (direction: 'asc' | 'desc') => ({
             first: async () => {
               const rows = [...matchingRows()]
@@ -600,8 +606,7 @@ describe('loadSessionExportTargets', () => {
       artifactError: 'Export build stalled before completion. Click to retry.',
       artifact: expect.objectContaining({
         status: 'failed',
-        errorMessage:
-          'Export build stalled before completion. Click to retry.',
+        errorMessage: 'Export build stalled before completion. Click to retry.',
       }),
     })
   })
@@ -1095,6 +1100,42 @@ describe('prepareExportArtifactBuild', () => {
         previewVersion: 2,
       }),
     ).resolves.toBeNull()
+  })
+
+  it('returns a concrete public/private flag for legacy sessions', async () => {
+    const { ctx } = workflowCtxFor({
+      sessions: [
+        sessionDoc({
+          isPrivate: undefined,
+        }),
+      ],
+      previews: [
+        previewDoc({
+          html: '<main>Preview</main>',
+          siteSpecJson: '{"title":"Preview"}',
+        }),
+      ],
+    })
+
+    const result = await prepareExportArtifactBuild(ctx, {
+      sessionId,
+      target: 'lakebed',
+      previewVersion: 2,
+    })
+
+    expect(result).toMatchObject({
+      sessionId,
+      target: 'lakebed',
+      previewVersion: 2,
+      source: openUiSource,
+      isDark: true,
+      isPrivate: false,
+    })
+    expect(result).toMatchObject({
+      html: '<main>Preview</main>',
+      siteSpecJson: '{"title":"Preview"}',
+    })
+    expect(result).not.toHaveProperty('previewHtml')
   })
 })
 

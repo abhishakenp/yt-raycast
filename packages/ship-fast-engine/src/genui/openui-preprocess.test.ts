@@ -36,4 +36,18 @@ describe('preprocessOpenUIResponse', () => {
     expect(result).toContain('{footer:{note:"Done"}}, null)')
     expect(result).not.toContain('{footer:{note:"Done"}, null)')
   })
+
+  it('repairs object boundaries accidentally closed by a parenthesis before the next argument', () => {
+    const source =
+      'root = EcommerceKimiPage("ShopifyLite", ["Home"], {chip:"New", heading:"Launch", imageAlt:"Storefront"), "Trusted by Leading Brands", {heading:"Categories"})'
+
+    const result = preprocessOpenUIResponse(source, { resolveRefs: false })
+
+    expect(result).toContain(
+      'imageAlt:"Storefront"}, "Trusted by Leading Brands"',
+    )
+    expect(result).not.toContain(
+      'imageAlt:"Storefront"), "Trusted by Leading Brands"',
+    )
+  })
 })

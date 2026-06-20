@@ -108,7 +108,7 @@ describe('ExportPanel', () => {
     expect(view.queryByText('queued')).toBeNull()
   })
 
-  it('downloads after a clicked building artifact becomes ready', async () => {
+  it('downloads through the API when a clicked artifact is still building', async () => {
     setExportTargets([
       {
         target: 'html',
@@ -133,7 +133,19 @@ describe('ExportPanel', () => {
       configurable: true,
       value: vi.fn(),
     })
-    const fetchMock = vi.fn(async () => new Response('zip-bytes'))
+    const fetchMock = vi.fn(async (url: string | URL) => {
+      const path = String(url)
+      if (path.endsWith('/export')) {
+        return Response.json({
+          ok: true,
+          downloadUrl: '/api/sessions/session_123/download/html',
+        })
+      }
+      if (path.endsWith('/download/html')) {
+        return new Response('zip-bytes')
+      }
+      return Response.json({ error: `Unexpected ${path}` }, { status: 500 })
+    })
     vi.stubGlobal('fetch', fetchMock)
 
     const view = render(<ExportPanel sessionId="session_123" />)
@@ -152,50 +164,13 @@ describe('ExportPanel', () => {
     expect(
       view.container.querySelector('.export-target-glyph .animate-spin'),
     ).toBeNull()
-    expect(view.getByText('72%')).toBeTruthy()
-    expect(button?.style.backgroundImage).toContain('110deg')
-
-    await new Promise((resolve) => window.setTimeout(resolve, 650))
-
-    expect(exportTargetsState.ensureExportArtifact).toHaveBeenCalledWith({
-      lookup: 'session_123',
-      target: 'html',
-      anonymousOwnerSecret: undefined,
-    })
-    expect(fetchMock).not.toHaveBeenCalled()
-    expect(authState.getToken).not.toHaveBeenCalled()
-    expect(
-      view.container.querySelector('[data-export-action="html"] .animate-spin'),
-    ).toBeTruthy()
-
-    setExportTargets([
-      {
-        target: 'html',
-        label: 'HTML',
-        ready: true,
-        status: 'ready',
-        requiresPayment: false,
-        fileCount: 4,
-        artifactReady: true,
-        artifactStatus: 'ready',
-        downloadUrl: '/api/sessions/session_123/download/html',
-      },
-    ])
-    view.rerender(<ExportPanel sessionId="session_123" />)
-
-    await waitFor(() => {
-      expect(
-        view.container.querySelector(
-          '[data-export-action="html"] .animate-spin',
-        ),
-      ).toBeNull()
-    })
+    await waitFor(() => expect(clickMock).toHaveBeenCalled())
+    expect(exportTargetsState.ensureExportArtifact).not.toHaveBeenCalled()
     expect(view.queryByText('72%')).toBeNull()
-    expect(clickMock).toHaveBeenCalled()
-    expect(fetchMock).toHaveBeenCalledWith(
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+      '/api/sessions/session_123/export',
       '/api/sessions/session_123/download/html',
-      { headers: { Authorization: 'Bearer app-token' } },
-    )
+    ])
   })
 
   it('continues the same click when a pending artifact is already ready', async () => {
@@ -247,11 +222,7 @@ describe('ExportPanel', () => {
     if (button) fireEvent.click(button)
 
     await waitFor(() => expect(clickMock).toHaveBeenCalled())
-    expect(exportTargetsState.ensureExportArtifact).toHaveBeenCalledWith({
-      lookup: 'session_123',
-      target: 'html',
-      anonymousOwnerSecret: undefined,
-    })
+    expect(exportTargetsState.ensureExportArtifact).not.toHaveBeenCalled()
     expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
       '/api/sessions/session_123/export',
       '/download/html',
