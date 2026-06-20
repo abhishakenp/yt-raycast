@@ -4,15 +4,19 @@ import { createPortal } from 'react-dom'
 
 import { EcommercifyTransformOverlay } from './EcommercifyTransformOverlay'
 import { useCommerceController } from '../hooks/useCommerceController'
+import type { GeneratedCommerceProduct } from '../services/generated-commerce-products'
 
 type CommercePanelProps = {
   sessionId: string
   onTransformingChange?: (isTransforming: boolean) => void
+  visualProductCount?: number
+  visualProducts?: Array<GeneratedCommerceProduct>
 }
 
 type CommerceConfig = {
   adminUrl?: string
   backendUrl?: string
+  errorMessage?: string
   status?: string
   storefrontUrl?: string
 }
@@ -51,19 +55,32 @@ const readCommerceWarning = (
 const createPersistedCommerceHandoff = (
   sessionId: string,
   config: CommerceConfig | null | undefined,
-): CommerceHandoff | undefined =>
-  config?.status === 'ready' && config.adminUrl && config.storefrontUrl
-    ? {
-        adminUrl: config.adminUrl,
-        backendUrl: config.backendUrl ?? '',
-        storefrontUrl: config.storefrontUrl,
-        tenantId: sessionId,
-      }
-    : undefined
+  warning?: string,
+): CommerceHandoff | undefined => {
+  if (config?.status !== 'ready' || !config.adminUrl || !config.storefrontUrl) {
+    return undefined
+  }
+
+  const isUnreachableDefaultHandoff =
+    warning !== undefined &&
+    config.adminUrl === 'http://localhost:7001' &&
+    config.storefrontUrl === 'http://localhost:9000'
+
+  if (isUnreachableDefaultHandoff) return undefined
+
+  return {
+    adminUrl: config.adminUrl,
+    backendUrl: config.backendUrl ?? '',
+    storefrontUrl: config.storefrontUrl,
+    tenantId: sessionId,
+  }
+}
 
 export const CommercePanel = ({
   sessionId,
   onTransformingChange,
+  visualProductCount,
+  visualProducts = [],
 }: CommercePanelProps) => {
   const {
     commerceError,
@@ -71,13 +88,19 @@ export const CommercePanel = ({
     config,
     isSaving,
     provisionCommerce,
-  } = useCommerceController(sessionId)
+  } = useCommerceController(sessionId, visualProducts)
   const [isTransforming, setIsTransforming] = useState(false)
   const isReady = config?.status === 'ready'
   const liveCheckoutWarning =
     config?.errorMessage ?? readCommerceWarning(config?.configJson)
   const visibleCommerceHandoff =
-    commerceHandoff ?? createPersistedCommerceHandoff(sessionId, config)
+    commerceHandoff ??
+    createPersistedCommerceHandoff(sessionId, config, liveCheckoutWarning)
+  const liveProductCount = config?.productCount ?? 0
+  const displayedProductCount =
+    liveProductCount > 0
+      ? liveProductCount
+      : (visualProductCount ?? visualProducts.length)
 
   const handleSave = async () => {
     setIsTransforming(true)
@@ -122,7 +145,7 @@ export const CommercePanel = ({
             Products
           </span>
           <span className="text-xs font-semibold text-[var(--text-primary)]">
-            {config?.productCount ?? 0}
+            {displayedProductCount}
           </span>
         </div>
       </div>
@@ -151,7 +174,7 @@ export const CommercePanel = ({
       )}
       {isReady && liveCheckoutWarning !== undefined && (
         <p className="mt-3 rounded-[var(--radius-sm)] border border-amber-400/30 bg-amber-400/12 p-3 text-sm text-amber-100">
-          Commerce enabled. Live checkout needs Medusa Store API configuration.
+          {liveCheckoutWarning}
         </p>
       )}
       {visibleCommerceHandoff !== undefined && (

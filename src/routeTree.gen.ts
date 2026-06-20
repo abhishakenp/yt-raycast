@@ -50,6 +50,7 @@ import { Route as ApiSessionsSessionIdPreviewRawRouteImport } from './routes/api
 import { Route as ApiSessionsSessionIdPreviewInlineTextRouteImport } from './routes/api/sessions.$sessionId.preview-inline-text'
 import { Route as ApiSessionsSessionIdPreviewInlineStyleRouteImport } from './routes/api/sessions.$sessionId.preview-inline-style'
 import { Route as ApiSessionsSessionIdPreviewHomepageHtmlRouteImport } from './routes/api/sessions.$sessionId.preview-homepage-html'
+import { Route as ApiSessionsSessionIdMedusaProductsRouteImport } from './routes/api/sessions.$sessionId.medusa-products'
 import { Route as ApiSessionsSessionIdMedusaConfigRouteImport } from './routes/api/sessions.$sessionId.medusa-config'
 import { Route as ApiSessionsSessionIdHistoryRouteImport } from './routes/api/sessions.$sessionId.history'
 import { Route as ApiSessionsSessionIdGalleryThumbRouteImport } from './routes/api/sessions.$sessionId.gallery-thumb'
@@ -281,6 +282,12 @@ const ApiSessionsSessionIdPreviewHomepageHtmlRoute =
     path: '/preview-homepage-html',
     getParentRoute: () => ApiSessionsSessionIdRoute,
   } as any)
+const ApiSessionsSessionIdMedusaProductsRoute =
+  ApiSessionsSessionIdMedusaProductsRouteImport.update({
+    id: '/medusa-products',
+    path: '/medusa-products',
+    getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
 const ApiSessionsSessionIdMedusaConfigRoute =
   ApiSessionsSessionIdMedusaConfigRouteImport.update({
     id: '/medusa-config',
@@ -436,6 +443,7 @@ export interface FileRoutesByFullPath {
   '/api/sessions/$sessionId/gallery-thumb': typeof ApiSessionsSessionIdGalleryThumbRoute
   '/api/sessions/$sessionId/history': typeof ApiSessionsSessionIdHistoryRouteWithChildren
   '/api/sessions/$sessionId/medusa-config': typeof ApiSessionsSessionIdMedusaConfigRoute
+  '/api/sessions/$sessionId/medusa-products': typeof ApiSessionsSessionIdMedusaProductsRoute
   '/api/sessions/$sessionId/preview-homepage-html': typeof ApiSessionsSessionIdPreviewHomepageHtmlRoute
   '/api/sessions/$sessionId/preview-inline-style': typeof ApiSessionsSessionIdPreviewInlineStyleRoute
   '/api/sessions/$sessionId/preview-inline-text': typeof ApiSessionsSessionIdPreviewInlineTextRoute
@@ -497,6 +505,7 @@ export interface FileRoutesByTo {
   '/api/sessions/$sessionId/gallery-thumb': typeof ApiSessionsSessionIdGalleryThumbRoute
   '/api/sessions/$sessionId/history': typeof ApiSessionsSessionIdHistoryRouteWithChildren
   '/api/sessions/$sessionId/medusa-config': typeof ApiSessionsSessionIdMedusaConfigRoute
+  '/api/sessions/$sessionId/medusa-products': typeof ApiSessionsSessionIdMedusaProductsRoute
   '/api/sessions/$sessionId/preview-homepage-html': typeof ApiSessionsSessionIdPreviewHomepageHtmlRoute
   '/api/sessions/$sessionId/preview-inline-style': typeof ApiSessionsSessionIdPreviewInlineStyleRoute
   '/api/sessions/$sessionId/preview-inline-text': typeof ApiSessionsSessionIdPreviewInlineTextRoute
@@ -559,6 +568,7 @@ export interface FileRoutesById {
   '/api/sessions/$sessionId/gallery-thumb': typeof ApiSessionsSessionIdGalleryThumbRoute
   '/api/sessions/$sessionId/history': typeof ApiSessionsSessionIdHistoryRouteWithChildren
   '/api/sessions/$sessionId/medusa-config': typeof ApiSessionsSessionIdMedusaConfigRoute
+  '/api/sessions/$sessionId/medusa-products': typeof ApiSessionsSessionIdMedusaProductsRoute
   '/api/sessions/$sessionId/preview-homepage-html': typeof ApiSessionsSessionIdPreviewHomepageHtmlRoute
   '/api/sessions/$sessionId/preview-inline-style': typeof ApiSessionsSessionIdPreviewInlineStyleRoute
   '/api/sessions/$sessionId/preview-inline-text': typeof ApiSessionsSessionIdPreviewInlineTextRoute
@@ -622,6 +632,7 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/gallery-thumb'
     | '/api/sessions/$sessionId/history'
     | '/api/sessions/$sessionId/medusa-config'
+    | '/api/sessions/$sessionId/medusa-products'
     | '/api/sessions/$sessionId/preview-homepage-html'
     | '/api/sessions/$sessionId/preview-inline-style'
     | '/api/sessions/$sessionId/preview-inline-text'
@@ -683,6 +694,7 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/gallery-thumb'
     | '/api/sessions/$sessionId/history'
     | '/api/sessions/$sessionId/medusa-config'
+    | '/api/sessions/$sessionId/medusa-products'
     | '/api/sessions/$sessionId/preview-homepage-html'
     | '/api/sessions/$sessionId/preview-inline-style'
     | '/api/sessions/$sessionId/preview-inline-text'
@@ -744,6 +756,7 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/gallery-thumb'
     | '/api/sessions/$sessionId/history'
     | '/api/sessions/$sessionId/medusa-config'
+    | '/api/sessions/$sessionId/medusa-products'
     | '/api/sessions/$sessionId/preview-homepage-html'
     | '/api/sessions/$sessionId/preview-inline-style'
     | '/api/sessions/$sessionId/preview-inline-text'
@@ -1085,6 +1098,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSessionsSessionIdPreviewHomepageHtmlRouteImport
       parentRoute: typeof ApiSessionsSessionIdRoute
     }
+    '/api/sessions/$sessionId/medusa-products': {
+      id: '/api/sessions/$sessionId/medusa-products'
+      path: '/medusa-products'
+      fullPath: '/api/sessions/$sessionId/medusa-products'
+      preLoaderRoute: typeof ApiSessionsSessionIdMedusaProductsRouteImport
+      parentRoute: typeof ApiSessionsSessionIdRoute
+    }
     '/api/sessions/$sessionId/medusa-config': {
       id: '/api/sessions/$sessionId/medusa-config'
       path: '/medusa-config'
@@ -1308,6 +1328,7 @@ interface ApiSessionsSessionIdRouteChildren {
   ApiSessionsSessionIdGalleryThumbRoute: typeof ApiSessionsSessionIdGalleryThumbRoute
   ApiSessionsSessionIdHistoryRoute: typeof ApiSessionsSessionIdHistoryRouteWithChildren
   ApiSessionsSessionIdMedusaConfigRoute: typeof ApiSessionsSessionIdMedusaConfigRoute
+  ApiSessionsSessionIdMedusaProductsRoute: typeof ApiSessionsSessionIdMedusaProductsRoute
   ApiSessionsSessionIdPreviewHomepageHtmlRoute: typeof ApiSessionsSessionIdPreviewHomepageHtmlRoute
   ApiSessionsSessionIdPreviewInlineStyleRoute: typeof ApiSessionsSessionIdPreviewInlineStyleRoute
   ApiSessionsSessionIdPreviewInlineTextRoute: typeof ApiSessionsSessionIdPreviewInlineTextRoute
@@ -1326,6 +1347,8 @@ const ApiSessionsSessionIdRouteChildren: ApiSessionsSessionIdRouteChildren = {
   ApiSessionsSessionIdHistoryRoute:
     ApiSessionsSessionIdHistoryRouteWithChildren,
   ApiSessionsSessionIdMedusaConfigRoute: ApiSessionsSessionIdMedusaConfigRoute,
+  ApiSessionsSessionIdMedusaProductsRoute:
+    ApiSessionsSessionIdMedusaProductsRoute,
   ApiSessionsSessionIdPreviewHomepageHtmlRoute:
     ApiSessionsSessionIdPreviewHomepageHtmlRoute,
   ApiSessionsSessionIdPreviewInlineStyleRoute:

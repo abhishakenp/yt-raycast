@@ -27,16 +27,20 @@ const commerceState = vi.hoisted(() => ({
         tenantId: string
       }
     | undefined,
+  useCommerceController: vi.fn(),
 }))
 
 vi.mock('../hooks/useCommerceController', () => ({
-  useCommerceController: () => ({
-    commerceError: undefined,
-    commerceHandoff: commerceState.handoff,
-    config: commerceState.config,
-    isSaving: false,
-    provisionCommerce: vi.fn(),
-  }),
+  useCommerceController: (...args: unknown[]) => {
+    commerceState.useCommerceController(...args)
+    return {
+      commerceError: undefined,
+      commerceHandoff: commerceState.handoff,
+      config: commerceState.config,
+      isSaving: false,
+      provisionCommerce: vi.fn(),
+    }
+  },
 }))
 
 describe('CommercePanel', () => {
@@ -48,6 +52,7 @@ describe('CommercePanel', () => {
       status: 'ready',
     }
     commerceState.handoff = undefined
+    commerceState.useCommerceController.mockClear()
   })
 
   it('shows visual readiness with a live checkout warning', () => {
@@ -55,11 +60,48 @@ describe('CommercePanel', () => {
 
     expect(screen.getByText('Visual ready')).toBeTruthy()
     expect(
-      screen.getByText(
-        'Commerce enabled. Live checkout needs Medusa Store API configuration.',
-      ),
+      screen.getByText('Medusa Store API is unavailable: fetch failed'),
     ).toBeTruthy()
     expect(screen.queryByText('Automatic')).toBeNull()
+  })
+
+  it('shows the concrete Store API failure instead of the generic setup warning', () => {
+    render(<CommercePanel sessionId="session_123" />)
+
+    expect(
+      screen.getByText('Medusa Store API is unavailable: fetch failed'),
+    ).toBeTruthy()
+    expect(
+      screen.queryByText(
+        'Commerce enabled. Live checkout needs Medusa Store API configuration.',
+      ),
+    ).toBeNull()
+  })
+
+  it('shows visual product count when live Medusa products are not synced yet', () => {
+    render(<CommercePanel sessionId="session_123" visualProductCount={6} />)
+
+    expect(screen.getByText('Products')).toBeTruthy()
+    expect(screen.getByText('6')).toBeTruthy()
+  })
+
+  it('passes generated visual products into the commerce controller', () => {
+    const visualProducts = [
+      { handle: 'truffle-box', price: 79, title: 'Truffle Box' },
+    ]
+
+    render(
+      <CommercePanel
+        sessionId="session_123"
+        visualProductCount={visualProducts.length}
+        visualProducts={visualProducts}
+      />,
+    )
+
+    expect(commerceState.useCommerceController).toHaveBeenCalledWith(
+      'session_123',
+      visualProducts,
+    )
   })
 
   it('offers Medusa storefront and admin credentials when provisioning returns a handoff', () => {
@@ -110,6 +152,27 @@ describe('CommercePanel', () => {
         'Set Medusa backend, admin, and storefront URLs to unlock links.',
       ),
     ).toBeNull()
+  })
+
+  it('does not show persisted fallback localhost links when Medusa is not reachable', () => {
+    commerceState.config = {
+      adminUrl: 'http://localhost:7001',
+      backendUrl: 'http://localhost:9000',
+      errorMessage: 'Medusa Store API is unavailable: fetch failed',
+      productCount: 0,
+      status: 'ready',
+      storefrontUrl: 'http://localhost:9000',
+    }
+
+    render(<CommercePanel sessionId="session_123" />)
+
+    expect(screen.queryByRole('link', { name: 'Open storefront' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Open admin' })).toBeNull()
+    expect(
+      screen.getByText(
+        'Set Medusa backend, admin, and storefront URLs to unlock links.',
+      ),
+    ).toBeTruthy()
   })
 
   it('does not show dead handoff links when no Medusa handoff exists', () => {

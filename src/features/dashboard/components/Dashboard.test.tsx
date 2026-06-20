@@ -111,8 +111,24 @@ vi.mock('@/features/cms/components/CmsPanel', () => ({
   CmsPanel: () => null,
 }))
 vi.mock('@/features/commerce/components/CommercePanel', () => ({
-  CommercePanel: ({ sessionId }: { sessionId: string }) => (
-    <div>Medusa commerce panel {sessionId}</div>
+  CommercePanel: ({
+    sessionId,
+    visualProductCount,
+    visualProducts,
+  }: {
+    sessionId: string
+    visualProductCount?: number
+    visualProducts?: Array<{ handle: string; price: number; title: string }>
+  }) => (
+    <div>
+      <span>Medusa commerce panel {sessionId}</span>
+      <span data-testid="commerce-visual-product-count">
+        {visualProductCount}
+      </span>
+      <span data-testid="commerce-visual-products">
+        {JSON.stringify(visualProducts)}
+      </span>
+    </div>
   ),
 }))
 vi.mock('@/features/commerce/components/EcommercifyTransformOverlay', () => ({
@@ -445,6 +461,63 @@ describe('Dashboard missing session state', () => {
     expect(
       await screen.findByText('Medusa commerce panel ready-commerce-session'),
     ).toBeTruthy()
+  })
+
+  it('passes generated visual product count into the Medusa commerce panel', async () => {
+    getConvexState().generationView = {
+      session: {
+        sessionId: 'visual-commerce-session',
+        status: 'preview_ready',
+        prompt: 'A ready commerce website',
+        preferredLanguage: 'en',
+        isPrivate: false,
+      },
+      tasks: [{ status: 'succeeded' }],
+      events: [],
+      homeModule: {
+        source:
+          'root = StorePage({ products: { items: [{ name: "Truffle Box", price: "$79" }, { name: "Dark Bar", price: "$12" }] } })',
+      },
+      siteSpec: null,
+    }
+
+    render(<Dashboard sessionId="visual-commerce-session" />)
+
+    fireEvent.click(screen.getByRole('button', { name: /E-commerce/i }))
+
+    expect(
+      (await screen.findByTestId('commerce-visual-product-count')).textContent,
+    ).toBe('2')
+  })
+
+  it('passes generated visual products into the Medusa commerce panel for sync', async () => {
+    getConvexState().generationView = {
+      session: {
+        sessionId: 'visual-commerce-session',
+        status: 'preview_ready',
+        prompt: 'A ready commerce website',
+        preferredLanguage: 'en',
+        isPrivate: false,
+      },
+      tasks: [{ status: 'succeeded' }],
+      events: [],
+      homeModule: {
+        source:
+          'root = StorePage({ products: { items: [{ name: "Truffle Box", price: "$79" }] } })',
+      },
+      siteSpec: null,
+    }
+
+    render(<Dashboard sessionId="visual-commerce-session" />)
+
+    fireEvent.click(screen.getByRole('button', { name: /E-commerce/i }))
+
+    expect(
+      JSON.parse(
+        (await screen.findByTestId('commerce-visual-products')).textContent ??
+          '[]',
+      ),
+    ).toEqual([{ handle: 'truffle-box', price: 79, title: 'Truffle Box' }])
   })
 
   it('removes the old rail mode editor path while keeping popover tools wired', () => {

@@ -20,6 +20,11 @@ import {
 } from 'react'
 import { I18nProvider, T } from './_providers/translation'
 import { preprocessOpenUIRuntimeResponse } from './openui-runtime-preprocess'
+import {
+  applyMedusaProductsToPreviewDom,
+  type MedusaPreviewProduct,
+} from './medusa-preview-sync'
+import { extractGeneratedCommerceProducts } from '@/features/commerce/services/generated-commerce-products'
 
 // NOTE: We use a plain QueryClientProvider here (not PersistQueryClientProvider).
 // The persist provider from @tanstack/react-query-persist-client resolved a
@@ -170,6 +175,49 @@ export default function OpenUIViewer({
     runtimeLibraryState.key === runtimeLibraryKey
       ? runtimeLibraryState.library
       : null
+
+  useEffect(() => {
+    if (!sessionId || !runtimeLibrary || !renderHostRef.current) return
+
+    const generatedProducts = extractGeneratedCommerceProducts({
+      source: preparedResponse,
+    })
+    if (generatedProducts.length === 0) return
+
+    let cancelled = false
+    const syncPreviewProducts = async () => {
+      try {
+        const medusaProductsResponse = await fetch(
+          `/api/sessions/${encodeURIComponent(sessionId)}/medusa-products`,
+          { headers: { Accept: 'application/json' } },
+        )
+        if (!medusaProductsResponse.ok || cancelled) return
+
+        const payload = (await medusaProductsResponse.json()) as {
+          products?: Array<MedusaPreviewProduct>
+        }
+        if (cancelled || !Array.isArray(payload.products)) return
+
+        requestAnimationFrame(() => {
+          if (cancelled || !renderHostRef.current) return
+          applyMedusaProductsToPreviewDom(renderHostRef.current, {
+            generatedProducts,
+            medusaProducts: payload.products ?? [],
+          })
+        })
+      } catch {
+        // The generated preview remains usable when Medusa is unavailable.
+      }
+    }
+
+    void syncPreviewProducts()
+    const interval = window.setInterval(syncPreviewProducts, 5000)
+
+    return () => {
+      cancelled = true
+      window.clearInterval(interval)
+    }
+  }, [preparedResponse, runtimeLibrary, sessionId])
 
   useEffect(() => {
     if (!onFirstPaint) return

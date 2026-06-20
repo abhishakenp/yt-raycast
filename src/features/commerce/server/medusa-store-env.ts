@@ -7,6 +7,7 @@ const viteEnv = (): MedusaEnv => ({
   MEDUSA_ADMIN_URL: import.meta.env.MEDUSA_ADMIN_URL,
   MEDUSA_ADMIN_EMAIL: import.meta.env.MEDUSA_ADMIN_EMAIL,
   MEDUSA_ADMIN_PASSWORD: import.meta.env.MEDUSA_ADMIN_PASSWORD,
+  MEDUSA_ADMIN_API_TOKEN: import.meta.env.MEDUSA_ADMIN_API_TOKEN,
   MEDUSA_BACKEND_URL: import.meta.env.MEDUSA_BACKEND_URL,
   MEDUSA_PUBLISHABLE_API_KEY: import.meta.env.MEDUSA_PUBLISHABLE_API_KEY,
   MEDUSA_PUBLISHABLE_KEY: import.meta.env.MEDUSA_PUBLISHABLE_KEY,
@@ -47,30 +48,49 @@ const medusaBackendUrlKeys = [
   'NEXT_PUBLIC_MEDUSA_BACKEND_URL',
 ]
 
+const medusaAdminUrlKeys = [
+  'MEDUSA_ADMIN_URL',
+  'VITE_MEDUSA_ADMIN_URL',
+  'NEXT_PUBLIC_MEDUSA_ADMIN_URL',
+]
+
+const medusaStorefrontUrlKeys = [
+  'MEDUSA_STOREFRONT_URL',
+  'VITE_MEDUSA_STOREFRONT_URL',
+  'NEXT_PUBLIC_MEDUSA_STOREFRONT_URL',
+]
+
+export const getConfiguredMedusaBackendUrl = (
+  env?: MedusaEnv,
+  metaEnv?: MedusaEnv,
+): string | undefined => readMedusaEnv(medusaBackendUrlKeys, env, metaEnv)
+
+export const getConfiguredMedusaAdminUrl = (
+  env?: MedusaEnv,
+  metaEnv?: MedusaEnv,
+): string | undefined => readMedusaEnv(medusaAdminUrlKeys, env, metaEnv)
+
+export const getConfiguredMedusaStorefrontUrl = (
+  env?: MedusaEnv,
+  metaEnv?: MedusaEnv,
+): string | undefined => readMedusaEnv(medusaStorefrontUrlKeys, env, metaEnv)
+
 export const hasConfiguredMedusaBackendUrl = (
   env?: MedusaEnv,
   metaEnv?: MedusaEnv,
-): boolean => readMedusaEnv(medusaBackendUrlKeys, env, metaEnv) !== undefined
+): boolean => getConfiguredMedusaBackendUrl(env, metaEnv) !== undefined
 
 export const getMedusaBackendUrl = (
   env?: MedusaEnv,
   metaEnv?: MedusaEnv,
 ): string =>
-  readMedusaEnv(medusaBackendUrlKeys, env, metaEnv) ?? 'http://localhost:9000'
+  getConfiguredMedusaBackendUrl(env, metaEnv) ?? 'http://localhost:9000'
 
 export const getMedusaAdminUrl = (
   env?: MedusaEnv,
   metaEnv?: MedusaEnv,
 ): string =>
-  readMedusaEnv(
-    [
-      'MEDUSA_ADMIN_URL',
-      'VITE_MEDUSA_ADMIN_URL',
-      'NEXT_PUBLIC_MEDUSA_ADMIN_URL',
-    ],
-    env,
-    metaEnv,
-  ) ?? 'http://localhost:7001'
+  getConfiguredMedusaAdminUrl(env, metaEnv) ?? 'http://localhost:7001'
 
 export const getMedusaAdminEmail = (
   env?: MedusaEnv,
@@ -82,19 +102,17 @@ export const getMedusaAdminPassword = (
   metaEnv?: MedusaEnv,
 ): string | undefined => readMedusaEnv(['MEDUSA_ADMIN_PASSWORD'], env, metaEnv)
 
+export const getMedusaAdminApiToken = (
+  env?: MedusaEnv,
+  metaEnv?: MedusaEnv,
+): string | undefined => readMedusaEnv(['MEDUSA_ADMIN_API_TOKEN'], env, metaEnv)
+
 export const getMedusaStorefrontUrl = (
   env?: MedusaEnv,
   metaEnv?: MedusaEnv,
 ): string =>
-  readMedusaEnv(
-    [
-      'MEDUSA_STOREFRONT_URL',
-      'VITE_MEDUSA_STOREFRONT_URL',
-      'NEXT_PUBLIC_MEDUSA_STOREFRONT_URL',
-    ],
-    env,
-    metaEnv,
-  ) ?? getMedusaBackendUrl(env, metaEnv)
+  getConfiguredMedusaStorefrontUrl(env, metaEnv) ??
+  getMedusaBackendUrl(env, metaEnv)
 
 export const getMedusaPublishableKey = (
   env?: MedusaEnv,

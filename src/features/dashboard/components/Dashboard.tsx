@@ -27,6 +27,7 @@ import type { PreviewSelection } from '@/components/GenUI/DirectPreview'
 import { IntroLoader } from '@/components/GenUI/IntroLoader'
 import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import { extractGeneratedCommerceProducts } from '@/features/commerce/services/generated-commerce-products'
 import { takeGenerationLaunchHandoff } from '@/features/session/services/generation-launch-handoff'
 import {
   readReadySessionPreview,
@@ -562,6 +563,21 @@ export function Dashboard({
     ).length
     return Math.max(5, Math.round((done / generationView.tasks.length) * 100))
   }, [generationView])
+  const visualProducts = useMemo(
+    () =>
+      extractGeneratedCommerceProducts({
+        source: homeModule?.source,
+        siteSpecJson:
+          generationView?.siteSpec?.specJson ??
+          generationView?.latestPreview?.siteSpecJson,
+      }),
+    [
+      generationView?.latestPreview?.siteSpecJson,
+      generationView?.siteSpec?.specJson,
+      homeModule?.source,
+    ],
+  )
+  const visualProductCount = visualProducts.length
 
   const imageOverrides = useMemo(() => {
     const map: Record<string, string> = {}
@@ -1429,7 +1445,11 @@ export function Dashboard({
                         className="z-[140] w-[min(360px,calc(100vw-24px))] border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
                       >
                         <Suspense fallback={<ToolPopoverFallback />}>
-                          <CommercePanel sessionId={activeSessionId} />
+                          <CommercePanel
+                            sessionId={activeSessionId}
+                            visualProductCount={visualProductCount}
+                            visualProducts={visualProducts}
+                          />
                         </Suspense>
                       </PopoverContent>
                     </Popover>
