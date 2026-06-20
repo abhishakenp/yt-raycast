@@ -97,6 +97,8 @@ let manifestSourceIndex: Record<
   ReactExportSourceEntry | undefined
 > | null = null
 let vendorSourceFileIndex: Record<string, string | undefined> | null = null
+const lakebedImageResolveConcurrency = 8
+const lakebedImageFetchTimeoutMs = 2_500
 
 const toPosixPath = (value: string): string => value.replaceAll('\\', '/')
 
@@ -245,6 +247,7 @@ const resolvePexelsImageForLakebed = async (
   try {
     const response = await fetch(searchUrl, {
       headers: { Authorization: pexelsApiKey },
+      signal: AbortSignal.timeout(lakebedImageFetchTimeoutMs),
     })
     if (!response.ok) return null
     const data = (await response.json()) as PexelsResponse
@@ -254,6 +257,27 @@ const resolvePexelsImageForLakebed = async (
   } catch {
     return null
   }
+}
+
+const mapWithConcurrency = async <TItem, TResult>(
+  items: TItem[],
+  limit: number,
+  mapper: (item: TItem) => Promise<TResult>,
+): Promise<TResult[]> => {
+  const results: TResult[] = []
+  let nextIndex = 0
+  const workerCount = Math.min(limit, items.length)
+  const workers = Array.from({ length: workerCount }, async () => {
+    while (nextIndex < items.length) {
+      const index = nextIndex
+      nextIndex += 1
+      const item = items[index]
+      if (item === undefined) continue
+      results[index] = await mapper(item)
+    }
+  })
+  await Promise.all(workers)
+  return results
 }
 
 const lakebedImageDimensionsForAlt = (alt: string): ImageDimensions => {
@@ -398,16 +422,26 @@ export const resolveLakebedImageSources = async (
     extractImageSources(previewHtml).map((source) => [source.alt, source.src]),
   )
 
-  for (const alt of collectRouteImageAlts(routes)) {
-    if (byAlt.has(alt)) continue
-    const { height, width } = lakebedImageDimensionsForAlt(alt)
-    const resolved =
-      (await resolvePexelsImageForLakebed(alt, width, height)) ??
-      picsumUrl(slugifyAlt(alt), width, height)
-    byAlt.set(
-      alt,
-      normalizeRemoteImageUrlForLakebed(resolved, { height, width }),
-    )
+  const missingAlts = collectRouteImageAlts(routes).filter(
+    (alt) => !byAlt.has(alt),
+  )
+  const resolvedImages = await mapWithConcurrency(
+    missingAlts,
+    lakebedImageResolveConcurrency,
+    async (alt) => {
+      const { height, width } = lakebedImageDimensionsForAlt(alt)
+      const resolved =
+        (await resolvePexelsImageForLakebed(alt, width, height)) ??
+        picsumUrl(slugifyAlt(alt), width, height)
+      return {
+        alt,
+        src: normalizeRemoteImageUrlForLakebed(resolved, { height, width }),
+      }
+    },
+  )
+
+  for (const { alt, src } of resolvedImages) {
+    byAlt.set(alt, src)
   }
 
   return [...byAlt].map(([alt, src]) => ({ alt, src }))
@@ -1488,11 +1522,16 @@ const renderSeedData = (
       .filter(([, rows]) => rows.length > 0),
   )
 
-  return `const seedRows = ${JSON.stringify(seedRows, null, 2)};
+  return `const seedRows: Record<string, Array<Record<string, string>>> = ${JSON.stringify(seedRows, null, 2)};
 
 const seededTables = new Set<string>();
 
-function ensureSeedData(db: Record<string, any>) {
+type LakebedSeedTable = {
+  all(): unknown[];
+  insert(row: Record<string, string>): unknown;
+};
+
+function ensureSeedData(db: Record<string, LakebedSeedTable | undefined>) {
   for (const [tableName, rows] of Object.entries(seedRows)) {
     if (seededTables.has(tableName)) continue;
     const table = db[tableName];
@@ -1500,7 +1539,7 @@ function ensureSeedData(db: Record<string, any>) {
       seededTables.add(tableName);
       continue;
     }
-    for (const row of rows as Array<Record<string, string>>) {
+    for (const row of rows) {
       table.insert(row);
     }
     seededTables.add(tableName);
@@ -2207,7 +2246,7 @@ npx lakebed dev
 
 The exported app has one client entry, one server entry, and shared TypeScript.
 
-Built with [ShipFast](https://ship-fast.io).
+Generated with [ShipFast](https://ship-fast.io) 🚀.
 `
 
 const renderAgents = (): string => `# Lakebed App Instructions
@@ -2520,14 +2559,26 @@ function normalizeQueryValue(name: string, value: unknown) {
   return value;
 }
 
+function collectionValues(value: unknown) {
+  if (Array.isArray(value)) return value;
+  if (!value || typeof value !== "object") return [];
+  const nestedCollection = Object.entries(value).find(([key, nested]) => {
+    return ["items", "rows", "data", "result"].includes(key) && Array.isArray(nested);
+  });
+  if (nestedCollection) {
+    const [, nested] = nestedCollection;
+    if (Array.isArray(nested)) return nested;
+  }
+  return Object.values(value);
+}
+
 function normalizeEntityListValue(name: string, value: unknown) {
-  if (!/(Items|Lines)$/.test(name) || !Array.isArray(value)) return value;
-  return value.map((item) => {
+  if (!/(Items|Lines)$/.test(name)) return value;
+  return collectionValues(value).map((item) => {
     if (!item || typeof item !== "object" || Array.isArray(item)) return item;
-    const record = item as Record<string, unknown>;
-    if (typeof record.quantity !== "string") return item;
-    const quantity = Number(record.quantity);
-    return Number.isFinite(quantity) ? { ...record, quantity } : item;
+    if (!("quantity" in item) || typeof item.quantity !== "string") return item;
+    const quantity = Number(item.quantity);
+    return Number.isFinite(quantity) ? { ...item, quantity } : item;
   });
 }
 
@@ -2922,9 +2973,14 @@ export async function buildOpenUILakebedProjectFiles(
     'client/lib/image.tsx': renderClientImage(),
     'client/lib/lakebed.ts': renderClientLakebed(),
     'client/lib/navigation.tsx': renderClientNavigation(),
-    'client/lib/style-overrides.tsx': renderClientStyleOverrides(styleOverrides),
+    'client/lib/style-overrides.tsx':
+      renderClientStyleOverrides(styleOverrides),
     'client/lib/theme.tsx': renderClientTheme(themeCss),
-    'server/index.ts': renderServerIndex(parsed.projectName, definitions, routes),
+    'server/index.ts': renderServerIndex(
+      parsed.projectName,
+      definitions,
+      routes,
+    ),
     'shared/content.ts': renderSharedContent(parsed.projectName, routes),
   })
   for (const component of clientComponents) {

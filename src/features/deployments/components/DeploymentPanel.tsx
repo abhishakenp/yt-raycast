@@ -29,6 +29,8 @@ type DeploymentPanelProps = {
 type DeploymentTarget = 'shipfast' | 'lakebed'
 
 type PublishResult = {
+  error?: string
+  status?: string
   url?: string
 }
 
@@ -36,7 +38,13 @@ type DeploymentExportTarget = {
   target: 'html' | 'react' | 'next' | 'lakebed'
   artifactReady?: boolean
   artifactStatus?: string
+  artifactError?: string
   deployedUrl?: string | null
+}
+
+type DeploymentPanelError = {
+  message: string
+  target: DeploymentTarget
 }
 
 const publishLakebedViaApi = async (
@@ -73,14 +81,13 @@ const targetDetails: Record<
   },
 }
 
-const isPublishResponse = (
-  value: unknown,
-): value is PublishResult & { error?: string } =>
+const isPublishResponse = (value: unknown): value is PublishResult =>
   value !== null &&
   typeof value === 'object' &&
   !Array.isArray(value) &&
-  (!('url' in value) || typeof value.url === 'string') &&
-  (!('error' in value) || typeof value.error === 'string')
+  (!('error' in value) || typeof value.error === 'string') &&
+  (!('status' in value) || typeof value.status === 'string') &&
+  (!('url' in value) || typeof value.url === 'string')
 
 const artifactProgressPercent = (target: DeploymentExportTarget | undefined) =>
   target?.artifactReady
@@ -108,29 +115,37 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
   const [waitingTarget, setWaitingTarget] = useState<DeploymentTarget>()
   const [pendingPublicTarget, setPendingPublicTarget] =
     useState<DeploymentTarget>()
-  const [error, setError] = useState<string>()
+  const [error, setError] = useState<DeploymentPanelError>()
 
   const visibleExportTargets = exportTargets?.targets ?? []
   const lakebedTarget = visibleExportTargets.find(
     (target) => target.target === 'lakebed',
   )
   const isPrivate = exportTargets?.isPrivate === true
-  const lakebedPreparing =
-    lakebedTarget?.artifactReady !== true &&
-    deploymentStatus?.provider !== 'lakebed'
-  const lakebedProgressPercent = artifactProgressPercent(lakebedTarget)
-  const showLakebedProgress =
-    waitingTarget === 'lakebed' && lakebedPreparing
-  const lakebedProgressBackground =
-    showLakebedProgress && lakebedProgressPercent > 0
-      ? `linear-gradient(110deg, rgba(34, 211, 238, 0.16) 0%, rgba(34, 211, 238, 0.08) ${lakebedProgressPercent}%, transparent ${lakebedProgressPercent}%, transparent 100%)`
-      : undefined
   const lakebedDeploymentUrl =
     lakebedTarget?.deployedUrl ??
     (deploymentStatus?.provider === 'lakebed' &&
     typeof deploymentStatus.url === 'string'
       ? deploymentStatus.url
       : undefined)
+  const lakebedPreparing =
+    lakebedTarget?.artifactReady !== true &&
+    deploymentStatus?.provider !== 'lakebed'
+  const lakebedArtifactError =
+    lakebedDeploymentUrl === undefined &&
+    lakebedTarget?.artifactStatus === 'failed'
+      ? (lakebedTarget.artifactError ?? 'Lakebed export failed.')
+      : undefined
+  const lakebedProgressPercent = artifactProgressPercent(lakebedTarget)
+  const showLakebedProgress = waitingTarget === 'lakebed' && lakebedPreparing
+  const lakebedProgressBackground =
+    showLakebedProgress && lakebedProgressPercent > 0
+      ? `linear-gradient(110deg, rgba(34, 211, 238, 0.16) 0%, rgba(34, 211, 238, 0.08) ${lakebedProgressPercent}%, transparent ${lakebedProgressPercent}%, transparent 100%)`
+      : undefined
+  const visibleError =
+    error && !(error.target === 'lakebed' && lakebedDeploymentUrl !== undefined)
+      ? error.message
+      : lakebedArtifactError
 
   const publishNow = async (target: DeploymentTarget) => {
     setError(undefined)
@@ -152,15 +167,17 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
           target: 'lakebed',
           anonymousOwnerSecret,
         })
-        if (result.status !== 'ready') return
+        if (!result || result.status !== 'ready') return
         setWaitingTarget(undefined)
       } catch (ensureError) {
         setWaitingTarget(undefined)
-        setError(
-          ensureError instanceof Error
-            ? ensureError.message
-            : 'Publish failed',
-        )
+        setError({
+          message:
+            ensureError instanceof Error
+              ? ensureError.message
+              : 'Publish failed',
+          target,
+        })
         return
       }
     }
@@ -173,18 +190,34 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
           ? undefined
           : readAnonymousOwnerSecret(window.localStorage, sessionId)
 
-      const result = (await (target === 'shipfast'
+      const result = await (target === 'shipfast'
         ? publishPreview({
             lookup: sessionId,
             anonymousOwnerSecret,
           })
-        : publishLakebedViaApi(sessionId, anonymousOwnerSecret)))
+        : publishLakebedViaApi(sessionId, anonymousOwnerSecret))
+
+      if (target === 'lakebed' && !result.url) {
+        setError({
+          message:
+            ('error' in result ? result.error : undefined) ??
+            'Lakebed publish is still preparing.',
+          target,
+        })
+        return
+      }
 
       if (typeof window !== 'undefined' && result.url) {
         window.open(result.url, '_blank', 'noopener,noreferrer')
       }
     } catch (publishError) {
-      setError(publishError instanceof Error ? publishError.message : 'Publish failed')
+      setError({
+        message:
+          publishError instanceof Error
+            ? publishError.message
+            : 'Publish failed',
+        target,
+      })
     } finally {
       setActiveTarget(undefined)
       setPendingPublicTarget(undefined)
@@ -202,10 +235,20 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
 
   useEffect(() => {
     if (waitingTarget !== 'lakebed') return
+    if (lakebedArtifactError !== undefined) {
+      setWaitingTarget(undefined)
+      setError({ message: lakebedArtifactError, target: 'lakebed' })
+      return
+    }
     if (lakebedPreparing && !lakebedDeploymentUrl) return
     setWaitingTarget(undefined)
     void publishNow('lakebed')
-  }, [lakebedDeploymentUrl, lakebedPreparing, waitingTarget])
+  }, [
+    lakebedArtifactError,
+    lakebedDeploymentUrl,
+    lakebedPreparing,
+    waitingTarget,
+  ])
 
   return (
     <div className="grid gap-3">
@@ -305,8 +348,8 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
             {activeTarget === 'lakebed'
               ? 'Publishing...'
               : showLakebedProgress && lakebedProgressPercent > 0
-              ? `${lakebedProgressPercent}%`
-              : targetDetails.lakebed.description}
+                ? `${lakebedProgressPercent}%`
+                : targetDetails.lakebed.description}
           </span>
         </span>
         <span
@@ -322,9 +365,9 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
         </span>
       </button>
 
-      {error && (
+      {visibleError && (
         <p className="m-0 rounded-xl border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-200">
-          {error}
+          {visibleError}
         </p>
       )}
     </div>

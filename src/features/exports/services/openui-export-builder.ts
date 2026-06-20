@@ -2988,7 +2988,7 @@ const renderReadme = (
 
   return `# ${projectName}
 
-Built with [ShipFast](https://ship-fast.io).
+Generated with [ShipFast](https://ship-fast.io) 🚀.
 
 ## Run locally
 
@@ -3422,7 +3422,7 @@ const buildRawHtmlExport = (input: OpenUIExportInput): BuiltExport => {
 
 This export contains a static single-file HTML website from Ship Fast v2.
 
-Built with [ShipFast](https://ship-fast.io).
+Generated with [ShipFast](https://ship-fast.io) 🚀.
 
 Open index.html directly, or serve this folder with any static host.
 `,

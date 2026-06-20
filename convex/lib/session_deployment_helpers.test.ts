@@ -380,7 +380,8 @@ describe('session deployment helpers', () => {
     await expect(
       prepareLakebedSessionDeployment(ctx, { sessionId }),
     ).resolves.toMatchObject({
-      source: '<!doctype html><html><body><h1>Static Preview</h1></body></html>',
+      source:
+        '<!doctype html><html><body><h1>Static Preview</h1></body></html>',
       sourceKind: 'html',
       previewHtml:
         '<!doctype html><html><body><h1>Static Preview</h1></body></html>',
@@ -520,7 +521,7 @@ describe('session deployment helpers', () => {
         value: expect.objectContaining({
           sessionId,
           target: 'lakebed',
-          status: 'available',
+          status: 'ready',
           previewVersion: 7,
           downloadUrl: '/api/sessions/session_deployment/download/lakebed',
           deployedUrl: 'https://lakebed-launch.lakebed.app',
@@ -533,7 +534,8 @@ describe('session deployment helpers', () => {
         value: expect.objectContaining({
           sessionId,
           eventType: 'published',
-          message: 'Published Lakebed app to https://lakebed-launch.lakebed.app',
+          message:
+            'Published Lakebed app to https://lakebed-launch.lakebed.app',
           previewVersion: 7,
         }),
       },
@@ -698,5 +700,4 @@ describe('session deployment helpers', () => {
       data: { code: 'SLUG_TAKEN' },
     })
   })
-
 })

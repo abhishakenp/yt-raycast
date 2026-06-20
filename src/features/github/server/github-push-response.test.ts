@@ -30,7 +30,8 @@ const exportData = {
 }
 
 const htmlPrebuiltFiles = {
-  'README.md': '# Atlas Notes\n\nBuilt with [ShipFast](https://ship-fast.io).\n',
+  'README.md':
+    '# Atlas Notes\n\nGenerated with [ShipFast](https://ship-fast.io) 🚀.\n',
   'index.html': '<main>Atlas Notes</main>',
   'llms.txt': 'Atlas Notes',
   'robots.txt': 'User-agent: *',
@@ -133,18 +134,18 @@ describe('createGitHubPushResponse', () => {
   beforeEach(() => {
     globalThis.fetch = unusedFetch
     globalThis.fetch = vi.fn(async (url: string | URL) => {
-        const href = String(url)
-        if (href === 'https://storage.test/html-files.json') {
-          return Response.json(htmlPrebuiltFiles)
-        }
-        if (href === 'https://storage.test/react-files.json') {
-          return Response.json(reactPrebuiltFiles)
-        }
-        if (href === 'https://storage.test/lakebed-files.json') {
-          return Response.json(lakebedPrebuiltFiles)
-        }
-        return new Response('Unhandled storage fetch', { status: 404 })
-      }) as typeof fetch
+      const href = String(url)
+      if (href === 'https://storage.test/html-files.json') {
+        return Response.json(htmlPrebuiltFiles)
+      }
+      if (href === 'https://storage.test/react-files.json') {
+        return Response.json(reactPrebuiltFiles)
+      }
+      if (href === 'https://storage.test/lakebed-files.json') {
+        return Response.json(lakebedPrebuiltFiles)
+      }
+      return new Response('Unhandled storage fetch', { status: 404 })
+    }) as typeof fetch
     client.query.mockReset().mockImplementation(async (_ref, args) => {
       if (args && 'lookup' in args) {
         return {
@@ -294,7 +295,8 @@ describe('createGitHubPushResponse', () => {
       lookup: 'session_123',
       target: 'html',
       anonymousOwnerSecret: 'owner-secret',
-      repoUrl: 'https://github.com/shipfast-test-user/a-product-website-for-atlas-html',
+      repoUrl:
+        'https://github.com/shipfast-test-user/a-product-website-for-atlas-html',
     })
     expect(tokenResolver).toHaveBeenCalledWith(jwtFor(), env, client)
     expect(await response.json()).toMatchObject({
@@ -339,6 +341,77 @@ describe('createGitHubPushResponse', () => {
       'POST /repos/shipfast-test-user/a-product-website-for-atlas-html/git/commits',
       'PATCH /repos/shipfast-test-user/a-product-website-for-atlas-html/git/refs/heads/main',
     ])
+  })
+
+  it('does not touch GitHub until prebuilt export files are ready', async () => {
+    const { fetchMock, requests } = createGitHubFetch()
+    client.query.mockResolvedValueOnce({
+      ...exportData,
+      artifact: { status: 'building' },
+      filesUrl: null,
+    })
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/session_123/github/push',
+        {
+          method: 'POST',
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({ target: 'lakebed' }),
+        },
+      ),
+      'session_123',
+      env,
+      client,
+      fetchMock,
+      tokenResolver,
+    )
+
+    expect(response.status).toBe(202)
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Export is still being prepared.',
+      status: 'building',
+    })
+    expect(requests).toEqual([])
+    expect(tokenResolver).not.toHaveBeenCalled()
+    expect(client.mutation).not.toHaveBeenCalled()
+  })
+
+  it('surfaces failed prebuilt export artifacts before touching GitHub', async () => {
+    const { fetchMock, requests } = createGitHubFetch()
+    client.query.mockResolvedValueOnce({
+      ...exportData,
+      artifact: {
+        errorMessage: 'Lakebed export failed.',
+        status: 'failed',
+      },
+      filesUrl: null,
+    })
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/session_123/github/push',
+        {
+          method: 'POST',
+          headers: { authorization: `Bearer ${jwtFor()}` },
+          body: JSON.stringify({ target: 'lakebed' }),
+        },
+      ),
+      'session_123',
+      env,
+      client,
+      fetchMock,
+      tokenResolver,
+    )
+
+    expect(response.status).toBe(409)
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Lakebed export failed.',
+      status: 'failed',
+    })
+    expect(requests).toEqual([])
+    expect(tokenResolver).not.toHaveBeenCalled()
+    expect(client.mutation).not.toHaveBeenCalled()
   })
 
   it('pushes React target files when requested', async () => {

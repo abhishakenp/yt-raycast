@@ -157,8 +157,7 @@ const nextConfig = {
 
 module.exports = nextConfig`
 
-const shipFastReadmeLine =
-  'Built with [ShipFast](https://ship-fast.io).'
+const shipFastReadmeLine = 'Generated with [ShipFast](https://ship-fast.io) 🚀.'
 
 export function createHtmlExportFiles(
   _sessionId: string,

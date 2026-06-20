@@ -41,10 +41,11 @@ describe('OpenUIViewer', () => {
     )
   })
 
-  it('shows a visible fallback while a ready OpenUI runtime is loading', () => {
+  it('shows a skeleton fallback while a ready OpenUI runtime is loading', () => {
     render(<OpenUIViewer response='root = Text("Cocoa Luxe")' />)
 
-    expect(screen.getByText('Loading preview…')).toBeTruthy()
+    expect(screen.getByRole('status', { name: 'Preview loading' })).toBeTruthy()
+    expect(screen.queryByText(/Loading preview/i)).toBeNull()
   })
 
   it('overlays session-scoped Medusa product edits onto the rendered preview', async () => {

@@ -19,6 +19,7 @@ type MockGitHubTarget = {
   fileCount: number | null
   artifactReady?: boolean
   artifactStatus?: string
+  artifactError?: string
   githubUrl?: string | null
   githubRepoUrl?: string | null
 }
@@ -302,6 +303,57 @@ describe('GitHubPanel', () => {
       '_blank',
       'noopener,noreferrer',
     )
+  })
+
+  it('shows an error when a clicked building artifact fails', async () => {
+    setExportTargets([
+      {
+        target: 'lakebed',
+        label: 'Lakebed',
+        ready: false,
+        status: 'available',
+        requiresPayment: false,
+        fileCount: null,
+        artifactReady: false,
+        artifactStatus: 'building',
+      },
+    ])
+    vi.stubGlobal('fetch', vi.fn())
+
+    const view = render(<GitHubPanel sessionId="session_123" />)
+
+    await waitFor(() => expect(view.getByText('Lakebed')).toBeTruthy())
+    const button = view.getByText('Lakebed').closest('button')
+    expect(button).toBeTruthy()
+    if (button) fireEvent.click(button)
+
+    await waitFor(() => {
+      expect(
+        document.querySelector('[data-github-action="lakebed"] .animate-spin'),
+      ).toBeTruthy()
+    })
+
+    setExportTargets([
+      {
+        target: 'lakebed',
+        label: 'Lakebed',
+        ready: false,
+        status: 'available',
+        requiresPayment: false,
+        fileCount: null,
+        artifactReady: false,
+        artifactStatus: 'failed',
+        artifactError: 'Lakebed export failed.',
+      },
+    ])
+    view.rerender(<GitHubPanel sessionId="session_123" />)
+
+    await waitFor(() =>
+      expect(view.getAllByText('Lakebed export failed.')).toHaveLength(2),
+    )
+    expect(
+      document.querySelector('[data-github-action="lakebed"] .animate-spin'),
+    ).toBeNull()
   })
 
   it('opens a persisted GitHub repo URL after reload without pushing again', async () => {
