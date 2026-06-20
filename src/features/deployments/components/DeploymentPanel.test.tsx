@@ -23,21 +23,28 @@ const convexState = vi.hoisted(() => ({
   },
   deploymentStatuses: new Map<string, MockDeploymentStatus>(),
   publishPreview: vi.fn(async () => ({ url: 'https://ship-fast.test/site' })),
+  ensureExportArtifact: vi.fn(async () => ({
+    target: 'lakebed',
+    status: 'queued',
+    previewVersion: 2,
+  })),
+  mutationCallCount: 0,
   queryCallCount: 0,
 }))
 
 vi.mock('convex/react', () => ({
-  useMutation: () => convexState.publishPreview,
-  useQuery: () => convexState.deploymentStatuses.get('current') ?? null,
-}))
-
-vi.mock('@/features/exports/hooks/use-export-targets', () => ({
-  useExportTargets: () => ({
-    data: convexState.exportTargets,
-    error: undefined,
-    isLoading: false,
-    refetch: vi.fn(),
-  }),
+  useMutation: () => {
+    convexState.mutationCallCount += 1
+    return convexState.mutationCallCount % 2 === 1
+      ? convexState.publishPreview
+      : convexState.ensureExportArtifact
+  },
+  useQuery: () => {
+    convexState.queryCallCount += 1
+    return convexState.queryCallCount % 2 === 1
+      ? convexState.exportTargets
+      : (convexState.deploymentStatuses.get('current') ?? null)
+  },
 }))
 
 const setExportTargets = (targets: MockDeploymentTarget[]) => {
@@ -45,11 +52,13 @@ const setExportTargets = (targets: MockDeploymentTarget[]) => {
     isPrivate: false,
     targets,
   }
+  convexState.queryCallCount = 0
 }
 
 const setDeploymentStatus = (status: MockDeploymentStatus | null) => {
   convexState.deploymentStatuses.clear()
   if (status) convexState.deploymentStatuses.set('current', status)
+  convexState.queryCallCount = 0
 }
 
 const installLocalStorage = () => {
@@ -73,6 +82,8 @@ describe('DeploymentPanel', () => {
   beforeEach(() => {
     installLocalStorage()
     convexState.publishPreview.mockClear()
+    convexState.ensureExportArtifact.mockClear()
+    convexState.mutationCallCount = 0
     setExportTargets([])
     setDeploymentStatus(null)
     vi.spyOn(window, 'open').mockImplementation(() => null)
@@ -84,7 +95,7 @@ describe('DeploymentPanel', () => {
     vi.restoreAllMocks()
   })
 
-  it('publishes Lakebed through the app route without a client artifact mutation', async () => {
+  it('publishes Lakebed after a clicked building artifact becomes ready', async () => {
     setExportTargets([
       {
         target: 'lakebed',
@@ -114,7 +125,42 @@ describe('DeploymentPanel', () => {
         ),
       ).toBeTruthy()
     })
+    expect(view.getByText('72%')).toBeTruthy()
+    expect(button?.style.backgroundImage).toContain('110deg')
 
+    await new Promise((resolve) => window.setTimeout(resolve, 650))
+
+    expect(convexState.ensureExportArtifact).toHaveBeenCalledWith({
+      lookup: 'session_123',
+      target: 'lakebed',
+      anonymousOwnerSecret: undefined,
+    })
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(convexState.publishPreview).not.toHaveBeenCalled()
+    expect(window.open).not.toHaveBeenCalled()
+    expect(
+      view.container.querySelector(
+        '[data-deployment-action="lakebed"] .animate-spin',
+      ),
+    ).toBeTruthy()
+
+    setExportTargets([
+      {
+        target: 'lakebed',
+        artifactReady: true,
+        artifactStatus: 'ready',
+      },
+    ])
+    view.rerender(<DeploymentPanel sessionId="session_123" />)
+
+    await waitFor(() => {
+      expect(
+        view.container.querySelector(
+          '[data-deployment-action="lakebed"] .animate-spin',
+        ),
+      ).toBeNull()
+    })
+    expect(view.queryByText('72%')).toBeNull()
     await waitFor(() =>
       expect(window.open).toHaveBeenCalledWith(
         'https://lakebed-launch.lakebed.app',
@@ -126,7 +172,6 @@ describe('DeploymentPanel', () => {
       '/api/sessions/session_123/deploy/lakebed',
       expect.objectContaining({ method: 'POST' }),
     )
-    expect(convexState.publishPreview).not.toHaveBeenCalled()
   })
 
   it('opens an existing Lakebed deployment without publishing again', async () => {
@@ -157,7 +202,7 @@ describe('DeploymentPanel', () => {
     expect(convexState.publishPreview).not.toHaveBeenCalled()
   })
 
-  it('continues the same click when Lakebed is pending', async () => {
+  it('continues the same click when a pending Lakebed artifact is ready', async () => {
     setExportTargets([
       {
         target: 'lakebed',
@@ -165,6 +210,11 @@ describe('DeploymentPanel', () => {
         artifactStatus: 'building',
       },
     ])
+    convexState.ensureExportArtifact.mockResolvedValueOnce({
+      target: 'lakebed',
+      status: 'ready',
+      previewVersion: 2,
+    })
     const fetchMock = vi.fn(async () =>
       Response.json({ url: 'https://lakebed-launch.lakebed.app' }),
     )
@@ -182,6 +232,11 @@ describe('DeploymentPanel', () => {
         'noopener,noreferrer',
       ),
     )
+    expect(convexState.ensureExportArtifact).toHaveBeenCalledWith({
+      lookup: 'session_123',
+      target: 'lakebed',
+      anonymousOwnerSecret: undefined,
+    })
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/sessions/session_123/deploy/lakebed',
       expect.objectContaining({ method: 'POST' }),

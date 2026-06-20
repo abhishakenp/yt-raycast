@@ -20,7 +20,6 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { useExportTargets } from '@/features/exports/hooks/use-export-targets'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 
 type DeploymentPanelProps = {
@@ -96,11 +95,17 @@ const artifactProgressPercent = (target: DeploymentExportTarget | undefined) =>
 
 export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
   const publishPreview = useMutation(api.sessions.publishPreviewByLookup)
-  const { data: exportTargets } = useExportTargets(sessionId)
+  const ensureExportArtifact = useMutation(
+    api.sessions.ensureExportArtifactByLookup,
+  )
+  const exportTargets = useQuery(api.sessions.getExportTargets, {
+    lookup: sessionId,
+  })
   const deploymentStatus = useQuery(api.sessions.getDeploymentStatusByLookup, {
     lookup: sessionId,
   })
   const [activeTarget, setActiveTarget] = useState<DeploymentTarget>()
+  const [waitingTarget, setWaitingTarget] = useState<DeploymentTarget>()
   const [pendingPublicTarget, setPendingPublicTarget] =
     useState<DeploymentTarget>()
   const [error, setError] = useState<string>()
@@ -115,7 +120,7 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
     deploymentStatus?.provider !== 'lakebed'
   const lakebedProgressPercent = artifactProgressPercent(lakebedTarget)
   const showLakebedProgress =
-    activeTarget === 'lakebed' && lakebedPreparing
+    waitingTarget === 'lakebed' && lakebedPreparing
   const lakebedProgressBackground =
     showLakebedProgress && lakebedProgressPercent > 0
       ? `linear-gradient(110deg, rgba(34, 211, 238, 0.16) 0%, rgba(34, 211, 238, 0.08) ${lakebedProgressPercent}%, transparent ${lakebedProgressPercent}%, transparent 100%)`
@@ -133,6 +138,31 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
     if (target === 'lakebed' && lakebedDeploymentUrl) {
       window.open(lakebedDeploymentUrl, '_blank', 'noopener,noreferrer')
       return
+    }
+
+    if (target === 'lakebed' && lakebedPreparing) {
+      setWaitingTarget(target)
+      try {
+        const anonymousOwnerSecret =
+          typeof window === 'undefined'
+            ? undefined
+            : readAnonymousOwnerSecret(window.localStorage, sessionId)
+        const result = await ensureExportArtifact({
+          lookup: sessionId,
+          target: 'lakebed',
+          anonymousOwnerSecret,
+        })
+        if (result.status !== 'ready') return
+        setWaitingTarget(undefined)
+      } catch (ensureError) {
+        setWaitingTarget(undefined)
+        setError(
+          ensureError instanceof Error
+            ? ensureError.message
+            : 'Publish failed',
+        )
+        return
+      }
     }
 
     setActiveTarget(target)
@@ -169,6 +199,13 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
     }
     void publishNow(target)
   }
+
+  useEffect(() => {
+    if (waitingTarget !== 'lakebed') return
+    if (lakebedPreparing && !lakebedDeploymentUrl) return
+    setWaitingTarget(undefined)
+    void publishNow('lakebed')
+  }, [lakebedDeploymentUrl, lakebedPreparing, waitingTarget])
 
   return (
     <div className="grid gap-3">
@@ -277,7 +314,7 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
           className="grid size-9 place-items-center rounded-lg border border-white/10 bg-white/[0.06] text-white/48"
           data-deployment-action="lakebed"
         >
-          {activeTarget === 'lakebed' ? (
+          {activeTarget === 'lakebed' || waitingTarget === 'lakebed' ? (
             <LoaderCircle className="size-4 animate-spin" strokeWidth={1.8} />
           ) : (
             <ExternalLink className="size-4" strokeWidth={1.8} />

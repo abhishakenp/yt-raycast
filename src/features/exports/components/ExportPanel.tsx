@@ -4,12 +4,13 @@ import {
   Lock,
   TriangleAlert,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useMutation, useQuery } from 'convex/react'
+import { useEffect, useState } from 'react'
 
+import { api } from '../../../../convex/_generated/api'
 import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
-import { useExportTargets } from '@/features/exports/hooks/use-export-targets'
 import { HtmlIcon, ReactIcon, NextIcon, LakebedIcon } from './ExportIcons'
 
 type ExportTarget = {
@@ -111,10 +112,15 @@ const isDownloadResult = (
 
 export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
   const { getToken, isSignedIn } = useOptionalAuth()
-  const { data: exportTargets, refetch: refetchExportTargets } =
-    useExportTargets(sessionId)
+  const exportTargets = useQuery(api.sessions.getExportTargets, {
+    lookup: sessionId,
+  })
+  const ensureExportArtifact = useMutation(
+    api.sessions.ensureExportArtifactByLookup,
+  )
   const [error, setError] = useState<string>()
   const [activeTarget, setActiveTarget] = useState<ExportTarget['target']>()
+  const [waitingTarget, setWaitingTarget] = useState<ExportTarget['target']>()
   const [downloadingTarget, setDownloadingTarget] =
     useState<ExportTarget['target']>()
 
@@ -179,7 +185,6 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data?.error ?? 'Export failed')
-      void refetchExportTargets()
       return isDownloadResult(data) ? data : {}
     } catch (exportError) {
       setError(
@@ -207,6 +212,27 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
   }
 
   const runTargetAction = async (targetConfig: ExportTarget) => {
+    if (!targetConfig.artifactReady) {
+      setWaitingTarget(targetConfig.target)
+      setError(undefined)
+      try {
+        const result = await ensureExportArtifact({
+          lookup: sessionId,
+          target: targetConfig.target,
+          anonymousOwnerSecret: readOwnerSecret(sessionId),
+        })
+        if (result.status !== 'ready') return
+        setWaitingTarget(undefined)
+      } catch (ensureError) {
+        setWaitingTarget(undefined)
+        setError(
+          ensureError instanceof Error
+            ? ensureError.message
+            : 'Export failed',
+        )
+        return
+      }
+    }
     if (targetConfig.requiresPayment) {
       await createExport(targetConfig.target)
       return
@@ -225,6 +251,23 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
     exportTargets?.targets && exportTargets.targets.length > 0
       ? exportTargets.targets
       : loadingTargets
+
+  useEffect(() => {
+    if (waitingTarget === undefined) return
+    const item = visibleTargets.find((target) => target.target === waitingTarget)
+    if (item === undefined) {
+      setWaitingTarget(undefined)
+      return
+    }
+    if (item.artifactReady) {
+      setWaitingTarget(undefined)
+      void runTargetAction(item)
+      return
+    }
+    if (item.artifactStatus === 'failed' || item.status === 'stale') {
+      setWaitingTarget(undefined)
+    }
+  }, [visibleTargets, waitingTarget])
 
   return (
     <div className="grid gap-3">
@@ -252,6 +295,7 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
                   : LakebedIcon
           const isBusy =
             activeTarget === item.target ||
+            waitingTarget === item.target ||
             downloadingTarget === item.target
           const isBuildPending =
             !item.artifactReady &&
@@ -261,7 +305,7 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
               item.artifactStatus === 'not_ready')
           const progressPercent = artifactProgressPercent(item)
           const showProgress =
-            activeTarget === item.target && isBuildPending
+            waitingTarget === item.target && isBuildPending
           const progressBackground =
             showProgress && progressPercent > 0
               ? `linear-gradient(110deg, rgba(34, 211, 238, 0.16) 0%, rgba(34, 211, 238, 0.08) ${progressPercent}%, transparent ${progressPercent}%, transparent 100%)`

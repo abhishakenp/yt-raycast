@@ -5,14 +5,15 @@ import {
   Lock,
   TriangleAlert,
 } from 'lucide-react'
+import { useMutation, useQuery } from 'convex/react'
 import { useEffect, useMemo, useState } from 'react'
 
+import { api } from '../../../../convex/_generated/api'
 import {
   useOptionalAuth,
   useOptionalClerk,
 } from '@/shared/auth/use-optional-auth'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
-import { useExportTargets } from '@/features/exports/hooks/use-export-targets'
 import { HtmlIcon, ReactIcon, NextIcon, LakebedIcon } from '@/features/exports/components/ExportIcons'
 
 type GitHubTarget = {
@@ -161,13 +162,18 @@ const consumePendingPush = (
 export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
   const auth = useOptionalAuth()
   const clerk = useOptionalClerk()
-  const { data: exportTargets, refetch: refetchExportTargets } =
-    useExportTargets(sessionId)
+  const exportTargets = useQuery(api.sessions.getExportTargets, {
+    lookup: sessionId,
+  })
+  const ensureExportArtifact = useMutation(
+    api.sessions.ensureExportArtifactByLookup,
+  )
   const [activeTarget, setActiveTarget] = useState<GitHubTarget['target']>()
   const [pendingRetryTarget, setPendingRetryTarget] = useState<
     GitHubTarget['target'] | null
   >(null)
   const [error, setError] = useState<string>()
+  const [waitingTarget, setWaitingTarget] = useState<GitHubTarget['target']>()
   const [repoUrlsByTarget, setRepoUrlsByTarget] = useState(() => ({
     html: '',
     react: '',
@@ -238,7 +244,6 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
     })
     const data = await response.json()
     if (!response.ok) throw new Error(data?.error ?? 'Export failed')
-    void refetchExportTargets()
   }
 
   const pushTarget = async (targetConfig: GitHubTarget) => {
@@ -257,6 +262,27 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
       void clerk.openSignIn?.()
       setError('Sign in before pushing to GitHub.')
       return
+    }
+
+    if (!targetConfig.artifactReady) {
+      setWaitingTarget(targetConfig.target)
+      try {
+        const result = await ensureExportArtifact({
+          lookup: sessionId,
+          target: targetConfig.target,
+          anonymousOwnerSecret: readOwnerSecret(sessionId),
+        })
+        if (result.status !== 'ready') return
+        setWaitingTarget(undefined)
+      } catch (ensureError) {
+        setWaitingTarget(undefined)
+        setError(
+          ensureError instanceof Error
+            ? ensureError.message
+            : 'GitHub push failed',
+        )
+        return
+      }
     }
 
     if (
@@ -326,6 +352,23 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
   }
 
   useEffect(() => {
+    if (waitingTarget === undefined) return
+    const item = visibleTargets.find((target) => target.target === waitingTarget)
+    if (item === undefined) {
+      setWaitingTarget(undefined)
+      return
+    }
+    if (item.artifactReady) {
+      setWaitingTarget(undefined)
+      void pushTarget(item)
+      return
+    }
+    if (item.artifactStatus === 'failed' || item.status === 'stale') {
+      setWaitingTarget(undefined)
+    }
+  }, [visibleTargets, waitingTarget])
+
+  useEffect(() => {
     if (
       !pendingRetryTarget ||
       activeTarget !== undefined ||
@@ -365,7 +408,7 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
                   ? NextIcon
                   : LakebedIcon
           const isBusy =
-            activeTarget === item.target
+            activeTarget === item.target || waitingTarget === item.target
           const isBuildPending =
             !item.artifactReady &&
             (item.artifactStatus === 'queued' ||
@@ -374,7 +417,7 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
               item.artifactStatus === 'not_ready')
           const progressPercent = artifactProgressPercent(item)
           const showProgress =
-            activeTarget === item.target && isBuildPending
+            waitingTarget === item.target && isBuildPending
           const progressBackground =
             showProgress && progressPercent > 0
               ? `linear-gradient(110deg, rgba(34, 211, 238, 0.16) 0%, rgba(34, 211, 238, 0.08) ${progressPercent}%, transparent ${progressPercent}%, transparent 100%)`
