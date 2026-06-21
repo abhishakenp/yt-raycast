@@ -11,6 +11,7 @@ import { Toaster } from 'sonner'
 
 import { AppProviders } from '@/app/providers/AppProviders'
 import { clerkFrostedGlassAppearance } from '@/app/providers/clerk-appearance'
+import { useReferralCapture } from '@/features/referrals/hooks/useReferralCapture'
 import { installDynamicImportRecovery } from '@/lib/chunk-load-recovery'
 
 import appCss from '../styles.css?url'
@@ -25,6 +26,8 @@ const configuredClerkPublishableKey =
     : null
 
 const RootDocument = ({ children }: { children: ReactNode }) => {
+  useReferralCapture()
+
   useEffect(() => {
     const isDark =
       localStorage.getItem('theme') === 'dark' ||
