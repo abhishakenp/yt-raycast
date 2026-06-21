@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { getReferralAuthToken } from '@/features/referrals/lib/referral-client'
+import {
+  getReferralAuthToken,
+  waitForClerkReady,
+} from '@/features/referrals/lib/referral-client'
 
 export type ReferralListItem = {
   status: 'pending' | 'qualified' | 'disqualified'
@@ -40,6 +43,9 @@ export const useReferralStatus = (): UseReferralStatus => {
     setError(null)
     setIsLoading(true)
     try {
+      // Wait for the Clerk SDK to finish hydrating so a signed-in user who lands
+      // here directly isn't shown the signed-out state on first paint.
+      await waitForClerkReady()
       const token = await getReferralAuthToken()
       if (!token) {
         setStatus(null)
