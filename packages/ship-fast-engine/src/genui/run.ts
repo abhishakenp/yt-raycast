@@ -1,5 +1,10 @@
 import { mergeStatements } from '@openuidev/lang-core'
 import { generateUI, type GenUIEvent } from './orchestrator.ts'
+import {
+  classifySiteCategory,
+  runV1PublicationGeneration,
+  type V1GeneratedArtifact,
+} from './v1-publication.ts'
 import { DEFAULT_MODEL } from './model-list.ts'
 import { detectLanguage } from '../pipeline/detect-language.js'
 import { withLanguageEnforcementBlock } from '../pipeline/prompt-language.js'
@@ -13,6 +18,10 @@ export interface OrchestratorResult {
   locale: string
   /** Brand string the model used for the page blocks. */
   brand: string
+  /** Normalized site category from the v1 classifier (only set on the v1 path). */
+  category?: string
+  /** Fullstack/grammar/admin artifacts emitted by the v1 publication path. */
+  artifacts?: V1GeneratedArtifact[]
 }
 
 const FIRST_QUOTED = /=\s*[A-Za-z][A-Za-z0-9_]*\(\s*"((?:\\.|[^"\\])*)"/
@@ -43,6 +52,58 @@ export async function runHomepageOrchestrator(p: {
   const languageMode = await detectLanguage(p.prompt, p.preferredLanguage)
   const generationPrompt = withLanguageEnforcementBlock(p.prompt, languageMode)
   const forcedLocale = languageMode.code === 'en' ? null : languageMode.code
+  const modelId = p.modelId || DEFAULT_MODEL
+
+  // GATED v1 publication path. Only English prompts are eligible (non-en keeps
+  // generateUI's language enforcement), so the cheap locale check gates the
+  // classify round-trip — non-en generations never pay for it. classify + v1
+  // live inside one try: ANY failure (incl. hard LLM errors from classify, a v1
+  // throw, or a stub-sized v1 program) silently falls through to the generateUI
+  // safety net below — purely additive with a guaranteed fallback and no
+  // regression for existing prompts.
+  if (languageMode.code === 'en') {
+    try {
+      const category = await classifySiteCategory(p.prompt, modelId, p.signal)
+      if (category === 'publication') {
+        const v1 = await runV1PublicationGeneration({
+          prompt: p.prompt,
+          modelId,
+          preferredLanguage: languageMode.code,
+          category,
+          signal: p.signal,
+          onSource: p.onSource,
+          // Forward only the kinds GenUIEvent and V1PublicationEvent share with
+          // identical fields. v1-only kinds (status, plan, module_start,
+          // module_retry, source, done) are dropped — onSource already drives
+          // the live preview, so consumers see no synthetic events.
+          onEvent: p.onEvent
+            ? (event) => {
+                if (event.type === 'theme') p.onEvent?.(event)
+                else if (event.type === 'locale') p.onEvent?.(event)
+                else if (event.type === 'skeleton') p.onEvent?.(event)
+                else if (event.type === 'module') p.onEvent?.(event)
+                else if (event.type === 'error') p.onEvent?.(event)
+              }
+            : undefined,
+        })
+        if (v1.source.trim().length > STUB_PROGRAM_MAX_CHARS) {
+          return {
+            source: v1.source,
+            theme: v1.theme,
+            locale: forcedLocale ?? v1.locale,
+            brand: v1.brand,
+            category: v1.category,
+            artifacts: v1.artifacts,
+          }
+        }
+        // v1 produced a stub-sized program — fall through to generateUI.
+      }
+    } catch {
+      // hard or soft failure (classify or v1) → fall through to generateUI (the
+      // safety net emits the proper error if it also fails).
+    }
+  }
+
   let theme: string | null = null
   let locale = forcedLocale ?? 'en'
   let source = ''
@@ -76,7 +137,7 @@ export async function runHomepageOrchestrator(p: {
 
   for await (const event of generateUI(
     generationPrompt,
-    p.modelId || DEFAULT_MODEL,
+    modelId,
     p.signal,
     forcedLocale,
     p.prompt,

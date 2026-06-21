@@ -3,12 +3,22 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const mocks = vi.hoisted(() => ({
   generateText: vi.fn(),
   isHardLlmFailure: vi.fn(),
+  classifySiteCategory: vi.fn(),
+  runV1PublicationGeneration: vi.fn(),
 }))
 
 vi.mock('../generate.ts', () => ({
   formatLlmFailureMessage: (error: unknown) => String(error),
   generateText: mocks.generateText,
   isHardLlmFailure: mocks.isHardLlmFailure,
+}))
+
+// Mock the gated v1 publication path. classifySiteCategory defaults to a
+// NON-publication category so every existing test keeps exercising the original
+// generateUI path unchanged; the v1-specific tests below override per-case.
+vi.mock('./v1-publication.ts', () => ({
+  classifySiteCategory: mocks.classifySiteCategory,
+  runV1PublicationGeneration: mocks.runV1PublicationGeneration,
 }))
 
 const delay = (ms: number) =>
@@ -31,6 +41,12 @@ describe('runHomepageOrchestrator multi-page generation', () => {
     mocks.generateText.mockReset()
     mocks.isHardLlmFailure.mockReset()
     mocks.isHardLlmFailure.mockReturnValue(false)
+    mocks.classifySiteCategory.mockReset()
+    mocks.runV1PublicationGeneration.mockReset()
+    // Default: non-publication category, so the v1 gate stays closed and every
+    // existing test runs the original generateUI path.
+    mocks.classifySiteCategory.mockResolvedValue('software')
+    mocks.runV1PublicationGeneration.mockResolvedValue(undefined)
   })
 
   it('waits for secondary page modules so the final source is a complete site', async () => {
@@ -404,5 +420,196 @@ describe('runHomepageOrchestrator multi-page generation', () => {
     )
 
     expect(source).not.toContain('completeWhen')
+  })
+
+  it('routes English publication prompts through the v1 generator', async () => {
+    const { runHomepageOrchestrator } = await import('./run.ts')
+    const v1Source = `root = PageSwitch(["Home"], [home])\n${'home = BlogKimiPage("Field Notes", ["Home"], {})'.repeat(
+      40,
+    )}`
+    const artifacts = [{ key: 'category-grammar', contentJson: '{}' }]
+
+    mocks.classifySiteCategory.mockResolvedValue('publication')
+    mocks.runV1PublicationGeneration.mockResolvedValue({
+      source: v1Source,
+      theme: 'elegant-luxury',
+      locale: 'en',
+      brand: 'Field Notes',
+      category: 'publication',
+      artifacts,
+    })
+
+    const result = await runHomepageOrchestrator({
+      prompt: 'Build a news magazine about climate journalism',
+    })
+
+    expect(mocks.runV1PublicationGeneration).toHaveBeenCalledTimes(1)
+    expect(mocks.generateText).not.toHaveBeenCalled()
+    expect(result.source).toBe(v1Source)
+    expect(result.category).toBe('publication')
+    expect(result.artifacts).toEqual(artifacts)
+    expect(result.theme).toBe('elegant-luxury')
+  })
+
+  it('falls back to generateUI when the v1 generator throws', async () => {
+    const { runHomepageOrchestrator } = await import('./run.ts')
+
+    mocks.classifySiteCategory.mockResolvedValue('publication')
+    mocks.runV1PublicationGeneration.mockRejectedValue(
+      new Error('v1 newsroom outage'),
+    )
+    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
+      if (!String(user).includes('This page:')) {
+        return JSON.stringify({
+          brand: 'FastCo',
+          tagline: 'FastCo launches previews quickly.',
+          theme: 'bold-tech',
+          locale: 'en',
+          pages: [
+            { label: 'Home', brief: 'Primary landing page', blocks: ['SaasKimiPage'] },
+          ],
+        })
+      }
+      return homeModule
+    })
+
+    const result = await runHomepageOrchestrator({
+      prompt: 'Build a news magazine about climate journalism',
+    })
+
+    expect(mocks.runV1PublicationGeneration).toHaveBeenCalledTimes(1)
+    expect(mocks.generateText).toHaveBeenCalled()
+    expect(result.source).toContain('home = SaasKimiPage')
+    expect(result.category).toBeUndefined()
+    expect(result.artifacts).toBeUndefined()
+  })
+
+  it('falls back to generateUI when classifySiteCategory throws (hard failure)', async () => {
+    const { runHomepageOrchestrator } = await import('./run.ts')
+
+    // Hard classify failure must NOT escape — the en gate runs classify inside
+    // the same try as v1, so any throw silently falls through to generateUI.
+    mocks.classifySiteCategory.mockRejectedValue(
+      new Error('classifier auth failure'),
+    )
+    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
+      if (!String(user).includes('This page:')) {
+        return JSON.stringify({
+          brand: 'FastCo',
+          tagline: 'FastCo launches previews quickly.',
+          theme: 'bold-tech',
+          locale: 'en',
+          pages: [
+            { label: 'Home', brief: 'Primary landing page', blocks: ['SaasKimiPage'] },
+          ],
+        })
+      }
+      return homeModule
+    })
+
+    const result = await runHomepageOrchestrator({
+      prompt: 'Build a news magazine about climate journalism',
+    })
+
+    expect(mocks.classifySiteCategory).toHaveBeenCalledTimes(1)
+    expect(mocks.runV1PublicationGeneration).not.toHaveBeenCalled()
+    expect(mocks.generateText).toHaveBeenCalled()
+    expect(result.source).toContain('home = SaasKimiPage')
+    expect(result.category).toBeUndefined()
+    expect(result.artifacts).toBeUndefined()
+  })
+
+  it('falls back to generateUI when the v1 generator returns a stub program', async () => {
+    const { runHomepageOrchestrator } = await import('./run.ts')
+
+    mocks.classifySiteCategory.mockResolvedValue('publication')
+    mocks.runV1PublicationGeneration.mockResolvedValue({
+      source: 'root = Text("tiny")',
+      theme: null,
+      locale: 'en',
+      brand: 'Field Notes',
+      category: 'publication',
+      artifacts: [],
+    })
+    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
+      if (!String(user).includes('This page:')) {
+        return JSON.stringify({
+          brand: 'FastCo',
+          tagline: 'FastCo launches previews quickly.',
+          theme: 'bold-tech',
+          locale: 'en',
+          pages: [
+            { label: 'Home', brief: 'Primary landing page', blocks: ['SaasKimiPage'] },
+          ],
+        })
+      }
+      return homeModule
+    })
+
+    const result = await runHomepageOrchestrator({
+      prompt: 'Build a news magazine about climate journalism',
+    })
+
+    expect(mocks.generateText).toHaveBeenCalled()
+    expect(result.source).toContain('home = SaasKimiPage')
+    expect(result.category).toBeUndefined()
+  })
+
+  it('does not invoke v1 for non-publication categories', async () => {
+    const { runHomepageOrchestrator } = await import('./run.ts')
+
+    mocks.classifySiteCategory.mockResolvedValue('software')
+    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
+      if (!String(user).includes('This page:')) {
+        return JSON.stringify({
+          brand: 'FastCo',
+          tagline: 'FastCo launches previews quickly.',
+          theme: 'bold-tech',
+          locale: 'en',
+          pages: [
+            { label: 'Home', brief: 'Primary landing page', blocks: ['SaasKimiPage'] },
+          ],
+        })
+      }
+      return homeModule
+    })
+
+    const result = await runHomepageOrchestrator({
+      prompt: 'Build a SaaS landing page for FastCo',
+    })
+
+    expect(mocks.runV1PublicationGeneration).not.toHaveBeenCalled()
+    expect(result.source).toContain('home = SaasKimiPage')
+  })
+
+  it('skips v1 for non-English publication prompts', async () => {
+    const { runHomepageOrchestrator } = await import('./run.ts')
+
+    // preferredLanguage forces a non-en locale, so the v1 gate stays closed even
+    // though the classifier returns publication.
+    mocks.classifySiteCategory.mockResolvedValue('publication')
+    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
+      if (!String(user).includes('This page:')) {
+        return JSON.stringify({
+          brand: 'Kaveri Press',
+          tagline: 'Local newsroom for Tamil readers.',
+          theme: 'bold-tech',
+          locale: 'ta-en',
+          pages: [
+            { label: 'Home', brief: 'Primary landing page', blocks: ['SaasKimiPage'] },
+          ],
+        })
+      }
+      return homeModule.replaceAll('FastCo', 'Kaveri Press')
+    })
+
+    const result = await runHomepageOrchestrator({
+      prompt: 'Build a Tamil news magazine',
+      preferredLanguage: 'ta-en',
+    })
+
+    expect(mocks.runV1PublicationGeneration).not.toHaveBeenCalled()
+    expect(result.locale).toBe('ta-en')
+    expect(result.source).toContain('SaasKimiPage')
   })
 })
