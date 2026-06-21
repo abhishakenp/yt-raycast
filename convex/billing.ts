@@ -2,6 +2,7 @@ import { ConvexError, v } from 'convex/values'
 
 import { internalMutation, mutation, query } from './_generated/server'
 import type { MutationCtx, QueryCtx } from './_generated/server'
+import { qualifyReferralOnPayment } from './lib/referral_qualification'
 
 const activeSubscriptionStatuses = new Set([
   'active',
@@ -345,6 +346,8 @@ export const applyBillingWebhook = mutation({
       processedAt: now,
     })
 
+    let referralUnlock: { referrerUserId: string } | null = null
+
     if (args.subscription !== undefined) {
       const existing =
         args.subscription.providerSubscriptionId === undefined
@@ -384,6 +387,16 @@ export const applyBillingWebhook = mutation({
             args.subscription.status === 'cancelled' ? now : undefined,
         })
       }
+
+      // When the payer's subscription is active, attribute any referral that
+      // brought them in. Returns the referrer only when their reward JUST
+      // unlocked, so the server can apply the lifetime discount.
+      if (activeSubscriptionStatuses.has(args.subscription.status)) {
+        const result = await qualifyReferralOnPayment(ctx, args.userId)
+        if (result !== null) {
+          referralUnlock = { referrerUserId: result.referrerUserId }
+        }
+      }
     }
 
     if ((args.credits ?? 0) > 0) {
@@ -405,6 +418,6 @@ export const applyBillingWebhook = mutation({
       }
     }
 
-    return { processed: true, duplicate: false }
+    return { processed: true, duplicate: false, referralUnlock }
   },
 })

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as ReferralsRouteImport } from './routes/referrals'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
@@ -38,6 +39,8 @@ import { Route as ExportSessionIdTargetRouteImport } from './routes/export.$sess
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe.webhook'
 import { Route as ApiSessionsRecentRouteImport } from './routes/api/sessions.recent'
 import { Route as ApiSessionsSessionIdRouteImport } from './routes/api/sessions.$sessionId'
+import { Route as ApiReferralsStatusRouteImport } from './routes/api/referrals.status'
+import { Route as ApiReferralsRecordRouteImport } from './routes/api/referrals.record'
 import { Route as ApiRazorpayWebhookRouteImport } from './routes/api/razorpay.webhook'
 import { Route as ApiMedusaStoreConfigRouteImport } from './routes/api/medusa-store.config'
 import { Route as ApiMedusaStoreCartRouteImport } from './routes/api/medusa-store.cart'
@@ -83,6 +86,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReferralsRoute = ReferralsRouteImport.update({
+  id: '/referrals',
+  path: '/referrals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -214,6 +222,16 @@ const ApiSessionsRecentRoute = ApiSessionsRecentRouteImport.update({
 const ApiSessionsSessionIdRoute = ApiSessionsSessionIdRouteImport.update({
   id: '/api/sessions/$sessionId',
   path: '/api/sessions/$sessionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiReferralsStatusRoute = ApiReferralsStatusRouteImport.update({
+  id: '/api/referrals/status',
+  path: '/api/referrals/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiReferralsRecordRoute = ApiReferralsRecordRouteImport.update({
+  id: '/api/referrals/record',
+  path: '/api/referrals/record',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRazorpayWebhookRoute = ApiRazorpayWebhookRouteImport.update({
@@ -401,6 +419,7 @@ export interface FileRoutesByFullPath {
   '/llms.txt': typeof LlmsDottxtRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/referrals': typeof ReferralsRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
@@ -424,6 +443,8 @@ export interface FileRoutesByFullPath {
   '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
   '/api/medusa-store/config': typeof ApiMedusaStoreConfigRoute
   '/api/razorpay/webhook': typeof ApiRazorpayWebhookRoute
+  '/api/referrals/record': typeof ApiReferralsRecordRoute
+  '/api/referrals/status': typeof ApiReferralsStatusRoute
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/api/sessions/recent': typeof ApiSessionsRecentRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
@@ -463,6 +484,7 @@ export interface FileRoutesByTo {
   '/llms.txt': typeof LlmsDottxtRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/referrals': typeof ReferralsRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
@@ -486,6 +508,8 @@ export interface FileRoutesByTo {
   '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
   '/api/medusa-store/config': typeof ApiMedusaStoreConfigRoute
   '/api/razorpay/webhook': typeof ApiRazorpayWebhookRoute
+  '/api/referrals/record': typeof ApiReferralsRecordRoute
+  '/api/referrals/status': typeof ApiReferralsStatusRoute
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/api/sessions/recent': typeof ApiSessionsRecentRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
@@ -526,6 +550,7 @@ export interface FileRoutesById {
   '/llms.txt': typeof LlmsDottxtRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/referrals': typeof ReferralsRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
@@ -549,6 +574,8 @@ export interface FileRoutesById {
   '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
   '/api/medusa-store/config': typeof ApiMedusaStoreConfigRoute
   '/api/razorpay/webhook': typeof ApiRazorpayWebhookRoute
+  '/api/referrals/record': typeof ApiReferralsRecordRoute
+  '/api/referrals/status': typeof ApiReferralsStatusRoute
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/api/sessions/recent': typeof ApiSessionsRecentRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
@@ -590,6 +617,7 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/pricing'
     | '/privacy'
+    | '/referrals'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
@@ -613,6 +641,8 @@ export interface FileRouteTypes {
     | '/api/medusa-store/cart'
     | '/api/medusa-store/config'
     | '/api/razorpay/webhook'
+    | '/api/referrals/record'
+    | '/api/referrals/status'
     | '/api/sessions/$sessionId'
     | '/api/sessions/recent'
     | '/api/stripe/webhook'
@@ -652,6 +682,7 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/pricing'
     | '/privacy'
+    | '/referrals'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
@@ -675,6 +706,8 @@ export interface FileRouteTypes {
     | '/api/medusa-store/cart'
     | '/api/medusa-store/config'
     | '/api/razorpay/webhook'
+    | '/api/referrals/record'
+    | '/api/referrals/status'
     | '/api/sessions/$sessionId'
     | '/api/sessions/recent'
     | '/api/stripe/webhook'
@@ -714,6 +747,7 @@ export interface FileRouteTypes {
     | '/llms.txt'
     | '/pricing'
     | '/privacy'
+    | '/referrals'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
@@ -737,6 +771,8 @@ export interface FileRouteTypes {
     | '/api/medusa-store/cart'
     | '/api/medusa-store/config'
     | '/api/razorpay/webhook'
+    | '/api/referrals/record'
+    | '/api/referrals/status'
     | '/api/sessions/$sessionId'
     | '/api/sessions/recent'
     | '/api/stripe/webhook'
@@ -777,6 +813,7 @@ export interface RootRouteChildren {
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
+  ReferralsRoute: typeof ReferralsRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
@@ -800,6 +837,8 @@ export interface RootRouteChildren {
   ApiMedusaStoreCartRoute: typeof ApiMedusaStoreCartRouteWithChildren
   ApiMedusaStoreConfigRoute: typeof ApiMedusaStoreConfigRoute
   ApiRazorpayWebhookRoute: typeof ApiRazorpayWebhookRoute
+  ApiReferralsRecordRoute: typeof ApiReferralsRecordRoute
+  ApiReferralsStatusRoute: typeof ApiReferralsStatusRoute
   ApiSessionsSessionIdRoute: typeof ApiSessionsSessionIdRouteWithChildren
   ApiSessionsRecentRoute: typeof ApiSessionsRecentRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
@@ -830,6 +869,13 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/referrals': {
+      id: '/referrals'
+      path: '/referrals'
+      fullPath: '/referrals'
+      preLoaderRoute: typeof ReferralsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -1012,6 +1058,20 @@ declare module '@tanstack/react-router' {
       path: '/api/sessions/$sessionId'
       fullPath: '/api/sessions/$sessionId'
       preLoaderRoute: typeof ApiSessionsSessionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/referrals/status': {
+      id: '/api/referrals/status'
+      path: '/api/referrals/status'
+      fullPath: '/api/referrals/status'
+      preLoaderRoute: typeof ApiReferralsStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/referrals/record': {
+      id: '/api/referrals/record'
+      path: '/api/referrals/record'
+      fullPath: '/api/referrals/record'
+      preLoaderRoute: typeof ApiReferralsRecordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/razorpay/webhook': {
@@ -1375,6 +1435,7 @@ const rootRouteChildren: RootRouteChildren = {
   LlmsDottxtRoute: LlmsDottxtRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
+  ReferralsRoute: ReferralsRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
@@ -1398,6 +1459,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMedusaStoreCartRoute: ApiMedusaStoreCartRouteWithChildren,
   ApiMedusaStoreConfigRoute: ApiMedusaStoreConfigRoute,
   ApiRazorpayWebhookRoute: ApiRazorpayWebhookRoute,
+  ApiReferralsRecordRoute: ApiReferralsRecordRoute,
+  ApiReferralsStatusRoute: ApiReferralsStatusRoute,
   ApiSessionsSessionIdRoute: ApiSessionsSessionIdRouteWithChildren,
   ApiSessionsRecentRoute: ApiSessionsRecentRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
@@ -1410,12 +1473,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

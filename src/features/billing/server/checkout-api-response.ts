@@ -7,6 +7,7 @@ import {
   resolvePaymentCurrency,
   resolvePaymentGateway,
 } from '@/billing/payment-routing.js'
+import { ensureStripeReferralCoupon } from '@/features/referrals/server/referral-discount'
 
 type CheckoutConvexClient = Pick<ConvexHttpClient, 'query' | 'setAuth'>
 
@@ -82,6 +83,7 @@ const fetchStripeCheckout = async (
   request: Request,
   body: CheckoutBody,
   userId: string,
+  referralCouponId: string | null,
 ) => {
   const mode = normalizeString(body.mode)
   const tier = normalizeString(body.tier) || 'pro'
@@ -102,26 +104,32 @@ const fetchStripeCheckout = async (
     )
   }
 
+  // Apply the lifetime referral discount only to recurring subscriptions.
+  const checkoutFields: Record<string, string> = {
+    mode: mode === 'credit_pack' ? 'payment' : 'subscription',
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+    client_reference_id: userId,
+    'line_items[0][price]': priceId,
+    'line_items[0][quantity]': '1',
+    'metadata[userId]': userId,
+    'metadata[mode]': mode,
+    'metadata[tier]': tier,
+    'metadata[packId]': packId,
+    'subscription_data[metadata][userId]': userId,
+    'subscription_data[metadata][tier]': tier,
+  }
+  if (mode === 'subscription' && referralCouponId) {
+    checkoutFields['discounts[0][coupon]'] = referralCouponId
+  }
+
   const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: formBody({
-      mode: mode === 'credit_pack' ? 'payment' : 'subscription',
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      client_reference_id: userId,
-      'line_items[0][price]': priceId,
-      'line_items[0][quantity]': '1',
-      'metadata[userId]': userId,
-      'metadata[mode]': mode,
-      'metadata[tier]': tier,
-      'metadata[packId]': packId,
-      'subscription_data[metadata][userId]': userId,
-      'subscription_data[metadata][tier]': tier,
-    }),
+    body: formBody(checkoutFields),
   })
   const data = (await response.json()) as {
     id?: string
@@ -147,6 +155,7 @@ const fetchRazorpayCheckout = async (
   env: CheckoutEnv,
   body: CheckoutBody,
   userId: string,
+  referralOfferId: string | null,
 ) => {
   const mode = normalizeString(body.mode)
   const tier = normalizeString(body.tier) || 'pro'
@@ -183,6 +192,8 @@ const fetchRazorpayCheckout = async (
         plan_id: planId,
         total_count: 120,
         customer_notify: 1,
+        // Lifetime referral reward → apply the pre-configured Razorpay offer.
+        ...(referralOfferId ? { offer_id: referralOfferId } : {}),
         notes: { userId, tier },
       }),
     })
@@ -296,7 +307,44 @@ export const createCheckoutApiResponse = async (
     )
   }
 
-  return gateway === 'stripe'
-    ? await fetchStripeCheckout(env, request, body, overview.userId)
-    : await fetchRazorpayCheckout(env, body, overview.userId)
+  // Resolve the lifetime referral reward for unlocked referrers starting a new
+  // subscription. Best-effort: a lookup failure must not block checkout.
+  let referralUnlocked = false
+  const secret = env.BILLING_WEBHOOK_MUTATION_SECRET
+  if (mode === 'subscription' && secret) {
+    try {
+      const eligibility = (await client.query(
+        api.referrals.isDiscountUnlockedForUser,
+        { secret, userId: overview.userId },
+      )) as { unlocked?: boolean }
+      referralUnlocked = Boolean(eligibility?.unlocked)
+    } catch {
+      referralUnlocked = false
+    }
+  }
+
+  if (gateway === 'razorpay') {
+    // Razorpay offers must be pre-created in the dashboard and referenced by id.
+    const referralOfferId = referralUnlocked
+      ? ((env.RAZORPAY_REFERRAL_OFFER_ID ?? '').trim() || null)
+      : null
+    return await fetchRazorpayCheckout(
+      env,
+      body,
+      overview.userId,
+      referralOfferId,
+    )
+  }
+
+  const referralCouponId = referralUnlocked
+    ? await ensureStripeReferralCoupon(env)
+    : null
+
+  return await fetchStripeCheckout(
+    env,
+    request,
+    body,
+    overview.userId,
+    referralCouponId,
+  )
 }
