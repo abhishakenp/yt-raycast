@@ -12,6 +12,7 @@ export const REFERRAL_DONE_KEY = 'shipfast_ref_recorded'
 export const REFERRAL_QUERY_PARAM = 'ref'
 
 type ClerkGlobal = {
+  loaded?: boolean
   user?: { primaryEmailAddress?: { emailAddress?: string } | null } | null
   session?: {
     getToken?: (options?: { template?: string }) => Promise<string | null>
@@ -24,6 +25,27 @@ const getClerk = (): ClerkGlobal | null => {
 }
 
 export const isClerkSignedIn = (): boolean => Boolean(getClerk()?.user)
+
+/**
+ * Resolve once the global Clerk SDK has finished hydrating (`loaded`), so
+ * callers don't mistake "still booting" for "signed out". Bounded so a truly
+ * signed-out / unconfigured page still proceeds. Returns whether a session is
+ * present at the time it settles.
+ */
+export const waitForClerkReady = async (timeoutMs = 10000): Promise<boolean> => {
+  if (typeof window === 'undefined') return false
+  const start = Date.now()
+  let elapsed = 0
+  while (elapsed < timeoutMs) {
+    const clerk = getClerk()
+    if (clerk?.loaded === true || clerk?.user || clerk?.session) {
+      return Boolean(clerk?.session || clerk?.user)
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250))
+    elapsed = Date.now() - start
+  }
+  return false
+}
 
 export const getClerkUserEmail = (): string | null =>
   getClerk()?.user?.primaryEmailAddress?.emailAddress ?? null
