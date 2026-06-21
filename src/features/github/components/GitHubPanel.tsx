@@ -14,7 +14,12 @@ import {
   useOptionalClerk,
 } from '@/shared/auth/use-optional-auth'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
-import { HtmlIcon, ReactIcon, NextIcon, LakebedIcon } from '@/features/exports/components/ExportIcons'
+import {
+  HtmlIcon,
+  ReactIcon,
+  NextIcon,
+  LakebedIcon,
+} from '@/features/exports/components/ExportIcons'
 
 type GitHubTarget = {
   target: 'html' | 'react' | 'next' | 'lakebed'
@@ -272,7 +277,7 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
           target: targetConfig.target,
           anonymousOwnerSecret: readOwnerSecret(sessionId),
         })
-        if (result.status !== 'ready') return
+        if (!result || result.status !== 'ready') return
         setWaitingTarget(undefined)
       } catch (ensureError) {
         setWaitingTarget(undefined)
@@ -353,7 +358,9 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
 
   useEffect(() => {
     if (waitingTarget === undefined) return
-    const item = visibleTargets.find((target) => target.target === waitingTarget)
+    const item = visibleTargets.find(
+      (target) => target.target === waitingTarget,
+    )
     if (item === undefined) {
       setWaitingTarget(undefined)
       return
@@ -416,23 +423,24 @@ export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
               item.artifactStatus === 'loading' ||
               item.artifactStatus === 'not_ready')
           const progressPercent = artifactProgressPercent(item)
-          const showProgress =
-            waitingTarget === item.target && isBuildPending
+          const showProgress = waitingTarget === item.target && isBuildPending
           const progressBackground =
             showProgress && progressPercent > 0
               ? `linear-gradient(110deg, rgba(34, 211, 238, 0.16) 0%, rgba(34, 211, 238, 0.08) ${progressPercent}%, transparent ${progressPercent}%, transparent 100%)`
               : undefined
           const existingRepoUrl =
-            item.githubUrl ?? item.githubRepoUrl ?? repoUrlsByTarget[item.target]
+            item.githubUrl ??
+            item.githubRepoUrl ??
+            repoUrlsByTarget[item.target]
           const statusText = showProgress
             ? `${progressPercent}%`
             : activeTarget === item.target
-            ? 'Pushing Repository...'
-            : item.artifactStatus === 'failed'
-              ? (item.artifactError ?? 'Export failed')
-              : isBuildPending
-                ? ''
-                : statusLabel(item)
+              ? 'Pushing Repository...'
+              : item.artifactStatus === 'failed'
+                ? (item.artifactError ?? 'Export failed')
+                : isBuildPending
+                  ? ''
+                  : statusLabel(item)
 
           return (
             <button

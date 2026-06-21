@@ -31,7 +31,7 @@ type SessionInternalReferences = InternalSessionReferences['sessions'] & {
 
 const internalReferences = internal as unknown as InternalSessionReferences
 
-export const sessionInternalReferences: SessionInternalReferences = {
+export const sessionInternalReferences = {
   buildExportArtifact: internalReferences.export_artifacts.build,
   stallExportArtifactBuild:
     internalReferences.sessions.markExportArtifactBuildStalled,
@@ -42,4 +42,4 @@ export const sessionInternalReferences: SessionInternalReferences = {
     internalReferences.sessions.completeGenerationInternal,
   completeGenerationNode:
     internalReferences.session_completion.completeGeneration,
-}
+} as unknown as SessionInternalReferences
