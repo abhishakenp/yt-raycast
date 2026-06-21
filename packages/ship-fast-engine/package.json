@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "bin": {
+    "ship-fast-engine": "./scripts/run-engine-standalone.ts"
+  },
   "exports": {
     ".": "./src/index.ts",
     "./*": "./src/*"
