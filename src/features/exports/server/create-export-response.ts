@@ -2,12 +2,14 @@ import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
-import type { ExportTarget } from '../services/openui-export-types'
+import type {
+  ExportTarget,
+  OpenUIExportInput,
+} from '../services/openui-export-types'
 import {
   buildDownloadFromArtifactFiles,
   buildOpenUIArtifactFiles,
 } from '../services/openui-artifact-files'
-import type { OpenUIExportInput } from '../services/openui-export-types'
 
 type ExportConvexClient = Pick<ConvexHttpClient, 'query'> &
   Partial<Pick<ConvexHttpClient, 'setAuth'>>
@@ -313,7 +315,8 @@ export const createExportResponse = async (
     return new Response(artifactResponse.body, {
       headers: createDownloadHeaders(
         download.artifact.contentType ?? 'application/octet-stream',
-        download.artifact.filename ?? `ship-fast-${sessionId}-${normalizedTarget}.zip`,
+        download.artifact.filename ??
+          `ship-fast-${sessionId}-${normalizedTarget}.zip`,
       ),
     })
   } catch (error) {

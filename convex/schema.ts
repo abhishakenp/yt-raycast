@@ -455,6 +455,11 @@ export default defineSchema({
     planId: v.string(),
     providerSubscriptionId: v.optional(v.string()),
     providerCheckoutId: v.optional(v.string()),
+    // Referral reward audit trail: when a referrer's 50%-for-life discount has
+    // been applied to this subscription at the payment provider.
+    referralDiscountPercent: v.optional(v.number()),
+    referralDiscountAppliedAt: v.optional(v.number()),
+    referralDiscountProviderId: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
     canceledAt: v.optional(v.number()),
@@ -467,4 +472,56 @@ export default defineSchema({
     idempotencyKey: v.string(),
     processedAt: v.number(),
   }).index('by_provider_idempotencyKey', ['provider', 'idempotencyKey']),
+
+  // ── Referral / sponsorship program ──────────────────────────────────────
+  // Each user owns one stable referral code. Sharing /?ref=CODE attributes new
+  // signups to the owner.
+  referralCodes: defineTable({
+    userId: v.string(),
+    code: v.string(),
+    createdAt: v.number(),
+  })
+    .index('by_userId', ['userId'])
+    .index('by_code', ['code']),
+
+  // One row per referred user. status transitions:
+  //   pending      → signed up via a ref link, not yet a paying customer
+  //   qualified    → referred user paid AND used a non-disposable email
+  //   disqualified → referred user used a disposable email (never counts)
+  referrals: defineTable({
+    referrerUserId: v.string(),
+    referredUserId: v.string(),
+    code: v.string(),
+    referredEmail: v.optional(v.string()),
+    emailDisposable: v.optional(v.boolean()),
+    emailSource: v.optional(v.string()),
+    status: v.union(
+      v.literal('pending'),
+      v.literal('qualified'),
+      v.literal('disqualified'),
+    ),
+    paidAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_referrer', ['referrerUserId'])
+    .index('by_referrer_status', ['referrerUserId', 'status'])
+    .index('by_referred', ['referredUserId']),
+
+  // The unlocked reward state for a referrer. Once `unlocked` flips true (2
+  // qualified referrals) it is PERMANENT — referred-user churn never revokes it.
+  // The discount only stops applying if the referrer cancels their own sub.
+  referralRewards: defineTable({
+    userId: v.string(),
+    unlocked: v.boolean(),
+    unlockedAt: v.optional(v.number()),
+    qualifiedCount: v.number(),
+    discountPercent: v.number(),
+    // Set once we have attached the provider coupon to the referrer's live sub.
+    discountAppliedAt: v.optional(v.number()),
+    discountProvider: v.optional(provider),
+    discountProviderId: v.optional(v.string()),
+    discountSubscriptionId: v.optional(v.string()),
+    updatedAt: v.number(),
+  }).index('by_userId', ['userId']),
 })

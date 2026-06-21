@@ -2,8 +2,13 @@ import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
+import { applyReferralDiscountForUser } from '@/features/referrals/server/referral-discount'
 
 type WebhookConvexClient = Pick<ConvexHttpClient, 'mutation'>
+type ApplyReferralDiscount = (
+  env: NodeJS.ProcessEnv,
+  userId: string,
+) => Promise<{ applied: boolean; reason: string }>
 type Provider = 'stripe' | 'razorpay'
 type BillingWebhookEnv = NodeJS.ProcessEnv
 type BillingStatus =
@@ -165,6 +170,7 @@ export const createWebhookApiResponse = async (
   provider: Provider,
   env: BillingWebhookEnv = process.env,
   clientOverride?: WebhookConvexClient,
+  applyDiscount: ApplyReferralDiscount = applyReferralDiscountForUser,
 ): Promise<Response> => {
   const rawBody = await request.text()
   const providerSecret =
@@ -199,10 +205,27 @@ export const createWebhookApiResponse = async (
   if (mutationPayload === null) return json({ received: true, ignored: true })
 
   const client = clientOverride ?? createRuntimeConvexHttpClient()
-  await client.mutation(api.billing.applyBillingWebhook, {
+  const result = (await client.mutation(api.billing.applyBillingWebhook, {
     secret: mutationSecret,
     ...mutationPayload,
-  })
+  })) as { referralUnlock?: { referrerUserId: string } | null }
+
+  // Apply the lifetime referral discount to anyone whose eligibility may have
+  // changed: the referrer who just hit the threshold, and the payer themselves
+  // (they may be an already-unlocked referrer who just (re)subscribed). Both are
+  // best-effort and never block the webhook response.
+  const usersToReconcile = new Set<string>([mutationPayload.userId])
+  if (result?.referralUnlock?.referrerUserId) {
+    usersToReconcile.add(result.referralUnlock.referrerUserId)
+  }
+  await Promise.all(
+    [...usersToReconcile].map((userId) =>
+      applyDiscount(env, userId).catch(() => ({
+        applied: false,
+        reason: 'unhandled',
+      })),
+    ),
+  )
 
   return json({ received: true })
 }
