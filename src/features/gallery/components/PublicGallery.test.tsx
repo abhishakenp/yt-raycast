@@ -60,8 +60,33 @@ const emptyGallery: GalleryPayload = {
   totalPages: 1,
 }
 
+const createMemoryStorage = (): Storage => {
+  const entries = new Map<string, string>()
+
+  return {
+    get length() {
+      return entries.size
+    },
+    clear: () => entries.clear(),
+    getItem: (key) => entries.get(key) ?? null,
+    key: (index) => Array.from(entries.keys())[index] ?? null,
+    removeItem: (key) => entries.delete(key),
+    setItem: (key, value) => entries.set(key, value),
+  }
+}
+
+const ensureLocalStorage = () => {
+  if (window.localStorage !== undefined) return
+
+  Object.defineProperty(window, 'localStorage', {
+    configurable: true,
+    value: createMemoryStorage(),
+  })
+}
+
 describe('GalleryGrid', () => {
   beforeEach(() => {
+    ensureLocalStorage()
     originalFetch = globalThis.fetch
     globalThis.fetch = vi
       .fn()
@@ -95,7 +120,7 @@ describe('GalleryGrid', () => {
     )
   })
 
-  it('prefers the generated gallery thumbnail image over live module rendering', () => {
+  it('prefers live module rendering over the generated gallery thumbnail image', () => {
     const gallery: GalleryPayload = {
       ...emptyGallery,
       items: [
@@ -111,14 +136,13 @@ describe('GalleryGrid', () => {
       total: 1,
     }
 
-    const { container, queryByTestId } = render(
-      <GalleryGrid gallery={gallery} />,
-    )
+    const { container, getByTestId } = render(<GalleryGrid gallery={gallery} />)
 
-    expect(container.querySelector('img')?.getAttribute('src')).toBe(
-      'https://cdn.example.test/generated-theme.png',
+    expect(getByTestId('generated-module-preview').textContent).toContain(
+      'LumenAI Studio',
     )
-    expect(queryByTestId('generated-module-preview')).toBeNull()
+    expect(globalThis.fetch).not.toHaveBeenCalled()
+    expect(container.querySelector('img')).toBeNull()
     expect(container.querySelector('h1')).toBeNull()
   })
 
