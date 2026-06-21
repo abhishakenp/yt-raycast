@@ -57,7 +57,11 @@ describe('billing webhook state mutation', () => {
       },
     })
 
-    expect(first).toEqual({ processed: true, duplicate: false })
+    expect(first).toEqual({
+      processed: true,
+      duplicate: false,
+      referralUnlock: null,
+    })
     expect(duplicate).toEqual({ processed: false, duplicate: true })
 
     const rows = await t.run(async (ctx) =>
@@ -124,7 +128,11 @@ describe('billing webhook state mutation', () => {
       userId,
     })
 
-    expect(first).toEqual({ processed: true, duplicate: false })
+    expect(first).toEqual({
+      processed: true,
+      duplicate: false,
+      referralUnlock: null,
+    })
     expect(duplicate).toEqual({ processed: false, duplicate: true })
     expect(consumed.remaining).toBe(2)
 
