@@ -8,13 +8,13 @@ Total changed paths: 254
 ## Convex session decomposition (78)
 
 - `convex/_generated/api.d.ts`
-- `convex/authenticated-admission.test.ts`
+- `convex/authenticated_admission.test.ts`
 - `convex/billing.test.ts`
-- `convex/chat-refinement.test.ts`
+- `convex/chat_refinement.test.ts`
 - `convex/cms.test.ts`
 - `convex/deployment.test.ts`
-- `convex/export-entitlement.test.ts`
-- `convex/generation-view.test.ts`
+- `convex/export_entitlement.test.ts`
+- `convex/generation_view.test.ts`
 - `convex/generation.test.ts`
 - `convex/generation.ts`
 - `convex/lakebed.test.ts`
@@ -82,9 +82,9 @@ Total changed paths: 254
 - `convex/lib/session_workspace_helpers.ts`
 - `convex/medusa.test.ts`
 - `convex/session_completion.ts`
-- `convex/session-readiness.test.ts`
+- `convex/session_readiness.test.ts`
 - `convex/sessions.ts`
-- `convex/usage-metrics.test.ts`
+- `convex/usage_metrics.test.ts`
 
 ## Quality gates and local enforcement (24)
 

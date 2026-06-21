@@ -31,7 +31,7 @@ Current inventory:
 Focused helper/session-readiness verification:
 
 ```bash
-bun vitest run --config vitest.config.ts convex/lib/session_*_helpers.test.ts convex/session-readiness.test.ts
+bun vitest run --config vitest.config.ts convex/lib/session_*_helpers.test.ts convex/session_readiness.test.ts
 ```
 
 Result:
