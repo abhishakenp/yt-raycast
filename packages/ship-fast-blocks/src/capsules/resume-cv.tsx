@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * ResumeCvKimiPage — a complete, self-contained personal resume / CV / portfolio page.
@@ -47,7 +47,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * defaults make it render the full résumé with no props at all.
  */
 export const ResumeCvKimiPage = defineCapsule({
-  name: "ResumeCvKimiPage",
+  name: 'ResumeCvKimiPage',
   description:
     "Complete personal resume / CV / portfolio page for an individual professional, with a clean, minimalist, editorial single-column layout on a light neutral canvas, generous whitespace and soft rounded cards. Includes a split hero (square headshot, role eyebrow, big intro headline, bio, dual CTAs and a 3-up stat strip like years-experience / projects / users-impacted), a 'trusted by' company logo band, a dated timeline of work experience with achievement bullets plus an education entry, a skills & expertise section with categorized proficiency cards (Expert/Advanced/Proficient badges) and a capability tag cloud, a featured-projects case-study gallery with alternating image/text rows and tech tags, a testimonials grid with star ratings and author avatars, and a contact section with channel links (email, phone, LinkedIn, GitHub, Dribbble) plus a real message form. Use as the ROOT/home page for a personal resume, CV, online portfolio, about-me page, freelancer or designer/developer profile, or a 'hire me' page when a polished, professional, content-rich single-page résumé is wanted. Supply content only — brand (person name), nav, hero, logos, experience, education, skills, projects, testimonials, contact, footer; the block owns all layout and styling.",
   props: z.object({
@@ -223,7 +223,7 @@ export const ResumeCvKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [inquiriesOpen, setInquiriesOpen] = useState(false)
-    const brand = props.brand ?? "Sarah Chen"
+    const brand = props.brand ?? 'Sarah Chen'
 
     const inquiries = lakebed.useQuery('inquiries')
     const favoriteProjectTitles = lakebed.useQuery('favoriteProjectTitles')
@@ -258,198 +258,199 @@ export const ResumeCvKimiPage = defineCapsule({
     }
     const nav = props.nav?.length
       ? props.nav
-      : ["About", "Experience", "Skills", "Projects", "Get in Touch"]
+      : ['About', 'Experience', 'Skills', 'Projects', 'Get in Touch']
 
-    const heroEyebrow = props.hero?.eyebrow ?? "Senior Product Designer"
+    const heroEyebrow = props.hero?.eyebrow ?? 'Senior Product Designer'
     const heroHeadline =
       props.hero?.headline ??
-      "Designing thoughtful digital experiences that connect people and products"
+      'Designing thoughtful digital experiences that connect people and products'
     const heroBio =
       props.hero?.bio ??
       "I'm a product designer based in San Francisco with 8+ years of experience crafting intuitive interfaces, building design systems, and leading cross-functional teams. Currently designing the future of collaborative tools at Notion."
     const heroPrimary = props.hero?.primaryCta ?? "Let's work together"
-    const heroSecondary = props.hero?.secondaryCta ?? "View my experience"
+    const heroSecondary = props.hero?.secondaryCta ?? 'View my experience'
     const heroPhotoAlt =
       props.hero?.photoAlt ??
-      "Professional headshot of a senior product designer with shoulder-length dark hair wearing a minimalist black blazer against a neutral gray studio background"
+      'Professional headshot of a senior product designer with shoulder-length dark hair wearing a minimalist black blazer against a neutral gray studio background'
     const heroStats = props.hero?.stats?.length
       ? props.hero.stats
       : [
-          { value: "8+", label: "Years Experience" },
-          { value: "50+", label: "Projects Shipped" },
-          { value: "12M+", label: "Users Impacted" },
+          { value: '8+', label: 'Years Experience' },
+          { value: '50+', label: 'Projects Shipped' },
+          { value: '12M+', label: 'Users Impacted' },
         ]
 
-    const logosCaption = props.logos?.caption ?? "Trusted by innovative teams at"
+    const logosCaption =
+      props.logos?.caption ?? 'Trusted by innovative teams at'
     const logoCompanies = props.logos?.companies?.length
       ? props.logos.companies
-      : ["Notion", "Figma", "Dropbox", "Stripe", "Slack"]
+      : ['Notion', 'Figma', 'Dropbox', 'Stripe', 'Slack']
 
-    const expHeading = props.experience?.heading ?? "Experience"
+    const expHeading = props.experience?.heading ?? 'Experience'
     const expDescription =
       props.experience?.description ??
-      "A decade of designing products across productivity, fintech, and enterprise SaaS—from early-stage startups to publicly traded companies."
+      'A decade of designing products across productivity, fintech, and enterprise SaaS—from early-stage startups to publicly traded companies.'
     const expItems = props.experience?.items?.length
       ? props.experience.items
       : [
           {
-            period: "2021 — Present",
-            role: "Senior Product Designer",
-            company: "Notion — San Francisco, CA",
-            badge: "Full-time",
+            period: '2021 — Present',
+            role: 'Senior Product Designer',
+            company: 'Notion — San Francisco, CA',
+            badge: 'Full-time',
             summary:
-              "Leading design for the Collaboration team, shipping features that help millions of teams work together. Built the commenting system from scratch, redesigned the notifications experience, and established accessibility standards across the product.",
+              'Leading design for the Collaboration team, shipping features that help millions of teams work together. Built the commenting system from scratch, redesigned the notifications experience, and established accessibility standards across the product.',
             bullets: [
-              "Increased monthly active commenters by 340% within 6 months of launch",
-              "Reduced notification fatigue by 45% through intelligent bundling and preference controls",
-              "Mentored 3 junior designers; two have since been promoted to mid-level",
+              'Increased monthly active commenters by 340% within 6 months of launch',
+              'Reduced notification fatigue by 45% through intelligent bundling and preference controls',
+              'Mentored 3 junior designers; two have since been promoted to mid-level',
             ],
           },
           {
-            period: "2018 — 2021",
-            role: "Product Designer",
-            company: "Stripe — San Francisco, CA",
-            badge: "Full-time",
+            period: '2018 — 2021',
+            role: 'Product Designer',
+            company: 'Stripe — San Francisco, CA',
+            badge: 'Full-time',
             summary:
-              "Designed products for Stripe Connect, the platform that powers marketplaces and multi-party payments. Focused on developer experience, dashboard redesigns, and onboarding flows for platforms like Shopify, Lyft, and Deliveroo.",
+              'Designed products for Stripe Connect, the platform that powers marketplaces and multi-party payments. Focused on developer experience, dashboard redesigns, and onboarding flows for platforms like Shopify, Lyft, and Deliveroo.',
             bullets: [
-              "Reduced platform onboarding time from 3 weeks to 3 days through automated workflows",
-              "Designed the Express Connect onboarding flow now used by 2M+ connected accounts",
+              'Reduced platform onboarding time from 3 weeks to 3 days through automated workflows',
+              'Designed the Express Connect onboarding flow now used by 2M+ connected accounts',
               "Contributed to Stripe's design system, adding 15+ components and establishing patterns",
             ],
           },
           {
-            period: "2016 — 2018",
-            role: "UX Designer",
-            company: "Dropbox — San Francisco, CA",
-            badge: "Full-time",
+            period: '2016 — 2018',
+            role: 'UX Designer',
+            company: 'Dropbox — San Francisco, CA',
+            badge: 'Full-time',
             summary:
               "Joined as the 5th designer on the Paper team, Dropbox's collaborative document editor. Shipped features for real-time collaboration, comment threads, and mobile editing. Later moved to the core Dropbox product to work on sharing and permissions.",
             bullets: [
-              "Shipped mobile Paper editor with 4.8★ App Store rating and 500K+ monthly active users",
-              "Redesigned sharing permissions, reducing support tickets by 28%",
+              'Shipped mobile Paper editor with 4.8★ App Store rating and 500K+ monthly active users',
+              'Redesigned sharing permissions, reducing support tickets by 28%',
             ],
           },
           {
-            period: "2014 — 2016",
-            role: "Junior Designer",
-            company: "IDEO — Palo Alto, CA",
-            badge: "Full-time",
+            period: '2014 — 2016',
+            role: 'Junior Designer',
+            company: 'IDEO — Palo Alto, CA',
+            badge: 'Full-time',
             summary:
               "Started my career at IDEO's Palo Alto studio, working across multiple client projects spanning healthcare, fintech, and consumer products. Learned human-centered design methodology and the value of rapid prototyping.",
             bullets: [
               "Led design research for a major bank's mobile app redesign, conducting 40+ user interviews",
-              "Co-designed a medication adherence app that improved patient compliance by 35%",
+              'Co-designed a medication adherence app that improved patient compliance by 35%',
             ],
           },
         ]
-    const educationHeading = props.experience?.educationHeading ?? "Education"
+    const educationHeading = props.experience?.educationHeading ?? 'Education'
     const education = props.experience?.education ?? {
-      period: "2010 — 2014",
-      degree: "B.S. in Product Design",
-      school: "Stanford University — Stanford, CA",
-      detail: "GPA: 3.8/4.0 • Minor in Computer Science • d.school fellow",
+      period: '2010 — 2014',
+      degree: 'B.S. in Product Design',
+      school: 'Stanford University — Stanford, CA',
+      detail: 'GPA: 3.8/4.0 • Minor in Computer Science • d.school fellow',
     }
 
-    const skillsHeading = props.skills?.heading ?? "Skills & Expertise"
+    const skillsHeading = props.skills?.heading ?? 'Skills & Expertise'
     const skillsDescription =
       props.skills?.description ??
-      "A comprehensive toolkit built over a decade of designing products at scale."
+      'A comprehensive toolkit built over a decade of designing products at scale.'
     const skillCategories = props.skills?.categories?.length
       ? props.skills.categories
       : [
           {
-            title: "Design Tools",
+            title: 'Design Tools',
             skills: [
-              { name: "Figma", level: "Expert" },
-              { name: "Sketch", level: "Expert" },
-              { name: "Framer", level: "Advanced" },
-              { name: "Principle", level: "Advanced" },
-              { name: "Adobe Creative Suite", level: "Proficient" },
+              { name: 'Figma', level: 'Expert' },
+              { name: 'Sketch', level: 'Expert' },
+              { name: 'Framer', level: 'Advanced' },
+              { name: 'Principle', level: 'Advanced' },
+              { name: 'Adobe Creative Suite', level: 'Proficient' },
             ],
           },
           {
-            title: "Product Strategy",
+            title: 'Product Strategy',
             skills: [
-              { name: "Design Systems", level: "Expert" },
-              { name: "User Research", level: "Expert" },
-              { name: "Product Analytics", level: "Advanced" },
-              { name: "A/B Testing", level: "Advanced" },
-              { name: "Roadmapping", level: "Proficient" },
+              { name: 'Design Systems', level: 'Expert' },
+              { name: 'User Research', level: 'Expert' },
+              { name: 'Product Analytics', level: 'Advanced' },
+              { name: 'A/B Testing', level: 'Advanced' },
+              { name: 'Roadmapping', level: 'Proficient' },
             ],
           },
           {
-            title: "Technical",
+            title: 'Technical',
             skills: [
-              { name: "HTML/CSS", level: "Expert" },
-              { name: "JavaScript", level: "Proficient" },
-              { name: "React", level: "Proficient" },
-              { name: "Git/GitHub", level: "Advanced" },
-              { name: "Accessibility (WCAG)", level: "Expert" },
+              { name: 'HTML/CSS', level: 'Expert' },
+              { name: 'JavaScript', level: 'Proficient' },
+              { name: 'React', level: 'Proficient' },
+              { name: 'Git/GitHub', level: 'Advanced' },
+              { name: 'Accessibility (WCAG)', level: 'Expert' },
             ],
           },
         ]
     const extrasHeading =
-      props.skills?.extrasHeading ?? "Additional Capabilities"
+      props.skills?.extrasHeading ?? 'Additional Capabilities'
     const extras = props.skills?.extras?.length
       ? props.skills.extras
       : [
-          "Prototyping",
-          "Wireframing",
-          "Information Architecture",
-          "Interaction Design",
-          "Visual Design",
-          "Usability Testing",
-          "Workshop Facilitation",
-          "Design Sprint",
-          "Mentoring",
-          "Cross-functional Collaboration",
-          "Design Ops",
-          "Motion Design",
-          "Illustration",
-          "3D Modeling (Blender)",
+          'Prototyping',
+          'Wireframing',
+          'Information Architecture',
+          'Interaction Design',
+          'Visual Design',
+          'Usability Testing',
+          'Workshop Facilitation',
+          'Design Sprint',
+          'Mentoring',
+          'Cross-functional Collaboration',
+          'Design Ops',
+          'Motion Design',
+          'Illustration',
+          '3D Modeling (Blender)',
         ]
 
-    const projectsHeading = props.projects?.heading ?? "Featured Projects"
+    const projectsHeading = props.projects?.heading ?? 'Featured Projects'
     const projectsDescription =
       props.projects?.description ??
-      "Selected case studies from my work at Notion, Stripe, and Dropbox."
+      'Selected case studies from my work at Notion, Stripe, and Dropbox.'
     const projectItems = props.projects?.items?.length
       ? props.projects.items
       : [
           {
-            eyebrow: "Notion — 2023",
-            title: "Collaborative Comments",
+            eyebrow: 'Notion — 2023',
+            title: 'Collaborative Comments',
             description:
               "Redesigned Notion's commenting experience to support threaded discussions, @mentions, and rich media. The project involved complex state management for real-time updates and careful consideration of notification patterns to avoid overwhelming users.",
-            tags: ["Product Design", "Interaction Design", "User Research"],
-            cta: "View case study",
+            tags: ['Product Design', 'Interaction Design', 'User Research'],
+            cta: 'View case study',
             imageAlt:
-              "Interface mockup of a collaborative document editor with inline comment threads and user avatars in the margin",
+              'Interface mockup of a collaborative document editor with inline comment threads and user avatars in the margin',
           },
           {
-            eyebrow: "Stripe — 2020",
-            title: "Connect Dashboard",
+            eyebrow: 'Stripe — 2020',
+            title: 'Connect Dashboard',
             description:
               "Designed the merchant-facing dashboard for Stripe Connect, giving platform businesses visibility into their sellers' performance. Created modular components that scaled across different use cases from marketplaces to SaaS platforms.",
-            tags: ["Dashboard Design", "Data Visualization", "Design System"],
-            cta: "View case study",
+            tags: ['Dashboard Design', 'Data Visualization', 'Design System'],
+            cta: 'View case study',
             imageAlt:
-              "Payment analytics dashboard with charts, transaction tables and a clean minimalist data visualization layout",
+              'Payment analytics dashboard with charts, transaction tables and a clean minimalist data visualization layout',
           },
           {
-            eyebrow: "Dropbox — 2017",
-            title: "Paper Mobile",
+            eyebrow: 'Dropbox — 2017',
+            title: 'Paper Mobile',
             description:
               "Led the design of Dropbox Paper's iOS and Android apps, bringing the collaborative document editor to mobile. Balanced feature parity with mobile-specific optimizations, creating touch-friendly interactions for complex formatting.",
-            tags: ["Mobile Design", "iOS & Android", "Touch Interaction"],
-            cta: "View case study",
+            tags: ['Mobile Design', 'iOS & Android', 'Touch Interaction'],
+            cta: 'View case study',
             imageAlt:
-              "Mobile phone displaying a document editing app interface with clean typography and collaborative editing features",
+              'Mobile phone displaying a document editing app interface with clean typography and collaborative editing features',
           },
         ]
 
-    const testimonialsHeading = props.testimonials?.heading ?? "Kind Words"
+    const testimonialsHeading = props.testimonials?.heading ?? 'Kind Words'
     const testimonialsDescription =
       props.testimonials?.description ??
       "Feedback from colleagues and collaborators I've worked with over the years."
@@ -459,34 +460,34 @@ export const ResumeCvKimiPage = defineCapsule({
           {
             quote:
               "Sarah's ability to translate complex product requirements into intuitive designs is unmatched. She doesn't just make things look good—she makes them work better. The commenting feature she led at Notion became our highest-user-engagement feature within months.",
-            name: "Ivan Zhao",
-            role: "CEO & Co-founder, Notion",
+            name: 'Ivan Zhao',
+            role: 'CEO & Co-founder, Notion',
             avatarAlt:
-              "Professional headshot of a tech CEO with short black hair and glasses wearing a black turtleneck",
+              'Professional headshot of a tech CEO with short black hair and glasses wearing a black turtleneck',
           },
           {
             quote:
-              "Working with Sarah on the Connect Dashboard was a masterclass in product thinking. She has this rare combination of strategic vision and pixel-perfect execution. Every interaction she designed had purpose and polish.",
-            name: "Patrick Collison",
-            role: "Co-founder & CEO, Stripe",
+              'Working with Sarah on the Connect Dashboard was a masterclass in product thinking. She has this rare combination of strategic vision and pixel-perfect execution. Every interaction she designed had purpose and polish.',
+            name: 'Patrick Collison',
+            role: 'Co-founder & CEO, Stripe',
             avatarAlt:
-              "Professional headshot of a startup co-founder with short brown hair and a friendly expression wearing a casual button-down shirt",
+              'Professional headshot of a startup co-founder with short brown hair and a friendly expression wearing a casual button-down shirt',
           },
           {
             quote:
               "Sarah was instrumental in building out our design system at Dropbox. She thinks about scale, accessibility, and developer handoff in ways that most designers don't. Her documentation is as thoughtful as her designs.",
-            name: "Jennifer Chen",
-            role: "VP of Design, Dropbox",
+            name: 'Jennifer Chen',
+            role: 'VP of Design, Dropbox',
             avatarAlt:
-              "Professional headshot of a design director with long dark hair and a warm smile wearing professional attire",
+              'Professional headshot of a design director with long dark hair and a warm smile wearing professional attire',
           },
           {
             quote:
-              "As a mentor, Sarah is patient, direct, and incredibly insightful. She helped me grow from a junior designer to a confident product thinker. Her feedback always cut to the core of the problem without ever feeling harsh.",
-            name: "David Kim",
-            role: "Product Designer, Notion",
+              'As a mentor, Sarah is patient, direct, and incredibly insightful. She helped me grow from a junior designer to a confident product thinker. Her feedback always cut to the core of the problem without ever feeling harsh.',
+            name: 'David Kim',
+            role: 'Product Designer, Notion',
             avatarAlt:
-              "Professional headshot of a product designer with short black hair and a friendly expression wearing a casual sweater",
+              'Professional headshot of a product designer with short black hair and a friendly expression wearing a casual sweater',
           },
         ]
 
@@ -497,23 +498,23 @@ export const ResumeCvKimiPage = defineCapsule({
     const contactChannels = props.contact?.channels?.length
       ? props.contact.channels
       : [
-          { kind: "email", value: "sarah@sarahchen.design" },
-          { kind: "phone", value: "+1 (415) 555-1234" },
-          { kind: "linkedin", value: "linkedin.com/in/sarahchen" },
-          { kind: "github", value: "github.com/sarahchen" },
-          { kind: "dribbble", value: "dribbble.com/sarahchen" },
+          { kind: 'email', value: 'sarah@sarahchen.design' },
+          { kind: 'phone', value: '+1 (415) 555-1234' },
+          { kind: 'linkedin', value: 'linkedin.com/in/sarahchen' },
+          { kind: 'github', value: 'github.com/sarahchen' },
+          { kind: 'dribbble', value: 'dribbble.com/sarahchen' },
         ]
-    const contactFormHeading = props.contact?.formHeading ?? "Send a message"
-    const contactSubmit = props.contact?.submit ?? "Send message"
+    const contactFormHeading = props.contact?.formHeading ?? 'Send a message'
+    const contactSubmit = props.contact?.submit ?? 'Send message'
 
-    const footerTagline = props.footer?.tagline ?? "Senior Product Designer"
-    const footerNote = props.footer?.note ?? "All rights reserved."
+    const footerTagline = props.footer?.tagline ?? 'Senior Product Designer'
+    const footerNote = props.footer?.note ?? 'All rights reserved.'
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["LinkedIn", "Twitter", "GitHub", "Dribbble"]
+      : ['LinkedIn', 'Twitter', 'GitHub', 'Dribbble']
     const footerLinks = props.footer?.links?.length
       ? props.footer.links
-      : ["Privacy Policy", "Resume PDF"]
+      : ['Privacy Policy', 'Resume PDF']
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
@@ -585,10 +586,10 @@ export const ResumeCvKimiPage = defineCapsule({
       const base = {
         width: 20,
         height: 20,
-        viewBox: "0 0 24 24",
-        "aria-hidden": true as const,
+        viewBox: '0 0 24 24',
+        'aria-hidden': true as const,
       }
-      if (k === "email")
+      if (k === 'email')
         return (
           <svg {...base} fill="none" stroke="currentColor" strokeWidth={2}>
             <path
@@ -598,7 +599,7 @@ export const ResumeCvKimiPage = defineCapsule({
             />
           </svg>
         )
-      if (k === "phone")
+      if (k === 'phone')
         return (
           <svg {...base} fill="none" stroke="currentColor" strokeWidth={2}>
             <path
@@ -608,19 +609,19 @@ export const ResumeCvKimiPage = defineCapsule({
             />
           </svg>
         )
-      if (k === "linkedin")
+      if (k === 'linkedin')
         return (
           <svg {...base} fill="currentColor">
             <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
           </svg>
         )
-      if (k === "github")
+      if (k === 'github')
         return (
           <svg {...base} fill="currentColor">
             <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
           </svg>
         )
-      if (k === "twitter")
+      if (k === 'twitter')
         return (
           <svg {...base} fill="currentColor">
             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -635,12 +636,12 @@ export const ResumeCvKimiPage = defineCapsule({
     }
 
     const inputCls =
-      "w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
+      'w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring'
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -830,7 +831,9 @@ export const ResumeCvKimiPage = defineCapsule({
                                 </p>
                               </div>
                               <p className="text-xs text-muted-foreground">
-                                {new Date(inquiry.createdAt).toLocaleDateString()}
+                                {new Date(
+                                  inquiry.createdAt,
+                                ).toLocaleDateString()}
                               </p>
                             </div>
                             <p className="text-sm text-muted-foreground">
@@ -1060,8 +1063,8 @@ export const ResumeCvKimiPage = defineCapsule({
                   <div
                     key={`${item.role}-${item.period}`}
                     className={cn(
-                      "grid gap-6 md:grid-cols-12",
-                      i < expItems.length - 1 && "border-b border-border pb-12",
+                      'grid gap-6 md:grid-cols-12',
+                      i < expItems.length - 1 && 'border-b border-border pb-12',
                     )}
                   >
                     <div className="md:col-span-3">
@@ -1075,7 +1078,9 @@ export const ResumeCvKimiPage = defineCapsule({
                           <h3 className="text-xl font-semibold text-foreground">
                             {item.role}
                           </h3>
-                          <p className="text-muted-foreground">{item.company}</p>
+                          <p className="text-muted-foreground">
+                            {item.company}
+                          </p>
                         </div>
                         <span className="whitespace-nowrap rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
                           {item.badge}
@@ -1202,7 +1207,7 @@ export const ResumeCvKimiPage = defineCapsule({
                   const ImageBlock = (
                     <div
                       className={cn(
-                        imageFirst ? "order-1" : "order-1 md:order-2",
+                        imageFirst ? 'order-1' : 'order-1 md:order-2',
                       )}
                     >
                       <div className="relative aspect-video overflow-hidden rounded-lg border border-border bg-muted">
@@ -1237,7 +1242,7 @@ export const ResumeCvKimiPage = defineCapsule({
                   const TextBlock = (
                     <div
                       className={cn(
-                        imageFirst ? "order-2" : "order-2 md:order-1",
+                        imageFirst ? 'order-2' : 'order-2 md:order-1',
                       )}
                     >
                       <span className="mb-2 block text-sm font-medium text-muted-foreground">
@@ -1320,7 +1325,9 @@ export const ResumeCvKimiPage = defineCapsule({
                         <p className="font-semibold text-card-foreground">
                           {t.name}
                         </p>
-                        <p className="text-sm text-muted-foreground">{t.role}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {t.role}
+                        </p>
                       </div>
                     </div>
                   </blockquote>
@@ -1366,13 +1373,19 @@ export const ResumeCvKimiPage = defineCapsule({
                       e.preventDefault()
                       const form = e.currentTarget
                       const name = (
-                        form.elements.namedItem('resume-name') as HTMLInputElement
+                        form.elements.namedItem(
+                          'resume-name',
+                        ) as HTMLInputElement
                       ).value
                       const email = (
-                        form.elements.namedItem('resume-email') as HTMLInputElement
+                        form.elements.namedItem(
+                          'resume-email',
+                        ) as HTMLInputElement
                       ).value
                       const message = (
-                        form.elements.namedItem('resume-message') as HTMLTextAreaElement
+                        form.elements.namedItem(
+                          'resume-message',
+                        ) as HTMLTextAreaElement
                       ).value
 
                       void submitInquiry(name, email, message)
@@ -1425,7 +1438,7 @@ export const ResumeCvKimiPage = defineCapsule({
                         rows={4}
                         required
                         placeholder="Tell me about your project..."
-                        className={cn(inputCls, "resize-none")}
+                        className={cn(inputCls, 'resize-none')}
                       />
                     </div>
                     <button

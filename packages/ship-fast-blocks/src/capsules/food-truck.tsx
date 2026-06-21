@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -13,15 +13,14 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * FoodTruckKimiPage — a complete, self-contained gourmet FOOD-TRUCK / street-food
@@ -45,9 +44,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * render the full page with no props at all.
  */
 export const FoodTruckKimiPage = defineCapsule({
-  name: "FoodTruckKimiPage",
+  name: 'FoodTruckKimiPage',
   description:
-    "Complete gourmet FOOD-TRUCK / street-food landing page with a warm, editorial cream-and-stone aesthetic. Includes a split hero (now-serving location pill, stacked chef-made headline, rating + open-hours, dish photo with a floating chef-owner card), a 3-up why-us feature strip (farm-to-street, dietary-friendly, catering), a rotating seasonal MENU with multiple priced cards (signature tacos, bowls & salads, burgers & sandwiches, sides & sweets) including V/VG/GF dietary labels, a weekly LOCATIONS schedule grid of day tiles with addresses and times plus a private-events banner, a masonry food GALLERY, a dark CATERING band with a real request-a-quote form (name, email, date, guest count, event type, message), star testimonials with press logos, a stats strip (tacos served, reviews, events catered, years), an accordion FAQ, a phone/email contact CTA, and a multi-column footer with menu/company/social links. Use as the ROOT/home page for food trucks, street-food vendors, taco/burger/bowl concepts, pop-up kitchens, catering businesses, or any chef-driven mobile-food brand wanting menu + locations + catering + social proof on one warm, appetizing page. Supply content only — brand, nav, hero, features, menu, locations, gallery, catering, testimonials, stats, faq, cta, footer; the block owns all layout and styling.",
+    'Complete gourmet FOOD-TRUCK / street-food landing page with a warm, editorial cream-and-stone aesthetic. Includes a split hero (now-serving location pill, stacked chef-made headline, rating + open-hours, dish photo with a floating chef-owner card), a 3-up why-us feature strip (farm-to-street, dietary-friendly, catering), a rotating seasonal MENU with multiple priced cards (signature tacos, bowls & salads, burgers & sandwiches, sides & sweets) including V/VG/GF dietary labels, a weekly LOCATIONS schedule grid of day tiles with addresses and times plus a private-events banner, a masonry food GALLERY, a dark CATERING band with a real request-a-quote form (name, email, date, guest count, event type, message), star testimonials with press logos, a stats strip (tacos served, reviews, events catered, years), an accordion FAQ, a phone/email contact CTA, and a multi-column footer with menu/company/social links. Use as the ROOT/home page for food trucks, street-food vendors, taco/burger/bowl concepts, pop-up kitchens, catering businesses, or any chef-driven mobile-food brand wanting menu + locations + catering + social proof on one warm, appetizing page. Supply content only — brand, nav, hero, features, menu, locations, gallery, catering, testimonials, stats, faq, cta, footer; the block owns all layout and styling.',
   props: z.object({
     /** Brand / food-truck name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -270,7 +269,7 @@ export const FoodTruckKimiPage = defineCapsule({
       eventType: '',
       message: '',
     })
-    const brand = props.brand ?? "Curbside Kitchen"
+    const brand = props.brand ?? 'Curbside Kitchen'
 
     const cateringRequests = lakebed.useQuery('cateringRequests')
     const favoriteItemNames = lakebed.useQuery('favoriteItemNames')
@@ -328,49 +327,49 @@ export const FoodTruckKimiPage = defineCapsule({
     }
     const nav = props.nav?.length
       ? props.nav
-      : ["Menu", "Locations", "Catering", "FAQ", "Book Catering"]
+      : ['Menu', 'Locations', 'Catering', 'FAQ', 'Book Catering']
 
-    const heroBadge = props.hero?.badge ?? "Now serving Los Angeles"
+    const heroBadge = props.hero?.badge ?? 'Now serving Los Angeles'
     const heroHeadingLines = props.hero?.headingLines?.length
       ? props.hero.headingLines
-      : ["Street food.", "Chef-made.", "Served fresh."]
+      : ['Street food.', 'Chef-made.', 'Served fresh.']
     const heroSub =
       props.hero?.subheading ??
-      "Chef Marcus Chen brings 15 years of fine dining experience to the streets. Seasonal ingredients, bold flavors, zero pretension."
+      'Chef Marcus Chen brings 15 years of fine dining experience to the streets. Seasonal ingredients, bold flavors, zero pretension.'
     const heroPrimary = props.hero?.primaryCta ?? "View Today's Menu"
-    const heroSecondary = props.hero?.secondaryCta ?? "Find Us"
-    const heroRating = props.hero?.rating ?? "4.9/5 (2,847 reviews)"
-    const heroHours = props.hero?.hours ?? "Open today 11am–8pm"
+    const heroSecondary = props.hero?.secondaryCta ?? 'Find Us'
+    const heroRating = props.hero?.rating ?? '4.9/5 (2,847 reviews)'
+    const heroHours = props.hero?.hours ?? 'Open today 11am–8pm'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Gourmet tacos being prepared on a food truck griddle with fresh ingredients"
-    const chefName = props.hero?.chefName ?? "Chef Marcus Chen"
-    const chefRole = props.hero?.chefRole ?? "Executive Chef & Owner"
+      'Gourmet tacos being prepared on a food truck griddle with fresh ingredients'
+    const chefName = props.hero?.chefName ?? 'Chef Marcus Chen'
+    const chefRole = props.hero?.chefRole ?? 'Executive Chef & Owner'
     const chefAvatarAlt =
       props.hero?.chefAvatarAlt ??
-      "Professional headshot of Chef Marcus Chen in his kitchen uniform"
+      'Professional headshot of Chef Marcus Chen in his kitchen uniform'
 
     const features = props.features?.length
       ? props.features
       : [
           {
-            title: "Farm-to-Street",
+            title: 'Farm-to-Street',
             description:
-              "We source 80% of our ingredients from California farms within 150 miles. Seasonal menus change monthly.",
+              'We source 80% of our ingredients from California farms within 150 miles. Seasonal menus change monthly.',
           },
           {
-            title: "Dietary Friendly",
+            title: 'Dietary Friendly',
             description:
-              "Extensive vegan, vegetarian, and gluten-free options. Every item clearly labeled with allergen info.",
+              'Extensive vegan, vegetarian, and gluten-free options. Every item clearly labeled with allergen info.',
           },
           {
-            title: "Full-Service Catering",
+            title: 'Full-Service Catering',
             description:
-              "From office lunches to weddings. We bring the truck or drop off platters. Serving up to 500 guests.",
+              'From office lunches to weddings. We bring the truck or drop off platters. Serving up to 500 guests.',
           },
         ]
 
-    const menuEyebrow = props.menu?.eyebrow ?? "June Menu"
+    const menuEyebrow = props.menu?.eyebrow ?? 'June Menu'
     const menuHeading = props.menu?.heading ?? "What's Cooking"
     const menuDesc =
       props.menu?.description ??
@@ -379,129 +378,129 @@ export const FoodTruckKimiPage = defineCapsule({
       ? props.menu.categories
       : [
           {
-            title: "Signature Tacos",
-            badge: "Most Popular",
+            title: 'Signature Tacos',
+            badge: 'Most Popular',
             imageAlt:
-              "Korean short rib tacos with kimchi slaw on corn tortillas",
+              'Korean short rib tacos with kimchi slaw on corn tortillas',
             items: [
               {
-                name: "Korean Short Rib",
+                name: 'Korean Short Rib',
                 description:
-                  "Braised galbi, kimchi slaw, cilantro, gochujang crema",
-                price: "$14",
+                  'Braised galbi, kimchi slaw, cilantro, gochujang crema',
+                price: '$14',
               },
               {
-                name: "Baja Fish",
-                description: "Crispy cod, cabbage, pico, chipotle aioli (GF)",
-                price: "$12",
+                name: 'Baja Fish',
+                description: 'Crispy cod, cabbage, pico, chipotle aioli (GF)',
+                price: '$12',
               },
               {
-                name: "Roasted Cauliflower",
+                name: 'Roasted Cauliflower',
                 description:
-                  "Tahini dressing, pickled onion, toasted almonds (V, GF)",
-                price: "$11",
-                tag: "VG",
+                  'Tahini dressing, pickled onion, toasted almonds (V, GF)',
+                price: '$11',
+                tag: 'VG',
               },
               {
-                name: "Carnitas",
-                description: "Slow-braised pork, salsa verde, queso fresco",
-                price: "$13",
+                name: 'Carnitas',
+                description: 'Slow-braised pork, salsa verde, queso fresco',
+                price: '$13',
               },
             ],
           },
           {
-            title: "Bowls & Salads",
+            title: 'Bowls & Salads',
             imageAlt:
-              "Loaded grain bowl with quinoa, roasted vegetables, and tahini dressing",
+              'Loaded grain bowl with quinoa, roasted vegetables, and tahini dressing',
             items: [
               {
-                name: "Mediterranean Bowl",
+                name: 'Mediterranean Bowl',
                 description:
-                  "Quinoa, falafel, hummus, cucumber, tomato, tahini (V)",
-                price: "$15",
-                tag: "VG",
+                  'Quinoa, falafel, hummus, cucumber, tomato, tahini (V)',
+                price: '$15',
+                tag: 'VG',
               },
               {
-                name: "Poke Bowl",
+                name: 'Poke Bowl',
                 description:
-                  "Sushi rice, ahi tuna, avocado, edamame, spicy mayo (GF)",
-                price: "$16",
+                  'Sushi rice, ahi tuna, avocado, edamame, spicy mayo (GF)',
+                price: '$16',
               },
               {
-                name: "Grilled Chicken Caesar",
+                name: 'Grilled Chicken Caesar',
                 description:
-                  "Romaine, parmesan, sourdough croutons, house dressing",
-                price: "$13",
+                  'Romaine, parmesan, sourdough croutons, house dressing',
+                price: '$13',
               },
               {
-                name: "Grain Bowl",
+                name: 'Grain Bowl',
                 description:
-                  "Farro, roasted seasonal veg, lemon herb vinaigrette (V, GF)",
-                price: "$14",
-                tag: "VG",
+                  'Farro, roasted seasonal veg, lemon herb vinaigrette (V, GF)',
+                price: '$14',
+                tag: 'VG',
               },
             ],
           },
           {
-            title: "Burgers & Sandwiches",
+            title: 'Burgers & Sandwiches',
             wide: true,
             imageAlt:
-              "Handheld smash burger with melted cheese and caramelized onions",
+              'Handheld smash burger with melted cheese and caramelized onions',
             items: [
               {
-                name: "Smash Burger",
+                name: 'Smash Burger',
                 description:
-                  "Double patty, american cheese, caramelized onions, special sauce",
-                price: "$15",
+                  'Double patty, american cheese, caramelized onions, special sauce',
+                price: '$15',
               },
               {
-                name: "Fried Chicken Sandwich",
-                description: "Buttermilk brined, pickles, slaw, spicy honey",
-                price: "$14",
+                name: 'Fried Chicken Sandwich',
+                description: 'Buttermilk brined, pickles, slaw, spicy honey',
+                price: '$14',
               },
               {
-                name: "Grilled Cheese",
+                name: 'Grilled Cheese',
                 description:
-                  "Sourdough, aged cheddar, gruyere, tomato soup dip",
-                price: "$11",
-                tag: "V",
+                  'Sourdough, aged cheddar, gruyere, tomato soup dip',
+                price: '$11',
+                tag: 'V',
               },
               {
-                name: "BLT",
+                name: 'BLT',
                 description:
-                  "Thick-cut bacon, heirloom tomato, butter lettuce, aioli",
-                price: "$13",
+                  'Thick-cut bacon, heirloom tomato, butter lettuce, aioli',
+                price: '$13',
               },
             ],
           },
           {
-            title: "Sides & Sweets",
-            imageAlt: "Assorted cookies and brownies on a rustic wooden board",
+            title: 'Sides & Sweets',
+            imageAlt: 'Assorted cookies and brownies on a rustic wooden board',
             items: [
               {
-                name: "Truffle Fries",
-                description: "Parmesan, truffle oil, herbs (V)",
-                price: "$6",
+                name: 'Truffle Fries',
+                description: 'Parmesan, truffle oil, herbs (V)',
+                price: '$6',
               },
               {
-                name: "Street Corn",
-                description: "Elote style, cotija, chili, lime (V, GF)",
-                price: "$5",
+                name: 'Street Corn',
+                description: 'Elote style, cotija, chili, lime (V, GF)',
+                price: '$5',
               },
               {
-                name: "Daily Cookie",
-                description: "Baked fresh each morning (V option)",
-                price: "$4",
+                name: 'Daily Cookie',
+                description: 'Baked fresh each morning (V option)',
+                price: '$4',
               },
             ],
           },
         ]
     const menuLegend = props.menu?.legend?.length
       ? props.menu.legend
-      : ["VG = Vegan", "V = Vegetarian", "GF = Gluten-Free"]
+      : ['VG = Vegan', 'V = Vegetarian', 'GF = Gluten-Free']
 
-    const locEyebrow = props.locations?.eyebrow ?? "Weekly Schedule"
-    const locHeading = props.locations?.heading ?? "Find the Truck"
+    const locEyebrow = props.locations?.eyebrow ?? 'Weekly Schedule'
+    const locHeading = props.locations?.heading ?? 'Find the Truck'
     const locDesc =
       props.locations?.description ??
       "We rotate through LA's best neighborhoods. Check our live location tracker on Instagram."
@@ -509,249 +508,249 @@ export const FoodTruckKimiPage = defineCapsule({
       ? props.locations.days
       : [
           {
-            initial: "M",
-            day: "Monday",
-            area: "Downtown Arts District",
+            initial: 'M',
+            day: 'Monday',
+            area: 'Downtown Arts District',
             rows: [
-              { label: "Location", value: "Traction Ave & 3rd" },
-              { label: "Time", value: "11:00 AM – 2:30 PM" },
-              { label: "Evening", value: "5:00 – 9:00 PM" },
+              { label: 'Location', value: 'Traction Ave & 3rd' },
+              { label: 'Time', value: '11:00 AM – 2:30 PM' },
+              { label: 'Evening', value: '5:00 – 9:00 PM' },
             ],
           },
           {
-            initial: "T",
-            day: "Tuesday",
-            area: "Culver City",
+            initial: 'T',
+            day: 'Tuesday',
+            area: 'Culver City',
             rows: [
-              { label: "Location", value: "Culver Steps Plaza" },
-              { label: "Time", value: "11:00 AM – 2:30 PM" },
-              { label: "Evening", value: "5:30 – 8:30 PM" },
+              { label: 'Location', value: 'Culver Steps Plaza' },
+              { label: 'Time', value: '11:00 AM – 2:30 PM' },
+              { label: 'Evening', value: '5:30 – 8:30 PM' },
             ],
           },
           {
-            initial: "W",
-            day: "Wednesday",
-            area: "Santa Monica",
+            initial: 'W',
+            day: 'Wednesday',
+            area: 'Santa Monica',
             rows: [
-              { label: "Location", value: "Main St & Ocean Park" },
-              { label: "Time", value: "11:00 AM – 3:00 PM" },
-              { label: "Evening", value: "5:00 – 8:00 PM" },
+              { label: 'Location', value: 'Main St & Ocean Park' },
+              { label: 'Time', value: '11:00 AM – 3:00 PM' },
+              { label: 'Evening', value: '5:00 – 8:00 PM' },
             ],
           },
           {
-            initial: "T",
-            day: "Thursday",
-            area: "Silver Lake",
+            initial: 'T',
+            day: 'Thursday',
+            area: 'Silver Lake',
             rows: [
-              { label: "Location", value: "Sunset Junction" },
-              { label: "Time", value: "11:30 AM – 2:30 PM" },
-              { label: "Evening", value: "6:00 – 10:00 PM" },
+              { label: 'Location', value: 'Sunset Junction' },
+              { label: 'Time', value: '11:30 AM – 2:30 PM' },
+              { label: 'Evening', value: '6:00 – 10:00 PM' },
             ],
           },
           {
-            initial: "F",
-            day: "Friday",
-            area: "DTLA Financial District",
+            initial: 'F',
+            day: 'Friday',
+            area: 'DTLA Financial District',
             rows: [
-              { label: "Location", value: "7th & Figueroa" },
-              { label: "Time", value: "11:00 AM – 2:30 PM" },
-              { label: "Evening", value: "5:00 – 9:00 PM" },
+              { label: 'Location', value: '7th & Figueroa' },
+              { label: 'Time', value: '11:00 AM – 2:30 PM' },
+              { label: 'Evening', value: '5:00 – 9:00 PM' },
             ],
           },
           {
-            initial: "S",
-            day: "Saturday",
-            area: "Smorgasburg LA",
+            initial: 'S',
+            day: 'Saturday',
+            area: 'Smorgasburg LA',
             rows: [
-              { label: "Location", value: "Row DTLA" },
-              { label: "Time", value: "10:00 AM – 4:00 PM" },
-              { label: "Note", value: "All day event" },
+              { label: 'Location', value: 'Row DTLA' },
+              { label: 'Time', value: '10:00 AM – 4:00 PM' },
+              { label: 'Note', value: 'All day event' },
             ],
           },
         ]
     const locBannerTitle =
-      props.locations?.bannerTitle ?? "Sunday: Private Events Only"
+      props.locations?.bannerTitle ?? 'Sunday: Private Events Only'
     const locBannerNote =
-      props.locations?.bannerNote ?? "Available for catering bookings"
-    const locBannerCta = props.locations?.bannerCta ?? "Book Us"
+      props.locations?.bannerNote ?? 'Available for catering bookings'
+    const locBannerCta = props.locations?.bannerCta ?? 'Book Us'
 
-    const galleryEyebrow = props.gallery?.eyebrow ?? "The Experience"
-    const galleryHeading = props.gallery?.heading ?? "Gallery"
+    const galleryEyebrow = props.gallery?.eyebrow ?? 'The Experience'
+    const galleryHeading = props.gallery?.heading ?? 'Gallery'
     const galleryAlts = props.gallery?.imageAlts?.length
       ? props.gallery.imageAlts
       : [
-          "Close-up of chef plating gourmet street tacos with precision",
-          "Vibrant fresh salad bowl with avocado and colorful vegetables",
-          "Golden crispy fried chicken sandwich on brioche bun",
-          "Food truck serving window with steam rising from fresh food",
-          "Hand holding loaded fries with cheese and toppings",
-          "Happy customers lining up at a food truck on a sunny day",
+          'Close-up of chef plating gourmet street tacos with precision',
+          'Vibrant fresh salad bowl with avocado and colorful vegetables',
+          'Golden crispy fried chicken sandwich on brioche bun',
+          'Food truck serving window with steam rising from fresh food',
+          'Hand holding loaded fries with cheese and toppings',
+          'Happy customers lining up at a food truck on a sunny day',
         ]
 
-    const cateringEyebrow = props.catering?.eyebrow ?? "Private Events"
-    const cateringHeading = props.catering?.heading ?? "Catering Services"
+    const cateringEyebrow = props.catering?.eyebrow ?? 'Private Events'
+    const cateringHeading = props.catering?.heading ?? 'Catering Services'
     const cateringDesc =
       props.catering?.description ??
-      "Bring the Curbside Kitchen experience to your event. We handle everything from intimate gatherings to corporate celebrations up to 500 guests."
+      'Bring the Curbside Kitchen experience to your event. We handle everything from intimate gatherings to corporate celebrations up to 500 guests.'
     const cateringOptions = props.catering?.options?.length
       ? props.catering.options
       : [
           {
-            title: "Full-Service Truck",
+            title: 'Full-Service Truck',
             description:
-              "We bring the full truck setup, cook fresh on-site, serve your guests",
+              'We bring the full truck setup, cook fresh on-site, serve your guests',
           },
           {
-            title: "Drop-Off Catering",
+            title: 'Drop-Off Catering',
             description:
-              "Pre-packed meals delivered hot, perfect for office lunches",
+              'Pre-packed meals delivered hot, perfect for office lunches',
           },
           {
-            title: "Buffet Setup",
+            title: 'Buffet Setup',
             description:
-              "Self-serve taco bars, bowl stations, full service included",
+              'Self-serve taco bars, bowl stations, full service included',
           },
         ]
     const cateringTags = props.catering?.tags?.length
       ? props.catering.tags
-      : ["Corporate Events", "Weddings", "Birthdays", "Festivals"]
-    const cateringFormTitle = props.catering?.formTitle ?? "Request a Quote"
+      : ['Corporate Events', 'Weddings', 'Birthdays', 'Festivals']
+    const cateringFormTitle = props.catering?.formTitle ?? 'Request a Quote'
     const guestCounts = props.catering?.guestCounts?.length
       ? props.catering.guestCounts
-      : ["25-50", "50-100", "100-200", "200-500"]
+      : ['25-50', '50-100', '100-200', '200-500']
     const eventTypes = props.catering?.eventTypes?.length
       ? props.catering.eventTypes
       : [
-          "Corporate Lunch",
-          "Wedding",
-          "Birthday Party",
-          "Festival / Public Event",
-          "Other",
+          'Corporate Lunch',
+          'Wedding',
+          'Birthday Party',
+          'Festival / Public Event',
+          'Other',
         ]
-    const cateringSubmit = props.catering?.submit ?? "Request Quote"
+    const cateringSubmit = props.catering?.submit ?? 'Request Quote'
 
-    const testEyebrow = props.testimonials?.eyebrow ?? "Reviews"
-    const testHeading = props.testimonials?.heading ?? "What People Say"
+    const testEyebrow = props.testimonials?.eyebrow ?? 'Reviews'
+    const testHeading = props.testimonials?.heading ?? 'What People Say'
     const testItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "Had them cater our company lunch for 80 people. The Korean short rib tacos were the hit of the day. Everyone asked where we found them. Will definitely book again!",
-            name: "Sarah Chen",
-            role: "VP Marketing, TechFlow Inc.",
+              'Had them cater our company lunch for 80 people. The Korean short rib tacos were the hit of the day. Everyone asked where we found them. Will definitely book again!',
+            name: 'Sarah Chen',
+            role: 'VP Marketing, TechFlow Inc.',
             avatarAlt:
-              "Professional headshot of Sarah Chen, a marketing executive",
+              'Professional headshot of Sarah Chen, a marketing executive',
           },
           {
             quote:
               "Best food truck in LA hands down. I've been tracking them for months. The cauliflower tacos are so good I dream about them. Worth driving across town for.",
-            name: "Marcus Johnson",
-            role: "Food Blogger @LAEats",
-            avatarAlt: "Professional headshot of Marcus Johnson, a food blogger",
+            name: 'Marcus Johnson',
+            role: 'Food Blogger @LAEats',
+            avatarAlt:
+              'Professional headshot of Marcus Johnson, a food blogger',
           },
           {
             quote:
-              "Hired them for my wedding reception. They were professional, punctual, and the food was absolutely incredible. Our guests are still talking about it three months later!",
-            name: "Emily Rodriguez",
-            role: "Wedding Client",
-            avatarAlt: "Professional headshot of Emily Rodriguez, a bride",
+              'Hired them for my wedding reception. They were professional, punctual, and the food was absolutely incredible. Our guests are still talking about it three months later!',
+            name: 'Emily Rodriguez',
+            role: 'Wedding Client',
+            avatarAlt: 'Professional headshot of Emily Rodriguez, a bride',
           },
         ]
     const pressLogos = props.testimonials?.pressLogos?.length
       ? props.testimonials.pressLogos
-      : ["Eater LA", "LA Times Food", "The Infatuation"]
+      : ['Eater LA', 'LA Times Food', 'The Infatuation']
 
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "47k", label: "Tacos Served" },
-          { value: "2,847", label: "5-Star Reviews" },
-          { value: "156", label: "Events Catered" },
-          { value: "4", label: "Years Running" },
+          { value: '47k', label: 'Tacos Served' },
+          { value: '2,847', label: '5-Star Reviews' },
+          { value: '156', label: 'Events Catered' },
+          { value: '4', label: 'Years Running' },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "Common Questions"
-    const faqHeading = props.faq?.heading ?? "FAQ"
+    const faqEyebrow = props.faq?.eyebrow ?? 'Common Questions'
+    const faqHeading = props.faq?.heading ?? 'FAQ'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "Do you accommodate dietary restrictions?",
-            a: "Absolutely. We have extensive vegan, vegetarian, and gluten-free options. Every menu item is clearly labeled, and our staff is trained on allergen protocols. For severe allergies, please let us know when ordering so we can take extra precautions.",
+            q: 'Do you accommodate dietary restrictions?',
+            a: 'Absolutely. We have extensive vegan, vegetarian, and gluten-free options. Every menu item is clearly labeled, and our staff is trained on allergen protocols. For severe allergies, please let us know when ordering so we can take extra precautions.',
           },
           {
-            q: "How do I book catering for an event?",
+            q: 'How do I book catering for an event?',
             a: "Fill out our catering form or email us at catering@curbsidekitchen.com with your event date, guest count, and preferred menu. We recommend booking at least 3 weeks in advance for weekends and 2 weeks for weekdays. We'll respond within 24 hours with a custom quote.",
           },
           {
-            q: "Do you take reservations or pre-orders?",
+            q: 'Do you take reservations or pre-orders?',
             a: "We don't take reservations, but we do offer pre-ordering through our website for pickup windows. This is especially useful for lunch rushes in DTLA. Orders can be placed up to 24 hours in advance with a 15-minute pickup window.",
           },
           {
-            q: "What forms of payment do you accept?",
-            a: "We accept all major credit cards, Apple Pay, Google Pay, and cash. For catering events, we require a 50% deposit to secure the date with the balance due one week before the event.",
+            q: 'What forms of payment do you accept?',
+            a: 'We accept all major credit cards, Apple Pay, Google Pay, and cash. For catering events, we require a 50% deposit to secure the date with the balance due one week before the event.',
           },
           {
-            q: "How do I know where the truck will be?",
-            a: "We post our weekly schedule every Sunday evening on Instagram and our website. For real-time updates (traffic delays, sold out items), follow us on Instagram @curbsidekitchen where we share stories throughout the day.",
+            q: 'How do I know where the truck will be?',
+            a: 'We post our weekly schedule every Sunday evening on Instagram and our website. For real-time updates (traffic delays, sold out items), follow us on Instagram @curbsidekitchen where we share stories throughout the day.',
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to book the truck?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to book the truck?'
     const ctaDesc =
       props.cta?.description ??
-      "From office lunches to wedding receptions, we bring the flavor. Get in touch for a custom quote."
-    const ctaEmail = props.cta?.emailCta ?? "Email Us"
-    const ctaPhone = props.cta?.phoneCta ?? "(310) 555-1234"
-    const ctaNote = props.cta?.note ?? "Typical response time: under 24 hours"
+      'From office lunches to wedding receptions, we bring the flavor. Get in touch for a custom quote.'
+    const ctaEmail = props.cta?.emailCta ?? 'Email Us'
+    const ctaPhone = props.cta?.phoneCta ?? '(310) 555-1234'
+    const ctaNote = props.cta?.note ?? 'Typical response time: under 24 hours'
 
     const footerAbout =
       props.footer?.about ??
-      "Gourmet food truck serving Los Angeles since 2020. Farm-to-street, chef-made, zero pretension."
+      'Gourmet food truck serving Los Angeles since 2020. Farm-to-street, chef-made, zero pretension.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Menu",
+            title: 'Menu',
             links: [
-              "Signature Tacos",
-              "Bowls & Salads",
-              "Burgers",
-              "Sides & Sweets",
+              'Signature Tacos',
+              'Bowls & Salads',
+              'Burgers',
+              'Sides & Sweets',
             ],
           },
           {
-            title: "Company",
-            links: ["Locations", "Catering", "FAQ", "Careers"],
+            title: 'Company',
+            links: ['Locations', 'Catering', 'FAQ', 'Careers'],
           },
         ]
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Instagram", "Twitter", "YouTube", "Facebook"]
-    const footerCopyright =
-      props.footer?.copyright ?? "All rights reserved."
+      : ['Instagram', 'Twitter', 'YouTube', 'Facebook']
+    const footerCopyright = props.footer?.copyright ?? 'All rights reserved.'
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Food Safety"]
+      : ['Privacy Policy', 'Terms of Service', 'Food Safety']
 
     const lastNav = nav[nav.length - 1]
 
     // Rotating accent tokens for decorative day tiles (no raw palette).
     const dayAccents = [
-      "bg-chart-1/15 text-chart-1",
-      "bg-chart-2/15 text-chart-2",
-      "bg-chart-3/15 text-chart-3",
-      "bg-chart-4/15 text-chart-4",
-      "bg-chart-5/15 text-chart-5",
-      "bg-primary/10 text-primary",
+      'bg-chart-1/15 text-chart-1',
+      'bg-chart-2/15 text-chart-2',
+      'bg-chart-3/15 text-chart-3',
+      'bg-chart-4/15 text-chart-4',
+      'bg-chart-5/15 text-chart-5',
+      'bg-primary/10 text-primary',
     ]
 
     // Decorative brand mark — initials of the brand name.
     const initials = brand
       .split(/\s+/)
       .map((w) => w.charAt(0))
-      .join("")
+      .join('')
       .slice(0, 2)
       .toUpperCase()
 
@@ -818,12 +817,12 @@ export const FoodTruckKimiPage = defineCapsule({
     )
 
     const inputCls =
-      "w-full rounded-lg border border-input bg-background px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+      'w-full rounded-lg border border-input bg-background px-4 py-2 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring'
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -925,7 +924,10 @@ export const FoodTruckKimiPage = defineCapsule({
                         aria-hidden="true"
                       >
                         {authPicture ? (
-                          <AvatarImage src={authPicture} alt={authDisplayName} />
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
                         ) : null}
                         <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
                           {authInitials}
@@ -946,7 +948,10 @@ export const FoodTruckKimiPage = defineCapsule({
                       <div className="flex items-center gap-3">
                         <Avatar size="lg" className="ring-2 ring-background">
                           {authPicture ? (
-                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
                           ) : null}
                           <AvatarFallback className="bg-foreground text-sm font-bold text-background">
                             {authInitials}
@@ -1074,7 +1079,10 @@ export const FoodTruckKimiPage = defineCapsule({
                     <div className="flex items-center gap-3">
                       <Avatar size="lg">
                         {authPicture ? (
-                          <AvatarImage src={authPicture} alt={authDisplayName} />
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
                         ) : null}
                         <AvatarFallback className="bg-foreground text-sm font-bold text-background">
                           {authInitials}
@@ -1198,7 +1206,9 @@ export const FoodTruckKimiPage = defineCapsule({
                       <p className="text-sm font-semibold text-card-foreground">
                         {chefName}
                       </p>
-                      <p className="text-xs text-muted-foreground">{chefRole}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {chefRole}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -1243,7 +1253,9 @@ export const FoodTruckKimiPage = defineCapsule({
                 <span className="text-sm uppercase tracking-widest text-muted-foreground">
                   {menuEyebrow}
                 </span>
-                <h2 className="text-3xl font-bold md:text-4xl">{menuHeading}</h2>
+                <h2 className="text-3xl font-bold md:text-4xl">
+                  {menuHeading}
+                </h2>
                 <p className="mx-auto max-w-lg text-muted-foreground">
                   {menuDesc}
                 </p>
@@ -1253,7 +1265,7 @@ export const FoodTruckKimiPage = defineCapsule({
                 {menuCategories.map((cat) => (
                   <div
                     key={cat.title}
-                    className={cn(cat.wide && "md:col-span-2")}
+                    className={cn(cat.wide && 'md:col-span-2')}
                   >
                     <Image
                       alt={cat.imageAlt}
@@ -1261,8 +1273,8 @@ export const FoodTruckKimiPage = defineCapsule({
                       h={400}
                       loading="lazy"
                       className={cn(
-                        "mb-6 w-full rounded-xl object-cover",
-                        cat.wide ? "h-48" : "h-64",
+                        'mb-6 w-full rounded-xl object-cover',
+                        cat.wide ? 'h-48' : 'h-64',
                       )}
                     />
                     <h3 className="mb-4 flex items-center gap-2 text-xl font-semibold">
@@ -1275,7 +1287,7 @@ export const FoodTruckKimiPage = defineCapsule({
                     </h3>
                     <div
                       className={cn(
-                        cat.wide ? "grid gap-4 sm:grid-cols-2" : "space-y-4",
+                        cat.wide ? 'grid gap-4 sm:grid-cols-2' : 'space-y-4',
                       )}
                     >
                       {cat.items.map((item, i) => {
@@ -1285,9 +1297,9 @@ export const FoodTruckKimiPage = defineCapsule({
                           <div
                             key={item.name}
                             className={cn(
-                              "flex items-start justify-between gap-4",
+                              'flex items-start justify-between gap-4',
                               i < cat.items.length - 1 &&
-                                "border-b border-border pb-4",
+                                'border-b border-border pb-4',
                             )}
                           >
                             <div className="flex-1">
@@ -1366,7 +1378,7 @@ export const FoodTruckKimiPage = defineCapsule({
                     <div className="mb-4 flex items-center gap-3">
                       <div
                         className={cn(
-                          "grid size-12 place-items-center rounded-lg font-bold",
+                          'grid size-12 place-items-center rounded-lg font-bold',
                           dayAccents[i % dayAccents.length],
                         )}
                       >
@@ -1374,7 +1386,9 @@ export const FoodTruckKimiPage = defineCapsule({
                       </div>
                       <div>
                         <h3 className="font-semibold">{d.day}</h3>
-                        <p className="text-sm text-muted-foreground">{d.area}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {d.area}
+                        </p>
                       </div>
                     </div>
                     <div className="space-y-2 text-sm">
@@ -1416,7 +1430,9 @@ export const FoodTruckKimiPage = defineCapsule({
                   </div>
                   <div>
                     <p className="font-semibold">{locBannerTitle}</p>
-                    <p className="text-sm text-background/70">{locBannerNote}</p>
+                    <p className="text-sm text-background/70">
+                      {locBannerNote}
+                    </p>
                   </div>
                 </div>
                 <button
@@ -1450,8 +1466,8 @@ export const FoodTruckKimiPage = defineCapsule({
                       h={500}
                       loading="lazy"
                       className={cn(
-                        "w-full rounded-xl object-cover",
-                        col === 1 ? "h-48" : "h-64",
+                        'w-full rounded-xl object-cover',
+                        col === 1 ? 'h-48' : 'h-64',
                       )}
                     />
                     <Image
@@ -1460,8 +1476,8 @@ export const FoodTruckKimiPage = defineCapsule({
                       h={400}
                       loading="lazy"
                       className={cn(
-                        "w-full rounded-xl object-cover",
-                        col === 1 ? "h-64" : "h-48",
+                        'w-full rounded-xl object-cover',
+                        col === 1 ? 'h-64' : 'h-48',
                       )}
                     />
                   </div>
@@ -1530,10 +1546,7 @@ export const FoodTruckKimiPage = defineCapsule({
                   <h3 className="mb-6 text-xl font-semibold">
                     {cateringFormTitle}
                   </h3>
-                  <form
-                    className="space-y-4"
-                    onSubmit={handleCateringSubmit}
-                  >
+                  <form className="space-y-4" onSubmit={handleCateringSubmit}>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
                         <label
@@ -1548,7 +1561,10 @@ export const FoodTruckKimiPage = defineCapsule({
                           placeholder="Your name"
                           value={cateringForm.name}
                           onChange={(e) =>
-                            setCateringForm({ ...cateringForm, name: e.target.value })
+                            setCateringForm({
+                              ...cateringForm,
+                              name: e.target.value,
+                            })
                           }
                           className={inputCls}
                         />
@@ -1566,7 +1582,10 @@ export const FoodTruckKimiPage = defineCapsule({
                           placeholder="you@email.com"
                           value={cateringForm.email}
                           onChange={(e) =>
-                            setCateringForm({ ...cateringForm, email: e.target.value })
+                            setCateringForm({
+                              ...cateringForm,
+                              email: e.target.value,
+                            })
                           }
                           className={inputCls}
                         />
@@ -1585,7 +1604,10 @@ export const FoodTruckKimiPage = defineCapsule({
                           type="date"
                           value={cateringForm.eventDate}
                           onChange={(e) =>
-                            setCateringForm({ ...cateringForm, eventDate: e.target.value })
+                            setCateringForm({
+                              ...cateringForm,
+                              eventDate: e.target.value,
+                            })
                           }
                           className={inputCls}
                         />
@@ -1601,9 +1623,12 @@ export const FoodTruckKimiPage = defineCapsule({
                           id="ft-guests"
                           value={cateringForm.guestCount}
                           onChange={(e) =>
-                            setCateringForm({ ...cateringForm, guestCount: e.target.value })
+                            setCateringForm({
+                              ...cateringForm,
+                              guestCount: e.target.value,
+                            })
                           }
-                          className={cn(inputCls, "appearance-none")}
+                          className={cn(inputCls, 'appearance-none')}
                         >
                           <option value="">Select guest count</option>
                           {guestCounts.map((g) => (
@@ -1625,9 +1650,12 @@ export const FoodTruckKimiPage = defineCapsule({
                         id="ft-type"
                         value={cateringForm.eventType}
                         onChange={(e) =>
-                          setCateringForm({ ...cateringForm, eventType: e.target.value })
+                          setCateringForm({
+                            ...cateringForm,
+                            eventType: e.target.value,
+                          })
                         }
-                        className={cn(inputCls, "appearance-none")}
+                        className={cn(inputCls, 'appearance-none')}
                       >
                         <option value="">Select event type</option>
                         {eventTypes.map((t) => (
@@ -1650,9 +1678,12 @@ export const FoodTruckKimiPage = defineCapsule({
                         placeholder="Tell us about your event..."
                         value={cateringForm.message}
                         onChange={(e) =>
-                          setCateringForm({ ...cateringForm, message: e.target.value })
+                          setCateringForm({
+                            ...cateringForm,
+                            message: e.target.value,
+                          })
                         }
-                        className={cn(inputCls, "resize-none")}
+                        className={cn(inputCls, 'resize-none')}
                       />
                     </div>
                     <button
@@ -1674,7 +1705,9 @@ export const FoodTruckKimiPage = defineCapsule({
                 <span className="text-sm uppercase tracking-widest text-muted-foreground">
                   {testEyebrow}
                 </span>
-                <h2 className="text-3xl font-bold md:text-4xl">{testHeading}</h2>
+                <h2 className="text-3xl font-bold md:text-4xl">
+                  {testHeading}
+                </h2>
               </div>
 
               <div className="grid gap-6 md:grid-cols-3">
@@ -1699,7 +1732,9 @@ export const FoodTruckKimiPage = defineCapsule({
                         <p className="text-sm font-semibold text-foreground">
                           {t.name}
                         </p>
-                        <p className="text-xs text-muted-foreground">{t.role}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t.role}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1872,10 +1907,7 @@ export const FoodTruckKimiPage = defineCapsule({
 
         {/* Catering Requests Drawer */}
         <Sheet open={cateringDrawerOpen} onOpenChange={setCateringDrawerOpen}>
-          <SheetContent
-            side="right"
-            className="w-full gap-0 p-0 sm:max-w-md"
-          >
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
             <SheetHeader className="border-b border-border p-6">
               <SheetTitle className="text-xl">Catering Requests</SheetTitle>
               <SheetDescription>
@@ -1888,10 +1920,7 @@ export const FoodTruckKimiPage = defineCapsule({
               {cateringRequests && cateringRequests.length > 0 ? (
                 <div className="space-y-5">
                   {cateringRequests.map((request) => (
-                    <div
-                      key={request.id}
-                      className="rounded-xl bg-muted p-4"
-                    >
+                    <div key={request.id} className="rounded-xl bg-muted p-4">
                       <div className="mb-3 flex items-start justify-between gap-3">
                         <div>
                           <p className="font-semibold text-foreground">

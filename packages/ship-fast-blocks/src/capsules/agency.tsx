@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * AgencyKimiPage — a complete, self-contained creative digital-agency LANDING page.
@@ -45,9 +45,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * no props at all.
  */
 export const AgencyKimiPage = defineCapsule({
-  name: "AgencyKimiPage",
+  name: 'AgencyKimiPage',
   description:
-    "Complete creative digital-agency / studio LANDING page with a bold, dark, cinematic aesthetic: near-black canvas, indigo-violet accent gradients, floating glow orbs and grain texture. Includes a full-bleed hero (availability badge, huge gradient headline, dual CTAs, inline KPI strip), a 6-up services/capabilities grid with hover-lift cards and icons, a 2-column selected-work gallery with image-zoom hover and case-study overlays, a split stats/about band with a glowing showcase photo, an oversized pull-quote testimonial, and a contact section with a real inquiry form plus social links. Use as the ROOT/home page for creative agencies, design studios, branding/marketing shops, freelance creatives, production houses, or portfolio sites when a moody, premium, conversion-focused page with strong work showcase and social proof is wanted. Supply content only — brand, nav, hero, services, work, stats, testimonial, contact, footer; the block owns all layout and styling.",
+    'Complete creative digital-agency / studio LANDING page with a bold, dark, cinematic aesthetic: near-black canvas, indigo-violet accent gradients, floating glow orbs and grain texture. Includes a full-bleed hero (availability badge, huge gradient headline, dual CTAs, inline KPI strip), a 6-up services/capabilities grid with hover-lift cards and icons, a 2-column selected-work gallery with image-zoom hover and case-study overlays, a split stats/about band with a glowing showcase photo, an oversized pull-quote testimonial, and a contact section with a real inquiry form plus social links. Use as the ROOT/home page for creative agencies, design studios, branding/marketing shops, freelance creatives, production houses, or portfolio sites when a moody, premium, conversion-focused page with strong work showcase and social proof is wanted. Supply content only — brand, nav, hero, services, work, stats, testimonial, contact, footer; the block owns all layout and styling.',
   props: z.object({
     /** Brand / studio name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -162,7 +162,13 @@ export const AgencyKimiPage = defineCapsule({
       projects: ({ db }) => db.projects.orderBy('createdAt').all(),
     },
     mutations: {
-      submitInquiry: ({ db }, name: string, email: string, projectType: string, message: string) => {
+      submitInquiry: (
+        { db },
+        name: string,
+        email: string,
+        projectType: string,
+        message: string,
+      ) => {
         db.inquiries.insert({
           name,
           email,
@@ -172,7 +178,13 @@ export const AgencyKimiPage = defineCapsule({
         })
         return db.inquiries.all()
       },
-      addProject: ({ db }, title: string, description: string, tag: string, client: string) => {
+      addProject: (
+        { db },
+        title: string,
+        description: string,
+        tag: string,
+        client: string,
+      ) => {
         db.projects.insert({
           title,
           description,
@@ -187,7 +199,7 @@ export const AgencyKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [portalOpen, setPortalOpen] = useState(false)
-    const brand = props.brand ?? "Studio Rise"
+    const brand = props.brand ?? 'Studio Rise'
 
     const inquiries = lakebed.useQuery('inquiries')
     const projects = lakebed.useQuery('projects')
@@ -222,155 +234,155 @@ export const AgencyKimiPage = defineCapsule({
 
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Work", "About", "Contact"]
+      : ['Services', 'Work', 'About', 'Contact']
 
-    const heroBadge = props.hero?.badge ?? "Available for new projects"
-    const headingTop = props.hero?.headingTop ?? "We craft digital"
-    const heroHighlight = props.hero?.highlight ?? "experiences"
-    const headingBottom = props.hero?.headingBottom ?? "that define brands."
+    const heroBadge = props.hero?.badge ?? 'Available for new projects'
+    const headingTop = props.hero?.headingTop ?? 'We craft digital'
+    const heroHighlight = props.hero?.highlight ?? 'experiences'
+    const headingBottom = props.hero?.headingBottom ?? 'that define brands.'
     const heroSub =
       props.hero?.subheading ??
-      "Strategy, design, and technology fused into cohesive digital products that captivate users and drive measurable business growth."
-    const heroPrimary = props.hero?.primaryCta ?? "View our work"
-    const heroSecondary = props.hero?.secondaryCta ?? "Start a project"
+      'Strategy, design, and technology fused into cohesive digital products that captivate users and drive measurable business growth.'
+    const heroPrimary = props.hero?.primaryCta ?? 'View our work'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Start a project'
     const heroStats = props.hero?.stats?.length
       ? props.hero.stats
       : [
-          { value: "120+", label: "Projects delivered" },
-          { value: "45", label: "Industry awards" },
-          { value: "8 yrs", label: "In the game" },
-          { value: "98%", label: "Client retention" },
+          { value: '120+', label: 'Projects delivered' },
+          { value: '45', label: 'Industry awards' },
+          { value: '8 yrs', label: 'In the game' },
+          { value: '98%', label: 'Client retention' },
         ]
 
     const servicesHeading =
-      props.services?.heading ?? "Capabilities that cover the full journey."
+      props.services?.heading ?? 'Capabilities that cover the full journey.'
     const servicesDesc =
       props.services?.description ??
-      "From initial concept to final pixel, we offer end-to-end services designed to transform ambitious ideas into market-leading digital products."
+      'From initial concept to final pixel, we offer end-to-end services designed to transform ambitious ideas into market-leading digital products.'
     const serviceItems = props.services?.items?.length
       ? props.services.items
       : [
           {
-            title: "Brand Strategy",
+            title: 'Brand Strategy',
             description:
-              "Positioning, messaging, and visual identity systems that resonate with your audience and differentiate you from competitors.",
+              'Positioning, messaging, and visual identity systems that resonate with your audience and differentiate you from competitors.',
           },
           {
-            title: "UI/UX Design",
+            title: 'UI/UX Design',
             description:
-              "User-centered interfaces crafted through research, wireframing, and high-fidelity prototyping for web and mobile.",
+              'User-centered interfaces crafted through research, wireframing, and high-fidelity prototyping for web and mobile.',
           },
           {
-            title: "Web Development",
+            title: 'Web Development',
             description:
-              "Performance-first frontend engineering with modern frameworks, clean architecture, and scalable infrastructure.",
+              'Performance-first frontend engineering with modern frameworks, clean architecture, and scalable infrastructure.',
           },
           {
-            title: "Digital Marketing",
+            title: 'Digital Marketing',
             description:
-              "Data-driven growth campaigns across SEO, content, paid media, and social to acquire and retain high-value customers.",
+              'Data-driven growth campaigns across SEO, content, paid media, and social to acquire and retain high-value customers.',
           },
           {
-            title: "Motion Design",
+            title: 'Motion Design',
             description:
-              "Cinematic animations, micro-interactions, and video production that bring interfaces and stories to life.",
+              'Cinematic animations, micro-interactions, and video production that bring interfaces and stories to life.',
           },
           {
-            title: "Creative Direction",
+            title: 'Creative Direction',
             description:
-              "Holistic creative leadership ensuring every touchpoint aligns with your brand vision and business objectives.",
+              'Holistic creative leadership ensuring every touchpoint aligns with your brand vision and business objectives.',
           },
         ]
 
-    const workHeading = props.work?.heading ?? "Selected work"
+    const workHeading = props.work?.heading ?? 'Selected work'
     const workDesc =
       props.work?.description ??
-      "A curated collection of projects where strategy, craft, and technology converged."
-    const workViewAll = props.work?.viewAll ?? "View all projects"
+      'A curated collection of projects where strategy, craft, and technology converged.'
+    const workViewAll = props.work?.viewAll ?? 'View all projects'
     const workItems = props.work?.items?.length
       ? props.work.items
       : [
           {
-            title: "Aurora Fintech",
+            title: 'Aurora Fintech',
             description:
-              "Complete brand overhaul and product design for a next-generation trading platform.",
-            tag: "Fintech",
+              'Complete brand overhaul and product design for a next-generation trading platform.',
+            tag: 'Fintech',
           },
           {
-            title: "Nova Commerce",
+            title: 'Nova Commerce',
             description:
-              "Headless e-commerce experience with 40% faster checkout and 3x conversion lift.",
-            tag: "E-commerce",
+              'Headless e-commerce experience with 40% faster checkout and 3x conversion lift.',
+            tag: 'E-commerce',
           },
           {
-            title: "Medilink Health",
+            title: 'Medilink Health',
             description:
-              "Patient-centric telehealth platform serving over 2 million users across Europe.",
-            tag: "Healthcare",
+              'Patient-centric telehealth platform serving over 2 million users across Europe.',
+            tag: 'Healthcare',
           },
           {
-            title: "Vertex Real Estate",
+            title: 'Vertex Real Estate',
             description:
-              "Immersive property platform with 3D tours and AI-powered matching algorithms.",
-            tag: "Real Estate",
+              'Immersive property platform with 3D tours and AI-powered matching algorithms.',
+            tag: 'Real Estate',
           },
         ]
-    const displayProjects = projects && projects.length > 0 ? projects : workItems
+    const displayProjects =
+      projects && projects.length > 0 ? projects : workItems
 
-    const statsHeading = props.stats?.heading ?? "Numbers that speak volumes."
+    const statsHeading = props.stats?.heading ?? 'Numbers that speak volumes.'
     const statsDesc =
       props.stats?.description ??
-      "We are a tight-knit collective of strategists, designers, and engineers obsessed with quality. Every metric below reflects our commitment to outcomes over outputs."
+      'We are a tight-knit collective of strategists, designers, and engineers obsessed with quality. Every metric below reflects our commitment to outcomes over outputs.'
     const statsImageAlt =
-      props.stats?.imageAlt ?? "Creative agency team collaboration in studio"
+      props.stats?.imageAlt ?? 'Creative agency team collaboration in studio'
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "$400M+", label: "Revenue generated for clients" },
-          { value: "12", label: "Countries served" },
-          { value: "24h", label: "Average response time" },
-          { value: "0", label: "Boring projects taken" },
+          { value: '$400M+', label: 'Revenue generated for clients' },
+          { value: '12', label: 'Countries served' },
+          { value: '24h', label: 'Average response time' },
+          { value: '0', label: 'Boring projects taken' },
         ]
 
     const testimonialQuote =
       props.testimonial?.quote ??
       "Studio Rise didn't just redesign our product — they redefined how our customers think about our brand. The results exceeded every KPI we set."
     const testimonialHighlight =
-      props.testimonial?.highlight ??
-      "redefined how our customers think"
-    const testimonialName = props.testimonial?.name ?? "Sarah Chen"
-    const testimonialRole = props.testimonial?.role ?? "CEO, Aurora Fintech"
+      props.testimonial?.highlight ?? 'redefined how our customers think'
+    const testimonialName = props.testimonial?.name ?? 'Sarah Chen'
+    const testimonialRole = props.testimonial?.role ?? 'CEO, Aurora Fintech'
     const testimonialAvatarAlt =
-      props.testimonial?.avatarAlt ?? "Portrait of Sarah Chen, fintech CEO"
+      props.testimonial?.avatarAlt ?? 'Portrait of Sarah Chen, fintech CEO'
 
     const contactHeading =
       props.contact?.heading ?? "Let's build something great together."
     const contactDesc =
       props.contact?.description ??
       "Have a project in mind? We'd love to hear about it. Share your vision and we'll respond within 24 hours."
-    const contactSubmit = props.contact?.submit ?? "Send message"
-    const contactEmailLabel = props.contact?.emailLabel ?? "Prefer email?"
-    const contactEmail = props.contact?.email ?? "hello@studiorise.co"
+    const contactSubmit = props.contact?.submit ?? 'Send message'
+    const contactEmailLabel = props.contact?.emailLabel ?? 'Prefer email?'
+    const contactEmail = props.contact?.email ?? 'hello@studiorise.co'
     const projectTypes = props.contact?.projectTypes?.length
       ? props.contact.projectTypes
       : [
-          "Brand Strategy",
-          "Web Design & Development",
-          "Digital Marketing",
-          "Motion Design",
-          "Other",
+          'Brand Strategy',
+          'Web Design & Development',
+          'Digital Marketing',
+          'Motion Design',
+          'Other',
         ]
 
-    const footerNote = props.footer?.note ?? "All rights reserved."
+    const footerNote = props.footer?.note ?? 'All rights reserved.'
     const footerLinks = props.footer?.links?.length
       ? props.footer.links
-      : ["Privacy", "Terms"]
+      : ['Privacy', 'Terms']
 
     // Brand logo tile — gradient with the brand initial (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-gradient-to-br from-primary to-accent font-black text-primary-foreground",
+          'grid place-items-center rounded-lg bg-gradient-to-br from-primary to-accent font-black text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -527,12 +539,12 @@ export const AgencyKimiPage = defineCapsule({
     ]
 
     const inputCls =
-      "w-full rounded-xl border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+      'w-full rounded-xl border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring'
 
     return (
       <div
         className={cn(
-          "relative min-h-svh overflow-x-hidden bg-background text-foreground antialiased selection:bg-primary/30 selection:text-primary-foreground",
+          'relative min-h-svh overflow-x-hidden bg-background text-foreground antialiased selection:bg-primary/30 selection:text-primary-foreground',
           props.className,
         )}
       >
@@ -796,7 +808,7 @@ export const AgencyKimiPage = defineCapsule({
                 <br />
                 <span className="bg-gradient-to-br from-primary via-primary/80 to-accent bg-clip-text text-transparent">
                   {heroHighlight}
-                </span>{" "}
+                </span>{' '}
                 {headingBottom}
               </h1>
               <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
@@ -826,7 +838,9 @@ export const AgencyKimiPage = defineCapsule({
                     <div className="text-3xl font-bold text-foreground">
                       {s.value}
                     </div>
-                    <div className="mt-1 text-sm text-muted-foreground">{s.label}</div>
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      {s.label}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -873,7 +887,9 @@ export const AgencyKimiPage = defineCapsule({
                   <h2 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
                     {workHeading}
                   </h2>
-                  <p className="max-w-xl text-lg text-muted-foreground">{workDesc}</p>
+                  <p className="max-w-xl text-lg text-muted-foreground">
+                    {workDesc}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -911,7 +927,9 @@ export const AgencyKimiPage = defineCapsule({
                         <h3 className="mb-2 text-2xl font-semibold transition-colors group-hover:text-primary">
                           {proj.title}
                         </h3>
-                        <p className="text-muted-foreground">{proj.description}</p>
+                        <p className="text-muted-foreground">
+                          {proj.description}
+                        </p>
                       </div>
                       <span className="mt-2 whitespace-nowrap rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
                         {proj.tag}
@@ -943,7 +961,9 @@ export const AgencyKimiPage = defineCapsule({
                         <div className="mb-1 text-4xl font-bold text-foreground">
                           {s.value}
                         </div>
-                        <div className="text-sm text-muted-foreground">{s.label}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {s.label}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1066,7 +1086,7 @@ export const AgencyKimiPage = defineCapsule({
                   </label>
                   <select
                     id="agency-type"
-                    className={cn(inputCls, "appearance-none")}
+                    className={cn(inputCls, 'appearance-none')}
                   >
                     {projectTypes.map((opt) => (
                       <option key={opt} className="bg-background">
@@ -1087,7 +1107,7 @@ export const AgencyKimiPage = defineCapsule({
                     rows={4}
                     required
                     placeholder="Tell us about your project, goals, and timeline."
-                    className={cn(inputCls, "resize-none")}
+                    className={cn(inputCls, 'resize-none')}
                   />
                 </div>
                 <button
@@ -1126,19 +1146,19 @@ export const AgencyKimiPage = defineCapsule({
                   </button>
                 </div>
                 <div className="flex items-center gap-6">
-                  {(["Twitter", "Instagram", "LinkedIn", "Dribbble"] as const).map(
-                    (social) => (
-                      <button
-                        key={social}
-                        type="button"
-                        aria-label={social}
-                        onClick={() => go(social)}
-                        className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {social}
-                      </button>
-                    ),
-                  )}
+                  {(
+                    ['Twitter', 'Instagram', 'LinkedIn', 'Dribbble'] as const
+                  ).map((social) => (
+                    <button
+                      key={social}
+                      type="button"
+                      aria-label={social}
+                      onClick={() => go(social)}
+                      className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {social}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -1197,10 +1217,12 @@ export const AgencyKimiPage = defineCapsule({
                 onSubmit={(e) => {
                   e.preventDefault()
                   const form = new FormData(e.currentTarget)
-                  const name = String(form.get("name") ?? "").trim()
-                  const email = String(form.get("email") ?? "").trim()
-                  const projectType = String(form.get("projectType") ?? "").trim()
-                  const message = String(form.get("message") ?? "").trim()
+                  const name = String(form.get('name') ?? '').trim()
+                  const email = String(form.get('email') ?? '').trim()
+                  const projectType = String(
+                    form.get('projectType') ?? '',
+                  ).trim()
+                  const message = String(form.get('message') ?? '').trim()
                   if (!name || !email || !projectType || !message) return
                   void submitInquiry(name, email, projectType, message)
                   e.currentTarget.reset()
@@ -1222,8 +1244,8 @@ export const AgencyKimiPage = defineCapsule({
                 <select
                   name="projectType"
                   required
-                  defaultValue={projectTypes[0] ?? ""}
-                  className={cn(inputCls, "appearance-none")}
+                  defaultValue={projectTypes[0] ?? ''}
+                  className={cn(inputCls, 'appearance-none')}
                 >
                   {projectTypes.map((type) => (
                     <option key={type} value={type}>
@@ -1236,7 +1258,7 @@ export const AgencyKimiPage = defineCapsule({
                   rows={4}
                   required
                   placeholder="Tell us what you want to build."
-                  className={cn(inputCls, "resize-none")}
+                  className={cn(inputCls, 'resize-none')}
                 />
                 <Button type="submit" className="w-full">
                   Submit inquiry

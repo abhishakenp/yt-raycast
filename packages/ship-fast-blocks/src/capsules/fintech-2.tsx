@@ -1,11 +1,11 @@
-import { useState } from "react"
-import { type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -15,14 +15,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * FintechKimiPage2 — a complete, self-contained digital-wallet / fintech LANDING page.
@@ -44,7 +44,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * ONLY content data; rich defaults make it render great with no props at all.
  */
 export const FintechKimiPage2 = defineCapsule({
-  name: "FintechKimiPage2",
+  name: 'FintechKimiPage2',
   description:
     "Second/alternative fintech LANDING page style (a visually DISTINCT sibling to FintechKimiPage) for a digital wallet / neobank / payments / money app — brighter and more playful than the first variant. Hero is a gradient-tinted 2-column layout with an 'instant payouts' status pill, a 'Your Money, Simplified' gradient headline, dual CTAs, a 4.9-star trust badge, and a floating 3D debit/credit-card mockup surrounded by live notification chips ('Sent to Sarah $240', 'Auto-saved this week $128.40'). Includes a trusted-by logo strip; a 6-up features grid with multi-colored rounded icon tiles (bank-level security, instant transfers, smart analytics, virtual cards, multi-currency, bill splitting); a dark KPI/stats band ($4.2B+ processed, 2M+ users, 99.99% uptime, 4.9 rating); a numbered 3-step get-started flow; a signature BENTO product-preview gallery showing in-app UI mockups (instant transaction feed, monthly-spend bar chart, one-tap virtual-card freeze/delete controls, effortless bill-splitting); a 3-tier pricing table (Free, a highlighted Most-Popular Pro, Business) with checkmark feature lists; a 3-card 5-star testimonial grid with headshot avatars; an accordion FAQ (FDIC, transfer speed, currencies, international use, lost phone, hidden fees); a dark conversion CTA band; and a 5-column footer with social icons and legal disclosures. Use as the ROOT/home page for fintech apps, neobanks, digital wallets, money/payments/savings products, or any finance startup wanting a clean, conversion-focused marketing page — pick this variant when you want a lighter, bento-driven, card-forward look distinct from the dark security-band first style. Supply content only; the block owns all layout and styling.",
   props: z.object({
@@ -217,13 +217,17 @@ export const FintechKimiPage2 = defineCapsule({
       }),
     },
     queries: {
-      transactions: ({ db }) =>
-        db.transactions.orderBy('createdAt').all(),
+      transactions: ({ db }) => db.transactions.orderBy('createdAt').all(),
       virtualCards: ({ db }) => db.virtualCards.orderBy('createdAt').all(),
       billSplits: ({ db }) => db.billSplits.orderBy('createdAt').all(),
     },
     mutations: {
-      addTransaction: ({ db }, description: string, amount: string, incoming: string) => {
+      addTransaction: (
+        { db },
+        description: string,
+        amount: string,
+        incoming: string,
+      ) => {
         db.transactions.insert({ description, amount, incoming })
         return db.transactions.orderBy('createdAt').all()
       },
@@ -259,299 +263,301 @@ export const FintechKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [transactionsOpen, setTransactionsOpen] = useState(false)
     const [mobileOpen, setMobileOpen] = useState(false)
-    const brand = props.brand ?? "Vault"
+    const brand = props.brand ?? 'Vault'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "How It Works", "Pricing", "Reviews", "FAQ"]
+      : ['Features', 'How It Works', 'Pricing', 'Reviews', 'FAQ']
 
-    const heroBadge = props.hero?.badge ?? "Now with instant payouts"
-    const heroLead = props.hero?.headingLead ?? "Your Money,"
-    const heroAccent = props.hero?.headingAccent ?? "Simplified"
+    const heroBadge = props.hero?.badge ?? 'Now with instant payouts'
+    const heroLead = props.hero?.headingLead ?? 'Your Money,'
+    const heroAccent = props.hero?.headingAccent ?? 'Simplified'
     const heroSub =
       props.hero?.subheading ??
-      "A smart digital wallet that brings all your accounts, cards, and payments into one secure place. Send, spend, and save with confidence."
-    const heroPrimary = props.hero?.primaryCta ?? "Get Started Free"
-    const heroSecondary = props.hero?.secondaryCta ?? "See How It Works"
-    const heroRating = props.hero?.rating ?? "Trusted by 2M+ users worldwide"
+      'A smart digital wallet that brings all your accounts, cards, and payments into one secure place. Send, spend, and save with confidence.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Get Started Free'
+    const heroSecondary = props.hero?.secondaryCta ?? 'See How It Works'
+    const heroRating = props.hero?.rating ?? 'Trusted by 2M+ users worldwide'
     const cardName = props.hero?.cardName ?? brand
-    const cardNumber = props.hero?.cardNumber ?? "4582 8910 3746 2105"
-    const cardHolder = props.hero?.cardHolder ?? "Alex Morgan"
-    const cardExpires = props.hero?.cardExpires ?? "09/28"
-    const chipSentLabel = props.hero?.chipSentLabel ?? "Sent to Sarah"
-    const chipSentValue = props.hero?.chipSentValue ?? "$240.00"
-    const chipSavedLabel = props.hero?.chipSavedLabel ?? "Auto-saved this week"
-    const chipSavedValue = props.hero?.chipSavedValue ?? "$128.40"
+    const cardNumber = props.hero?.cardNumber ?? '4582 8910 3746 2105'
+    const cardHolder = props.hero?.cardHolder ?? 'Alex Morgan'
+    const cardExpires = props.hero?.cardExpires ?? '09/28'
+    const chipSentLabel = props.hero?.chipSentLabel ?? 'Sent to Sarah'
+    const chipSentValue = props.hero?.chipSentValue ?? '$240.00'
+    const chipSavedLabel = props.hero?.chipSavedLabel ?? 'Auto-saved this week'
+    const chipSavedValue = props.hero?.chipSavedValue ?? '$128.40'
 
-    const logosLabel = props.logos?.label ?? "Trusted by teams at"
+    const logosLabel = props.logos?.label ?? 'Trusted by teams at'
     const logosItems = props.logos?.items?.length
       ? props.logos.items
-      : ["Stripe", "Notion", "Figma", "Vercel", "Linear", "Mercury"]
+      : ['Stripe', 'Notion', 'Figma', 'Vercel', 'Linear', 'Mercury']
 
     const featuresHeading =
-      props.features?.heading ?? "Everything you need in one wallet"
+      props.features?.heading ?? 'Everything you need in one wallet'
     const featuresDesc =
       props.features?.description ??
-      "Powerful tools designed to give you complete control over your finances — without the complexity of traditional banking."
+      'Powerful tools designed to give you complete control over your finances — without the complexity of traditional banking.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Bank-Level Security",
+            title: 'Bank-Level Security',
             description:
-              "AES-256 encryption, biometric authentication, and real-time fraud monitoring keep your money protected around the clock.",
+              'AES-256 encryption, biometric authentication, and real-time fraud monitoring keep your money protected around the clock.',
           },
           {
-            title: "Instant Transfers",
+            title: 'Instant Transfers',
             description:
-              "Move money in seconds, not days. Zero fees when sending between Vault users anywhere in the world.",
+              'Move money in seconds, not days. Zero fees when sending between Vault users anywhere in the world.',
           },
           {
-            title: "Smart Analytics",
+            title: 'Smart Analytics',
             description:
-              "AI-powered spending insights and automated budgeting that learns your habits and helps you save effortlessly.",
+              'AI-powered spending insights and automated budgeting that learns your habits and helps you save effortlessly.',
           },
           {
-            title: "Virtual Cards",
+            title: 'Virtual Cards',
             description:
-              "Generate disposable virtual cards for safer online shopping. Freeze, unfreeze, or delete them instantly.",
+              'Generate disposable virtual cards for safer online shopping. Freeze, unfreeze, or delete them instantly.',
           },
           {
-            title: "Multi-Currency",
+            title: 'Multi-Currency',
             description:
-              "Hold 50+ currencies with real exchange rates and zero hidden fees. Travel and transact like a local.",
+              'Hold 50+ currencies with real exchange rates and zero hidden fees. Travel and transact like a local.',
           },
           {
-            title: "Bill Splitting",
+            title: 'Bill Splitting',
             description:
-              "Split bills instantly with friends and family, even if they are not on Vault yet. No awkward reminders needed.",
+              'Split bills instantly with friends and family, even if they are not on Vault yet. No awkward reminders needed.',
           },
         ]
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "$4.2B+", label: "Transactions Processed" },
-          { value: "2M+", label: "Active Users" },
-          { value: "99.99%", label: "Uptime SLA" },
-          { value: "4.9", label: "App Store Rating" },
+          { value: '$4.2B+', label: 'Transactions Processed' },
+          { value: '2M+', label: 'Active Users' },
+          { value: '99.99%', label: 'Uptime SLA' },
+          { value: '4.9', label: 'App Store Rating' },
         ]
 
-    const stepsHeading = props.steps?.heading ?? "Get started in minutes"
+    const stepsHeading = props.steps?.heading ?? 'Get started in minutes'
     const stepsDesc =
       props.steps?.description ??
-      "No branches, no paperwork, no waiting. Open your account and start transacting faster than ever before."
+      'No branches, no paperwork, no waiting. Open your account and start transacting faster than ever before.'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Download & Sign Up",
+            title: 'Download & Sign Up',
             description:
-              "Create your account in under 3 minutes with just your email and phone number. No credit check required.",
+              'Create your account in under 3 minutes with just your email and phone number. No credit check required.',
           },
           {
-            title: "Link Your Accounts",
+            title: 'Link Your Accounts',
             description:
-              "Securely connect your existing bank cards and accounts using industry-standard open banking APIs.",
+              'Securely connect your existing bank cards and accounts using industry-standard open banking APIs.',
           },
           {
-            title: "Start Transacting",
+            title: 'Start Transacting',
             description:
-              "Send money, pay bills, create virtual cards, and track spending in real time from one dashboard.",
+              'Send money, pay bills, create virtual cards, and track spending in real time from one dashboard.',
           },
         ]
 
     const galleryHeading =
-      props.gallery?.heading ?? "Built for how you actually spend"
+      props.gallery?.heading ?? 'Built for how you actually spend'
     const galleryDesc =
       props.gallery?.description ??
-      "Clean interfaces, instant actions, and powerful insights that make managing money feel effortless."
-    const feedCaption = props.gallery?.feedCaption ?? "Instant transaction feed"
+      'Clean interfaces, instant actions, and powerful insights that make managing money feel effortless.'
+    const feedCaption = props.gallery?.feedCaption ?? 'Instant transaction feed'
     const feedRows = props.gallery?.feedRows?.length
       ? props.gallery.feedRows
       : [
-          { amount: "+$450.00", incoming: true },
-          { amount: "-$28.50", incoming: false },
-          { amount: "+$1,200", incoming: true },
-          { amount: "-$84.00", incoming: false },
-          { amount: "-$12.99", incoming: false },
+          { amount: '+$450.00', incoming: true },
+          { amount: '-$28.50', incoming: false },
+          { amount: '+$1,200', incoming: true },
+          { amount: '-$84.00', incoming: false },
+          { amount: '-$12.99', incoming: false },
         ]
-    const analyticsCaption = props.gallery?.analyticsCaption ?? "Smart analytics"
-    const analyticsTitle = props.gallery?.analyticsTitle ?? "Monthly Spend"
-    const analyticsPeriod = props.gallery?.analyticsPeriod ?? "Oct 2025"
+    const analyticsCaption =
+      props.gallery?.analyticsCaption ?? 'Smart analytics'
+    const analyticsTitle = props.gallery?.analyticsTitle ?? 'Monthly Spend'
+    const analyticsPeriod = props.gallery?.analyticsPeriod ?? 'Oct 2025'
     const analyticsBars = props.gallery?.analyticsBars?.length
       ? props.gallery.analyticsBars
       : [40, 65, 45, 80, 55, 70, 60]
-    const cardCaption = props.gallery?.cardCaption ?? "One-tap card controls"
-    const cardLast4 = props.gallery?.cardLast4 ?? "•••• 4821"
-    const splitCaption = props.gallery?.splitCaption ?? "Effortless bill splitting"
-    const splitTitle = props.gallery?.splitTitle ?? "Split $142.50"
+    const cardCaption = props.gallery?.cardCaption ?? 'One-tap card controls'
+    const cardLast4 = props.gallery?.cardLast4 ?? '•••• 4821'
+    const splitCaption =
+      props.gallery?.splitCaption ?? 'Effortless bill splitting'
+    const splitTitle = props.gallery?.splitTitle ?? 'Split $142.50'
     const splitRows = props.gallery?.splitRows?.length
       ? props.gallery.splitRows
       : [
-          { name: "You", status: "$47.50" },
-          { name: "Marcus", status: "Pending" },
-          { name: "Priya", status: "Pending" },
+          { name: 'You', status: '$47.50' },
+          { name: 'Marcus', status: 'Pending' },
+          { name: 'Priya', status: 'Pending' },
         ]
 
     const pricingHeading =
-      props.pricing?.heading ?? "Simple, transparent pricing"
+      props.pricing?.heading ?? 'Simple, transparent pricing'
     const pricingDesc =
       props.pricing?.description ??
-      "Start free and scale as you grow. No hidden fees, no long-term contracts, cancel anytime."
+      'Start free and scale as you grow. No hidden fees, no long-term contracts, cancel anytime.'
     const pricingPlans = props.pricing?.plans?.length
       ? props.pricing.plans
       : [
           {
-            name: "Free",
-            tagline: "For personal use",
-            price: "$0",
-            period: "/ month",
-            cta: "Get Started",
+            name: 'Free',
+            tagline: 'For personal use',
+            price: '$0',
+            period: '/ month',
+            cta: 'Get Started',
             featured: false,
             features: [
-              "Basic digital wallet",
-              "3 virtual cards",
-              "Standard bank transfers",
-              "Spending summaries",
-              "Email support",
+              'Basic digital wallet',
+              '3 virtual cards',
+              'Standard bank transfers',
+              'Spending summaries',
+              'Email support',
             ],
           },
           {
-            name: "Pro",
-            tagline: "For power users",
-            price: "$9.99",
-            period: "/ month",
-            cta: "Start Pro Trial",
+            name: 'Pro',
+            tagline: 'For power users',
+            price: '$9.99',
+            period: '/ month',
+            cta: 'Start Pro Trial',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
             features: [
-              "Unlimited virtual cards",
-              "Instant transfers",
-              "Advanced AI analytics",
-              "Multi-currency accounts",
-              "Priority chat support",
+              'Unlimited virtual cards',
+              'Instant transfers',
+              'Advanced AI analytics',
+              'Multi-currency accounts',
+              'Priority chat support',
             ],
           },
           {
-            name: "Business",
-            tagline: "For teams & companies",
-            price: "$29.99",
-            period: "/ month",
-            cta: "Contact Sales",
+            name: 'Business',
+            tagline: 'For teams & companies',
+            price: '$29.99',
+            period: '/ month',
+            cta: 'Contact Sales',
             featured: false,
             features: [
-              "Everything in Pro",
-              "Up to 10 team accounts",
-              "API access",
-              "Custom integrations",
-              "Dedicated account manager",
+              'Everything in Pro',
+              'Up to 10 team accounts',
+              'API access',
+              'Custom integrations',
+              'Dedicated account manager',
             ],
           },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Loved by thousands"
+      props.testimonials?.heading ?? 'Loved by thousands'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Do not take our word for it. Here is what real users say about managing money with Vault."
+      'Do not take our word for it. Here is what real users say about managing money with Vault.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "Vault replaced three apps I used daily. The instant transfers alone saved me hours every month, and the virtual cards make online shopping so much safer.",
-            name: "Sarah Chen",
-            role: "Freelance Designer",
+              'Vault replaced three apps I used daily. The instant transfers alone saved me hours every month, and the virtual cards make online shopping so much safer.',
+            name: 'Sarah Chen',
+            role: 'Freelance Designer',
             avatarAlt:
-              "Professional headshot of Sarah Chen, a smiling woman with dark hair",
+              'Professional headshot of Sarah Chen, a smiling woman with dark hair',
           },
           {
             quote:
-              "Finally, a financial app that actually understands how businesses move money. The analytics are incredible and the API let us automate our entire payout flow.",
-            name: "Marcus Johnson",
-            role: "Small Business Owner",
+              'Finally, a financial app that actually understands how businesses move money. The analytics are incredible and the API let us automate our entire payout flow.',
+            name: 'Marcus Johnson',
+            role: 'Small Business Owner',
             avatarAlt:
-              "Professional headshot of Marcus Johnson, a smiling man with short beard",
+              'Professional headshot of Marcus Johnson, a smiling man with short beard',
           },
           {
             quote:
-              "The security features give me real peace of mind. I create a new virtual card for every subscription now. If one gets leaked, I just delete it. Game changer.",
-            name: "Priya Sharma",
-            role: "Software Engineer",
+              'The security features give me real peace of mind. I create a new virtual card for every subscription now. If one gets leaked, I just delete it. Game changer.',
+            name: 'Priya Sharma',
+            role: 'Software Engineer',
             avatarAlt:
-              "Professional headshot of Priya Sharma, a smiling woman with long dark hair",
+              'Professional headshot of Priya Sharma, a smiling woman with long dark hair',
           },
         ]
 
-    const faqHeading = props.faq?.heading ?? "Frequently asked questions"
+    const faqHeading = props.faq?.heading ?? 'Frequently asked questions'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know about Vault. Can not find what you are looking for? Reach out to our support team."
+      'Everything you need to know about Vault. Can not find what you are looking for? Reach out to our support team.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "Is my money FDIC insured?",
+            question: 'Is my money FDIC insured?',
             answer:
-              "Yes. Funds held in your Vault account are deposited with our partner banks and are insured up to $250,000 per depositor through the Federal Deposit Insurance Corporation (FDIC). Your money is safe and fully protected.",
+              'Yes. Funds held in your Vault account are deposited with our partner banks and are insured up to $250,000 per depositor through the Federal Deposit Insurance Corporation (FDIC). Your money is safe and fully protected.',
           },
           {
-            question: "How quickly can I transfer money?",
+            question: 'How quickly can I transfer money?',
             answer:
-              "Internal transfers between Vault users are instant, 24/7. External bank transfers typically complete within 1-2 business days. Pro and Business users also get access to same-day ACH and real-time payment rails where available.",
+              'Internal transfers between Vault users are instant, 24/7. External bank transfers typically complete within 1-2 business days. Pro and Business users also get access to same-day ACH and real-time payment rails where available.',
           },
           {
-            question: "What currencies are supported?",
+            question: 'What currencies are supported?',
             answer:
-              "We support over 50 currencies including USD, EUR, GBP, JPY, AUD, CAD, CHF, SGD, and more. You can hold, exchange, and transact in multiple currencies with real mid-market exchange rates and no hidden markup.",
+              'We support over 50 currencies including USD, EUR, GBP, JPY, AUD, CAD, CHF, SGD, and more. You can hold, exchange, and transact in multiple currencies with real mid-market exchange rates and no hidden markup.',
           },
           {
-            question: "Can I use Vault outside the US?",
+            question: 'Can I use Vault outside the US?',
             answer:
-              "Absolutely. Vault is available in 40+ countries with local payment rails in major markets. You can send and receive money internationally, use your card abroad, and access local account details in the US, UK, EU, and Australia.",
+              'Absolutely. Vault is available in 40+ countries with local payment rails in major markets. You can send and receive money internationally, use your card abroad, and access local account details in the US, UK, EU, and Australia.',
           },
           {
-            question: "What happens if I lose my phone?",
+            question: 'What happens if I lose my phone?',
             answer:
-              "Your account remains secure. You can instantly freeze all activity from any web browser at vault.com/security. Once you get a new device, simply reinstall the app and verify your identity to regain access. All funds and transaction history remain intact.",
+              'Your account remains secure. You can instantly freeze all activity from any web browser at vault.com/security. Once you get a new device, simply reinstall the app and verify your identity to regain access. All funds and transaction history remain intact.',
           },
           {
-            question: "Are there any hidden fees?",
+            question: 'Are there any hidden fees?',
             answer:
-              "Never. We believe in complete transparency. Free accounts have zero monthly fees. Pro and Business plans show exactly what you pay upfront. We do not charge for card replacements, in-network ATM withdrawals, or account inactivity. See our full fee schedule for details.",
+              'Never. We believe in complete transparency. Free accounts have zero monthly fees. Pro and Business plans show exactly what you pay upfront. We do not charge for card replacements, in-network ATM withdrawals, or account inactivity. See our full fee schedule for details.',
           },
         ]
 
     const ctaHeading =
-      props.cta?.heading ?? "Ready to take control of your money?"
+      props.cta?.heading ?? 'Ready to take control of your money?'
     const ctaDesc =
       props.cta?.description ??
-      "Join 2 million users who have already switched to smarter banking. No credit check, no hidden fees, no stress."
-    const ctaPrimary = props.cta?.primaryCta ?? "Create Free Account"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Talk to Sales"
+      'Join 2 million users who have already switched to smarter banking. No credit check, no hidden fees, no stress.'
+    const ctaPrimary = props.cta?.primaryCta ?? 'Create Free Account'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'Talk to Sales'
 
     const footerTagline =
       props.footer?.tagline ??
-      "The modern digital wallet that brings all your accounts, cards, and payments into one secure place."
+      'The modern digital wallet that brings all your accounts, cards, and payments into one secure place.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Product",
-            links: ["Features", "Pricing", "Security", "Business", "API Docs"],
+            title: 'Product',
+            links: ['Features', 'Pricing', 'Security', 'Business', 'API Docs'],
           },
           {
-            title: "Company",
-            links: ["About", "Careers", "Blog", "Press", "Partners"],
+            title: 'Company',
+            links: ['About', 'Careers', 'Blog', 'Press', 'Partners'],
           },
           {
-            title: "Support",
+            title: 'Support',
             links: [
-              "Help Center",
-              "Contact Us",
-              "Status",
-              "Privacy Policy",
-              "Terms of Service",
+              'Help Center',
+              'Contact Us',
+              'Status',
+              'Privacy Policy',
+              'Terms of Service',
             ],
           },
         ]
@@ -560,7 +566,7 @@ export const FintechKimiPage2 = defineCapsule({
       `© ${new Date().getFullYear()} ${brand} Financial Inc. All rights reserved.`
     const footerDisclosure =
       props.footer?.disclosure ??
-      "Vault is a financial technology company, not a bank."
+      'Vault is a financial technology company, not a bank.'
 
     // Lakebed hooks
     const storedTransactions = lakebed.useQuery('transactions')
@@ -568,10 +574,8 @@ export const FintechKimiPage2 = defineCapsule({
     const storedBillSplits = lakebed.useQuery('billSplits')
     const auth = lakebed.useAuth()
     const addTransaction = lakebed.useMutation('addTransaction')
-    const addVirtualCard = lakebed.useMutation('addVirtualCard')
     const freezeCard = lakebed.useMutation('freezeCard')
     const deleteCard = lakebed.useMutation('deleteCard')
-    const addBillSplit = lakebed.useMutation('addBillSplit')
     const settleBillSplit = lakebed.useMutation('settleBillSplit')
 
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
@@ -615,7 +619,13 @@ export const FintechKimiPage2 = defineCapsule({
     const displayVirtualCards =
       storedVirtualCards && storedVirtualCards.length > 0
         ? storedVirtualCards
-        : [{ id: 'default', last4: cardLast4.replace('•••• ', ''), status: 'active' }]
+        : [
+            {
+              id: 'default',
+              last4: cardLast4.replace('•••• ', ''),
+              status: 'active',
+            },
+          ]
 
     const displayBillSplits =
       storedBillSplits && storedBillSplits.length > 0
@@ -631,7 +641,7 @@ export const FintechKimiPage2 = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground",
+          'grid place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -694,7 +704,10 @@ export const FintechKimiPage2 = defineCapsule({
 
     const ChevronDown = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5 text-muted-foreground group-open:rotate-180 transition-transform", className)}
+        className={cn(
+          'size-5 text-muted-foreground group-open:rotate-180 transition-transform',
+          className,
+        )}
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
@@ -804,35 +817,35 @@ export const FintechKimiPage2 = defineCapsule({
     // Tokenized tints for the multi-colored feature icon tiles (maps the HTML's
     // brand/blue/purple/orange/teal/rose set onto theme tokens + chart colors).
     const featureTints = [
-      "bg-primary/10 text-primary",
-      "bg-chart-1/15 text-chart-1",
-      "bg-chart-2/15 text-chart-2",
-      "bg-chart-3/15 text-chart-3",
-      "bg-chart-4/15 text-chart-4",
-      "bg-chart-5/15 text-chart-5",
+      'bg-primary/10 text-primary',
+      'bg-chart-1/15 text-chart-1',
+      'bg-chart-2/15 text-chart-2',
+      'bg-chart-3/15 text-chart-3',
+      'bg-chart-4/15 text-chart-4',
+      'bg-chart-5/15 text-chart-5',
     ]
 
     const socialIcons: { label: string; path: ReactNode }[] = [
       {
-        label: "Twitter",
+        label: 'Twitter',
         path: (
           <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
         ),
       },
       {
-        label: "LinkedIn",
+        label: 'LinkedIn',
         path: (
           <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z" />
         ),
       },
       {
-        label: "GitHub",
+        label: 'GitHub',
         path: (
           <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
         ),
       },
       {
-        label: "Instagram",
+        label: 'Instagram',
         path: (
           <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
         ),
@@ -842,7 +855,7 @@ export const FintechKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -872,7 +885,10 @@ export const FintechKimiPage2 = defineCapsule({
                 ))}
               </div>
               <div className="hidden items-center gap-3 md:flex">
-                <Sheet open={transactionsOpen} onOpenChange={setTransactionsOpen}>
+                <Sheet
+                  open={transactionsOpen}
+                  onOpenChange={setTransactionsOpen}
+                >
                   <SheetTrigger asChild>
                     <button
                       type="button"
@@ -903,7 +919,9 @@ export const FintechKimiPage2 = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Transaction History</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Transaction History
+                      </SheetTitle>
                       <SheetDescription>
                         {displayTransactions.length > 0
                           ? `${displayTransactions.length} transaction${displayTransactions.length === 1 ? '' : 's'}`
@@ -924,13 +942,17 @@ export const FintechKimiPage2 = defineCapsule({
                                   {tx.description}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
-                                  {tx.incoming === 'true' ? 'Incoming' : 'Outgoing'}
+                                  {tx.incoming === 'true'
+                                    ? 'Incoming'
+                                    : 'Outgoing'}
                                 </p>
                               </div>
                               <span
                                 className={cn(
                                   'text-sm font-bold',
-                                  tx.incoming === 'true' ? 'text-primary' : 'text-muted-foreground',
+                                  tx.incoming === 'true'
+                                    ? 'text-primary'
+                                    : 'text-muted-foreground',
                                 )}
                               >
                                 {tx.amount}
@@ -1196,7 +1218,7 @@ export const FintechKimiPage2 = defineCapsule({
                     <span>{heroBadge}</span>
                   </div>
                   <h1 className="text-5xl font-extrabold leading-tight tracking-tight text-foreground sm:text-6xl lg:text-7xl">
-                    {heroLead}{" "}
+                    {heroLead}{' '}
                     <span className="bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">
                       {heroAccent}
                     </span>
@@ -1379,7 +1401,7 @@ export const FintechKimiPage2 = defineCapsule({
                   >
                     <div
                       className={cn(
-                        "mb-5 grid size-14 place-items-center rounded-xl text-xl transition-transform group-hover:scale-110",
+                        'mb-5 grid size-14 place-items-center rounded-xl text-xl transition-transform group-hover:scale-110',
                         featureTints[i % featureTints.length],
                       )}
                     >
@@ -1475,14 +1497,16 @@ export const FintechKimiPage2 = defineCapsule({
                         <span className="size-10 shrink-0 rounded-full bg-gradient-to-br from-primary/30 to-chart-1/30" />
                         <span
                           className={cn(
-                            "h-2.5 flex-1 rounded-full bg-muted",
-                            tx.incoming !== 'true' && "max-w-[60%]",
+                            'h-2.5 flex-1 rounded-full bg-muted',
+                            tx.incoming !== 'true' && 'max-w-[60%]',
                           )}
                         />
                         <span
                           className={cn(
-                            "text-sm font-bold",
-                            tx.incoming === 'true' ? "text-primary" : "text-muted-foreground",
+                            'text-sm font-bold',
+                            tx.incoming === 'true'
+                              ? 'text-primary'
+                              : 'text-muted-foreground',
                           )}
                         >
                           {tx.amount}
@@ -1538,7 +1562,9 @@ export const FintechKimiPage2 = defineCapsule({
                           <span className="mr-auto text-[10px] text-primary-foreground/70">
                             Virtual Card
                           </span>
-                          <span className="text-xs font-bold">•••• {card.last4}</span>
+                          <span className="text-xs font-bold">
+                            •••• {card.last4}
+                          </span>
                         </div>
                         <div className="flex gap-2">
                           <button
@@ -1546,10 +1572,10 @@ export const FintechKimiPage2 = defineCapsule({
                             onClick={() => void freezeCard(card.id)}
                             disabled={card.status === 'frozen'}
                             className={cn(
-                              "flex h-10 flex-1 items-center justify-center rounded-lg text-xs font-semibold transition-colors",
+                              'flex h-10 flex-1 items-center justify-center rounded-lg text-xs font-semibold transition-colors',
                               card.status === 'frozen'
-                                ? "bg-muted text-muted-foreground"
-                                : "bg-primary/10 text-primary hover:bg-primary/20",
+                                ? 'bg-muted text-muted-foreground'
+                                : 'bg-primary/10 text-primary hover:bg-primary/20',
                             )}
                           >
                             {card.status === 'frozen' ? 'Frozen' : 'Freeze'}
@@ -1585,12 +1611,12 @@ export const FintechKimiPage2 = defineCapsule({
                         <div key={split.id} className="flex items-center gap-3">
                           <span
                             className={cn(
-                              "size-8 shrink-0 rounded-full bg-gradient-to-br",
+                              'size-8 shrink-0 rounded-full bg-gradient-to-br',
                               i === 0
-                                ? "from-primary/30 to-chart-1/30"
+                                ? 'from-primary/30 to-chart-1/30'
                                 : i === 1
-                                  ? "from-chart-1/30 to-chart-2/30"
-                                  : "from-chart-2/30 to-chart-5/30",
+                                  ? 'from-chart-1/30 to-chart-2/30'
+                                  : 'from-chart-2/30 to-chart-5/30',
                             )}
                           />
                           <span className="text-sm font-semibold text-foreground">
@@ -1598,10 +1624,10 @@ export const FintechKimiPage2 = defineCapsule({
                           </span>
                           <span
                             className={cn(
-                              "ml-auto text-sm",
+                              'ml-auto text-sm',
                               split.status === 'paid'
-                                ? "font-bold text-primary"
-                                : "text-muted-foreground",
+                                ? 'font-bold text-primary'
+                                : 'text-muted-foreground',
                             )}
                           >
                             {split.status === 'paid' ? 'Paid' : 'Pending'}
@@ -1643,15 +1669,15 @@ export const FintechKimiPage2 = defineCapsule({
                   <article
                     key={plan.name}
                     className={cn(
-                      "relative rounded-2xl bg-card p-8 text-card-foreground transition-all",
+                      'relative rounded-2xl bg-card p-8 text-card-foreground transition-all',
                       plan.featured
-                        ? "border-2 border-primary shadow-xl shadow-primary/10"
-                        : "border border-border hover:shadow-xl",
+                        ? 'border-2 border-primary shadow-xl shadow-primary/10'
+                        : 'border border-border hover:shadow-xl',
                     )}
                   >
                     {plan.featured && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary to-accent-foreground px-4 py-1 text-xs font-bold uppercase tracking-wider text-primary-foreground">
-                        {plan.badge ?? "Most Popular"}
+                        {plan.badge ?? 'Most Popular'}
                       </div>
                     )}
                     <div className="mb-1 text-lg font-bold text-foreground">
@@ -1661,7 +1687,7 @@ export const FintechKimiPage2 = defineCapsule({
                       {plan.tagline}
                     </div>
                     <div className="mb-6 text-5xl font-extrabold text-foreground">
-                      {plan.price}{" "}
+                      {plan.price}{' '}
                       <span className="text-base font-medium text-muted-foreground">
                         {plan.period}
                       </span>
@@ -1681,10 +1707,10 @@ export const FintechKimiPage2 = defineCapsule({
                       type="button"
                       onClick={() => go(plan.cta)}
                       className={cn(
-                        "block w-full rounded-xl py-3 text-center font-semibold transition-colors",
+                        'block w-full rounded-xl py-3 text-center font-semibold transition-colors',
                         plan.featured
-                          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 hover:bg-primary/90"
-                          : "border-2 border-border text-foreground hover:bg-muted",
+                          ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30 hover:bg-primary/90'
+                          : 'border-2 border-border text-foreground hover:bg-muted',
                       )}
                     >
                       {plan.cta}

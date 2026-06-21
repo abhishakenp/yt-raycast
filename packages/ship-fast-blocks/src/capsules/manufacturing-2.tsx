@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -52,7 +52,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
  * it render great with no props.
  */
 export const ManufacturingKimiPage2 = defineCapsule({
-  name: "ManufacturingKimiPage2",
+  name: 'ManufacturingKimiPage2',
   description:
     "Bold, dramatic precision-manufacturing / industrial-fabrication LANDING page — VARIANT 2 and a visually distinct alternative/second style sibling to ManufacturingKimiPage (which is the cleaner, neutral, light-surface version). This 'ApexForge Industries' port features a dark charcoal hero with an animated gradient and photo overlay, a saturated orange/primary brand-accent CTA color, image-tiled industry cards with gradient scrims, numbered process steps on gradient rails, project-gallery cards with category badges and client stats, a dark split about/stats band, star-rated testimonials with company names, and a full-bleed orange gradient closing CTA. Includes a centered hero (ISO certification pill, headline, dual CTAs, trust-stat strip), a 'trusted by industry leaders' logo strip, a 6-up capabilities grid (CNC machining, welding & fabrication, sheet metal work, 3D printing & additive, finishing & coating, quality & inspection) with bullet specs, an 8-up image-tiled industries grid (aerospace, automotive, energy, construction, medical, defense, industrial, renewable), a 5-step engineering process (consultation, engineering, production, finishing, delivery) with a lead-time stats panel, a featured-projects gallery with category tags and delivery metrics, a dark about-the-company stats split, a 3-up testimonials grid, an orange gradient CTA band with trust badges, and a 4-column footer. Use as the ROOT/home page for CNC machine shops, metal fabricators, contract manufacturers, industrial engineering firms, foundries or precision-parts suppliers serving aerospace, automotive, energy, medical, defense, construction or renewable sectors when a high-impact, photography-rich, conversion-focused page is wanted. Supply content only — brand, nav, hero, logos, capabilities, industries, process, gallery, about, testimonials, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -239,15 +239,18 @@ export const ManufacturingKimiPage2 = defineCapsule({
         new Set(db.favorites.all().map((favorite) => favorite.projectName)),
     },
     mutations: {
-      submitQuoteRequest: ({ db }, data: {
-        projectName: string
-        company: string
-        email: string
-        phone: string
-        description: string
-        quantity: string
-        timeline: string
-      }) => {
+      submitQuoteRequest: (
+        { db },
+        data: {
+          projectName: string
+          company: string
+          email: string
+          phone: string
+          description: string
+          quantity: string
+          timeline: string
+        },
+      ) => {
         db.quoteRequests.insert(data)
         return db.quoteRequests.all()
       },
@@ -279,8 +282,8 @@ export const ManufacturingKimiPage2 = defineCapsule({
       quantity: '',
       timeline: '',
     })
-    const brand = props.brand ?? "ApexForge"
-    const brandTagline = props.brandTagline ?? "INDUSTRIES"
+    const brand = props.brand ?? 'ApexForge'
+    const brandTagline = props.brandTagline ?? 'INDUSTRIES'
 
     const favoriteProjectNames = lakebed.useQuery('favoriteProjectNames')
     const toggleFavorite = lakebed.useMutation('toggleFavorite')
@@ -313,312 +316,334 @@ export const ManufacturingKimiPage2 = defineCapsule({
     }
     const nav = props.nav?.length
       ? props.nav
-      : ["Capabilities", "Industries", "Process", "Projects", "About", "Get Quote"]
+      : [
+          'Capabilities',
+          'Industries',
+          'Process',
+          'Projects',
+          'About',
+          'Get Quote',
+        ]
 
-    const heroBadge = props.hero?.badge ?? "ISO 9001:2015 CERTIFIED"
-    const heroHeading = props.hero?.heading ?? "Forging the Future of"
-    const heroAccent = props.hero?.headingAccent ?? "Industrial Excellence"
+    const heroBadge = props.hero?.badge ?? 'ISO 9001:2015 CERTIFIED'
+    const heroHeading = props.hero?.heading ?? 'Forging the Future of'
+    const heroAccent = props.hero?.headingAccent ?? 'Industrial Excellence'
     const heroSub =
       props.hero?.subheading ??
       "Precision manufacturing, custom fabrication, and engineering solutions for the world's most demanding industries. From aerospace to energy infrastructure."
-    const heroPrimary = props.hero?.primaryCta ?? "Explore Capabilities"
-    const heroSecondary = props.hero?.secondaryCta ?? "View Projects"
+    const heroPrimary = props.hero?.primaryCta ?? 'Explore Capabilities'
+    const heroSecondary = props.hero?.secondaryCta ?? 'View Projects'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Industrial CNC machining facility with sparks and precision metalworking"
+      'Industrial CNC machining facility with sparks and precision metalworking'
     const heroStats = props.hero?.stats?.length
       ? props.hero.stats
       : [
-          { value: "ISO 9001", label: "Certified Quality" },
-          { value: "24/7", label: "Production Support" },
-          { value: "Global", label: "Delivery Network" },
+          { value: 'ISO 9001', label: 'Certified Quality' },
+          { value: '24/7', label: 'Production Support' },
+          { value: 'Global', label: 'Delivery Network' },
         ]
 
-    const logosHeading = props.logos?.heading ?? "Trusted by Industry Leaders"
+    const logosHeading = props.logos?.heading ?? 'Trusted by Industry Leaders'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
       : [
-          "BOEING",
-          "SIEMENS",
-          "GE AVIATION",
-          "ROLLS-ROYCE",
-          "CATERPILLAR",
-          "TESLA",
+          'BOEING',
+          'SIEMENS',
+          'GE AVIATION',
+          'ROLLS-ROYCE',
+          'CATERPILLAR',
+          'TESLA',
         ]
 
-    const capEyebrow = props.capabilities?.eyebrow ?? "Our Capabilities"
+    const capEyebrow = props.capabilities?.eyebrow ?? 'Our Capabilities'
     const capHeading =
-      props.capabilities?.heading ?? "Comprehensive Manufacturing Solutions"
+      props.capabilities?.heading ?? 'Comprehensive Manufacturing Solutions'
     const capDesc =
       props.capabilities?.description ??
-      "From concept to completion, we deliver precision-engineered components and assemblies with industry-leading quality and speed."
+      'From concept to completion, we deliver precision-engineered components and assemblies with industry-leading quality and speed.'
     const capItems = props.capabilities?.items?.length
       ? props.capabilities.items
       : [
           {
-            title: "CNC Machining",
+            title: 'CNC Machining',
             description:
               '5-axis CNC milling and turning with tolerances to ±0.0005". Materials include titanium, Inconel, aluminum, and engineering plastics.',
             bullets: [
-              "30+ CNC centers",
-              "24-hour turnaround available",
+              '30+ CNC centers',
+              '24-hour turnaround available',
               'Parts up to 60" x 40" x 30"',
             ],
           },
           {
-            title: "Welding & Fabrication",
+            title: 'Welding & Fabrication',
             description:
-              "MIG, TIG, and robotic welding for structural steel, aluminum, and exotic alloys. Certified welders with AWS D1.1 and ASME Section IX.",
+              'MIG, TIG, and robotic welding for structural steel, aluminum, and exotic alloys. Certified welders with AWS D1.1 and ASME Section IX.',
             bullets: [
-              "Automated welding cells",
-              "Structural steel up to 50 tons",
-              "X-ray inspection certified",
+              'Automated welding cells',
+              'Structural steel up to 50 tons',
+              'X-ray inspection certified',
             ],
           },
           {
-            title: "Sheet Metal Work",
+            title: 'Sheet Metal Work',
             description:
-              "Laser cutting, punching, bending, and forming. From prototypes to high-volume production runs with quick die changeovers.",
+              'Laser cutting, punching, bending, and forming. From prototypes to high-volume production runs with quick die changeovers.',
             bullets: [
-              "6kW fiber laser cutting",
-              "250-ton press brakes",
-              "Materials 0.5mm to 25mm",
+              '6kW fiber laser cutting',
+              '250-ton press brakes',
+              'Materials 0.5mm to 25mm',
             ],
           },
           {
-            title: "3D Printing & Additive",
+            title: '3D Printing & Additive',
             description:
-              "Industrial SLA, SLS, and DMLS additive manufacturing. Metal 3D printing in titanium, stainless steel, and aluminum.",
+              'Industrial SLA, SLS, and DMLS additive manufacturing. Metal 3D printing in titanium, stainless steel, and aluminum.',
             bullets: [
-              "Build volume 400x400x500mm",
-              "Layer resolution 20 microns",
-              "Post-processing included",
+              'Build volume 400x400x500mm',
+              'Layer resolution 20 microns',
+              'Post-processing included',
             ],
           },
           {
-            title: "Finishing & Coating",
+            title: 'Finishing & Coating',
             description:
-              "Anodizing, powder coating, electroplating, and specialized surface treatments. MIL-SPEC finishes and custom color matching.",
+              'Anodizing, powder coating, electroplating, and specialized surface treatments. MIL-SPEC finishes and custom color matching.',
             bullets: [
-              "Type II & III anodizing",
+              'Type II & III anodizing',
               "Powder coat line 12'x8'x25'",
-              "Chrome & nickel plating",
+              'Chrome & nickel plating',
             ],
           },
           {
-            title: "Quality & Inspection",
+            title: 'Quality & Inspection',
             description:
-              "CMM inspection, material certification, and full traceability. AS9100D and NADCAP accredited quality systems.",
+              'CMM inspection, material certification, and full traceability. AS9100D and NADCAP accredited quality systems.',
             bullets: [
               'Zeiss CMM 24" x 20" x 16"',
-              "First Article Inspection",
-              "Full material certs",
+              'First Article Inspection',
+              'Full material certs',
             ],
           },
         ]
 
-    const indEyebrow = props.industries?.eyebrow ?? "Industries Served"
-    const indHeading = props.industries?.heading ?? "Powering Critical Industries"
+    const indEyebrow = props.industries?.eyebrow ?? 'Industries Served'
+    const indHeading =
+      props.industries?.heading ?? 'Powering Critical Industries'
     const indDesc =
       props.industries?.description ??
-      "From aerospace to renewable energy, we manufacture components that keep the world moving, flying, and advancing."
+      'From aerospace to renewable energy, we manufacture components that keep the world moving, flying, and advancing.'
     const indItems = props.industries?.items?.length
       ? props.industries.items
       : [
           {
-            title: "Aerospace",
+            title: 'Aerospace',
             description:
-              "Flight-critical components, turbine parts, and structural assemblies for commercial and defense aviation.",
-            imageAlt: "Aerospace jet engine turbine blade manufacturing",
+              'Flight-critical components, turbine parts, and structural assemblies for commercial and defense aviation.',
+            imageAlt: 'Aerospace jet engine turbine blade manufacturing',
           },
           {
-            title: "Automotive",
+            title: 'Automotive',
             description:
-              "Powertrain components, EV battery enclosures, and precision chassis parts for leading OEMs.",
-            imageAlt: "Automotive assembly line manufacturing robotic arms",
+              'Powertrain components, EV battery enclosures, and precision chassis parts for leading OEMs.',
+            imageAlt: 'Automotive assembly line manufacturing robotic arms',
           },
           {
-            title: "Energy",
+            title: 'Energy',
             description:
-              "Oil & gas extraction equipment, wind turbine components, and solar mounting systems.",
-            imageAlt: "Offshore oil rig energy infrastructure platform",
+              'Oil & gas extraction equipment, wind turbine components, and solar mounting systems.',
+            imageAlt: 'Offshore oil rig energy infrastructure platform',
           },
           {
-            title: "Construction",
+            title: 'Construction',
             description:
-              "Structural steel, heavy equipment components, and infrastructure hardware.",
-            imageAlt: "Heavy construction equipment excavator at building site",
+              'Structural steel, heavy equipment components, and infrastructure hardware.',
+            imageAlt: 'Heavy construction equipment excavator at building site',
           },
           {
-            title: "Medical",
+            title: 'Medical',
             description:
-              "Surgical instruments, implantable devices, and diagnostic equipment housings. ISO 13485 certified.",
-            imageAlt: "Medical device manufacturing clean room",
+              'Surgical instruments, implantable devices, and diagnostic equipment housings. ISO 13485 certified.',
+            imageAlt: 'Medical device manufacturing clean room',
           },
           {
-            title: "Defense",
+            title: 'Defense',
             description:
-              "Armored vehicle components, weapons systems, and tactical gear. ITAR registered facility.",
-            imageAlt: "Defense military vehicle manufacturing facility",
+              'Armored vehicle components, weapons systems, and tactical gear. ITAR registered facility.',
+            imageAlt: 'Defense military vehicle manufacturing facility',
           },
           {
-            title: "Industrial",
+            title: 'Industrial',
             description:
-              "Automation equipment, conveyor systems, and custom machinery for manufacturing plants.",
-            imageAlt: "Industrial robotics and automation manufacturing",
+              'Automation equipment, conveyor systems, and custom machinery for manufacturing plants.',
+            imageAlt: 'Industrial robotics and automation manufacturing',
           },
           {
-            title: "Renewable",
+            title: 'Renewable',
             description:
-              "Wind turbine nacelles, solar tracking systems, and hydroelectric components.",
-            imageAlt: "Wind turbines renewable energy infrastructure",
+              'Wind turbine nacelles, solar tracking systems, and hydroelectric components.',
+            imageAlt: 'Wind turbines renewable energy infrastructure',
           },
         ]
 
-    const procEyebrow = props.process?.eyebrow ?? "Our Process"
+    const procEyebrow = props.process?.eyebrow ?? 'Our Process'
     const procHeading =
-      props.process?.heading ?? "Engineering Excellence in 5 Steps"
+      props.process?.heading ?? 'Engineering Excellence in 5 Steps'
     const procDesc =
       props.process?.description ??
-      "From initial concept to final delivery, our streamlined process ensures quality, transparency, and on-time results."
+      'From initial concept to final delivery, our streamlined process ensures quality, transparency, and on-time results.'
     const procSteps = props.process?.steps?.length
       ? props.process.steps
       : [
           {
-            title: "Consultation",
+            title: 'Consultation',
             description:
-              "Deep-dive discussion to understand your specifications, timeline, and budget requirements.",
-            bullets: ["Technical review", "Material selection", "DFM feedback"],
+              'Deep-dive discussion to understand your specifications, timeline, and budget requirements.',
+            bullets: ['Technical review', 'Material selection', 'DFM feedback'],
           },
           {
-            title: "Engineering",
+            title: 'Engineering',
             description:
-              "CAD modeling, prototyping, and process planning to validate design before production.",
-            bullets: ["3D modeling", "Prototype samples", "Tooling design"],
+              'CAD modeling, prototyping, and process planning to validate design before production.',
+            bullets: ['3D modeling', 'Prototype samples', 'Tooling design'],
           },
           {
-            title: "Production",
+            title: 'Production',
             description:
-              "Precision manufacturing with real-time monitoring and in-process quality checks.",
-            bullets: ["CNC machining", "Quality checkpoints", "Progress updates"],
+              'Precision manufacturing with real-time monitoring and in-process quality checks.',
+            bullets: [
+              'CNC machining',
+              'Quality checkpoints',
+              'Progress updates',
+            ],
           },
           {
-            title: "Finishing",
+            title: 'Finishing',
             description:
-              "Surface treatments, coatings, and final assembly to meet exact specifications.",
-            bullets: ["Heat treating", "Surface finishing", "Assembly"],
+              'Surface treatments, coatings, and final assembly to meet exact specifications.',
+            bullets: ['Heat treating', 'Surface finishing', 'Assembly'],
           },
           {
-            title: "Delivery",
+            title: 'Delivery',
             description:
-              "Final inspection with full documentation and global shipping coordination.",
-            bullets: ["Quality reports", "Material certs", "Global logistics"],
+              'Final inspection with full documentation and global shipping coordination.',
+            bullets: ['Quality reports', 'Material certs', 'Global logistics'],
           },
         ]
     const procStats = props.process?.stats?.length
       ? props.process.stats
       : [
-          { value: "48 Hours", label: "Average quote turnaround for standard projects" },
-          { value: "99.2%", label: "On-time delivery rate across all industries" },
-          { value: "24/7", label: "Customer support and production monitoring" },
+          {
+            value: '48 Hours',
+            label: 'Average quote turnaround for standard projects',
+          },
+          {
+            value: '99.2%',
+            label: 'On-time delivery rate across all industries',
+          },
+          {
+            value: '24/7',
+            label: 'Customer support and production monitoring',
+          },
         ]
 
-    const galEyebrow = props.gallery?.eyebrow ?? "Featured Projects"
+    const galEyebrow = props.gallery?.eyebrow ?? 'Featured Projects'
     const galHeading =
-      props.gallery?.heading ?? "Manufacturing Excellence in Action"
+      props.gallery?.heading ?? 'Manufacturing Excellence in Action'
     const galDesc =
       props.gallery?.description ??
-      "Real projects delivered on-time and to-spec for demanding clients across industries."
+      'Real projects delivered on-time and to-spec for demanding clients across industries.'
     const galItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
           {
-            title: "Titanium Turbine Components",
+            title: 'Titanium Turbine Components',
             description:
               'Precision-machined Ti-6Al-4V turbine blades for next-generation commercial jet engines. Tolerances held to ±0.001".',
-            tag: "AEROSPACE",
+            tag: 'AEROSPACE',
             imageAlt:
-              "CNC machined titanium turbine blade for aerospace application",
-            metric: "2,400 units delivered",
-            client: "Boeing Contract",
+              'CNC machined titanium turbine blade for aerospace application',
+            metric: '2,400 units delivered',
+            client: 'Boeing Contract',
           },
           {
-            title: "EV Battery Enclosures",
+            title: 'EV Battery Enclosures',
             description:
-              "Aluminum 6061-T6 battery housings with integrated cooling channels and EMI shielding for electric vehicle platforms.",
-            tag: "AUTOMOTIVE",
-            imageAlt: "Electric vehicle battery enclosure made from aluminum",
-            metric: "15,000 units/month",
-            client: "Tesla Supplier",
+              'Aluminum 6061-T6 battery housings with integrated cooling channels and EMI shielding for electric vehicle platforms.',
+            tag: 'AUTOMOTIVE',
+            imageAlt: 'Electric vehicle battery enclosure made from aluminum',
+            metric: '15,000 units/month',
+            client: 'Tesla Supplier',
           },
           {
-            title: "Offshore Platform Components",
+            title: 'Offshore Platform Components',
             description:
-              "Corrosion-resistant Inconel 625 pressure vessels and flow control systems for North Sea drilling operations.",
-            tag: "ENERGY",
-            imageAlt: "Offshore oil platform equipment and drilling machinery",
-            metric: "312 assemblies",
-            client: "Shell Energy",
+              'Corrosion-resistant Inconel 625 pressure vessels and flow control systems for North Sea drilling operations.',
+            tag: 'ENERGY',
+            imageAlt: 'Offshore oil platform equipment and drilling machinery',
+            metric: '312 assemblies',
+            client: 'Shell Energy',
           },
           {
-            title: "Stadium Structural Framework",
+            title: 'Stadium Structural Framework',
             description:
-              "A36 structural steel truss assemblies with hot-dip galvanizing for 65,000-seat arena roof support system.",
-            tag: "CONSTRUCTION",
-            imageAlt: "Heavy structural steel framework for construction project",
-            metric: "850 tons fabricated",
-            client: "AECOM Project",
+              'A36 structural steel truss assemblies with hot-dip galvanizing for 65,000-seat arena roof support system.',
+            tag: 'CONSTRUCTION',
+            imageAlt:
+              'Heavy structural steel framework for construction project',
+            metric: '850 tons fabricated',
+            client: 'AECOM Project',
           },
           {
-            title: "Orthopedic Surgical Instruments",
+            title: 'Orthopedic Surgical Instruments',
             description:
-              "17-4 PH stainless steel surgical tools with electropolished surfaces. Class II medical device manufacturing.",
-            tag: "MEDICAL",
-            imageAlt: "Surgical medical device components",
-            metric: "50,000 units/year",
-            client: "Stryker Medical",
+              '17-4 PH stainless steel surgical tools with electropolished surfaces. Class II medical device manufacturing.',
+            tag: 'MEDICAL',
+            imageAlt: 'Surgical medical device components',
+            metric: '50,000 units/year',
+            client: 'Stryker Medical',
           },
           {
-            title: "Wind Turbine Gearbox Housings",
+            title: 'Wind Turbine Gearbox Housings',
             description:
-              "Ductile iron gearbox enclosures for 3.5MW offshore wind turbines. Cast, machined, and painted to marine spec.",
-            tag: "RENEWABLE",
-            imageAlt: "Wind turbine nacelle assembly and components",
-            metric: "120 units delivered",
-            client: "Vestas Wind",
+              'Ductile iron gearbox enclosures for 3.5MW offshore wind turbines. Cast, machined, and painted to marine spec.',
+            tag: 'RENEWABLE',
+            imageAlt: 'Wind turbine nacelle assembly and components',
+            metric: '120 units delivered',
+            client: 'Vestas Wind',
           },
         ]
 
     const aboutEyebrow = props.about?.eyebrow ?? `About ${brand}`
     const aboutHeading =
-      props.about?.heading ?? "Four Decades of Manufacturing Excellence"
+      props.about?.heading ?? 'Four Decades of Manufacturing Excellence'
     const aboutBody = props.about?.body?.length
       ? props.about.body
       : [
-          "Founded in 1983, ApexForge Industries has grown from a small machine shop to a global manufacturing partner serving Fortune 500 companies across six continents.",
-          "Our 340,000 sq ft facility in Detroit, Michigan houses over 200 CNC machines, robotic welding cells, and dedicated quality labs. With 450 skilled employees working three shifts, we deliver precision components on time, every time.",
+          'Founded in 1983, ApexForge Industries has grown from a small machine shop to a global manufacturing partner serving Fortune 500 companies across six continents.',
+          'Our 340,000 sq ft facility in Detroit, Michigan houses over 200 CNC machines, robotic welding cells, and dedicated quality labs. With 450 skilled employees working three shifts, we deliver precision components on time, every time.',
         ]
     const aboutCerts = props.about?.certs?.length
       ? props.about.certs
       : [
-          "AS9100D Certified",
-          "ITAR Registered",
-          "ISO 13485 Medical",
-          "NADCAP Aerospace",
+          'AS9100D Certified',
+          'ITAR Registered',
+          'ISO 13485 Medical',
+          'NADCAP Aerospace',
         ]
-    const aboutLink = props.about?.link ?? "Learn more about our certifications"
+    const aboutLink = props.about?.link ?? 'Learn more about our certifications'
     const aboutStats = props.about?.stats?.length
       ? props.about.stats
       : [
-          { value: "41", label: "Years in Operation" },
-          { value: "450+", label: "Skilled Employees" },
-          { value: "200+", label: "CNC Machines" },
-          { value: "2.4M", label: "Parts Delivered (2024)" },
+          { value: '41', label: 'Years in Operation' },
+          { value: '450+', label: 'Skilled Employees' },
+          { value: '200+', label: 'CNC Machines' },
+          { value: '2.4M', label: 'Parts Delivered (2024)' },
         ]
 
-    const testEyebrow = props.testimonials?.eyebrow ?? "Client Testimonials"
+    const testEyebrow = props.testimonials?.eyebrow ?? 'Client Testimonials'
     const testHeading =
-      props.testimonials?.heading ?? "Trusted by Industry Leaders"
+      props.testimonials?.heading ?? 'Trusted by Industry Leaders'
     const testDesc =
       props.testimonials?.description ??
       `What our partners say about working with ${brand} Industries.`
@@ -627,69 +652,69 @@ export const ManufacturingKimiPage2 = defineCapsule({
       : [
           {
             quote:
-              "ApexForge has been our primary supplier for titanium components for over 15 years. Their quality is consistently exceptional, and their on-time delivery rate is unmatched in the industry.",
-            name: "Michael Chen",
-            role: "Director of Procurement",
-            company: "Boeing Commercial Airplanes",
+              'ApexForge has been our primary supplier for titanium components for over 15 years. Their quality is consistently exceptional, and their on-time delivery rate is unmatched in the industry.',
+            name: 'Michael Chen',
+            role: 'Director of Procurement',
+            company: 'Boeing Commercial Airplanes',
             avatarAlt:
-              "Professional headshot of Michael Chen, Director of Procurement at Boeing",
+              'Professional headshot of Michael Chen, Director of Procurement at Boeing',
           },
           {
             quote:
-              "When we needed to scale EV battery enclosure production 3x in 6 months, ApexForge delivered. Their engineering team optimized our design for manufacturability, reducing costs by 18%.",
-            name: "Sarah Johnson",
-            role: "VP of Manufacturing",
-            company: "Tesla, Inc.",
+              'When we needed to scale EV battery enclosure production 3x in 6 months, ApexForge delivered. Their engineering team optimized our design for manufacturability, reducing costs by 18%.',
+            name: 'Sarah Johnson',
+            role: 'VP of Manufacturing',
+            company: 'Tesla, Inc.',
             avatarAlt:
-              "Professional headshot of Sarah Johnson, VP of Manufacturing at Tesla",
+              'Professional headshot of Sarah Johnson, VP of Manufacturing at Tesla',
           },
           {
             quote:
-              "The team at ApexForge understood the critical nature of our surgical instruments. Their attention to detail and commitment to quality helped us pass FDA inspections with zero findings.",
-            name: "Dr. James Rodriguez",
-            role: "Chief of Operations",
-            company: "Stryker Medical",
+              'The team at ApexForge understood the critical nature of our surgical instruments. Their attention to detail and commitment to quality helped us pass FDA inspections with zero findings.',
+            name: 'Dr. James Rodriguez',
+            role: 'Chief of Operations',
+            company: 'Stryker Medical',
             avatarAlt:
-              "Professional headshot of Dr. James Rodriguez, Chief of Operations at Stryker",
+              'Professional headshot of Dr. James Rodriguez, Chief of Operations at Stryker',
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to Start Your Project?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to Start Your Project?'
     const ctaDesc =
       props.cta?.description ??
-      "Get a detailed quote within 48 hours. Our engineering team is ready to review your designs and provide DFM feedback to optimize for manufacturing."
-    const ctaPrimary = props.cta?.primaryCta ?? "Request a Quote"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Call (800) 555-1234"
+      'Get a detailed quote within 48 hours. Our engineering team is ready to review your designs and provide DFM feedback to optimize for manufacturing.'
+    const ctaPrimary = props.cta?.primaryCta ?? 'Request a Quote'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'Call (800) 555-1234'
     const ctaBadges = props.cta?.badges?.length
       ? props.cta.badges
-      : ["Quotes in 48 hours", "Free DFM analysis", "No minimum order quantity"]
+      : ['Quotes in 48 hours', 'Free DFM analysis', 'No minimum order quantity']
 
     const footerAbout =
       props.footer?.about ??
-      "Precision manufacturing for aerospace, automotive, energy, and medical industries since 1983."
-    const footerCapTitle = props.footer?.capabilitiesTitle ?? "Capabilities"
+      'Precision manufacturing for aerospace, automotive, energy, and medical industries since 1983.'
+    const footerCapTitle = props.footer?.capabilitiesTitle ?? 'Capabilities'
     const footerCap = props.footer?.capabilities?.length
       ? props.footer.capabilities
       : [
-          "CNC Machining",
-          "Welding & Fabrication",
-          "Sheet Metal Work",
-          "3D Printing",
-          "Finishing & Coating",
-          "Quality Inspection",
+          'CNC Machining',
+          'Welding & Fabrication',
+          'Sheet Metal Work',
+          '3D Printing',
+          'Finishing & Coating',
+          'Quality Inspection',
         ]
-    const footerCompanyTitle = props.footer?.companyTitle ?? "Company"
+    const footerCompanyTitle = props.footer?.companyTitle ?? 'Company'
     const footerCompany = props.footer?.company?.length
       ? props.footer.company
-      : ["About Us", "Projects", "Careers", "News", "Certifications", "Contact"]
-    const footerContactTitle = props.footer?.contactTitle ?? "Contact"
+      : ['About Us', 'Projects', 'Careers', 'News', 'Certifications', 'Contact']
+    const footerContactTitle = props.footer?.contactTitle ?? 'Contact'
     const footerAddress =
-      props.footer?.address ?? "3400 Industrial Boulevard, Detroit, MI 48207"
-    const footerPhone = props.footer?.phone ?? "(800) 555-1234"
-    const footerEmail = props.footer?.email ?? "quotes@apexforge.com"
+      props.footer?.address ?? '3400 Industrial Boulevard, Detroit, MI 48207'
+    const footerPhone = props.footer?.phone ?? '(800) 555-1234'
+    const footerEmail = props.footer?.email ?? 'quotes@apexforge.com'
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Sitemap"]
+      : ['Privacy Policy', 'Terms of Service', 'Sitemap']
     const footerCopyright =
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand} Industries. All rights reserved.`
@@ -790,63 +815,250 @@ export const ManufacturingKimiPage2 = defineCapsule({
     )
 
     const heroStatIcons: ReactNode[] = [
-      <svg key="h0" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="h0"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>,
-      <svg key="h1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="h1"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>,
-      <svg key="h2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="h2"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
       </svg>,
     ]
 
     const capIcons: ReactNode[] = [
-      <svg key="c0" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="c0"
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm8.486-.486a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" />
       </svg>,
-      <svg key="c1" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="c1"
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
         <path d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
       </svg>,
-      <svg key="c2" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="c2"
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
       </svg>,
-      <svg key="c3" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="c3"
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
       </svg>,
-      <svg key="c4" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="c4"
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
       </svg>,
-      <svg key="c5" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="c5"
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>,
     ]
 
     const indIcons: ReactNode[] = [
-      <svg key="n0" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="n0"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
       </svg>,
-      <svg key="n1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="n1"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
       </svg>,
-      <svg key="n2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="n2"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M13 10V3L4 14h7v7l9-11h-7z" />
       </svg>,
-      <svg key="n3" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="n3"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
       </svg>,
-      <svg key="n4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="n4"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
       </svg>,
-      <svg key="n5" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="n5"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
       </svg>,
-      <svg key="n6" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="n6"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
         <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>,
-      <svg key="n7" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="n7"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
       </svg>,
     ]
@@ -854,7 +1066,7 @@ export const ManufacturingKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -1008,7 +1220,17 @@ export const ManufacturingKimiPage2 = defineCapsule({
                       onClick={() => go(nav[nav.length - 1])}
                       className="hidden items-center gap-2 rounded-lg bg-primary px-5 py-2.5 font-semibold text-primary-foreground shadow-lg transition-all hover:bg-primary/90 sm:inline-flex"
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
                         <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                       {nav[nav.length - 1]}
@@ -1019,9 +1241,12 @@ export const ManufacturingKimiPage2 = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Request a Quote</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Request a Quote
+                      </SheetTitle>
                       <SheetDescription>
-                        Get a detailed quote within 48 hours. Our engineering team is ready to review your designs.
+                        Get a detailed quote within 48 hours. Our engineering
+                        team is ready to review your designs.
                       </SheetDescription>
                     </SheetHeader>
                     <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -1055,7 +1280,10 @@ export const ManufacturingKimiPage2 = defineCapsule({
                             required
                             value={quoteForm.projectName}
                             onChange={(e) =>
-                              setQuoteForm({ ...quoteForm, projectName: e.target.value })
+                              setQuoteForm({
+                                ...quoteForm,
+                                projectName: e.target.value,
+                              })
                             }
                             className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                             placeholder="e.g., Titanium Turbine Components"
@@ -1074,7 +1302,10 @@ export const ManufacturingKimiPage2 = defineCapsule({
                             required
                             value={quoteForm.company}
                             onChange={(e) =>
-                              setQuoteForm({ ...quoteForm, company: e.target.value })
+                              setQuoteForm({
+                                ...quoteForm,
+                                company: e.target.value,
+                              })
                             }
                             className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                             placeholder="Your company name"
@@ -1093,7 +1324,10 @@ export const ManufacturingKimiPage2 = defineCapsule({
                             required
                             value={quoteForm.email}
                             onChange={(e) =>
-                              setQuoteForm({ ...quoteForm, email: e.target.value })
+                              setQuoteForm({
+                                ...quoteForm,
+                                email: e.target.value,
+                              })
                             }
                             className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                             placeholder="you@company.com"
@@ -1111,7 +1345,10 @@ export const ManufacturingKimiPage2 = defineCapsule({
                             type="tel"
                             value={quoteForm.phone}
                             onChange={(e) =>
-                              setQuoteForm({ ...quoteForm, phone: e.target.value })
+                              setQuoteForm({
+                                ...quoteForm,
+                                phone: e.target.value,
+                              })
                             }
                             className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                             placeholder="(555) 123-4567"
@@ -1130,7 +1367,10 @@ export const ManufacturingKimiPage2 = defineCapsule({
                             rows={4}
                             value={quoteForm.description}
                             onChange={(e) =>
-                              setQuoteForm({ ...quoteForm, description: e.target.value })
+                              setQuoteForm({
+                                ...quoteForm,
+                                description: e.target.value,
+                              })
                             }
                             className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                             placeholder="Describe your project requirements, materials, specifications..."
@@ -1148,7 +1388,10 @@ export const ManufacturingKimiPage2 = defineCapsule({
                             type="text"
                             value={quoteForm.quantity}
                             onChange={(e) =>
-                              setQuoteForm({ ...quoteForm, quantity: e.target.value })
+                              setQuoteForm({
+                                ...quoteForm,
+                                quantity: e.target.value,
+                              })
                             }
                             className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                             placeholder="e.g., 100 units, 5000 units/month"
@@ -1166,16 +1409,16 @@ export const ManufacturingKimiPage2 = defineCapsule({
                             type="text"
                             value={quoteForm.timeline}
                             onChange={(e) =>
-                              setQuoteForm({ ...quoteForm, timeline: e.target.value })
+                              setQuoteForm({
+                                ...quoteForm,
+                                timeline: e.target.value,
+                              })
                             }
                             className="w-full rounded-lg border border-border bg-background px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                             placeholder="e.g., 4 weeks, 3 months"
                           />
                         </div>
-                        <Button
-                          type="submit"
-                          className="w-full rounded-full"
-                        >
+                        <Button type="submit" className="w-full rounded-full">
                           Submit Quote Request
                         </Button>
                       </form>
@@ -1201,7 +1444,17 @@ export const ManufacturingKimiPage2 = defineCapsule({
                   onClick={() => setMobileOpen((v: boolean) => !v)}
                   className="p-2 text-muted-foreground transition-colors hover:text-primary lg:hidden"
                 >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
                 </button>
@@ -1321,7 +1574,17 @@ export const ManufacturingKimiPage2 = defineCapsule({
                     className="inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-4 text-lg font-bold text-primary-foreground shadow-xl transition-all hover:-translate-y-0.5 hover:bg-primary/90"
                   >
                     {heroPrimary}
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
                       <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
                   </button>
@@ -1330,7 +1593,17 @@ export const ManufacturingKimiPage2 = defineCapsule({
                     onClick={() => go(heroSecondary)}
                     className="inline-flex items-center gap-2 rounded-lg border border-background/20 bg-background/10 px-8 py-4 text-lg font-semibold text-background backdrop-blur-sm transition-all hover:bg-background/20"
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
                       <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
@@ -1374,7 +1647,13 @@ export const ManufacturingKimiPage2 = defineCapsule({
                     onClick={() => go(logo)}
                     className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <svg
+                      width="32"
+                      height="32"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
                       <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                     </svg>
                     <span className="text-lg font-bold">{logo}</span>
@@ -1429,7 +1708,17 @@ export const ManufacturingKimiPage2 = defineCapsule({
                       className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary/80"
                     >
                       Get Quote
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
                         <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
                       </svg>
                     </button>
@@ -1502,7 +1791,7 @@ export const ManufacturingKimiPage2 = defineCapsule({
                 {procSteps.map((step, i) => (
                   <div key={step.title} className="relative">
                     <div className="mb-6 grid size-16 place-items-center rounded-2xl bg-primary text-2xl font-bold text-primary-foreground shadow-xl">
-                      {String(i + 1).padStart(2, "0")}
+                      {String(i + 1).padStart(2, '0')}
                     </div>
                     {i < procSteps.length - 1 && (
                       <div className="absolute left-20 right-0 top-8 hidden h-0.5 bg-gradient-to-r from-primary to-primary/20 lg:block" />
@@ -1610,13 +1899,26 @@ export const ManufacturingKimiPage2 = defineCapsule({
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation()
-                            setQuoteForm({ ...quoteForm, projectName: item.title })
+                            setQuoteForm({
+                              ...quoteForm,
+                              projectName: item.title,
+                            })
                             setQuoteOpen(true)
                           }}
                           className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary/80"
                         >
                           Request Similar Quote
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
                             <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
                           </svg>
                         </button>
@@ -1671,7 +1973,17 @@ export const ManufacturingKimiPage2 = defineCapsule({
                     className="inline-flex items-center gap-2 font-semibold text-primary transition-colors hover:text-primary/80"
                   >
                     {aboutLink}
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
                       <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
                   </button>
@@ -1732,7 +2044,9 @@ export const ManufacturingKimiPage2 = defineCapsule({
                         className="size-14 rounded-full object-cover"
                       />
                       <div>
-                        <div className="font-bold text-foreground">{t.name}</div>
+                        <div className="font-bold text-foreground">
+                          {t.name}
+                        </div>
                         <div className="text-sm text-muted-foreground">
                           {t.role}
                         </div>
@@ -1763,7 +2077,17 @@ export const ManufacturingKimiPage2 = defineCapsule({
                   onClick={() => setQuoteOpen(true)}
                   className="inline-flex items-center gap-2 rounded-lg bg-background px-8 py-4 text-lg font-bold text-foreground shadow-xl transition-all hover:bg-background/90 hover:shadow-2xl"
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                   {ctaPrimary}
@@ -1773,7 +2097,17 @@ export const ManufacturingKimiPage2 = defineCapsule({
                   onClick={() => go(ctaSecondary)}
                   className="inline-flex items-center gap-2 rounded-lg border border-primary-foreground/30 bg-primary-foreground/10 px-8 py-4 text-lg font-bold text-primary-foreground transition-all hover:bg-primary-foreground/20"
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                   {ctaSecondary}
@@ -1782,8 +2116,21 @@ export const ManufacturingKimiPage2 = defineCapsule({
 
               <div className="grid gap-8 text-sm text-primary-foreground/80 sm:grid-cols-3">
                 {ctaBadges.map((b) => (
-                  <div key={b} className="flex items-center justify-center gap-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <div
+                    key={b}
+                    className="flex items-center justify-center gap-2"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
                       <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span>{b}</span>
@@ -1825,30 +2172,48 @@ export const ManufacturingKimiPage2 = defineCapsule({
                   <button
                     type="button"
                     aria-label="LinkedIn"
-                    onClick={() => go("LinkedIn")}
+                    onClick={() => go('LinkedIn')}
                     className="grid size-10 place-items-center rounded-lg bg-background/10 text-background/70 transition-colors hover:bg-primary hover:text-primary-foreground"
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
                       <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
                     </svg>
                   </button>
                   <button
                     type="button"
                     aria-label="Twitter"
-                    onClick={() => go("Twitter")}
+                    onClick={() => go('Twitter')}
                     className="grid size-10 place-items-center rounded-lg bg-background/10 text-background/70 transition-colors hover:bg-primary hover:text-primary-foreground"
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                     </svg>
                   </button>
                   <button
                     type="button"
                     aria-label="YouTube"
-                    onClick={() => go("YouTube")}
+                    onClick={() => go('YouTube')}
                     className="grid size-10 place-items-center rounded-lg bg-background/10 text-background/70 transition-colors hover:bg-primary hover:text-primary-foreground"
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
                       <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                     </svg>
                   </button>
@@ -1900,7 +2265,17 @@ export const ManufacturingKimiPage2 = defineCapsule({
                 <address className="space-y-3 text-sm not-italic">
                   <p className="flex items-start gap-3">
                     <span className="mt-0.5 shrink-0 text-primary">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
                         <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
@@ -1909,7 +2284,17 @@ export const ManufacturingKimiPage2 = defineCapsule({
                   </p>
                   <p className="flex items-center gap-3">
                     <span className="shrink-0 text-primary">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
                         <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
                     </span>
@@ -1923,7 +2308,17 @@ export const ManufacturingKimiPage2 = defineCapsule({
                   </p>
                   <p className="flex items-center gap-3">
                     <span className="shrink-0 text-primary">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
                         <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                     </span>

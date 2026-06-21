@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * EventPlannerKimiPage — a complete, self-contained luxury EVENT-PLANNING agency
@@ -46,7 +46,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * Callers supply ONLY content data; rich defaults render the full page with no props.
  */
 export const EventPlannerKimiPage = defineCapsule({
-  name: "EventPlannerKimiPage",
+  name: 'EventPlannerKimiPage',
   description:
     "Complete luxury EVENT-PLANNING / event-management agency landing page with a calm, editorial, warm-neutral aesthetic: airy whitespace, thin elegant serif-style headlines, rounded photo cards and pill CTAs. Includes a split hero (eyebrow, large light headline, dual CTAs, KPI strip, tall hero photo with a floating planner-team card), a trusted-by hotel-brand logo strip, a 6-up services grid with per-service 'starting at' pricing (wedding planning, corporate events, private celebrations, non-profit galas, destination events, day-of coordination), a numbered 4-step process row (Discovery, Design, Planning, Execution), a masonry portfolio/gallery of past events, a 3-tier pricing/packages block (Essential, Signature, White Glove) with a highlighted popular plan, a stats + photo-collage impact band, a 6-up client-testimonials grid with star ratings and headshots, an FAQ accordion, a dark split contact section with company details (email, phone, address) plus a full inquiry form (name, email, event type, date, guest count, message), and a 4-column footer. Use as the ROOT/home page for event planners, wedding planners, party/celebration planners, corporate-event and gala organizers, catering or destination-event companies, or any premium hospitality service wanting a refined, conversion-focused page with portfolio, packages, social proof and a booking form. Supply content only — brand, nav, hero, services, process, gallery, pricing, stats, testimonials, faq, contact, footer; the block owns all layout and styling.",
   props: z.object({
@@ -199,9 +199,7 @@ export const EventPlannerKimiPage = defineCapsule({
       .object({
         tagline: z.string().optional(),
         columns: z
-          .array(
-            z.object({ title: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ title: z.string(), links: z.array(z.string()) }))
           .optional(),
         legal: z.string().optional(),
         legalLinks: z.array(z.string()).optional(),
@@ -280,7 +278,7 @@ export const EventPlannerKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [inquiryOpen, setInquiryOpen] = useState(false)
-    const brand = props.brand ?? "Serene Events"
+    const brand = props.brand ?? 'Serene Events'
 
     const inquiries = lakebed.useQuery('inquiries')
     const favoriteServiceNames = lakebed.useQuery('favoriteServiceNames')
@@ -321,326 +319,324 @@ export const EventPlannerKimiPage = defineCapsule({
     const inquiryCount = safeInquiries.length
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Gallery", "Process", "Testimonials", "FAQ"]
+      : ['Services', 'Gallery', 'Process', 'Testimonials', 'FAQ']
 
-    const heroEyebrow = props.hero?.eyebrow ?? "Est. 2012 • San Francisco"
+    const heroEyebrow = props.hero?.eyebrow ?? 'Est. 2012 • San Francisco'
     const heroHeading =
-      props.hero?.heading ?? "Crafting Moments That Last Forever"
+      props.hero?.heading ?? 'Crafting Moments That Last Forever'
     const heroSub =
       props.hero?.subheading ??
-      "We transform your vision into extraordinary experiences. From intimate gatherings to grand celebrations, every detail is thoughtfully designed and flawlessly executed."
-    const heroPrimary = props.hero?.primaryCta ?? "Start Planning"
-    const heroSecondary = props.hero?.secondaryCta ?? "View Our Work"
+      'We transform your vision into extraordinary experiences. From intimate gatherings to grand celebrations, every detail is thoughtfully designed and flawlessly executed.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Start Planning'
+    const heroSecondary = props.hero?.secondaryCta ?? 'View Our Work'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Elegant wedding reception table with floral centerpiece in warm candlelight"
-    const heroCardTitle = props.hero?.cardTitle ?? "Sarah & Team"
-    const heroCardRole = props.hero?.cardRole ?? "Lead Planners"
-    const heroCardQuote = props.hero?.cardQuote ?? "Your dream, our expertise."
+      'Elegant wedding reception table with floral centerpiece in warm candlelight'
+    const heroCardTitle = props.hero?.cardTitle ?? 'Sarah & Team'
+    const heroCardRole = props.hero?.cardRole ?? 'Lead Planners'
+    const heroCardQuote = props.hero?.cardQuote ?? 'Your dream, our expertise.'
     const heroAvatars = props.hero?.teamAvatars?.length
       ? props.hero.teamAvatars
       : [
-          "Professional headshot of event planner Sarah Chen with warm smile",
-          "Professional headshot of event coordinator Michael Torres",
-          "Professional headshot of senior planner Emma Williams",
+          'Professional headshot of event planner Sarah Chen with warm smile',
+          'Professional headshot of event coordinator Michael Torres',
+          'Professional headshot of senior planner Emma Williams',
         ]
     const heroStats = props.hero?.stats?.length
       ? props.hero.stats
       : [
-          { value: "500+", label: "Events Planned" },
-          { value: "12", label: "Years Experience" },
-          { value: "98%", label: "Client Satisfaction" },
+          { value: '500+', label: 'Events Planned' },
+          { value: '12', label: 'Years Experience' },
+          { value: '98%', label: 'Client Satisfaction' },
         ]
 
-    const logosHeading = props.logos?.heading ?? "Trusted by Leading Brands"
+    const logosHeading = props.logos?.heading ?? 'Trusted by Leading Brands'
     const logoBrands = props.logos?.brands?.length
       ? props.logos.brands
       : [
-          "Fairmont",
-          "Four Seasons",
-          "Ritz-Carlton",
-          "St. Regis",
-          "Mandarin",
-          "Rosewood",
+          'Fairmont',
+          'Four Seasons',
+          'Ritz-Carlton',
+          'St. Regis',
+          'Mandarin',
+          'Rosewood',
         ]
 
-    const servicesEyebrow = props.services?.eyebrow ?? "Our Services"
+    const servicesEyebrow = props.services?.eyebrow ?? 'Our Services'
     const servicesHeading =
-      props.services?.heading ?? "Comprehensive Event Solutions"
+      props.services?.heading ?? 'Comprehensive Event Solutions'
     const servicesDesc =
       props.services?.description ??
-      "From conception to celebration, we handle every aspect of your event with precision and creativity."
+      'From conception to celebration, we handle every aspect of your event with precision and creativity.'
     const serviceItems = props.services?.items?.length
       ? props.services.items
       : [
           {
-            title: "Wedding Planning",
+            title: 'Wedding Planning',
             description:
               'Full-service wedding coordination from engagement to "I do." We manage venues, vendors, timelines, and every detail that makes your day uniquely yours.',
-            price: "Starting at $8,500",
+            price: 'Starting at $8,500',
             imageAlt:
-              "Elegant wedding ceremony with white floral arch and guests seated on manicured lawn",
+              'Elegant wedding ceremony with white floral arch and guests seated on manicured lawn',
           },
           {
-            title: "Corporate Events",
+            title: 'Corporate Events',
             description:
               "Professional galas, product launches, and executive retreats that reflect your brand's sophistication and leave lasting impressions on clients and partners.",
-            price: "Starting at $12,000",
+            price: 'Starting at $12,000',
             imageAlt:
-              "Modern corporate conference with attendees networking in contemporary venue space",
+              'Modern corporate conference with attendees networking in contemporary venue space',
           },
           {
-            title: "Private Celebrations",
+            title: 'Private Celebrations',
             description:
               "Milestone birthdays, anniversary dinners, and intimate gatherings crafted with personal touches that honor life's precious moments.",
-            price: "Starting at $3,500",
+            price: 'Starting at $3,500',
             imageAlt:
-              "Intimate private dinner party with elegant table setting and soft ambient lighting",
+              'Intimate private dinner party with elegant table setting and soft ambient lighting',
           },
           {
-            title: "Non-Profit Galas",
+            title: 'Non-Profit Galas',
             description:
-              "Fundraising events that inspire generosity and community engagement. We understand the unique needs of charitable organizations and donor cultivation.",
-            price: "Starting at $6,000",
+              'Fundraising events that inspire generosity and community engagement. We understand the unique needs of charitable organizations and donor cultivation.',
+            price: 'Starting at $6,000',
             imageAlt:
-              "Elegant charity gala with formal dinner setup and stage for presentations",
+              'Elegant charity gala with formal dinner setup and stage for presentations',
           },
           {
-            title: "Destination Events",
+            title: 'Destination Events',
             description:
-              "Napa wine country weddings, tropical celebrations, and European villa gatherings. We coordinate travel, accommodations, and local vendor relationships.",
-            price: "Starting at $15,000",
+              'Napa wine country weddings, tropical celebrations, and European villa gatherings. We coordinate travel, accommodations, and local vendor relationships.',
+            price: 'Starting at $15,000',
             imageAlt:
-              "Elegant outdoor garden party with string lights and beautifully decorated tables",
+              'Elegant outdoor garden party with string lights and beautifully decorated tables',
           },
           {
-            title: "Day-Of Coordination",
+            title: 'Day-Of Coordination',
             description:
-              "Already planned your event? Our day-of coordination ensures flawless execution. We manage the timeline, vendors, and any unexpected situations.",
-            price: "Starting at $2,500",
+              'Already planned your event? Our day-of coordination ensures flawless execution. We manage the timeline, vendors, and any unexpected situations.',
+            price: 'Starting at $2,500',
             imageAlt:
-              "Sophisticated cocktail party with elegant bar setup and professional bartenders",
+              'Sophisticated cocktail party with elegant bar setup and professional bartenders',
           },
         ]
 
-    const processEyebrow = props.process?.eyebrow ?? "Our Process"
-    const processHeading = props.process?.heading ?? "How We Work"
+    const processEyebrow = props.process?.eyebrow ?? 'Our Process'
+    const processHeading = props.process?.heading ?? 'How We Work'
     const processDesc =
       props.process?.description ??
-      "A proven four-step approach that ensures every event exceeds expectations while respecting your time and vision."
+      'A proven four-step approach that ensures every event exceeds expectations while respecting your time and vision.'
     const processSteps = props.process?.steps?.length
       ? props.process.steps
       : [
           {
-            title: "Discovery",
+            title: 'Discovery',
             description:
-              "We begin with an in-depth consultation to understand your vision, preferences, budget, and the feeling you want to create. This is where the magic begins.",
+              'We begin with an in-depth consultation to understand your vision, preferences, budget, and the feeling you want to create. This is where the magic begins.',
           },
           {
-            title: "Design",
+            title: 'Design',
             description:
-              "Our creative team develops a comprehensive concept including mood boards, color palettes, venue recommendations, and vendor selections tailored to your story.",
+              'Our creative team develops a comprehensive concept including mood boards, color palettes, venue recommendations, and vendor selections tailored to your story.',
           },
           {
-            title: "Planning",
+            title: 'Planning',
             description:
-              "We handle all logistics: contract negotiations, timeline creation, RSVP management, and coordination meetings. You stay informed without the stress.",
+              'We handle all logistics: contract negotiations, timeline creation, RSVP management, and coordination meetings. You stay informed without the stress.',
           },
           {
-            title: "Execution",
+            title: 'Execution',
             description:
-              "On the big day, we manage every detail from setup to breakdown. You simply enjoy the moment while we ensure everything unfolds perfectly.",
+              'On the big day, we manage every detail from setup to breakdown. You simply enjoy the moment while we ensure everything unfolds perfectly.',
           },
         ]
 
-    const galleryEyebrow = props.gallery?.eyebrow ?? "Portfolio"
-    const galleryHeading = props.gallery?.heading ?? "Recent Events"
+    const galleryEyebrow = props.gallery?.eyebrow ?? 'Portfolio'
+    const galleryHeading = props.gallery?.heading ?? 'Recent Events'
     const galleryDesc =
       props.gallery?.description ??
       "A glimpse into celebrations we've crafted for clients who trusted us with their most important moments."
     const galleryImages = props.gallery?.images?.length
       ? props.gallery.images
       : [
-          "Garden wedding ceremony with white rose arch and guests seated on lawn at sunset",
-          "Elegant place setting with gold flatware and white linen at formal dinner",
-          "Luxury corporate gala with dramatic uplighting and decorated tables",
-          "Intimate candlelit dinner party with elegant floral centerpieces",
-          "Beach wedding ceremony with ocean backdrop and flowing white fabric arch",
-          "Beautiful wedding cake with white frosting and fresh flowers on decorated table",
-          "Outdoor reception tent with elegant lighting and decorated tables at twilight",
-          "Elegant ballroom wedding reception with crystal chandeliers and long dining tables",
+          'Garden wedding ceremony with white rose arch and guests seated on lawn at sunset',
+          'Elegant place setting with gold flatware and white linen at formal dinner',
+          'Luxury corporate gala with dramatic uplighting and decorated tables',
+          'Intimate candlelit dinner party with elegant floral centerpieces',
+          'Beach wedding ceremony with ocean backdrop and flowing white fabric arch',
+          'Beautiful wedding cake with white frosting and fresh flowers on decorated table',
+          'Outdoor reception tent with elegant lighting and decorated tables at twilight',
+          'Elegant ballroom wedding reception with crystal chandeliers and long dining tables',
         ]
     const galleryWide = props.gallery?.wideImages?.length
       ? props.gallery.wideImages
       : [
-          "Live band performing at elegant wedding reception with dancing guests",
-          "Rustic barn wedding reception with string lights and wooden tables",
-          "Champagne tower celebration at luxury corporate event",
+          'Live band performing at elegant wedding reception with dancing guests',
+          'Rustic barn wedding reception with string lights and wooden tables',
+          'Champagne tower celebration at luxury corporate event',
         ]
 
-    const pricingEyebrow = props.pricing?.eyebrow ?? "Investment"
-    const pricingHeading = props.pricing?.heading ?? "Planning Packages"
+    const pricingEyebrow = props.pricing?.eyebrow ?? 'Investment'
+    const pricingHeading = props.pricing?.heading ?? 'Planning Packages'
     const pricingDesc =
       props.pricing?.description ??
-      "Transparent pricing for weddings and celebrations. Custom quotes available for corporate and destination events."
-    const pricingPopular = props.pricing?.popularLabel ?? "Most Popular"
-    const pricingCta = props.pricing?.cta ?? "Inquire"
+      'Transparent pricing for weddings and celebrations. Custom quotes available for corporate and destination events.'
+    const pricingPopular = props.pricing?.popularLabel ?? 'Most Popular'
+    const pricingCta = props.pricing?.cta ?? 'Inquire'
     const pricingTiers = props.pricing?.tiers?.length
       ? props.pricing.tiers
       : [
           {
-            name: "Essential",
-            tagline: "Day-of coordination",
-            price: "$2,500",
+            name: 'Essential',
+            tagline: 'Day-of coordination',
+            price: '$2,500',
             features: [
-              "One month of pre-event support",
-              "Day-of timeline creation",
-              "Vendor coordination",
-              "On-site management (10 hours)",
-              "Setup and breakdown oversight",
+              'One month of pre-event support',
+              'Day-of timeline creation',
+              'Vendor coordination',
+              'On-site management (10 hours)',
+              'Setup and breakdown oversight',
             ],
           },
           {
-            name: "Signature",
-            tagline: "Partial planning",
-            price: "$5,500",
+            name: 'Signature',
+            tagline: 'Partial planning',
+            price: '$5,500',
             popular: true,
             features: [
-              "Everything in Essential, plus:",
-              "Six months of planning support",
-              "Vendor recommendations & referrals",
-              "Design concept & mood board",
-              "Two venue walkthroughs",
-              "Rehearsal coordination",
+              'Everything in Essential, plus:',
+              'Six months of planning support',
+              'Vendor recommendations & referrals',
+              'Design concept & mood board',
+              'Two venue walkthroughs',
+              'Rehearsal coordination',
             ],
           },
           {
-            name: "White Glove",
-            tagline: "Full-service planning",
-            price: "$12,000",
+            name: 'White Glove',
+            tagline: 'Full-service planning',
+            price: '$12,000',
             features: [
-              "Everything in Signature, plus:",
-              "Full planning from day one",
-              "Unlimited vendor meetings",
-              "Custom design & décor sourcing",
-              "Guest management & RSVP tracking",
-              "Dedicated lead planner + assistant",
+              'Everything in Signature, plus:',
+              'Full planning from day one',
+              'Unlimited vendor meetings',
+              'Custom design & décor sourcing',
+              'Guest management & RSVP tracking',
+              'Dedicated lead planner + assistant',
             ],
           },
         ]
 
-    const statsEyebrow = props.stats?.eyebrow ?? "Our Impact"
-    const statsHeading =
-      props.stats?.heading ?? "Numbers That Tell Our Story"
+    const statsEyebrow = props.stats?.eyebrow ?? 'Our Impact'
+    const statsHeading = props.stats?.heading ?? 'Numbers That Tell Our Story'
     const statsDesc =
       props.stats?.description ??
-      "Twelve years of creating extraordinary events has taught us that the best measure of success is the joy we bring to our clients. These numbers reflect our commitment to excellence and the trust placed in us."
+      'Twelve years of creating extraordinary events has taught us that the best measure of success is the joy we bring to our clients. These numbers reflect our commitment to excellence and the trust placed in us.'
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "500+", label: "Events Executed" },
-          { value: "98%", label: "Client Satisfaction" },
-          { value: "85%", label: "Referral Rate" },
-          { value: "$12M", label: "Event Budgets Managed" },
+          { value: '500+', label: 'Events Executed' },
+          { value: '98%', label: 'Client Satisfaction' },
+          { value: '85%', label: 'Referral Rate' },
+          { value: '$12M', label: 'Event Budgets Managed' },
         ]
     const statsImageAlts = props.stats?.imageAlts?.length
       ? props.stats.imageAlts
       : [
-          "Happy bride and groom dancing at wedding reception with guests",
-          "Wedding ceremony aisle decorated with white flowers and petals",
-          "Couple exchanging vows at outdoor beach wedding",
-          "Elegant table setting with candles and floral arrangement",
+          'Happy bride and groom dancing at wedding reception with guests',
+          'Wedding ceremony aisle decorated with white flowers and petals',
+          'Couple exchanging vows at outdoor beach wedding',
+          'Elegant table setting with candles and floral arrangement',
         ]
 
-    const testimonialsEyebrow = props.testimonials?.eyebrow ?? "Testimonials"
-    const testimonialsHeading = props.testimonials?.heading ?? "Client Love"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'Testimonials'
+    const testimonialsHeading = props.testimonials?.heading ?? 'Client Love'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Hear from couples and organizations who trusted us with their most important celebrations."
+      'Hear from couples and organizations who trusted us with their most important celebrations.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "Serene Events made our wedding day absolutely perfect. Sarah and her team thought of every detail we never even considered. Our guests are still talking about how beautiful everything was. Worth every penny!",
-            name: "Rebecca Martinez",
-            role: "Wedding at Napa Valley, June 2024",
+              'Serene Events made our wedding day absolutely perfect. Sarah and her team thought of every detail we never even considered. Our guests are still talking about how beautiful everything was. Worth every penny!',
+            name: 'Rebecca Martinez',
+            role: 'Wedding at Napa Valley, June 2024',
             avatarAlt:
-              "Professional headshot of Rebecca Martinez, marketing director and newlywed",
+              'Professional headshot of Rebecca Martinez, marketing director and newlywed',
           },
           {
             quote:
               "Our company's 25th anniversary gala was flawless thanks to Serene Events. They handled everything from venue selection to entertainment booking. Our board was incredibly impressed with the professionalism.",
-            name: "David Chen",
-            role: "CEO, Meridian Technologies",
-            avatarAlt: "Professional headshot of David Chen, technology CEO",
+            name: 'David Chen',
+            role: 'CEO, Meridian Technologies',
+            avatarAlt: 'Professional headshot of David Chen, technology CEO',
           },
           {
             quote:
               "We hired Serene Events for my parents' 50th anniversary dinner, and it exceeded all expectations. The venue, the décor, the menu—everything was exactly what Mom dreamed of. Thank you for making it magical!",
-            name: "Jennifer Park",
-            role: "50th Anniversary Celebration",
+            name: 'Jennifer Park',
+            role: '50th Anniversary Celebration',
             avatarAlt:
-              "Professional headshot of Jennifer Park, event coordinator and daughter of anniversary couple",
+              'Professional headshot of Jennifer Park, event coordinator and daughter of anniversary couple',
           },
           {
             quote:
-              "As a nonprofit, we needed an event planner who understood our budget constraints while delivering a gala that felt luxurious. Serene Events struck the perfect balance. We raised 40% more than our goal!",
-            name: "Margaret Sullivan",
-            role: "Executive Director, Bay Arts Foundation",
+              'As a nonprofit, we needed an event planner who understood our budget constraints while delivering a gala that felt luxurious. Serene Events struck the perfect balance. We raised 40% more than our goal!',
+            name: 'Margaret Sullivan',
+            role: 'Executive Director, Bay Arts Foundation',
             avatarAlt:
-              "Professional headshot of Margaret Sullivan, nonprofit executive director",
+              'Professional headshot of Margaret Sullivan, nonprofit executive director',
           },
           {
             quote:
-              "Destination weddings are stressful, but Sarah made our Tuscany wedding feel effortless. She coordinated with Italian vendors seamlessly and was available at every hour. Best decision we made!",
-            name: "Alexandra Rivera",
-            role: "Destination Wedding, Tuscany",
-            avatarAlt:
-              "Professional headshot of Alexandra Rivera, newlywed",
+              'Destination weddings are stressful, but Sarah made our Tuscany wedding feel effortless. She coordinated with Italian vendors seamlessly and was available at every hour. Best decision we made!',
+            name: 'Alexandra Rivera',
+            role: 'Destination Wedding, Tuscany',
+            avatarAlt: 'Professional headshot of Alexandra Rivera, newlywed',
           },
           {
             quote:
-              "We used Serene Events for our product launch at CES. The turnout was incredible, media coverage exceeded expectations, and our team could focus on demos instead of logistics. Already booked them for next year!",
-            name: "Ryan Kim",
-            role: "CEO, Voltex Robotics",
+              'We used Serene Events for our product launch at CES. The turnout was incredible, media coverage exceeded expectations, and our team could focus on demos instead of logistics. Already booked them for next year!',
+            name: 'Ryan Kim',
+            role: 'CEO, Voltex Robotics',
             avatarAlt:
-              "Professional headshot of Ryan Kim, startup founder and CEO",
+              'Professional headshot of Ryan Kim, startup founder and CEO',
           },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Common Questions"
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Common Questions'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know about working with Serene Events."
+      'Everything you need to know about working with Serene Events.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "How far in advance should we book your services?",
+            question: 'How far in advance should we book your services?',
             answer:
-              "For weddings, we recommend booking 12-18 months in advance, especially for peak season (May-October). For corporate events and private celebrations, 3-6 months is typically sufficient, though more lead time gives us greater flexibility with premium venues and vendors.",
+              'For weddings, we recommend booking 12-18 months in advance, especially for peak season (May-October). For corporate events and private celebrations, 3-6 months is typically sufficient, though more lead time gives us greater flexibility with premium venues and vendors.',
           },
           {
-            question: "Do you work with clients outside of San Francisco?",
+            question: 'Do you work with clients outside of San Francisco?',
             answer:
               "Absolutely! While we're based in San Francisco, we regularly plan events throughout California, including Napa Valley, Sonoma, Carmel, and Lake Tahoe. We also specialize in destination events across the US and internationally, with particular expertise in Italy, Mexico, and the Caribbean.",
           },
           {
-            question: "Can you work within our specific budget?",
+            question: 'Can you work within our specific budget?',
             answer:
               "Yes, we pride ourselves on creating exceptional events across various budgets. During our initial consultation, we'll discuss your priorities and help allocate your budget strategically. We have strong relationships with vendors at different price points and know where to splurge and where to save without compromising on quality or experience.",
           },
           {
             question: "What's included in the planning packages?",
             answer:
-              "Each package includes different levels of support, detailed in our pricing section above. Generally, our services cover vendor recommendations and negotiations, timeline creation, design concept development, RSVP management, rehearsal coordination, and on-site event management. Premium packages include additional services like custom design sourcing and dedicated assistants.",
+              'Each package includes different levels of support, detailed in our pricing section above. Generally, our services cover vendor recommendations and negotiations, timeline creation, design concept development, RSVP management, rehearsal coordination, and on-site event management. Premium packages include additional services like custom design sourcing and dedicated assistants.',
           },
           {
-            question: "Do you handle vendor payments and contracts?",
+            question: 'Do you handle vendor payments and contracts?',
             answer:
-              "We facilitate vendor introductions, review contracts for industry-standard terms, and negotiate on your behalf when appropriate. However, all contracts are signed directly between you and the vendor, and payments are made directly to vendors. This ensures transparency and that you maintain direct relationships with the talented professionals making your event special.",
+              'We facilitate vendor introductions, review contracts for industry-standard terms, and negotiate on your behalf when appropriate. However, all contracts are signed directly between you and the vendor, and payments are made directly to vendors. This ensures transparency and that you maintain direct relationships with the talented professionals making your event special.',
           },
           {
             question: "What happens if there's an emergency on the event day?",
@@ -648,67 +644,67 @@ export const EventPlannerKimiPage = defineCapsule({
               "This is where our experience truly shines. We arrive prepared with backup plans for common scenarios—vendor no-shows, weather changes, equipment failures—and maintain relationships with emergency vendors who can respond quickly. Our team includes contingency planning in every timeline, and we're trained to handle challenges calmly while keeping you blissfully unaware of any hiccups.",
           },
           {
-            question: "How do we get started?",
+            question: 'How do we get started?',
             answer:
               "Simply fill out our inquiry form below or call us at (415) 555-0147. We'll schedule a complimentary 30-minute consultation to discuss your vision, date, and needs. From there, we'll provide a custom proposal outlining our recommended package and approach for your specific event. No pressure, no obligation—just an opportunity to see if we're the right fit.",
           },
         ]
 
-    const contactEyebrow = props.contact?.eyebrow ?? "Start Your Journey"
+    const contactEyebrow = props.contact?.eyebrow ?? 'Start Your Journey'
     const contactHeading =
       props.contact?.heading ?? "Let's Create Something Beautiful"
     const contactDesc =
       props.contact?.description ??
       "Ready to begin planning your perfect event? We'd love to hear about your vision. Fill out the inquiry form and we'll be in touch within 24 hours to schedule your complimentary consultation."
-    const contactEmail = props.contact?.email ?? "hello@sereneevents.com"
-    const contactPhone = props.contact?.phone ?? "(415) 555-0147"
+    const contactEmail = props.contact?.email ?? 'hello@sereneevents.com'
+    const contactPhone = props.contact?.phone ?? '(415) 555-0147'
     const contactAddress =
       props.contact?.address ??
-      "580 Market Street, Suite 800, San Francisco, CA 94104"
+      '580 Market Street, Suite 800, San Francisco, CA 94104'
     const eventTypes = props.contact?.eventTypes?.length
       ? props.contact.eventTypes
       : [
-          "Select an event type",
-          "Wedding",
-          "Corporate Event",
-          "Private Celebration",
-          "Non-Profit Gala",
-          "Destination Event",
+          'Select an event type',
+          'Wedding',
+          'Corporate Event',
+          'Private Celebration',
+          'Non-Profit Gala',
+          'Destination Event',
         ]
     const guestRanges = props.contact?.guestRanges?.length
       ? props.contact.guestRanges
       : [
-          "Select range",
-          "1-50 guests",
-          "51-100 guests",
-          "101-150 guests",
-          "151-200 guests",
-          "200+ guests",
+          'Select range',
+          '1-50 guests',
+          '51-100 guests',
+          '101-150 guests',
+          '151-200 guests',
+          '200+ guests',
         ]
-    const contactSubmit = props.contact?.submit ?? "Send Inquiry"
+    const contactSubmit = props.contact?.submit ?? 'Send Inquiry'
 
     const footerTagline =
       props.footer?.tagline ??
-      "Creating unforgettable moments with elegance, precision, and heart since 2012."
+      'Creating unforgettable moments with elegance, precision, and heart since 2012.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Services",
+            title: 'Services',
             links: [
-              "Wedding Planning",
-              "Corporate Events",
-              "Private Celebrations",
-              "Destination Events",
+              'Wedding Planning',
+              'Corporate Events',
+              'Private Celebrations',
+              'Destination Events',
             ],
           },
           {
-            title: "Company",
-            links: ["Portfolio", "Testimonials", "Our Process", "FAQ"],
+            title: 'Company',
+            links: ['Portfolio', 'Testimonials', 'Our Process', 'FAQ'],
           },
           {
-            title: "Connect",
-            links: ["Instagram", "Pinterest", "LinkedIn", "Contact Us"],
+            title: 'Connect',
+            links: ['Instagram', 'Pinterest', 'LinkedIn', 'Contact Us'],
           },
         ]
     const footerLegal =
@@ -716,7 +712,7 @@ export const EventPlannerKimiPage = defineCapsule({
       `© ${new Date().getFullYear()} ${brand}. All rights reserved.`
     const footerLegalLinks = props.footer?.legalLinks?.length
       ? props.footer.legalLinks
-      : ["Privacy Policy", "Terms of Service"]
+      : ['Privacy Policy', 'Terms of Service']
 
     const Clock = ({ className }: { className?: string }) => (
       <svg
@@ -781,7 +777,7 @@ export const EventPlannerKimiPage = defineCapsule({
     )
 
     const inputCls =
-      "w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-transparent focus:ring-2 focus:ring-ring"
+      'w-full rounded-lg border border-input bg-background px-4 py-3 text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-transparent focus:ring-2 focus:ring-ring'
 
     const HeartIcon = ({ active = false }: { active?: boolean }) => (
       <svg
@@ -835,7 +831,7 @@ export const EventPlannerKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh overflow-x-hidden bg-background text-foreground antialiased",
+          'min-h-svh overflow-x-hidden bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -1371,7 +1367,7 @@ export const EventPlannerKimiPage = defineCapsule({
                 {processSteps.map((step, i) => (
                   <div key={step.title} className="relative">
                     <div className="mb-6 flex size-16 items-center justify-center rounded-full bg-primary text-2xl font-light text-primary-foreground">
-                      {String(i + 1).padStart(2, "0")}
+                      {String(i + 1).padStart(2, '0')}
                     </div>
                     <h3 className="mb-3 text-xl font-medium text-foreground">
                       {step.title}
@@ -1417,10 +1413,8 @@ export const EventPlannerKimiPage = defineCapsule({
                       h={i % 2 === 0 ? 600 : 400}
                       loading="lazy"
                       className={cn(
-                        "w-full object-cover transition-transform duration-500 hover:scale-105",
-                        i % 2 === 0
-                          ? "h-64 lg:h-80"
-                          : "h-48 lg:h-56",
+                        'w-full object-cover transition-transform duration-500 hover:scale-105',
+                        i % 2 === 0 ? 'h-64 lg:h-80' : 'h-48 lg:h-56',
                       )}
                     />
                   </button>
@@ -1433,8 +1427,8 @@ export const EventPlannerKimiPage = defineCapsule({
                     type="button"
                     onClick={() => go(galleryHeading)}
                     className={cn(
-                      "overflow-hidden rounded-xl",
-                      i === 2 && "col-span-2 lg:col-span-1",
+                      'overflow-hidden rounded-xl',
+                      i === 2 && 'col-span-2 lg:col-span-1',
                     )}
                   >
                     <Image
@@ -1467,10 +1461,10 @@ export const EventPlannerKimiPage = defineCapsule({
                   <article
                     key={tier.name}
                     className={cn(
-                      "relative rounded-2xl p-8 lg:p-10",
+                      'relative rounded-2xl p-8 lg:p-10',
                       tier.popular
-                        ? "bg-primary shadow-xl"
-                        : "bg-card shadow-sm",
+                        ? 'bg-primary shadow-xl'
+                        : 'bg-card shadow-sm',
                     )}
                   >
                     {tier.popular && (
@@ -1480,30 +1474,30 @@ export const EventPlannerKimiPage = defineCapsule({
                     )}
                     <h3
                       className={cn(
-                        "mb-2 text-xl font-medium",
+                        'mb-2 text-xl font-medium',
                         tier.popular
-                          ? "text-primary-foreground"
-                          : "text-card-foreground",
+                          ? 'text-primary-foreground'
+                          : 'text-card-foreground',
                       )}
                     >
                       {tier.name}
                     </h3>
                     <p
                       className={cn(
-                        "mb-6",
+                        'mb-6',
                         tier.popular
-                          ? "text-primary-foreground/70"
-                          : "text-muted-foreground",
+                          ? 'text-primary-foreground/70'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {tier.tagline}
                     </p>
                     <p
                       className={cn(
-                        "mb-8 text-4xl font-light",
+                        'mb-8 text-4xl font-light',
                         tier.popular
-                          ? "text-primary-foreground"
-                          : "text-card-foreground",
+                          ? 'text-primary-foreground'
+                          : 'text-card-foreground',
                       )}
                     >
                       {tier.price}
@@ -1513,17 +1507,17 @@ export const EventPlannerKimiPage = defineCapsule({
                         <li key={feat} className="flex items-start gap-3">
                           <Check
                             className={cn(
-                              "mt-0.5 size-5 shrink-0",
+                              'mt-0.5 size-5 shrink-0',
                               tier.popular
-                                ? "text-primary-foreground/70"
-                                : "text-muted-foreground",
+                                ? 'text-primary-foreground/70'
+                                : 'text-muted-foreground',
                             )}
                           />
                           <span
                             className={cn(
                               tier.popular
-                                ? "text-primary-foreground/90"
-                                : "text-muted-foreground",
+                                ? 'text-primary-foreground/90'
+                                : 'text-muted-foreground',
                             )}
                           >
                             {feat}
@@ -1535,10 +1529,10 @@ export const EventPlannerKimiPage = defineCapsule({
                       type="button"
                       onClick={() => go(`${pricingCta} ${tier.name}`)}
                       className={cn(
-                        "block w-full rounded-full px-6 py-3 text-center font-medium transition-colors",
+                        'block w-full rounded-full px-6 py-3 text-center font-medium transition-colors',
                         tier.popular
-                          ? "bg-background text-foreground hover:bg-muted"
-                          : "border border-border text-foreground hover:bg-muted",
+                          ? 'bg-background text-foreground hover:bg-muted'
+                          : 'border border-border text-foreground hover:bg-muted',
                       )}
                     >
                       {pricingCta}
@@ -1801,7 +1795,9 @@ export const EventPlannerKimiPage = defineCapsule({
                       document.getElementById('ep-guests') as HTMLSelectElement
                     ).value
                     const message = (
-                      document.getElementById('ep-message') as HTMLTextAreaElement
+                      document.getElementById(
+                        'ep-message',
+                      ) as HTMLTextAreaElement
                     ).value
 
                     void submitInquiry(
@@ -1875,7 +1871,7 @@ export const EventPlannerKimiPage = defineCapsule({
                       <select
                         id="ep-type"
                         required
-                        className={cn(inputCls, "appearance-none")}
+                        className={cn(inputCls, 'appearance-none')}
                       >
                         {eventTypes.map((opt) => (
                           <option key={opt} className="bg-background">
@@ -1903,7 +1899,7 @@ export const EventPlannerKimiPage = defineCapsule({
                         </label>
                         <select
                           id="ep-guests"
-                          className={cn(inputCls, "appearance-none")}
+                          className={cn(inputCls, 'appearance-none')}
                         >
                           {guestRanges.map((opt) => (
                             <option key={opt} className="bg-background">
@@ -1924,7 +1920,7 @@ export const EventPlannerKimiPage = defineCapsule({
                         id="ep-message"
                         rows={4}
                         placeholder="Share details about your dream event, preferred style, venues you're considering, or any questions you have..."
-                        className={cn(inputCls, "resize-none")}
+                        className={cn(inputCls, 'resize-none')}
                       />
                     </div>
                     <button

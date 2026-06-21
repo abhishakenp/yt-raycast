@@ -4,7 +4,7 @@ import { defineCapsule } from './openui.ts'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { boolean, number, string, table } from '@ship-fast/lakebed/server'
+import { boolean, string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -241,20 +241,6 @@ export const SaasKimiPage10 = defineCapsule({
       scheduledSlots: ({ db }) => db.scheduledSlots.all(),
     },
     mutations: {
-      addMeeting: (
-        { db },
-        time: string,
-        title: string,
-        note: string,
-        tone: string,
-      ) => {
-        db.meetings.insert({ time, title, note, tone })
-        return db.meetings.all()
-      },
-      removeMeeting: ({ db }, id: string) => {
-        db.meetings.delete(id)
-        return db.meetings.all()
-      },
       toggleSlot: ({ db }, day: string, time: string) => {
         const existing = db.scheduledSlots
           .where('day', day)
@@ -277,8 +263,6 @@ export const SaasKimiPage10 = defineCapsule({
     const storedMeetings = lakebed.useQuery('meetings')
     const storedSlots = lakebed.useQuery('scheduledSlots')
     const auth = lakebed.useAuth()
-    const addMeeting = lakebed.useMutation('addMeeting')
-    const removeMeeting = lakebed.useMutation('removeMeeting')
     const toggleSlot = lakebed.useMutation('toggleSlot')
 
     const isSignedIn = auth.isAuthenticated && !auth.isGuest

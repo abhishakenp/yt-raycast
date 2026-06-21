@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * BlogPostKimiPage — a complete, self-contained editorial BLOG POST / article
@@ -46,9 +46,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * it render great with no props at all.
  */
 export const BlogPostKimiPage = defineCapsule({
-  name: "BlogPostKimiPage",
+  name: 'BlogPostKimiPage',
   description:
-    "Complete editorial BLOG POST / long-form ARTICLE DETAIL page with a calm, light, magazine reading aesthetic: centered prose column, generous whitespace, serif pull-quotes and a publication feel. Includes a sticky publication navbar, an article header (category pill, large headline, dek/subtitle, author avatar + date + read-time byline), a full-width cover image, a typeset article body (lead paragraph, h2/h3 section headings, an accented serif blockquote pull-quote, an inline figure with caption, bold inline emphasis, and a highlighted key-findings callout panel), a tag/topic list, an author bio card with social links, a 3-up related-articles grid with hover-zoom thumbnails, a newsletter subscribe band with email form, and a multi-column footer. Use for a blog post, journal/magazine article, essay, editorial story, news article, case study writeup, changelog or documentation article — any single-article reading page (NOT a marketing landing hero). Supply content only — brand, nav, header, cover, body sections, tags, author, related posts, newsletter, footer; the block owns all layout and styling.",
+    'Complete editorial BLOG POST / long-form ARTICLE DETAIL page with a calm, light, magazine reading aesthetic: centered prose column, generous whitespace, serif pull-quotes and a publication feel. Includes a sticky publication navbar, an article header (category pill, large headline, dek/subtitle, author avatar + date + read-time byline), a full-width cover image, a typeset article body (lead paragraph, h2/h3 section headings, an accented serif blockquote pull-quote, an inline figure with caption, bold inline emphasis, and a highlighted key-findings callout panel), a tag/topic list, an author bio card with social links, a 3-up related-articles grid with hover-zoom thumbnails, a newsletter subscribe band with email form, and a multi-column footer. Use for a blog post, journal/magazine article, essay, editorial story, news article, case study writeup, changelog or documentation article — any single-article reading page (NOT a marketing landing hero). Supply content only — brand, nav, header, cover, body sections, tags, author, related posts, newsletter, footer; the block owns all layout and styling.',
   props: z.object({
     /** Publication / brand name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -176,8 +176,17 @@ export const BlogPostKimiPage = defineCapsule({
       subscriberCount: ({ db }) => db.subscribers.all().length,
     },
     mutations: {
-      addToReadingList: ({ db }, articleTitle: string, articleCategory: string, articleDate: string, articleExcerpt: string, articleImageAlt: string) => {
-        const existing = db.readingList.where('articleTitle', articleTitle).all()[0]
+      addToReadingList: (
+        { db },
+        articleTitle: string,
+        articleCategory: string,
+        articleDate: string,
+        articleExcerpt: string,
+        articleImageAlt: string,
+      ) => {
+        const existing = db.readingList
+          .where('articleTitle', articleTitle)
+          .all()[0]
         if (!existing) {
           db.readingList.insert({
             articleTitle,
@@ -190,7 +199,9 @@ export const BlogPostKimiPage = defineCapsule({
         return db.readingList.all()
       },
       removeFromReadingList: ({ db }, articleTitle: string) => {
-        for (const item of db.readingList.where('articleTitle', articleTitle).all()) {
+        for (const item of db.readingList
+          .where('articleTitle', articleTitle)
+          .all()) {
           db.readingList.delete(item.id)
         }
         return db.readingList.all()
@@ -208,7 +219,7 @@ export const BlogPostKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [readingListOpen, setReadingListOpen] = useState(false)
-    const brand = props.brand ?? "Studio Journal"
+    const brand = props.brand ?? 'Studio Journal'
 
     const readingList = lakebed.useQuery('readingList')
     const subscriberCount = lakebed.useQuery('subscriberCount')
@@ -306,49 +317,49 @@ export const BlogPostKimiPage = defineCapsule({
 
     const nav = props.nav?.length
       ? props.nav
-      : ["Articles", "Authors", "Topics", "About"]
+      : ['Articles', 'Authors', 'Topics', 'About']
 
-    const category = props.header?.category ?? "Design Philosophy"
+    const category = props.header?.category ?? 'Design Philosophy'
     const title =
       props.header?.title ??
-      "The Art of Slow Design: Why Taking Your Time Creates Better Products"
+      'The Art of Slow Design: Why Taking Your Time Creates Better Products'
     const dek =
       props.header?.dek ??
-      "In an industry obsessed with speed, the most impactful designers are learning to pause, reflect, and let ideas mature."
-    const authorName = props.header?.authorName ?? "Elena Martinez"
-    const authorRole = props.header?.authorRole ?? "Design Director"
+      'In an industry obsessed with speed, the most impactful designers are learning to pause, reflect, and let ideas mature.'
+    const authorName = props.header?.authorName ?? 'Elena Martinez'
+    const authorRole = props.header?.authorRole ?? 'Design Director'
     const headerAvatarAlt =
       props.header?.authorAvatarAlt ??
-      "Professional headshot of Elena Martinez, a design director with warm smile and dark hair"
-    const date = props.header?.date ?? "March 15, 2024"
-    const readTime = props.header?.readTime ?? "12 min read"
+      'Professional headshot of Elena Martinez, a design director with warm smile and dark hair'
+    const date = props.header?.date ?? 'March 15, 2024'
+    const readTime = props.header?.readTime ?? '12 min read'
 
     const coverAlt =
       props.cover?.imageAlt ??
-      "Minimalist design workspace with natural light, featuring a clean desk with notebook and single plant"
+      'Minimalist design workspace with natural light, featuring a clean desk with notebook and single plant'
     const coverCaption =
       props.cover?.caption ??
-      "A serene, minimalist workspace representing the philosophy of slow design"
+      'A serene, minimalist workspace representing the philosophy of slow design'
 
     const lead = props.lead?.length
       ? props.lead
       : [
-          "Last October, I watched a junior designer spend three days perfecting a button hover state. The rest of the team was racing toward a deadline, cranking out screens at breakneck speed. But there was Sarah, adjusting micro-interactions by milliseconds, testing color shifts in different lighting conditions, documenting her rationale in excruciating detail.",
+          'Last October, I watched a junior designer spend three days perfecting a button hover state. The rest of the team was racing toward a deadline, cranking out screens at breakneck speed. But there was Sarah, adjusting micro-interactions by milliseconds, testing color shifts in different lighting conditions, documenting her rationale in excruciating detail.',
         ]
 
     const introParagraphs = [
       "On day four, she presented her work. The room went quiet. That button wasn't just functional—it was delightful. Users would feel it before they understood it. The micro-interaction communicated trust, responsiveness, and care. It was a tiny detail that elevated the entire product experience.",
-      "This is the paradox of modern design: we're told to move fast, ship constantly, iterate quickly. Yet the work that endures—the products people truly love—often comes from designers who resist the pressure to rush. They practice what I call \"slow design,\" and it's becoming the competitive advantage nobody talks about.",
+      'This is the paradox of modern design: we\'re told to move fast, ship constantly, iterate quickly. Yet the work that endures—the products people truly love—often comes from designers who resist the pressure to rush. They practice what I call "slow design," and it\'s becoming the competitive advantage nobody talks about.',
     ]
 
     const sections = props.sections?.length
       ? props.sections
       : [
           {
-            heading: "The Speed Trap",
+            heading: 'The Speed Trap',
             blocks: [
               {
-                p: "Silicon Valley has fetishized velocity. We celebrate teams that ship features weekly, designers who produce dozens of screens daily, companies that \"move fast and break things.\" The underlying assumption is that speed equals innovation, that the first to market wins, that iteration beats deliberation.",
+                p: 'Silicon Valley has fetishized velocity. We celebrate teams that ship features weekly, designers who produce dozens of screens daily, companies that "move fast and break things." The underlying assumption is that speed equals innovation, that the first to market wins, that iteration beats deliberation.',
               },
               {
                 p: "But this narrative ignores a crucial truth: most products don't fail because they launched too slowly. They fail because they solve the wrong problem, or solve it poorly, or create more friction than they remove. In my 15 years of designing digital products, I've seen rushed launches kill promising concepts more often than missed deadlines ever have.",
@@ -359,75 +370,75 @@ export const BlogPostKimiPage = defineCapsule({
             ],
           },
           {
-            heading: "What Slow Design Looks Like",
+            heading: 'What Slow Design Looks Like',
             blocks: [
               {
                 p: "Slow design isn't about working less or missing deadlines. It's about allocating time where it matters most. Here's what I've observed in teams that practice it well:",
               },
-              { h3: "1. Extended Problem Immersion" },
+              { h3: '1. Extended Problem Immersion' },
               {
                 p: "Instead of jumping to solutions, slow designers spend disproportionate time understanding the problem space. When Airbnb redesigned their host onboarding in 2021, the team spent six weeks just shadowing hosts, mapping emotional journeys, and identifying moments of anxiety that weren't obvious in analytics. The resulting design increased host activation by 34%—but it required patience that many teams would have bypassed.",
               },
-              { h3: "2. Deliberate Constraint Setting" },
+              { h3: '2. Deliberate Constraint Setting' },
               {
-                p: "Paradoxically, slowing down often means setting stricter constraints. When Figma built their multiplayer editing feature, they deliberately limited the initial scope to text editing only. This constraint allowed the team to perfect the underlying synchronization engine rather than spreading their attention across multiple feature surfaces. The result felt magical because it was polished, not because it was comprehensive.",
+                p: 'Paradoxically, slowing down often means setting stricter constraints. When Figma built their multiplayer editing feature, they deliberately limited the initial scope to text editing only. This constraint allowed the team to perfect the underlying synchronization engine rather than spreading their attention across multiple feature surfaces. The result felt magical because it was polished, not because it was comprehensive.',
               },
               {
                 imageAlt:
-                  "Team of designers collaborating around a large table with sketches and wireframes",
+                  'Team of designers collaborating around a large table with sketches and wireframes',
                 caption:
                   "Team collaboration session at Notion's San Francisco office, 2023",
               },
-              { h3: "3. Maturation Periods" },
+              { h3: '3. Maturation Periods' },
               {
-                p: "Notion's infamous for their approach to features: they often sit on completed designs for months before shipping. CEO Ivan Zhao has explained that this \"maturation period\" allows the team to experience their own product daily, identifying friction points that weren't visible during initial design. The waitlist feature, which drove significant growth in 2022, was built and then shelved for eight months while the team refined the invitation flow.",
+                p: 'Notion\'s infamous for their approach to features: they often sit on completed designs for months before shipping. CEO Ivan Zhao has explained that this "maturation period" allows the team to experience their own product daily, identifying friction points that weren\'t visible during initial design. The waitlist feature, which drove significant growth in 2022, was built and then shelved for eight months while the team refined the invitation flow.',
               },
             ],
           },
           {
-            heading: "The Business Case for Patience",
+            heading: 'The Business Case for Patience',
             blocks: [
               {
-                p: "Skeptics will ask: how do you justify slow design to stakeholders demanding velocity? The answer lies in measuring what matters. Feature velocity is easy to quantify; user satisfaction, retention impact, and brand perception are harder but ultimately more valuable.",
+                p: 'Skeptics will ask: how do you justify slow design to stakeholders demanding velocity? The answer lies in measuring what matters. Feature velocity is easy to quantify; user satisfaction, retention impact, and brand perception are harder but ultimately more valuable.',
               },
               {
-                p: "When Linear built their issue tracking product, they famously rejected VC pressure to scale quickly. The small team spent two years on a product that competitors might have built in six months. But those 18 \"extra\" months produced a tool so refined that it commands a premium price in a crowded market. Linear's annual recurring revenue crossed $20 million in 2023—a testament to the economics of excellence.",
+                p: 'When Linear built their issue tracking product, they famously rejected VC pressure to scale quickly. The small team spent two years on a product that competitors might have built in six months. But those 18 "extra" months produced a tool so refined that it commands a premium price in a crowded market. Linear\'s annual recurring revenue crossed $20 million in 2023—a testament to the economics of excellence.',
               },
               {
-                callout: "Key Research Findings",
+                callout: 'Key Research Findings',
                 items: [
-                  "McKinsey's 2023 design study found that companies with formal \"thinking time\" policies saw 47% higher customer satisfaction scores",
-                  "Teams that conduct 3+ rounds of user testing (vs. 1-2) reduce post-launch bug reports by 62%",
-                  "Products with 6+ month development cycles show 3x higher 2-year retention than those built in under 3 months",
+                  'McKinsey\'s 2023 design study found that companies with formal "thinking time" policies saw 47% higher customer satisfaction scores',
+                  'Teams that conduct 3+ rounds of user testing (vs. 1-2) reduce post-launch bug reports by 62%',
+                  'Products with 6+ month development cycles show 3x higher 2-year retention than those built in under 3 months',
                 ],
               },
             ],
           },
           {
-            heading: "Practical Slow Design",
+            heading: 'Practical Slow Design',
             blocks: [
               {
                 p: "Adopting slow design doesn't require corporate policy changes or executive buy-in. Individual designers and small teams can implement it immediately:",
               },
               {
-                p: "Start with a \"waiting list\" for your own ideas. When you have a design solution, write it down and revisit it in 48 hours. Most initial solutions benefit from this cooling period—you'll spot assumptions, simplifications, and missed opportunities that weren't visible in the moment of creation.",
+                p: 'Start with a "waiting list" for your own ideas. When you have a design solution, write it down and revisit it in 48 hours. Most initial solutions benefit from this cooling period—you\'ll spot assumptions, simplifications, and missed opportunities that weren\'t visible in the moment of creation.',
               },
               {
                 p: "Protect deep work blocks aggressively. Cal Newport's research on deep work applies directly to design. Two hours of uninterrupted focus produces better outcomes than six hours of fragmented attention. Schedule these blocks during your peak cognitive hours and defend them ruthlessly.",
               },
               {
-                p: "Build \"beauty sprints\" into your timeline. After functional completion, allocate 20% of remaining project time purely for refinement. This isn't gold-plating—it's the period when good products become great. Use it for micro-interactions, edge cases, and those details that separate professional work from exceptional work.",
+                p: 'Build "beauty sprints" into your timeline. After functional completion, allocate 20% of remaining project time purely for refinement. This isn\'t gold-plating—it\'s the period when good products become great. Use it for micro-interactions, edge cases, and those details that separate professional work from exceptional work.',
               },
             ],
           },
           {
-            heading: "The Future is Thoughtful",
+            heading: 'The Future is Thoughtful',
             blocks: [
               {
                 p: "As AI tools accelerate the production of mediocre design, human judgment and taste become more valuable, not less. The designers who thrive won't be those who produce the fastest—they'll be those who know when to slow down, when to question defaults, when to let ideas mature.",
               },
               {
-                p: "Sarah, that junior designer obsessing over button states? She was promoted to senior within 18 months. Her work on that micro-interaction became a case study that her current team—a Series B fintech startup—still references. The three days that seemed extravagant were, in retrospect, an investment that paid dividends far beyond the immediate project.",
+                p: 'Sarah, that junior designer obsessing over button states? She was promoted to senior within 18 months. Her work on that micro-interaction became a case study that her current team—a Series B fintech startup—still references. The three days that seemed extravagant were, in retrospect, an investment that paid dividends far beyond the immediate project.',
               },
             ],
           },
@@ -438,7 +449,7 @@ export const BlogPostKimiPage = defineCapsule({
       "Speed is the enemy of nuance. When we rush, we default to patterns we've used before, solutions we've seen work elsewhere. We stop seeing the unique context in front of us."
     const pullQuoteAttribution =
       props.pullQuote?.attribution ??
-      "From a 2022 interview with Jony Ive in The Design Journal"
+      'From a 2022 interview with Jony Ive in The Design Journal'
 
     const closing = props.closing?.length
       ? props.closing
@@ -448,88 +459,88 @@ export const BlogPostKimiPage = defineCapsule({
 
     const tags = props.tags?.length
       ? props.tags
-      : ["Design Process", "Product Strategy", "UX Research", "Team Culture"]
+      : ['Design Process', 'Product Strategy', 'UX Research', 'Team Culture']
 
-    const authorBioName = props.author?.name ?? "Elena Martinez"
+    const authorBioName = props.author?.name ?? 'Elena Martinez'
     const authorBio =
       props.author?.bio ??
-      "Elena is a Design Director with 15 years of experience building products at Stripe, Airbnb, and Notion. She writes about the intersection of craft, strategy, and team culture. Her work has been featured in Communication Arts, Fast Company, and the AIGA Design Journal."
+      'Elena is a Design Director with 15 years of experience building products at Stripe, Airbnb, and Notion. She writes about the intersection of craft, strategy, and team culture. Her work has been featured in Communication Arts, Fast Company, and the AIGA Design Journal.'
     const authorBioAvatarAlt =
       props.author?.avatarAlt ??
-      "Professional headshot of Elena Martinez, design director and writer"
+      'Professional headshot of Elena Martinez, design director and writer'
     const authorLinks = props.author?.links?.length
       ? props.author.links
-      : ["Twitter", "LinkedIn", "Portfolio"]
+      : ['Twitter', 'LinkedIn', 'Portfolio']
 
-    const relatedHeading = props.related?.heading ?? "Related Articles"
+    const relatedHeading = props.related?.heading ?? 'Related Articles'
     const relatedItems = props.related?.items?.length
       ? props.related.items
       : [
           {
-            category: "Team Culture",
-            date: "Feb 28, 2024",
-            title: "Building Design Systems That Actually Get Used",
+            category: 'Team Culture',
+            date: 'Feb 28, 2024',
+            title: 'Building Design Systems That Actually Get Used',
             excerpt:
-              "Lessons from rolling out design systems at three different startups—and why adoption is harder than construction.",
+              'Lessons from rolling out design systems at three different startups—and why adoption is harder than construction.',
             imageAlt:
-              "Design team whiteboarding session with colorful sticky notes on glass wall",
+              'Design team whiteboarding session with colorful sticky notes on glass wall',
           },
           {
-            category: "UX Research",
-            date: "Feb 10, 2024",
-            title: "The Lost Art of Sketching Before Pixels",
+            category: 'UX Research',
+            date: 'Feb 10, 2024',
+            title: 'The Lost Art of Sketching Before Pixels',
             excerpt:
-              "Why the best digital designers still start with analog tools—and how paper prototyping catches problems Figma misses.",
+              'Why the best digital designers still start with analog tools—and how paper prototyping catches problems Figma misses.',
             imageAlt:
-              "Close-up of hands sketching wireframes in a notebook with pencil",
+              'Close-up of hands sketching wireframes in a notebook with pencil',
           },
           {
-            category: "Design Process",
-            date: "Jan 22, 2024",
-            title: "Measuring Design Quality: Beyond Vanity Metrics",
+            category: 'Design Process',
+            date: 'Jan 22, 2024',
+            title: 'Measuring Design Quality: Beyond Vanity Metrics',
             excerpt:
-              "A framework for quantifying design excellence using behavioral signals instead of NPS scores and gut feelings.",
+              'A framework for quantifying design excellence using behavioral signals instead of NPS scores and gut feelings.',
             imageAlt:
-              "Laptop screen showing data analytics dashboard with charts and metrics",
+              'Laptop screen showing data analytics dashboard with charts and metrics',
           },
         ]
 
     const newsletterHeading =
-      props.newsletter?.heading ?? "Subscribe to Studio Journal"
+      props.newsletter?.heading ?? 'Subscribe to Studio Journal'
     const newsletterDesc =
       props.newsletter?.description ??
-      "Get weekly articles on design craft, strategy, and team culture. No spam, unsubscribe anytime."
+      'Get weekly articles on design craft, strategy, and team culture. No spam, unsubscribe anytime.'
     const newsletterPlaceholder =
-      props.newsletter?.placeholder ?? "your@email.com"
-    const newsletterSubmit = props.newsletter?.submit ?? "Subscribe"
+      props.newsletter?.placeholder ?? 'your@email.com'
+    const newsletterSubmit = props.newsletter?.submit ?? 'Subscribe'
     const newsletterFootnote =
       props.newsletter?.footnote ??
-      "Join 12,400+ designers. Delivered every Tuesday."
+      'Join 12,400+ designers. Delivered every Tuesday.'
 
     const footerBlurb =
       props.footer?.blurb ??
-      "A publication for designers who care about craft. Exploring the intersection of aesthetics, strategy, and human-centered product development."
+      'A publication for designers who care about craft. Exploring the intersection of aesthetics, strategy, and human-centered product development.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            heading: "Explore",
-            links: ["All Articles", "Topics", "Authors", "Podcast"],
+            heading: 'Explore',
+            links: ['All Articles', 'Topics', 'Authors', 'Podcast'],
           },
           {
-            heading: "Connect",
-            links: ["Twitter", "LinkedIn", "YouTube", "RSS Feed"],
+            heading: 'Connect',
+            links: ['Twitter', 'LinkedIn', 'YouTube', 'RSS Feed'],
           },
         ]
-    const footerNote = props.footer?.note ?? "All rights reserved."
+    const footerNote = props.footer?.note ?? 'All rights reserved.'
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service"]
+      : ['Privacy Policy', 'Terms of Service']
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -615,7 +626,9 @@ export const BlogPostKimiPage = defineCapsule({
                                 <button
                                   type="button"
                                   onClick={() =>
-                                    void removeFromReadingList(item.articleTitle)
+                                    void removeFromReadingList(
+                                      item.articleTitle,
+                                    )
                                   }
                                   className="flex items-center gap-2 text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                                 >
@@ -1033,7 +1046,9 @@ export const BlogPostKimiPage = defineCapsule({
           {/* Tags */}
           <div className="mt-12 border-t border-border pt-8">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="mr-2 text-sm text-muted-foreground">Tagged:</span>
+              <span className="mr-2 text-sm text-muted-foreground">
+                Tagged:
+              </span>
               {tags.map((tag) => (
                 <button
                   key={tag}

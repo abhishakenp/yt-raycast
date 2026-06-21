@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
+} from '#/components/ui/sheet.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
+import { Button } from '#/components/ui/button.tsx'
 
 /**
  * SaasKimiPage8 — a brutalist, high-contrast SaaS landing page (8th style
@@ -55,9 +55,9 @@ import { Button } from "#/components/ui/button.tsx"
  * - Auth-aware UI with sign-in/sign-out flows
  */
 export const SaasKimiPage8 = defineCapsule({
-  name: "SaasKimiPage8",
+  name: 'SaasKimiPage8',
   description:
-    "A brutalist, high-contrast SaaS landing page (8th style sibling to SaasKimiPage) with a monospace editorial aesthetic, heavy offset shadows, and bold red-accent borders. Features a sticky navbar with a compact logo mark, a split hero with a product-demo card and floating status overlay, an animated logo marquee, a 6-up feature grid with offset shadow cards, a dark 4-step how-it-works band with inline metrics, a 6-item product gallery, a 3-tier pricing table with a highlighted Most Popular plan, a bold red stats band, a 6-up testimonial grid with avatar headshots, an interactive FAQ accordion, a dark closing CTA with an email capture form, and a multi-column footer with social icons. Full-stack features: newsletter signup persistence, demo request tracking, Google authentication with account menu, and a session status drawer. Use for AI tools, productivity apps, scheduling SaaS, developer tools, or brutalist/retro-modern B2B startups when a striking, border-heavy, editorial layout with strong visual hierarchy is needed. Supply content only — brand, nav, hero, logos, features, steps, gallery, pricing, statsBand, testimonials, faq, cta, footer; the block owns all layout and styling.",
+    'A brutalist, high-contrast SaaS landing page (8th style sibling to SaasKimiPage) with a monospace editorial aesthetic, heavy offset shadows, and bold red-accent borders. Features a sticky navbar with a compact logo mark, a split hero with a product-demo card and floating status overlay, an animated logo marquee, a 6-up feature grid with offset shadow cards, a dark 4-step how-it-works band with inline metrics, a 6-item product gallery, a 3-tier pricing table with a highlighted Most Popular plan, a bold red stats band, a 6-up testimonial grid with avatar headshots, an interactive FAQ accordion, a dark closing CTA with an email capture form, and a multi-column footer with social icons. Full-stack features: newsletter signup persistence, demo request tracking, Google authentication with account menu, and a session status drawer. Use for AI tools, productivity apps, scheduling SaaS, developer tools, or brutalist/retro-modern B2B startups when a striking, border-heavy, editorial layout with strong visual hierarchy is needed. Supply content only — brand, nav, hero, logos, features, steps, gallery, pricing, statsBand, testimonials, faq, cta, footer; the block owns all layout and styling.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -239,9 +239,7 @@ export const SaasKimiPage8 = defineCapsule({
     },
     mutations: {
       subscribeToNewsletter: ({ db }, email: string) => {
-        const existing = db.newsletterSubscribers
-          .where("email", email)
-          .all()[0]
+        const existing = db.newsletterSubscribers.where('email', email).all()[0]
         if (!existing) {
           db.newsletterSubscribers.insert({ email })
         }
@@ -255,129 +253,125 @@ export const SaasKimiPage8 = defineCapsule({
   },
   component: ({ props, lakebed }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "CHRONOSYNC"
+    const brand = props.brand ?? 'CHRONOSYNC'
     const nav = props.nav?.length
       ? props.nav
-      : ["FEATURES", "PRICING", "STORIES", "FAQ"]
+      : ['FEATURES', 'PRICING', 'STORIES', 'FAQ']
 
     const hero = {
-      badge:
-        props.hero?.badge ?? "NOW IN PUBLIC BETA — 10K+ USERS",
-      heading: props.hero?.heading ?? "YOUR CALENDAR",
-      highlight: props.hero?.highlight ?? "THINKS FOR",
+      badge: props.hero?.badge ?? 'NOW IN PUBLIC BETA — 10K+ USERS',
+      heading: props.hero?.heading ?? 'YOUR CALENDAR',
+      highlight: props.hero?.highlight ?? 'THINKS FOR',
       subheading:
         props.hero?.subheading ??
-        "ChronoSync AI learns your patterns, protects your focus time, and schedules meetings automatically. No more 47-tab scheduling wars.",
-      primaryCta: props.hero?.primaryCta ?? "GET STARTED FREE",
-      secondaryCta: props.hero?.secondaryCta ?? "SEE HOW IT WORKS",
-      proof:
-        props.hero?.proof ?? ["FREE FOREVER TIER", "NO CREDIT CARD"],
+        'ChronoSync AI learns your patterns, protects your focus time, and schedules meetings automatically. No more 47-tab scheduling wars.',
+      primaryCta: props.hero?.primaryCta ?? 'GET STARTED FREE',
+      secondaryCta: props.hero?.secondaryCta ?? 'SEE HOW IT WORKS',
+      proof: props.hero?.proof ?? ['FREE FOREVER TIER', 'NO CREDIT CARD'],
       demoAlt:
         props.hero?.demoAlt ??
-        "minimalist desk setup with calendar app on monitor showing clean scheduling interface",
-      demoTitle: props.hero?.demoTitle ?? "Next: Product Review",
-      demoTime:
-        props.hero?.demoTime ?? "2:00 PM — 3:00 PM • Auto-scheduled",
-      demoStatus: props.hero?.demoStatus ?? "CONFIRMED",
+        'minimalist desk setup with calendar app on monitor showing clean scheduling interface',
+      demoTitle: props.hero?.demoTitle ?? 'Next: Product Review',
+      demoTime: props.hero?.demoTime ?? '2:00 PM — 3:00 PM • Auto-scheduled',
+      demoStatus: props.hero?.demoStatus ?? 'CONFIRMED',
     }
 
     const logoNames = props.logos?.names?.length
       ? props.logos.names
       : [
-          "NOTION",
-          "LINEAR",
-          "FIGMA",
-          "STRIPE",
-          "RAILWAY",
-          "RAYCAST",
-          "Vercel",
-          "SUPABASE",
+          'NOTION',
+          'LINEAR',
+          'FIGMA',
+          'STRIPE',
+          'RAILWAY',
+          'RAYCAST',
+          'Vercel',
+          'SUPABASE',
         ]
 
     const features = {
-      tag: props.features?.tag ?? "FEATURES",
+      tag: props.features?.tag ?? 'FEATURES',
       heading:
         props.features?.heading ??
-        "AUTOMATION THAT ACTUALLY UNDERSTANDS CONTEXT",
+        'AUTOMATION THAT ACTUALLY UNDERSTANDS CONTEXT',
       description:
         props.features?.description ??
-        "Most schedulers move blocks. ChronoSync understands priority, energy levels, and deep work requirements.",
+        'Most schedulers move blocks. ChronoSync understands priority, energy levels, and deep work requirements.',
       items: props.features?.items?.length
         ? props.features.items
         : [
             {
-              title: "SMART CONFLICTS",
+              title: 'SMART CONFLICTS',
               description:
-                "Double-booked? ChronoSync auto-resolves based on meeting importance, attendee seniority, and your energy patterns. Learns from every choice.",
+                'Double-booked? ChronoSync auto-resolves based on meeting importance, attendee seniority, and your energy patterns. Learns from every choice.',
             },
             {
-              title: "FOCUS DEFENDER",
+              title: 'FOCUS DEFENDER',
               description:
-                "Blocks 3-hour focus sessions automatically. Declines meetings that violate your deep work windows unless explicitly overridden.",
+                'Blocks 3-hour focus sessions automatically. Declines meetings that violate your deep work windows unless explicitly overridden.',
             },
             {
-              title: "GROUP SCHEDULING",
+              title: 'GROUP SCHEDULING',
               description:
-                "Find optimal meeting times across 12+ calendars instantly. Handles timezones, personal preferences, and room bookings in one pass.",
+                'Find optimal meeting times across 12+ calendars instantly. Handles timezones, personal preferences, and room bookings in one pass.',
             },
             {
-              title: "ENERGY OPTIMIZER",
+              title: 'ENERGY OPTIMIZER',
               description:
-                "Schedules high-cognitive tasks during your peak hours. Morning person? Important reviews land before lunch. Night owl? Deep work blocks shift later.",
+                'Schedules high-cognitive tasks during your peak hours. Morning person? Important reviews land before lunch. Night owl? Deep work blocks shift later.',
             },
             {
-              title: "AUTOPILOT MODE",
+              title: 'AUTOPILOT MODE',
               description:
-                "Let ChronoSync fully manage your calendar for a week. It books, moves, declines, and reschedules based on your historical patterns and stated priorities.",
+                'Let ChronoSync fully manage your calendar for a week. It books, moves, declines, and reschedules based on your historical patterns and stated priorities.',
             },
             {
-              title: "ZERO-DATA POLICY",
+              title: 'ZERO-DATA POLICY',
               description:
-                "Your calendar data never trains our models. On-device processing for sensitive info. SOC2 Type II certified, GDPR compliant, end-to-end encrypted.",
+                'Your calendar data never trains our models. On-device processing for sensitive info. SOC2 Type II certified, GDPR compliant, end-to-end encrypted.',
             },
           ],
     }
 
     const steps = {
-      tag: props.steps?.tag ?? "HOW IT WORKS",
-      heading:
-        props.steps?.heading ?? "FROM CHAOS TO CALM IN 4 STEPS",
+      tag: props.steps?.tag ?? 'HOW IT WORKS',
+      heading: props.steps?.heading ?? 'FROM CHAOS TO CALM IN 4 STEPS',
       items: props.steps?.items?.length
         ? props.steps.items
         : [
             {
-              title: "CONNECT CALENDARS",
+              title: 'CONNECT CALENDARS',
               description:
-                "Link Google, Outlook, Apple, Notion, Linear, or any CalDAV source. ChronoSync reads availability and existing commitments across all platforms.",
+                'Link Google, Outlook, Apple, Notion, Linear, or any CalDAV source. ChronoSync reads availability and existing commitments across all platforms.',
             },
             {
-              title: "SET PREFERENCES",
+              title: 'SET PREFERENCES',
               description:
-                "Define focus hours, meeting limits, energy patterns, and priority contacts. The AI learns from every interaction and rescheduling decision you make.",
+                'Define focus hours, meeting limits, energy patterns, and priority contacts. The AI learns from every interaction and rescheduling decision you make.',
             },
             {
-              title: "AUTOPILOT ACTIVATES",
+              title: 'AUTOPILOT ACTIVATES',
               description:
-                "Share your ChronoSync link. Recipients pick from AI-curated slots. Conflicts auto-resolve. Prep time gets blocked. Travel time calculated.",
+                'Share your ChronoSync link. Recipients pick from AI-curated slots. Conflicts auto-resolve. Prep time gets blocked. Travel time calculated.',
             },
             {
-              title: "RECLAIM YOUR DAY",
+              title: 'RECLAIM YOUR DAY',
               description:
-                "Review daily/weekly summaries. Approve or override AI decisions. Watch your calendar optimize itself while you focus on actual work.",
+                'Review daily/weekly summaries. Approve or override AI decisions. Watch your calendar optimize itself while you focus on actual work.',
             },
           ],
       stats: props.steps?.stats?.length
         ? props.steps.stats
         : [
-            { value: "94%", label: "scheduling conflicts auto-resolved" },
-            { value: "6.2hrs", label: "avg weekly time saved" },
-            { value: "3min", label: "setup time to first automation" },
+            { value: '94%', label: 'scheduling conflicts auto-resolved' },
+            { value: '6.2hrs', label: 'avg weekly time saved' },
+            { value: '3min', label: 'setup time to first automation' },
           ],
     }
 
     const gallery = {
-      tag: props.gallery?.tag ?? "PRODUCT GALLERY",
-      heading: props.gallery?.heading ?? "EVERY VIEW, OPTIMIZED",
+      tag: props.gallery?.tag ?? 'PRODUCT GALLERY',
+      heading: props.gallery?.heading ?? 'EVERY VIEW, OPTIMIZED',
       description:
         props.gallery?.description ??
         "ChronoSync adapts to how you think—whether you're a list person, a visual planner, or a data-driven optimizer.",
@@ -385,101 +379,99 @@ export const SaasKimiPage8 = defineCapsule({
         ? props.gallery.items
         : [
             {
-              alt: "dashboard interface showing weekly calendar view with colorful time blocks",
-              title: "WEEKLY COMMAND CENTER",
+              alt: 'dashboard interface showing weekly calendar view with colorful time blocks',
+              title: 'WEEKLY COMMAND CENTER',
               description:
                 "Bird's-eye view of priorities and blocked focus time",
             },
             {
-              alt: "mobile phone screen showing minimalist calendar app day view",
-              title: "MOBILE QUICK ACTIONS",
+              alt: 'mobile phone screen showing minimalist calendar app day view',
+              title: 'MOBILE QUICK ACTIONS',
               description:
-                "One-tap rescheduling and instant availability sharing",
+                'One-tap rescheduling and instant availability sharing',
             },
             {
-              alt: "analytics dashboard showing productivity metrics and time allocation charts",
-              title: "TIME INTELLIGENCE",
+              alt: 'analytics dashboard showing productivity metrics and time allocation charts',
+              title: 'TIME INTELLIGENCE',
               description:
-                "Insights into meeting load, focus hours, and patterns",
+                'Insights into meeting load, focus hours, and patterns',
             },
             {
-              alt: "team collaboration interface showing shared scheduling board with member avatars",
-              title: "TEAM COORDINATION",
-              description: "Cross-team availability and conflict resolution",
+              alt: 'team collaboration interface showing shared scheduling board with member avatars',
+              title: 'TEAM COORDINATION',
+              description: 'Cross-team availability and conflict resolution',
             },
             {
-              alt: "public scheduling link interface showing available time slots for booking",
-              title: "SMART BOOKING LINKS",
+              alt: 'public scheduling link interface showing available time slots for booking',
+              title: 'SMART BOOKING LINKS',
               description:
-                "Custom rules per link—duration, buffer, meeting types",
+                'Custom rules per link—duration, buffer, meeting types',
             },
             {
-              alt: "focus mode interface with minimal distractions and single calendar view",
-              title: "DEEP WORK MODE",
+              alt: 'focus mode interface with minimal distractions and single calendar view',
+              title: 'DEEP WORK MODE',
               description:
-                "Stripped-down view. Notifications silenced. Just you.",
+                'Stripped-down view. Notifications silenced. Just you.',
             },
           ],
     }
 
     const pricing = {
-      tag: props.pricing?.tag ?? "PRICING",
-      heading:
-        props.pricing?.heading ?? "SIMPLE, TRANSPARENT PRICING",
+      tag: props.pricing?.tag ?? 'PRICING',
+      heading: props.pricing?.heading ?? 'SIMPLE, TRANSPARENT PRICING',
       description:
         props.pricing?.description ??
-        "Start free. Upgrade when you need more power. No hidden fees, no surprises.",
+        'Start free. Upgrade when you need more power. No hidden fees, no surprises.',
       plans: props.pricing?.plans?.length
         ? props.pricing.plans
         : [
             {
-              name: "STARTER",
+              name: 'STARTER',
               description:
-                "For individuals getting started with AI scheduling.",
-              price: "$0",
-              period: "/forever",
+                'For individuals getting started with AI scheduling.',
+              price: '$0',
+              period: '/forever',
               features: [
-                "1 connected calendar",
-                "10 AI-scheduled meetings/mo",
-                "Basic conflict detection",
-                "Email notifications",
+                '1 connected calendar',
+                '10 AI-scheduled meetings/mo',
+                'Basic conflict detection',
+                'Email notifications',
               ],
-              cta: "GET STARTED FREE",
+              cta: 'GET STARTED FREE',
               popular: false,
             },
             {
-              name: "PROFESSIONAL",
-              description:
-                "For busy professionals who need full automation.",
-              price: "$12",
-              period: "/month",
+              name: 'PROFESSIONAL',
+              description: 'For busy professionals who need full automation.',
+              price: '$12',
+              period: '/month',
               features: [
-                "Unlimited calendars",
-                "Unlimited AI scheduling",
-                "Smart conflict resolution",
-                "Focus time protection",
-                "Custom booking links",
-                "Analytics dashboard",
-                "Priority support",
+                'Unlimited calendars',
+                'Unlimited AI scheduling',
+                'Smart conflict resolution',
+                'Focus time protection',
+                'Custom booking links',
+                'Analytics dashboard',
+                'Priority support',
               ],
-              cta: "START 14-DAY TRIAL",
+              cta: 'START 14-DAY TRIAL',
               popular: true,
             },
             {
-              name: "TEAM",
+              name: 'TEAM',
               description:
-                "For teams who need coordinated scheduling intelligence.",
-              price: "$29",
-              period: "/user/mo",
+                'For teams who need coordinated scheduling intelligence.',
+              price: '$29',
+              period: '/user/mo',
               features: [
-                "Everything in Professional",
-                "Team-wide availability view",
-                "Meeting room booking",
-                "Admin controls & insights",
-                "SAML SSO",
-                "Dedicated success manager",
+                'Everything in Professional',
+                'Team-wide availability view',
+                'Meeting room booking',
+                'Admin controls & insights',
+                'SAML SSO',
+                'Dedicated success manager',
               ],
-              cta: "CONTACT SALES",
+              cta: 'CONTACT SALES',
               popular: false,
             },
           ],
@@ -489,158 +481,156 @@ export const SaasKimiPage8 = defineCapsule({
       items: props.statsBand?.items?.length
         ? props.statsBand.items
         : [
-            { value: "10K+", label: "active users" },
-            { value: "847K", label: "meetings scheduled" },
-            { value: "4.2M", label: "hours saved" },
-            { value: "99.9%", label: "uptime SLA" },
+            { value: '10K+', label: 'active users' },
+            { value: '847K', label: 'meetings scheduled' },
+            { value: '4.2M', label: 'hours saved' },
+            { value: '99.9%', label: 'uptime SLA' },
           ],
     }
 
     const testimonials = {
-      tag: props.testimonials?.tag ?? "TESTIMONIALS",
+      tag: props.testimonials?.tag ?? 'TESTIMONIALS',
       heading:
         props.testimonials?.heading ??
-        "PEOPLE ACTUALLY LIKE THEIR CALENDARS NOW",
+        'PEOPLE ACTUALLY LIKE THEIR CALENDARS NOW',
       items: props.testimonials?.items?.length
         ? props.testimonials.items
         : [
             {
               quote:
                 "ChronoSync eliminated the 47-email threads to find meeting times across three time zones. My team reclaimed 8 hours a week. It's not just a scheduler—it's a sanity preserver.",
-              name: "Sarah Chen",
-              role: "VP Engineering @ Vercel",
+              name: 'Sarah Chen',
+              role: 'VP Engineering @ Vercel',
               avatarAlt:
-                "professional headshot of a smiling woman with dark hair in a tech office setting",
+                'professional headshot of a smiling woman with dark hair in a tech office setting',
             },
             {
               quote:
                 "The focus time protection is game-changing. ChronoSync actually defends my 3-hour design blocks. In 6 months, I've had zero interruptions during deep work sessions.",
-              name: "Marcus Johnson",
-              role: "Design Lead @ Figma",
+              name: 'Marcus Johnson',
+              role: 'Design Lead @ Figma',
               avatarAlt:
-                "professional headshot of a bearded man in glasses with confident expression",
+                'professional headshot of a bearded man in glasses with confident expression',
             },
             {
               quote:
                 "As a founder, my time is fragmented across investor calls, team syncs, and deep work. ChronoSync's autopilot mode managed my calendar for a product launch week. Flawless.",
-              name: "Priya Sharma",
-              role: "Founder @ Linear",
+              name: 'Priya Sharma',
+              role: 'Founder @ Linear',
               avatarAlt:
-                "professional headshot of a woman with short hair in a modern office environment",
+                'professional headshot of a woman with short hair in a modern office environment',
             },
             {
               quote:
-                "The zero-data policy mattered to us. We evaluated 12 scheduling tools. ChronoSync was the only one that combined AI intelligence with genuine privacy. Deployed to 200 engineers.",
-              name: "David Park",
-              role: "CTO @ Railway",
+                'The zero-data policy mattered to us. We evaluated 12 scheduling tools. ChronoSync was the only one that combined AI intelligence with genuine privacy. Deployed to 200 engineers.',
+              name: 'David Park',
+              role: 'CTO @ Railway',
               avatarAlt:
-                "professional headshot of a smiling man with short dark hair in startup office",
+                'professional headshot of a smiling man with short dark hair in startup office',
             },
             {
               quote:
-                "Smart conflicts saved me from a double-booked board presentation and team offsite. The AI resolved it based on attendee seniority and rescheduled the offsite automatically. Magic.",
-              name: "Elena Rodriguez",
-              role: "Product Manager @ Stripe",
+                'Smart conflicts saved me from a double-booked board presentation and team offsite. The AI resolved it based on attendee seniority and rescheduled the offsite automatically. Magic.',
+              name: 'Elena Rodriguez',
+              role: 'Product Manager @ Stripe',
               avatarAlt:
-                "professional headshot of a woman with blonde hair smiling naturally",
+                'professional headshot of a woman with blonde hair smiling naturally',
             },
             {
               quote:
                 "Switched from Calendly. ChronoSync's energy optimizer learned I'm sharper in mornings. Now client calls auto-schedule before noon, creative work afternoons. Revenue up 30%.",
-              name: "James Wilson",
-              role: "Freelance Consultant",
+              name: 'James Wilson',
+              role: 'Freelance Consultant',
               avatarAlt:
-                "professional headshot of a man with glasses and friendly expression",
+                'professional headshot of a man with glasses and friendly expression',
             },
           ],
     }
 
     const faq = {
-      tag: props.faq?.tag ?? "FAQ",
-      heading: props.faq?.heading ?? "QUESTIONS? ANSWERED.",
+      tag: props.faq?.tag ?? 'FAQ',
+      heading: props.faq?.heading ?? 'QUESTIONS? ANSWERED.',
       items: props.faq?.items?.length
         ? props.faq.items
         : [
             {
-              question: "Which calendars does ChronoSync support?",
+              question: 'Which calendars does ChronoSync support?',
               answer:
-                "Google Calendar, Microsoft Outlook/Exchange, Apple iCloud Calendar, Fastmail, and any CalDAV-compatible provider. We also integrate with Notion databases, Linear issues, and Slack status for context-aware scheduling. Team plans include room resource booking via Google Workspace and Microsoft 365.",
+                'Google Calendar, Microsoft Outlook/Exchange, Apple iCloud Calendar, Fastmail, and any CalDAV-compatible provider. We also integrate with Notion databases, Linear issues, and Slack status for context-aware scheduling. Team plans include room resource booking via Google Workspace and Microsoft 365.',
             },
             {
-              question:
-                "How does the AI actually make scheduling decisions?",
+              question: 'How does the AI actually make scheduling decisions?',
               answer:
-                "ChronoSync analyzes your historical patterns—when you accept/decline meetings, how you reschedule conflicts, your energy levels throughout the day (if you opt in), and explicit preferences you set. It uses this to predict optimal slots, not just available ones. The AI runs on-device for privacy; no calendar data trains our models.",
+                'ChronoSync analyzes your historical patterns—when you accept/decline meetings, how you reschedule conflicts, your energy levels throughout the day (if you opt in), and explicit preferences you set. It uses this to predict optimal slots, not just available ones. The AI runs on-device for privacy; no calendar data trains our models.',
             },
             {
-              question: "Can I override AI decisions?",
+              question: 'Can I override AI decisions?',
               answer:
-                "Absolutely. You have full control. The AI suggests; you approve. You can set autopilot confidence levels—high confidence actions happen automatically (like resolving obvious conflicts), medium confidence sends a notification, low confidence waits for your input. Every decision is reversible.",
+                'Absolutely. You have full control. The AI suggests; you approve. You can set autopilot confidence levels—high confidence actions happen automatically (like resolving obvious conflicts), medium confidence sends a notification, low confidence waits for your input. Every decision is reversible.',
             },
             {
-              question: "What happens to my data?",
+              question: 'What happens to my data?',
               answer:
                 "Your calendar data is end-to-end encrypted. We never sell data. We don't train AI on your events. Processing happens on-device where possible. We're SOC2 Type II certified, GDPR compliant, and undergo annual penetration testing. You can export or delete all data instantly, anytime.",
             },
             {
-              question: "Is there a free trial for paid plans?",
+              question: 'Is there a free trial for paid plans?',
               answer:
                 "Yes. Professional and Team plans include a 14-day free trial with full feature access. No credit card required to start. If you don't upgrade, you automatically revert to the free Starter plan. We also offer free Professional access for verified open-source maintainers and students.",
             },
             {
               question:
-                "How do team plans handle scheduling across organizations?",
+                'How do team plans handle scheduling across organizations?',
               answer:
-                "Team plans include cross-organization scheduling via secure, permission-based availability sharing. External partners see only free/busy slots, not event details. Room and resource booking integrates with Google Workspace, Microsoft 365, and Zoom Rooms. Admin dashboards show team-wide utilization and meeting load analytics.",
+                'Team plans include cross-organization scheduling via secure, permission-based availability sharing. External partners see only free/busy slots, not event details. Room and resource booking integrates with Google Workspace, Microsoft 365, and Zoom Rooms. Admin dashboards show team-wide utilization and meeting load analytics.',
             },
           ],
     }
 
     const cta = {
-      heading: props.cta?.heading ?? "RECLAIM 6+ HOURS",
-      highlight: props.cta?.highlight ?? "EVERY WEEK",
+      heading: props.cta?.heading ?? 'RECLAIM 6+ HOURS',
+      highlight: props.cta?.highlight ?? 'EVERY WEEK',
       subheading:
         props.cta?.subheading ??
         "Join 10,000+ professionals who've eliminated scheduling chaos. Start free today. Upgrade when you're ready.",
-      placeholder: props.cta?.placeholder ?? "you@company.com",
-      button: props.cta?.button ?? "START FREE",
-      proof:
-        props.cta?.proof ?? [
-          "14-day Pro trial",
-          "No credit card required",
-          "Cancel anytime",
-        ],
+      placeholder: props.cta?.placeholder ?? 'you@company.com',
+      button: props.cta?.button ?? 'START FREE',
+      proof: props.cta?.proof ?? [
+        '14-day Pro trial',
+        'No credit card required',
+        'Cancel anytime',
+      ],
     }
 
     const footer = {
       tagline:
         props.footer?.tagline ??
-        "AI-powered calendar that learns your patterns and protects your focus. Built for people who value their time.",
+        'AI-powered calendar that learns your patterns and protects your focus. Built for people who value their time.',
       columns: props.footer?.columns?.length
         ? props.footer.columns
         : [
             {
-              title: "PRODUCT",
+              title: 'PRODUCT',
               links: [
-                "Features",
-                "Pricing",
-                "Integrations",
-                "Changelog",
-                "Roadmap",
+                'Features',
+                'Pricing',
+                'Integrations',
+                'Changelog',
+                'Roadmap',
               ],
             },
             {
-              title: "COMPANY",
-              links: ["About", "Blog", "Careers", "Press", "Contact"],
+              title: 'COMPANY',
+              links: ['About', 'Blog', 'Careers', 'Press', 'Contact'],
             },
             {
-              title: "LEGAL",
+              title: 'LEGAL',
               links: [
-                "Privacy Policy",
-                "Terms of Service",
-                "Security",
-                "GDPR",
-                "SOC 2",
+                'Privacy Policy',
+                'Terms of Service',
+                'Security',
+                'GDPR',
+                'SOC 2',
               ],
             },
           ],
@@ -649,35 +639,35 @@ export const SaasKimiPage8 = defineCapsule({
         `\u00A9 ${new Date().getFullYear()} ChronoSync AI, Inc. All rights reserved.`,
       subnote:
         props.footer?.subnote ??
-        "Built with brutalist love in San Francisco & Lisbon",
+        'Built with brutalist love in San Francisco & Lisbon',
     }
 
     const [openFaq, setOpenFaq] = useState<number | null>(null)
     const [accountOpen, setAccountOpen] = useState(false)
 
     const auth = lakebed.useAuth()
-    const subscriberCount = lakebed.useQuery("subscriberCount")
-    const demoRequestCount = lakebed.useQuery("demoRequestCount")
-    const subscribeToNewsletter = lakebed.useMutation("subscribeToNewsletter")
-    const requestDemo = lakebed.useMutation("requestDemo")
+    const subscriberCount = lakebed.useQuery('subscriberCount')
+    const demoRequestCount = lakebed.useQuery('demoRequestCount')
+    const subscribeToNewsletter = lakebed.useMutation('subscribeToNewsletter')
+    const requestDemo = lakebed.useMutation('requestDemo')
 
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
     const authDisplayName =
-      auth.displayName || auth.user?.displayName || authEmail || "Account"
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
     const authInitials =
       authDisplayName
         .split(/\s+/)
         .filter(Boolean)
         .slice(0, 2)
         .map((part) => part[0]?.toUpperCase())
-        .join("") || "ME"
+        .join('') || 'ME'
     const authLabel = auth.isLoading
-      ? "Checking..."
+      ? 'Checking...'
       : isSignedIn
         ? authDisplayName
-        : "Sign in"
+        : 'Sign in'
 
     const handleSignIn = () => {
       if (auth.isLoading) return
@@ -690,7 +680,7 @@ export const SaasKimiPage8 = defineCapsule({
 
     const Check = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5 shrink-0", className)}
+        className={cn('size-5 shrink-0', className)}
         fill="currentColor"
         viewBox="0 0 20 20"
         aria-hidden="true"
@@ -705,7 +695,7 @@ export const SaasKimiPage8 = defineCapsule({
 
     const Cross = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5 shrink-0", className)}
+        className={cn('size-5 shrink-0', className)}
         fill="currentColor"
         viewBox="0 0 20 20"
         aria-hidden="true"
@@ -824,23 +814,23 @@ export const SaasKimiPage8 = defineCapsule({
 
     const socialIcons = [
       {
-        label: "Twitter",
-        path: "M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z",
+        label: 'Twitter',
+        path: 'M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z',
       },
       {
-        label: "GitHub",
-        path: "M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z",
+        label: 'GitHub',
+        path: 'M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z',
       },
       {
-        label: "LinkedIn",
-        path: "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z",
+        label: 'LinkedIn',
+        path: 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z',
       },
     ]
 
     return (
       <div
         className={cn(
-          "flex min-h-svh flex-col bg-background text-foreground font-sans antialiased",
+          'flex min-h-svh flex-col bg-background text-foreground font-sans antialiased',
           props.className,
         )}
       >
@@ -912,7 +902,9 @@ export const SaasKimiPage8 = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Session Status</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Session Status
+                      </SheetTitle>
                       <SheetDescription>
                         Your current session activity and subscription status.
                       </SheetDescription>
@@ -947,7 +939,10 @@ export const SaasKimiPage8 = defineCapsule({
                               Account Status
                             </h3>
                             <div className="flex items-center gap-3">
-                              <Avatar size="lg" className="ring-2 ring-background">
+                              <Avatar
+                                size="lg"
+                                className="ring-2 ring-background"
+                              >
                                 {authPicture ? (
                                   <AvatarImage
                                     src={authPicture}
@@ -963,7 +958,7 @@ export const SaasKimiPage8 = defineCapsule({
                                   {authDisplayName}
                                 </p>
                                 <p className="truncate text-xs text-muted-foreground">
-                                  {authEmail ?? "Signed in"}
+                                  {authEmail ?? 'Signed in'}
                                 </p>
                               </div>
                             </div>
@@ -1032,7 +1027,7 @@ export const SaasKimiPage8 = defineCapsule({
                               {authDisplayName}
                             </p>
                             <p className="truncate text-xs text-muted-foreground">
-                              {authEmail ?? "Signed in to this session"}
+                              {authEmail ?? 'Signed in to this session'}
                             </p>
                           </div>
                         </div>
@@ -1040,14 +1035,14 @@ export const SaasKimiPage8 = defineCapsule({
                       <div className="p-2">
                         <button
                           type="button"
-                          onClick={() => go("Account")}
+                          onClick={() => go('Account')}
                           className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           Account
                         </button>
                         <button
                           type="button"
-                          onClick={() => go("Settings")}
+                          onClick={() => go('Settings')}
                           className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           Settings
@@ -1080,7 +1075,7 @@ export const SaasKimiPage8 = defineCapsule({
                 )}
                 <button
                   type="button"
-                  onClick={() => go("START FREE")}
+                  onClick={() => go('START FREE')}
                   className="bg-foreground text-background px-5 py-2 font-mono text-sm font-bold hover:bg-primary hover:text-primary-foreground transition-colors"
                 >
                   START FREE
@@ -1128,10 +1123,7 @@ export const SaasKimiPage8 = defineCapsule({
                   </div>
                   <div className="flex items-center gap-6 text-sm font-mono text-muted-foreground">
                     {hero.proof.map((item) => (
-                      <span
-                        key={item}
-                        className="flex items-center gap-2"
-                      >
+                      <span key={item} className="flex items-center gap-2">
                         <Check className="size-4" />
                         {item}
                       </span>
@@ -1179,10 +1171,7 @@ export const SaasKimiPage8 = defineCapsule({
           <section className="py-12 border-b-2 border-foreground bg-foreground overflow-hidden">
             <div className="flex animate-marquee whitespace-nowrap">
               {[0, 1].map((group) => (
-                <div
-                  key={group}
-                  className="flex items-center gap-16 px-8"
-                >
+                <div key={group} className="flex items-center gap-16 px-8">
                   {logoNames.map((name) => (
                     <span
                       key={`${group}-${name}`}
@@ -1249,7 +1238,7 @@ export const SaasKimiPage8 = defineCapsule({
                 {steps.items.map((step, i) => (
                   <div key={step.title} className="relative">
                     <div className="font-mono text-6xl font-bold text-primary opacity-30 mb-4">
-                      {String(i + 1).padStart(2, "0")}
+                      {String(i + 1).padStart(2, '0')}
                     </div>
                     <h3 className="font-mono font-bold text-lg mb-3">
                       {step.title}
@@ -1310,9 +1299,7 @@ export const SaasKimiPage8 = defineCapsule({
                       className="w-full aspect-[3/2] object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="p-4 border-t-2 border-foreground">
-                      <h3 className="font-mono font-bold">
-                        {item.title}
-                      </h3>
+                      <h3 className="font-mono font-bold">{item.title}</h3>
                       <p className="text-sm text-muted-foreground mt-1">
                         {item.description}
                       </p>
@@ -1345,8 +1332,8 @@ export const SaasKimiPage8 = defineCapsule({
                   <div
                     key={plan.name}
                     className={cn(
-                      "relative flex flex-col",
-                      plan.popular && "md:-mt-2",
+                      'relative flex flex-col',
+                      plan.popular && 'md:-mt-2',
                     )}
                   >
                     {plan.popular && (
@@ -1356,16 +1343,16 @@ export const SaasKimiPage8 = defineCapsule({
                     )}
                     <div
                       className={cn(
-                        "absolute inset-0 translate-x-1.5 translate-y-1.5",
-                        plan.popular ? "bg-primary" : "bg-foreground",
+                        'absolute inset-0 translate-x-1.5 translate-y-1.5',
+                        plan.popular ? 'bg-primary' : 'bg-foreground',
                       )}
                     />
                     <div
                       className={cn(
-                        "relative flex flex-col flex-1 border-2 border-foreground p-8",
+                        'relative flex flex-col flex-1 border-2 border-foreground p-8',
                         plan.popular
-                          ? "bg-foreground text-background"
-                          : "bg-background",
+                          ? 'bg-foreground text-background'
+                          : 'bg-background',
                       )}
                     >
                       <div className="font-mono text-sm text-muted-foreground mb-2">
@@ -1389,12 +1376,10 @@ export const SaasKimiPage8 = defineCapsule({
                             className="flex items-start gap-3 text-sm"
                           >
                             <Check className="text-primary" />
-                            <span className="text-foreground">
-                              {feat}
-                            </span>
+                            <span className="text-foreground">{feat}</span>
                           </li>
                         ))}
-                        {plan.name === "STARTER" && (
+                        {plan.name === 'STARTER' && (
                           <li className="flex items-start gap-3 text-sm text-muted-foreground">
                             <Cross className="size-5" />
                             <span>Focus time protection</span>
@@ -1404,17 +1389,17 @@ export const SaasKimiPage8 = defineCapsule({
                       <button
                         type="button"
                         onClick={() => {
-                          if (plan.cta === "CONTACT SALES") {
-                            void requestDemo("contact@example.com", plan.name)
+                          if (plan.cta === 'CONTACT SALES') {
+                            void requestDemo('contact@example.com', plan.name)
                           } else {
                             go(plan.cta)
                           }
                         }}
                         className={cn(
-                          "w-full py-3 font-mono font-bold transition-colors",
+                          'w-full py-3 font-mono font-bold transition-colors',
                           plan.popular
-                            ? "bg-primary text-primary-foreground hover:bg-primary/80"
-                            : "bg-background border-2 border-foreground text-foreground hover:bg-foreground hover:text-background",
+                            ? 'bg-primary text-primary-foreground hover:bg-primary/80'
+                            : 'bg-background border-2 border-foreground text-foreground hover:bg-foreground hover:text-background',
                         )}
                       >
                         {plan.cta}
@@ -1425,15 +1410,15 @@ export const SaasKimiPage8 = defineCapsule({
               </div>
               <div className="mt-12 text-center">
                 <p className="font-mono text-sm text-muted-foreground">
-                  Annual billing saves 20%. Educational and non-profit
-                  discounts available.{" "}
+                  Annual billing saves 20%. Educational and non-profit discounts
+                  available.{' '}
                   <button
                     type="button"
-                    onClick={() => go("Contact us")}
+                    onClick={() => go('Contact us')}
                     className="text-primary underline hover:no-underline"
                   >
                     Contact us
-                  </button>{" "}
+                  </button>{' '}
                   for details.
                 </p>
               </div>
@@ -1537,8 +1522,8 @@ export const SaasKimiPage8 = defineCapsule({
                           {item.question}
                           <span
                             className={cn(
-                              "text-primary transition-transform",
-                              open && "rotate-45",
+                              'text-primary transition-transform',
+                              open && 'rotate-45',
                             )}
                           >
                             +
@@ -1546,8 +1531,8 @@ export const SaasKimiPage8 = defineCapsule({
                         </button>
                         <div
                           className={cn(
-                            "px-6 text-muted-foreground text-sm leading-relaxed transition-all",
-                            open ? "pb-6 block" : "h-0 overflow-hidden",
+                            'px-6 text-muted-foreground text-sm leading-relaxed transition-all',
+                            open ? 'pb-6 block' : 'h-0 overflow-hidden',
                           )}
                         >
                           {item.answer}
@@ -1583,7 +1568,7 @@ export const SaasKimiPage8 = defineCapsule({
                   ) as HTMLInputElement
                   if (emailInput?.value) {
                     void subscribeToNewsletter(emailInput.value)
-                    emailInput.value = ""
+                    emailInput.value = ''
                   }
                   go(cta.button)
                 }}
@@ -1603,10 +1588,7 @@ export const SaasKimiPage8 = defineCapsule({
               </form>
               <div className="flex flex-wrap justify-center gap-6 text-sm font-mono text-background/70">
                 {cta.proof.map((item) => (
-                  <span
-                    key={item}
-                    className="flex items-center gap-2"
-                  >
+                  <span key={item} className="flex items-center gap-2">
                     <Check className="text-primary" />
                     {item}
                   </span>
@@ -1630,9 +1612,7 @@ export const SaasKimiPage8 = defineCapsule({
                         CS
                       </span>
                     </div>
-                    <span className="font-mono font-bold text-lg">
-                      {brand}
-                    </span>
+                    <span className="font-mono font-bold text-lg">{brand}</span>
                   </button>
                   <p className="text-sm text-muted-foreground max-w-xs leading-relaxed mb-4">
                     {footer.tagline}

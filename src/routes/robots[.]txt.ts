@@ -1,3 +1,4 @@
+import type {} from '@tanstack/react-start'
 import { createFileRoute } from '@tanstack/react-router'
 
 import { createPublicMetadataResponse } from '@/features/deployments/server/public-metadata-response'

@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,7 +12,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "#/components/ui/command.tsx"
+} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetClose,
@@ -22,14 +22,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * SubscriptionBoxKimiPage — a complete, self-contained subscription-box e-commerce
@@ -52,7 +52,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * supply ONLY content data; rich defaults make it render great with no props at all.
  */
 export const SubscriptionBoxKimiPage = defineCapsule({
-  name: "SubscriptionBoxKimiPage",
+  name: 'SubscriptionBoxKimiPage',
   description:
     "Complete subscription-box / box-of-the-month e-commerce LANDING page with a warm, editorial, light aesthetic (artisan coffee 'BrewBox' style). Includes a split hero (live-shipment status pill, large headline with accent phrase, dual CTAs, avatar stack with subscriber count, product flat-lay photo + floating freshness badge), a press/'featured in' logos trust strip, a 6-up benefits/value grid with icon tiles, a 3-step 'how it works' flow with step images and connector arrows, a farm-to-cup brand-story split with an offset photo collage and a stat trio, a 3-tier subscription PRICING block with a highlighted 'Most Popular' plan and feature checklists, a dark stats/metrics band, a 3-up customer testimonials grid with 5-star ratings and avatars, an accordion FAQ (details/summary), a full-bleed closing CTA over an image overlay, and a fat multi-column footer with company/support/legal links and social icons. Use as the ROOT/home page for subscription boxes, monthly-delivery DTC brands, coffee/tea/wine/snack/meal-kit clubs, curated-goods memberships, or any recurring-shipment commerce product needing trust signals, tiered plans, social proof and FAQ. Supply content only — brand, nav, hero, benefits, steps, story, plans, stats, testimonials, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -178,9 +178,7 @@ export const SubscriptionBoxKimiPage = defineCapsule({
         eyebrow: z.string().optional(),
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       })
       .optional(),
     /** Closing full-bleed CTA. */
@@ -199,9 +197,7 @@ export const SubscriptionBoxKimiPage = defineCapsule({
       .object({
         description: z.string().optional(),
         columns: z
-          .array(
-            z.object({ heading: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ heading: z.string(), links: z.array(z.string()) }))
           .optional(),
         copyright: z.string().optional(),
         madeWith: z.string().optional(),
@@ -261,7 +257,11 @@ export const SubscriptionBoxKimiPage = defineCapsule({
 
         return db.subscriptions.all()
       },
-      updateSubscriptionQuantity: ({ db }, planId: string, quantity: number) => {
+      updateSubscriptionQuantity: (
+        { db },
+        planId: string,
+        quantity: number,
+      ) => {
         const nextQuantity = Math.max(0, Math.floor(quantity))
 
         for (const item of db.subscriptions.where('planName', planId).all()) {
@@ -308,187 +308,186 @@ export const SubscriptionBoxKimiPage = defineCapsule({
     const [mobileOpen, setMobileOpen] = useState(false)
     const [searchOpen, setSearchOpen] = useState(false)
     const [subscriptionOpen, setSubscriptionOpen] = useState(false)
-    const brand = props.brand ?? "BrewBox"
+    const brand = props.brand ?? 'BrewBox'
     const nav = props.nav?.length
       ? props.nav
-      : ["How It Works", "Plans", "Our Story", "FAQ"]
+      : ['How It Works', 'Plans', 'Our Story', 'FAQ']
 
-    const heroBadge =
-      props.hero?.badge ?? "Now shipping: Ethiopian Yirgacheffe"
-    const heroHeadingTop = props.hero?.headingTop ?? "Exceptional coffee,"
-    const heroHighlight = props.hero?.highlight ?? "delivered perfectly."
+    const heroBadge = props.hero?.badge ?? 'Now shipping: Ethiopian Yirgacheffe'
+    const heroHeadingTop = props.hero?.headingTop ?? 'Exceptional coffee,'
+    const heroHighlight = props.hero?.highlight ?? 'delivered perfectly.'
     const heroSub =
       props.hero?.subheading ??
-      "Discover single-origin coffees from award-winning roasters. Each box arrives freshly roasted, with brewing guides and tasting notes tailored to your preferences."
-    const heroPrimary = props.hero?.primaryCta ?? "Start Your Subscription"
-    const heroSecondary = props.hero?.secondaryCta ?? "See How It Works"
-    const heroSocialProof = props.hero?.socialProof ?? "12,000+ coffee lovers"
+      'Discover single-origin coffees from award-winning roasters. Each box arrives freshly roasted, with brewing guides and tasting notes tailored to your preferences.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Start Your Subscription'
+    const heroSecondary = props.hero?.secondaryCta ?? 'See How It Works'
+    const heroSocialProof = props.hero?.socialProof ?? '12,000+ coffee lovers'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "flat lay of artisan coffee subscription box contents including freshly roasted beans ceramic cup brewing equipment and tasting notes card"
-    const heroBadgeTitle = props.hero?.badgeTitle ?? "Freshness Guaranteed"
+      'flat lay of artisan coffee subscription box contents including freshly roasted beans ceramic cup brewing equipment and tasting notes card'
+    const heroBadgeTitle = props.hero?.badgeTitle ?? 'Freshness Guaranteed'
     const heroBadgeSubtitle =
-      props.hero?.badgeSubtitle ?? "Roasted within 48 hours"
+      props.hero?.badgeSubtitle ?? 'Roasted within 48 hours'
 
-    const logosHeading = props.logos?.heading ?? "Featured in & trusted by"
+    const logosHeading = props.logos?.heading ?? 'Featured in & trusted by'
     const logosItems = props.logos?.items?.length
       ? props.logos.items
-      : ["Bon Appétit", "Food & Wine", "Serious Eats", "Sprudge", "Eater"]
+      : ['Bon Appétit', 'Food & Wine', 'Serious Eats', 'Sprudge', 'Eater']
 
     const benefitsHeading =
-      props.benefits?.heading ?? "The complete coffee experience"
+      props.benefits?.heading ?? 'The complete coffee experience'
     const benefitsDesc =
       props.benefits?.description ??
-      "Every box is curated to help you discover, brew, and appreciate exceptional coffee."
+      'Every box is curated to help you discover, brew, and appreciate exceptional coffee.'
     const benefitItems = props.benefits?.items?.length
       ? props.benefits.items
       : [
           {
-            title: "Curated Selection",
+            title: 'Curated Selection',
             description:
-              "Three unique coffees each month from top-tier roasters like Intelligentsia, Counter Culture, and Stumptown. Rotating origins from Ethiopia to Colombia.",
+              'Three unique coffees each month from top-tier roasters like Intelligentsia, Counter Culture, and Stumptown. Rotating origins from Ethiopia to Colombia.',
           },
           {
-            title: "Peak Freshness",
+            title: 'Peak Freshness',
             description:
-              "Roasted to order and shipped within 48 hours of roasting. Nitrogen-flushed bags lock in flavor for optimal brewing from day 3 to day 21.",
+              'Roasted to order and shipped within 48 hours of roasting. Nitrogen-flushed bags lock in flavor for optimal brewing from day 3 to day 21.',
           },
           {
-            title: "Brewing Guides",
+            title: 'Brewing Guides',
             description:
-              "Detailed tasting notes with flavor profiles, origin stories, and precise brewing parameters for V60, Chemex, AeroPress, and espresso methods.",
+              'Detailed tasting notes with flavor profiles, origin stories, and precise brewing parameters for V60, Chemex, AeroPress, and espresso methods.',
           },
           {
-            title: "Flexible Delivery",
+            title: 'Flexible Delivery',
             description:
-              "Choose your frequency: weekly, bi-weekly, or monthly. Pause, skip, or adjust anytime. Delivery aligned with your consumption rate.",
+              'Choose your frequency: weekly, bi-weekly, or monthly. Pause, skip, or adjust anytime. Delivery aligned with your consumption rate.',
           },
           {
-            title: "Grind Preference",
+            title: 'Grind Preference',
             description:
-              "Whole bean or ground to your specifications. Choose from coarse (French press), medium (drip), fine (espresso), or extra-fine (Turkish).",
+              'Whole bean or ground to your specifications. Choose from coarse (French press), medium (drip), fine (espresso), or extra-fine (Turkish).',
           },
           {
-            title: "Satisfaction Promise",
+            title: 'Satisfaction Promise',
             description:
               "Not loving a coffee? We'll replace it free or refund your box. Our taste-matching algorithm improves with every rating you submit.",
           },
         ]
 
-    const stepsEyebrow = props.steps?.eyebrow ?? "How It Works"
+    const stepsEyebrow = props.steps?.eyebrow ?? 'How It Works'
     const stepsHeading =
-      props.steps?.heading ?? "Your perfect cup, in three steps"
+      props.steps?.heading ?? 'Your perfect cup, in three steps'
     const stepsDesc =
       props.steps?.description ??
-      "We handle the sourcing, roasting, and delivery. You enjoy the brewing and tasting."
+      'We handle the sourcing, roasting, and delivery. You enjoy the brewing and tasting.'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Choose your plan",
+            title: 'Choose your plan',
             description:
-              "Select your preferred roast profile (light, medium, dark, or mixed), grind setting, and delivery frequency. Plans start at $19/month.",
+              'Select your preferred roast profile (light, medium, dark, or mixed), grind setting, and delivery frequency. Plans start at $19/month.',
             imageAlt:
-              "person selecting coffee beans from jars in a specialty coffee shop",
+              'person selecting coffee beans from jars in a specialty coffee shop',
           },
           {
-            title: "We curate & roast",
+            title: 'We curate & roast',
             description:
-              "Our coffee team scores 50+ samples monthly. Winners are small-batch roasted Monday-Wednesday and shipped Thursday morning.",
+              'Our coffee team scores 50+ samples monthly. Winners are small-batch roasted Monday-Wednesday and shipped Thursday morning.',
             imageAlt:
-              "industrial coffee roasting machine with copper drum and visible roasting beans",
+              'industrial coffee roasting machine with copper drum and visible roasting beans',
           },
           {
-            title: "Brew & enjoy",
+            title: 'Brew & enjoy',
             description:
-              "Unbox your coffee, scan the QR code for brewing instructions, and discover your new favorite origin. Rate each coffee to refine future selections.",
+              'Unbox your coffee, scan the QR code for brewing instructions, and discover your new favorite origin. Rate each coffee to refine future selections.',
             imageAlt:
-              "pour over coffee being brewed with steam rising from ceramic dripper into glass carafe",
+              'pour over coffee being brewed with steam rising from ceramic dripper into glass carafe',
           },
         ]
 
-    const storyEyebrow = props.story?.eyebrow ?? "Our Story"
+    const storyEyebrow = props.story?.eyebrow ?? 'Our Story'
     const storyHeading =
-      props.story?.heading ?? "From farm to cup, with care at every step"
+      props.story?.heading ?? 'From farm to cup, with care at every step'
     const storyParagraphs = props.story?.paragraphs?.length
       ? props.story.paragraphs
       : [
           "BrewBox began in 2018 when our founder, a former Q-Grader, grew frustrated with the gap between exceptional green coffee and what reached consumers' cups. We built direct relationships with farmers in Ethiopia, Guatemala, Colombia, and Kenya—paying 40% above Fair Trade minimums.",
-          "Each coffee in your box is traceable to the farm or cooperative level. We share the harvest dates, processing methods (washed, natural, honey, anaerobic), and the stories of the producers behind every bean.",
-          "Our roasting partners are small-batch artisans who have won 17 national roasting competitions combined. They roast on equipment that costs more than a house because precision matters—down to 0.1°C control throughout the roast curve.",
+          'Each coffee in your box is traceable to the farm or cooperative level. We share the harvest dates, processing methods (washed, natural, honey, anaerobic), and the stories of the producers behind every bean.',
+          'Our roasting partners are small-batch artisans who have won 17 national roasting competitions combined. They roast on equipment that costs more than a house because precision matters—down to 0.1°C control throughout the roast curve.',
         ]
     const storyImageAlts = props.story?.imageAlts?.length
       ? props.story.imageAlts
       : [
-          "close up of coffee cherries being hand picked at a farm",
-          "coffee cupping session with multiple glasses and spoons on wooden table",
-          "barista carefully pouring latte art into ceramic cup",
-          "aerial view of coffee plantation with rows of green coffee trees",
+          'close up of coffee cherries being hand picked at a farm',
+          'coffee cupping session with multiple glasses and spoons on wooden table',
+          'barista carefully pouring latte art into ceramic cup',
+          'aerial view of coffee plantation with rows of green coffee trees',
         ]
     const storyStats = props.story?.stats?.length
       ? props.story.stats
       : [
-          { value: "6", label: "Origin countries" },
-          { value: "40%", label: "Above Fair Trade" },
-          { value: "48hr", label: "Roast to ship" },
+          { value: '6', label: 'Origin countries' },
+          { value: '40%', label: 'Above Fair Trade' },
+          { value: '48hr', label: 'Roast to ship' },
         ]
 
-    const plansEyebrow = props.plans?.eyebrow ?? "Plans"
-    const plansHeading = props.plans?.heading ?? "Choose your subscription"
+    const plansEyebrow = props.plans?.eyebrow ?? 'Plans'
+    const plansHeading = props.plans?.heading ?? 'Choose your subscription'
     const plansDesc =
       props.plans?.description ??
-      "Flexible plans that scale with your coffee consumption. All plans include free shipping and can be paused anytime."
+      'Flexible plans that scale with your coffee consumption. All plans include free shipping and can be paused anytime.'
     const planItems = props.plans?.items?.length
       ? props.plans.items
       : [
           {
-            name: "Explorer",
-            tagline: "Perfect for solo drinkers",
-            price: "$19",
-            period: "/month",
+            name: 'Explorer',
+            tagline: 'Perfect for solo drinkers',
+            price: '$19',
+            period: '/month',
             features: [
-              "12 oz of single-origin coffee",
-              "1 coffee variety per box",
-              "Digital brewing guide",
-              "Cancel anytime",
+              '12 oz of single-origin coffee',
+              '1 coffee variety per box',
+              'Digital brewing guide',
+              'Cancel anytime',
             ],
-            cta: "Get Started",
+            cta: 'Get Started',
           },
           {
-            name: "Enthusiast",
-            tagline: "For the daily coffee lover",
-            price: "$34",
-            period: "/month",
+            name: 'Enthusiast',
+            tagline: 'For the daily coffee lover',
+            price: '$34',
+            period: '/month',
             features: [
-              "24 oz of premium coffee",
-              "2 different origins per box",
-              "Printed tasting cards + QR",
-              "Priority customer support",
-              "Exclusive micro-lot access",
+              '24 oz of premium coffee',
+              '2 different origins per box',
+              'Printed tasting cards + QR',
+              'Priority customer support',
+              'Exclusive micro-lot access',
             ],
-            cta: "Get Started",
+            cta: 'Get Started',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Connoisseur",
-            tagline: "For households & offices",
-            price: "$59",
-            period: "/month",
+            name: 'Connoisseur',
+            tagline: 'For households & offices',
+            price: '$59',
+            period: '/month',
             features: [
-              "48 oz of rare coffees",
-              "3 premium varieties",
-              "Exclusive Gesha & competition lots",
-              "Monthly brewing kit gifts",
-              "Quarterly virtual cupping",
+              '48 oz of rare coffees',
+              '3 premium varieties',
+              'Exclusive Gesha & competition lots',
+              'Monthly brewing kit gifts',
+              'Quarterly virtual cupping',
             ],
-            cta: "Get Started",
+            cta: 'Get Started',
           },
         ]
     const plansFootnote =
       props.plans?.footnote ??
-      "All plans include free shipping within the US. International shipping available for $8/box."
-    const plansFootnoteLink = props.plans?.footnoteLink ?? "Learn more"
+      'All plans include free shipping within the US. International shipping available for $8/box.'
+    const plansFootnoteLink = props.plans?.footnoteLink ?? 'Learn more'
 
     const priceAmount = (price: string) => {
       const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ''))
@@ -516,8 +515,12 @@ export const SubscriptionBoxKimiPage = defineCapsule({
     const favoritePlanNames = lakebed.useQuery('favoritePlanNames')
     const auth = lakebed.useAuth()
     const subscribeToPlan = lakebed.useMutation('subscribeToPlan')
-    const updateSubscriptionQuantity = lakebed.useMutation('updateSubscriptionQuantity')
-    const removeFromSubscriptions = lakebed.useMutation('removeFromSubscriptions')
+    const updateSubscriptionQuantity = lakebed.useMutation(
+      'updateSubscriptionQuantity',
+    )
+    const removeFromSubscriptions = lakebed.useMutation(
+      'removeFromSubscriptions',
+    )
     const clearSubscriptions = lakebed.useMutation('clearSubscriptions')
     const toggleFavorite = lakebed.useMutation('toggleFavorite')
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
@@ -546,9 +549,7 @@ export const SubscriptionBoxKimiPage = defineCapsule({
       lakebed.signOut()
     }
     const displayPlans =
-      storedPlans && storedPlans.length > 0
-        ? storedPlans
-        : normalizedPlanItems
+      storedPlans && storedPlans.length > 0 ? storedPlans : normalizedPlanItems
     const safeSubscriptionLines = subscriptionLines ?? []
     const subscriptionCount = safeSubscriptionLines.reduce(
       (total, item) => total + item.quantity,
@@ -558,21 +559,22 @@ export const SubscriptionBoxKimiPage = defineCapsule({
       (total, item) => total + priceAmount(item.plan.price) * item.quantity,
       0,
     )
-    const shipping = subscriptionSubtotal > 0 && subscriptionSubtotal < 150 ? 12 : 0
+    const shipping =
+      subscriptionSubtotal > 0 && subscriptionSubtotal < 150 ? 12 : 0
     const subscriptionTotal = subscriptionSubtotal + shipping
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "12K+", label: "Active subscribers" },
-          { value: "89", label: "Coffees shipped" },
-          { value: "4.9", label: "Average rating" },
-          { value: "98%", label: "Retention rate" },
+          { value: '12K+', label: 'Active subscribers' },
+          { value: '89', label: 'Coffees shipped' },
+          { value: '4.9', label: 'Average rating' },
+          { value: '98%', label: 'Retention rate' },
         ]
 
-    const testimonialsEyebrow = props.testimonials?.eyebrow ?? "Testimonials"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'Testimonials'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Loved by coffee enthusiasts"
+      props.testimonials?.heading ?? 'Loved by coffee enthusiasts'
     const testimonialsDesc =
       props.testimonials?.description ??
       "Here's what our subscribers say about their BrewBox experience."
@@ -582,95 +584,95 @@ export const SubscriptionBoxKimiPage = defineCapsule({
           {
             quote:
               "I've tried Blue Bottle, Intelligentsia's own subscription, and others. BrewBox consistently sends coffees I can't find elsewhere. The January Ethiopian was one of the best cups I've ever had.",
-            name: "David Chen",
-            role: "Software Engineer, Portland",
+            name: 'David Chen',
+            role: 'Software Engineer, Portland',
             avatarAlt:
-              "professional headshot of a middle aged man with glasses and short gray hair",
+              'professional headshot of a middle aged man with glasses and short gray hair',
           },
           {
             quote:
               "As a former barista, I'm picky about coffee. BrewBox sends varieties I'd never find in my local shops. The brewing guides are incredibly detailed—my V60 technique improved dramatically.",
-            name: "Maya Thompson",
-            role: "Product Designer, Austin",
+            name: 'Maya Thompson',
+            role: 'Product Designer, Austin',
             avatarAlt:
-              "professional headshot of a young woman with dark curly hair and warm smile",
+              'professional headshot of a young woman with dark curly hair and warm smile',
           },
           {
             quote:
-              "We switched our office coffee to BrewBox Connoisseur. Productivity meetings are now something people actually look forward to. The Gesha last month stopped three conversations mid-sentence.",
-            name: "James Rodriguez",
-            role: "CEO, TechStart, SF",
+              'We switched our office coffee to BrewBox Connoisseur. Productivity meetings are now something people actually look forward to. The Gesha last month stopped three conversations mid-sentence.',
+            name: 'James Rodriguez',
+            role: 'CEO, TechStart, SF',
             avatarAlt:
-              "professional headshot of a man with short dark hair and friendly expression",
+              'professional headshot of a man with short dark hair and friendly expression',
           },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Questions & Answers"
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Questions & Answers'
     const faqDesc =
-      props.faq?.description ?? "Everything you need to know about BrewBox."
+      props.faq?.description ?? 'Everything you need to know about BrewBox.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "When will my first box ship?",
+            q: 'When will my first box ship?',
             a: "Orders placed by Sunday 11:59pm ET ship the following Thursday. Most subscribers receive their first box within 5-7 business days. You'll receive tracking information via email and SMS once your order is on its way.",
           },
           {
-            q: "Can I choose which coffees I receive?",
-            a: "You select your roast preference (light, medium, dark, or variety), and we curate based on that profile. Enthusiast and Connoisseur members can rate each coffee, and our algorithm learns your taste to improve future selections. Connoisseur members occasionally receive exclusive pre-selection emails for limited micro-lots.",
+            q: 'Can I choose which coffees I receive?',
+            a: 'You select your roast preference (light, medium, dark, or variety), and we curate based on that profile. Enthusiast and Connoisseur members can rate each coffee, and our algorithm learns your taste to improve future selections. Connoisseur members occasionally receive exclusive pre-selection emails for limited micro-lots.',
           },
           {
-            q: "Do you offer ground coffee or just whole bean?",
-            a: "Both! You can choose whole bean, or select your grind size: coarse (French press/cold brew), medium (drip/pour-over), fine (espresso), or extra-fine (Turkish). We recommend whole bean for maximum freshness—coffee begins to stale 15 minutes after grinding.",
+            q: 'Do you offer ground coffee or just whole bean?',
+            a: 'Both! You can choose whole bean, or select your grind size: coarse (French press/cold brew), medium (drip/pour-over), fine (espresso), or extra-fine (Turkish). We recommend whole bean for maximum freshness—coffee begins to stale 15 minutes after grinding.',
           },
           {
             q: "What if I don't like a coffee in my box?",
             a: "We stand behind every coffee with our satisfaction promise. Rate any coffee 2 stars or below, and we'll credit your account for that bag or send a replacement in your next box—your choice. Your ratings also help us refine your future selections.",
           },
           {
-            q: "How do I change or cancel my subscription?",
-            a: "You have full control via your account dashboard. Pause for up to 3 months, skip a shipment, change your plan, or cancel anytime before your next billing date (which is 3 days before roasting). No contracts, no fees, no hassle.",
+            q: 'How do I change or cancel my subscription?',
+            a: 'You have full control via your account dashboard. Pause for up to 3 months, skip a shipment, change your plan, or cancel anytime before your next billing date (which is 3 days before roasting). No contracts, no fees, no hassle.',
           },
           {
-            q: "Do you ship internationally?",
-            a: "Yes! We ship to Canada ($8/box, 5-10 days), UK ($12/box, 7-14 days), and Australia ($15/box, 10-18 days). Due to customs regulations, some destinations may have delays. All international orders are shipped via DHL Express with full tracking.",
+            q: 'Do you ship internationally?',
+            a: 'Yes! We ship to Canada ($8/box, 5-10 days), UK ($12/box, 7-14 days), and Australia ($15/box, 10-18 days). Due to customs regulations, some destinations may have delays. All international orders are shipped via DHL Express with full tracking.',
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to upgrade your mornings?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to upgrade your mornings?'
     const ctaDesc =
       props.cta?.description ??
       "Join 12,000+ coffee lovers who've discovered their new favorite roasts. Your first box ships within 48 hours of roasting."
-    const ctaPrimary = props.cta?.primaryCta ?? "Start Your Subscription"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Learn More"
+    const ctaPrimary = props.cta?.primaryCta ?? 'Start Your Subscription'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'Learn More'
     const ctaNote =
-      props.cta?.note ?? "Cancel anytime. No long-term commitment required."
+      props.cta?.note ?? 'Cancel anytime. No long-term commitment required.'
     const ctaImageAlt =
       props.cta?.imageAlt ??
-      "coffee beans roasting with warm amber light and smoke"
+      'coffee beans roasting with warm amber light and smoke'
 
     const footerDesc =
       props.footer?.description ??
-      "Discover exceptional single-origin coffees from world-class roasters. Delivered fresh to your door, perfectly timed for your morning ritual."
+      'Discover exceptional single-origin coffees from world-class roasters. Delivered fresh to your door, perfectly timed for your morning ritual.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            heading: "Company",
-            links: ["About Us", "Careers", "Press", "Blog"],
+            heading: 'Company',
+            links: ['About Us', 'Careers', 'Press', 'Blog'],
           },
           {
-            heading: "Support",
-            links: ["Help Center", "Contact Us", "Shipping Info", "Returns"],
+            heading: 'Support',
+            links: ['Help Center', 'Contact Us', 'Shipping Info', 'Returns'],
           },
           {
-            heading: "Legal",
+            heading: 'Legal',
             links: [
-              "Privacy Policy",
-              "Terms of Service",
-              "Cookie Policy",
-              "Accessibility",
+              'Privacy Policy',
+              'Terms of Service',
+              'Cookie Policy',
+              'Accessibility',
             ],
           },
         ]
@@ -678,14 +680,14 @@ export const SubscriptionBoxKimiPage = defineCapsule({
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand} Coffee Co. All rights reserved.`
     const footerMadeWith =
-      props.footer?.madeWith ?? "Made with care in San Francisco, CA"
+      props.footer?.madeWith ?? 'Made with care in San Francisco, CA'
 
     // Brand mark — coffee cup glyph (decorative brand asset).
     const BrandMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 24 24"
         fill="currentColor"
-        className={cn("text-primary", className)}
+        className={cn('text-primary', className)}
         aria-hidden="true"
       >
         <path d="M18.5 3H6c-1.1 0-2 .9-2 2v5.71c0 3.83 2.95 7.18 6.78 7.29 3.96.12 7.22-3.06 7.22-7v-1h.5c1.93 0 3.5-1.57 3.5-3.5S20.43 3 18.5 3zM16 8.5c0 .83-.67 1.5-1.5 1.5h-1v1c0 2.48-2.02 4.5-4.5 4.5s-4.5-2.02-4.5-4.5V5h11v3.5zM18.5 7h-.5V5h.5c.83 0 1.5.67 1.5 1.5S19.33 7 18.5 7z" />
@@ -867,23 +869,23 @@ export const SubscriptionBoxKimiPage = defineCapsule({
 
     const socialIcons: { label: string; path: string }[] = [
       {
-        label: "Instagram",
-        path: "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z",
+        label: 'Instagram',
+        path: 'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z',
       },
       {
-        label: "Twitter",
-        path: "M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z",
+        label: 'Twitter',
+        path: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z',
       },
       {
-        label: "YouTube",
-        path: "M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z",
+        label: 'YouTube',
+        path: 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z',
       },
     ]
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -1065,7 +1067,9 @@ export const SubscriptionBoxKimiPage = defineCapsule({
                   className="w-full gap-0 p-0 sm:max-w-md"
                 >
                   <SheetHeader className="border-b border-border p-6">
-                    <SheetTitle className="text-xl">Your subscriptions</SheetTitle>
+                    <SheetTitle className="text-xl">
+                      Your subscriptions
+                    </SheetTitle>
                     <SheetDescription>
                       {subscriptionCount > 0
                         ? `${subscriptionCount} subscription${subscriptionCount === 1 ? '' : 's'} in your plan.`
@@ -1383,9 +1387,9 @@ export const SubscriptionBoxKimiPage = defineCapsule({
                   <div className="flex items-center gap-6 pt-4">
                     <div className="flex -space-x-2">
                       {[
-                        "professional headshot of a smiling woman with brown hair",
-                        "professional headshot of a man with short dark hair and warm smile",
-                        "professional headshot of a blonde woman smiling confidently",
+                        'professional headshot of a smiling woman with brown hair',
+                        'professional headshot of a man with short dark hair and warm smile',
+                        'professional headshot of a blonde woman smiling confidently',
                       ].map((alt) => (
                         <Image
                           key={alt}
@@ -1538,7 +1542,7 @@ export const SubscriptionBoxKimiPage = defineCapsule({
                   <div className="space-y-4">
                     <div className="aspect-[3/4] overflow-hidden rounded-xl">
                       <Image
-                        alt={storyImageAlts[0] ?? "coffee farm"}
+                        alt={storyImageAlts[0] ?? 'coffee farm'}
                         w={600}
                         h={800}
                         loading="lazy"
@@ -1547,7 +1551,7 @@ export const SubscriptionBoxKimiPage = defineCapsule({
                     </div>
                     <div className="aspect-square overflow-hidden rounded-xl">
                       <Image
-                        alt={storyImageAlts[1] ?? "coffee cupping"}
+                        alt={storyImageAlts[1] ?? 'coffee cupping'}
                         w={600}
                         h={600}
                         loading="lazy"
@@ -1558,7 +1562,7 @@ export const SubscriptionBoxKimiPage = defineCapsule({
                   <div className="space-y-4 pt-8">
                     <div className="aspect-square overflow-hidden rounded-xl">
                       <Image
-                        alt={storyImageAlts[2] ?? "barista latte art"}
+                        alt={storyImageAlts[2] ?? 'barista latte art'}
                         w={600}
                         h={600}
                         loading="lazy"
@@ -1567,7 +1571,7 @@ export const SubscriptionBoxKimiPage = defineCapsule({
                     </div>
                     <div className="aspect-[3/4] overflow-hidden rounded-xl">
                       <Image
-                        alt={storyImageAlts[3] ?? "coffee plantation"}
+                        alt={storyImageAlts[3] ?? 'coffee plantation'}
                         w={600}
                         h={800}
                         loading="lazy"
@@ -1619,8 +1623,7 @@ export const SubscriptionBoxKimiPage = defineCapsule({
               </div>
               <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
                 {displayPlans.map((plan) => {
-                  const isFavorite =
-                    favoritePlanNames?.has(plan.name) ?? false
+                  const isFavorite = favoritePlanNames?.has(plan.name) ?? false
                   const isFeatured = plan.featured === 'true'
                   const features = plan.features.split(', ')
 
@@ -1628,10 +1631,10 @@ export const SubscriptionBoxKimiPage = defineCapsule({
                     <div
                       key={plan.name}
                       className={cn(
-                        "relative rounded-xl p-8",
+                        'relative rounded-xl p-8',
                         isFeatured
-                          ? "bg-primary text-primary-foreground"
-                          : "border border-border bg-card text-card-foreground",
+                          ? 'bg-primary text-primary-foreground'
+                          : 'border border-border bg-card text-card-foreground',
                       )}
                     >
                       {plan.badge && (
@@ -1649,10 +1652,10 @@ export const SubscriptionBoxKimiPage = defineCapsule({
                             : `Add ${plan.name} to favorites`
                         }
                         className={cn(
-                          "absolute -top-2 -right-2 grid size-8 place-items-center rounded-full shadow-md transition-all hover:scale-105",
+                          'absolute -top-2 -right-2 grid size-8 place-items-center rounded-full shadow-md transition-all hover:scale-105',
                           isFavorite
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-background/90 text-foreground hover:bg-background",
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-background/90 text-foreground hover:bg-background',
                         )}
                       >
                         <HeartIcon active={isFavorite} />
@@ -1660,10 +1663,10 @@ export const SubscriptionBoxKimiPage = defineCapsule({
                       <h3 className="text-xl font-semibold">{plan.name}</h3>
                       <p
                         className={cn(
-                          "mt-2",
+                          'mt-2',
                           isFeatured
-                            ? "text-primary-foreground/70"
-                            : "text-muted-foreground",
+                            ? 'text-primary-foreground/70'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {plan.tagline}
@@ -1673,8 +1676,8 @@ export const SubscriptionBoxKimiPage = defineCapsule({
                         <span
                           className={cn(
                             isFeatured
-                              ? "text-primary-foreground/70"
-                              : "text-muted-foreground",
+                              ? 'text-primary-foreground/70'
+                              : 'text-muted-foreground',
                           )}
                         >
                           {plan.period}
@@ -1685,17 +1688,17 @@ export const SubscriptionBoxKimiPage = defineCapsule({
                           <li key={feature} className="flex items-start gap-3">
                             <Check
                               className={cn(
-                                "mt-0.5 size-5 shrink-0",
+                                'mt-0.5 size-5 shrink-0',
                                 isFeatured
-                                  ? "text-primary-foreground"
-                                  : "text-primary",
+                                  ? 'text-primary-foreground'
+                                  : 'text-primary',
                               )}
                             />
                             <span
                               className={cn(
                                 isFeatured
-                                  ? "text-primary-foreground/90"
-                                  : "text-muted-foreground",
+                                  ? 'text-primary-foreground/90'
+                                  : 'text-muted-foreground',
                               )}
                             >
                               {feature}
@@ -1710,10 +1713,10 @@ export const SubscriptionBoxKimiPage = defineCapsule({
                           setSubscriptionOpen(true)
                         }}
                         className={cn(
-                          "w-full rounded-full px-6 py-3 font-medium transition-colors",
+                          'w-full rounded-full px-6 py-3 font-medium transition-colors',
                           isFeatured
-                            ? "bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-                            : "border border-border text-foreground hover:bg-accent",
+                            ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90'
+                            : 'border border-border text-foreground hover:bg-accent',
                         )}
                       >
                         {plan.cta}

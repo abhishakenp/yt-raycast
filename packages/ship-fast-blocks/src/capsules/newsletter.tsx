@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * NewsletterKimiPage — a complete, full-stack editorial NEWSLETTER landing /
@@ -54,7 +54,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * content data; rich defaults make it render great with no props at all.
  */
 export const NewsletterKimiPage = defineCapsule({
-  name: "NewsletterKimiPage",
+  name: 'NewsletterKimiPage',
   description:
     "Complete full-stack editorial NEWSLETTER landing / email-subscription page with a warm, calm, literary aesthetic: serif display headings, paper-toned surface, generous whitespace. Includes a centered hero (eyebrow kicker, serif headline, inline email signup form, social-proof line), a 4-up subscriber stats strip (dynamic count), a 'What You Get' features grid with icons plus a checklist of perks, reader testimonial cards with avatars and short pull-quotes, a recent-issues archive grid (cover photo, issue number, date, blurb, read-issue link, bookmark functionality, view-all link), a two-tier pricing comparison (Free vs Paid plan, each with its own email capture + feature list), an FAQ accordion, a dark final-CTA subscribe band, and a multi-column footer with social links. Full-stack features: reading list drawer, Google auth, subscription tracking, persisted state. Use as the ROOT/home page for newsletters, email subscriptions, Substack-style publications, blogs, indie writers, essayists, digests, or content creators who want a thoughtful, conversion-focused signup page with archive showcase, social proof and free/paid tiers. Supply content only — brand, nav, hero, stats, features, testimonials, issues, pricing, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -166,9 +166,7 @@ export const NewsletterKimiPage = defineCapsule({
     faq: z
       .object({
         heading: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       })
       .optional(),
     /** Final CTA subscribe band. */
@@ -188,9 +186,7 @@ export const NewsletterKimiPage = defineCapsule({
       .object({
         tagline: z.string().optional(),
         columns: z
-          .array(
-            z.object({ title: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ title: z.string(), links: z.array(z.string()) }))
           .optional(),
         copyright: z.string().optional(),
         legal: z.array(z.string()).optional(),
@@ -223,16 +219,16 @@ export const NewsletterKimiPage = defineCapsule({
     },
     mutations: {
       addToReadingList: ({ db }, issueTitle: string) => {
-        const existing = db.readingList
-          .where('issueTitle', issueTitle)
-          .all()[0]
+        const existing = db.readingList.where('issueTitle', issueTitle).all()[0]
         if (existing) return db.readingList.all()
 
         db.readingList.insert({ issueTitle })
         return db.readingList.all()
       },
       removeFromReadingList: ({ db }, issueTitle: string) => {
-        for (const item of db.readingList.where('issueTitle', issueTitle).all()) {
+        for (const item of db.readingList
+          .where('issueTitle', issueTitle)
+          .all()) {
           db.readingList.delete(item.id)
         }
         return db.readingList.all()
@@ -252,7 +248,7 @@ export const NewsletterKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [readingListOpen, setReadingListOpen] = useState(false)
-    const brand = props.brand ?? "The Quiet Observer"
+    const brand = props.brand ?? 'The Quiet Observer'
 
     const storedIssues = lakebed.useQuery('issues')
     const readingListTitles = lakebed.useQuery('readingListTitles')
@@ -290,40 +286,43 @@ export const NewsletterKimiPage = defineCapsule({
     }
     const nav = props.nav?.length
       ? props.nav
-      : ["Recent Issues", "About", "Subscribe"]
+      : ['Recent Issues', 'About', 'Subscribe']
 
-    const heroEyebrow = props.hero?.eyebrow ?? "Every Sunday Morning"
-    const heroTop = props.hero?.headingTop ?? "Essays that slow down"
-    const heroBottom = props.hero?.headingBottom ?? "the conversation"
+    const heroEyebrow = props.hero?.eyebrow ?? 'Every Sunday Morning'
+    const heroTop = props.hero?.headingTop ?? 'Essays that slow down'
+    const heroBottom = props.hero?.headingBottom ?? 'the conversation'
     const heroSub =
       props.hero?.subheading ??
-      "A weekly newsletter exploring the intersection of technology, creativity, and human connection. Join 12,000+ readers who start their Sundays with insight, not noise."
-    const heroPlaceholder = props.hero?.emailPlaceholder ?? "your@email.com"
-    const heroSubmit = props.hero?.submit ?? "Subscribe Free"
+      'A weekly newsletter exploring the intersection of technology, creativity, and human connection. Join 12,000+ readers who start their Sundays with insight, not noise.'
+    const heroPlaceholder = props.hero?.emailPlaceholder ?? 'your@email.com'
+    const heroSubmit = props.hero?.submit ?? 'Subscribe Free'
     const heroProofPrefix =
       props.hero?.proofPrefix ??
-      "No spam. Unsubscribe anytime. Read by teams at "
+      'No spam. Unsubscribe anytime. Read by teams at '
     const heroProofBrands =
-      props.hero?.proofBrands ?? "Notion, Figma, Stripe, and Vercel"
+      props.hero?.proofBrands ?? 'Notion, Figma, Stripe, and Vercel'
 
     const staticStats = props.stats?.length
       ? props.stats
       : [
-          { value: "12,400+", label: "Subscribers" },
-          { value: "47%", label: "Open Rate" },
-          { value: "3 years", label: "Publishing" },
-          { value: "156", label: "Issues Sent" },
+          { value: '12,400+', label: 'Subscribers' },
+          { value: '47%', label: 'Open Rate' },
+          { value: '3 years', label: 'Publishing' },
+          { value: '156', label: 'Issues Sent' },
         ]
 
     const displayStats =
-      typeof subscriberCount === "number"
+      typeof subscriberCount === 'number'
         ? [
-            { value: `${subscriberCount.toLocaleString()}+`, label: "Subscribers" },
+            {
+              value: `${subscriberCount.toLocaleString()}+`,
+              label: 'Subscribers',
+            },
             ...staticStats.slice(1),
           ]
         : staticStats
 
-    const featuresHeading = props.features?.heading ?? "What You Get"
+    const featuresHeading = props.features?.heading ?? 'What You Get'
     const featuresDesc =
       props.features?.description ??
       "Every issue is crafted with care. Here's what lands in your inbox each Sunday."
@@ -331,17 +330,17 @@ export const NewsletterKimiPage = defineCapsule({
       ? props.features.items
       : [
           {
-            title: "One Deep Essay",
+            title: 'One Deep Essay',
             description:
               "A 1,500-2,000 word essay exploring a single topic with nuance. No listicles. No clickbait. Just thoughtful analysis on technology's impact on our lives.",
           },
           {
-            title: "Curated Links",
+            title: 'Curated Links',
             description:
-              "Five carefully selected articles, books, and podcasts that informed my thinking this week. Each with a personal note on why it matters.",
+              'Five carefully selected articles, books, and podcasts that informed my thinking this week. Each with a personal note on why it matters.',
           },
           {
-            title: "Community Replies",
+            title: 'Community Replies',
             description:
               "Every email is a conversation. Reply directly and I'll respond. The best reader insights get featured (anonymously) in the next issue.",
           },
@@ -349,236 +348,233 @@ export const NewsletterKimiPage = defineCapsule({
     const featurePerks = props.features?.perks?.length
       ? props.features.perks
       : [
-          { title: "Archive Access", description: "All 156 past issues" },
-          { title: "Audio Versions", description: "Listen on the go" },
-          { title: "No Ads", description: "Reader-supported only" },
-          { title: "Private Discord", description: "Join the conversation" },
+          { title: 'Archive Access', description: 'All 156 past issues' },
+          { title: 'Audio Versions', description: 'Listen on the go' },
+          { title: 'No Ads', description: 'Reader-supported only' },
+          { title: 'Private Discord', description: 'Join the conversation' },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Readers Say"
+      props.testimonials?.heading ?? 'What Readers Say'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Join thousands of readers who make The Quiet Observer part of their Sunday ritual."
+      'Join thousands of readers who make The Quiet Observer part of their Sunday ritual.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
-            name: "Sarah Chen",
-            role: "Product Lead, Notion",
+            name: 'Sarah Chen',
+            role: 'Product Lead, Notion',
             quote:
-              "The only newsletter I read start to finish every week. Sarah has this rare ability to find the signal in the noise of tech discourse.",
+              'The only newsletter I read start to finish every week. Sarah has this rare ability to find the signal in the noise of tech discourse.',
             avatarAlt:
-              "professional headshot of a smiling woman with shoulder-length dark hair",
+              'professional headshot of a smiling woman with shoulder-length dark hair',
           },
           {
-            name: "Marcus Rivera",
-            role: "Engineering Manager, Stripe",
+            name: 'Marcus Rivera',
+            role: 'Engineering Manager, Stripe',
             quote:
               "I've been reading since issue #12. It's become essential context for my work—thoughtful, well-researched, and genuinely original.",
             avatarAlt:
-              "professional headshot of a smiling man with short dark hair and glasses",
+              'professional headshot of a smiling man with short dark hair and glasses',
           },
           {
-            name: "Emily Watson",
-            role: "Design Director, Figma",
+            name: 'Emily Watson',
+            role: 'Design Director, Figma',
             quote:
               "Every Sunday, this is my first read with coffee. It's thoughtful, human, and consistently surfaces ideas that stay with me all week.",
             avatarAlt:
-              "professional headshot of a woman with blonde hair pulled back wearing minimal jewelry",
+              'professional headshot of a woman with blonde hair pulled back wearing minimal jewelry',
           },
         ]
     const testimonialMini = props.testimonials?.mini?.length
       ? props.testimonials.mini
       : [
-          { quote: "My favorite read", author: "David Park, Vercel" },
-          { quote: "Essential context", author: "Lisa Thompson, Linear" },
-          { quote: "Worth every minute", author: "James Chen, GitHub" },
-          { quote: "Brilliant analysis", author: "Maria Garcia, Apple" },
+          { quote: 'My favorite read', author: 'David Park, Vercel' },
+          { quote: 'Essential context', author: 'Lisa Thompson, Linear' },
+          { quote: 'Worth every minute', author: 'James Chen, GitHub' },
+          { quote: 'Brilliant analysis', author: 'Maria Garcia, Apple' },
         ]
 
-    const issuesHeading = props.issues?.heading ?? "Recent Issues"
+    const issuesHeading = props.issues?.heading ?? 'Recent Issues'
     const issuesDesc =
       props.issues?.description ??
-      "A selection of our most-read essays from the past few months."
-    const issuesViewAll = props.issues?.viewAll ?? "View All 156 Issues"
-    const issuesReadLabel = props.issues?.readLabel ?? "Read issue"
+      'A selection of our most-read essays from the past few months.'
+    const issuesViewAll = props.issues?.viewAll ?? 'View All 156 Issues'
+    const issuesReadLabel = props.issues?.readLabel ?? 'Read issue'
     const staticIssueItems = props.issues?.items?.length
       ? props.issues.items
       : [
           {
-            number: "Issue #" + "156",
-            date: "May 25, 2026",
-            title: "The Art of Digital Slowing",
+            number: 'Issue #' + '156',
+            date: 'May 25, 2026',
+            title: 'The Art of Digital Slowing',
             blurb:
-              "On the paradox of building tools for focus in an age of infinite distraction—and why the answer might not be another app.",
+              'On the paradox of building tools for focus in an age of infinite distraction—and why the answer might not be another app.',
             imageAlt:
-              "minimal workspace desk with open notebook, coffee cup, and soft natural morning light",
+              'minimal workspace desk with open notebook, coffee cup, and soft natural morning light',
           },
           {
-            number: "Issue #" + "155",
-            date: "May 18, 2026",
-            title: "When AI Writes the Code",
+            number: 'Issue #' + '155',
+            date: 'May 18, 2026',
+            title: 'When AI Writes the Code',
             blurb:
-              "What happens to craft when the tools get too good? A meditation on writing, coding, and the value of struggle.",
+              'What happens to craft when the tools get too good? A meditation on writing, coding, and the value of struggle.',
             imageAlt:
-              "futuristic humanoid robot arm reaching toward glowing light representing AI and human interaction",
+              'futuristic humanoid robot arm reaching toward glowing light representing AI and human interaction',
           },
           {
-            number: "Issue #" + "154",
-            date: "May 11, 2026",
-            title: "The Remote Work Bet",
+            number: 'Issue #' + '154',
+            date: 'May 11, 2026',
+            title: 'The Remote Work Bet',
             blurb:
               "Five years in, the data is finally clear. What we got right, what we lost, and where we're headed next.",
             imageAlt:
-              "diverse group of colleagues collaborating around a table with laptops in a modern office space",
+              'diverse group of colleagues collaborating around a table with laptops in a modern office space',
           },
           {
-            number: "Issue #" + "153",
-            date: "May 4, 2026",
-            title: "Writing as Thinking",
+            number: 'Issue #' + '153',
+            date: 'May 4, 2026',
+            title: 'Writing as Thinking',
             blurb:
-              "The lost art of using prose to clarify thought. Why the best product minds I know are obsessive note-takers.",
+              'The lost art of using prose to clarify thought. Why the best product minds I know are obsessive note-takers.',
             imageAlt:
-              "vintage typewriter with blank page representing the craft of thoughtful writing",
+              'vintage typewriter with blank page representing the craft of thoughtful writing',
           },
           {
-            number: "Issue #" + "152",
-            date: "April 27, 2026",
-            title: "Privacy After the Breach",
+            number: 'Issue #' + '152',
+            date: 'April 27, 2026',
+            title: 'Privacy After the Breach',
             blurb:
-              "A personal account of having my data leaked—and the broader implications for how we build trust online.",
+              'A personal account of having my data leaked—and the broader implications for how we build trust online.',
             imageAlt:
-              "cybersecurity concept with digital lock and binary code overlay on dark background",
+              'cybersecurity concept with digital lock and binary code overlay on dark background',
           },
           {
-            number: "Issue #" + "151",
-            date: "April 20, 2026",
-            title: "The Cult of Productivity",
+            number: 'Issue #' + '151',
+            date: 'April 20, 2026',
+            title: 'The Cult of Productivity',
             blurb:
-              "Why optimizing every moment might be making us miserable. A case for intentional inefficiency.",
+              'Why optimizing every moment might be making us miserable. A case for intentional inefficiency.',
             imageAlt:
-              "serene mountain landscape at golden hour representing the search for meaning and perspective",
+              'serene mountain landscape at golden hour representing the search for meaning and perspective',
           },
         ]
 
     const displayIssues =
-      storedIssues && storedIssues.length > 0
-        ? storedIssues
-        : staticIssueItems
+      storedIssues && storedIssues.length > 0 ? storedIssues : staticIssueItems
 
-    const pricingHeading = props.pricing?.heading ?? "Choose Your Experience"
+    const pricingHeading = props.pricing?.heading ?? 'Choose Your Experience'
     const pricingDesc =
       props.pricing?.description ??
       "Free to start. Upgrade when you're ready for more."
     const pricingPlaceholder =
-      props.pricing?.emailPlaceholder ?? "your@email.com"
-    const freePrice = props.pricing?.free?.price ?? "Free"
+      props.pricing?.emailPlaceholder ?? 'your@email.com'
+    const freePrice = props.pricing?.free?.price ?? 'Free'
     const freeTagline =
-      props.pricing?.free?.tagline ?? "Perfect for getting started"
-    const freeSubmit = props.pricing?.free?.submit ?? "Subscribe Free"
+      props.pricing?.free?.tagline ?? 'Perfect for getting started'
+    const freeSubmit = props.pricing?.free?.submit ?? 'Subscribe Free'
     const freeFeatures = props.pricing?.free?.features?.length
       ? props.pricing.free.features
       : [
-          "Weekly essay in your inbox",
-          "Access to 3 months of archives",
-          "Reply to any issue",
+          'Weekly essay in your inbox',
+          'Access to 3 months of archives',
+          'Reply to any issue',
         ]
-    const paidBadge = props.pricing?.paid?.badge ?? "Most Popular"
-    const paidPrice = props.pricing?.paid?.price ?? "$8"
-    const paidPeriod = props.pricing?.paid?.period ?? "/month"
+    const paidBadge = props.pricing?.paid?.badge ?? 'Most Popular'
+    const paidPrice = props.pricing?.paid?.price ?? '$8'
+    const paidPeriod = props.pricing?.paid?.period ?? '/month'
     const paidTagline =
-      props.pricing?.paid?.tagline ?? "For the dedicated reader"
-    const paidSubmit = props.pricing?.paid?.submit ?? "Upgrade — $8/month"
+      props.pricing?.paid?.tagline ?? 'For the dedicated reader'
+    const paidSubmit = props.pricing?.paid?.submit ?? 'Upgrade — $8/month'
     const paidNote =
-      props.pricing?.paid?.note ?? "Annual billing saves 20% ($76/year)"
+      props.pricing?.paid?.note ?? 'Annual billing saves 20% ($76/year)'
     const paidFeatures = props.pricing?.paid?.features?.length
       ? props.pricing.paid.features
       : [
-          "Everything in Free",
-          "Complete archive (156 issues)",
-          "Audio versions (podcast feed)",
-          "Private Discord community",
-          "Monthly AMA sessions",
-          "Support independent writing",
+          'Everything in Free',
+          'Complete archive (156 issues)',
+          'Audio versions (podcast feed)',
+          'Private Discord community',
+          'Monthly AMA sessions',
+          'Support independent writing',
         ]
     const pricingFootnotePrefix =
-      props.pricing?.footnotePrefix ?? "Need a team subscription? "
-    const pricingFootnoteLink = props.pricing?.footnoteLink ?? "Contact us"
+      props.pricing?.footnotePrefix ?? 'Need a team subscription? '
+    const pricingFootnoteLink = props.pricing?.footnoteLink ?? 'Contact us'
     const pricingFootnoteSuffix =
-      props.pricing?.footnoteSuffix ?? " for enterprise pricing."
+      props.pricing?.footnoteSuffix ?? ' for enterprise pricing.'
 
-    const faqHeading = props.faq?.heading ?? "Questions & Answers"
+    const faqHeading = props.faq?.heading ?? 'Questions & Answers'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "How often do you publish?",
+            q: 'How often do you publish?',
             a: "Every Sunday morning, usually around 8 AM EST. Occasionally I'll send a mid-week issue if there's breaking news worth addressing, but I stick to the weekly schedule to respect your inbox.",
           },
           {
-            q: "Can I access past issues?",
-            a: "Free subscribers get access to the last 3 months of issues. Paid subscribers can browse the complete archive—all 156 issues since we started in 2023. Every issue is tagged and searchable.",
+            q: 'Can I access past issues?',
+            a: 'Free subscribers get access to the last 3 months of issues. Paid subscribers can browse the complete archive—all 156 issues since we started in 2023. Every issue is tagged and searchable.',
           },
           {
-            q: "Do you offer refunds?",
+            q: 'Do you offer refunds?',
             a: "Yes. If you're not satisfied with your paid subscription, contact me within 30 days for a full refund—no questions asked. After 30 days, you can cancel anytime and keep access until your billing period ends.",
           },
           {
-            q: "Who writes this newsletter?",
+            q: 'Who writes this newsletter?',
             a: "Hi, I'm Sarah Mitchell. I'm a former product manager at Stripe who left to write full-time. I've been publishing The Quiet Observer since 2023, and I'm based in Brooklyn, New York.",
           },
           {
-            q: "How do team subscriptions work?",
-            a: "Team subscriptions give everyone at your company access to paid features, including the full archive, audio versions, and our private Discord. Pricing starts at $50/month for up to 10 team members. Get in touch for larger teams.",
+            q: 'How do team subscriptions work?',
+            a: 'Team subscriptions give everyone at your company access to paid features, including the full archive, audio versions, and our private Discord. Pricing starts at $50/month for up to 10 team members. Get in touch for larger teams.',
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Start your Sunday with insight"
+    const ctaHeading = props.cta?.heading ?? 'Start your Sunday with insight'
     const ctaDesc =
       props.cta?.description ??
-      "Join 12,000+ readers who make The Quiet Observer part of their weekend ritual. No spam. Unsubscribe anytime."
-    const ctaPlaceholder = props.cta?.emailPlaceholder ?? "your@email.com"
-    const ctaSubmit = props.cta?.submit ?? "Subscribe Free"
-    const ctaNotePrefix = props.cta?.notePrefix ?? "Or "
-    const ctaNoteLink = props.cta?.noteLink ?? "upgrade to paid"
-    const ctaNoteSuffix = props.cta?.noteSuffix ?? " for the full experience."
+      'Join 12,000+ readers who make The Quiet Observer part of their weekend ritual. No spam. Unsubscribe anytime.'
+    const ctaPlaceholder = props.cta?.emailPlaceholder ?? 'your@email.com'
+    const ctaSubmit = props.cta?.submit ?? 'Subscribe Free'
+    const ctaNotePrefix = props.cta?.notePrefix ?? 'Or '
+    const ctaNoteLink = props.cta?.noteLink ?? 'upgrade to paid'
+    const ctaNoteSuffix = props.cta?.noteSuffix ?? ' for the full experience.'
 
     const footerTagline =
       props.footer?.tagline ??
-      "Thoughtful essays on technology, creativity, and human connection. Written by Sarah Mitchell in Brooklyn, NY."
+      'Thoughtful essays on technology, creativity, and human connection. Written by Sarah Mitchell in Brooklyn, NY.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Newsletter",
-            links: ["Recent Issues", "Archive", "Audio Feed", "Subscribe"],
+            title: 'Newsletter',
+            links: ['Recent Issues', 'Archive', 'Audio Feed', 'Subscribe'],
           },
           {
-            title: "Connect",
-            links: ["About", "Discord", "Contact", "Sponsor"],
+            title: 'Connect',
+            links: ['About', 'Discord', 'Contact', 'Sponsor'],
           },
         ]
-    const footerCopyright =
-      props.footer?.copyright ?? "All rights reserved."
+    const footerCopyright = props.footer?.copyright ?? 'All rights reserved.'
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy", "Terms"]
+      : ['Privacy', 'Terms']
 
     // Brand logo tile — initial mark (decorative brand asset).
     const LogoMark = ({
       className,
-      tone = "primary",
+      tone = 'primary',
     }: {
       className?: string
-      tone?: "primary" | "muted"
+      tone?: 'primary' | 'muted'
     }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg font-serif font-medium",
-          tone === "primary"
-            ? "bg-foreground text-background"
-            : "bg-muted-foreground/30 text-background",
+          'grid place-items-center rounded-lg font-serif font-medium',
+          tone === 'primary'
+            ? 'bg-foreground text-background'
+            : 'bg-muted-foreground/30 text-background',
           className,
         )}
         aria-hidden="true"
@@ -700,12 +696,12 @@ export const NewsletterKimiPage = defineCapsule({
     ]
 
     const heroInputCls =
-      "flex-1 rounded-lg border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
+      'flex-1 rounded-lg border border-input bg-background px-4 py-3 text-foreground placeholder-muted-foreground transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring'
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -774,7 +770,9 @@ export const NewsletterKimiPage = defineCapsule({
                       {readingListTitles && readingListTitles.size > 0 ? (
                         <div className="space-y-4">
                           {displayIssues
-                            .filter((issue) => readingListTitles.has(issue.title))
+                            .filter((issue) =>
+                              readingListTitles.has(issue.title),
+                            )
                             .map((issue) => (
                               <div
                                 key={issue.title}
@@ -1048,7 +1046,9 @@ export const NewsletterKimiPage = defineCapsule({
                   onSubmit={(e) => {
                     e.preventDefault()
                     const form = e.currentTarget
-                    const email = form.querySelector('input[type="email"]') as HTMLInputElement
+                    const email = form.querySelector(
+                      'input[type="email"]',
+                    ) as HTMLInputElement
                     if (email?.value) {
                       void subscribe(email.value, 'free')
                       go(heroSubmit)
@@ -1328,7 +1328,9 @@ export const NewsletterKimiPage = defineCapsule({
                     onSubmit={(e) => {
                       e.preventDefault()
                       const form = e.currentTarget
-                      const email = form.querySelector('input[type="email"]') as HTMLInputElement
+                      const email = form.querySelector(
+                        'input[type="email"]',
+                      ) as HTMLInputElement
                       if (email?.value) {
                         void subscribe(email.value, 'free')
                         go(freeSubmit)
@@ -1381,7 +1383,9 @@ export const NewsletterKimiPage = defineCapsule({
                     onSubmit={(e) => {
                       e.preventDefault()
                       const form = e.currentTarget
-                      const email = form.querySelector('input[type="email"]') as HTMLInputElement
+                      const email = form.querySelector(
+                        'input[type="email"]',
+                      ) as HTMLInputElement
                       if (email?.value) {
                         void subscribe(email.value, 'paid')
                         go(paidSubmit)
@@ -1470,7 +1474,9 @@ export const NewsletterKimiPage = defineCapsule({
                 onSubmit={(e) => {
                   e.preventDefault()
                   const form = e.currentTarget
-                  const email = form.querySelector('input[type="email"]') as HTMLInputElement
+                  const email = form.querySelector(
+                    'input[type="email"]',
+                  ) as HTMLInputElement
                   if (email?.value) {
                     void subscribe(email.value, 'free')
                     go(ctaSubmit)
@@ -1528,7 +1534,7 @@ export const NewsletterKimiPage = defineCapsule({
                   {footerTagline}
                 </p>
                 <div className="flex gap-4">
-                  {(["Twitter", "RSS Feed"] as const).map((social) => (
+                  {(['Twitter', 'RSS Feed'] as const).map((social) => (
                     <button
                       key={social}
                       type="button"
@@ -1536,7 +1542,7 @@ export const NewsletterKimiPage = defineCapsule({
                       onClick={() => go(social)}
                       className="grid size-10 place-items-center rounded-lg bg-background/10 text-background transition-colors hover:bg-background/20"
                     >
-                      {social === "Twitter" ? (
+                      {social === 'Twitter' ? (
                         <svg
                           className="size-5"
                           fill="currentColor"

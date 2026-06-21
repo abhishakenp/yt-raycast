@@ -1,10 +1,11 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +15,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * TutoringKimiPage2 — a bold, dark-hero tutoring landing page. This is the
@@ -39,9 +40,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * social proof.
  */
 export const TutoringKimiPage2 = defineCapsule({
-  name: "TutoringKimiPage2",
+  name: 'TutoringKimiPage2',
   description:
-    "A bold, dark-hero tutoring landing page — the second style sibling to TutoringKimiPage — featuring a high-contrast hero with ambient background imagery and floating tutor card, a trusted-by school logos strip, a 6-up subject grid with tag chips, a 4-up vetted-expert highlights band, a numbered vertical step timeline paired with a session-booked preview image, a 4-column mentor gallery with star ratings, a 3-tier pricing table on a dark band with an emphasized Most Popular plan, a full-width stats band, a 6-up testimonial grid with star-rated quotes and parent/student avatars, an accordion FAQ with animated chevrons, a vibrant CTA section with dot-pattern texture, and a multi-column footer with social icons. Use when a modern, energetic, conversion-forward tutoring marketplace page is wanted with rich content sections, pricing tiers, and social proof.",
+    'A bold, dark-hero tutoring landing page — the second style sibling to TutoringKimiPage — featuring a high-contrast hero with ambient background imagery and floating tutor card, a trusted-by school logos strip, a 6-up subject grid with tag chips, a 4-up vetted-expert highlights band, a numbered vertical step timeline paired with a session-booked preview image, a 4-column mentor gallery with star ratings, a 3-tier pricing table on a dark band with an emphasized Most Popular plan, a full-width stats band, a 6-up testimonial grid with star-rated quotes and parent/student avatars, an accordion FAQ with animated chevrons, a vibrant CTA section with dot-pattern texture, and a multi-column footer with social icons. Use when a modern, energetic, conversion-forward tutoring marketplace page is wanted with rich content sections, pricing tiers, and social proof.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -256,7 +257,9 @@ export const TutoringKimiPage2 = defineCapsule({
       updateSessionQuantity: ({ db }, planName: string, quantity: number) => {
         const nextQuantity = Math.max(0, Math.floor(quantity))
 
-        for (const item of db.bookedSessions.where('planName', planName).all()) {
+        for (const item of db.bookedSessions
+          .where('planName', planName)
+          .all()) {
           if (nextQuantity) {
             db.bookedSessions.update(item.id, { quantity: nextQuantity })
           } else {
@@ -267,7 +270,9 @@ export const TutoringKimiPage2 = defineCapsule({
         return db.bookedSessions.all()
       },
       removeSession: ({ db }, planName: string) => {
-        for (const item of db.bookedSessions.where('planName', planName).all()) {
+        for (const item of db.bookedSessions
+          .where('planName', planName)
+          .all()) {
           db.bookedSessions.delete(item.id)
         }
 
@@ -299,90 +304,89 @@ export const TutoringKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [sessionsOpen, setSessionsOpen] = useState(false)
 
-    const brand = props.brand ?? "SparkTutors"
+    const brand = props.brand ?? 'SparkTutors'
     const nav = props.nav?.length
       ? props.nav
-      : ["Subjects", "How It Works", "Tutors", "Pricing", "FAQ"]
+      : ['Subjects', 'How It Works', 'Tutors', 'Pricing', 'FAQ']
 
     const hero = {
-      badge: props.hero?.badge ?? "Now accepting students for Fall 2025",
-      heading: props.hero?.heading ?? "Learning that",
-      highlight: props.hero?.highlight ?? "actually clicks.",
+      badge: props.hero?.badge ?? 'Now accepting students for Fall 2025',
+      heading: props.hero?.heading ?? 'Learning that',
+      highlight: props.hero?.highlight ?? 'actually clicks.',
       subheading:
         props.hero?.subheading ??
-        "Expert 1-on-1 tutoring in math, science, English, and test prep. Our tutors are top performers from universities like Stanford, MIT, and Cornell. Average grade improvement: 1.5 letter grades in 8 weeks.",
-      primaryCta: props.hero?.primaryCta ?? "Start Your Free Session",
-      secondaryCta: props.hero?.secondaryCta ?? "See How It Works",
+        'Expert 1-on-1 tutoring in math, science, English, and test prep. Our tutors are top performers from universities like Stanford, MIT, and Cornell. Average grade improvement: 1.5 letter grades in 8 weeks.',
+      primaryCta: props.hero?.primaryCta ?? 'Start Your Free Session',
+      secondaryCta: props.hero?.secondaryCta ?? 'See How It Works',
       trust: props.hero?.trust?.length
         ? props.hero.trust
-        : ["No commitment", "Vetted top-5% tutors", "Money-back guarantee"],
+        : ['No commitment', 'Vetted top-5% tutors', 'Money-back guarantee'],
       imageAlt:
         props.hero?.imageAlt ??
-        "young woman tutoring a high school student at a wooden table with notebooks and a laptop",
-      floatingName: props.hero?.floatingName ?? "Dr. Sarah Chen",
-      floatingMeta: props.hero?.floatingMeta ?? "PhD Mathematics, MIT",
+        'young woman tutoring a high school student at a wooden table with notebooks and a laptop',
+      floatingName: props.hero?.floatingName ?? 'Dr. Sarah Chen',
+      floatingMeta: props.hero?.floatingMeta ?? 'PhD Mathematics, MIT',
       floatingAvatarAlt:
         props.hero?.floatingAvatarAlt ??
-        "professional headshot of a smiling female tutor with dark hair",
+        'professional headshot of a smiling female tutor with dark hair',
     }
 
     const logos = {
-      caption:
-        props.logos?.caption ?? "Trusted by families at leading schools",
+      caption: props.logos?.caption ?? 'Trusted by families at leading schools',
       items: props.logos?.items?.length
         ? props.logos.items
         : [
-            "Exeter Prep",
-            "Andover Academy",
-            "Harker School",
-            "Lakeside",
-            "TJ High School",
+            'Exeter Prep',
+            'Andover Academy',
+            'Harker School',
+            'Lakeside',
+            'TJ High School',
           ],
     }
 
     const features = {
-      heading: props.features?.heading ?? "Every subject, every level.",
+      heading: props.features?.heading ?? 'Every subject, every level.',
       description:
         props.features?.description ??
-        "From elementary reading to college-level physics, our specialists cover 40+ subjects with proven curricula designed for real understanding — not just homework help.",
+        'From elementary reading to college-level physics, our specialists cover 40+ subjects with proven curricula designed for real understanding — not just homework help.',
       items: props.features?.items?.length
         ? props.features.items
         : [
             {
-              title: "Mathematics",
+              title: 'Mathematics',
               description:
-                "Arithmetic through multivariable calculus, linear algebra, and differential equations. AP Calculus AB/BC specialists with 95% pass rate.",
-              tags: ["Algebra", "Geometry", "Calculus", "Statistics"],
+                'Arithmetic through multivariable calculus, linear algebra, and differential equations. AP Calculus AB/BC specialists with 95% pass rate.',
+              tags: ['Algebra', 'Geometry', 'Calculus', 'Statistics'],
             },
             {
-              title: "Sciences",
+              title: 'Sciences',
               description:
-                "Biology, chemistry, physics, and environmental science. Hands-on lab prep and conceptual problem-solving from PhD-level instructors.",
-              tags: ["Biology", "Chemistry", "Physics", "AP Science"],
+                'Biology, chemistry, physics, and environmental science. Hands-on lab prep and conceptual problem-solving from PhD-level instructors.',
+              tags: ['Biology', 'Chemistry', 'Physics', 'AP Science'],
             },
             {
-              title: "English & Writing",
+              title: 'English & Writing',
               description:
-                "Reading comprehension, essay writing, grammar, and literary analysis. Former AP English exam readers on staff.",
-              tags: ["Reading", "Essays", "Literature", "ESL"],
+                'Reading comprehension, essay writing, grammar, and literary analysis. Former AP English exam readers on staff.',
+              tags: ['Reading', 'Essays', 'Literature', 'ESL'],
             },
             {
-              title: "Test Preparation",
+              title: 'Test Preparation',
               description:
-                "SAT, ACT, SSAT, ISEE, AP exams, and GRE. Average score improvement of 140 points on the SAT and 4 points on the ACT.",
-              tags: ["SAT", "ACT", "SSAT", "AP Exams"],
+                'SAT, ACT, SSAT, ISEE, AP exams, and GRE. Average score improvement of 140 points on the SAT and 4 points on the ACT.',
+              tags: ['SAT', 'ACT', 'SSAT', 'AP Exams'],
             },
             {
-              title: "Computer Science",
+              title: 'Computer Science',
               description:
-                "Python, Java, JavaScript, data structures, algorithms, and machine learning fundamentals. Project-based learning with real portfolio builds.",
-              tags: ["Python", "Java", "JavaScript", "AP CS"],
+                'Python, Java, JavaScript, data structures, algorithms, and machine learning fundamentals. Project-based learning with real portfolio builds.',
+              tags: ['Python', 'Java', 'JavaScript', 'AP CS'],
             },
             {
-              title: "Languages",
+              title: 'Languages',
               description:
-                "Spanish, Mandarin, French, Latin, and German. Native speakers and certified educators with immersive conversation practice.",
-              tags: ["Spanish", "Mandarin", "French", "Latin"],
+                'Spanish, Mandarin, French, Latin, and German. Native speakers and certified educators with immersive conversation practice.',
+              tags: ['Spanish', 'Mandarin', 'French', 'Latin'],
             },
           ],
     }
@@ -392,161 +396,161 @@ export const TutoringKimiPage2 = defineCapsule({
         ? props.highlights.items
         : [
             {
-              title: "Vetted Experts",
+              title: 'Vetted Experts',
               description:
-                "Top 5% of applicants. Background-checked with verified credentials.",
+                'Top 5% of applicants. Background-checked with verified credentials.',
             },
             {
-              title: "Flexible Scheduling",
+              title: 'Flexible Scheduling',
               description:
-                "Book same-day sessions 7 days a week, 6 AM to 11 PM in your timezone.",
+                'Book same-day sessions 7 days a week, 6 AM to 11 PM in your timezone.',
             },
             {
-              title: "Progress Tracking",
+              title: 'Progress Tracking',
               description:
-                "Detailed session notes and weekly dashboards for parents and students.",
+                'Detailed session notes and weekly dashboards for parents and students.',
             },
             {
-              title: "Personalized Matching",
+              title: 'Personalized Matching',
               description:
-                "AI-assisted tutor matching based on learning style and personality.",
+                'AI-assisted tutor matching based on learning style and personality.',
             },
           ],
     }
 
     const steps = {
-      heading: props.steps?.heading ?? "Start learning in minutes.",
+      heading: props.steps?.heading ?? 'Start learning in minutes.',
       description:
         props.steps?.description ??
-        "No long-term contracts. No hidden fees. Just book, meet, and start seeing results from the very first session.",
+        'No long-term contracts. No hidden fees. Just book, meet, and start seeing results from the very first session.',
       items: props.steps?.items?.length
         ? props.steps.items
         : [
             {
-              title: "Tell us what you need",
+              title: 'Tell us what you need',
               description:
-                "Answer 5 quick questions about the subject, grade level, and learning goals. Takes under 60 seconds.",
+                'Answer 5 quick questions about the subject, grade level, and learning goals. Takes under 60 seconds.',
             },
             {
-              title: "Get matched with a tutor",
+              title: 'Get matched with a tutor',
               description:
-                "Our matching engine suggests 3 verified tutors. Review their profiles, credentials, and student ratings before choosing.",
+                'Our matching engine suggests 3 verified tutors. Review their profiles, credentials, and student ratings before choosing.',
             },
             {
-              title: "Book your first session",
+              title: 'Book your first session',
               description:
-                "Pick a time that works for you. Sessions are held over our interactive video classroom with built-in whiteboard and screen share.",
+                'Pick a time that works for you. Sessions are held over our interactive video classroom with built-in whiteboard and screen share.',
             },
             {
-              title: "Track progress every week",
+              title: 'Track progress every week',
               description:
-                "Receive detailed session recaps, practice assignments, and a weekly progress dashboard. Adjust goals anytime.",
+                'Receive detailed session recaps, practice assignments, and a weekly progress dashboard. Adjust goals anytime.',
             },
           ],
     }
 
     const tutors = {
-      heading: props.tutors?.heading ?? "Meet your mentors.",
+      heading: props.tutors?.heading ?? 'Meet your mentors.',
       description:
         props.tutors?.description ??
         "Our tutors are graduates and current students from the nation's top universities. They have an average of 4.8 years of teaching experience and are passionate about helping students succeed.",
-      viewAll: props.tutors?.viewAll ?? "View All 200+ Tutors",
+      viewAll: props.tutors?.viewAll ?? 'View All 200+ Tutors',
       items: props.tutors?.items?.length
         ? props.tutors.items
         : [
             {
-              name: "Dr. Marcus Webb",
-              subject: "Mathematics & Physics",
-              bio: "PhD Physics, Stanford. 6 years teaching AP Calculus and Physics. Former competition math coach.",
-              rating: "4.9",
-              tags: ["Calculus", "Physics", "SAT Math"],
+              name: 'Dr. Marcus Webb',
+              subject: 'Mathematics & Physics',
+              bio: 'PhD Physics, Stanford. 6 years teaching AP Calculus and Physics. Former competition math coach.',
+              rating: '4.9',
+              tags: ['Calculus', 'Physics', 'SAT Math'],
               avatarAlt:
-                "professional headshot of a smiling male tutor in his late twenties wearing a navy blazer",
+                'professional headshot of a smiling male tutor in his late twenties wearing a navy blazer',
             },
             {
-              name: "Priya Sharma",
-              subject: "English & History",
+              name: 'Priya Sharma',
+              subject: 'English & History',
               bio: "AB Harvard '22, Rhodes Scholar finalist. Specializes in essay writing and AP English Literature.",
-              rating: "5.0",
-              tags: ["Writing", "Literature", "History"],
+              rating: '5.0',
+              tags: ['Writing', 'Literature', 'History'],
               avatarAlt:
-                "professional headshot of a confident female tutor in her early thirties with dark hair and a white blouse",
+                'professional headshot of a confident female tutor in her early thirties with dark hair and a white blouse',
             },
             {
-              name: "James Okonkwo",
-              subject: "Chemistry & Biology",
-              bio: "MD Candidate, Johns Hopkins. 5 years tutoring organic chemistry and molecular biology.",
-              rating: "4.8",
-              tags: ["Chemistry", "Biology", "MCAT"],
+              name: 'James Okonkwo',
+              subject: 'Chemistry & Biology',
+              bio: 'MD Candidate, Johns Hopkins. 5 years tutoring organic chemistry and molecular biology.',
+              rating: '4.8',
+              tags: ['Chemistry', 'Biology', 'MCAT'],
               avatarAlt:
-                "professional headshot of a friendly male tutor in his late twenties wearing a light blue button-down shirt",
+                'professional headshot of a friendly male tutor in his late twenties wearing a light blue button-down shirt',
             },
             {
-              name: "Lin Chen",
-              subject: "Computer Science & Math",
-              bio: "BS Computer Science, MIT. Former software engineer at Google. Teaches Python, Java, and algorithms.",
-              rating: "4.9",
-              tags: ["Python", "Java", "AP CS"],
+              name: 'Lin Chen',
+              subject: 'Computer Science & Math',
+              bio: 'BS Computer Science, MIT. Former software engineer at Google. Teaches Python, Java, and algorithms.',
+              rating: '4.9',
+              tags: ['Python', 'Java', 'AP CS'],
               avatarAlt:
-                "professional headshot of a cheerful female tutor in her late twenties with long dark hair and a cream sweater",
+                'professional headshot of a cheerful female tutor in her late twenties with long dark hair and a cream sweater',
             },
           ],
     }
 
     const pricing = {
-      heading: props.pricing?.heading ?? "Simple, transparent pricing.",
+      heading: props.pricing?.heading ?? 'Simple, transparent pricing.',
       description:
         props.pricing?.description ??
-        "No enrollment fees. No surprise charges. Purchase sessions and use them whenever you want — they never expire.",
+        'No enrollment fees. No surprise charges. Purchase sessions and use them whenever you want — they never expire.',
       plans: props.pricing?.plans?.length
         ? props.pricing.plans
         : [
             {
-              name: "Single Session",
-              tagline: "Perfect for a quick cram or homework emergency.",
-              price: "$75",
-              period: "/session",
+              name: 'Single Session',
+              tagline: 'Perfect for a quick cram or homework emergency.',
+              price: '$75',
+              period: '/session',
               features: [
-                "60 minutes, 1-on-1",
-                "Session recording included",
-                "Session notes & resources",
-                "Same-day booking available",
+                '60 minutes, 1-on-1',
+                'Session recording included',
+                'Session notes & resources',
+                'Same-day booking available',
               ],
-              cta: "Book Single Session",
+              cta: 'Book Single Session',
               featured: false,
             },
             {
-              name: "8-Session Pack",
-              tagline: "Our recommended plan for measurable improvement.",
-              price: "$540",
-              period: "/pack",
-              note: "$67.50 per session — save 10%",
+              name: '8-Session Pack',
+              tagline: 'Our recommended plan for measurable improvement.',
+              price: '$540',
+              period: '/pack',
+              note: '$67.50 per session — save 10%',
               features: [
-                "Everything in Single Session",
-                "Matched tutor consistency",
-                "Weekly progress reports",
-                "Custom practice problem sets",
-                "Email support between sessions",
+                'Everything in Single Session',
+                'Matched tutor consistency',
+                'Weekly progress reports',
+                'Custom practice problem sets',
+                'Email support between sessions',
               ],
-              cta: "Get 8 Sessions",
+              cta: 'Get 8 Sessions',
               featured: true,
-              badge: "Most Popular",
+              badge: 'Most Popular',
             },
             {
-              name: "Semester Plan",
+              name: 'Semester Plan',
               tagline:
-                "Comprehensive support for a full semester or test prep cycle.",
-              price: "$1,260",
-              period: "/semester",
-              note: "$63 per session — save 16%",
+                'Comprehensive support for a full semester or test prep cycle.',
+              price: '$1,260',
+              period: '/semester',
+              note: '$63 per session — save 16%',
               features: [
-                "20 sessions, never expire",
-                "Dedicated tutor assignment",
-                "Parent dashboard & calls",
-                "Custom curriculum road map",
-                "Priority scheduling & 24/7 chat",
+                '20 sessions, never expire',
+                'Dedicated tutor assignment',
+                'Parent dashboard & calls',
+                'Custom curriculum road map',
+                'Priority scheduling & 24/7 chat',
               ],
-              cta: "Start Semester Plan",
+              cta: 'Start Semester Plan',
               featured: false,
             },
           ],
@@ -556,15 +560,15 @@ export const TutoringKimiPage2 = defineCapsule({
       items: props.stats?.items?.length
         ? props.stats.items
         : [
-            { value: "14,000+", label: "Students Helped" },
-            { value: "98,000+", label: "Sessions Delivered" },
-            { value: "4.9/5", label: "Average Rating" },
-            { value: "240+", label: "Expert Tutors" },
+            { value: '14,000+', label: 'Students Helped' },
+            { value: '98,000+', label: 'Sessions Delivered' },
+            { value: '4.9/5', label: 'Average Rating' },
+            { value: '240+', label: 'Expert Tutors' },
           ],
     }
 
     const testimonials = {
-      heading: props.testimonials?.heading ?? "Real families. Real results.",
+      heading: props.testimonials?.heading ?? 'Real families. Real results.',
       description:
         props.testimonials?.description ??
         "Join thousands of families who have transformed their student's confidence and grades with Spark Tutors.",
@@ -574,50 +578,50 @@ export const TutoringKimiPage2 = defineCapsule({
             {
               quote:
                 'My daughter went from a C+ in Algebra II to an A- in just six weeks with Marcus. She actually looks forward to their sessions now. The detailed progress reports after every meeting are incredibly helpful.',
-              name: "Jennifer Walsh",
-              role: "Parent of 10th grader, Boston, MA",
+              name: 'Jennifer Walsh',
+              role: 'Parent of 10th grader, Boston, MA',
               avatarAlt:
-                "professional headshot of a smiling mother in her forties with short brown hair and glasses",
+                'professional headshot of a smiling mother in her forties with short brown hair and glasses',
             },
             {
               quote:
                 "I was completely lost in AP Chemistry before working with James. He explained stoichiometry and equilibrium in ways my teacher never could. I got a 5 on the AP exam and now I'm majoring in chemistry at UCLA.",
-              name: "David Park",
-              role: "12th grader, Los Angeles, CA",
+              name: 'David Park',
+              role: '12th grader, Los Angeles, CA',
               avatarAlt:
-                "professional headshot of a smiling young man with short dark hair wearing a dark crew neck shirt",
+                'professional headshot of a smiling young man with short dark hair wearing a dark crew neck shirt',
             },
             {
               quote:
-                "Priya helped my son with his college application essays. The difference between his first draft and final submission was night and day. He got into his dream school, and I truly believe her guidance was a major factor.",
-              name: "Margaret Okafor",
-              role: "Parent of 12th grader, Chicago, IL",
+                'Priya helped my son with his college application essays. The difference between his first draft and final submission was night and day. He got into his dream school, and I truly believe her guidance was a major factor.',
+              name: 'Margaret Okafor',
+              role: 'Parent of 12th grader, Chicago, IL',
               avatarAlt:
-                "professional headshot of a smiling woman in her fifties with silver hair and a navy blouse",
+                'professional headshot of a smiling woman in her fifties with silver hair and a navy blouse',
             },
             {
               quote:
                 "I struggled with Spanish for two years. After 10 sessions with Maria, I went from failing quizzes to getting consistent B+s. She's patient and makes grammar actually make sense.",
-              name: "Sophia Martinez",
-              role: "11th grader, Miami, FL",
+              name: 'Sophia Martinez',
+              role: '11th grader, Miami, FL',
               avatarAlt:
-                "professional headshot of a smiling teenage girl with long straight dark hair and a light pink top",
+                'professional headshot of a smiling teenage girl with long straight dark hair and a light pink top',
             },
             {
               quote:
                 "The Semester Plan was the best investment we made this year. Our daughter's SAT score jumped from 1240 to 1420. The tutor assigned practice tests, tracked weak spots, and adjusted the plan weekly.",
-              name: "Robert Henderson",
-              role: "Parent of 11th grader, Austin, TX",
+              name: 'Robert Henderson',
+              role: 'Parent of 11th grader, Austin, TX',
               avatarAlt:
-                "professional headshot of a middle-aged man with graying hair and a warm smile wearing a blue dress shirt",
+                'professional headshot of a middle-aged man with graying hair and a warm smile wearing a blue dress shirt',
             },
             {
               quote:
                 "Lin made computer science accessible for my son, who had zero coding experience. Three months later he's building his own Python projects and just started an AP CS class with full confidence.",
-              name: "Amanda Liu",
-              role: "Parent of 9th grader, Seattle, WA",
+              name: 'Amanda Liu',
+              role: 'Parent of 9th grader, Seattle, WA',
               avatarAlt:
-                "professional headshot of a professional woman in her thirties wearing a black blazer and pearl earrings",
+                'professional headshot of a professional woman in her thirties wearing a black blazer and pearl earrings',
             },
           ],
     }
@@ -631,32 +635,32 @@ export const TutoringKimiPage2 = defineCapsule({
         ? props.faq.items
         : [
             {
-              question: "How do I choose the right tutor for my child?",
+              question: 'How do I choose the right tutor for my child?',
               answer:
                 "After you fill out a brief questionnaire about your student's needs, our matching engine recommends 3 tutors based on subject expertise, teaching style, and personality fit. You can review full profiles including credentials, student reviews, sample teaching videos, and availability before making your choice. Every first session is backed by our satisfaction guarantee — if it's not a good fit, we'll rematch you at no cost.",
             },
             {
-              question: "What happens during a typical tutoring session?",
+              question: 'What happens during a typical tutoring session?',
               answer:
                 "Sessions take place in our interactive virtual classroom with HD video, a shared digital whiteboard, and screen sharing. Before each session, your tutor reviews your previous progress and prepares targeted material. During the 60-minute session, you'll work through problems, review concepts, and ask questions in real time. Afterward, you'll receive a detailed recap with notes, assigned practice problems, and goals for next time.",
             },
             {
-              question: "Can I use sessions for multiple subjects?",
+              question: 'Can I use sessions for multiple subjects?',
               answer:
                 "Absolutely. Your purchased sessions are stored as credits in your account and can be used across any subject and any tutor. Many of our students work with one tutor for math and another for English in the same week. There's no restriction on mixing subjects, and credits never expire.",
             },
             {
-              question: "What is your cancellation and rescheduling policy?",
+              question: 'What is your cancellation and rescheduling policy?',
               answer:
                 "You can reschedule or cancel any session up to 4 hours before the start time with no penalty — the session credit simply returns to your account. Cancellations within 4 hours may be subject to a late cancellation fee. For the Semester Plan, you'll also receive two complimentary same-day reschedules per month for those unexpected schedule changes.",
             },
             {
-              question: "Do you offer in-person tutoring?",
+              question: 'Do you offer in-person tutoring?',
               answer:
-                "Currently, all Spark Tutors sessions are conducted online through our purpose-built virtual classroom. This allows us to match you with the absolute best tutor for your needs nationwide, not just whoever is available locally. Our online platform includes collaborative whiteboards, equation editors, document annotation, and session recording — tools that often make online tutoring more effective than in-person.",
+                'Currently, all Spark Tutors sessions are conducted online through our purpose-built virtual classroom. This allows us to match you with the absolute best tutor for your needs nationwide, not just whoever is available locally. Our online platform includes collaborative whiteboards, equation editors, document annotation, and session recording — tools that often make online tutoring more effective than in-person.',
             },
             {
-              question: "Is there a money-back guarantee?",
+              question: 'Is there a money-back guarantee?',
               answer:
                 "Yes. We offer a 100% satisfaction guarantee on your first session. If you or your student are not completely satisfied, we'll refund the full cost or apply it toward a rematch with a different tutor — your choice. For session packs, unused credits are fully refundable within 30 days of purchase. After 30 days, unused credits remain in your account indefinitely and can be used anytime.",
             },
@@ -664,55 +668,61 @@ export const TutoringKimiPage2 = defineCapsule({
     }
 
     const cta = {
-      heading: props.cta?.heading ?? "Ready to see results?",
+      heading: props.cta?.heading ?? 'Ready to see results?',
       description:
         props.cta?.description ??
         "Book your free 30-minute assessment session. We'll evaluate your student's needs, demonstrate our platform, and match them with the perfect tutor — no credit card required.",
-      primaryCta: props.cta?.primaryCta ?? "Start Free Assessment",
-      secondaryCta: props.cta?.secondaryCta ?? "View Full Pricing",
-      note:
-        props.cta?.note ??
-        "Average first-session-to-match time: 4 minutes",
+      primaryCta: props.cta?.primaryCta ?? 'Start Free Assessment',
+      secondaryCta: props.cta?.secondaryCta ?? 'View Full Pricing',
+      note: props.cta?.note ?? 'Average first-session-to-match time: 4 minutes',
     }
 
     const footer = {
       about:
         props.footer?.about ??
-        "Expert 1-on-1 tutoring that gets real results. Real tutors, real subjects, and a real commitment to your success.",
+        'Expert 1-on-1 tutoring that gets real results. Real tutors, real subjects, and a real commitment to your success.',
       columns: props.footer?.columns?.length
         ? props.footer.columns
         : [
             {
-              title: "Subjects",
+              title: 'Subjects',
               links: [
-                "Mathematics",
-                "Sciences",
-                "English & Writing",
-                "Test Preparation",
-                "Computer Science",
-                "World Languages",
+                'Mathematics',
+                'Sciences',
+                'English & Writing',
+                'Test Preparation',
+                'Computer Science',
+                'World Languages',
               ],
             },
             {
-              title: "Company",
-              links: ["About Us", "Our Tutors", "Careers", "Blog", "Press", "Contact"],
+              title: 'Company',
+              links: [
+                'About Us',
+                'Our Tutors',
+                'Careers',
+                'Blog',
+                'Press',
+                'Contact',
+              ],
             },
             {
-              title: "Support",
+              title: 'Support',
               links: [
-                "Help Center",
-                "Session Guidelines",
-                "Technical Requirements",
-                "Parent Resources",
-                "Privacy Policy",
-                "Terms of Service",
+                'Help Center',
+                'Session Guidelines',
+                'Technical Requirements',
+                'Parent Resources',
+                'Privacy Policy',
+                'Terms of Service',
               ],
             },
           ],
       copyright:
         props.footer?.copyright ??
         `© ${new Date().getFullYear()} ${brand}. All rights reserved.`,
-      tagline: props.footer?.tagline ?? "Made with care for students everywhere.",
+      tagline:
+        props.footer?.tagline ?? 'Made with care for students everywhere.',
     }
 
     const storedTutors = lakebed.useQuery('tutors')
@@ -882,7 +892,7 @@ export const TutoringKimiPage2 = defineCapsule({
       type: string
       className?: string
     }) => {
-      if (type === "Facebook") {
+      if (type === 'Facebook') {
         return (
           <svg
             className={className}
@@ -896,7 +906,7 @@ export const TutoringKimiPage2 = defineCapsule({
           </svg>
         )
       }
-      if (type === "Twitter") {
+      if (type === 'Twitter') {
         return (
           <svg
             className={className}
@@ -910,7 +920,7 @@ export const TutoringKimiPage2 = defineCapsule({
           </svg>
         )
       }
-      if (type === "Instagram") {
+      if (type === 'Instagram') {
         return (
           <svg
             className={className}
@@ -924,7 +934,7 @@ export const TutoringKimiPage2 = defineCapsule({
           </svg>
         )
       }
-      if (type === "LinkedIn") {
+      if (type === 'LinkedIn') {
         return (
           <svg
             className={className}
@@ -1034,7 +1044,7 @@ export const TutoringKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -1261,7 +1271,9 @@ export const TutoringKimiPage2 = defineCapsule({
                                 </div>
                                 <button
                                   type="button"
-                                  onClick={() => void removeSession(item.planName)}
+                                  onClick={() =>
+                                    void removeSession(item.planName)
+                                  }
                                   className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                                 >
                                   Remove
@@ -1326,7 +1338,10 @@ export const TutoringKimiPage2 = defineCapsule({
 
         <main>
           {/* Hero */}
-          <section className="relative overflow-hidden bg-card" aria-label="Hero">
+          <section
+            className="relative overflow-hidden bg-card"
+            aria-label="Hero"
+          >
             <div className="absolute inset-0 opacity-20">
               <Image
                 alt="overhead view of students collaborating on a laptop in a bright modern study space"
@@ -1382,7 +1397,7 @@ export const TutoringKimiPage2 = defineCapsule({
                 <div className="relative hidden lg:block">
                   <div
                     className="relative overflow-hidden rounded-2xl border border-primary-foreground/10 shadow-2xl"
-                    style={{ animation: "float 4s ease-in-out infinite" }}
+                    style={{ animation: 'float 4s ease-in-out infinite' }}
                   >
                     <Image
                       alt={hero.imageAlt}
@@ -1433,8 +1448,8 @@ export const TutoringKimiPage2 = defineCapsule({
                   <div
                     key={logo}
                     className={cn(
-                      "flex items-center gap-2 text-lg font-bold tracking-tight text-foreground",
-                      i === 4 && "hidden sm:flex",
+                      'flex items-center gap-2 text-lg font-bold tracking-tight text-foreground',
+                      i === 4 && 'hidden sm:flex',
                     )}
                   >
                     <svg
@@ -1446,7 +1461,9 @@ export const TutoringKimiPage2 = defineCapsule({
                       {i === 0 && (
                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                       )}
-                      {i === 1 && <rect x="3" y="3" width="18" height="18" rx="2" />}
+                      {i === 1 && (
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                      )}
                       {i === 2 && <path d="M12 2L1 21h22L12 2z" />}
                       {i === 3 && <circle cx="12" cy="12" r="10" />}
                       {i === 4 && <polygon points="12 2 22 22 2 22" />}
@@ -1552,8 +1569,8 @@ export const TutoringKimiPage2 = defineCapsule({
                         </div>
                         <div
                           className={cn(
-                            "pb-8",
-                            i === steps.items.length - 1 && "pb-0",
+                            'pb-8',
+                            i === steps.items.length - 1 && 'pb-0',
                           )}
                         >
                           <h3 className="text-lg font-bold text-foreground">
@@ -1659,7 +1676,9 @@ export const TutoringKimiPage2 = defineCapsule({
                         />
                         <div className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-background/95 px-2.5 py-1 shadow-sm backdrop-blur">
                           <Star className="h-3.5 w-3.5 text-primary" />
-                          <span className="text-xs font-bold">{tutor.rating}</span>
+                          <span className="text-xs font-bold">
+                            {tutor.rating}
+                          </span>
                         </div>
                         <button
                           type="button"
@@ -1726,10 +1745,10 @@ export const TutoringKimiPage2 = defineCapsule({
                   <article
                     key={plan.name}
                     className={cn(
-                      "relative flex flex-col rounded-2xl border p-8",
+                      'relative flex flex-col rounded-2xl border p-8',
                       plan.featured
-                        ? "border-primary bg-primary text-primary-foreground shadow-2xl"
-                        : "border-border bg-card/50 text-card-foreground",
+                        ? 'border-primary bg-primary text-primary-foreground shadow-2xl'
+                        : 'border-border bg-card/50 text-card-foreground',
                     )}
                   >
                     {plan.badge && (
@@ -1739,20 +1758,20 @@ export const TutoringKimiPage2 = defineCapsule({
                     )}
                     <h3
                       className={cn(
-                        "mb-2 text-lg font-bold",
+                        'mb-2 text-lg font-bold',
                         plan.featured
-                          ? "text-primary-foreground"
-                          : "text-card-foreground",
+                          ? 'text-primary-foreground'
+                          : 'text-card-foreground',
                       )}
                     >
                       {plan.name}
                     </h3>
                     <p
                       className={cn(
-                        "mb-6 text-sm",
+                        'mb-6 text-sm',
                         plan.featured
-                          ? "text-primary-foreground/70"
-                          : "text-muted-foreground",
+                          ? 'text-primary-foreground/70'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {plan.tagline}
@@ -1760,20 +1779,20 @@ export const TutoringKimiPage2 = defineCapsule({
                     <div className="mb-6">
                       <span
                         className={cn(
-                          "text-5xl font-black",
+                          'text-5xl font-black',
                           plan.featured
-                            ? "text-primary-foreground"
-                            : "text-card-foreground",
+                            ? 'text-primary-foreground'
+                            : 'text-card-foreground',
                         )}
                       >
                         {plan.price}
                       </span>
                       <span
                         className={cn(
-                          "font-medium",
+                          'font-medium',
                           plan.featured
-                            ? "text-primary-foreground/70"
-                            : "text-muted-foreground",
+                            ? 'text-primary-foreground/70'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {plan.period}
@@ -1781,10 +1800,10 @@ export const TutoringKimiPage2 = defineCapsule({
                       {plan.note && (
                         <div
                           className={cn(
-                            "mt-1 text-sm",
+                            'mt-1 text-sm',
                             plan.featured
-                              ? "text-primary-foreground/70"
-                              : "text-muted-foreground",
+                              ? 'text-primary-foreground/70'
+                              : 'text-muted-foreground',
                           )}
                         >
                           {plan.note}
@@ -1793,23 +1812,20 @@ export const TutoringKimiPage2 = defineCapsule({
                     </div>
                     <ul className="mb-8 flex-1 space-y-3">
                       {plan.features.map((f) => (
-                        <li
-                          key={f}
-                          className="flex items-start gap-3 text-sm"
-                        >
+                        <li key={f} className="flex items-start gap-3 text-sm">
                           <Check
                             className={cn(
-                              "h-5 w-5 shrink-0",
+                              'h-5 w-5 shrink-0',
                               plan.featured
-                                ? "text-primary-foreground"
-                                : "text-primary",
+                                ? 'text-primary-foreground'
+                                : 'text-primary',
                             )}
                           />
                           <span
                             className={
                               plan.featured
-                                ? "text-primary-foreground/80"
-                                : "text-muted-foreground"
+                                ? 'text-primary-foreground/80'
+                                : 'text-muted-foreground'
                             }
                           >
                             {f}
@@ -1824,10 +1840,10 @@ export const TutoringKimiPage2 = defineCapsule({
                         setSessionsOpen(true)
                       }}
                       className={cn(
-                        "block rounded-full px-6 py-3.5 text-center text-sm font-bold transition-colors",
+                        'block rounded-full px-6 py-3.5 text-center text-sm font-bold transition-colors',
                         plan.featured
-                          ? "bg-background text-foreground hover:bg-muted"
-                          : "border border-border bg-card text-card-foreground hover:bg-muted",
+                          ? 'bg-background text-foreground hover:bg-muted'
+                          : 'border border-border bg-card text-card-foreground hover:bg-muted',
                       )}
                     >
                       {plan.cta}
@@ -2031,7 +2047,7 @@ export const TutoringKimiPage2 = defineCapsule({
                 </p>
                 <div className="flex items-center gap-4">
                   {(
-                    ["Facebook", "Twitter", "Instagram", "LinkedIn"] as const
+                    ['Facebook', 'Twitter', 'Instagram', 'LinkedIn'] as const
                   ).map((social) => (
                     <button
                       key={social}
@@ -2070,9 +2086,7 @@ export const TutoringKimiPage2 = defineCapsule({
               <p className="text-sm text-muted-foreground">
                 {footer.copyright}
               </p>
-              <p className="text-sm text-muted-foreground">
-                {footer.tagline}
-              </p>
+              <p className="text-sm text-muted-foreground">{footer.tagline}</p>
             </div>
           </div>
         </footer>

@@ -1,10 +1,11 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import type { ReactNode } from 'react'
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +15,8 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 
 /**
  * AboutKimiPage — a complete, self-contained company / ABOUT page.
@@ -45,7 +40,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * defaults sourced from the original HTML make it render great with no props.
  */
 export const AboutKimiPage = defineCapsule({
-  name: "AboutKimiPage",
+  name: 'AboutKimiPage',
   description:
     "Complete company / ABOUT page with a polished, premium indigo-to-violet aesthetic: glassy sticky navbar, a mission hero with a gradient-accented headline floating over soft blurred ambient orbs, an 'our story' split pairing a photo (with a 'founded' badge) and narrative copy plus a pull-quote, a 6-up core-values icon grid, an 'by the numbers' stats grid with gradient numerals, a 6-up team/leadership grid (portrait + role + short bio + social links), a dark dotted CTA band, and a slim legal footer. Use as the ABOUT / company / mission / team / who-we-are page for startups, product studios, agencies, SaaS companies or any modern brand that wants to tell its story, share values, show metrics and introduce the people. Supply content only — brand, nav, hero, story, values, stats, team, cta, footer; the block owns all layout, imagery and styling.",
   props: z.object({
@@ -191,94 +186,51 @@ export const AboutKimiPage = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [contactOpen, setContactOpen] = useState(false)
-    const [inquiryName, setInquiryName] = useState("")
-    const [inquiryEmail, setInquiryEmail] = useState("")
-    const [inquiryMessage, setInquiryMessage] = useState("")
-    const [newsletterEmail, setNewsletterEmail] = useState("")
-    const [subscribed, setSubscribed] = useState(false)
+    const [inquiryName, setInquiryName] = useState('')
+    const [inquiryEmail, setInquiryEmail] = useState('')
+    const [inquiryMessage, setInquiryMessage] = useState('')
 
-    const brand = props.brand ?? "Kinetic Labs"
+    const brand = props.brand ?? 'Kinetic Labs'
     const nav = props.nav?.length
       ? props.nav
-      : ["Our Story", "Values", "Team", "Stats"]
+      : ['Our Story', 'Values', 'Team', 'Stats']
 
     // Lakebed hooks
-    const inquiries = lakebed.useQuery("inquiries")
-    const favoriteMemberNames = lakebed.useQuery("favoriteMemberNames")
-    const subscriberEmails = lakebed.useQuery("subscriberEmails")
-    const submitInquiry = lakebed.useMutation("submitInquiry")
-    const toggleFavorite = lakebed.useMutation("toggleFavorite")
-    const subscribe = lakebed.useMutation("subscribe")
-    const auth = lakebed.useAuth()
-
-    const isSignedIn = auth.isAuthenticated && !auth.isGuest
-    const authEmail = auth.email || auth.user?.email
-    const authPicture = auth.picture || auth.user?.picture
-    const authDisplayName =
-      auth.displayName || auth.user?.displayName || authEmail || "Account"
-    const authInitials =
-      authDisplayName
-        .split(/\s+/)
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((part) => part[0]?.toUpperCase())
-        .join("") || "ME"
-    const authLabel = auth.isLoading
-      ? "Checking..."
-      : isSignedIn
-        ? authDisplayName
-        : "Sign in"
-
-    const handleSignIn = () => {
-      if (auth.isLoading) return
-      void lakebed.signInWithGoogle()
-    }
-
-    const handleSignOut = () => {
-      lakebed.signOut()
-    }
+    const inquiries = lakebed.useQuery('inquiries')
+    const favoriteMemberNames = lakebed.useQuery('favoriteMemberNames')
+    const subscriberEmails = lakebed.useQuery('subscriberEmails')
+    const submitInquiry = lakebed.useMutation('submitInquiry')
 
     const handleContactSubmit = (e: React.FormEvent) => {
       e.preventDefault()
       if (!inquiryName || !inquiryEmail || !inquiryMessage) return
 
       void submitInquiry(inquiryName, inquiryEmail, inquiryMessage)
-      setInquiryName("")
-      setInquiryEmail("")
-      setInquiryMessage("")
+      setInquiryName('')
+      setInquiryEmail('')
+      setInquiryMessage('')
       setContactOpen(false)
     }
 
-    const handleNewsletterSubmit = (e: React.FormEvent) => {
-      e.preventDefault()
-      if (!newsletterEmail) return
-
-      const success = subscribe(newsletterEmail)
-      if (success) {
-        setSubscribed(true)
-        setNewsletterEmail("")
-      }
-    }
-
     const heroEyebrow = props.hero?.eyebrow ?? `About ${brand}`
-    const heroHeading = props.hero?.heading ?? "We build products that"
-    const heroHighlight = props.hero?.highlight ?? "move the world forward"
+    const heroHeading = props.hero?.heading ?? 'We build products that'
+    const heroHighlight = props.hero?.highlight ?? 'move the world forward'
     const heroSub =
       props.hero?.subheading ??
       `${brand} is a product studio focused on clarity, craft, and impact. We partner with ambitious teams to design and ship modern software that people love to use.`
-    const heroPrimary = props.hero?.primaryCta ?? "Read our story"
-    const heroSecondary = props.hero?.secondaryCta ?? "Get in touch"
+    const heroPrimary = props.hero?.primaryCta ?? 'Read our story'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Get in touch'
 
-    const storyEyebrow = props.story?.eyebrow ?? "Our Story"
+    const storyEyebrow = props.story?.eyebrow ?? 'Our Story'
     const storyHeading =
-      props.story?.heading ?? "From a garage experiment to a global studio"
+      props.story?.heading ?? 'From a garage experiment to a global studio'
     const storyDesc =
       props.story?.description ??
-      "What started as late-night prototypes turned into a team obsessed with one question: how do we make software feel effortless?"
+      'What started as late-night prototypes turned into a team obsessed with one question: how do we make software feel effortless?'
     const storyImageAlt =
       props.story?.imageAlt ??
-      "Team collaborating at a long table in a bright modern office"
-    const storyBadge = props.story?.badge ?? "Founded in 2016"
+      'Team collaborating at a long table in a bright modern office'
+    const storyBadge = props.story?.badge ?? 'Founded in 2016'
     const storyParagraphs = props.story?.paragraphs?.length
       ? props.story.paragraphs
       : [
@@ -288,9 +240,9 @@ export const AboutKimiPage = defineCapsule({
     const storyQuote =
       props.story?.quote ?? "We don't chase trends. We chase outcomes."
 
-    const valuesEyebrow = props.values?.eyebrow ?? "Core Values"
+    const valuesEyebrow = props.values?.eyebrow ?? 'Core Values'
     const valuesHeading =
-      props.values?.heading ?? "The principles that guide our work"
+      props.values?.heading ?? 'The principles that guide our work'
     const valuesDesc =
       props.values?.description ??
       "Culture isn't a poster on the wall. It's the sum of small decisions made under pressure—and we try to make them consistent."
@@ -298,120 +250,131 @@ export const AboutKimiPage = defineCapsule({
       ? props.values.items
       : [
           {
-            title: "People first",
+            title: 'People first',
             description:
               "We hire for curiosity, empathy, and ownership. Teams do their best work when they feel safe to challenge ideas and admit what they don't know.",
           },
           {
-            title: "Radical clarity",
+            title: 'Radical clarity',
             description:
-              "Complexity is easy. Simplicity is hard. We cut scope, sharpen messaging, and build interfaces that require zero training.",
+              'Complexity is easy. Simplicity is hard. We cut scope, sharpen messaging, and build interfaces that require zero training.',
           },
           {
-            title: "Ship to learn",
+            title: 'Ship to learn',
             description:
-              "We prefer fast experiments over slow perfection. Every launch is a hypothesis; every metric teaches us what to build next.",
+              'We prefer fast experiments over slow perfection. Every launch is a hypothesis; every metric teaches us what to build next.',
           },
           {
-            title: "Integrity by default",
+            title: 'Integrity by default',
             description:
-              "We say what we mean, set realistic timelines, and own our mistakes. Trust is our most important long-term investment.",
+              'We say what we mean, set realistic timelines, and own our mistakes. Trust is our most important long-term investment.',
           },
           {
-            title: "Global perspective",
+            title: 'Global perspective',
             description:
-              "Great ideas come from everywhere. Our remote-first culture means we build for diverse users, not just the ones next door.",
+              'Great ideas come from everywhere. Our remote-first culture means we build for diverse users, not just the ones next door.',
           },
           {
-            title: "Obsessive craft",
+            title: 'Obsessive craft',
             description:
-              "Details matter. Animation timing, error copy, loading states—we treat every pixel and interaction as part of the product.",
+              'Details matter. Animation timing, error copy, loading states—we treat every pixel and interaction as part of the product.',
           },
         ]
 
-    const statsEyebrow = props.stats?.eyebrow ?? "By the numbers"
-    const statsHeading = props.stats?.heading ?? "Impact at a glance"
+    const statsEyebrow = props.stats?.eyebrow ?? 'By the numbers'
+    const statsHeading = props.stats?.heading ?? 'Impact at a glance'
     const statsDesc =
       props.stats?.description ??
       "Numbers don't tell the whole story, but they give you a sense of scale."
     const statItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "8M+", label: "Monthly active users" },
-          { value: "140+", label: "Products shipped" },
-          { value: "42", label: "Team members" },
-          { value: "12", label: "Countries represented" },
+          { value: '8M+', label: 'Monthly active users' },
+          { value: '140+', label: 'Products shipped' },
+          { value: '42', label: 'Team members' },
+          { value: '12', label: 'Countries represented' },
         ]
 
-    const teamEyebrow = props.team?.eyebrow ?? "Leadership"
+    const teamEyebrow = props.team?.eyebrow ?? 'Leadership'
     const teamHeading =
-      props.team?.heading ?? "Meet the people behind the products"
+      props.team?.heading ?? 'Meet the people behind the products'
     const teamDesc =
       props.team?.description ??
-      "Our leadership team brings together decades of experience across design, engineering, and product strategy."
+      'Our leadership team brings together decades of experience across design, engineering, and product strategy.'
     const defaultTeamMembers = [
-          {
-            name: "Maya Chen",
-            role: "CEO & Co-founder",
-            bio: "Former product lead at Stripe. Obsessed with onboarding flows and clear pricing pages.",
-          },
-          {
-            name: "Daniel Osei",
-            role: "CTO & Co-founder",
-            bio: "Systems thinker. Built infrastructure at scale. Believes the best code is the code you don't write.",
-          },
-          {
-            name: "Priya Nair",
-            role: "Head of Design",
-            bio: "Champion of accessibility and motion. Runs design sprints that actually ship.",
-          },
-          {
-            name: "Lucas Reyes",
-            role: "VP of Engineering",
-            bio: "Full-stack polyglot. Focused on developer experience, CI/CD, and platform reliability.",
-          },
-          {
-            name: "Aisha Mbeki",
-            role: "Head of Strategy",
-            bio: "Former consultant turned operator. Connects business goals to product roadmaps.",
-          },
-          {
-            name: "Yuki Tanaka",
-            role: "Director of Research",
-            bio: "Turns user interviews into product insights. Advocate for inclusive research practices.",
-          },
-        ]
-    const teamMembers: Array<{ name: string; role: string; bio: string; imageAlt?: string }> = props.team?.members?.length
+      {
+        name: 'Maya Chen',
+        role: 'CEO & Co-founder',
+        bio: 'Former product lead at Stripe. Obsessed with onboarding flows and clear pricing pages.',
+      },
+      {
+        name: 'Daniel Osei',
+        role: 'CTO & Co-founder',
+        bio: "Systems thinker. Built infrastructure at scale. Believes the best code is the code you don't write.",
+      },
+      {
+        name: 'Priya Nair',
+        role: 'Head of Design',
+        bio: 'Champion of accessibility and motion. Runs design sprints that actually ship.',
+      },
+      {
+        name: 'Lucas Reyes',
+        role: 'VP of Engineering',
+        bio: 'Full-stack polyglot. Focused on developer experience, CI/CD, and platform reliability.',
+      },
+      {
+        name: 'Aisha Mbeki',
+        role: 'Head of Strategy',
+        bio: 'Former consultant turned operator. Connects business goals to product roadmaps.',
+      },
+      {
+        name: 'Yuki Tanaka',
+        role: 'Director of Research',
+        bio: 'Turns user interviews into product insights. Advocate for inclusive research practices.',
+      },
+    ]
+    const teamMembers: Array<{
+      name: string
+      role: string
+      bio: string
+      imageAlt?: string
+    }> = props.team?.members?.length
       ? props.team.members
-          .filter((member): member is NonNullable<typeof member> => Boolean(member))
+          .filter((member): member is NonNullable<typeof member> =>
+            Boolean(member),
+          )
           .map((member, index) => ({
             name: member.name || `Team member ${index + 1}`,
-            role: member.role || "Team member",
-            bio: member.bio || "Focused on creating a thoughtful customer experience.",
-            imageAlt: member.imageAlt || `Portrait of ${member.name || `team member ${index + 1}`}`,
+            role: member.role || 'Team member',
+            bio:
+              member.bio ||
+              'Focused on creating a thoughtful customer experience.',
+            imageAlt:
+              member.imageAlt ||
+              `Portrait of ${member.name || `team member ${index + 1}`}`,
           }))
       : defaultTeamMembers
 
     const ctaHeading =
-      props.cta?.heading ?? "Ready to build something meaningful?"
+      props.cta?.heading ?? 'Ready to build something meaningful?'
     const ctaSub =
       props.cta?.subheading ??
       "Whether you need a full product team or a focused design sprint, we'd love to hear what you're working on."
-    const ctaPrimary = props.cta?.primaryCta ?? "Start a project"
-    const ctaSecondary = props.cta?.secondaryCta ?? "View case studies"
+    const ctaPrimary = props.cta?.primaryCta ?? 'Start a project'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'View case studies'
 
     const footerCopyright =
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand}. All rights reserved.`
     const footerLinks = props.footer?.links?.length
       ? props.footer.links
-      : ["Privacy", "Terms", "Contact"]
+      : ['Privacy', 'Terms', 'Contact']
 
     // Shared brand mark — indigo→violet gradient tile + zap glyph (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid size-7 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground",
+          'grid size-7 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -446,39 +409,6 @@ export const AboutKimiPage = defineCapsule({
       >
         <line x1="5" y1="12" x2="19" y2="12" />
         <polyline points="12 5 19 12 12 19" />
-      </svg>
-    )
-
-    const HeartIcon = ({ active = false }: { active?: boolean }) => (
-      <svg
-        className={cn(
-          "size-5",
-          active ? "text-primary-foreground" : "text-foreground",
-        )}
-        fill={active ? "currentColor" : "none"}
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-      </svg>
-    )
-
-    const ChevronDown = () => (
-      <svg
-        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <polyline points="6 9 12 15 18 9" />
       </svg>
     )
 
@@ -669,7 +599,7 @@ export const AboutKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "flex min-h-svh flex-col bg-background text-foreground antialiased",
+          'flex min-h-svh flex-col bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -711,14 +641,17 @@ export const AboutKimiPage = defineCapsule({
         <main className="flex flex-1 flex-col">
           {/* Hero */}
           <section className="relative overflow-hidden py-20 sm:py-24 lg:py-32">
-            <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0"
+            >
               <div className="absolute -top-32 -right-32 size-[520px] rounded-full bg-primary/25 blur-3xl" />
               <div className="absolute -bottom-28 -left-24 size-[380px] rounded-full bg-accent/40 blur-3xl" />
             </div>
             <div className="relative mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
               <Eyebrow icon={<SparkleIcon />}>{heroEyebrow}</Eyebrow>
               <h1 className="mt-6 max-w-3xl text-4xl font-extrabold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                {heroHeading}{" "}
+                {heroHeading}{' '}
                 <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   {heroHighlight}
                 </span>
@@ -793,8 +726,8 @@ export const AboutKimiPage = defineCapsule({
                     <p
                       key={i}
                       className={cn(
-                        "leading-relaxed text-muted-foreground",
-                        i > 0 && "mt-4",
+                        'leading-relaxed text-muted-foreground',
+                        i > 0 && 'mt-4',
                       )}
                     >
                       {para}
@@ -941,8 +874,8 @@ export const AboutKimiPage = defineCapsule({
                       <div className="mt-3 flex gap-2.5">
                         {(
                           [
-                            { label: "Twitter", node: <TwitterIcon /> },
-                            { label: "LinkedIn", node: <LinkedInIcon /> },
+                            { label: 'Twitter', node: <TwitterIcon /> },
+                            { label: 'LinkedIn', node: <LinkedInIcon /> },
                           ] as const
                         ).map((social) => (
                           <button

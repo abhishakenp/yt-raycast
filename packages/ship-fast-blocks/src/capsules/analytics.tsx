@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -13,15 +13,14 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * AnalyticsKimiPage — a complete, self-contained SaaS analytics DASHBOARD page.
@@ -43,9 +42,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * make it render great with no props at all.
  */
 export const AnalyticsKimiPage = defineCapsule({
-  name: "AnalyticsKimiPage",
+  name: 'AnalyticsKimiPage',
   description:
-    "Complete SaaS analytics DASHBOARD / admin overview page with a clean, light, data-dense product UI: a fixed left sidebar (brand mark, primary nav with active state and a notification count badge, plus a user profile card), a sticky top header with page title, an analytics search field, and date-filter + Export actions. Body includes a 4-up KPI metric-card grid (Total Revenue, Active Users, Conversion Rate, Avg. Session) with up/down percentage trend deltas and icon chips, a charts row pairing a wide Revenue Overview line/area chart (with Month/Year toggle) and a Traffic Sources doughnut chart with a labeled percentage legend, a full Recent Transactions data table (customer avatars + emails, date, amount, colored status pills for Completed/Processing/Failed, plan, per-row View action, and Previous/Next pagination), and a 3-up secondary metrics row (Top Performing Pages with progress bars, Device Breakdown desktop/mobile/tablet, and Subscription Growth with churn and LTV). Use as the ROOT/home page for analytics dashboards, admin panels, business-intelligence consoles, metrics/reporting overviews, revenue or product analytics, customer/subscription dashboards, or any data visualization control panel. Supply content only — brand, nav, header copy, KPIs, charts, transactions, and metric panels; the block owns all layout and styling.",
+    'Complete SaaS analytics DASHBOARD / admin overview page with a clean, light, data-dense product UI: a fixed left sidebar (brand mark, primary nav with active state and a notification count badge, plus a user profile card), a sticky top header with page title, an analytics search field, and date-filter + Export actions. Body includes a 4-up KPI metric-card grid (Total Revenue, Active Users, Conversion Rate, Avg. Session) with up/down percentage trend deltas and icon chips, a charts row pairing a wide Revenue Overview line/area chart (with Month/Year toggle) and a Traffic Sources doughnut chart with a labeled percentage legend, a full Recent Transactions data table (customer avatars + emails, date, amount, colored status pills for Completed/Processing/Failed, plan, per-row View action, and Previous/Next pagination), and a 3-up secondary metrics row (Top Performing Pages with progress bars, Device Breakdown desktop/mobile/tablet, and Subscription Growth with churn and LTV). Use as the ROOT/home page for analytics dashboards, admin panels, business-intelligence consoles, metrics/reporting overviews, revenue or product analytics, customer/subscription dashboards, or any data visualization control panel. Supply content only — brand, nav, header copy, KPIs, charts, transactions, and metric panels; the block owns all layout and styling.',
   props: z.object({
     /** Brand / product name shown in the sidebar header. */
     brand: z.string().optional(),
@@ -77,7 +76,7 @@ export const AnalyticsKimiPage = defineCapsule({
           label: z.string(),
           value: z.string(),
           delta: z.string(),
-          trend: z.enum(["up", "down"]),
+          trend: z.enum(['up', 'down']),
           caption: z.string(),
         }),
       )
@@ -119,7 +118,7 @@ export const AnalyticsKimiPage = defineCapsule({
               email: z.string(),
               date: z.string(),
               amount: z.string(),
-              status: z.enum(["completed", "processing", "failed"]),
+              status: z.enum(['completed', 'processing', 'failed']),
               plan: z.string(),
             }),
           )
@@ -150,7 +149,7 @@ export const AnalyticsKimiPage = defineCapsule({
             z.object({
               label: z.string(),
               percent: z.number(),
-              icon: z.enum(["desktop", "mobile", "tablet"]),
+              icon: z.enum(['desktop', 'mobile', 'tablet']),
             }),
           )
           .optional(),
@@ -207,7 +206,17 @@ export const AnalyticsKimiPage = defineCapsule({
         }
         return []
       },
-      addTransaction: ({ db }, transaction: { name: string; email: string; date: string; amount: string; status: string; plan: string }) => {
+      addTransaction: (
+        { db },
+        transaction: {
+          name: string
+          email: string
+          date: string
+          amount: string
+          status: string
+          plan: string
+        },
+      ) => {
         db.transactions.insert(transaction)
         return db.transactions.all()
       },
@@ -217,16 +226,16 @@ export const AnalyticsKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [notificationsOpen, setNotificationsOpen] = useState(false)
-    const brand = props.brand ?? "DataFlow"
+    const brand = props.brand ?? 'DataFlow'
     const nav = props.nav?.length
       ? props.nav
       : [
-          "Dashboard",
-          "Customers",
-          "Analytics",
-          "Reports",
-          "Notifications",
-          "Settings",
+          'Dashboard',
+          'Customers',
+          'Analytics',
+          'Reports',
+          'Notifications',
+          'Settings',
         ]
     // Lakebed queries and mutations
     const storedTransactions = lakebed.useQuery('transactions')
@@ -235,10 +244,9 @@ export const AnalyticsKimiPage = defineCapsule({
     const notificationCount =
       (unreadNotificationCount ?? 0) > 0
         ? String(unreadNotificationCount)
-        : props.notificationCount ?? "3"
+        : (props.notificationCount ?? '3')
     const markNotificationRead = lakebed.useMutation('markNotificationRead')
     const clearAllNotifications = lakebed.useMutation('clearAllNotifications')
-    const addTransaction = lakebed.useMutation('addTransaction')
     const auth = lakebed.useAuth()
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
@@ -266,200 +274,197 @@ export const AnalyticsKimiPage = defineCapsule({
       lakebed.signOut()
     }
 
-    const userName = props.user?.name ?? authDisplayName ?? "Marcus Chen"
-    const userRole = props.user?.role ?? "Product Manager"
-    const userAvatarAlt =
-      props.user?.avatarAlt ??
-      "Professional headshot of a product manager with short brown hair and a friendly smile"
+    const userRole = props.user?.role ?? 'Product Manager'
 
-    const headerTitle = props.header?.title ?? "Dashboard Overview"
+    const headerTitle = props.header?.title ?? 'Dashboard Overview'
     const headerSubtitle =
       props.header?.subtitle ?? "Welcome back, here's what's happening"
     const searchPlaceholder =
-      props.header?.searchPlaceholder ?? "Search analytics..."
-    const exportLabel = props.header?.exportLabel ?? "Export"
+      props.header?.searchPlaceholder ?? 'Search analytics...'
+    const exportLabel = props.header?.exportLabel ?? 'Export'
 
     const kpis = props.kpis?.length
       ? props.kpis
       : ([
           {
-            label: "Total Revenue",
-            value: "$124,592",
-            delta: "+12.5%",
-            trend: "up",
-            caption: "vs last month",
+            label: 'Total Revenue',
+            value: '$124,592',
+            delta: '+12.5%',
+            trend: 'up',
+            caption: 'vs last month',
           },
           {
-            label: "Active Users",
-            value: "8,429",
-            delta: "+8.2%",
-            trend: "up",
-            caption: "vs last month",
+            label: 'Active Users',
+            value: '8,429',
+            delta: '+8.2%',
+            trend: 'up',
+            caption: 'vs last month',
           },
           {
-            label: "Conversion Rate",
-            value: "3.24%",
-            delta: "+2.1%",
-            trend: "up",
-            caption: "vs last month",
+            label: 'Conversion Rate',
+            value: '3.24%',
+            delta: '+2.1%',
+            trend: 'up',
+            caption: 'vs last month',
           },
           {
-            label: "Avg. Session",
-            value: "4m 32s",
-            delta: "-1.4%",
-            trend: "down",
-            caption: "vs last month",
+            label: 'Avg. Session',
+            value: '4m 32s',
+            delta: '-1.4%',
+            trend: 'down',
+            caption: 'vs last month',
           },
         ] as const)
 
-    const revenueTitle = props.revenue?.title ?? "Revenue Overview"
+    const revenueTitle = props.revenue?.title ?? 'Revenue Overview'
     const revenueSubtitle =
-      props.revenue?.subtitle ?? "Monthly revenue and growth trends"
+      props.revenue?.subtitle ?? 'Monthly revenue and growth trends'
     const revenueToggles = props.revenue?.toggles?.length
       ? props.revenue.toggles
-      : ["Month", "Year"]
+      : ['Month', 'Year']
     const revenuePoints = props.revenue?.points?.length
       ? props.revenue.points
       : [
-          { label: "Jan", value: 82000 },
-          { label: "Feb", value: 91000 },
-          { label: "Mar", value: 105000 },
-          { label: "Apr", value: 98200 },
-          { label: "May", value: 114000 },
-          { label: "Jun", value: 124592 },
+          { label: 'Jan', value: 82000 },
+          { label: 'Feb', value: 91000 },
+          { label: 'Mar', value: 105000 },
+          { label: 'Apr', value: 98200 },
+          { label: 'May', value: 114000 },
+          { label: 'Jun', value: 124592 },
         ]
 
-    const trafficTitle = props.traffic?.title ?? "Traffic Sources"
+    const trafficTitle = props.traffic?.title ?? 'Traffic Sources'
     const trafficSubtitle =
-      props.traffic?.subtitle ?? "Visitor acquisition channels"
+      props.traffic?.subtitle ?? 'Visitor acquisition channels'
     const trafficSources = props.traffic?.sources?.length
       ? props.traffic.sources
       : [
-          { label: "Organic Search", value: 42 },
-          { label: "Direct", value: 28 },
-          { label: "Social Media", value: 18 },
-          { label: "Referral", value: 12 },
+          { label: 'Organic Search', value: 42 },
+          { label: 'Direct', value: 28 },
+          { label: 'Social Media', value: 18 },
+          { label: 'Referral', value: 12 },
         ]
 
-    const txTitle = props.transactions?.title ?? "Recent Transactions"
+    const txTitle = props.transactions?.title ?? 'Recent Transactions'
     const txSubtitle =
-      props.transactions?.subtitle ?? "Latest customer payments and activities"
-    const txViewAll = props.transactions?.viewAll ?? "View All"
+      props.transactions?.subtitle ?? 'Latest customer payments and activities'
+    const txViewAll = props.transactions?.viewAll ?? 'View All'
     const txFootnote =
-      props.transactions?.footnote ?? "Showing 6 of 247 transactions"
-    const txRows = storedTransactions && storedTransactions.length > 0
-      ? storedTransactions.map((t) => ({
-          name: t.name,
-          email: t.email,
-          date: t.date,
-          amount: t.amount,
-          status: t.status as "completed" | "processing" | "failed",
-          plan: t.plan,
-        }))
-      : props.transactions?.rows?.length
-        ? props.transactions.rows
-        : ([
-            {
-              name: "Sarah Miller",
-              email: "sarah@techcorp.com",
-              date: "May 30, 2026",
-              amount: "$299.00",
-              status: "completed",
-              plan: "Pro Plan",
-            },
-            {
-              name: "James Wilson",
-              email: "james@startup.io",
-              date: "May 30, 2026",
-              amount: "$499.00",
-              status: "processing",
-              plan: "Enterprise",
-            },
-            {
-              name: "Emily Davis",
-              email: "emily@design.studio",
-              date: "May 29, 2026",
-              amount: "$99.00",
-              status: "completed",
-              plan: "Starter",
-            },
-            {
-              name: "Michael Brown",
-              email: "michael@devteam.net",
-              date: "May 29, 2026",
-              amount: "$299.00",
-              status: "failed",
-              plan: "Pro Plan",
-            },
-            {
-              name: "Lisa Anderson",
-              email: "lisa@product.co",
-              date: "May 28, 2026",
-              amount: "$499.00",
-              status: "completed",
-              plan: "Enterprise",
-            },
-            {
-              name: "David Kim",
-              email: "david@innovate.io",
-              date: "May 28, 2026",
-              amount: "$99.00",
-              status: "completed",
-              plan: "Starter",
-            },
-          ] as const)
+      props.transactions?.footnote ?? 'Showing 6 of 247 transactions'
+    const txRows =
+      storedTransactions && storedTransactions.length > 0
+        ? storedTransactions.map((t) => ({
+            name: t.name,
+            email: t.email,
+            date: t.date,
+            amount: t.amount,
+            status: t.status as 'completed' | 'processing' | 'failed',
+            plan: t.plan,
+          }))
+        : props.transactions?.rows?.length
+          ? props.transactions.rows
+          : ([
+              {
+                name: 'Sarah Miller',
+                email: 'sarah@techcorp.com',
+                date: 'May 30, 2026',
+                amount: '$299.00',
+                status: 'completed',
+                plan: 'Pro Plan',
+              },
+              {
+                name: 'James Wilson',
+                email: 'james@startup.io',
+                date: 'May 30, 2026',
+                amount: '$499.00',
+                status: 'processing',
+                plan: 'Enterprise',
+              },
+              {
+                name: 'Emily Davis',
+                email: 'emily@design.studio',
+                date: 'May 29, 2026',
+                amount: '$99.00',
+                status: 'completed',
+                plan: 'Starter',
+              },
+              {
+                name: 'Michael Brown',
+                email: 'michael@devteam.net',
+                date: 'May 29, 2026',
+                amount: '$299.00',
+                status: 'failed',
+                plan: 'Pro Plan',
+              },
+              {
+                name: 'Lisa Anderson',
+                email: 'lisa@product.co',
+                date: 'May 28, 2026',
+                amount: '$499.00',
+                status: 'completed',
+                plan: 'Enterprise',
+              },
+              {
+                name: 'David Kim',
+                email: 'david@innovate.io',
+                date: 'May 28, 2026',
+                amount: '$99.00',
+                status: 'completed',
+                plan: 'Starter',
+              },
+            ] as const)
 
-    const topPagesTitle = props.topPages?.title ?? "Top Performing Pages"
+    const topPagesTitle = props.topPages?.title ?? 'Top Performing Pages'
     const topPagesItems = props.topPages?.items?.length
       ? props.topPages.items
       : [
-          { label: "/features", value: "12,847 views", percent: 85 },
-          { label: "/pricing", value: "8,234 views", percent: 65 },
-          { label: "/docs", value: "5,891 views", percent: 45 },
-          { label: "/blog", value: "3,456 views", percent: 28 },
+          { label: '/features', value: '12,847 views', percent: 85 },
+          { label: '/pricing', value: '8,234 views', percent: 65 },
+          { label: '/docs', value: '5,891 views', percent: 45 },
+          { label: '/blog', value: '3,456 views', percent: 28 },
         ]
 
-    const devicesTitle = props.devices?.title ?? "Device Breakdown"
+    const devicesTitle = props.devices?.title ?? 'Device Breakdown'
     const deviceItems = props.devices?.items?.length
       ? props.devices.items
       : ([
-          { label: "Desktop", percent: 58, icon: "desktop" },
-          { label: "Mobile", percent: 34, icon: "mobile" },
-          { label: "Tablet", percent: 8, icon: "tablet" },
+          { label: 'Desktop', percent: 58, icon: 'desktop' },
+          { label: 'Mobile', percent: 34, icon: 'mobile' },
+          { label: 'Tablet', percent: 8, icon: 'tablet' },
         ] as const)
 
-    const growthTitle = props.growth?.title ?? "Subscription Growth"
+    const growthTitle = props.growth?.title ?? 'Subscription Growth'
     const growthItems = props.growth?.items?.length
       ? props.growth.items
       : [
           {
-            label: "This Month",
-            caption: "New signups",
-            value: "+247",
-            delta: "+18% vs last month",
+            label: 'This Month',
+            caption: 'New signups',
+            value: '+247',
+            delta: '+18% vs last month',
           },
           {
-            label: "Churn Rate",
-            caption: "Monthly cancellations",
-            value: "2.4%",
-            delta: "-0.3% vs last month",
+            label: 'Churn Rate',
+            caption: 'Monthly cancellations',
+            value: '2.4%',
+            delta: '-0.3% vs last month',
           },
           {
-            label: "LTV",
-            caption: "Customer lifetime value",
-            value: "$1,247",
-            delta: "+8% vs last month",
+            label: 'LTV',
+            caption: 'Customer lifetime value',
+            value: '$1,247',
+            delta: '+8% vs last month',
           },
         ]
 
     // Chart tokens cycled for traffic-source slices / progress bars (data viz only).
-    const sliceTokens = ["bg-chart-1", "bg-chart-2", "bg-chart-3", "bg-chart-4"]
+    const sliceTokens = ['bg-chart-1', 'bg-chart-2', 'bg-chart-3', 'bg-chart-4']
 
     // Brand logo tile — solid token mark with the brand initial (decorative).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary font-black text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary font-black text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -472,13 +477,13 @@ export const AnalyticsKimiPage = defineCapsule({
     const iconProps = {
       width: 20,
       height: 20,
-      viewBox: "0 0 24 24",
-      fill: "none",
-      stroke: "currentColor",
+      viewBox: '0 0 24 24',
+      fill: 'none',
+      stroke: 'currentColor',
       strokeWidth: 2,
-      strokeLinecap: "round" as const,
-      strokeLinejoin: "round" as const,
-      "aria-hidden": true,
+      strokeLinecap: 'round' as const,
+      strokeLinejoin: 'round' as const,
+      'aria-hidden': true,
     }
 
     const navIcons: Record<string, ReactNode> = {
@@ -563,21 +568,6 @@ export const AnalyticsKimiPage = defineCapsule({
       </svg>
     )
 
-    const ChevronDown = () => (
-      <svg
-        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <polyline points="6 9 12 15 18 9" />
-      </svg>
-    )
-
     const ArrowRight = () => (
       <svg
         className="size-4"
@@ -595,14 +585,14 @@ export const AnalyticsKimiPage = defineCapsule({
     )
 
     const statusStyles: Record<string, string> = {
-      completed: "bg-chart-1/15 text-chart-1",
-      processing: "bg-chart-2/15 text-chart-2",
-      failed: "bg-destructive/15 text-destructive",
+      completed: 'bg-chart-1/15 text-chart-1',
+      processing: 'bg-chart-2/15 text-chart-2',
+      failed: 'bg-destructive/15 text-destructive',
     }
     const statusLabels: Record<string, string> = {
-      completed: "Completed",
-      processing: "Processing",
-      failed: "Failed",
+      completed: 'Completed',
+      processing: 'Processing',
+      failed: 'Failed',
     }
 
     // Build an area-chart path from the revenue points.
@@ -621,8 +611,10 @@ export const AnalyticsKimiPage = defineCapsule({
       return { x, y, ...p }
     })
     const linePath = coords
-      .map((c, i) => `${i === 0 ? "M" : "L"} ${c.x.toFixed(1)} ${c.y.toFixed(1)}`)
-      .join(" ")
+      .map(
+        (c, i) => `${i === 0 ? 'M' : 'L'} ${c.x.toFixed(1)} ${c.y.toFixed(1)}`,
+      )
+      .join(' ')
     const areaPath = `${linePath} L ${coords[coords.length - 1].x.toFixed(
       1,
     )} ${chartH - padY} L ${coords[0].x.toFixed(1)} ${chartH - padY} Z`
@@ -639,7 +631,7 @@ export const AnalyticsKimiPage = defineCapsule({
         dash: fraction * circumference,
         gap: circumference - fraction * circumference,
         offset: -dashOffsetAcc,
-        token: sliceTokens[i % sliceTokens.length].replace("bg-", "stroke-"),
+        token: sliceTokens[i % sliceTokens.length].replace('bg-', 'stroke-'),
       }
       dashOffsetAcc += fraction * circumference
       return seg
@@ -663,7 +655,7 @@ export const AnalyticsKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "relative min-h-svh bg-background text-foreground antialiased",
+          'relative min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -686,22 +678,22 @@ export const AnalyticsKimiPage = defineCapsule({
                   key={label}
                   type="button"
                   onClick={() => {
-                    if (label === "Notifications") {
+                    if (label === 'Notifications') {
                       setNotificationsOpen(true)
                     } else {
                       go(label)
                     }
                   }}
                   className={cn(
-                    "flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
+                    'flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors',
                     active
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:bg-muted",
+                      ? 'bg-accent text-accent-foreground'
+                      : 'text-muted-foreground hover:bg-muted',
                   )}
                 >
                   {navIcons[label] ?? navIcons.Dashboard}
                   <span>{label}</span>
-                  {label === "Notifications" ? (
+                  {label === 'Notifications' ? (
                     <span className="ml-auto rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
                       {notificationCount}
                     </span>
@@ -746,7 +738,10 @@ export const AnalyticsKimiPage = defineCapsule({
                     <div className="flex items-center gap-3">
                       <Avatar size="lg" className="ring-2 ring-background">
                         {authPicture ? (
-                          <AvatarImage src={authPicture} alt={authDisplayName} />
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
                         ) : null}
                         <AvatarFallback className="bg-foreground text-sm font-bold text-background">
                           {authInitials}
@@ -877,7 +872,12 @@ export const AnalyticsKimiPage = defineCapsule({
                   }}
                   className="hidden items-center gap-2 rounded-lg bg-muted px-3 py-2 md:flex"
                 >
-                  <svg {...iconProps} width={16} height={16} className="text-muted-foreground">
+                  <svg
+                    {...iconProps}
+                    width={16}
+                    height={16}
+                    className="text-muted-foreground"
+                  >
                     <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   <input
@@ -890,7 +890,7 @@ export const AnalyticsKimiPage = defineCapsule({
                 <button
                   type="button"
                   aria-label="Date filter"
-                  onClick={() => go("Date filter")}
+                  onClick={() => go('Date filter')}
                   className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted"
                 >
                   <svg {...iconProps}>
@@ -930,13 +930,13 @@ export const AnalyticsKimiPage = defineCapsule({
                         </p>
                         <div
                           className={cn(
-                            "mt-2 flex items-center gap-1",
-                            kpi.trend === "up"
-                              ? "text-chart-1"
-                              : "text-destructive",
+                            'mt-2 flex items-center gap-1',
+                            kpi.trend === 'up'
+                              ? 'text-chart-1'
+                              : 'text-destructive',
                           )}
                         >
-                          {kpi.trend === "up" ? <TrendUp /> : <TrendDown />}
+                          {kpi.trend === 'up' ? <TrendUp /> : <TrendDown />}
                           <span className="text-sm font-medium">
                             {kpi.delta}
                           </span>
@@ -971,10 +971,10 @@ export const AnalyticsKimiPage = defineCapsule({
                           type="button"
                           onClick={() => go(t)}
                           className={cn(
-                            "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                            'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
                             i === 0
-                              ? "bg-muted text-foreground hover:bg-accent"
-                              : "text-muted-foreground hover:bg-muted",
+                              ? 'bg-muted text-foreground hover:bg-accent'
+                              : 'text-muted-foreground hover:bg-muted',
                           )}
                         >
                           {t}
@@ -1073,7 +1073,7 @@ export const AnalyticsKimiPage = defineCapsule({
                         <div className="flex items-center gap-2">
                           <span
                             className={cn(
-                              "size-3 rounded-full",
+                              'size-3 rounded-full',
                               sliceTokens[i % sliceTokens.length],
                             )}
                           />
@@ -1108,16 +1108,21 @@ export const AnalyticsKimiPage = defineCapsule({
                   <table className="w-full">
                     <thead className="bg-muted">
                       <tr>
-                        {["Customer", "Date", "Amount", "Status", "Plan", "Actions"].map(
-                          (h) => (
-                            <th
-                              key={h}
-                              className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
-                            >
-                              {h}
-                            </th>
-                          ),
-                        )}
+                        {[
+                          'Customer',
+                          'Date',
+                          'Amount',
+                          'Status',
+                          'Plan',
+                          'Actions',
+                        ].map((h) => (
+                          <th
+                            key={h}
+                            className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground"
+                          >
+                            {h}
+                          </th>
+                        ))}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
@@ -1153,7 +1158,7 @@ export const AnalyticsKimiPage = defineCapsule({
                           <td className="whitespace-nowrap px-6 py-4">
                             <span
                               className={cn(
-                                "rounded-full px-2 py-1 text-xs font-medium",
+                                'rounded-full px-2 py-1 text-xs font-medium',
                                 statusStyles[row.status],
                               )}
                             >
@@ -1189,7 +1194,7 @@ export const AnalyticsKimiPage = defineCapsule({
                     </button>
                     <button
                       type="button"
-                      onClick={() => go("Next transactions")}
+                      onClick={() => go('Next transactions')}
                       className="rounded-lg px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
                     >
                       Next →
@@ -1221,7 +1226,7 @@ export const AnalyticsKimiPage = defineCapsule({
                         <div className="h-2 overflow-hidden rounded-full bg-muted">
                           <div
                             className={cn(
-                              "h-full rounded-full",
+                              'h-full rounded-full',
                               sliceTokens[i % sliceTokens.length],
                             )}
                             style={{ width: `${item.percent}%` }}
@@ -1255,7 +1260,7 @@ export const AnalyticsKimiPage = defineCapsule({
                           <div className="h-2 overflow-hidden rounded-full bg-muted">
                             <div
                               className={cn(
-                                "h-full rounded-full",
+                                'h-full rounded-full',
                                 sliceTokens[i % sliceTokens.length],
                               )}
                               style={{ width: `${item.percent}%` }}
@@ -1277,9 +1282,9 @@ export const AnalyticsKimiPage = defineCapsule({
                       <div
                         key={item.label}
                         className={cn(
-                          "flex items-center justify-between",
+                          'flex items-center justify-between',
                           i < growthItems.length - 1 &&
-                            "border-b border-border pb-4",
+                            'border-b border-border pb-4',
                         )}
                       >
                         <div>
@@ -1323,8 +1328,8 @@ export const AnalyticsKimiPage = defineCapsule({
                     <div
                       key={notification.id}
                       className={cn(
-                        "rounded-lg border border-border bg-card p-4",
-                        notification.read === 'false' && "bg-muted/40",
+                        'rounded-lg border border-border bg-card p-4',
+                        notification.read === 'false' && 'bg-muted/40',
                       )}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -1339,7 +1344,9 @@ export const AnalyticsKimiPage = defineCapsule({
                         {notification.read === 'false' && (
                           <button
                             type="button"
-                            onClick={() => void markNotificationRead(notification.id)}
+                            onClick={() =>
+                              void markNotificationRead(notification.id)
+                            }
                             className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                           >
                             Mark read

@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,23 +14,23 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
-type SvgProps = Partial<React.ComponentPropsWithRef<"svg">>
+type SvgProps = Partial<React.ComponentPropsWithRef<'svg'>>
 
 // Brand mark — stylized V
 const LogoMark = (props: SvgProps) => (
   <svg
     viewBox="0 0 24 24"
     fill="currentColor"
-    className={cn("text-primary", props.className)}
+    className={cn('text-primary', props.className)}
     aria-hidden="true"
     {...props}
   >
@@ -84,7 +84,11 @@ const MenuIcon = (props: SvgProps) => (
     aria-hidden="true"
     {...props}
   >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M4 6h16M4 12h16M4 18h16"
+    />
   </svg>
 )
 
@@ -99,13 +103,20 @@ const XIcon = (props: SvgProps) => (
     aria-hidden="true"
     {...props}
   >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M6 18L18 6M6 6l12 12"
+    />
   </svg>
 )
 
 const ChevronDown = (props: SvgProps) => (
   <svg
-    className={cn("size-5 text-muted-foreground group-open:rotate-180 transition-transform", props.className)}
+    className={cn(
+      'size-5 text-muted-foreground group-open:rotate-180 transition-transform',
+      props.className,
+    )}
     fill="none"
     stroke="currentColor"
     strokeWidth="2"
@@ -121,7 +132,7 @@ const ChevronDown = (props: SvgProps) => (
 
 const ArrowRight = (props: SvgProps) => (
   <svg
-    className={cn("size-4", props.className)}
+    className={cn('size-4', props.className)}
     fill="none"
     stroke="currentColor"
     strokeWidth="2"
@@ -133,21 +144,6 @@ const ArrowRight = (props: SvgProps) => (
   >
     <line x1="5" y1="12" x2="19" y2="12" />
     <polyline points="12 5 19 12 12 19" />
-  </svg>
-)
-
-const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
-  <svg
-    className={cn("size-5", active ? "text-primary-foreground" : "text-foreground")}
-    fill={active ? "currentColor" : "none"}
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-  >
-    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
   </svg>
 )
 
@@ -170,7 +166,7 @@ const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
  * credibility, detailed history, team depth, and social proof on a dark canvas.
  */
 export const AboutKimiPage2 = defineCapsule({
-  name: "AboutKimiPage2",
+  name: 'AboutKimiPage2',
   description:
     "Complete company / ABOUT page variant 2 with a dark, premium engineering aesthetic: glassy sticky navbar with native disclosure mobile menu, mission hero with subtle grid-pattern backdrop and gradient-accented headline over a warm gradient wash, a 'trusted by' logo strip with grayscale hover reveal, a split 'our mission' section pairing narrative copy with metric highlights and a photo with floating live-stats card, a dense 'by the numbers' stats band, a detailed alternating vertical timeline telling the company founding story, a 4-up core-values icon grid with hover brand-border accents, a 9-up leadership team grid with portrait cards and role badges, a 4-up testimonial grid with circular avatar quotes, a masonry-style 'life at' photo gallery, a warm gradient CTA band, and a multi-column footer with social icons and link columns. Use as the ABOUT / company / mission / team / who-we-are page when the brand wants technical credibility, rich storytelling, detailed history, and social proof in a dark, immersive layout. This is the second dark style sibling to AboutKimiPage.",
   props: z.object({
@@ -290,9 +286,7 @@ export const AboutKimiPage2 = defineCapsule({
         eyebrow: z.string().optional(),
         heading: z.string().optional(),
         description: z.string().optional(),
-        photos: z
-          .array(z.object({ alt: z.string() }))
-          .optional(),
+        photos: z.array(z.object({ alt: z.string() })).optional(),
       })
       .optional(),
     /** Closing CTA band. */
@@ -338,14 +332,10 @@ export const AboutKimiPage2 = defineCapsule({
       bookmarkedItems: ({ db }) =>
         new Set(db.bookmarks.all().map((bookmark) => bookmark.itemName)),
       inquiryCount: ({ db }) => db.inquiries.all().length,
-      isSubscribed: ({ db }, email: string) =>
-        db.subscribers.where("email", email).all().length > 0,
     },
     mutations: {
       toggleBookmark: ({ db }, itemName: string, itemType: string) => {
-        const existing = db.bookmarks
-          .where("itemName", itemName)
-          .all()[0]
+        const existing = db.bookmarks.where('itemName', itemName).all()[0]
 
         if (existing) {
           db.bookmarks.delete(existing.id)
@@ -360,7 +350,7 @@ export const AboutKimiPage2 = defineCapsule({
         return db.inquiries.all()
       },
       subscribe: ({ db }, email: string) => {
-        const existing = db.subscribers.where("email", email).all()[0]
+        const existing = db.subscribers.where('email', email).all()[0]
         if (!existing) {
           db.subscribers.insert({ email })
         }
@@ -371,36 +361,33 @@ export const AboutKimiPage2 = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [contactOpen, setContactOpen] = useState(false)
-    const [newsletterEmail, setNewsletterEmail] = useState("")
     const [inquiryForm, setInquiryForm] = useState({
-      name: "",
-      email: "",
-      message: "",
+      name: '',
+      email: '',
+      message: '',
     })
 
-    const bookmarkedItems = lakebed.useQuery("bookmarkedItems")
-    const inquiryCount = lakebed.useQuery("inquiryCount")
-    const toggleBookmark = lakebed.useMutation("toggleBookmark")
-    const submitInquiry = lakebed.useMutation("submitInquiry")
-    const subscribe = lakebed.useMutation("subscribe")
+    const bookmarkedItems = lakebed.useQuery('bookmarkedItems')
+    const inquiryCount = lakebed.useQuery('inquiryCount')
+    const submitInquiry = lakebed.useMutation('submitInquiry')
     const auth = lakebed.useAuth()
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
     const authDisplayName =
-      auth.displayName || auth.user?.displayName || authEmail || "Account"
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
     const authInitials =
       authDisplayName
         .split(/\s+/)
         .filter(Boolean)
         .slice(0, 2)
         .map((part) => part[0]?.toUpperCase())
-        .join("") || "ME"
+        .join('') || 'ME'
     const authLabel = auth.isLoading
-      ? "Checking..."
+      ? 'Checking...'
       : isSignedIn
         ? authDisplayName
-        : "Sign in"
+        : 'Sign in'
 
     const handleSignIn = () => {
       if (auth.isLoading) return
@@ -411,351 +398,353 @@ export const AboutKimiPage2 = defineCapsule({
       lakebed.signOut()
     }
 
-    const handleSubscribe = (e: React.FormEvent) => {
-      e.preventDefault()
-      if (newsletterEmail.trim()) {
-        void subscribe(newsletterEmail.trim())
-        setNewsletterEmail("")
-      }
-    }
-
     const handleSubmitInquiry = (e: React.FormEvent) => {
       e.preventDefault()
-      if (inquiryForm.name.trim() && inquiryForm.email.trim() && inquiryForm.message.trim()) {
-        void submitInquiry(inquiryForm.name.trim(), inquiryForm.email.trim(), inquiryForm.message.trim())
-        setInquiryForm({ name: "", email: "", message: "" })
+      if (
+        inquiryForm.name.trim() &&
+        inquiryForm.email.trim() &&
+        inquiryForm.message.trim()
+      ) {
+        void submitInquiry(
+          inquiryForm.name.trim(),
+          inquiryForm.email.trim(),
+          inquiryForm.message.trim(),
+        )
+        setInquiryForm({ name: '', email: '', message: '' })
         setContactOpen(false)
       }
     }
 
-    const brand = props.brand ?? "Vertex Data"
+    const brand = props.brand ?? 'Vertex Data'
     const nav = props.nav?.length
       ? props.nav
-      : ["Mission", "Story", "Values", "Team"]
+      : ['Mission', 'Story', 'Values', 'Team']
 
     const heroEyebrow = props.hero?.eyebrow ?? `About ${brand}`
-    const heroHeading =
-      props.hero?.heading ?? "We make real-time data"
-    const heroHighlight =
-      props.hero?.highlight ?? "accessible to everyone"
+    const heroHeading = props.hero?.heading ?? 'We make real-time data'
+    const heroHighlight = props.hero?.highlight ?? 'accessible to everyone'
     const heroSub =
       props.hero?.subheading ??
-      "Founded in 2019 in San Francisco, Vertex Data powers sub-50ms analytics for 2,400+ companies including Notion, Figma, and Stripe. Our stream-processing engine handles 12 billion events daily with 99.99% uptime — because infrastructure should never be the bottleneck."
-    const heroPrimary = props.hero?.primaryCta ?? "Read our story"
-    const heroSecondary = props.hero?.secondaryCta ?? "Meet the team"
+      'Founded in 2019 in San Francisco, Vertex Data powers sub-50ms analytics for 2,400+ companies including Notion, Figma, and Stripe. Our stream-processing engine handles 12 billion events daily with 99.99% uptime — because infrastructure should never be the bottleneck.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Read our story'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Meet the team'
 
-    const logosTitle = props.logos?.title ?? "Trusted by engineering teams at"
+    const logosTitle = props.logos?.title ?? 'Trusted by engineering teams at'
     const logosItems = props.logos?.items?.length
       ? props.logos.items
       : [
-        { name: "Notion" },
-        { name: "Figma" },
-        { name: "Stripe" },
-        { name: "Linear" },
-        { name: "Shopify" },
-        { name: "Airbnb" },
-      ]
+          { name: 'Notion' },
+          { name: 'Figma' },
+          { name: 'Stripe' },
+          { name: 'Linear' },
+          { name: 'Shopify' },
+          { name: 'Airbnb' },
+        ]
 
-    const missionEyebrow = props.mission?.eyebrow ?? "Our Mission"
+    const missionEyebrow = props.mission?.eyebrow ?? 'Our Mission'
     const missionHeading =
       props.mission?.heading ??
-      "Democratize real-time data for every engineering team on the planet"
+      'Democratize real-time data for every engineering team on the planet'
     const missionParagraphs = props.mission?.paragraphs?.length
       ? props.mission.paragraphs
       : [
-        "We believe speed is a competitive advantage. The teams that can query, transform, and act on data in milliseconds — not minutes — win their markets. Yet for most companies, real-time infrastructure remains prohibitively complex and expensive.",
-        "Vertex Data exists to erase that gap. We build the stream-processing layer we wished we had at Google and Netflix — then make it affordable enough for a seed-stage startup and elastic enough for a Fortune 500 bank.",
-      ]
+          'We believe speed is a competitive advantage. The teams that can query, transform, and act on data in milliseconds — not minutes — win their markets. Yet for most companies, real-time infrastructure remains prohibitively complex and expensive.',
+          'Vertex Data exists to erase that gap. We build the stream-processing layer we wished we had at Google and Netflix — then make it affordable enough for a seed-stage startup and elastic enough for a Fortune 500 bank.',
+        ]
     const missionStats = props.mission?.stats?.length
       ? props.mission.stats
       : [
-        { value: "$0.002", label: "Per 1M events ingested" },
-        { value: "<50ms", label: "P99 query latency" },
-        { value: "Zero", label: "Infrastructure to manage" },
-      ]
+          { value: '$0.002', label: 'Per 1M events ingested' },
+          { value: '<50ms', label: 'P99 query latency' },
+          { value: 'Zero', label: 'Infrastructure to manage' },
+        ]
     const missionImageAlt =
       props.mission?.imageAlt ??
-      "Modern open-plan tech office with exposed brick walls, industrial lighting, and engineers working at long desks"
+      'Modern open-plan tech office with exposed brick walls, industrial lighting, and engineers working at long desks'
 
     const statItems = props.stats?.items?.length
       ? props.stats.items
       : [
-        { value: "2,400+", label: "Paying customers" },
-        { value: "12B", label: "Events processed daily" },
-        { value: "99.99%", label: "Platform uptime (12 mo)" },
-        { value: "140+", label: "Team members" },
-        { value: "4", label: "Global offices" },
-        { value: "$69.2M", label: "Total funding raised" },
-      ]
+          { value: '2,400+', label: 'Paying customers' },
+          { value: '12B', label: 'Events processed daily' },
+          { value: '99.99%', label: 'Platform uptime (12 mo)' },
+          { value: '140+', label: 'Team members' },
+          { value: '4', label: 'Global offices' },
+          { value: '$69.2M', label: 'Total funding raised' },
+        ]
 
-    const storyEyebrow = props.story?.eyebrow ?? "Our Story"
+    const storyEyebrow = props.story?.eyebrow ?? 'Our Story'
     const storyHeading =
-      props.story?.heading ?? "Five years of relentless iteration"
+      props.story?.heading ?? 'Five years of relentless iteration'
     const storyDesc =
       props.story?.description ??
-      "From a SoMa warehouse to processing 12 billion events a day — this is how we built Vertex Data, one commit at a time."
+      'From a SoMa warehouse to processing 12 billion events a day — this is how we built Vertex Data, one commit at a time.'
     const storyItems = props.story?.items?.length
       ? props.story.items
       : [
-        {
-          date: "March 2019",
-          title: "The spark in SoMa",
-          description:
-            "Marcus Chen and Priya Nair founded Vertex in a converted warehouse on Harrison Street. The first prototype of StreamEngine was built in six weeks using Craigslist servers and $8,000 of personal savings.",
-        },
-        {
-          date: "November 2019",
-          title: "$1.2M pre-seed",
-          description:
-            "Gradient Ventures led the round with participation from 14 angel operators including the former CTOs of MongoDB and Confluent. We hired our first three engineers — all former colleagues from Google.",
-        },
-        {
-          date: "August 2020",
-          title: "Seed & first revenue",
-          description:
-            "Accel led a $4.2M seed. Our first paying customer was Deliverr (now Flexport), who needed real-time inventory tracking across 40 warehouses. By December we had 10 customers and $14K MRR.",
-        },
-        {
-          date: "April 2021",
-          title: "Series A & scale",
-          description:
-            "Benchmark led an $18M Series A at a $72M valuation. The team grew to 45. We signed a 5-year lease on 12,000 sq ft at 555 Mission Street — then promptly outgrew half of it in nine months.",
-        },
-        {
-          date: "February 2022",
-          title: "StreamEngine v2 ships",
-          description:
-            "We launched our rewritten engine with sub-50ms p99 latency — a 10x improvement. 500 paying customers. Q2 2022 was our first $1M ARR quarter. We also open-sourced our VoltDB adapter; it hit 10,000 GitHub stars in 90 days.",
-        },
-        {
-          date: "June 2023",
-          title: "Series B & global expansion",
-          description:
-            "Coatue led a $47M Series B. We opened offices in Shoreditch, London and Bugis, Singapore. The team crossed 110 people. We hired our first enterprise sales reps and a dedicated security team for SOC 2 Type II prep.",
-        },
-        {
-          date: "January 2024",
-          title: "Acquisition & momentum",
-          description:
-            "We acquired StreamWeave for $8M to bolster our Change Data Capture layer. Customer count hit 2,400. We process 12 billion events daily across six AWS regions and three GCP zones.",
-        },
-        {
-          date: "October 2024",
-          title: "Vertex AI launches",
-          description:
-            "We shipped our real-time ML feature store, letting data scientists serve features with the same 50ms SLA as our analytics queries. 140 employees. Four offices. And we're just getting started.",
-        },
-      ]
+          {
+            date: 'March 2019',
+            title: 'The spark in SoMa',
+            description:
+              'Marcus Chen and Priya Nair founded Vertex in a converted warehouse on Harrison Street. The first prototype of StreamEngine was built in six weeks using Craigslist servers and $8,000 of personal savings.',
+          },
+          {
+            date: 'November 2019',
+            title: '$1.2M pre-seed',
+            description:
+              'Gradient Ventures led the round with participation from 14 angel operators including the former CTOs of MongoDB and Confluent. We hired our first three engineers — all former colleagues from Google.',
+          },
+          {
+            date: 'August 2020',
+            title: 'Seed & first revenue',
+            description:
+              'Accel led a $4.2M seed. Our first paying customer was Deliverr (now Flexport), who needed real-time inventory tracking across 40 warehouses. By December we had 10 customers and $14K MRR.',
+          },
+          {
+            date: 'April 2021',
+            title: 'Series A & scale',
+            description:
+              'Benchmark led an $18M Series A at a $72M valuation. The team grew to 45. We signed a 5-year lease on 12,000 sq ft at 555 Mission Street — then promptly outgrew half of it in nine months.',
+          },
+          {
+            date: 'February 2022',
+            title: 'StreamEngine v2 ships',
+            description:
+              'We launched our rewritten engine with sub-50ms p99 latency — a 10x improvement. 500 paying customers. Q2 2022 was our first $1M ARR quarter. We also open-sourced our VoltDB adapter; it hit 10,000 GitHub stars in 90 days.',
+          },
+          {
+            date: 'June 2023',
+            title: 'Series B & global expansion',
+            description:
+              'Coatue led a $47M Series B. We opened offices in Shoreditch, London and Bugis, Singapore. The team crossed 110 people. We hired our first enterprise sales reps and a dedicated security team for SOC 2 Type II prep.',
+          },
+          {
+            date: 'January 2024',
+            title: 'Acquisition & momentum',
+            description:
+              'We acquired StreamWeave for $8M to bolster our Change Data Capture layer. Customer count hit 2,400. We process 12 billion events daily across six AWS regions and three GCP zones.',
+          },
+          {
+            date: 'October 2024',
+            title: 'Vertex AI launches',
+            description:
+              "We shipped our real-time ML feature store, letting data scientists serve features with the same 50ms SLA as our analytics queries. 140 employees. Four offices. And we're just getting started.",
+          },
+        ]
 
-    const valuesEyebrow = props.values?.eyebrow ?? "How We Work"
+    const valuesEyebrow = props.values?.eyebrow ?? 'How We Work'
     const valuesHeading =
-      props.values?.heading ?? "Values that drive every decision"
+      props.values?.heading ?? 'Values that drive every decision'
     const valuesDesc =
       props.values?.description ??
       "These aren't posters on a wall. They're the criteria we use in interviews, product reviews, and incident post-mortems."
     const valueItems = props.values?.items?.length
       ? props.values.items
       : [
-        {
-          title: "Customer Obsession",
-          description:
-            "We start with the customer and work backwards. Every feature, pricing tier, and support interaction is judged by one question: does this make our customers more successful?",
-        },
-        {
-          title: "Reliability First",
-          description:
-            "Our customers run production systems on us. We treat every nine like a promise: 99.99% uptime isn't a goal, it's the floor. We practice chaos engineering weekly.",
-        },
-        {
-          title: "Radical Transparency",
-          description:
-            "Open dashboards for system status. Public post-mortems for every incident. Open salary bands. We believe trust is built through visibility, not secrecy.",
-        },
-        {
-          title: "Build for Builders",
-          description:
-            "We are engineers designing for engineers. No enterprise sales theater. No bloated feature lists. Just fast, well-documented, delightful tools that respect your time.",
-        },
-      ]
+          {
+            title: 'Customer Obsession',
+            description:
+              'We start with the customer and work backwards. Every feature, pricing tier, and support interaction is judged by one question: does this make our customers more successful?',
+          },
+          {
+            title: 'Reliability First',
+            description:
+              "Our customers run production systems on us. We treat every nine like a promise: 99.99% uptime isn't a goal, it's the floor. We practice chaos engineering weekly.",
+          },
+          {
+            title: 'Radical Transparency',
+            description:
+              'Open dashboards for system status. Public post-mortems for every incident. Open salary bands. We believe trust is built through visibility, not secrecy.',
+          },
+          {
+            title: 'Build for Builders',
+            description:
+              'We are engineers designing for engineers. No enterprise sales theater. No bloated feature lists. Just fast, well-documented, delightful tools that respect your time.',
+          },
+        ]
 
-    const teamEyebrow = props.team?.eyebrow ?? "The People"
-    const teamHeading =
-      props.team?.heading ?? "Meet the leadership team"
+    const teamEyebrow = props.team?.eyebrow ?? 'The People'
+    const teamHeading = props.team?.heading ?? 'Meet the leadership team'
     const teamDesc =
       props.team?.description ??
       "Engineers, operators, and designers who've built data systems at Google, Netflix, Shopify, AWS, and Stripe."
     const teamMembers = props.team?.members?.length
       ? props.team.members
       : [
-        {
-          name: "Marcus Chen",
-          role: "Co-Founder & CEO",
-          bio: "Previously Staff Engineer at Google (Spanner infrastructure). Stanford CS '14. Marcus leads company strategy, fundraising, and the annual all-hands hackathon.",
-          imageAlt:
-            "Professional headshot of an Asian man in his 30s wearing a navy blazer, smiling confidently",
-        },
-        {
-          name: "Priya Nair",
-          role: "Co-Founder & CTO",
-          bio: "Previously Principal Engineer at Netflix (Data Platform). MIT '12. Priya architected StreamEngine v2 and holds 11 patents in distributed systems.",
-          imageAlt:
-            "Professional headshot of a South Asian woman with dark hair pulled back, wearing a charcoal turtleneck, warm genuine smile",
-        },
-        {
-          name: "David Okafor",
-          role: "VP of Engineering",
-          bio: "Previously Engineering Manager at Shopify (Payments). Waterloo '10. David runs our 65-person engineering org across SF, London, and Singapore.",
-          imageAlt:
-            "Professional headshot of a Black man with a short beard and rectangular glasses, wearing a denim shirt, friendly approachable expression",
-        },
-        {
-          name: "Elena Volkov",
-          role: "Head of Design",
-          bio: "Previously Lead Product Designer at Figma (Design Systems). RISD '15. Elena built our design system, Vortex, which we open-sourced in 2023.",
-          imageAlt:
-            "Professional portrait of a blonde woman with hair swept back elegantly, wearing a black crew neck top, thoughtful confident expression",
-        },
-        {
-          name: "Sarah Kim",
-          role: "Principal Engineer",
-          bio: "Previously Senior Staff at AWS (Kinesis). CMU '13. Sarah owns our query optimizer and maintains our ANSI SQL compliance test suite.",
-          imageAlt:
-            "Professional headshot of a Korean-American woman with shoulder-length dark hair, wearing a crisp white oxford shirt, direct confident gaze",
-        },
-        {
-          name: "James Wilson",
-          role: "Head of Sales",
-          bio: "Previously Director of Commercial Sales at Datadog. UC Berkeley '11. James grew our enterprise pipeline from $0 to $28M in 18 months.",
-          imageAlt:
-            "Professional headshot of a Caucasian man in his early 40s with graying temples, wearing a light blue button-down shirt, warm approachable smile",
-        },
-        {
-          name: "Aisha Patel",
-          role: "Head of Customer Success",
-          bio: "Previously VP of Customer Success at Twilio. Harvard MBA '16. Aisha's team maintains a 97% gross retention rate and 4.9/5 support CSAT.",
-          imageAlt:
-            "Professional portrait of a South Asian woman in her early 30s with long dark wavy hair, wearing a burgundy silk blouse, warm professional smile",
-        },
-        {
-          name: "Tomáš Horák",
-          role: "Staff Engineer",
-          bio: "Previously Senior SRE at Spotify (Event Delivery). Charles University '14. Tomáš runs our incident response program and chaos engineering platform.",
-          imageAlt:
-            "Professional headshot of a Central European man with short brown hair and light stubble, wearing a black crew neck t-shirt, casual confident expression",
-        },
-        {
-          name: "Yuki Tanaka",
-          role: "Engineering Manager",
-          bio: "Previously Tech Lead at Stripe (Ledger Infrastructure). Tokyo University '15. Yuki manages our storage team and mentors junior engineers across time zones.",
-          imageAlt:
-            "Professional portrait of a Japanese man with neat black hair, wearing a gray cardigan over a white collared shirt, calm composed expression",
-        },
-      ]
+          {
+            name: 'Marcus Chen',
+            role: 'Co-Founder & CEO',
+            bio: "Previously Staff Engineer at Google (Spanner infrastructure). Stanford CS '14. Marcus leads company strategy, fundraising, and the annual all-hands hackathon.",
+            imageAlt:
+              'Professional headshot of an Asian man in his 30s wearing a navy blazer, smiling confidently',
+          },
+          {
+            name: 'Priya Nair',
+            role: 'Co-Founder & CTO',
+            bio: "Previously Principal Engineer at Netflix (Data Platform). MIT '12. Priya architected StreamEngine v2 and holds 11 patents in distributed systems.",
+            imageAlt:
+              'Professional headshot of a South Asian woman with dark hair pulled back, wearing a charcoal turtleneck, warm genuine smile',
+          },
+          {
+            name: 'David Okafor',
+            role: 'VP of Engineering',
+            bio: "Previously Engineering Manager at Shopify (Payments). Waterloo '10. David runs our 65-person engineering org across SF, London, and Singapore.",
+            imageAlt:
+              'Professional headshot of a Black man with a short beard and rectangular glasses, wearing a denim shirt, friendly approachable expression',
+          },
+          {
+            name: 'Elena Volkov',
+            role: 'Head of Design',
+            bio: "Previously Lead Product Designer at Figma (Design Systems). RISD '15. Elena built our design system, Vortex, which we open-sourced in 2023.",
+            imageAlt:
+              'Professional portrait of a blonde woman with hair swept back elegantly, wearing a black crew neck top, thoughtful confident expression',
+          },
+          {
+            name: 'Sarah Kim',
+            role: 'Principal Engineer',
+            bio: "Previously Senior Staff at AWS (Kinesis). CMU '13. Sarah owns our query optimizer and maintains our ANSI SQL compliance test suite.",
+            imageAlt:
+              'Professional headshot of a Korean-American woman with shoulder-length dark hair, wearing a crisp white oxford shirt, direct confident gaze',
+          },
+          {
+            name: 'James Wilson',
+            role: 'Head of Sales',
+            bio: "Previously Director of Commercial Sales at Datadog. UC Berkeley '11. James grew our enterprise pipeline from $0 to $28M in 18 months.",
+            imageAlt:
+              'Professional headshot of a Caucasian man in his early 40s with graying temples, wearing a light blue button-down shirt, warm approachable smile',
+          },
+          {
+            name: 'Aisha Patel',
+            role: 'Head of Customer Success',
+            bio: "Previously VP of Customer Success at Twilio. Harvard MBA '16. Aisha's team maintains a 97% gross retention rate and 4.9/5 support CSAT.",
+            imageAlt:
+              'Professional portrait of a South Asian woman in her early 30s with long dark wavy hair, wearing a burgundy silk blouse, warm professional smile',
+          },
+          {
+            name: 'Tomáš Horák',
+            role: 'Staff Engineer',
+            bio: "Previously Senior SRE at Spotify (Event Delivery). Charles University '14. Tomáš runs our incident response program and chaos engineering platform.",
+            imageAlt:
+              'Professional headshot of a Central European man with short brown hair and light stubble, wearing a black crew neck t-shirt, casual confident expression',
+          },
+          {
+            name: 'Yuki Tanaka',
+            role: 'Engineering Manager',
+            bio: "Previously Tech Lead at Stripe (Ledger Infrastructure). Tokyo University '15. Yuki manages our storage team and mentors junior engineers across time zones.",
+            imageAlt:
+              'Professional portrait of a Japanese man with neat black hair, wearing a gray cardigan over a white collared shirt, calm composed expression',
+          },
+        ]
 
-    const testimonialsEyebrow = props.testimonials?.eyebrow ?? "Testimonials"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'Testimonials'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Loved by data teams"
+      props.testimonials?.heading ?? 'Loved by data teams'
     const testimonialsDesc =
       props.testimonials?.description ??
       "We don't just measure latency and throughput. We measure trust."
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
-        {
-          name: "Jennifer Walsh",
-          role: "VP Engineering, Notion",
-          quote:
-            "We reduced our analytics pipeline from 4 hours to 47 seconds. Vertex didn't just speed us up — it changed how we think about data.",
-          imageAlt:
-            "Professional headshot of a Caucasian woman with curly auburn hair, wearing a black blazer, confident smile",
-        },
-        {
-          name: "Rahul Mehta",
-          role: "CTO, Linear",
-          quote:
-            "The support is absurdly good. We had an issue at 2am on a Sunday and had a Principal Engineer on a Zoom within 15 minutes.",
-          imageAlt:
-            "Professional headshot of a South Asian man with short dark hair and a trimmed beard, wearing a gray crew neck sweater",
-        },
-        {
-          name: "Carla Jennings",
-          role: "Director of Data, Figma",
-          quote:
-            "We evaluated five stream processors. Vertex was the only one where the p99 latency matched the marketing page. No benchmarking tricks.",
-          imageAlt:
-            "Professional headshot of a Black woman with long braids, wearing gold hoop earrings and a cream blouse, bright warm smile",
-        },
-        {
-          name: "Brian O'Connor",
-          role: "Head of Platform, Stripe",
-          quote:
-            "Moving to Vertex cut our infra costs by 60% while handling 10x the volume. That's not just ROI — that's a competitive weapon.",
-          imageAlt:
-            "Professional headshot of an Irish man in his late 30s with light stubble, wearing a dark green henley shirt, relaxed confident expression",
-        },
-      ]
+          {
+            name: 'Jennifer Walsh',
+            role: 'VP Engineering, Notion',
+            quote:
+              "We reduced our analytics pipeline from 4 hours to 47 seconds. Vertex didn't just speed us up — it changed how we think about data.",
+            imageAlt:
+              'Professional headshot of a Caucasian woman with curly auburn hair, wearing a black blazer, confident smile',
+          },
+          {
+            name: 'Rahul Mehta',
+            role: 'CTO, Linear',
+            quote:
+              'The support is absurdly good. We had an issue at 2am on a Sunday and had a Principal Engineer on a Zoom within 15 minutes.',
+            imageAlt:
+              'Professional headshot of a South Asian man with short dark hair and a trimmed beard, wearing a gray crew neck sweater',
+          },
+          {
+            name: 'Carla Jennings',
+            role: 'Director of Data, Figma',
+            quote:
+              'We evaluated five stream processors. Vertex was the only one where the p99 latency matched the marketing page. No benchmarking tricks.',
+            imageAlt:
+              'Professional headshot of a Black woman with long braids, wearing gold hoop earrings and a cream blouse, bright warm smile',
+          },
+          {
+            name: "Brian O'Connor",
+            role: 'Head of Platform, Stripe',
+            quote:
+              "Moving to Vertex cut our infra costs by 60% while handling 10x the volume. That's not just ROI — that's a competitive weapon.",
+            imageAlt:
+              'Professional headshot of an Irish man in his late 30s with light stubble, wearing a dark green henley shirt, relaxed confident expression',
+          },
+        ]
 
-    const galleryEyebrow = props.gallery?.eyebrow ?? "Life at Vertex"
-    const galleryHeading =
-      props.gallery?.heading ?? "Where the magic happens"
+    const galleryEyebrow = props.gallery?.eyebrow ?? 'Life at Vertex'
+    const galleryHeading = props.gallery?.heading ?? 'Where the magic happens'
     const galleryDesc =
       props.gallery?.description ??
-      "Four offices, one culture. We invest heavily in spaces that make deep work and creative collisions equally effortless."
+      'Four offices, one culture. We invest heavily in spaces that make deep work and creative collisions equally effortless.'
     const galleryPhotos = props.gallery?.photos?.length
       ? props.gallery.photos
       : [
-        {
-          alt: "Wide-angle interior shot of a bright modern tech office with floor-to-ceiling windows, exposed brick walls, and long communal desks",
-        },
-        {
-          alt: "Team of software engineers collaborating around a large monitor displaying code, inside a glass-walled meeting room",
-        },
-        {
-          alt: "Three diverse colleagues laughing together during a daily stand-up meeting in a colorful lounge with mid-century modern furniture",
-        },
-        {
-          alt: "Close-up of a developers hands typing on a MacBook Pro with multiple external monitors showing real-time data dashboards",
-        },
-        {
-          alt: "Group photo of twenty employees cheering at a rooftop company event at golden hour with the San Francisco skyline behind them",
-        },
-        {
-          alt: "Bright modern office kitchen with fresh fruit bowls, professional espresso machine, and a neon wall sign reading Good Vibes Only",
-        },
-      ]
+          {
+            alt: 'Wide-angle interior shot of a bright modern tech office with floor-to-ceiling windows, exposed brick walls, and long communal desks',
+          },
+          {
+            alt: 'Team of software engineers collaborating around a large monitor displaying code, inside a glass-walled meeting room',
+          },
+          {
+            alt: 'Three diverse colleagues laughing together during a daily stand-up meeting in a colorful lounge with mid-century modern furniture',
+          },
+          {
+            alt: 'Close-up of a developers hands typing on a MacBook Pro with multiple external monitors showing real-time data dashboards',
+          },
+          {
+            alt: 'Group photo of twenty employees cheering at a rooftop company event at golden hour with the San Francisco skyline behind them',
+          },
+          {
+            alt: 'Bright modern office kitchen with fresh fruit bowls, professional espresso machine, and a neon wall sign reading Good Vibes Only',
+          },
+        ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to ship faster?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to ship faster?'
     const ctaSub =
       props.cta?.subheading ??
-      "Join 2,400+ companies processing billions of events with sub-50ms latency. Start free, scale infinitely, pay only for what you use."
-    const ctaPrimary = props.cta?.primaryCta ?? "Start Free Trial"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Talk to Sales"
+      'Join 2,400+ companies processing billions of events with sub-50ms latency. Start free, scale infinitely, pay only for what you use.'
+    const ctaPrimary = props.cta?.primaryCta ?? 'Start Free Trial'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'Talk to Sales'
     const ctaDisclaimer =
       props.cta?.disclaimer ??
-      "No credit card required. 14-day free trial with $500 in credits. Cancel anytime."
+      'No credit card required. 14-day free trial with $500 in credits. Cancel anytime.'
 
     const footerTagline =
       props.footer?.tagline ??
-      "Real-time data infrastructure for engineering teams that refuse to compromise on speed, reliability, or cost."
+      'Real-time data infrastructure for engineering teams that refuse to compromise on speed, reliability, or cost.'
     const footerCopyright =
       props.footer?.copyright ?? ` 2024 ${brand}, Inc. All rights reserved.`
     const footerAddress =
-      props.footer?.address ?? "555 Mission Street, San Francisco, CA 94105"
-    const footerEmail = props.footer?.email ?? "hello@vertexdata.io"
+      props.footer?.address ?? '555 Mission Street, San Francisco, CA 94105'
+    const footerEmail = props.footer?.email ?? 'hello@vertexdata.io'
     const footerProductLinks = props.footer?.productLinks?.length
       ? props.footer.productLinks
-      : ["StreamEngine", "Vertex AI", "Change Data Capture", "Pricing", "Changelog"]
+      : [
+          'StreamEngine',
+          'Vertex AI',
+          'Change Data Capture',
+          'Pricing',
+          'Changelog',
+        ]
     const footerCompanyLinks = props.footer?.companyLinks?.length
       ? props.footer.companyLinks
-      : ["About", "Blog", "Careers", "Press Kit", "Contact"]
+      : ['About', 'Blog', 'Careers', 'Press Kit', 'Contact']
     const footerLegalLinks = props.footer?.legalLinks?.length
       ? props.footer.legalLinks
-      : ["Privacy Policy", "Terms of Service", "Security", "SOC 2", "GDPR"]
+      : ['Privacy Policy', 'Terms of Service', 'Security', 'SOC 2', 'GDPR']
 
     return (
       <div
         className={cn(
-          "flex min-h-svh flex-col bg-background text-foreground antialiased",
+          'flex min-h-svh flex-col bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -835,7 +824,7 @@ export const AboutKimiPage2 = defineCapsule({
                             {authDisplayName}
                           </p>
                           <p className="truncate text-xs text-muted-foreground">
-                            {authEmail ?? "Signed in to this session"}
+                            {authEmail ?? 'Signed in to this session'}
                           </p>
                         </div>
                       </div>
@@ -843,7 +832,7 @@ export const AboutKimiPage2 = defineCapsule({
                     <div className="p-2">
                       <button
                         type="button"
-                        onClick={() => go("Account")}
+                        onClick={() => go('Account')}
                         className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         Account
@@ -851,7 +840,7 @@ export const AboutKimiPage2 = defineCapsule({
                       </button>
                       <button
                         type="button"
-                        onClick={() => go("Bookmarks")}
+                        onClick={() => go('Bookmarks')}
                         className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         Bookmarks
@@ -914,7 +903,7 @@ export const AboutKimiPage2 = defineCapsule({
                   ))}
                   <button
                     type="button"
-                    onClick={() => go("Start Free Trial")}
+                    onClick={() => go('Start Free Trial')}
                     className="mt-2 rounded-full bg-primary px-5 py-2.5 text-center text-sm font-semibold text-primary-foreground"
                   >
                     Start Free Trial
@@ -927,8 +916,14 @@ export const AboutKimiPage2 = defineCapsule({
 
         <main>
           {/* Hero */}
-          <section className="relative overflow-hidden border-b border-border/60" aria-label="Hero">
-            <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+          <section
+            className="relative overflow-hidden border-b border-border/60"
+            aria-label="Hero"
+          >
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0"
+            >
               <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(to_right,currentColor_1px,transparent_1px),linear-gradient(to_bottom,currentColor_1px,transparent_1px)] [background-size:32px_32px]" />
               <div className="absolute inset-0 bg-gradient-to-b from-primary/20 via-transparent to-transparent" />
             </div>
@@ -939,7 +934,7 @@ export const AboutKimiPage2 = defineCapsule({
                   {heroEyebrow}
                 </span>
                 <h1 className="text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl lg:text-7xl">
-                  {heroHeading}{" "}
+                  {heroHeading}{' '}
                   <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                     {heroHighlight}
                   </span>
@@ -968,7 +963,10 @@ export const AboutKimiPage2 = defineCapsule({
           </section>
 
           {/* Logos */}
-          <section className="border-b border-border/60 py-14" aria-label="Trusted by">
+          <section
+            className="border-b border-border/60 py-14"
+            aria-label="Trusted by"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <p className="mb-10 text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 {logosTitle}
@@ -995,7 +993,10 @@ export const AboutKimiPage2 = defineCapsule({
           </section>
 
           {/* Mission */}
-          <section id="mission" className="relative overflow-hidden py-24 sm:py-32 lg:py-40">
+          <section
+            id="mission"
+            className="relative overflow-hidden py-24 sm:py-32 lg:py-40"
+          >
             <div
               aria-hidden="true"
               className="pointer-events-none absolute right-0 top-1/2 h-[600px] w-[600px] -translate-y-1/2 translate-x-1/3 rounded-full bg-primary/10 blur-3xl"
@@ -1013,19 +1014,25 @@ export const AboutKimiPage2 = defineCapsule({
                     <p
                       key={i}
                       className={cn(
-                        "mt-6 text-lg leading-relaxed text-muted-foreground",
-                        i > 0 && "mt-4",
+                        'mt-6 text-lg leading-relaxed text-muted-foreground',
+                        i > 0 && 'mt-4',
                       )}
                     >
-                      <strong className="text-foreground">{para.split(" ").slice(0, 3).join(" ")}</strong>{" "}
-                      {para.split(" ").slice(3).join(" ")}
+                      <strong className="text-foreground">
+                        {para.split(' ').slice(0, 3).join(' ')}
+                      </strong>{' '}
+                      {para.split(' ').slice(3).join(' ')}
                     </p>
                   ))}
                   <div className="mt-10 flex gap-8 border-t border-border/60 pt-10">
                     {missionStats.map((s) => (
                       <div key={s.label}>
-                        <p className="text-3xl font-bold text-foreground">{s.value}</p>
-                        <p className="mt-1 text-sm text-muted-foreground">{s.label}</p>
+                        <p className="text-3xl font-bold text-foreground">
+                          {s.value}
+                        </p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {s.label}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -1061,7 +1068,10 @@ export const AboutKimiPage2 = defineCapsule({
           </section>
 
           {/* Stats band */}
-          <section className="border-y border-border/60 bg-muted/30 py-16 sm:py-20" aria-label="Company statistics">
+          <section
+            className="border-y border-border/60 bg-muted/30 py-16 sm:py-20"
+            aria-label="Company statistics"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="grid grid-cols-2 gap-x-8 gap-y-12 text-center md:grid-cols-3 lg:grid-cols-6">
                 {statItems.map((s) => (
@@ -1088,7 +1098,9 @@ export const AboutKimiPage2 = defineCapsule({
                 <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
                   {storyHeading}
                 </h2>
-                <p className="mt-6 text-lg text-muted-foreground">{storyDesc}</p>
+                <p className="mt-6 text-lg text-muted-foreground">
+                  {storyDesc}
+                </p>
               </div>
 
               <div className="relative mx-auto mt-20 max-w-5xl">
@@ -1104,8 +1116,10 @@ export const AboutKimiPage2 = defineCapsule({
                     >
                       <div
                         className={cn(
-                          "order-2 pl-16",
-                          isEven ? "lg:order-1 lg:pl-0 lg:pr-12 lg:text-right" : "lg:order-3 lg:pl-12 lg:text-left",
+                          'order-2 pl-16',
+                          isEven
+                            ? 'lg:order-1 lg:pl-0 lg:pr-12 lg:text-right'
+                            : 'lg:order-3 lg:pl-12 lg:text-left',
                         )}
                       >
                         <span className="inline-block rounded bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
@@ -1119,7 +1133,12 @@ export const AboutKimiPage2 = defineCapsule({
                         </p>
                       </div>
                       <div className="absolute left-8 top-1 flex h-4 w-4 -translate-x-1/2 items-center justify-center rounded-full border-4 border-background bg-primary lg:left-1/2 lg:top-1.5" />
-                      <div className={cn("hidden lg:block", isEven ? "order-3" : "order-1")} />
+                      <div
+                        className={cn(
+                          'hidden lg:block',
+                          isEven ? 'order-3' : 'order-1',
+                        )}
+                      />
                     </div>
                   )
                 })}
@@ -1128,7 +1147,10 @@ export const AboutKimiPage2 = defineCapsule({
           </section>
 
           {/* Values */}
-          <section id="values" className="border-t border-border/60 bg-muted/20 py-24 sm:py-32 lg:py-40">
+          <section
+            id="values"
+            className="border-t border-border/60 bg-muted/20 py-24 sm:py-32 lg:py-40"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="mx-auto max-w-3xl text-center">
                 <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">
@@ -1137,7 +1159,9 @@ export const AboutKimiPage2 = defineCapsule({
                 <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
                   {valuesHeading}
                 </h2>
-                <p className="mt-6 text-lg text-muted-foreground">{valuesDesc}</p>
+                <p className="mt-6 text-lg text-muted-foreground">
+                  {valuesDesc}
+                </p>
               </div>
 
               <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -1148,28 +1172,74 @@ export const AboutKimiPage2 = defineCapsule({
                   >
                     <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
                       {i === 0 && (
-                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                        <svg
+                          className="h-6 w-6"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                          />
                         </svg>
                       )}
                       {i === 1 && (
-                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <svg
+                          className="h-6 w-6"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
                         </svg>
                       )}
                       {i === 2 && (
-                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <svg
+                          className="h-6 w-6"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
                         </svg>
                       )}
                       {i === 3 && (
-                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
+                        <svg
+                          className="h-6 w-6"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"
+                          />
                         </svg>
                       )}
                     </div>
-                    <h3 className="text-lg font-bold text-foreground">{item.title}</h3>
+                    <h3 className="text-lg font-bold text-foreground">
+                      {item.title}
+                    </h3>
                     <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                       {item.description}
                     </p>
@@ -1208,8 +1278,12 @@ export const AboutKimiPage2 = defineCapsule({
                       />
                     </div>
                     <div className="mt-5">
-                      <h3 className="text-lg font-bold text-foreground">{member.name}</h3>
-                      <p className="text-sm font-medium text-primary">{member.role}</p>
+                      <h3 className="text-lg font-bold text-foreground">
+                        {member.name}
+                      </h3>
+                      <p className="text-sm font-medium text-primary">
+                        {member.role}
+                      </p>
                       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                         {member.bio}
                       </p>
@@ -1221,7 +1295,10 @@ export const AboutKimiPage2 = defineCapsule({
           </section>
 
           {/* Testimonials */}
-          <section className="border-y border-border/60 bg-muted/20 py-24 sm:py-32 lg:py-40" aria-label="Customer testimonials">
+          <section
+            className="border-y border-border/60 bg-muted/20 py-24 sm:py-32 lg:py-40"
+            aria-label="Customer testimonials"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="mx-auto max-w-3xl text-center">
                 <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">
@@ -1230,7 +1307,9 @@ export const AboutKimiPage2 = defineCapsule({
                 <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
                   {testimonialsHeading}
                 </h2>
-                <p className="mt-6 text-lg text-muted-foreground">{testimonialsDesc}</p>
+                <p className="mt-6 text-lg text-muted-foreground">
+                  {testimonialsDesc}
+                </p>
               </div>
 
               <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
@@ -1248,8 +1327,12 @@ export const AboutKimiPage2 = defineCapsule({
                         className="h-10 w-10 rounded-full object-cover"
                       />
                       <div>
-                        <p className="text-sm font-bold text-foreground">{item.name}</p>
-                        <p className="text-xs text-muted-foreground">{item.role}</p>
+                        <p className="text-sm font-bold text-foreground">
+                          {item.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {item.role}
+                        </p>
                       </div>
                     </div>
                     <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
@@ -1271,7 +1354,9 @@ export const AboutKimiPage2 = defineCapsule({
                 <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
                   {galleryHeading}
                 </h2>
-                <p className="mt-6 text-lg text-muted-foreground">{galleryDesc}</p>
+                <p className="mt-6 text-lg text-muted-foreground">
+                  {galleryDesc}
+                </p>
               </div>
 
               <div className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -1279,9 +1364,9 @@ export const AboutKimiPage2 = defineCapsule({
                   <div
                     key={i}
                     className={cn(
-                      "overflow-hidden rounded-2xl border border-border/60 bg-card",
-                      i === 0 && "sm:col-span-2 lg:col-span-2",
-                      i === 5 && "sm:col-span-2 lg:col-span-1",
+                      'overflow-hidden rounded-2xl border border-border/60 bg-card',
+                      i === 0 && 'sm:col-span-2 lg:col-span-2',
+                      i === 5 && 'sm:col-span-2 lg:col-span-1',
                     )}
                   >
                     <Image
@@ -1299,7 +1384,10 @@ export const AboutKimiPage2 = defineCapsule({
 
           {/* CTA */}
           <section className="relative overflow-hidden border-t border-border/60 bg-primary/10 py-24 sm:py-32 lg:py-40">
-            <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0"
+            >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/40 via-background/80 to-background" />
               <div className="absolute -top-24 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
             </div>
@@ -1326,13 +1414,18 @@ export const AboutKimiPage2 = defineCapsule({
                   {ctaSecondary}
                 </button>
               </div>
-              <p className="mt-6 text-sm text-muted-foreground/80">{ctaDisclaimer}</p>
+              <p className="mt-6 text-sm text-muted-foreground/80">
+                {ctaDisclaimer}
+              </p>
             </div>
           </section>
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-border/60 bg-card py-16" role="contentinfo">
+        <footer
+          className="border-t border-border/60 bg-card py-16"
+          role="contentinfo"
+        >
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid gap-12 lg:grid-cols-5">
               <div className="lg:col-span-2">
@@ -1351,7 +1444,7 @@ export const AboutKimiPage2 = defineCapsule({
                 <div className="mt-6 flex gap-4">
                   <button
                     type="button"
-                    onClick={() => go("Twitter")}
+                    onClick={() => go('Twitter')}
                     aria-label="Twitter"
                     className="text-muted-foreground transition-colors hover:text-foreground"
                   >
@@ -1359,7 +1452,7 @@ export const AboutKimiPage2 = defineCapsule({
                   </button>
                   <button
                     type="button"
-                    onClick={() => go("GitHub")}
+                    onClick={() => go('GitHub')}
                     aria-label="GitHub"
                     className="text-muted-foreground transition-colors hover:text-foreground"
                   >
@@ -1367,7 +1460,7 @@ export const AboutKimiPage2 = defineCapsule({
                   </button>
                   <button
                     type="button"
-                    onClick={() => go("LinkedIn")}
+                    onClick={() => go('LinkedIn')}
                     aria-label="LinkedIn"
                     className="text-muted-foreground transition-colors hover:text-foreground"
                   >
@@ -1435,7 +1528,9 @@ export const AboutKimiPage2 = defineCapsule({
             </div>
 
             <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-8 sm:flex-row">
-              <p className="text-sm text-muted-foreground/80">{footerCopyright}</p>
+              <p className="text-sm text-muted-foreground/80">
+                {footerCopyright}
+              </p>
               <div className="flex gap-6 text-sm text-muted-foreground/80">
                 <span>{footerAddress}</span>
                 <span>&middot;</span>

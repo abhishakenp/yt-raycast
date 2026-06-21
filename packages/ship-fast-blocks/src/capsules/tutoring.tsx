@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   CommandDialog,
   CommandEmpty,
@@ -56,9 +56,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
  * content data; rich defaults make it render great with no props at all.
  */
 export const TutoringKimiPage = defineCapsule({
-  name: "TutoringKimiPage",
+  name: 'TutoringKimiPage',
   description:
-    "Complete online-tutoring / education-marketplace LANDING page with a clean, bright, trust-forward aesthetic: light canvas, near-black brand + CTA color, soft muted section bands, rounded cards and tinted subject-icon tiles. Includes a 2-column hero (live sessions-booked pill, big headline, dual CTAs, trust checks, student-and-tutor photo with a floating featured-tutor card), a trusted-by school/university logos row, a dark KPI stats band (students helped, expert tutors, grade improvement, average rating), a 6-up subjects grid (Mathematics, Science, Languages, English, Test Prep, Computer Science) with per-subject tutor counts, a 3-up star-rated parent/student testimonials grid, a 4-up vetted-tutor roster with headshots, ratings and subject tags, a 3-step how-it-works band, a 3-tier pricing table with a highlighted Most Popular plan, an 8-tile learning-in-action gallery, an accordion FAQ, and a dark booking CTA with a real multi-field find-my-tutor form (student name, parent email, subject + grade-level selects, preferred-day chips, goals). Use as the ROOT/home page for tutoring services, online learning platforms, test-prep companies, tutor marketplaces, academic coaching, language schools, or edtech startups when a friendly, credible, conversion-focused page with subjects, tutor profiles, pricing and a booking form is wanted. Supply content only — brand, nav, hero, stats, subjects, testimonials, tutors, steps, pricing, gallery, faq, booking, footer; the block owns all layout and styling.",
+    'Complete online-tutoring / education-marketplace LANDING page with a clean, bright, trust-forward aesthetic: light canvas, near-black brand + CTA color, soft muted section bands, rounded cards and tinted subject-icon tiles. Includes a 2-column hero (live sessions-booked pill, big headline, dual CTAs, trust checks, student-and-tutor photo with a floating featured-tutor card), a trusted-by school/university logos row, a dark KPI stats band (students helped, expert tutors, grade improvement, average rating), a 6-up subjects grid (Mathematics, Science, Languages, English, Test Prep, Computer Science) with per-subject tutor counts, a 3-up star-rated parent/student testimonials grid, a 4-up vetted-tutor roster with headshots, ratings and subject tags, a 3-step how-it-works band, a 3-tier pricing table with a highlighted Most Popular plan, an 8-tile learning-in-action gallery, an accordion FAQ, and a dark booking CTA with a real multi-field find-my-tutor form (student name, parent email, subject + grade-level selects, preferred-day chips, goals). Use as the ROOT/home page for tutoring services, online learning platforms, test-prep companies, tutor marketplaces, academic coaching, language schools, or edtech startups when a friendly, credible, conversion-focused page with subjects, tutor profiles, pricing and a booking form is wanted. Supply content only — brand, nav, hero, stats, subjects, testimonials, tutors, steps, pricing, gallery, faq, booking, footer; the block owns all layout and styling.',
   props: z.object({
     /** Brand / company name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -262,15 +262,18 @@ export const TutoringKimiPage = defineCapsule({
         new Set(db.favorites.all().map((favorite) => favorite.tutorName)),
     },
     mutations: {
-      addBooking: ({ db }, booking: {
-        studentName: string
-        parentEmail: string
-        subject: string
-        grade: string
-        days: string
-        goals: string
-        tutorId: string
-      }) => {
+      addBooking: (
+        { db },
+        booking: {
+          studentName: string
+          parentEmail: string
+          subject: string
+          grade: string
+          days: string
+          goals: string
+          tutorId: string
+        },
+      ) => {
         db.bookings.insert(booking)
         return db.bookings.all()
       },
@@ -304,94 +307,101 @@ export const TutoringKimiPage = defineCapsule({
     const [mobileOpen, setMobileOpen] = useState(false)
     const [searchOpen, setSearchOpen] = useState(false)
     const [bookingsOpen, setBookingsOpen] = useState(false)
-    const brand = props.brand ?? "MentorMatch"
+    const brand = props.brand ?? 'MentorMatch'
     const nav = props.nav?.length
       ? props.nav
-      : ["Subjects", "Tutors", "How It Works", "Pricing", "FAQ"]
+      : ['Subjects', 'Tutors', 'How It Works', 'Pricing', 'FAQ']
 
-    const heroBadge = props.hero?.badge ?? "2,847 sessions booked this week"
-    const heroPre = props.hero?.headingPre ?? "Master any subject with"
-    const heroHighlight = props.hero?.highlight ?? "expert tutors"
+    const heroBadge = props.hero?.badge ?? '2,847 sessions booked this week'
+    const heroPre = props.hero?.headingPre ?? 'Master any subject with'
+    const heroHighlight = props.hero?.highlight ?? 'expert tutors'
     const heroSub =
       props.hero?.subheading ??
-      "Connect with vetted educators for personalized one-on-one learning. From algebra to advanced physics, our tutors help students build confidence and achieve academic excellence."
-    const heroPrimary = props.hero?.primaryCta ?? "Book Your First Session"
-    const heroSecondary = props.hero?.secondaryCta ?? "Meet Our Tutors"
+      'Connect with vetted educators for personalized one-on-one learning. From algebra to advanced physics, our tutors help students build confidence and achieve academic excellence.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Book Your First Session'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Meet Our Tutors'
     const heroTrust = props.hero?.trust?.length
       ? props.hero.trust
-      : ["Vetted experts only", "Satisfaction guaranteed"]
+      : ['Vetted experts only', 'Satisfaction guaranteed']
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Young student and tutor working together at a desk with notebooks and laptop"
-    const featuredName = props.hero?.featuredName ?? "Sarah Chen"
-    const featuredMeta = props.hero?.featuredMeta ?? "Mathematics PhD • 4.9★"
+      'Young student and tutor working together at a desk with notebooks and laptop'
+    const featuredName = props.hero?.featuredName ?? 'Sarah Chen'
+    const featuredMeta = props.hero?.featuredMeta ?? 'Mathematics PhD • 4.9★'
     const featuredAvatarAlt =
       props.hero?.featuredAvatarAlt ??
-      "Professional headshot of a smiling female tutor with shoulder-length brown hair"
+      'Professional headshot of a smiling female tutor with shoulder-length brown hair'
 
     const logosCaption =
       props.logos?.caption ??
-      "Trusted by students and parents from leading schools and universities"
+      'Trusted by students and parents from leading schools and universities'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
-      : ["Stanford", "MIT", "UC Berkeley", "Phillips Exeter", "Andover", "Stuyvesant"]
+      : [
+          'Stanford',
+          'MIT',
+          'UC Berkeley',
+          'Phillips Exeter',
+          'Andover',
+          'Stuyvesant',
+        ]
 
     const statItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "12,500+", label: "Students Helped" },
-          { value: "850+", label: "Expert Tutors" },
-          { value: "94%", label: "Grade Improvement" },
-          { value: "4.8★", label: "Average Rating" },
+          { value: '12,500+', label: 'Students Helped' },
+          { value: '850+', label: 'Expert Tutors' },
+          { value: '94%', label: 'Grade Improvement' },
+          { value: '4.8★', label: 'Average Rating' },
         ]
 
-    const subjectsHeading = props.subjects?.heading ?? "Subjects we cover"
+    const subjectsHeading = props.subjects?.heading ?? 'Subjects we cover'
     const subjectsDesc =
       props.subjects?.description ??
-      "From elementary basics to college-level courses, find expert help across every academic discipline."
+      'From elementary basics to college-level courses, find expert help across every academic discipline.'
     const subjectItems = props.subjects?.items?.length
       ? props.subjects.items
       : [
           {
-            title: "Mathematics",
+            title: 'Mathematics',
             description:
-              "Algebra, geometry, calculus, statistics, and test prep for SAT/ACT math sections.",
-            count: "187 tutors available",
+              'Algebra, geometry, calculus, statistics, and test prep for SAT/ACT math sections.',
+            count: '187 tutors available',
           },
           {
-            title: "Science",
+            title: 'Science',
             description:
-              "Biology, chemistry, physics, environmental science, and AP/IB exam preparation.",
-            count: "142 tutors available",
+              'Biology, chemistry, physics, environmental science, and AP/IB exam preparation.',
+            count: '142 tutors available',
           },
           {
-            title: "Languages",
+            title: 'Languages',
             description:
-              "Spanish, French, Mandarin, Latin, German, English as a Second Language (ESL).",
-            count: "96 tutors available",
+              'Spanish, French, Mandarin, Latin, German, English as a Second Language (ESL).',
+            count: '96 tutors available',
           },
           {
-            title: "English & Literature",
+            title: 'English & Literature',
             description:
-              "Essay writing, reading comprehension, grammar, Shakespeare, and creative writing.",
-            count: "124 tutors available",
+              'Essay writing, reading comprehension, grammar, Shakespeare, and creative writing.',
+            count: '124 tutors available',
           },
           {
-            title: "Test Preparation",
+            title: 'Test Preparation',
             description:
-              "SAT, ACT, GRE, GMAT, LSAT, MCAT, AP exams, and IB assessments.",
-            count: "89 tutors available",
+              'SAT, ACT, GRE, GMAT, LSAT, MCAT, AP exams, and IB assessments.',
+            count: '89 tutors available',
           },
           {
-            title: "Computer Science",
+            title: 'Computer Science',
             description:
-              "Python, JavaScript, Java, algorithms, data structures, and web development.",
-            count: "76 tutors available",
+              'Python, JavaScript, Java, algorithms, data structures, and web development.',
+            count: '76 tutors available',
           },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What families are saying"
+      props.testimonials?.heading ?? 'What families are saying'
     const testimonialsDesc =
       props.testimonials?.description ??
       "Real stories from students and parents who've seen real results."
@@ -401,75 +411,76 @@ export const TutoringKimiPage = defineCapsule({
           {
             quote:
               "My daughter's SAT math score improved by 140 points after working with David for 3 months. The personalized attention made all the difference.",
-            name: "Jennifer Walsh",
-            role: "Parent of 11th grader, Boston",
+            name: 'Jennifer Walsh',
+            role: 'Parent of 11th grader, Boston',
             avatarAlt:
-              "Professional headshot of Jennifer Walsh, a mother with blonde hair and a warm smile",
+              'Professional headshot of Jennifer Walsh, a mother with blonde hair and a warm smile',
           },
           {
             quote:
-              "I went from struggling in AP Physics to getting a 5 on the exam. Marcus explained complex concepts in ways that actually made sense to me.",
-            name: "James Park",
-            role: "12th grade student, San Francisco",
+              'I went from struggling in AP Physics to getting a 5 on the exam. Marcus explained complex concepts in ways that actually made sense to me.',
+            name: 'James Park',
+            role: '12th grade student, San Francisco',
             avatarAlt:
-              "Professional headshot of James Park, a high school student with dark hair and glasses",
+              'Professional headshot of James Park, a high school student with dark hair and glasses',
           },
           {
             quote:
-              "As a working adult learning Spanish for a promotion, I needed flexible scheduling. The evening sessions fit my life perfectly. ¡Estoy listo!",
-            name: "Michael Torres",
-            role: "Adult learner, Chicago",
+              'As a working adult learning Spanish for a promotion, I needed flexible scheduling. The evening sessions fit my life perfectly. ¡Estoy listo!',
+            name: 'Michael Torres',
+            role: 'Adult learner, Chicago',
             avatarAlt:
-              "Professional headshot of Michael Torres, a professional man in his 30s with short black hair",
+              'Professional headshot of Michael Torres, a professional man in his 30s with short black hair',
           },
         ]
 
-    const tutorsHeading = props.tutors?.heading ?? "Meet our top tutors"
+    const tutorsHeading = props.tutors?.heading ?? 'Meet our top tutors'
     const tutorsDesc =
       props.tutors?.description ??
-      "Every tutor is rigorously vetted, background-checked, and trained to deliver results."
-    const tutorsViewAll = props.tutors?.viewAll ?? "View All 850+ Tutors"
+      'Every tutor is rigorously vetted, background-checked, and trained to deliver results.'
+    const tutorsViewAll = props.tutors?.viewAll ?? 'View All 850+ Tutors'
     const tutorItems = props.tutors?.items?.length
       ? props.tutors.items
       : [
           {
-            name: "Dr. Sarah Chen",
-            title: "Mathematics PhD, MIT",
-            rating: "4.9",
-            sessions: "847 sessions",
-            tags: ["Calculus", "SAT Math"],
+            name: 'Dr. Sarah Chen',
+            title: 'Mathematics PhD, MIT',
+            rating: '4.9',
+            sessions: '847 sessions',
+            tags: ['Calculus', 'SAT Math'],
             avatarAlt:
-              "Professional headshot of Dr. Sarah Chen, an Asian woman with shoulder-length dark hair wearing glasses and a navy blazer",
+              'Professional headshot of Dr. Sarah Chen, an Asian woman with shoulder-length dark hair wearing glasses and a navy blazer',
           },
           {
-            name: "David Martinez",
-            title: "Former AP Physics Teacher",
-            rating: "5.0",
-            sessions: "1,203 sessions",
-            tags: ["Physics", "Engineering"],
+            name: 'David Martinez',
+            title: 'Former AP Physics Teacher',
+            rating: '5.0',
+            sessions: '1,203 sessions',
+            tags: ['Physics', 'Engineering'],
             avatarAlt:
-              "Professional headshot of David Martinez, a Latino man with short dark hair and a friendly smile wearing a light blue shirt",
+              'Professional headshot of David Martinez, a Latino man with short dark hair and a friendly smile wearing a light blue shirt',
           },
           {
-            name: "Emily Watson",
-            title: "English Literature MA, Oxford",
-            rating: "4.8",
-            sessions: "634 sessions",
-            tags: ["Essay Writing", "SAT English"],
+            name: 'Emily Watson',
+            title: 'English Literature MA, Oxford',
+            rating: '4.8',
+            sessions: '634 sessions',
+            tags: ['Essay Writing', 'SAT English'],
             avatarAlt:
-              "Professional headshot of Emily Watson, a young woman with curly red hair and green eyes wearing a cream sweater",
+              'Professional headshot of Emily Watson, a young woman with curly red hair and green eyes wearing a cream sweater',
           },
           {
-            name: "Marcus Johnson",
-            title: "Computer Science BS, Stanford",
-            rating: "4.9",
-            sessions: "521 sessions",
-            tags: ["Python", "JavaScript"],
+            name: 'Marcus Johnson',
+            title: 'Computer Science BS, Stanford',
+            rating: '4.9',
+            sessions: '521 sessions',
+            tags: ['Python', 'JavaScript'],
             avatarAlt:
-              "Professional headshot of Marcus Johnson, an African American man with a neat beard and warm smile wearing a charcoal suit",
+              'Professional headshot of Marcus Johnson, an African American man with a neat beard and warm smile wearing a charcoal suit',
           },
         ]
     const normalizedTutorItems = tutorItems.map((tutor) => ({
+      id: '',
       name: tutor.name,
       title: tutor.title,
       rating: tutor.rating,
@@ -517,111 +528,112 @@ export const TutoringKimiPage = defineCapsule({
     const safeBookingLines = bookingLines ?? []
     const bookingCount = safeBookingLines.length
 
-    const stepsHeading = props.steps?.heading ?? "How it works"
+    const stepsHeading = props.steps?.heading ?? 'How it works'
     const stepsDesc =
       props.steps?.description ??
-      "Get matched with the perfect tutor and start learning in three simple steps."
+      'Get matched with the perfect tutor and start learning in three simple steps.'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Tell us your needs",
+            title: 'Tell us your needs',
             description:
               "Share your subject, grade level, goals, and preferred schedule. We'll understand exactly what you're looking for.",
           },
           {
-            title: "Get matched instantly",
+            title: 'Get matched instantly',
             description:
-              "Our algorithm finds the perfect tutor based on expertise, teaching style, and your unique learning preferences.",
+              'Our algorithm finds the perfect tutor based on expertise, teaching style, and your unique learning preferences.',
           },
           {
-            title: "Start learning",
+            title: 'Start learning',
             description:
-              "Meet in our virtual classroom with video, whiteboard, and screen sharing. All sessions are recorded for review.",
+              'Meet in our virtual classroom with video, whiteboard, and screen sharing. All sessions are recorded for review.',
           },
         ]
 
-    const pricingHeading = props.pricing?.heading ?? "Simple, transparent pricing"
+    const pricingHeading =
+      props.pricing?.heading ?? 'Simple, transparent pricing'
     const pricingDesc =
       props.pricing?.description ??
-      "No hidden fees. Pay per session or save with a monthly plan."
+      'No hidden fees. Pay per session or save with a monthly plan.'
     const pricingPlans = props.pricing?.plans?.length
       ? props.pricing.plans
       : [
           {
-            name: "Single Session",
-            tagline: "Perfect for occasional help",
-            price: "$65",
-            period: "/session",
+            name: 'Single Session',
+            tagline: 'Perfect for occasional help',
+            price: '$65',
+            period: '/session',
             features: [
-              "60-minute session",
-              "Any subject",
-              "Session recording",
-              "Cancel anytime",
+              '60-minute session',
+              'Any subject',
+              'Session recording',
+              'Cancel anytime',
             ],
-            cta: "Get Started",
+            cta: 'Get Started',
             featured: false,
           },
           {
-            name: "Monthly Plan",
-            tagline: "4 sessions per month",
-            price: "$220",
-            period: "/month",
+            name: 'Monthly Plan',
+            tagline: '4 sessions per month',
+            price: '$220',
+            period: '/month',
             features: [
-              "4 sessions (save 15%)",
-              "Dedicated tutor",
-              "Progress tracking",
-              "Priority scheduling",
-              "24/7 chat support",
+              '4 sessions (save 15%)',
+              'Dedicated tutor',
+              'Progress tracking',
+              'Priority scheduling',
+              '24/7 chat support',
             ],
-            cta: "Choose Monthly",
+            cta: 'Choose Monthly',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Intensive Prep",
-            tagline: "Exam and test preparation",
-            price: "$450",
-            period: "/month",
+            name: 'Intensive Prep',
+            tagline: 'Exam and test preparation',
+            price: '$450',
+            period: '/month',
             features: [
-              "8 sessions per month",
-              "Test-taking strategies",
-              "Practice exams included",
-              "Score guarantee",
+              '8 sessions per month',
+              'Test-taking strategies',
+              'Practice exams included',
+              'Score guarantee',
             ],
-            cta: "Choose Intensive",
+            cta: 'Choose Intensive',
             featured: false,
           },
         ]
 
-    const galleryHeading = props.gallery?.heading ?? "Learning in action"
+    const galleryHeading = props.gallery?.heading ?? 'Learning in action'
     const galleryDesc =
       props.gallery?.description ??
-      "See how our virtual classroom brings students and tutors together."
+      'See how our virtual classroom brings students and tutors together.'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
-          "High school student and tutor reviewing math problems together at a white desk with a laptop",
-          "College students studying together in a library with books and laptops on a wooden table",
-          "Teacher explaining science concepts to elementary students in a bright classroom with colorful educational materials",
-          "Student using a tablet for online learning with headphones in a modern home study environment",
-          "Professional tutor helping a young student with homework assignment at a kitchen table",
-          "Young woman studying with colorful highlighters and textbooks spread on a desk",
-          "Child learning to read with an adult pointing at a colorful storybook illustration",
-          "Stack of colorful textbooks and notebooks with a laptop showing educational content",
+          'High school student and tutor reviewing math problems together at a white desk with a laptop',
+          'College students studying together in a library with books and laptops on a wooden table',
+          'Teacher explaining science concepts to elementary students in a bright classroom with colorful educational materials',
+          'Student using a tablet for online learning with headphones in a modern home study environment',
+          'Professional tutor helping a young student with homework assignment at a kitchen table',
+          'Young woman studying with colorful highlighters and textbooks spread on a desk',
+          'Child learning to read with an adult pointing at a colorful storybook illustration',
+          'Stack of colorful textbooks and notebooks with a laptop showing educational content',
         ]
 
-    const faqHeading = props.faq?.heading ?? "Frequently asked questions"
+    const faqHeading = props.faq?.heading ?? 'Frequently asked questions'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know about our tutoring service."
+      'Everything you need to know about our tutoring service.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "How do I choose the right tutor?",
+            question: 'How do I choose the right tutor?',
             answer:
-              "Our matching algorithm considers your subject, grade level, learning goals, and scheduling preferences to recommend the best tutors. You can also browse tutor profiles, read reviews from other students, and schedule a free 15-minute consultation before committing to a full session.",
+              'Our matching algorithm considers your subject, grade level, learning goals, and scheduling preferences to recommend the best tutors. You can also browse tutor profiles, read reviews from other students, and schedule a free 15-minute consultation before committing to a full session.',
           },
           {
             question: "What happens if I'm not satisfied?",
@@ -629,116 +641,118 @@ export const TutoringKimiPage = defineCapsule({
               "We offer a 100% satisfaction guarantee. If your first session doesn't meet expectations, we'll match you with a different tutor at no charge. For ongoing plans, you can cancel anytime with 7 days notice and receive a prorated refund for unused sessions.",
           },
           {
-            question: "Can I work with the same tutor regularly?",
+            question: 'Can I work with the same tutor regularly?',
             answer:
-              "Absolutely. Many students prefer building a long-term relationship with one tutor. Our Monthly and Intensive plans include a dedicated tutor who learns your learning style, tracks your progress, and adjusts their approach as you grow.",
+              'Absolutely. Many students prefer building a long-term relationship with one tutor. Our Monthly and Intensive plans include a dedicated tutor who learns your learning style, tracks your progress, and adjusts their approach as you grow.',
           },
           {
-            question: "What technology do I need?",
+            question: 'What technology do I need?',
             answer:
-              "All you need is a computer or tablet with a stable internet connection and a webcam. Our virtual classroom works in any modern browser—no downloads required. We recommend a quiet space and headphones with a microphone for the best experience.",
+              'All you need is a computer or tablet with a stable internet connection and a webcam. Our virtual classroom works in any modern browser—no downloads required. We recommend a quiet space and headphones with a microphone for the best experience.',
           },
           {
-            question: "Do you offer in-person tutoring?",
+            question: 'Do you offer in-person tutoring?',
             answer:
-              "Currently, all sessions are conducted online through our purpose-built virtual classroom. This allows us to match you with the best tutors nationwide, maintain flexible scheduling, and provide session recordings for review. The interactive whiteboard and screen sharing tools create an engaging learning experience.",
+              'Currently, all sessions are conducted online through our purpose-built virtual classroom. This allows us to match you with the best tutors nationwide, maintain flexible scheduling, and provide session recordings for review. The interactive whiteboard and screen sharing tools create an engaging learning experience.',
           },
           {
-            question: "What subjects and grade levels do you cover?",
+            question: 'What subjects and grade levels do you cover?',
             answer:
-              "We cover K-12 through college and adult continuing education. This includes all core subjects (math, science, English, history), foreign languages (Spanish, French, Mandarin, Latin, German), computer science and coding, test prep (SAT, ACT, GRE, GMAT, LSAT, MCAT), and specialized subjects like AP and IB courses.",
+              'We cover K-12 through college and adult continuing education. This includes all core subjects (math, science, English, history), foreign languages (Spanish, French, Mandarin, Latin, German), computer science and coding, test prep (SAT, ACT, GRE, GMAT, LSAT, MCAT), and specialized subjects like AP and IB courses.',
           },
         ]
 
-    const bookingHeading = props.booking?.heading ?? "Ready to start learning?"
+    const bookingHeading = props.booking?.heading ?? 'Ready to start learning?'
     const bookingDesc =
       props.booking?.description ??
-      "Book your first session today. No commitment required—see results or your money back."
-    const bookingPrimary = props.booking?.primaryCta ?? "Book Your First Session"
+      'Book your first session today. No commitment required—see results or your money back.'
+    const bookingPrimary =
+      props.booking?.primaryCta ?? 'Book Your First Session'
     const bookingSecondary =
-      props.booking?.secondaryCta ?? "Schedule a Free Consultation"
+      props.booking?.secondaryCta ?? 'Schedule a Free Consultation'
     const bookingNote =
       props.booking?.note ??
       `Join 12,500+ students already learning with ${brand}`
-    const bookingFormTitle = props.booking?.formTitle ?? "Quick booking form"
+    const bookingFormTitle = props.booking?.formTitle ?? 'Quick booking form'
     const subjectOptions = props.booking?.subjectOptions?.length
       ? props.booking.subjectOptions
       : [
-          "Select subject...",
-          "Mathematics",
-          "Science",
-          "English & Literature",
-          "Languages",
-          "Test Preparation",
-          "Computer Science",
+          'Select subject...',
+          'Mathematics',
+          'Science',
+          'English & Literature',
+          'Languages',
+          'Test Preparation',
+          'Computer Science',
         ]
     const gradeOptions = props.booking?.gradeOptions?.length
       ? props.booking.gradeOptions
       : [
-          "Select grade...",
-          "Elementary (K-5)",
-          "Middle School (6-8)",
-          "High School (9-12)",
-          "College / Adult",
+          'Select grade...',
+          'Elementary (K-5)',
+          'Middle School (6-8)',
+          'High School (9-12)',
+          'College / Adult',
         ]
     const bookingDays = props.booking?.days?.length
       ? props.booking.days
-      : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    const bookingSubmit = props.booking?.submit ?? "Find My Perfect Tutor"
+      : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    const bookingSubmit = props.booking?.submit ?? 'Find My Perfect Tutor'
     const bookingFormNote =
       props.booking?.formNote ??
       "We'll match you within 24 hours. No payment required until you confirm your tutor."
 
     const footerAbout =
       props.footer?.about ??
-      "Connecting students with expert tutors for personalized one-on-one learning. Building confidence, achieving excellence."
+      'Connecting students with expert tutors for personalized one-on-one learning. Building confidence, achieving excellence.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Subjects",
+            title: 'Subjects',
             links: [
-              "Mathematics",
-              "Science",
-              "English & Literature",
-              "Languages",
-              "Test Preparation",
-              "Computer Science",
+              'Mathematics',
+              'Science',
+              'English & Literature',
+              'Languages',
+              'Test Preparation',
+              'Computer Science',
             ],
           },
           {
-            title: "Company",
-            links: ["About Us", "Become a Tutor", "Careers", "Blog", "Press"],
+            title: 'Company',
+            links: ['About Us', 'Become a Tutor', 'Careers', 'Blog', 'Press'],
           },
           {
-            title: "Support",
+            title: 'Support',
             links: [
-              "Help Center",
-              "Contact Us",
-              "Privacy Policy",
-              "Terms of Service",
-              "Sitemap",
+              'Help Center',
+              'Contact Us',
+              'Privacy Policy',
+              'Terms of Service',
+              'Sitemap',
             ],
           },
         ]
     const footerCopyright =
-      props.footer?.copyright ?? `© ${new Date().getFullYear()} ${brand}. All rights reserved.`
+      props.footer?.copyright ??
+      `© ${new Date().getFullYear()} ${brand}. All rights reserved.`
     const footerTagline =
-      props.footer?.tagline ?? "Made with care for students everywhere"
+      props.footer?.tagline ?? 'Made with care for students everywhere'
 
     // Brand logo tile — near-black brand square with the brand initials (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary font-bold text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary font-bold text-primary-foreground',
           className,
         )}
         aria-hidden="true"
       >
         {brand
-          .split(" ")
+          .split(' ')
           .map((w) => w.charAt(0))
-          .join("")
+          .join('')
           .slice(0, 2)
           .toUpperCase()}
       </span>
@@ -825,48 +839,114 @@ export const TutoringKimiPage = defineCapsule({
 
     // Tinted subject icon tiles rotate through token surfaces (no raw palette).
     const subjectIconTints = [
-      "bg-primary/10 text-primary",
-      "bg-secondary text-secondary-foreground",
-      "bg-accent text-accent-foreground",
-      "bg-chart-4/15 text-chart-4",
-      "bg-chart-1/15 text-chart-1",
-      "bg-chart-2/15 text-chart-2",
+      'bg-primary/10 text-primary',
+      'bg-secondary text-secondary-foreground',
+      'bg-accent text-accent-foreground',
+      'bg-chart-4/15 text-chart-4',
+      'bg-chart-1/15 text-chart-1',
+      'bg-chart-2/15 text-chart-2',
     ]
 
     const subjectIcons: ReactNode[] = [
       // book / math
-      <svg key="i0" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="i0"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
       </svg>,
       // flask / science
-      <svg key="i1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="i1"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
       </svg>,
       // chart / languages
-      <svg key="i2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="i2"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
       </svg>,
       // book-open / english
-      <svg key="i3" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="i3"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
       </svg>,
       // document / test prep
-      <svg key="i4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="i4"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>,
       // code / computer science
-      <svg key="i5" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="i5"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
       </svg>,
     ]
 
     const inputCls =
-      "w-full rounded-lg border border-input bg-background px-4 py-2.5 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+      'w-full rounded-lg border border-input bg-background px-4 py-2.5 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent'
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -880,7 +960,9 @@ export const TutoringKimiPage = defineCapsule({
                 className="flex items-center gap-2"
               >
                 <LogoMark className="size-8 text-sm" />
-                <span className="text-lg font-semibold tracking-tight">{brand}</span>
+                <span className="text-lg font-semibold tracking-tight">
+                  {brand}
+                </span>
               </button>
               <div className="hidden items-center gap-8 md:flex">
                 {nav.map((label) => (
@@ -1082,19 +1164,26 @@ export const TutoringKimiPage = defineCapsule({
                                 </div>
                                 <div className="mt-4 space-y-1 text-sm">
                                   <p className="text-muted-foreground">
-                                    <span className="font-medium">Subject:</span> {booking.subject}
+                                    <span className="font-medium">
+                                      Subject:
+                                    </span>{' '}
+                                    {booking.subject}
                                   </p>
                                   <p className="text-muted-foreground">
-                                    <span className="font-medium">Grade:</span> {booking.grade}
+                                    <span className="font-medium">Grade:</span>{' '}
+                                    {booking.grade}
                                   </p>
                                   <p className="text-muted-foreground">
-                                    <span className="font-medium">Days:</span> {booking.days}
+                                    <span className="font-medium">Days:</span>{' '}
+                                    {booking.days}
                                   </p>
                                 </div>
                                 <div className="mt-4">
                                   <button
                                     type="button"
-                                    onClick={() => void removeBooking(booking.id)}
+                                    onClick={() =>
+                                      void removeBooking(booking.id)
+                                    }
                                     className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                                   >
                                     Remove booking
@@ -1154,7 +1243,17 @@ export const TutoringKimiPage = defineCapsule({
                   onClick={() => setMobileOpen((v: boolean) => !v)}
                   className="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
                 </button>
@@ -1292,7 +1391,10 @@ export const TutoringKimiPage = defineCapsule({
                     {heroBadge}
                   </div>
                   <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-                    {heroPre} <span className="text-muted-foreground">{heroHighlight}</span>
+                    {heroPre}{' '}
+                    <span className="text-muted-foreground">
+                      {heroHighlight}
+                    </span>
                   </h1>
                   <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
                     {heroSub}
@@ -1324,7 +1426,12 @@ export const TutoringKimiPage = defineCapsule({
                 </div>
                 <div className="relative">
                   <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-muted">
-                    <Image alt={heroImageAlt} w={800} h={600} className="size-full object-cover" />
+                    <Image
+                      alt={heroImageAlt}
+                      w={800}
+                      h={600}
+                      className="size-full object-cover"
+                    />
                   </div>
                   <div className="absolute -bottom-6 -left-6 hidden rounded-xl border border-border bg-background p-4 shadow-lg sm:block">
                     <div className="flex items-center gap-3">
@@ -1336,7 +1443,9 @@ export const TutoringKimiPage = defineCapsule({
                       />
                       <div>
                         <p className="text-sm font-medium">{featuredName}</p>
-                        <p className="text-xs text-muted-foreground">{featuredMeta}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {featuredMeta}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1348,15 +1457,17 @@ export const TutoringKimiPage = defineCapsule({
           {/* Logos */}
           <section className="border-b border-border py-12">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <p className="mb-8 text-center text-sm text-muted-foreground">{logosCaption}</p>
+              <p className="mb-8 text-center text-sm text-muted-foreground">
+                {logosCaption}
+              </p>
               <div className="grid grid-cols-2 items-center gap-8 opacity-60 md:grid-cols-4 lg:grid-cols-6">
                 {logoItems.map((logo, i) => (
                   <div
                     key={logo}
                     className={cn(
-                      "flex h-12 items-center justify-center font-semibold text-muted-foreground",
-                      i === 4 && "hidden md:flex",
-                      i === 5 && "hidden lg:flex",
+                      'flex h-12 items-center justify-center font-semibold text-muted-foreground',
+                      i === 4 && 'hidden md:flex',
+                      i === 5 && 'hidden lg:flex',
                     )}
                   >
                     {logo}
@@ -1373,7 +1484,9 @@ export const TutoringKimiPage = defineCapsule({
                 {statItems.map((s) => (
                   <div key={s.label} className="text-center">
                     <p className="text-4xl font-bold sm:text-5xl">{s.value}</p>
-                    <p className="mt-2 text-sm text-primary-foreground/70">{s.label}</p>
+                    <p className="mt-2 text-sm text-primary-foreground/70">
+                      {s.label}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -1399,14 +1512,16 @@ export const TutoringKimiPage = defineCapsule({
                   >
                     <div
                       className={cn(
-                        "mb-4 grid size-12 place-items-center rounded-xl",
+                        'mb-4 grid size-12 place-items-center rounded-xl',
                         subjectIconTints[i % subjectIconTints.length],
                       )}
                     >
                       {subjectIcons[i % subjectIcons.length]}
                     </div>
                     <h3 className="mb-2 text-lg font-semibold">{s.title}</h3>
-                    <p className="mb-4 text-sm text-muted-foreground">{s.description}</p>
+                    <p className="mb-4 text-sm text-muted-foreground">
+                      {s.description}
+                    </p>
                     <p className="text-xs text-muted-foreground">{s.count}</p>
                   </button>
                 ))}
@@ -1421,7 +1536,9 @@ export const TutoringKimiPage = defineCapsule({
                 <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
                   {testimonialsHeading}
                 </h2>
-                <p className="text-lg text-muted-foreground">{testimonialsDesc}</p>
+                <p className="text-lg text-muted-foreground">
+                  {testimonialsDesc}
+                </p>
               </div>
               <div className="grid gap-8 md:grid-cols-3">
                 {testimonialItems.map((t) => (
@@ -1434,7 +1551,9 @@ export const TutoringKimiPage = defineCapsule({
                         <Star key={i} className="size-5" />
                       ))}
                     </div>
-                    <p className="mb-6 leading-relaxed text-foreground/80">&ldquo;{t.quote}&rdquo;</p>
+                    <p className="mb-6 leading-relaxed text-foreground/80">
+                      &ldquo;{t.quote}&rdquo;
+                    </p>
                     <div className="flex items-center gap-3">
                       <Image
                         alt={t.avatarAlt}
@@ -1444,7 +1563,9 @@ export const TutoringKimiPage = defineCapsule({
                       />
                       <div>
                         <p className="text-sm font-medium">{t.name}</p>
-                        <p className="text-xs text-muted-foreground">{t.role}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t.role}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1499,11 +1620,15 @@ export const TutoringKimiPage = defineCapsule({
                       </div>
                       <div className="space-y-3">
                         <h3 className="text-lg font-semibold">{tutor.name}</h3>
-                        <p className="mb-2 text-sm text-muted-foreground">{tutor.title}</p>
+                        <p className="mb-2 text-sm text-muted-foreground">
+                          {tutor.title}
+                        </p>
                         <div className="flex items-center gap-2 text-sm">
                           <span className="text-chart-4">★ {tutor.rating}</span>
                           <span className="text-muted-foreground">•</span>
-                          <span className="text-muted-foreground">{tutor.sessions}</span>
+                          <span className="text-muted-foreground">
+                            {tutor.sessions}
+                          </span>
                         </div>
                         <div className="mt-3 flex flex-wrap gap-2">
                           {tutorTags.map((tag) => (
@@ -1567,7 +1692,9 @@ export const TutoringKimiPage = defineCapsule({
                       {i + 1}
                     </div>
                     <h3 className="mb-3 text-xl font-semibold">{step.title}</h3>
-                    <p className="leading-relaxed text-muted-foreground">{step.description}</p>
+                    <p className="leading-relaxed text-muted-foreground">
+                      {step.description}
+                    </p>
                     {i < stepItems.length - 1 && (
                       <div
                         aria-hidden="true"
@@ -1594,10 +1721,10 @@ export const TutoringKimiPage = defineCapsule({
                   <div
                     key={plan.name}
                     className={cn(
-                      "relative rounded-2xl p-8",
+                      'relative rounded-2xl p-8',
                       plan.featured
-                        ? "bg-primary text-primary-foreground"
-                        : "border border-border bg-card text-card-foreground",
+                        ? 'bg-primary text-primary-foreground'
+                        : 'border border-border bg-card text-card-foreground',
                     )}
                   >
                     {plan.badge && (
@@ -1607,16 +1734,18 @@ export const TutoringKimiPage = defineCapsule({
                     )}
                     <h3
                       className={cn(
-                        "mb-2 text-lg font-semibold",
-                        plan.featured && "text-primary-foreground",
+                        'mb-2 text-lg font-semibold',
+                        plan.featured && 'text-primary-foreground',
                       )}
                     >
                       {plan.name}
                     </h3>
                     <p
                       className={cn(
-                        "mb-6 text-sm",
-                        plan.featured ? "text-primary-foreground/70" : "text-muted-foreground",
+                        'mb-6 text-sm',
+                        plan.featured
+                          ? 'text-primary-foreground/70'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {plan.tagline}
@@ -1625,7 +1754,9 @@ export const TutoringKimiPage = defineCapsule({
                       <span className="text-4xl font-bold">{plan.price}</span>
                       <span
                         className={cn(
-                          plan.featured ? "text-primary-foreground/70" : "text-muted-foreground",
+                          plan.featured
+                            ? 'text-primary-foreground/70'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {plan.period}
@@ -1633,16 +1764,20 @@ export const TutoringKimiPage = defineCapsule({
                     </div>
                     <ul
                       className={cn(
-                        "mb-8 space-y-3 text-sm",
-                        plan.featured ? "text-primary-foreground/80" : "text-muted-foreground",
+                        'mb-8 space-y-3 text-sm',
+                        plan.featured
+                          ? 'text-primary-foreground/80'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {plan.features.map((f) => (
                         <li key={f} className="flex items-center gap-2">
                           <Check
                             className={cn(
-                              "size-5",
-                              plan.featured ? "text-primary-foreground" : "text-chart-2",
+                              'size-5',
+                              plan.featured
+                                ? 'text-primary-foreground'
+                                : 'text-chart-2',
                             )}
                           />
                           {f}
@@ -1653,10 +1788,10 @@ export const TutoringKimiPage = defineCapsule({
                       type="button"
                       onClick={() => go(plan.cta)}
                       className={cn(
-                        "block w-full rounded-xl py-3 text-center font-medium transition-colors",
+                        'block w-full rounded-xl py-3 text-center font-medium transition-colors',
                         plan.featured
-                          ? "bg-background text-foreground hover:bg-muted"
-                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                          ? 'bg-background text-foreground hover:bg-muted'
+                          : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
                       )}
                     >
                       {plan.cta}
@@ -1678,7 +1813,10 @@ export const TutoringKimiPage = defineCapsule({
               </div>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                 {galleryItems.map((alt, i) => (
-                  <div key={i} className="aspect-square overflow-hidden rounded-xl bg-muted">
+                  <div
+                    key={i}
+                    className="aspect-square overflow-hidden rounded-xl bg-muted"
+                  >
                     <Image
                       alt={alt}
                       w={400}
@@ -1708,7 +1846,9 @@ export const TutoringKimiPage = defineCapsule({
                     className="group rounded-xl border border-border bg-card"
                   >
                     <summary className="flex cursor-pointer items-center justify-between p-6">
-                      <h3 className="pr-8 text-lg font-medium">{item.question}</h3>
+                      <h3 className="pr-8 text-lg font-medium">
+                        {item.question}
+                      </h3>
                       <span className="flex size-5 flex-shrink-0 items-center justify-center">
                         <ChevronDown />
                       </span>
@@ -1730,7 +1870,9 @@ export const TutoringKimiPage = defineCapsule({
                   <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
                     {bookingHeading}
                   </h2>
-                  <p className="mb-8 text-lg text-primary-foreground/70">{bookingDesc}</p>
+                  <p className="mb-8 text-lg text-primary-foreground/70">
+                    {bookingDesc}
+                  </p>
                   <div className="flex flex-col gap-4 sm:flex-row">
                     <button
                       type="button"
@@ -1747,23 +1889,58 @@ export const TutoringKimiPage = defineCapsule({
                       {bookingSecondary}
                     </button>
                   </div>
-                  <p className="mt-6 text-sm text-primary-foreground/60">{bookingNote}</p>
+                  <p className="mt-6 text-sm text-primary-foreground/60">
+                    {bookingNote}
+                  </p>
                 </div>
                 <div className="rounded-2xl bg-card p-8 text-card-foreground">
-                  <h3 className="mb-6 text-xl font-semibold">{bookingFormTitle}</h3>
+                  <h3 className="mb-6 text-xl font-semibold">
+                    {bookingFormTitle}
+                  </h3>
                   <form
                     className="space-y-4"
                     onSubmit={(e) => {
                       e.preventDefault()
                       const form = e.currentTarget
-                      const studentName = (form.querySelector('#tutoring-student') as HTMLInputElement)?.value || ''
-                      const parentEmail = (form.querySelector('#tutoring-email') as HTMLInputElement)?.value || ''
-                      const subject = (form.querySelector('#tutoring-subject') as HTMLSelectElement)?.value || ''
-                      const grade = (form.querySelector('#tutoring-grade') as HTMLSelectElement)?.value || ''
-                      const selectedDays = Array.from(form.querySelectorAll('input[type="checkbox"]:checked')).map(
-                        (cb) => (cb as HTMLInputElement).nextElementSibling?.textContent || ''
-                      ).join(', ')
-                      const goals = (form.querySelector('#tutoring-goals') as HTMLTextAreaElement)?.value || ''
+                      const studentName =
+                        (
+                          form.querySelector(
+                            '#tutoring-student',
+                          ) as HTMLInputElement
+                        )?.value || ''
+                      const parentEmail =
+                        (
+                          form.querySelector(
+                            '#tutoring-email',
+                          ) as HTMLInputElement
+                        )?.value || ''
+                      const subject =
+                        (
+                          form.querySelector(
+                            '#tutoring-subject',
+                          ) as HTMLSelectElement
+                        )?.value || ''
+                      const grade =
+                        (
+                          form.querySelector(
+                            '#tutoring-grade',
+                          ) as HTMLSelectElement
+                        )?.value || ''
+                      const selectedDays = Array.from(
+                        form.querySelectorAll('input[type="checkbox"]:checked'),
+                      )
+                        .map(
+                          (cb) =>
+                            (cb as HTMLInputElement).nextElementSibling
+                              ?.textContent || '',
+                        )
+                        .join(', ')
+                      const goals =
+                        (
+                          form.querySelector(
+                            '#tutoring-goals',
+                          ) as HTMLTextAreaElement
+                        )?.value || ''
 
                       void addBooking({
                         studentName,
@@ -1818,7 +1995,11 @@ export const TutoringKimiPage = defineCapsule({
                         >
                           Subject needed
                         </label>
-                        <select id="tutoring-subject" required className={inputCls}>
+                        <select
+                          id="tutoring-subject"
+                          required
+                          className={inputCls}
+                        >
                           {subjectOptions.map((opt) => (
                             <option key={opt} className="bg-background">
                               {opt}
@@ -1833,7 +2014,11 @@ export const TutoringKimiPage = defineCapsule({
                         >
                           Grade level
                         </label>
-                        <select id="tutoring-grade" required className={inputCls}>
+                        <select
+                          id="tutoring-grade"
+                          required
+                          className={inputCls}
+                        >
                           {gradeOptions.map((opt) => (
                             <option key={opt} className="bg-background">
                               {opt}
@@ -1852,7 +2037,10 @@ export const TutoringKimiPage = defineCapsule({
                             key={day}
                             className="flex cursor-pointer items-center gap-2 rounded-lg bg-muted px-3 py-2 transition-colors hover:bg-accent"
                           >
-                            <input type="checkbox" className="rounded border-input" />
+                            <input
+                              type="checkbox"
+                              className="rounded border-input"
+                            />
                             <span className="text-sm">{day}</span>
                           </label>
                         ))}
@@ -1869,7 +2057,7 @@ export const TutoringKimiPage = defineCapsule({
                         id="tutoring-goals"
                         rows={3}
                         placeholder="Tell us about your learning goals, specific topics, or anything else..."
-                        className={cn(inputCls, "resize-none")}
+                        className={cn(inputCls, 'resize-none')}
                       />
                     </div>
                     <button
@@ -1878,7 +2066,9 @@ export const TutoringKimiPage = defineCapsule({
                     >
                       {bookingSubmit}
                     </button>
-                    <p className="text-center text-xs text-muted-foreground">{bookingFormNote}</p>
+                    <p className="text-center text-xs text-muted-foreground">
+                      {bookingFormNote}
+                    </p>
                   </form>
                 </div>
               </div>
@@ -1897,33 +2087,43 @@ export const TutoringKimiPage = defineCapsule({
                   className="mb-4 flex items-center gap-2"
                 >
                   <LogoMark className="size-8 text-sm" />
-                  <span className="text-lg font-semibold tracking-tight">{brand}</span>
+                  <span className="text-lg font-semibold tracking-tight">
+                    {brand}
+                  </span>
                 </button>
                 <p className="mb-6 max-w-sm text-sm leading-relaxed text-muted-foreground">
                   {footerAbout}
                 </p>
                 <div className="flex items-center gap-4">
-                  {(["Twitter", "Instagram", "LinkedIn"] as const).map((social) => (
-                    <button
-                      key={social}
-                      type="button"
-                      aria-label={social}
-                      onClick={() => go(social)}
-                      className="grid size-10 place-items-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
-                    >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                        {social === "Twitter" && (
-                          <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
-                        )}
-                        {social === "Instagram" && (
-                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-                        )}
-                        {social === "LinkedIn" && (
-                          <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
-                        )}
-                      </svg>
-                    </button>
-                  ))}
+                  {(['Twitter', 'Instagram', 'LinkedIn'] as const).map(
+                    (social) => (
+                      <button
+                        key={social}
+                        type="button"
+                        aria-label={social}
+                        onClick={() => go(social)}
+                        className="grid size-10 place-items-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          {social === 'Twitter' && (
+                            <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
+                          )}
+                          {social === 'Instagram' && (
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                          )}
+                          {social === 'LinkedIn' && (
+                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                          )}
+                        </svg>
+                      </button>
+                    ),
+                  )}
                 </div>
               </div>
               {footerColumns.map((col) => (

@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,7 +12,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "#/components/ui/command.tsx"
+} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetClose,
@@ -21,15 +21,14 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * LogisticsKimiPage — a complete, self-contained global-logistics / freight-forwarding
@@ -53,7 +52,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * defaults make it render great with no props at all.
  */
 export const LogisticsKimiPage = defineCapsule({
-  name: "LogisticsKimiPage",
+  name: 'LogisticsKimiPage',
   description:
     "Complete global-logistics, freight-forwarding and shipping-company LANDING page with a clean, corporate, trust-forward aesthetic: light surface, deep slate primary, rounded cards, soft shadows and generous whitespace. Includes a split hero (headline, real-time shipment-tracking input with a tracking-number field, trust chips and a floating on-time delivery-rate badge over a cargo-port photo), a client logo trust strip, a 4-up KPI stat band (countries served, shipments delivered, years, team), a 6-up services grid (Air Freight, Ocean Freight, Ground Transport, Warehousing, Customs Brokerage, Last-Mile Delivery — each with an icon and starting price), a numbered four-step 'how it works' flow beside a warehouse photo, a 6-image global-network gallery, a 3-tier pricing table (Standard / Priority / Express with feature lists and a Popular highlight), three five-star customer testimonials with avatars, an accordion FAQ, a high-contrast closing CTA, and a rich multi-column footer with services/company/contact columns and social links. Use as the ROOT/home page for logistics providers, freight forwarders, shipping carriers, supply-chain, courier, warehousing, customs-brokerage, fulfillment or cargo/transport companies when a professional, conversion-focused page with shipment tracking, service catalog, pricing and social proof is wanted. Supply content only — brand, nav, hero, logos, stats, services, steps, gallery, pricing, testimonials, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -172,9 +171,7 @@ export const LogisticsKimiPage = defineCapsule({
       .object({
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       })
       .optional(),
     /** Closing CTA band. */
@@ -230,33 +227,57 @@ export const LogisticsKimiPage = defineCapsule({
       quoteRequests: ({ db }) => db.quoteRequests.orderBy('createdAt').all(),
     },
     mutations: {
-      addShipment: ({ db }, trackingNumber: string, origin: string, destination: string, service: string, weight: string) => {
+      addShipment: (
+        { db },
+        trackingNumber: string,
+        origin: string,
+        destination: string,
+        service: string,
+        weight: string,
+      ) => {
         db.shipments.insert({
           trackingNumber,
           origin,
           destination,
           status: 'In Transit',
-          estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+            .toISOString()
+            .split('T')[0],
           weight,
           service,
         })
         return db.shipments.all()
       },
-      updateShipmentStatus: ({ db }, trackingNumber: string, status: string) => {
-        const shipment = db.shipments.where('trackingNumber', trackingNumber).all()[0]
+      updateShipmentStatus: (
+        { db },
+        trackingNumber: string,
+        status: string,
+      ) => {
+        const shipment = db.shipments
+          .where('trackingNumber', trackingNumber)
+          .all()[0]
         if (shipment) {
           db.shipments.update(shipment.id, { status })
         }
         return db.shipments.all()
       },
       removeShipment: ({ db }, trackingNumber: string) => {
-        const shipment = db.shipments.where('trackingNumber', trackingNumber).all()[0]
+        const shipment = db.shipments
+          .where('trackingNumber', trackingNumber)
+          .all()[0]
         if (shipment) {
           db.shipments.delete(shipment.id)
         }
         return db.shipments.all()
       },
-      submitQuoteRequest: ({ db }, origin: string, destination: string, weight: string, service: string, email: string) => {
+      submitQuoteRequest: (
+        { db },
+        origin: string,
+        destination: string,
+        weight: string,
+        service: string,
+        email: string,
+      ) => {
         db.quoteRequests.insert({
           origin,
           destination,
@@ -280,42 +301,42 @@ export const LogisticsKimiPage = defineCapsule({
     const [trackingOpen, setTrackingOpen] = useState(false)
     const [quoteOpen, setQuoteOpen] = useState(false)
     const [searchOpen, setSearchOpen] = useState(false)
-    const [trackingInput, setTrackingInput] = useState("")
+    const [trackingInput, setTrackingInput] = useState('')
     const [quoteForm, setQuoteForm] = useState({
-      origin: "",
-      destination: "",
-      weight: "",
-      service: "Air Freight",
-      email: "",
+      origin: '',
+      destination: '',
+      weight: '',
+      service: 'Air Freight',
+      email: '',
     })
-    const brand = props.brand ?? "SwiftFreight"
+    const brand = props.brand ?? 'SwiftFreight'
 
-    const shipments = lakebed.useQuery("shipments")
-    const quoteRequests = lakebed.useQuery("quoteRequests")
+    const shipments = lakebed.useQuery('shipments')
+    const quoteRequests = lakebed.useQuery('quoteRequests')
     const auth = lakebed.useAuth()
-    const addShipment = lakebed.useMutation("addShipment")
-    const updateShipmentStatus = lakebed.useMutation("updateShipmentStatus")
-    const removeShipment = lakebed.useMutation("removeShipment")
-    const submitQuoteRequest = lakebed.useMutation("submitQuoteRequest")
-    const clearQuoteRequests = lakebed.useMutation("clearQuoteRequests")
+    const addShipment = lakebed.useMutation('addShipment')
+    const updateShipmentStatus = lakebed.useMutation('updateShipmentStatus')
+    const removeShipment = lakebed.useMutation('removeShipment')
+    const submitQuoteRequest = lakebed.useMutation('submitQuoteRequest')
+    const clearQuoteRequests = lakebed.useMutation('clearQuoteRequests')
 
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
     const authDisplayName =
-      auth.displayName || auth.user?.displayName || authEmail || "Account"
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
     const authInitials =
       authDisplayName
         .split(/\s+/)
         .filter(Boolean)
         .slice(0, 2)
         .map((part) => part[0]?.toUpperCase())
-        .join("") || "ME"
+        .join('') || 'ME'
     const authLabel = auth.isLoading
-      ? "Checking..."
+      ? 'Checking...'
       : isSignedIn
         ? authDisplayName
-        : "Sign in"
+        : 'Sign in'
 
     const handleSignIn = () => {
       if (auth.isLoading) return
@@ -331,19 +352,24 @@ export const LogisticsKimiPage = defineCapsule({
       if (trackingInput.trim()) {
         void addShipment(
           trackingInput.trim(),
-          "Shenzhen",
-          "Los Angeles",
-          "Air Freight",
-          "500kg",
+          'Shenzhen',
+          'Los Angeles',
+          'Air Freight',
+          '500kg',
         )
         setTrackingOpen(true)
-        setTrackingInput("")
+        setTrackingInput('')
       }
     }
 
     const handleQuoteSubmit = (e: React.FormEvent) => {
       e.preventDefault()
-      if (quoteForm.origin && quoteForm.destination && quoteForm.weight && quoteForm.email) {
+      if (
+        quoteForm.origin &&
+        quoteForm.destination &&
+        quoteForm.weight &&
+        quoteForm.email
+      ) {
         void submitQuoteRequest(
           quoteForm.origin,
           quoteForm.destination,
@@ -353,11 +379,11 @@ export const LogisticsKimiPage = defineCapsule({
         )
         setQuoteOpen(true)
         setQuoteForm({
-          origin: "",
-          destination: "",
-          weight: "",
-          service: "Air Freight",
-          email: "",
+          origin: '',
+          destination: '',
+          weight: '',
+          service: 'Air Freight',
+          email: '',
         })
       }
     }
@@ -366,45 +392,47 @@ export const LogisticsKimiPage = defineCapsule({
     const safeQuoteRequests = quoteRequests ?? []
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Track", "About", "Pricing", "Contact"]
+      : ['Services', 'Track', 'About', 'Pricing', 'Contact']
 
-    const headingTop = props.hero?.headingTop ?? "Global logistics,"
-    const heroHighlight = props.hero?.highlight ?? "simplified."
+    const headingTop = props.hero?.headingTop ?? 'Global logistics,'
+    const heroHighlight = props.hero?.highlight ?? 'simplified.'
     const heroSub =
       props.hero?.subheading ??
-      "Ship to 180+ countries with real-time tracking and guaranteed delivery. From Shenzhen to Chicago, Amsterdam to São Paulo—we move what matters."
-    const trackLabel = props.hero?.trackLabel ?? "Track your shipment"
+      'Ship to 180+ countries with real-time tracking and guaranteed delivery. From Shenzhen to Chicago, Amsterdam to São Paulo—we move what matters.'
+    const trackLabel = props.hero?.trackLabel ?? 'Track your shipment'
     const trackPlaceholder =
-      props.hero?.trackPlaceholder ?? "Enter tracking number (e.g., SF-7823-9912)"
-    const trackButton = props.hero?.trackButton ?? "Track"
+      props.hero?.trackPlaceholder ??
+      'Enter tracking number (e.g., SF-7823-9912)'
+    const trackButton = props.hero?.trackButton ?? 'Track'
     const trackHint =
-      props.hero?.trackHint ?? "Try demo: SF-2024-8841, SF-2024-7752, SF-2024-9931"
+      props.hero?.trackHint ??
+      'Try demo: SF-2024-8841, SF-2024-7752, SF-2024-9931'
     const heroChips = props.hero?.chips?.length
       ? props.hero.chips
-      : ["Real-time tracking", "Insurance included", "24/7 support"]
+      : ['Real-time tracking', 'Insurance included', '24/7 support']
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Aerial view of a large commercial shipping port with colorful cargo containers and cranes at sunset"
-    const heroBadgeValue = props.hero?.badgeValue ?? "98.7% on-time"
-    const heroBadgeLabel = props.hero?.badgeLabel ?? "Delivery rate in 2024"
-    const heroPrimary = props.hero?.primaryCta ?? "Get a Quote"
+      'Aerial view of a large commercial shipping port with colorful cargo containers and cranes at sunset'
+    const heroBadgeValue = props.hero?.badgeValue ?? '98.7% on-time'
+    const heroBadgeLabel = props.hero?.badgeLabel ?? 'Delivery rate in 2024'
+    const heroPrimary = props.hero?.primaryCta ?? 'Get a Quote'
 
-    const logosHeading = props.logos?.heading ?? "Trusted by industry leaders"
+    const logosHeading = props.logos?.heading ?? 'Trusted by industry leaders'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
-      : ["TechFlow", "Globex", "Acme Corp", "Stark Ind", "Wayne Ent", "Oscorp"]
+      : ['TechFlow', 'Globex', 'Acme Corp', 'Stark Ind', 'Wayne Ent', 'Oscorp']
 
     const statItems = props.stats?.length
       ? props.stats
       : [
-          { value: "180+", label: "Countries served" },
-          { value: "2.4M", label: "Shipments delivered (2024)" },
-          { value: "24", label: "Years in operation" },
-          { value: "4,200", label: "Team members worldwide" },
+          { value: '180+', label: 'Countries served' },
+          { value: '2.4M', label: 'Shipments delivered (2024)' },
+          { value: '24', label: 'Years in operation' },
+          { value: '4,200', label: 'Team members worldwide' },
         ]
 
     const servicesHeading =
-      props.services?.heading ?? "Complete logistics solutions"
+      props.services?.heading ?? 'Complete logistics solutions'
     const servicesDesc =
       props.services?.description ??
       "From factory floor to customer's door—every mode, every mile, managed seamlessly."
@@ -412,44 +440,44 @@ export const LogisticsKimiPage = defineCapsule({
       ? props.services.items
       : [
           {
-            title: "Air Freight",
+            title: 'Air Freight',
             description:
-              "Express and standard air cargo to 500+ airports. Next-flight-out options for urgent shipments. Typical transit: 1-5 days.",
-            price: "From $4.20/kg",
+              'Express and standard air cargo to 500+ airports. Next-flight-out options for urgent shipments. Typical transit: 1-5 days.',
+            price: 'From $4.20/kg',
           },
           {
-            title: "Ocean Freight",
+            title: 'Ocean Freight',
             description:
-              "FCL and LCL shipping to major ports worldwide. Full container loads or consolidated cargo. Typical transit: 15-45 days.",
-            price: "From $85/CBM",
+              'FCL and LCL shipping to major ports worldwide. Full container loads or consolidated cargo. Typical transit: 15-45 days.',
+            price: 'From $85/CBM',
           },
           {
-            title: "Ground Transport",
+            title: 'Ground Transport',
             description:
-              "Full truckload (FTL) and less-than-truckload (LTL) across North America and Europe. Real-time GPS tracking included.",
-            price: "From $1.45/mile",
+              'Full truckload (FTL) and less-than-truckload (LTL) across North America and Europe. Real-time GPS tracking included.',
+            price: 'From $1.45/mile',
           },
           {
-            title: "Warehousing",
+            title: 'Warehousing',
             description:
-              "42 facilities across 18 countries. Climate-controlled storage, pick-and-pack, kitting, and inventory management via our WMS.",
-            price: "From $0.45/unit/day",
+              '42 facilities across 18 countries. Climate-controlled storage, pick-and-pack, kitting, and inventory management via our WMS.',
+            price: 'From $0.45/unit/day',
           },
           {
-            title: "Customs Brokerage",
+            title: 'Customs Brokerage',
             description:
-              "Licensed customs brokers in 38 countries. Documentation, duty calculation, and compliance management for smooth clearance.",
-            price: "From $125/shipment",
+              'Licensed customs brokers in 38 countries. Documentation, duty calculation, and compliance management for smooth clearance.',
+            price: 'From $125/shipment',
           },
           {
-            title: "Last-Mile Delivery",
+            title: 'Last-Mile Delivery',
             description:
-              "White-glove delivery, installation services, and residential delivery with SMS/email notifications and photo confirmation.",
-            price: "From $12.50/delivery",
+              'White-glove delivery, installation services, and residential delivery with SMS/email notifications and photo confirmation.',
+            price: 'From $12.50/delivery',
           },
         ]
 
-    const stepsHeading = props.steps?.heading ?? "How it works"
+    const stepsHeading = props.steps?.heading ?? 'How it works'
     const stepsDesc =
       props.steps?.description ??
       "From quote to delivery in four simple steps. Our platform handles the complexity so you don't have to."
@@ -457,217 +485,225 @@ export const LogisticsKimiPage = defineCapsule({
       ? props.steps.items
       : [
           {
-            title: "Get an instant quote",
+            title: 'Get an instant quote',
             description:
-              "Enter origin, destination, and cargo details. Our algorithm compares rates across air, ocean, and ground to find your best option.",
+              'Enter origin, destination, and cargo details. Our algorithm compares rates across air, ocean, and ground to find your best option.',
           },
           {
-            title: "Book and schedule",
+            title: 'Book and schedule',
             description:
-              "Confirm your booking online. Choose pickup date, add insurance, and select any additional services like customs brokerage.",
+              'Confirm your booking online. Choose pickup date, add insurance, and select any additional services like customs brokerage.',
           },
           {
-            title: "We handle pickup & transit",
+            title: 'We handle pickup & transit',
             description:
-              "Our drivers collect your cargo. Track every mile in real-time via GPS, EDI updates, and milestone notifications.",
+              'Our drivers collect your cargo. Track every mile in real-time via GPS, EDI updates, and milestone notifications.',
           },
           {
-            title: "Delivery confirmation",
+            title: 'Delivery confirmation',
             description:
-              "Cargo arrives with photo proof of delivery. Access POD, BOL, and invoice instantly in your shipment history.",
+              'Cargo arrives with photo proof of delivery. Access POD, BOL, and invoice instantly in your shipment history.',
           },
         ]
     const stepsImageAlt =
       props.steps?.imageAlt ??
-      "A professional logistics worker in a warehouse scanning a package barcode with a handheld device"
-    const stepsBadgeLabel = props.steps?.badgeLabel ?? "Average booking time"
-    const stepsBadgeValue = props.steps?.badgeValue ?? "3 min"
+      'A professional logistics worker in a warehouse scanning a package barcode with a handheld device'
+    const stepsBadgeLabel = props.steps?.badgeLabel ?? 'Average booking time'
+    const stepsBadgeValue = props.steps?.badgeValue ?? '3 min'
 
-    const galleryHeading = props.gallery?.heading ?? "Our global network"
+    const galleryHeading = props.gallery?.heading ?? 'Our global network'
     const galleryDesc =
       props.gallery?.description ??
-      "Facilities, fleet, and infrastructure that keep the world moving."
+      'Facilities, fleet, and infrastructure that keep the world moving.'
     const galleryImages = props.gallery?.images?.length
       ? props.gallery.images
       : [
-          "Large commercial cargo ship loaded with colorful shipping containers sailing at sea",
-          "Modern warehouse interior with tall shelves of packages and automated conveyor systems",
-          "Fleet of white commercial delivery trucks parked at a distribution center",
-          "Cargo airplane being loaded with freight containers at an airport tarmac",
-          "Workers in safety vests coordinating logistics operations at a busy freight terminal",
-          "Aerial view of a massive container port with cranes and stacked shipping containers",
+          'Large commercial cargo ship loaded with colorful shipping containers sailing at sea',
+          'Modern warehouse interior with tall shelves of packages and automated conveyor systems',
+          'Fleet of white commercial delivery trucks parked at a distribution center',
+          'Cargo airplane being loaded with freight containers at an airport tarmac',
+          'Workers in safety vests coordinating logistics operations at a busy freight terminal',
+          'Aerial view of a massive container port with cranes and stacked shipping containers',
         ]
 
-    const pricingHeading = props.pricing?.heading ?? "Service tiers"
+    const pricingHeading = props.pricing?.heading ?? 'Service tiers'
     const pricingDesc =
       props.pricing?.description ??
-      "Choose the service level that matches your timeline and budget."
+      'Choose the service level that matches your timeline and budget.'
     const pricingFootnote =
       props.pricing?.footnote ??
-      "Ocean freight rates from $85/CBM. Ground transport from $1.45/mile. Volume discounts available."
+      'Ocean freight rates from $85/CBM. Ground transport from $1.45/mile. Volume discounts available.'
     const pricingTiers = props.pricing?.tiers?.length
       ? props.pricing.tiers
       : [
           {
-            name: "Standard",
-            tagline: "Economy shipping for non-urgent cargo",
-            price: "$2.80",
-            unit: "/kg air",
+            name: 'Standard',
+            tagline: 'Economy shipping for non-urgent cargo',
+            price: '$2.80',
+            unit: '/kg air',
             features: [
-              "5-7 day air transit",
-              "Standard tracking",
-              "$100 insurance included",
-              "Email support",
+              '5-7 day air transit',
+              'Standard tracking',
+              '$100 insurance included',
+              'Email support',
             ],
-            cta: "Get a quote",
+            cta: 'Get a quote',
           },
           {
-            name: "Priority",
-            tagline: "Best balance of speed and cost",
-            price: "$4.50",
-            unit: "/kg air",
+            name: 'Priority',
+            tagline: 'Best balance of speed and cost',
+            price: '$4.50',
+            unit: '/kg air',
             features: [
-              "2-4 day air transit",
-              "Real-time GPS tracking",
-              "$500 insurance included",
-              "24/7 phone & email support",
-              "Customs brokerage",
+              '2-4 day air transit',
+              'Real-time GPS tracking',
+              '$500 insurance included',
+              '24/7 phone & email support',
+              'Customs brokerage',
             ],
-            cta: "Get a quote",
-            badge: "Popular",
+            cta: 'Get a quote',
+            badge: 'Popular',
             featured: true,
           },
           {
-            name: "Express",
-            tagline: "When every hour counts",
-            price: "$8.90",
-            unit: "/kg air",
+            name: 'Express',
+            tagline: 'When every hour counts',
+            price: '$8.90',
+            unit: '/kg air',
             features: [
-              "Next-flight-out (NFO)",
-              "Real-time GPS + EDI",
-              "$2,500 insurance included",
-              "Dedicated account manager",
-              "Charter options available",
+              'Next-flight-out (NFO)',
+              'Real-time GPS + EDI',
+              '$2,500 insurance included',
+              'Dedicated account manager',
+              'Charter options available',
             ],
-            cta: "Contact sales",
+            cta: 'Contact sales',
           },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Trusted by shippers worldwide"
+      props.testimonials?.heading ?? 'Trusted by shippers worldwide'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "What our customers say about working with SwiftFreight."
+      'What our customers say about working with SwiftFreight.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
               "SwiftFreight has been our logistics partner for 6 years. Their real-time tracking and proactive communication have eliminated the 'where's my shipment?' anxiety completely.",
-            name: "Sarah Chen",
-            role: "VP Operations, TechFlow Inc.",
+            name: 'Sarah Chen',
+            role: 'VP Operations, TechFlow Inc.',
             avatarAlt:
-              "Professional headshot of a smiling businesswoman in a navy blazer",
+              'Professional headshot of a smiling businesswoman in a navy blazer',
           },
           {
             quote:
               "When we needed to move 40 containers from Ningbo to Rotterdam in 48 hours, SwiftFreight chartered a vessel. That level of responsiveness is why we've tripled our volume with them.",
-            name: "Marcus Weber",
-            role: "Director of Logistics, Globex Trading",
+            name: 'Marcus Weber',
+            role: 'Director of Logistics, Globex Trading',
             avatarAlt:
-              "Professional headshot of a middle-aged businessman with glasses and a confident smile",
+              'Professional headshot of a middle-aged businessman with glasses and a confident smile',
           },
           {
             quote:
               "Their customs brokerage team saved us from a $15,000 duty miscalculation. They caught the HS code error before the shipment left Shanghai. That's partnership.",
-            name: "Elena Rodriguez",
-            role: "Import Manager, Acme Corporation",
+            name: 'Elena Rodriguez',
+            role: 'Import Manager, Acme Corporation',
             avatarAlt:
-              "Professional headshot of a young woman with dark hair wearing a white blouse",
+              'Professional headshot of a young woman with dark hair wearing a white blouse',
           },
         ]
 
-    const faqHeading = props.faq?.heading ?? "Frequently asked questions"
+    const faqHeading = props.faq?.heading ?? 'Frequently asked questions'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know about shipping with SwiftFreight."
+      'Everything you need to know about shipping with SwiftFreight.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "How do I track my shipment?",
+            q: 'How do I track my shipment?',
             a: "Enter your tracking number in the search bar at the top of our website or in our mobile app. You'll see real-time location updates, estimated delivery time, and any customs clearance milestones. You can also opt in for SMS or email notifications at every stage.",
           },
           {
-            q: "What are your transit times?",
-            a: "Air freight typically takes 1-5 days depending on the route. Ocean freight ranges from 15-45 days. Ground transport within North America is 1-7 days, and within Europe 1-5 days. Express/next-flight-out options are available for urgent shipments.",
+            q: 'What are your transit times?',
+            a: 'Air freight typically takes 1-5 days depending on the route. Ocean freight ranges from 15-45 days. Ground transport within North America is 1-7 days, and within Europe 1-5 days. Express/next-flight-out options are available for urgent shipments.',
           },
           {
-            q: "Do you handle customs clearance?",
-            a: "Yes. Our licensed customs brokers operate in 38 countries. We handle documentation, duty calculation, and ensure compliance with local regulations. Customs brokerage is included in Priority and Express tiers, and available as an add-on for Standard shipments.",
+            q: 'Do you handle customs clearance?',
+            a: 'Yes. Our licensed customs brokers operate in 38 countries. We handle documentation, duty calculation, and ensure compliance with local regulations. Customs brokerage is included in Priority and Express tiers, and available as an add-on for Standard shipments.',
           },
           {
-            q: "What cargo types do you accept?",
-            a: "We handle general cargo, electronics, automotive parts, fashion/apparel, pharmaceuticals (GDP-compliant), perishables (temperature-controlled), and project cargo. Restricted items include hazardous materials without proper classification, weapons, and illegal goods per IATA/IMDG regulations.",
+            q: 'What cargo types do you accept?',
+            a: 'We handle general cargo, electronics, automotive parts, fashion/apparel, pharmaceuticals (GDP-compliant), perishables (temperature-controlled), and project cargo. Restricted items include hazardous materials without proper classification, weapons, and illegal goods per IATA/IMDG regulations.',
           },
           {
-            q: "Is my shipment insured?",
-            a: "All shipments include basic liability coverage. Standard tier includes $100, Priority includes $500, and Express includes $2,500. Additional cargo insurance is available up to the full declared value. Claims are processed within 14 business days with proper documentation.",
+            q: 'Is my shipment insured?',
+            a: 'All shipments include basic liability coverage. Standard tier includes $100, Priority includes $500, and Express includes $2,500. Additional cargo insurance is available up to the full declared value. Claims are processed within 14 business days with proper documentation.',
           },
           {
-            q: "How do I get a quote?",
+            q: 'How do I get a quote?',
             a: "Use our online quote tool by entering origin, destination, dimensions, weight, and cargo type. You'll receive instant rates for all service tiers. For complex shipments (project cargo, charters, or oversized freight), contact our sales team directly at sales@swiftfreight.com or call +1 (555) 234-5678.",
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to ship smarter?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to ship smarter?'
     const ctaDesc =
       props.cta?.description ??
-      "Join 3,400+ companies that trust SwiftFreight to move their cargo. Get your first quote in under 3 minutes."
-    const ctaPrimary = props.cta?.primary ?? "Get instant quote"
-    const ctaSecondary = props.cta?.secondary ?? "Talk to sales"
+      'Join 3,400+ companies that trust SwiftFreight to move their cargo. Get your first quote in under 3 minutes.'
+    const ctaPrimary = props.cta?.primary ?? 'Get instant quote'
+    const ctaSecondary = props.cta?.secondary ?? 'Talk to sales'
     const ctaNote =
       props.cta?.note ??
-      "No account required for quotes. Volume discounts available for 50+ shipments/month."
+      'No account required for quotes. Volume discounts available for 50+ shipments/month.'
 
     const footerBlurb =
       props.footer?.blurb ??
-      "Global logistics made simple. Air, ocean, and ground freight to 180+ countries with real-time tracking and guaranteed delivery."
-    const footerServicesTitle = props.footer?.servicesTitle ?? "Services"
+      'Global logistics made simple. Air, ocean, and ground freight to 180+ countries with real-time tracking and guaranteed delivery.'
+    const footerServicesTitle = props.footer?.servicesTitle ?? 'Services'
     const footerServicesLinks = props.footer?.servicesLinks?.length
       ? props.footer.servicesLinks
       : [
-          "Air Freight",
-          "Ocean Freight",
-          "Ground Transport",
-          "Warehousing",
-          "Customs Brokerage",
-          "Last-Mile Delivery",
+          'Air Freight',
+          'Ocean Freight',
+          'Ground Transport',
+          'Warehousing',
+          'Customs Brokerage',
+          'Last-Mile Delivery',
         ]
-    const footerCompanyTitle = props.footer?.companyTitle ?? "Company"
+    const footerCompanyTitle = props.footer?.companyTitle ?? 'Company'
     const footerCompanyLinks = props.footer?.companyLinks?.length
       ? props.footer.companyLinks
-      : ["About Us", "Careers", "Press", "Partners", "Sustainability", "Security"]
-    const footerContactTitle = props.footer?.contactTitle ?? "Contact"
-    const footerEmail = props.footer?.email ?? "support@swiftfreight.com"
-    const footerPhone = props.footer?.phone ?? "+1 (555) 234-5678"
+      : [
+          'About Us',
+          'Careers',
+          'Press',
+          'Partners',
+          'Sustainability',
+          'Security',
+        ]
+    const footerContactTitle = props.footer?.contactTitle ?? 'Contact'
+    const footerEmail = props.footer?.email ?? 'support@swiftfreight.com'
+    const footerPhone = props.footer?.phone ?? '+1 (555) 234-5678'
     const footerAddress =
-      props.footer?.address ?? "450 Lexington Ave, Suite 2800, New York, NY 10017"
+      props.footer?.address ??
+      '450 Lexington Ave, Suite 2800, New York, NY 10017'
     const footerCopyright =
       props.footer?.copyright ??
-      "SwiftFreight Logistics Inc. All rights reserved."
+      'SwiftFreight Logistics Inc. All rights reserved.'
     const footerLegalLinks = props.footer?.legalLinks?.length
       ? props.footer.legalLinks
-      : ["Privacy Policy", "Terms of Service", "Cookie Settings"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["LinkedIn", "Twitter", "Facebook"]
+      : ['LinkedIn', 'Twitter', 'Facebook']
 
     // Brand logo tile — bolt mark on a primary tile (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground",
+          'grid shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -688,7 +724,7 @@ export const LogisticsKimiPage = defineCapsule({
 
     const Check = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5 shrink-0", className)}
+        className={cn('size-5 shrink-0', className)}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -703,7 +739,7 @@ export const LogisticsKimiPage = defineCapsule({
 
     const Star = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5", className)}
+        className={cn('size-5', className)}
         viewBox="0 0 20 20"
         fill="currentColor"
         aria-hidden="true"
@@ -746,45 +782,105 @@ export const LogisticsKimiPage = defineCapsule({
     // Per-service icons; tints rotate through tokens (never raw palette).
     const serviceIcons: ReactNode[] = [
       // plane / air
-      <svg key="air" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="air"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
       </svg>,
       // ocean / info circle
-      <svg key="ocean" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="ocean"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>,
       // truck / ground
-      <svg key="ground" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="ground"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
         <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1" />
       </svg>,
       // warehouse / building
-      <svg key="warehouse" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="warehouse"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
       </svg>,
       // customs / document
-      <svg key="customs" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="customs"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>,
       // last-mile / location
-      <svg key="lastmile" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="lastmile"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
         <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>,
     ]
     const iconTints = [
-      "bg-primary/10 text-primary",
-      "bg-accent text-accent-foreground",
-      "bg-secondary text-secondary-foreground",
-      "bg-chart-2/15 text-chart-2",
-      "bg-chart-4/15 text-chart-4",
-      "bg-destructive/10 text-destructive",
+      'bg-primary/10 text-primary',
+      'bg-accent text-accent-foreground',
+      'bg-secondary text-secondary-foreground',
+      'bg-chart-2/15 text-chart-2',
+      'bg-chart-4/15 text-chart-4',
+      'bg-destructive/10 text-destructive',
     ]
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -822,7 +918,16 @@ export const LogisticsKimiPage = defineCapsule({
                   onClick={() => setSearchOpen(true)}
                   className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground sm:flex"
                 >
-                  <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    className="size-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                   </svg>
@@ -833,7 +938,16 @@ export const LogisticsKimiPage = defineCapsule({
                   onClick={() => setTrackingOpen(true)}
                   className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground sm:flex"
                 >
-                  <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    className="size-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   <span className="text-sm font-medium">Track</span>
@@ -890,7 +1004,7 @@ export const LogisticsKimiPage = defineCapsule({
                               {authDisplayName}
                             </p>
                             <p className="truncate text-xs text-muted-foreground">
-                              {authEmail ?? "Signed in to this session"}
+                              {authEmail ?? 'Signed in to this session'}
                             </p>
                           </div>
                         </div>
@@ -898,7 +1012,7 @@ export const LogisticsKimiPage = defineCapsule({
                       <div className="p-2">
                         <button
                           type="button"
-                          onClick={() => go("Shipments")}
+                          onClick={() => go('Shipments')}
                           className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           Shipments
@@ -906,7 +1020,7 @@ export const LogisticsKimiPage = defineCapsule({
                         </button>
                         <button
                           type="button"
-                          onClick={() => go("Quotes")}
+                          onClick={() => go('Quotes')}
                           className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           Quote Requests
@@ -953,7 +1067,16 @@ export const LogisticsKimiPage = defineCapsule({
                   onClick={() => setMobileOpen((v: boolean) => !v)}
                   className="p-2 text-muted-foreground transition-colors hover:text-foreground lg:hidden"
                 >
-                  <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    className="size-6"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
                 </button>
@@ -997,7 +1120,7 @@ export const LogisticsKimiPage = defineCapsule({
                             {authDisplayName}
                           </p>
                           <p className="truncate text-xs text-muted-foreground">
-                            {authEmail ?? "Signed in"}
+                            {authEmail ?? 'Signed in'}
                           </p>
                         </div>
                       </div>
@@ -1052,7 +1175,16 @@ export const LogisticsKimiPage = defineCapsule({
                 >
                   <div className="size-12 overflow-hidden rounded-md bg-muted">
                     <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                      <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <svg
+                        className="size-6"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
                         <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
                         <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1" />
                       </svg>
@@ -1068,12 +1200,12 @@ export const LogisticsKimiPage = defineCapsule({
                   </div>
                   <span
                     className={cn(
-                      "rounded-full px-2 py-1 text-xs font-semibold",
-                      shipment.status === "Delivered"
-                        ? "bg-primary/10 text-primary"
-                        : shipment.status === "In Transit"
-                          ? "bg-chart-2/15 text-chart-2"
-                          : "bg-muted text-muted-foreground",
+                      'rounded-full px-2 py-1 text-xs font-semibold',
+                      shipment.status === 'Delivered'
+                        ? 'bg-primary/10 text-primary'
+                        : shipment.status === 'In Transit'
+                          ? 'bg-chart-2/15 text-chart-2'
+                          : 'bg-muted text-muted-foreground',
                     )}
                   >
                     {shipment.status}
@@ -1126,13 +1258,24 @@ export const LogisticsKimiPage = defineCapsule({
                         type="submit"
                         className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                       >
-                        <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <svg
+                          className="size-5"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
                           <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                         <span>{trackButton}</span>
                       </button>
                     </div>
-                    <p className="mt-3 text-xs text-muted-foreground">{trackHint}</p>
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      {trackHint}
+                    </p>
                   </form>
 
                   <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
@@ -1157,7 +1300,16 @@ export const LogisticsKimiPage = defineCapsule({
                   <div className="absolute -bottom-6 -left-6 rounded-xl border border-border bg-card p-4 shadow-lg">
                     <div className="flex items-center gap-3">
                       <div className="grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
-                        <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <svg
+                          className="size-6"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
                           <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </div>
@@ -1235,7 +1387,7 @@ export const LogisticsKimiPage = defineCapsule({
                   >
                     <div
                       className={cn(
-                        "mb-6 grid size-14 place-items-center rounded-xl",
+                        'mb-6 grid size-14 place-items-center rounded-xl',
                         iconTints[i % iconTints.length],
                       )}
                     >
@@ -1300,7 +1452,16 @@ export const LogisticsKimiPage = defineCapsule({
                   <div className="absolute right-6 top-6 rounded-xl border border-border bg-card p-4 shadow-lg">
                     <div className="flex items-center gap-3">
                       <div className="grid size-10 place-items-center rounded-full bg-primary text-primary-foreground">
-                        <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <svg
+                          className="size-5"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
                           <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </div>
@@ -1365,10 +1526,10 @@ export const LogisticsKimiPage = defineCapsule({
                     <div
                       key={tier.name}
                       className={cn(
-                        "relative rounded-2xl p-8",
+                        'relative rounded-2xl p-8',
                         featured
-                          ? "bg-primary text-primary-foreground"
-                          : "border border-border bg-card",
+                          ? 'bg-primary text-primary-foreground'
+                          : 'border border-border bg-card',
                       )}
                     >
                       {tier.badge ? (
@@ -1378,18 +1539,20 @@ export const LogisticsKimiPage = defineCapsule({
                       ) : null}
                       <h3
                         className={cn(
-                          "mb-2 text-lg font-semibold",
-                          featured ? "text-primary-foreground" : "text-card-foreground",
+                          'mb-2 text-lg font-semibold',
+                          featured
+                            ? 'text-primary-foreground'
+                            : 'text-card-foreground',
                         )}
                       >
                         {tier.name}
                       </h3>
                       <p
                         className={cn(
-                          "mb-6 text-sm",
+                          'mb-6 text-sm',
                           featured
-                            ? "text-primary-foreground/70"
-                            : "text-muted-foreground",
+                            ? 'text-primary-foreground/70'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {tier.tagline}
@@ -1397,8 +1560,10 @@ export const LogisticsKimiPage = defineCapsule({
                       <div className="mb-6">
                         <span
                           className={cn(
-                            "text-4xl font-semibold",
-                            featured ? "text-primary-foreground" : "text-card-foreground",
+                            'text-4xl font-semibold',
+                            featured
+                              ? 'text-primary-foreground'
+                              : 'text-card-foreground',
                           )}
                         >
                           {tier.price}
@@ -1406,8 +1571,8 @@ export const LogisticsKimiPage = defineCapsule({
                         <span
                           className={cn(
                             featured
-                              ? "text-primary-foreground/70"
-                              : "text-muted-foreground",
+                              ? 'text-primary-foreground/70'
+                              : 'text-muted-foreground',
                           )}
                         >
                           {tier.unit}
@@ -1415,10 +1580,10 @@ export const LogisticsKimiPage = defineCapsule({
                       </div>
                       <ul
                         className={cn(
-                          "mb-8 space-y-3 text-sm",
+                          'mb-8 space-y-3 text-sm',
                           featured
-                            ? "text-primary-foreground/90"
-                            : "text-muted-foreground",
+                            ? 'text-primary-foreground/90'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {tier.features.map((feature) => (
@@ -1426,8 +1591,8 @@ export const LogisticsKimiPage = defineCapsule({
                             <Check
                               className={
                                 featured
-                                  ? "text-primary-foreground"
-                                  : "text-primary"
+                                  ? 'text-primary-foreground'
+                                  : 'text-primary'
                               }
                             />
                             {feature}
@@ -1438,10 +1603,10 @@ export const LogisticsKimiPage = defineCapsule({
                         type="button"
                         onClick={() => go(tier.cta)}
                         className={cn(
-                          "w-full rounded-xl py-3 font-medium transition-colors",
+                          'w-full rounded-xl py-3 font-medium transition-colors',
                           featured
-                            ? "bg-background text-foreground hover:bg-muted"
-                            : "border border-primary text-primary hover:bg-muted/50",
+                            ? 'bg-background text-foreground hover:bg-muted'
+                            : 'border border-primary text-primary hover:bg-muted/50',
                         )}
                       >
                         {tier.cta}
@@ -1494,7 +1659,9 @@ export const LogisticsKimiPage = defineCapsule({
                         <p className="font-semibold text-card-foreground">
                           {t.name}
                         </p>
-                        <p className="text-sm text-muted-foreground">{t.role}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {t.role}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1550,7 +1717,16 @@ export const LogisticsKimiPage = defineCapsule({
                   className="inline-flex items-center rounded-xl bg-background px-8 py-4 font-semibold text-foreground transition-colors hover:bg-muted"
                 >
                   {ctaPrimary}
-                  <svg className="ml-2 size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    className="ml-2 size-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </button>
@@ -1562,7 +1738,9 @@ export const LogisticsKimiPage = defineCapsule({
                   {ctaSecondary}
                 </button>
               </div>
-              <p className="mt-6 text-sm text-primary-foreground/60">{ctaNote}</p>
+              <p className="mt-6 text-sm text-primary-foreground/60">
+                {ctaNote}
+              </p>
             </div>
           </section>
         </main>
@@ -1574,8 +1752,8 @@ export const LogisticsKimiPage = defineCapsule({
               <SheetTitle className="text-xl">Track Shipments</SheetTitle>
               <SheetDescription>
                 {safeShipments.length > 0
-                  ? `${safeShipments.length} shipment${safeShipments.length === 1 ? "" : "s"} tracked.`
-                  : "No shipments tracked yet."}
+                  ? `${safeShipments.length} shipment${safeShipments.length === 1 ? '' : 's'} tracked.`
+                  : 'No shipments tracked yet.'}
               </SheetDescription>
             </SheetHeader>
             <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -1588,7 +1766,16 @@ export const LogisticsKimiPage = defineCapsule({
                     >
                       <div className="aspect-square overflow-hidden rounded-lg bg-muted">
                         <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                          <svg className="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <svg
+                            className="size-8"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
                             <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
                             <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1" />
                           </svg>
@@ -1606,12 +1793,12 @@ export const LogisticsKimiPage = defineCapsule({
                           </div>
                           <span
                             className={cn(
-                              "rounded-full px-2 py-1 text-xs font-semibold",
-                              shipment.status === "Delivered"
-                                ? "bg-primary/10 text-primary"
-                                : shipment.status === "In Transit"
-                                  ? "bg-chart-2/15 text-chart-2"
-                                  : "bg-muted text-muted-foreground",
+                              'rounded-full px-2 py-1 text-xs font-semibold',
+                              shipment.status === 'Delivered'
+                                ? 'bg-primary/10 text-primary'
+                                : shipment.status === 'In Transit'
+                                  ? 'bg-chart-2/15 text-chart-2'
+                                  : 'bg-muted text-muted-foreground',
                             )}
                           >
                             {shipment.status}
@@ -1629,9 +1816,9 @@ export const LogisticsKimiPage = defineCapsule({
                             onClick={() =>
                               void updateShipmentStatus(
                                 shipment.trackingNumber,
-                                shipment.status === "In Transit"
-                                  ? "Delivered"
-                                  : "In Transit",
+                                shipment.status === 'In Transit'
+                                  ? 'Delivered'
+                                  : 'In Transit',
                               )
                             }
                             className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
@@ -1665,7 +1852,11 @@ export const LogisticsKimiPage = defineCapsule({
             </div>
             <SheetFooter className="border-t border-border p-6">
               <SheetClose asChild>
-                <Button type="button" variant="secondary" className="rounded-full">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="rounded-full"
+                >
                   Close
                 </Button>
               </SheetClose>
@@ -1680,14 +1871,17 @@ export const LogisticsKimiPage = defineCapsule({
               <SheetTitle className="text-xl">Quote Requests</SheetTitle>
               <SheetDescription>
                 {safeQuoteRequests.length > 0
-                  ? `${safeQuoteRequests.length} quote request${safeQuoteRequests.length === 1 ? "" : "s"} submitted.`
-                  : "No quote requests yet."}
+                  ? `${safeQuoteRequests.length} quote request${safeQuoteRequests.length === 1 ? '' : 's'} submitted.`
+                  : 'No quote requests yet.'}
               </SheetDescription>
             </SheetHeader>
             <div className="flex-1 overflow-y-auto px-6 py-5">
               <form onSubmit={handleQuoteSubmit} className="mb-6 space-y-4">
                 <div>
-                  <label htmlFor="quote-origin" className="mb-2 block text-sm font-medium text-card-foreground">
+                  <label
+                    htmlFor="quote-origin"
+                    className="mb-2 block text-sm font-medium text-card-foreground"
+                  >
                     Origin
                   </label>
                   <input
@@ -1695,13 +1889,18 @@ export const LogisticsKimiPage = defineCapsule({
                     type="text"
                     placeholder="e.g., Shenzhen"
                     value={quoteForm.origin}
-                    onChange={(e) => setQuoteForm({ ...quoteForm, origin: e.target.value })}
+                    onChange={(e) =>
+                      setQuoteForm({ ...quoteForm, origin: e.target.value })
+                    }
                     className="w-full rounded-xl border border-input bg-muted/50 px-4 py-3 text-foreground placeholder:text-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="quote-destination" className="mb-2 block text-sm font-medium text-card-foreground">
+                  <label
+                    htmlFor="quote-destination"
+                    className="mb-2 block text-sm font-medium text-card-foreground"
+                  >
                     Destination
                   </label>
                   <input
@@ -1709,13 +1908,21 @@ export const LogisticsKimiPage = defineCapsule({
                     type="text"
                     placeholder="e.g., Los Angeles"
                     value={quoteForm.destination}
-                    onChange={(e) => setQuoteForm({ ...quoteForm, destination: e.target.value })}
+                    onChange={(e) =>
+                      setQuoteForm({
+                        ...quoteForm,
+                        destination: e.target.value,
+                      })
+                    }
                     className="w-full rounded-xl border border-input bg-muted/50 px-4 py-3 text-foreground placeholder:text-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="quote-weight" className="mb-2 block text-sm font-medium text-card-foreground">
+                  <label
+                    htmlFor="quote-weight"
+                    className="mb-2 block text-sm font-medium text-card-foreground"
+                  >
                     Weight
                   </label>
                   <input
@@ -1723,19 +1930,26 @@ export const LogisticsKimiPage = defineCapsule({
                     type="text"
                     placeholder="e.g., 500kg"
                     value={quoteForm.weight}
-                    onChange={(e) => setQuoteForm({ ...quoteForm, weight: e.target.value })}
+                    onChange={(e) =>
+                      setQuoteForm({ ...quoteForm, weight: e.target.value })
+                    }
                     className="w-full rounded-xl border border-input bg-muted/50 px-4 py-3 text-foreground placeholder:text-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="quote-service" className="mb-2 block text-sm font-medium text-card-foreground">
+                  <label
+                    htmlFor="quote-service"
+                    className="mb-2 block text-sm font-medium text-card-foreground"
+                  >
                     Service
                   </label>
                   <select
                     id="quote-service"
                     value={quoteForm.service}
-                    onChange={(e) => setQuoteForm({ ...quoteForm, service: e.target.value })}
+                    onChange={(e) =>
+                      setQuoteForm({ ...quoteForm, service: e.target.value })
+                    }
                     className="w-full rounded-xl border border-input bg-muted/50 px-4 py-3 text-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
                   >
                     <option value="Air Freight">Air Freight</option>
@@ -1743,11 +1957,16 @@ export const LogisticsKimiPage = defineCapsule({
                     <option value="Ground Transport">Ground Transport</option>
                     <option value="Warehousing">Warehousing</option>
                     <option value="Customs Brokerage">Customs Brokerage</option>
-                    <option value="Last-Mile Delivery">Last-Mile Delivery</option>
+                    <option value="Last-Mile Delivery">
+                      Last-Mile Delivery
+                    </option>
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="quote-email" className="mb-2 block text-sm font-medium text-card-foreground">
+                  <label
+                    htmlFor="quote-email"
+                    className="mb-2 block text-sm font-medium text-card-foreground"
+                  >
                     Email
                   </label>
                   <input
@@ -1755,7 +1974,9 @@ export const LogisticsKimiPage = defineCapsule({
                     type="email"
                     placeholder="your@email.com"
                     value={quoteForm.email}
-                    onChange={(e) => setQuoteForm({ ...quoteForm, email: e.target.value })}
+                    onChange={(e) =>
+                      setQuoteForm({ ...quoteForm, email: e.target.value })
+                    }
                     className="w-full rounded-xl border border-input bg-muted/50 px-4 py-3 text-foreground placeholder:text-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
                     required
                   />
@@ -1768,7 +1989,9 @@ export const LogisticsKimiPage = defineCapsule({
               {safeQuoteRequests.length > 0 && (
                 <div className="space-y-5">
                   <div className="border-t border-border pt-5">
-                    <h3 className="mb-4 text-sm font-semibold text-foreground">Recent Requests</h3>
+                    <h3 className="mb-4 text-sm font-semibold text-foreground">
+                      Recent Requests
+                    </h3>
                   </div>
                   {safeQuoteRequests.map((request) => (
                     <div
@@ -1808,7 +2031,11 @@ export const LogisticsKimiPage = defineCapsule({
                 </Button>
               )}
               <SheetClose asChild>
-                <Button type="button" variant="secondary" className="rounded-full">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="rounded-full"
+                >
                   Close
                 </Button>
               </SheetClose>
@@ -1887,7 +2114,16 @@ export const LogisticsKimiPage = defineCapsule({
                 <h4 className="mb-4 font-semibold">{footerContactTitle}</h4>
                 <ul className="space-y-3 text-sm text-muted-foreground">
                   <li className="flex items-start gap-3">
-                    <svg className="mt-0.5 size-5 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg
+                      className="mt-0.5 size-5 shrink-0 text-muted-foreground"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
                       <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                     <button
@@ -1899,7 +2135,16 @@ export const LogisticsKimiPage = defineCapsule({
                     </button>
                   </li>
                   <li className="flex items-start gap-3">
-                    <svg className="mt-0.5 size-5 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg
+                      className="mt-0.5 size-5 shrink-0 text-muted-foreground"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
                       <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
                     <button
@@ -1911,7 +2156,16 @@ export const LogisticsKimiPage = defineCapsule({
                     </button>
                   </li>
                   <li className="flex items-start gap-3">
-                    <svg className="mt-0.5 size-5 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg
+                      className="mt-0.5 size-5 shrink-0 text-muted-foreground"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
                       <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>

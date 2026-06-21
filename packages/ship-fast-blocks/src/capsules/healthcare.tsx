@@ -1,11 +1,11 @@
-import { useState } from "react"
-import { type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -15,14 +15,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
+} from '#/components/ui/sheet.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
+import { Button } from '#/components/ui/button.tsx'
 
 /**
  * HealthcareKimiPage — a complete, self-contained primary-care / medical-clinic
@@ -47,7 +47,7 @@ import { Button } from "#/components/ui/button.tsx"
  * props at all.
  */
 export const HealthcareKimiPage = defineCapsule({
-  name: "HealthcareKimiPage",
+  name: 'HealthcareKimiPage',
   description:
     "Complete primary-care / medical-clinic / healthcare LANDING page with a clean, trustworthy, light clinical aesthetic: calm neutral canvas, single brand accent on CTAs, badges and icons, soft rounded cards. Includes a split hero (now-accepting-patients pill, patient-first headline, dual CTAs, insurance/same-day/virtual trust row, exam-room photo with floating Open-Today hours card and patient-count card), an accepted-insurance logo strip, a 6-up medical services grid (Primary Care, Virtual Visits, Women's Health, Pediatrics, Mental Health, Lab & Diagnostics) with icons and book links, a 4-up board-certified physician team grid with headshots and specialties, an accent statistics band (active patients, wait time, satisfaction, years), a 6-up 5-star patient-testimonial grid with avatars, a 3-step booking how-it-works flow, a transparent 3-tier pricing table with a highlighted Most-Popular plan and feature checklists, an accordion FAQ, a full-bleed accent call-to-action band with phone CTA, and a rich multi-column footer with services, company, contact and social links. Use as the ROOT/home page for doctors' offices, primary care practices, family medicine, pediatric, women's health, dental, wellness, telehealth or urgent-care clinics, hospitals and medical groups when a calm, credible, conversion-focused page with appointment booking, physician bios, transparent pricing and insurance trust signals is wanted. Supply content only — brand, nav, hero, insurers, services, doctors, stats, testimonials, steps, pricing, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -286,10 +286,10 @@ export const HealthcareKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [bookingOpen, setBookingOpen] = useState(false)
-    const brand = props.brand ?? "Vitality Health Partners"
+    const brand = props.brand ?? 'Vitality Health Partners'
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Doctors", "Reviews", "Pricing", "FAQ"]
+      : ['Services', 'Doctors', 'Reviews', 'Pricing', 'FAQ']
 
     const appointments = lakebed.useQuery('appointments')
     const favoriteDoctorNames = lakebed.useQuery('favoriteDoctorNames')
@@ -325,350 +325,346 @@ export const HealthcareKimiPage = defineCapsule({
     const safeAppointments = appointments ?? []
     const appointmentCount = safeAppointments.length
 
-    const heroBadge = props.hero?.badge ?? "Now accepting new patients"
-    const heroBefore = props.hero?.headingBefore ?? "Healthcare that puts "
-    const heroHighlight = props.hero?.highlight ?? "you"
-    const heroAfter = props.hero?.headingAfter ?? " first"
+    const heroBadge = props.hero?.badge ?? 'Now accepting new patients'
+    const heroBefore = props.hero?.headingBefore ?? 'Healthcare that puts '
+    const heroHighlight = props.hero?.highlight ?? 'you'
+    const heroAfter = props.hero?.headingAfter ?? ' first'
     const heroSub =
       props.hero?.subheading ??
-      "Experience modern primary care with same-day appointments, transparent pricing, and a team that truly listens. Serving San Francisco families since 2015."
-    const heroPrimary = props.hero?.primaryCta ?? "Schedule Your Visit"
-    const heroSecondary = props.hero?.secondaryCta ?? "Explore Services"
+      'Experience modern primary care with same-day appointments, transparent pricing, and a team that truly listens. Serving San Francisco families since 2015.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Schedule Your Visit'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Explore Services'
     const heroTrust = props.hero?.trust?.length
       ? props.hero.trust
-      : ["Insurance accepted", "Same-day visits", "Virtual care"]
+      : ['Insurance accepted', 'Same-day visits', 'Virtual care']
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Modern medical examination room with natural light"
-    const hoursLabel = props.hero?.hoursLabel ?? "Open Today"
-    const hoursValue = props.hero?.hoursValue ?? "7:00 AM - 7:00 PM"
-    const patientCount = props.hero?.patientCount ?? "4,900+ patients"
+      'Modern medical examination room with natural light'
+    const hoursLabel = props.hero?.hoursLabel ?? 'Open Today'
+    const hoursValue = props.hero?.hoursValue ?? '7:00 AM - 7:00 PM'
+    const patientCount = props.hero?.patientCount ?? '4,900+ patients'
 
-    const insurersLabel =
-      props.insurers?.label ?? "Accepted insurance plans"
+    const insurersLabel = props.insurers?.label ?? 'Accepted insurance plans'
     const insurerItems = props.insurers?.items?.length
       ? props.insurers.items
-      : ["Blue Shield", "Aetna", "Cigna", "UnitedHealth", "Kaiser", "Medicare"]
+      : ['Blue Shield', 'Aetna', 'Cigna', 'UnitedHealth', 'Kaiser', 'Medicare']
 
-    const servicesEyebrow = props.services?.eyebrow ?? "Our Services"
+    const servicesEyebrow = props.services?.eyebrow ?? 'Our Services'
     const servicesHeading =
-      props.services?.heading ?? "Comprehensive care for every stage of life"
+      props.services?.heading ?? 'Comprehensive care for every stage of life'
     const servicesDesc =
       props.services?.description ??
-      "From routine checkups to specialized treatments, our board-certified physicians provide personalized care tailored to your unique health needs."
+      'From routine checkups to specialized treatments, our board-certified physicians provide personalized care tailored to your unique health needs.'
     const serviceItems = props.services?.items?.length
       ? props.services.items
       : [
           {
-            title: "Primary Care",
+            title: 'Primary Care',
             description:
-              "Comprehensive annual physicals, chronic disease management, and preventive screenings. We manage diabetes, hypertension, asthma, and more.",
-            cta: "Book primary care",
+              'Comprehensive annual physicals, chronic disease management, and preventive screenings. We manage diabetes, hypertension, asthma, and more.',
+            cta: 'Book primary care',
           },
           {
-            title: "Virtual Visits",
+            title: 'Virtual Visits',
             description:
-              "Connect with your doctor from home for follow-ups, medication refills, and minor concerns. HIPAA-compliant video appointments available same-day.",
-            cta: "Schedule virtual visit",
+              'Connect with your doctor from home for follow-ups, medication refills, and minor concerns. HIPAA-compliant video appointments available same-day.',
+            cta: 'Schedule virtual visit',
           },
           {
             title: "Women's Health",
             description:
-              "Annual well-woman exams, Pap smears, breast health screenings, family planning, menopause management, and hormone therapy consultations.",
+              'Annual well-woman exams, Pap smears, breast health screenings, family planning, menopause management, and hormone therapy consultations.',
             cta: "Book women's health visit",
           },
           {
-            title: "Pediatrics",
+            title: 'Pediatrics',
             description:
-              "Complete care for infants, children, and adolescents. Well-child visits, immunizations, school physicals, and developmental screenings.",
-            cta: "Schedule pediatric visit",
+              'Complete care for infants, children, and adolescents. Well-child visits, immunizations, school physicals, and developmental screenings.',
+            cta: 'Schedule pediatric visit',
           },
           {
-            title: "Mental Health",
+            title: 'Mental Health',
             description:
-              "Integrated behavioral health services including anxiety and depression screening, counseling referrals, and medication management.",
-            cta: "Book mental health visit",
+              'Integrated behavioral health services including anxiety and depression screening, counseling referrals, and medication management.',
+            cta: 'Book mental health visit',
           },
           {
-            title: "Lab & Diagnostics",
+            title: 'Lab & Diagnostics',
             description:
-              "On-site blood work, urine testing, EKGs, and rapid strep/flu tests. Most results available within 24-48 hours through your patient portal.",
-            cta: "Learn about labs",
+              'On-site blood work, urine testing, EKGs, and rapid strep/flu tests. Most results available within 24-48 hours through your patient portal.',
+            cta: 'Learn about labs',
           },
         ]
 
-    const doctorsEyebrow = props.doctors?.eyebrow ?? "Our Team"
-    const doctorsHeading = props.doctors?.heading ?? "Meet our physicians"
+    const doctorsEyebrow = props.doctors?.eyebrow ?? 'Our Team'
+    const doctorsHeading = props.doctors?.heading ?? 'Meet our physicians'
     const doctorsDesc =
       props.doctors?.description ??
-      "Board-certified doctors with decades of combined experience, committed to building lasting relationships with every patient."
+      'Board-certified doctors with decades of combined experience, committed to building lasting relationships with every patient.'
     const doctorItems = props.doctors?.items?.length
       ? props.doctors.items
       : [
           {
-            name: "Dr. Sarah Chen, MD",
-            specialty: "Internal Medicine",
-            bio: "Harvard Medical School. 15 years experience. Specializes in chronic disease management and preventive care.",
+            name: 'Dr. Sarah Chen, MD',
+            specialty: 'Internal Medicine',
+            bio: 'Harvard Medical School. 15 years experience. Specializes in chronic disease management and preventive care.',
             photoAlt:
-              "Professional headshot of Dr. Sarah Chen, a female physician with shoulder-length dark hair wearing a white coat",
+              'Professional headshot of Dr. Sarah Chen, a female physician with shoulder-length dark hair wearing a white coat',
           },
           {
-            name: "Dr. James Mitchell, MD",
-            specialty: "Family Medicine",
-            bio: "Stanford University. 12 years experience. Board certified in family medicine with focus on holistic care.",
+            name: 'Dr. James Mitchell, MD',
+            specialty: 'Family Medicine',
+            bio: 'Stanford University. 12 years experience. Board certified in family medicine with focus on holistic care.',
             photoAlt:
-              "Professional headshot of Dr. James Mitchell, a male physician in his 40s with short gray hair and glasses",
+              'Professional headshot of Dr. James Mitchell, a male physician in his 40s with short gray hair and glasses',
           },
           {
-            name: "Dr. Priya Patel, DO",
+            name: 'Dr. Priya Patel, DO',
             specialty: "Women's Health",
-            bio: "Johns Hopkins University. 10 years experience. OB/GYN trained, specializing in reproductive health and wellness.",
+            bio: 'Johns Hopkins University. 10 years experience. OB/GYN trained, specializing in reproductive health and wellness.',
             photoAlt:
-              "Professional headshot of Dr. Priya Patel, a female physician with long dark hair wearing a white coat and stethoscope",
+              'Professional headshot of Dr. Priya Patel, a female physician with long dark hair wearing a white coat and stethoscope',
           },
           {
-            name: "Dr. Michael Torres, MD",
-            specialty: "Pediatrics",
-            bio: "UCSF School of Medicine. 8 years experience. Fellow of the American Academy of Pediatrics. Speaks English and Spanish.",
+            name: 'Dr. Michael Torres, MD',
+            specialty: 'Pediatrics',
+            bio: 'UCSF School of Medicine. 8 years experience. Fellow of the American Academy of Pediatrics. Speaks English and Spanish.',
             photoAlt:
-              "Professional headshot of Dr. Michael Torres, a male pediatrician in his 30s with a warm smile",
+              'Professional headshot of Dr. Michael Torres, a male pediatrician in his 30s with a warm smile',
           },
         ]
 
     const statItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "4,900+", label: "Active Patients" },
-          { value: "15 min", label: "Avg. Wait Time" },
-          { value: "98%", label: "Patient Satisfaction" },
-          { value: "9+", label: "Years of Service" },
+          { value: '4,900+', label: 'Active Patients' },
+          { value: '15 min', label: 'Avg. Wait Time' },
+          { value: '98%', label: 'Patient Satisfaction' },
+          { value: '9+', label: 'Years of Service' },
         ]
 
-    const testimonialsEyebrow =
-      props.testimonials?.eyebrow ?? "Patient Reviews"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'Patient Reviews'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What our patients say"
+      props.testimonials?.heading ?? 'What our patients say'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Real stories from real patients who trust us with their care."
+      'Real stories from real patients who trust us with their care.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
               "Dr. Chen took the time to actually listen to my concerns. She explained my blood work in detail and created a plan that fit my lifestyle. First doctor I've had in years who truly cares.",
-            name: "David Richardson",
-            meta: "Patient since 2021",
-            avatarAlt: "Portrait of patient David Richardson",
+            name: 'David Richardson',
+            meta: 'Patient since 2021',
+            avatarAlt: 'Portrait of patient David Richardson',
           },
           {
             quote:
-              "The virtual visit option is a game-changer. I was able to get my prescription refill during my lunch break without driving across the city. The video quality and connection were perfect.",
-            name: "Jennifer Walsh",
-            meta: "Patient since 2019",
-            avatarAlt: "Portrait of patient Jennifer Walsh",
+              'The virtual visit option is a game-changer. I was able to get my prescription refill during my lunch break without driving across the city. The video quality and connection were perfect.',
+            name: 'Jennifer Walsh',
+            meta: 'Patient since 2019',
+            avatarAlt: 'Portrait of patient Jennifer Walsh',
           },
           {
             quote:
-              "As a new mom, I was anxious about finding the right pediatrician. Dr. Torres made us feel so comfortable. He answers all our questions patiently and my daughter actually looks forward to checkups!",
-            name: "Amanda Foster",
-            meta: "Patient since 2022",
-            avatarAlt: "Portrait of patient Amanda Foster",
+              'As a new mom, I was anxious about finding the right pediatrician. Dr. Torres made us feel so comfortable. He answers all our questions patiently and my daughter actually looks forward to checkups!',
+            name: 'Amanda Foster',
+            meta: 'Patient since 2022',
+            avatarAlt: 'Portrait of patient Amanda Foster',
           },
           {
             quote:
-              "Finally a clinic with transparent pricing! I knew exactly what my visit would cost before I even walked in. No surprise bills months later. The online booking is seamless too.",
-            name: "Robert Kim",
-            meta: "Patient since 2020",
-            avatarAlt: "Portrait of patient Robert Kim",
+              'Finally a clinic with transparent pricing! I knew exactly what my visit would cost before I even walked in. No surprise bills months later. The online booking is seamless too.',
+            name: 'Robert Kim',
+            meta: 'Patient since 2020',
+            avatarAlt: 'Portrait of patient Robert Kim',
           },
           {
             quote:
               "Dr. Patel is incredible. She made me feel so comfortable during my well-woman exam and addressed concerns I didn't even know I had. The staff is warm and the office is beautiful.",
-            name: "Lisa Thompson",
-            meta: "Patient since 2023",
-            avatarAlt: "Portrait of patient Lisa Thompson",
+            name: 'Lisa Thompson',
+            meta: 'Patient since 2023',
+            avatarAlt: 'Portrait of patient Lisa Thompson',
           },
           {
             quote:
-              "I brought my elderly father here after his previous doctor retired. Dr. Mitchell was patient and thorough, explaining everything in terms we both understood. The whole family now comes here.",
-            name: "Marcus Johnson",
-            meta: "Patient since 2022",
-            avatarAlt: "Portrait of patient Marcus Johnson",
+              'I brought my elderly father here after his previous doctor retired. Dr. Mitchell was patient and thorough, explaining everything in terms we both understood. The whole family now comes here.',
+            name: 'Marcus Johnson',
+            meta: 'Patient since 2022',
+            avatarAlt: 'Portrait of patient Marcus Johnson',
           },
         ]
 
-    const stepsEyebrow = props.steps?.eyebrow ?? "How It Works"
+    const stepsEyebrow = props.steps?.eyebrow ?? 'How It Works'
     const stepsHeading =
-      props.steps?.heading ?? "Book your visit in 3 simple steps"
+      props.steps?.heading ?? 'Book your visit in 3 simple steps'
     const stepsDesc =
       props.steps?.description ??
-      "Getting quality healthcare has never been easier. Same-day appointments available for urgent needs."
+      'Getting quality healthcare has never been easier. Same-day appointments available for urgent needs.'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Book online or call",
+            title: 'Book online or call',
             description:
-              "Choose your preferred time slot through our secure booking system or call us directly at (415) 555-1234. Virtual visits available.",
+              'Choose your preferred time slot through our secure booking system or call us directly at (415) 555-1234. Virtual visits available.',
           },
           {
-            title: "Complete intake",
+            title: 'Complete intake',
             description:
-              "Fill out your medical history and insurance information through our patient portal before your visit. Takes just 5 minutes.",
+              'Fill out your medical history and insurance information through our patient portal before your visit. Takes just 5 minutes.',
           },
           {
-            title: "See your doctor",
+            title: 'See your doctor',
             description:
-              "Arrive 10 minutes early (or join your video call). Your physician will review your history, address concerns, and create a personalized care plan.",
+              'Arrive 10 minutes early (or join your video call). Your physician will review your history, address concerns, and create a personalized care plan.',
           },
         ]
 
-    const pricingEyebrow = props.pricing?.eyebrow ?? "Transparent Pricing"
-    const pricingHeading = props.pricing?.heading ?? "Simple, upfront pricing"
+    const pricingEyebrow = props.pricing?.eyebrow ?? 'Transparent Pricing'
+    const pricingHeading = props.pricing?.heading ?? 'Simple, upfront pricing'
     const pricingDesc =
       props.pricing?.description ??
-      "No hidden fees or surprise bills. We accept most major insurance plans and offer transparent self-pay rates."
+      'No hidden fees or surprise bills. We accept most major insurance plans and offer transparent self-pay rates.'
     const pricingItems = props.pricing?.items?.length
       ? props.pricing.items
       : [
           {
-            name: "New Patient Visit",
-            tagline: "Comprehensive initial consultation",
-            price: "$180",
-            unit: "/visit",
+            name: 'New Patient Visit',
+            tagline: 'Comprehensive initial consultation',
+            price: '$180',
+            unit: '/visit',
             features: [
-              "60-minute consultation",
-              "Complete health history review",
-              "Personalized care plan",
-              "Patient portal access",
+              '60-minute consultation',
+              'Complete health history review',
+              'Personalized care plan',
+              'Patient portal access',
             ],
-            cta: "Book new patient visit",
+            cta: 'Book new patient visit',
           },
           {
-            name: "Follow-up Visit",
-            tagline: "For existing patients",
-            price: "$120",
-            unit: "/visit",
+            name: 'Follow-up Visit',
+            tagline: 'For existing patients',
+            price: '$120',
+            unit: '/visit',
             features: [
-              "30-minute consultation",
-              "Progress review & adjustments",
-              "Medication management",
-              "In-person or virtual",
+              '30-minute consultation',
+              'Progress review & adjustments',
+              'Medication management',
+              'In-person or virtual',
             ],
-            cta: "Book follow-up",
+            cta: 'Book follow-up',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Urgent Care",
-            tagline: "Same-day appointments",
-            price: "$150",
-            unit: "/visit",
+            name: 'Urgent Care',
+            tagline: 'Same-day appointments',
+            price: '$150',
+            unit: '/visit',
             features: [
-              "Same-day appointment",
-              "Acute illness treatment",
-              "Rapid testing available",
-              "Prescription refills",
+              'Same-day appointment',
+              'Acute illness treatment',
+              'Rapid testing available',
+              'Prescription refills',
             ],
-            cta: "Book urgent care",
+            cta: 'Book urgent care',
           },
         ]
     const pricingNote =
       props.pricing?.note ??
-      "Insurance typically covers 80-100% of visit costs."
-    const pricingNoteCta = props.pricing?.noteCta ?? "Verify your coverage"
+      'Insurance typically covers 80-100% of visit costs.'
+    const pricingNoteCta = props.pricing?.noteCta ?? 'Verify your coverage'
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading =
-      props.faq?.heading ?? "Frequently asked questions"
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Frequently asked questions'
     const faqDesc =
-      props.faq?.description ?? "Everything you need to know about our practice."
+      props.faq?.description ??
+      'Everything you need to know about our practice.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "Do you accept my insurance?",
+            question: 'Do you accept my insurance?',
             answer:
-              "We accept most major insurance plans including Blue Shield, Aetna, Cigna, UnitedHealthcare, Kaiser, and Medicare. We also offer competitive self-pay rates for those without insurance or with out-of-network plans. Contact our billing team at (415) 555-1235 to verify your specific coverage.",
+              'We accept most major insurance plans including Blue Shield, Aetna, Cigna, UnitedHealthcare, Kaiser, and Medicare. We also offer competitive self-pay rates for those without insurance or with out-of-network plans. Contact our billing team at (415) 555-1235 to verify your specific coverage.',
           },
           {
-            question: "How quickly can I get an appointment?",
+            question: 'How quickly can I get an appointment?',
             answer:
-              "For routine visits, we typically have availability within 1-3 days. For urgent concerns, we offer same-day appointments and walk-in hours from 7:00-9:00 AM weekdays. Virtual visits are often available within hours. Book online 24/7 or call us during business hours.",
+              'For routine visits, we typically have availability within 1-3 days. For urgent concerns, we offer same-day appointments and walk-in hours from 7:00-9:00 AM weekdays. Virtual visits are often available within hours. Book online 24/7 or call us during business hours.',
           },
           {
-            question: "What should I bring to my first appointment?",
+            question: 'What should I bring to my first appointment?',
             answer:
-              "Please bring a valid photo ID, your insurance card, a list of current medications (including dosages), and any relevant medical records or recent test results. If you have specific concerns, writing them down beforehand helps ensure we address everything during your visit.",
+              'Please bring a valid photo ID, your insurance card, a list of current medications (including dosages), and any relevant medical records or recent test results. If you have specific concerns, writing them down beforehand helps ensure we address everything during your visit.',
           },
           {
-            question: "Do you offer virtual visits?",
+            question: 'Do you offer virtual visits?',
             answer:
               "Yes! We offer HIPAA-compliant video visits for many types of appointments including follow-ups, medication management, mental health check-ins, and minor acute concerns. Virtual visits are covered by most insurance plans at the same rate as in-person visits. You'll receive a secure link via email and text before your appointment.",
           },
           {
-            question: "What are your office hours?",
+            question: 'What are your office hours?',
             answer:
               "We're open Monday through Friday 7:00 AM - 7:00 PM, and Saturday 8:00 AM - 2:00 PM. We offer early morning and evening appointments to accommodate busy schedules. Virtual visits are available during all business hours and selected evening hours Monday through Thursday until 8:00 PM.",
           },
           {
-            question: "Can you manage my chronic conditions?",
+            question: 'Can you manage my chronic conditions?',
             answer:
-              "Absolutely. Our physicians specialize in managing chronic conditions including diabetes, hypertension, asthma, thyroid disorders, high cholesterol, and depression/anxiety. We coordinate with specialists when needed and use our patient portal for ongoing communication and medication adjustments between visits.",
+              'Absolutely. Our physicians specialize in managing chronic conditions including diabetes, hypertension, asthma, thyroid disorders, high cholesterol, and depression/anxiety. We coordinate with specialists when needed and use our patient portal for ongoing communication and medication adjustments between visits.',
           },
         ]
 
-    const ctaHeading =
-      props.cta?.heading ?? "Ready to prioritize your health?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to prioritize your health?'
     const ctaDesc =
       props.cta?.description ??
-      "Join thousands of San Francisco families who trust Vitality Health Partners for their primary care. Same-day appointments available."
-    const ctaPrimary = props.cta?.primaryCta ?? "Book Your First Visit"
-    const ctaPhone = props.cta?.phone ?? "(415) 555-1234"
+      'Join thousands of San Francisco families who trust Vitality Health Partners for their primary care. Same-day appointments available.'
+    const ctaPrimary = props.cta?.primaryCta ?? 'Book Your First Visit'
+    const ctaPhone = props.cta?.phone ?? '(415) 555-1234'
     const ctaNote =
       props.cta?.note ??
-      "No-commitment consultation. Most insurance plans accepted."
+      'No-commitment consultation. Most insurance plans accepted.'
 
     const footerTagline =
       props.footer?.tagline ??
-      "Modern primary care and wellness services for the whole family. Serving San Francisco since 2015."
-    const footerServicesHeading =
-      props.footer?.servicesHeading ?? "Services"
+      'Modern primary care and wellness services for the whole family. Serving San Francisco since 2015.'
+    const footerServicesHeading = props.footer?.servicesHeading ?? 'Services'
     const footerServicesLinks = props.footer?.servicesLinks?.length
       ? props.footer.servicesLinks
       : [
-          "Primary Care",
-          "Virtual Visits",
+          'Primary Care',
+          'Virtual Visits',
           "Women's Health",
-          "Pediatrics",
-          "Mental Health",
-          "Lab & Diagnostics",
+          'Pediatrics',
+          'Mental Health',
+          'Lab & Diagnostics',
         ]
-    const footerCompanyHeading = props.footer?.companyHeading ?? "Company"
+    const footerCompanyHeading = props.footer?.companyHeading ?? 'Company'
     const footerCompanyLinks = props.footer?.companyLinks?.length
       ? props.footer.companyLinks
-      : ["Our Doctors", "About Us", "Careers", "Blog", "Press"]
-    const footerContactHeading = props.footer?.contactHeading ?? "Contact"
+      : ['Our Doctors', 'About Us', 'Careers', 'Blog', 'Press']
+    const footerContactHeading = props.footer?.contactHeading ?? 'Contact'
     const footerAddress =
-      props.footer?.address ?? "1234 Mission Street, San Francisco, CA 94103"
-    const footerPhone = props.footer?.phone ?? "(415) 555-1234"
-    const footerEmail = props.footer?.email ?? "hello@vitalityhealth.com"
+      props.footer?.address ?? '1234 Mission Street, San Francisco, CA 94103'
+    const footerPhone = props.footer?.phone ?? '(415) 555-1234'
+    const footerEmail = props.footer?.email ?? 'hello@vitalityhealth.com'
     const footerCopyright =
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand}. All rights reserved.`
     const footerLegal = props.footer?.legalLinks?.length
       ? props.footer.legalLinks
-      : ["Privacy Policy", "Terms of Service", "Accessibility"]
+      : ['Privacy Policy', 'Terms of Service', 'Accessibility']
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Facebook", "Instagram", "LinkedIn"]
+      : ['Facebook', 'Instagram', 'LinkedIn']
 
     // Brand mark — heart-in-tile (decorative brand asset).
     const HeartMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-xl bg-primary text-primary-foreground",
+          'grid place-items-center rounded-xl bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -879,7 +875,7 @@ export const HealthcareKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-muted text-foreground antialiased",
+          'min-h-svh bg-muted text-foreground antialiased',
           props.className,
         )}
       >
@@ -1065,7 +1061,9 @@ export const HealthcareKimiPage = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">My Appointments</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        My Appointments
+                      </SheetTitle>
                       <SheetDescription>
                         {appointmentCount > 0
                           ? `${appointmentCount} appointment${appointmentCount === 1 ? '' : 's'} scheduled.`
@@ -1166,25 +1164,39 @@ export const HealthcareKimiPage = defineCapsule({
                             e.preventDefault()
                             const form = e.currentTarget
                             const service = (
-                              form.elements.namedItem('service') as HTMLSelectElement
+                              form.elements.namedItem(
+                                'service',
+                              ) as HTMLSelectElement
                             ).value
                             const doctor = (
-                              form.elements.namedItem('doctor') as HTMLSelectElement
+                              form.elements.namedItem(
+                                'doctor',
+                              ) as HTMLSelectElement
                             ).value
                             const date = (
-                              form.elements.namedItem('date') as HTMLInputElement
+                              form.elements.namedItem(
+                                'date',
+                              ) as HTMLInputElement
                             ).value
                             const time = (
-                              form.elements.namedItem('time') as HTMLSelectElement
+                              form.elements.namedItem(
+                                'time',
+                              ) as HTMLSelectElement
                             ).value
                             const patientName = (
-                              form.elements.namedItem('patientName') as HTMLInputElement
+                              form.elements.namedItem(
+                                'patientName',
+                              ) as HTMLInputElement
                             ).value
                             const patientEmail = (
-                              form.elements.namedItem('patientEmail') as HTMLInputElement
+                              form.elements.namedItem(
+                                'patientEmail',
+                              ) as HTMLInputElement
                             ).value
                             const patientPhone = (
-                              form.elements.namedItem('patientPhone') as HTMLInputElement
+                              form.elements.namedItem(
+                                'patientPhone',
+                              ) as HTMLInputElement
                             ).value
 
                             if (
@@ -1340,10 +1352,7 @@ export const HealthcareKimiPage = defineCapsule({
                               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                             />
                           </div>
-                          <Button
-                            type="submit"
-                            className="w-full rounded-full"
-                          >
+                          <Button type="submit" className="w-full rounded-full">
                             Book Appointment
                           </Button>
                         </form>
@@ -1560,11 +1569,8 @@ export const HealthcareKimiPage = defineCapsule({
                   </div>
                   <div className="absolute -right-4 -top-4 rounded-xl border border-border bg-card p-4 shadow-xl">
                     <div className="flex items-center gap-2">
-                      <div
-                        className="flex -space-x-2"
-                        aria-hidden="true"
-                      >
-                        {["a", "b", "c"].map((k) => (
+                      <div className="flex -space-x-2" aria-hidden="true">
+                        {['a', 'b', 'c'].map((k) => (
                           <span
                             key={k}
                             className="size-8 rounded-full border-2 border-card bg-secondary"
@@ -1676,8 +1682,7 @@ export const HealthcareKimiPage = defineCapsule({
 
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
                 {doctorItems.map((doc) => {
-                  const isFavorite =
-                    favoriteDoctorNames?.has(doc.name) ?? false
+                  const isFavorite = favoriteDoctorNames?.has(doc.name) ?? false
 
                   return (
                     <article key={doc.name} className="group">
@@ -1883,10 +1888,10 @@ export const HealthcareKimiPage = defineCapsule({
                   <article
                     key={plan.name}
                     className={cn(
-                      "relative rounded-2xl bg-card p-8",
+                      'relative rounded-2xl bg-card p-8',
                       plan.featured
-                        ? "border-2 border-primary shadow-lg"
-                        : "border border-border",
+                        ? 'border-2 border-primary shadow-lg'
+                        : 'border border-border',
                     )}
                   >
                     {plan.featured && plan.badge ? (
@@ -1919,10 +1924,10 @@ export const HealthcareKimiPage = defineCapsule({
                       type="button"
                       onClick={() => setBookingOpen(true)}
                       className={cn(
-                        "block w-full rounded-xl px-6 py-3 text-center font-semibold transition-colors",
+                        'block w-full rounded-xl px-6 py-3 text-center font-semibold transition-colors',
                         plan.featured
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
                       )}
                     >
                       {plan.cta}
@@ -1933,7 +1938,7 @@ export const HealthcareKimiPage = defineCapsule({
 
               <div className="mt-12 text-center">
                 <p className="text-muted-foreground">
-                  {pricingNote}{" "}
+                  {pricingNote}{' '}
                   <button
                     type="button"
                     onClick={() => go(pricingNoteCta)}

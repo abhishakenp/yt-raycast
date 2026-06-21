@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -24,9 +24,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const TestimonialsKimiPage2 = defineCapsule({
-  name: "TestimonialsKimiPage2",
+  name: 'TestimonialsKimiPage2',
   description:
-    "Testimonials second style sibling to TestimonialsKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Testimonials second style sibling to TestimonialsKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const TestimonialsKimiPage2 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -81,7 +83,13 @@ export const TestimonialsKimiPage2 = defineCapsule({
         new Set(db.favorites.all().map((favorite) => favorite.sectionTitle)),
     },
     mutations: {
-      saveTestimonial: ({ db }, quote: string, name: string, role: string, alt: string) => {
+      saveTestimonial: (
+        { db },
+        quote: string,
+        name: string,
+        role: string,
+        alt: string,
+      ) => {
         db.savedTestimonials.insert({ quote, name, role, alt })
         return db.savedTestimonials.all()
       },
@@ -108,92 +116,107 @@ export const TestimonialsKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [savedOpen, setSavedOpen] = useState(false)
     const [mobileOpen, setMobileOpen] = useState(false)
-    const brand = props.brand ?? "TrustPulse"
-    const nav = props.nav?.length ? props.nav : ["TrustPulse", "Product", "Case Studies", "Pricing", "Resources", "Log in"]
+    const brand = props.brand ?? 'TrustPulse'
+    const nav = props.nav?.length
+      ? props.nav
+      : [
+          'TrustPulse',
+          'Product',
+          'Case Studies',
+          'Pricing',
+          'Resources',
+          'Log in',
+        ]
     const hero = {
-      eyebrow: "Testimonials / Variant 2",
-      title: "Turn Customer Love Into Revenue",
-      description: "TrustPulse | Customer Reviews & Case Studies That Drive Growth TrustPulse Product Case Studies Pricing Resources Log in Start Free Trial Now with AI-powered sentiment analysis T...",
-      primaryCta: "TrustPulse",
-      secondaryCta: "Product",
-      imageAlt: "Modern open-plan office with a diverse team working on laptops and collaborating near a large window",
+      eyebrow: 'Testimonials / Variant 2',
+      title: 'Turn Customer Love Into Revenue',
+      description:
+        'TrustPulse | Customer Reviews & Case Studies That Drive Growth TrustPulse Product Case Studies Pricing Resources Log in Start Free Trial Now with AI-powered sentiment analysis T...',
+      primaryCta: 'TrustPulse',
+      secondaryCta: 'Product',
+      imageAlt:
+        'Modern open-plan office with a diverse team working on laptops and collaborating near a large window',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Everything you need to prove value",
-    "body": "TrustPulse | Customer Reviews & Case Studies That Drive Growth TrustPulse Product Case Studies Pricing Resources Log in Start Free Trial Now with AI-powered sentiment analysis T...",
-    "items": [
-      "Proof that speaks louder than pitches",
-      "Simple, transparent pricing",
-      "Questions & Answers"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "Launch in minutes, not weeks",
-    "body": "Testimonials page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Ready to turn praise into profit?",
-      "Review Aggregation",
-      "Case Study Builder"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Behind the scenes",
-    "body": "Testimonials page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Social Proof Widgets",
-      "Connect Sources",
-      "Curate & Format"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Proof that speaks louder than pitches",
-    "body": "Testimonials page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Publish Anywhere"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "Launch in minutes, not weeks",
-    "alt": "Modern open-plan office with a diverse team working on laptops and collaborating near a large window",
-    "caption": "Testimonials generated page detail"
-  },
-  {
-    "title": "Behind the scenes",
-    "alt": "Marketing strategist drawing a customer journey funnel on a large whiteboard during a workshop",
-    "caption": "Testimonials generated page detail"
-  },
-  {
-    "title": "Proof that speaks louder than pitches",
-    "alt": "UX designer pointing at a laptop screen showing a wireframe for a testimonials section layout",
-    "caption": "Testimonials generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'Everything you need to prove value',
+            body: 'TrustPulse | Customer Reviews & Case Studies That Drive Growth TrustPulse Product Case Studies Pricing Resources Log in Start Free Trial Now with AI-powered sentiment analysis T...',
+            items: [
+              'Proof that speaks louder than pitches',
+              'Simple, transparent pricing',
+              'Questions & Answers',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'Launch in minutes, not weeks',
+            body: "Testimonials page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Ready to turn praise into profit?',
+              'Review Aggregation',
+              'Case Study Builder',
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Behind the scenes',
+            body: "Testimonials page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Social Proof Widgets',
+              'Connect Sources',
+              'Curate & Format',
+            ],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Proof that speaks louder than pitches',
+            body: "Testimonials page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['Publish Anywhere'],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'Launch in minutes, not weeks',
+            alt: 'Modern open-plan office with a diverse team working on laptops and collaborating near a large window',
+            caption: 'Testimonials generated page detail',
+          },
+          {
+            title: 'Behind the scenes',
+            alt: 'Marketing strategist drawing a customer journey funnel on a large whiteboard during a workshop',
+            caption: 'Testimonials generated page detail',
+          },
+          {
+            title: 'Proof that speaks louder than pitches',
+            alt: 'UX designer pointing at a laptop screen showing a wireframe for a testimonials section layout',
+            caption: 'Testimonials generated page detail',
+          },
+        ]
 
     const savedTestimonials = lakebed.useQuery('savedTestimonials')
     const favoriteSectionTitles = lakebed.useQuery('favoriteSectionTitles')
@@ -279,10 +302,19 @@ export const TestimonialsKimiPage2 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -420,7 +452,9 @@ export const TestimonialsKimiPage2 = defineCapsule({
                   className="w-full gap-0 p-0 sm:max-w-md"
                 >
                   <SheetHeader className="border-b border-border p-6">
-                    <SheetTitle className="text-xl">Saved testimonials</SheetTitle>
+                    <SheetTitle className="text-xl">
+                      Saved testimonials
+                    </SheetTitle>
                     <SheetDescription>
                       {savedCount > 0
                         ? `${savedCount} testimonial${savedCount === 1 ? '' : 's'} saved for this session.`
@@ -478,7 +512,8 @@ export const TestimonialsKimiPage2 = defineCapsule({
                           No saved testimonials
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Save testimonials from the sections below to build your collection.
+                          Save testimonials from the sections below to build
+                          your collection.
                         </p>
                       </div>
                     )}
@@ -633,16 +668,28 @@ export const TestimonialsKimiPage2 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -650,13 +697,21 @@ export const TestimonialsKimiPage2 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => {
-                const isFavorite = favoriteSectionTitles?.has(section.title) ?? false
+                const isFavorite =
+                  favoriteSectionTitles?.has(section.title) ?? false
                 return (
-                  <article key={section.title} className="rounded-lg border border-border bg-card p-6">
+                  <article
+                    key={section.title}
+                    className="rounded-lg border border-border bg-card p-6"
+                  >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                        <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
+                        <p className="text-sm font-medium text-primary">
+                          {section.eyebrow}
+                        </p>
+                        <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                          {section.title}
+                        </h2>
                       </div>
                       <button
                         type="button"
@@ -677,7 +732,9 @@ export const TestimonialsKimiPage2 = defineCapsule({
                         <HeartIcon active={isFavorite} />
                       </button>
                     </div>
-                    <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                    <p className="mt-3 leading-7 text-muted-foreground">
+                      {section.body}
+                    </p>
                     {section.items?.length ? (
                       <div className="mt-5 grid gap-2">
                         {section.items.map((item) => (
@@ -702,8 +759,12 @@ export const TestimonialsKimiPage2 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -715,11 +776,26 @@ export const TestimonialsKimiPage2 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -728,29 +804,36 @@ export const TestimonialsKimiPage2 = defineCapsule({
 
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-12 text-center">
-              <p className="text-sm font-medium text-primary">Customer stories</p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight">What our customers say</h2>
+              <p className="text-sm font-medium text-primary">
+                Customer stories
+              </p>
+              <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                What our customers say
+              </h2>
             </div>
             <div className="grid gap-6 md:grid-cols-3">
               {[
                 {
-                  quote: "TrustPulse transformed how we collect and display customer reviews. The sentiment analysis alone saved our support team 15 hours per week.",
-                  name: "Sarah Mitchell",
-                  role: "VP of Customer Success · TechFlow Inc",
-                  alt: "Professional headshot of a woman with glasses and warm smile"
+                  quote:
+                    'TrustPulse transformed how we collect and display customer reviews. The sentiment analysis alone saved our support team 15 hours per week.',
+                  name: 'Sarah Mitchell',
+                  role: 'VP of Customer Success · TechFlow Inc',
+                  alt: 'Professional headshot of a woman with glasses and warm smile',
                 },
                 {
-                  quote: "We implemented TrustPulse across our entire product line and saw a 32% increase in conversion rates within the first month. The ROI was immediate.",
-                  name: "James Rodriguez",
-                  role: "Head of Growth · ScaleUp Ventures",
-                  alt: "Professional headshot of a man with confident expression"
+                  quote:
+                    'We implemented TrustPulse across our entire product line and saw a 32% increase in conversion rates within the first month. The ROI was immediate.',
+                  name: 'James Rodriguez',
+                  role: 'Head of Growth · ScaleUp Ventures',
+                  alt: 'Professional headshot of a man with confident expression',
                 },
                 {
-                  quote: "The case study builder feature is incredible. We went from zero case studies to twelve published stories in just three weeks. Our sales team loves it.",
-                  name: "Emily Chen",
-                  role: "Marketing Director · CloudBase",
-                  alt: "Professional headshot of a woman with bright smile"
-                }
+                  quote:
+                    'The case study builder feature is incredible. We went from zero case studies to twelve published stories in just three weeks. Our sales team loves it.',
+                  name: 'Emily Chen',
+                  role: 'Marketing Director · CloudBase',
+                  alt: 'Professional headshot of a woman with bright smile',
+                },
               ].map((testimonial) => (
                 <div
                   key={testimonial.name}
@@ -780,7 +863,12 @@ export const TestimonialsKimiPage2 = defineCapsule({
                     <button
                       type="button"
                       onClick={() => {
-                        void saveTestimonial(testimonial.quote, testimonial.name, testimonial.role, testimonial.alt)
+                        void saveTestimonial(
+                          testimonial.quote,
+                          testimonial.name,
+                          testimonial.role,
+                          testimonial.alt,
+                        )
                         setSavedOpen(true)
                       }}
                       className="rounded-full border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
@@ -797,9 +885,15 @@ export const TestimonialsKimiPage2 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -815,10 +909,17 @@ export const TestimonialsKimiPage2 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

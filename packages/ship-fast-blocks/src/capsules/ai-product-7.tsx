@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,19 +14,19 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const AiProductKimiPage7 = defineCapsule({
-  name: "AiProductKimiPage7",
+  name: 'AiProductKimiPage7',
   description:
-    "Complete AI-product / AI-SaaS landing page with a dark, cinematic glassmorphism aesthetic — the 7th sibling variant to AiProductKimiPage. Features a dramatic split hero with a live-integration pill, gradient headline, dual CTAs, and a frosted-glass AI editor preview card; a trusted-by logo strip; a 6-up feature grid with gradient token-colored icon tiles; a 3-step how-it-works timeline; a product screenshot gallery; a 3-tier pricing block with a gradient-highlighted Most Popular plan; a 4-up stats band; a 6-card star-rated testimonial wall; an FAQ accordion; a bold gradient final call-to-action; and a rich multi-column footer with social icons. Use as a bold, immersive, dark-themed ROOT page for AI writing assistants, generative-AI tools, AI copilots, SaaS startups, marketing agencies, or developer-AI products when a cinematic, conversion-focused marketing site with features, pricing, social proof, and FAQ is desired. All surfaces use semantic tokens for clean theme injection. Supply content only — brand, nav, hero, logos, features, steps, gallery, pricing, stats, testimonials, faq, finalCta, footer; the block owns all layout, spacing, depth, and type hierarchy.",
+    'Complete AI-product / AI-SaaS landing page with a dark, cinematic glassmorphism aesthetic — the 7th sibling variant to AiProductKimiPage. Features a dramatic split hero with a live-integration pill, gradient headline, dual CTAs, and a frosted-glass AI editor preview card; a trusted-by logo strip; a 6-up feature grid with gradient token-colored icon tiles; a 3-step how-it-works timeline; a product screenshot gallery; a 3-tier pricing block with a gradient-highlighted Most Popular plan; a 4-up stats band; a 6-card star-rated testimonial wall; an FAQ accordion; a bold gradient final call-to-action; and a rich multi-column footer with social icons. Use as a bold, immersive, dark-themed ROOT page for AI writing assistants, generative-AI tools, AI copilots, SaaS startups, marketing agencies, or developer-AI products when a cinematic, conversion-focused marketing site with features, pricing, social proof, and FAQ is desired. All surfaces use semantic tokens for clean theme injection. Supply content only — brand, nav, hero, logos, features, steps, gallery, pricing, stats, testimonials, faq, finalCta, footer; the block owns all layout, spacing, depth, and type hierarchy.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -153,9 +153,7 @@ export const AiProductKimiPage7 = defineCapsule({
       .object({
         tagline: z.string().optional(),
         columns: z
-          .array(
-            z.object({ title: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ title: z.string(), links: z.array(z.string()) }))
           .optional(),
         copyright: z.string().optional(),
         socials: z.array(z.string()).optional(),
@@ -176,7 +174,12 @@ export const AiProductKimiPage7 = defineCapsule({
       drafts: ({ db }) => db.drafts.orderBy('createdAt').all(),
     },
     mutations: {
-      saveDraft: ({ db }, title: string, content: string, wordCount: number) => {
+      saveDraft: (
+        { db },
+        title: string,
+        content: string,
+        wordCount: number,
+      ) => {
         db.drafts.insert({
           title,
           content,
@@ -199,22 +202,24 @@ export const AiProductKimiPage7 = defineCapsule({
   },
   component: ({ props, lakebed }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "ScriptForge AI"
-    const nav = props.nav?.length ? props.nav : ["Features", "Pricing", "Reviews", "FAQ"]
+    const brand = props.brand ?? 'ScriptForge AI'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Features', 'Pricing', 'Reviews', 'FAQ']
 
-    const heroBadge = props.hero?.badge ?? "Now with GPT-4 Turbo Integration"
-    const headingTop = props.hero?.headingTop ?? "Write Faster,"
-    const headingBottom = props.hero?.headingBottom ?? "Think Smarter"
+    const heroBadge = props.hero?.badge ?? 'Now with GPT-4 Turbo Integration'
+    const headingTop = props.hero?.headingTop ?? 'Write Faster,'
+    const headingBottom = props.hero?.headingBottom ?? 'Think Smarter'
     const heroSub =
       props.hero?.subheading ??
       "ScriptForge AI helps content creators, marketers, and teams produce compelling blog posts, emails, and copy in minutes—not hours. Join 50,000+ writers who've transformed their workflow."
-    const heroPrimary = props.hero?.primaryCta ?? "Start Writing Free"
-    const heroSecondary = props.hero?.secondaryCta ?? "See How It Works"
+    const heroPrimary = props.hero?.primaryCta ?? 'Start Writing Free'
+    const heroSecondary = props.hero?.secondaryCta ?? 'See How It Works'
     const heroTrust = props.hero?.trust?.length
       ? props.hero.trust
-      : ["No credit card required", "14-day free trial"]
-    const previewFile = props.hero?.previewFile ?? "ScriptForge Editor"
-    const previewIntro = props.hero?.previewIntro ?? "AI Assistant"
+      : ['No credit card required', '14-day free trial']
+    const previewFile = props.hero?.previewFile ?? 'ScriptForge Editor'
+    const previewIntro = props.hero?.previewIntro ?? 'AI Assistant'
     const previewQuote =
       props.hero?.previewQuote ??
       "I've drafted 3 headline options for your product launch:"
@@ -227,179 +232,177 @@ export const AiProductKimiPage7 = defineCapsule({
         ]
     const previewUserMsg =
       props.hero?.previewUserMsg ??
-      "Option 3 is perfect! Can you expand it into a full email?"
+      'Option 3 is perfect! Can you expand it into a full email?'
     const previewUserAlt =
-      props.hero?.previewUserAlt ?? "professional headshot of a marketing manager"
-    const floatingLabel = props.hero?.floatingLabel ?? "AI Generated"
-    const floatingSub = props.hero?.floatingSub ?? "in 2.3 seconds"
+      props.hero?.previewUserAlt ??
+      'professional headshot of a marketing manager'
+    const floatingLabel = props.hero?.floatingLabel ?? 'AI Generated'
+    const floatingSub = props.hero?.floatingSub ?? 'in 2.3 seconds'
 
-    const logosLabel = props.logos?.label ?? "Trusted by teams at"
+    const logosLabel = props.logos?.label ?? 'Trusted by teams at'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
-      : ["Notion", "Figma", "Vercel", "Stripe", "Slack", "Linear"]
+      : ['Notion', 'Figma', 'Vercel', 'Stripe', 'Slack', 'Linear']
 
     const featuresHeading =
-      props.features?.heading ?? "Everything You Need to Write Better Content"
+      props.features?.heading ?? 'Everything You Need to Write Better Content'
     const featuresDesc =
       props.features?.description ??
-      "From first draft to final polish, ScriptForge AI streamlines every step of your writing process with intelligent assistance."
+      'From first draft to final polish, ScriptForge AI streamlines every step of your writing process with intelligent assistance.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Instant Draft Generation",
+            title: 'Instant Draft Generation',
             description:
-              "Generate complete blog posts, emails, and marketing copy from simple prompts. Go from idea to publish-ready content in under 5 minutes.",
+              'Generate complete blog posts, emails, and marketing copy from simple prompts. Go from idea to publish-ready content in under 5 minutes.',
           },
           {
-            title: "Smart Tone Adjustment",
+            title: 'Smart Tone Adjustment',
             description:
-              "Instantly adapt your writing tone from professional to casual, persuasive to informative. Match your brand voice across all channels.",
+              'Instantly adapt your writing tone from professional to casual, persuasive to informative. Match your brand voice across all channels.',
           },
           {
-            title: "Grammar & Style Check",
+            title: 'Grammar & Style Check',
             description:
-              "Advanced AI catches grammar issues, awkward phrasing, and readability problems. Get suggestions that improve clarity and flow.",
+              'Advanced AI catches grammar issues, awkward phrasing, and readability problems. Get suggestions that improve clarity and flow.',
           },
           {
-            title: "50+ Content Templates",
+            title: '50+ Content Templates',
             description:
-              "Pre-built templates for blog posts, social media, product descriptions, emails, ad copy, and more. Start with proven frameworks.",
+              'Pre-built templates for blog posts, social media, product descriptions, emails, ad copy, and more. Start with proven frameworks.',
           },
           {
-            title: "Team Collaboration",
+            title: 'Team Collaboration',
             description:
-              "Share projects, leave comments, and maintain brand consistency with team libraries. Perfect for marketing teams and agencies.",
+              'Share projects, leave comments, and maintain brand consistency with team libraries. Perfect for marketing teams and agencies.',
           },
           {
-            title: "One-Click Publishing",
+            title: 'One-Click Publishing',
             description:
-              "Export to WordPress, Medium, Ghost, or download as DOCX, PDF, or Markdown. Publish directly to your CMS without copy-pasting.",
+              'Export to WordPress, Medium, Ghost, or download as DOCX, PDF, or Markdown. Publish directly to your CMS without copy-pasting.',
           },
         ]
 
     const stepsHeading =
-      props.steps?.heading ?? "From Blank Page to Published in 3 Steps"
-    const stepsDesc = props.steps?.description ?? ""
+      props.steps?.heading ?? 'From Blank Page to Published in 3 Steps'
+    const stepsDesc = props.steps?.description ?? ''
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Describe Your Goal",
+            title: 'Describe Your Goal',
             description:
-              "Tell ScriptForge what you need—a blog post about sustainable fashion, a sales email for software, or social captions for your product launch.",
+              'Tell ScriptForge what you need—a blog post about sustainable fashion, a sales email for software, or social captions for your product launch.',
           },
           {
-            title: "AI Generates Options",
+            title: 'AI Generates Options',
             description:
-              "Get 3 unique variations in seconds. Each option has a different angle, tone, and structure. Pick your favorite or blend elements together.",
+              'Get 3 unique variations in seconds. Each option has a different angle, tone, and structure. Pick your favorite or blend elements together.',
           },
           {
-            title: "Refine & Publish",
+            title: 'Refine & Publish',
             description:
-              "Use inline editing to fine-tune. Expand sections, change tone, or ask the AI to rewrite. Then export to your platform of choice.",
+              'Use inline editing to fine-tune. Expand sections, change tone, or ask the AI to rewrite. Then export to your platform of choice.',
           },
         ]
 
-    const galleryHeading = props.gallery?.heading ?? "See ScriptForge in Action"
+    const galleryHeading = props.gallery?.heading ?? 'See ScriptForge in Action'
     const galleryDesc =
       props.gallery?.description ??
-      "Real screenshots from our editor showing the AI writing experience."
+      'Real screenshots from our editor showing the AI writing experience.'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
           {
-            title: "Clean Editor Interface",
-            description: "Distraction-free writing with AI suggestions inline.",
+            title: 'Clean Editor Interface',
+            description: 'Distraction-free writing with AI suggestions inline.',
             imageAlt:
-              "modern laptop displaying a clean writing application interface on white desk",
+              'modern laptop displaying a clean writing application interface on white desk',
           },
           {
-            title: "Performance Analytics",
+            title: 'Performance Analytics',
             description:
-              "Track word count, reading time, and content quality scores.",
+              'Track word count, reading time, and content quality scores.',
             imageAlt:
-              "desktop monitor showing analytics dashboard with colorful charts and graphs",
+              'desktop monitor showing analytics dashboard with colorful charts and graphs',
           },
           {
-            title: "Team Workspaces",
+            title: 'Team Workspaces',
             description:
-              "Collaborate with shared projects and brand libraries.",
+              'Collaborate with shared projects and brand libraries.',
             imageAlt:
-              "team collaboration workspace with multiple screens showing project management tools",
+              'team collaboration workspace with multiple screens showing project management tools',
           },
           {
-            title: "API & Integrations",
-            description:
-              "Connect your existing workflow with our REST API.",
+            title: 'API & Integrations',
+            description: 'Connect your existing workflow with our REST API.',
             imageAlt:
-              "developer working on laptop with code editor and terminal windows open",
+              'developer working on laptop with code editor and terminal windows open',
           },
           {
-            title: "Content Calendar",
-            description:
-              "Schedule and plan your content strategy visually.",
+            title: 'Content Calendar',
+            description: 'Schedule and plan your content strategy visually.',
             imageAlt:
-              "content calendar displayed on tablet showing scheduled posts and campaigns",
+              'content calendar displayed on tablet showing scheduled posts and campaigns',
           },
           {
-            title: "Brand Voice Training",
-            description:
-              "Teach AI your unique tone with custom examples.",
+            title: 'Brand Voice Training',
+            description: 'Teach AI your unique tone with custom examples.',
             imageAlt:
-              "marketing team meeting reviewing campaign materials on large display",
+              'marketing team meeting reviewing campaign materials on large display',
           },
         ]
 
     const pricingHeading =
-      props.pricing?.heading ?? "Simple, Transparent Pricing"
+      props.pricing?.heading ?? 'Simple, Transparent Pricing'
     const pricingDesc =
       props.pricing?.description ??
-      "Start free, upgrade when you need more power. No hidden fees, cancel anytime."
+      'Start free, upgrade when you need more power. No hidden fees, cancel anytime.'
     const pricingPlans = props.pricing?.plans?.length
       ? props.pricing.plans
       : [
           {
-            name: "Starter",
-            tagline: "Perfect for trying out ScriptForge",
-            price: "Free",
-            period: "",
-            cta: "Get Started",
+            name: 'Starter',
+            tagline: 'Perfect for trying out ScriptForge',
+            price: 'Free',
+            period: '',
+            cta: 'Get Started',
             featured: false,
             features: [
-              "5,000 words/month",
-              "Basic templates",
-              "Grammar checker",
+              '5,000 words/month',
+              'Basic templates',
+              'Grammar checker',
             ],
-            missingFeatures: ["Team features"],
+            missingFeatures: ['Team features'],
           },
           {
-            name: "Pro",
-            tagline: "For serious content creators",
-            price: "$29",
-            period: "/month",
-            cta: "Start Free Trial",
+            name: 'Pro',
+            tagline: 'For serious content creators',
+            price: '$29',
+            period: '/month',
+            cta: 'Start Free Trial',
             featured: true,
             features: [
-              "Unlimited words",
-              "All 50+ templates",
-              "Brand voice training",
-              "Priority support",
+              'Unlimited words',
+              'All 50+ templates',
+              'Brand voice training',
+              'Priority support',
             ],
             missingFeatures: [],
           },
           {
-            name: "Team",
-            tagline: "For marketing teams & agencies",
-            price: "$79",
-            period: "/month",
-            cta: "Contact Sales",
+            name: 'Team',
+            tagline: 'For marketing teams & agencies',
+            price: '$79',
+            period: '/month',
+            cta: 'Contact Sales',
             featured: false,
             features: [
-              "Everything in Pro",
-              "5 team members",
-              "Shared brand library",
-              "API access",
+              'Everything in Pro',
+              '5 team members',
+              'Shared brand library',
+              'API access',
             ],
             missingFeatures: [],
           },
@@ -408,14 +411,14 @@ export const AiProductKimiPage7 = defineCapsule({
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "50K+", label: "Active Writers" },
-          { value: "2M+", label: "Articles Generated" },
-          { value: "10x", label: "Faster Writing" },
-          { value: "4.9", label: "Average Rating" },
+          { value: '50K+', label: 'Active Writers' },
+          { value: '2M+', label: 'Articles Generated' },
+          { value: '10x', label: 'Faster Writing' },
+          { value: '4.9', label: 'Average Rating' },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Loved by Writers Everywhere"
+      props.testimonials?.heading ?? 'Loved by Writers Everywhere'
     const testimonialsDesc =
       props.testimonials?.description ??
       "Here's what content creators, marketers, and teams say about ScriptForge AI."
@@ -425,125 +428,124 @@ export const AiProductKimiPage7 = defineCapsule({
           {
             quote:
               "ScriptForge cut my blog writing time from 6 hours to 45 minutes. The AI understands context better than any other tool I've tried. My editor thinks I've hired a ghostwriter!",
-            name: "Sarah Chen",
-            role: "Marketing Director, TechFlow SaaS",
+            name: 'Sarah Chen',
+            role: 'Marketing Director, TechFlow SaaS',
             avatarAlt:
-              "professional headshot of a female marketing director with short brown hair",
+              'professional headshot of a female marketing director with short brown hair',
           },
           {
             quote:
               "Our content agency went from 3 full-time writers to 1 writer plus ScriptForge. We're producing 40% more content and the quality is actually better. It's like having a senior copywriter on demand.",
-            name: "Marcus Rodriguez",
-            role: "Founder, Amplify Content Agency",
+            name: 'Marcus Rodriguez',
+            role: 'Founder, Amplify Content Agency',
             avatarAlt:
-              "professional headshot of a male agency founder in his 30s with dark hair",
+              'professional headshot of a male agency founder in his 30s with dark hair',
           },
           {
             quote:
               "I was skeptical about AI writing tools until ScriptForge. It doesn't replace my voice—it amplifies it. I draft 5x faster and spend my energy on creative direction instead of staring at blank pages.",
-            name: "Emma Thompson",
-            role: "Freelance Writer & Author",
+            name: 'Emma Thompson',
+            role: 'Freelance Writer & Author',
             avatarAlt:
-              "professional headshot of a female freelance writer with blonde hair and warm smile",
+              'professional headshot of a female freelance writer with blonde hair and warm smile',
           },
           {
             quote:
-              "We integrated ScriptForge into our e-commerce workflow. Product descriptions that took 30 minutes now take 3. Our conversion rates improved 18% because the AI generates more persuasive copy than we ever did manually.",
-            name: "David Park",
-            role: "E-commerce Manager, StyleHub",
+              'We integrated ScriptForge into our e-commerce workflow. Product descriptions that took 30 minutes now take 3. Our conversion rates improved 18% because the AI generates more persuasive copy than we ever did manually.',
+            name: 'David Park',
+            role: 'E-commerce Manager, StyleHub',
             avatarAlt:
-              "professional headshot of a male ecommerce manager with glasses and beard",
+              'professional headshot of a male ecommerce manager with glasses and beard',
           },
           {
             quote:
               "The brand voice training feature is a game-changer. We uploaded 50 of our best-performing emails and now every new piece sounds exactly like us. It's uncanny how well it captures our tone.",
-            name: "Aisha Johnson",
-            role: "Brand Strategist, Lumen Brands",
+            name: 'Aisha Johnson',
+            role: 'Brand Strategist, Lumen Brands',
             avatarAlt:
-              "professional headshot of a female brand strategist with curly dark hair",
+              'professional headshot of a female brand strategist with curly dark hair',
           },
           {
             quote:
-              "As a non-native English speaker, ScriptForge helps me write confidently. The grammar suggestions are subtle and smart—they fix issues without making my writing sound robotic.",
-            name: "Raj Patel",
-            role: "Founder, Nexus Startup",
+              'As a non-native English speaker, ScriptForge helps me write confidently. The grammar suggestions are subtle and smart—they fix issues without making my writing sound robotic.',
+            name: 'Raj Patel',
+            role: 'Founder, Nexus Startup',
             avatarAlt:
-              "professional headshot of a male startup founder from southeast asia",
+              'professional headshot of a male startup founder from southeast asia',
           },
         ]
 
-    const faqHeading = props.faq?.heading ?? "Frequently Asked Questions"
+    const faqHeading = props.faq?.heading ?? 'Frequently Asked Questions'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know about ScriptForge AI."
+      'Everything you need to know about ScriptForge AI.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "How is ScriptForge different from ChatGPT?",
+            question: 'How is ScriptForge different from ChatGPT?',
             answer:
-              "ScriptForge is purpose-built for content creation. Unlike general AI chatbots, we offer 50+ writing templates, brand voice training, SEO optimization, and direct publishing integrations. Our AI is fine-tuned specifically for marketing copy, blog posts, and business content—not general conversation.",
+              'ScriptForge is purpose-built for content creation. Unlike general AI chatbots, we offer 50+ writing templates, brand voice training, SEO optimization, and direct publishing integrations. Our AI is fine-tuned specifically for marketing copy, blog posts, and business content—not general conversation.',
           },
           {
-            question: "Is the content original and plagiarism-free?",
+            question: 'Is the content original and plagiarism-free?',
             answer:
-              "Yes. ScriptForge generates original content using advanced language models. Every piece is unique and passes Copyscape checks. We never copy from existing sources—the AI creates fresh content based on patterns learned during training, just like a human writer would.",
+              'Yes. ScriptForge generates original content using advanced language models. Every piece is unique and passes Copyscape checks. We never copy from existing sources—the AI creates fresh content based on patterns learned during training, just like a human writer would.',
           },
           {
-            question: "Can I cancel my subscription anytime?",
+            question: 'Can I cancel my subscription anytime?',
             answer:
               "Absolutely. There are no contracts or commitments. You can cancel your subscription at any time from your account settings. If you cancel, you'll continue to have access until the end of your billing period. We also offer a 14-day money-back guarantee for all paid plans.",
           },
           {
-            question: "What languages does ScriptForge support?",
+            question: 'What languages does ScriptForge support?',
             answer:
-              "ScriptForge supports 25+ languages including English, Spanish, French, German, Italian, Portuguese, Dutch, Polish, Russian, Japanese, Chinese, Korean, and Arabic. All templates and features work across supported languages with the same quality and customization options.",
+              'ScriptForge supports 25+ languages including English, Spanish, French, German, Italian, Portuguese, Dutch, Polish, Russian, Japanese, Chinese, Korean, and Arabic. All templates and features work across supported languages with the same quality and customization options.',
           },
           {
-            question: "Do you offer an API for developers?",
+            question: 'Do you offer an API for developers?',
             answer:
-              "Yes! Our REST API is available on Team plans and above. You can integrate ScriptForge into your own applications, CMS, or workflow automation tools. The API includes all core features: content generation, tone adjustment, and grammar checking. Contact our sales team for enterprise API pricing.",
+              'Yes! Our REST API is available on Team plans and above. You can integrate ScriptForge into your own applications, CMS, or workflow automation tools. The API includes all core features: content generation, tone adjustment, and grammar checking. Contact our sales team for enterprise API pricing.',
           },
           {
-            question: "How does the brand voice training work?",
+            question: 'How does the brand voice training work?',
             answer:
               "Upload 10-50 samples of your best content—emails, blog posts, social media, or any writing that represents your brand. Our AI analyzes tone, vocabulary, sentence structure, and style patterns. Within minutes, you'll have a custom voice profile that generates new content matching your brand perfectly.",
           },
         ]
 
-    const finalHeading =
-      props.finalCta?.heading ?? "Ready to Write 10x Faster?"
+    const finalHeading = props.finalCta?.heading ?? 'Ready to Write 10x Faster?'
     const finalDesc =
       props.finalCta?.description ??
       "Join 50,000+ writers, marketers, and teams who've transformed their content creation process. Start your free 14-day trial today—no credit card required."
-    const finalPrimary = props.finalCta?.primaryCta ?? "Start Free Trial"
-    const finalSecondary = props.finalCta?.secondaryCta ?? "Book a Demo"
+    const finalPrimary = props.finalCta?.primaryCta ?? 'Start Free Trial'
+    const finalSecondary = props.finalCta?.secondaryCta ?? 'Book a Demo'
     const finalTrust =
       props.finalCta?.trust ??
-      "Trusted by teams at Notion, Figma, Stripe, and 2,000+ companies worldwide"
+      'Trusted by teams at Notion, Figma, Stripe, and 2,000+ companies worldwide'
 
     const footerTagline =
       props.footer?.tagline ??
-      "The AI writing assistant that helps you create compelling content faster. Built for writers, marketers, and teams who demand quality."
+      'The AI writing assistant that helps you create compelling content faster. Built for writers, marketers, and teams who demand quality.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Product",
-            links: ["Features", "Pricing", "Templates", "Integrations", "API"],
+            title: 'Product',
+            links: ['Features', 'Pricing', 'Templates', 'Integrations', 'API'],
           },
           {
-            title: "Company",
-            links: ["About", "Blog", "Careers", "Press", "Contact"],
+            title: 'Company',
+            links: ['About', 'Blog', 'Careers', 'Press', 'Contact'],
           },
           {
-            title: "Resources",
+            title: 'Resources',
             links: [
-              "Help Center",
-              "Documentation",
-              "Community",
-              "Status",
-              "Security",
+              'Help Center',
+              'Documentation',
+              'Community',
+              'Status',
+              'Security',
             ],
           },
         ]
@@ -552,11 +554,10 @@ export const AiProductKimiPage7 = defineCapsule({
       `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Twitter", "GitHub", "LinkedIn"]
+      : ['Twitter', 'GitHub', 'LinkedIn']
 
     const [draftsOpen, setDraftsOpen] = useState(false)
     const drafts = lakebed.useQuery('drafts')
-    const saveDraft = lakebed.useMutation('saveDraft')
     const deleteDraft = lakebed.useMutation('deleteDraft')
     const clearDrafts = lakebed.useMutation('clearDrafts')
     const auth = lakebed.useAuth()
@@ -595,7 +596,7 @@ export const AiProductKimiPage7 = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-gradient-to-br from-primary to-secondary",
+          'grid place-items-center rounded-lg bg-gradient-to-br from-primary to-secondary',
           className,
         )}
         aria-hidden="true"
@@ -782,7 +783,7 @@ export const AiProductKimiPage7 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-gradient-to-br from-background via-primary/20 to-background text-foreground antialiased selection:bg-primary/20",
+          'min-h-svh bg-gradient-to-br from-background via-primary/20 to-background text-foreground antialiased selection:bg-primary/20',
           props.className,
         )}
       >
@@ -888,7 +889,8 @@ export const AiProductKimiPage7 = defineCapsule({
                           No drafts saved
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Start writing and save your first draft to see it here.
+                          Start writing and save your first draft to see it
+                          here.
                         </p>
                       </div>
                     )}
@@ -1036,7 +1038,7 @@ export const AiProductKimiPage7 = defineCapsule({
               )}
               <button
                 type="button"
-                onClick={() => go("Get Started Free")}
+                onClick={() => go('Get Started Free')}
                 className="inline-flex items-center justify-center rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background transition-colors hover:bg-foreground/90"
               >
                 Get Started Free
@@ -1270,7 +1272,9 @@ export const AiProductKimiPage7 = defineCapsule({
                       <h3 className="mb-3 text-xl font-semibold text-foreground">
                         {step.title}
                       </h3>
-                      <p className="text-muted-foreground">{step.description}</p>
+                      <p className="text-muted-foreground">
+                        {step.description}
+                      </p>
                     </div>
                     {i < stepItems.length - 1 ? (
                       <div className="absolute -right-6 top-1/2 hidden -translate-y-1/2 md:block">
@@ -1341,10 +1345,10 @@ export const AiProductKimiPage7 = defineCapsule({
                   <div
                     key={plan.name}
                     className={cn(
-                      "relative rounded-2xl border p-8 backdrop-blur-xl",
+                      'relative rounded-2xl border p-8 backdrop-blur-xl',
                       plan.featured
-                        ? "border-primary/30 bg-gradient-to-b from-primary/20 to-secondary/20 md:-translate-y-4"
-                        : "border-border/10 bg-card/5",
+                        ? 'border-primary/30 bg-gradient-to-b from-primary/20 to-secondary/20 md:-translate-y-4'
+                        : 'border-border/10 bg-card/5',
                     )}
                   >
                     {plan.featured ? (
@@ -1396,10 +1400,10 @@ export const AiProductKimiPage7 = defineCapsule({
                       type="button"
                       onClick={() => go(plan.cta)}
                       className={cn(
-                        "block w-full rounded-full py-3 text-center font-semibold transition-all",
+                        'block w-full rounded-full py-3 text-center font-semibold transition-all',
                         plan.featured
-                          ? "bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90"
-                          : "border border-border/20 text-foreground hover:bg-card/10",
+                          ? 'bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90'
+                          : 'border border-border/20 text-foreground hover:bg-card/10',
                       )}
                     >
                       {plan.cta}
@@ -1600,7 +1604,7 @@ export const AiProductKimiPage7 = defineCapsule({
             <div className="flex flex-col items-center justify-between gap-4 border-t border-border/10 pt-8 md:flex-row">
               <p className="text-sm text-muted-foreground">{footerCopyright}</p>
               <div className="flex flex-wrap gap-6">
-                {["Privacy Policy", "Terms of Service", "Cookie Settings"].map(
+                {['Privacy Policy', 'Terms of Service', 'Cookie Settings'].map(
                   (link) => (
                     <button
                       key={link}

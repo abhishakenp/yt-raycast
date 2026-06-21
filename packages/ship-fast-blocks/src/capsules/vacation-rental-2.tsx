@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * VacationRentalKimiPage2 — a complete, self-contained vacation-rental LISTING-DETAIL
@@ -42,9 +42,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * versus the coastal coral of the first variant.
  */
 export const VacationRentalKimiPage2 = defineCapsule({
-  name: "VacationRentalKimiPage2",
+  name: 'VacationRentalKimiPage2',
   description:
-    "Complete vacation-rental / short-term-stay LISTING-DETAIL page in an airy, light-canvas Airbnb style with an emerald primary accent — the second style sibling to VacationRentalKimiPage. Features a 6-image bento gallery, a two-column body with host header and bedroom grid, a multi-paragraph property description, an icon-led amenities grid, three-step booking cards, a host bio with verification badges, category rating bars, dated guest reviews with headshots, a full-bleed scenic CTA banner, an FAQ grid, house-rules / safety / cancellation columns, stat counters, press logos, and a multi-column footer — all beside a sticky booking card with date+guest inputs, a Reserve button, itemized fees, and weekly discount. Ideal for jungle villas, tropical rentals, boutique stays, property booking sites, or marketplace listing pages when a greener, Tulum-inspired mood is desired. All content prop-driven with rich defaults; zero-args renders fully.",
+    'Complete vacation-rental / short-term-stay LISTING-DETAIL page in an airy, light-canvas Airbnb style with an emerald primary accent — the second style sibling to VacationRentalKimiPage. Features a 6-image bento gallery, a two-column body with host header and bedroom grid, a multi-paragraph property description, an icon-led amenities grid, three-step booking cards, a host bio with verification badges, category rating bars, dated guest reviews with headshots, a full-bleed scenic CTA banner, an FAQ grid, house-rules / safety / cancellation columns, stat counters, press logos, and a multi-column footer — all beside a sticky booking card with date+guest inputs, a Reserve button, itemized fees, and weekly discount. Ideal for jungle villas, tropical rentals, boutique stays, property booking sites, or marketplace listing pages when a greener, Tulum-inspired mood is desired. All content prop-driven with rich defaults; zero-args renders fully.',
   props: z.object({
     /** Brand / property name (navbar and footer). */
     brand: z.string().optional(),
@@ -250,7 +250,16 @@ export const VacationRentalKimiPage2 = defineCapsule({
         new Set(db.favorites.all().map((favorite) => favorite.propertyTitle)),
     },
     mutations: {
-      createBooking: ({ db }, bookingData: { checkInDate: string, checkOutDate: string, guests: string, propertyTitle: string, totalAmount: string }) => {
+      createBooking: (
+        { db },
+        bookingData: {
+          checkInDate: string
+          checkOutDate: string
+          guests: string
+          propertyTitle: string
+          totalAmount: string
+        },
+      ) => {
         db.bookings.insert(bookingData)
         return db.bookings.all()
       },
@@ -280,292 +289,288 @@ export const VacationRentalKimiPage2 = defineCapsule({
     const [checkOutDate, setCheckOutDate] = useState('')
     const [guests, setGuests] = useState('')
 
-    const brand = props.brand ?? "Casa Verde"
+    const brand = props.brand ?? 'Casa Verde'
     const nav = props.nav?.length
       ? props.nav
-      : ["Gallery", "Amenities", "Reviews", "Host", "Book Now"]
+      : ['Gallery', 'Amenities', 'Reviews', 'Host', 'Book Now']
 
     const listing = {
-      title: props.listing?.title ?? "Casa Verde — Modern Jungle Villa",
+      title: props.listing?.title ?? 'Casa Verde — Modern Jungle Villa',
       locationMeta:
         props.listing?.locationMeta ??
-        "Tulum, Quintana Roo · Entire villa · 8 guests · 4 bedrooms · 5 baths",
-      rating: props.listing?.rating ?? "4.96",
-      reviewCount: props.listing?.reviewCount ?? "128 reviews",
-      hostTier: props.listing?.hostTier ?? "Superhost",
+        'Tulum, Quintana Roo · Entire villa · 8 guests · 4 bedrooms · 5 baths',
+      rating: props.listing?.rating ?? '4.96',
+      reviewCount: props.listing?.reviewCount ?? '128 reviews',
+      hostTier: props.listing?.hostTier ?? 'Superhost',
     }
 
-    const galleryShowAll = props.gallery?.showAll ?? "Show all 42 photos"
+    const galleryShowAll = props.gallery?.showAll ?? 'Show all 42 photos'
     const galleryImages = props.gallery?.images?.length
       ? props.gallery.images
       : [
-          "Aerial view of a modern tropical villa with a turquoise swimming pool surrounded by palm trees and dense jungle greenery",
-          "Bright open plan living room with polished concrete floors, woven pendant lamps, and lush green plants",
-          "Minimalist master bedroom with crisp white linens, natural wood headboard, and panoramic jungle views through glass doors",
-          "Covered outdoor dining terrace with wooden table, string lights, and tropical garden views at dusk",
-          "Sleek modern kitchen with marble countertops, open shelving, and warm pendant lighting",
-          "Rooftop terrace with comfortable wicker seating, small plunge pool, and a sunset view over tropical palms",
+          'Aerial view of a modern tropical villa with a turquoise swimming pool surrounded by palm trees and dense jungle greenery',
+          'Bright open plan living room with polished concrete floors, woven pendant lamps, and lush green plants',
+          'Minimalist master bedroom with crisp white linens, natural wood headboard, and panoramic jungle views through glass doors',
+          'Covered outdoor dining terrace with wooden table, string lights, and tropical garden views at dusk',
+          'Sleek modern kitchen with marble countertops, open shelving, and warm pendant lighting',
+          'Rooftop terrace with comfortable wicker seating, small plunge pool, and a sunset view over tropical palms',
         ]
 
     const details = {
-      hostedBy: props.details?.hostedBy ?? "Entire villa hosted by Sofia Reyes",
+      hostedBy: props.details?.hostedBy ?? 'Entire villa hosted by Sofia Reyes',
       tagline:
         props.details?.tagline ??
-        "Designed for open-air living with shaded decks, indoor-outdoor flow, and curated local art.",
-      aboutHeading: props.details?.aboutHeading ?? "About this space",
+        'Designed for open-air living with shaded decks, indoor-outdoor flow, and curated local art.',
+      aboutHeading: props.details?.aboutHeading ?? 'About this space',
       aboutParagraphs: props.details?.aboutParagraphs?.length
         ? props.details.aboutParagraphs
         : [
-            "Casa Verde sits on a quiet street in Aldea Zama, a gated jungle neighborhood between Tulum town and the beach road. The architecture blends raw concrete and warm tropical hardwoods with floor-to-ceiling windows that pull the outside in.",
+            'Casa Verde sits on a quiet street in Aldea Zama, a gated jungle neighborhood between Tulum town and the beach road. The architecture blends raw concrete and warm tropical hardwoods with floor-to-ceiling windows that pull the outside in.',
             "The main floor includes a chef's kitchen with a six-burner gas range, quartz countertops, and a hidden pantry. The living area flows onto a covered terrace with an outdoor grill and a 10-seat dining table under a palapa roof. A private courtyard pool wraps the terrace in greenery.",
-            "Upstairs, the rooftop delivers a second lounge, sunbeds, and a plunge pool with jungle-crown views at sunset. Every bedroom has an en-suite bathroom, rainfall shower, and organic cotton bedding.",
+            'Upstairs, the rooftop delivers a second lounge, sunbeds, and a plunge pool with jungle-crown views at sunset. Every bedroom has an en-suite bathroom, rainfall shower, and organic cotton bedding.',
           ],
       bedrooms: props.details?.bedrooms?.length
         ? props.details.bedrooms
         : [
             {
-              title: "Bedroom 1 · King",
-              description: "En-suite bath, garden view, blackout curtains",
+              title: 'Bedroom 1 · King',
+              description: 'En-suite bath, garden view, blackout curtains',
             },
             {
-              title: "Bedroom 2 · King",
-              description: "En-suite bath, pool terrace access",
+              title: 'Bedroom 2 · King',
+              description: 'En-suite bath, pool terrace access',
             },
             {
-              title: "Bedroom 3 · Queen",
-              description: "En-suite bath, desk area, fast Wi-Fi",
+              title: 'Bedroom 3 · Queen',
+              description: 'En-suite bath, desk area, fast Wi-Fi',
             },
             {
-              title: "Bedroom 4 · 2 Twin XL",
-              description: "En-suite bath, bunk-friendly, jungle view",
+              title: 'Bedroom 4 · 2 Twin XL',
+              description: 'En-suite bath, bunk-friendly, jungle view',
             },
             {
-              title: "Common area · Sleeper sofa",
-              description: "Queen sleeper in media lounge",
+              title: 'Common area · Sleeper sofa',
+              description: 'Queen sleeper in media lounge',
             },
           ],
       highlights: props.details?.highlights?.length
         ? props.details.highlights
         : [
-            { text: "Aldea Zama · 5 min to beach" },
-            { text: "Self check-in with keypad" },
-            { text: "Free cancellation for 48hrs" },
+            { text: 'Aldea Zama · 5 min to beach' },
+            { text: 'Self check-in with keypad' },
+            { text: 'Free cancellation for 48hrs' },
           ],
     }
 
     const booking = {
-      price: props.booking?.price ?? "$245",
-      priceUnit: props.booking?.priceUnit ?? "per night",
-      rating: props.booking?.rating ?? "4.96",
-      reviewCount: props.booking?.reviewCount ?? "128 reviews",
-      checkInDate: props.booking?.checkInDate ?? "2026-06-15",
-      checkOutDate: props.booking?.checkOutDate ?? "2026-06-20",
-      guestsValue: props.booking?.guestsValue ?? "4 guests",
-      reserveLabel: props.booking?.reserveLabel ?? "Reserve",
-      chargeNote:
-        props.booking?.chargeNote ?? "You will not be charged yet",
+      price: props.booking?.price ?? '$245',
+      priceUnit: props.booking?.priceUnit ?? 'per night',
+      rating: props.booking?.rating ?? '4.96',
+      reviewCount: props.booking?.reviewCount ?? '128 reviews',
+      checkInDate: props.booking?.checkInDate ?? '2026-06-15',
+      checkOutDate: props.booking?.checkOutDate ?? '2026-06-20',
+      guestsValue: props.booking?.guestsValue ?? '4 guests',
+      reserveLabel: props.booking?.reserveLabel ?? 'Reserve',
+      chargeNote: props.booking?.chargeNote ?? 'You will not be charged yet',
       lineItems: props.booking?.lineItems?.length
         ? props.booking.lineItems
         : [
-            { label: "$245 x 5 nights", amount: "$1,225", accent: false },
-            { label: "Cleaning fee", amount: "$120", accent: false },
-            { label: "Service fee", amount: "$185", accent: false },
-            { label: "Weekly stay discount", amount: "-$75", accent: true },
+            { label: '$245 x 5 nights', amount: '$1,225', accent: false },
+            { label: 'Cleaning fee', amount: '$120', accent: false },
+            { label: 'Service fee', amount: '$185', accent: false },
+            { label: 'Weekly stay discount', amount: '-$75', accent: true },
           ],
-      totalLabel: props.booking?.totalLabel ?? "Total before taxes",
-      totalAmount: props.booking?.totalAmount ?? "$1,455",
+      totalLabel: props.booking?.totalLabel ?? 'Total before taxes',
+      totalAmount: props.booking?.totalAmount ?? '$1,455',
     }
 
     const amenitiesHeading =
-      props.amenities?.heading ?? "What this place offers"
+      props.amenities?.heading ?? 'What this place offers'
     const amenityItems = props.amenities?.items?.length
       ? props.amenities.items
       : [
-          "Free parking on premises",
-          "Private pool",
-          "High-speed Wi-Fi (500 Mbps)",
-          "Fully equipped kitchen",
-          "Washer & dryer",
-          "Dedicated workspace",
-          "EV charger",
-          "Air conditioning in every room",
-          "Rooftop terrace & plunge pool",
-          "Concierge & local experiences",
-          "Outdoor shower & hammmocks",
-          "Self check-in with keypad",
+          'Free parking on premises',
+          'Private pool',
+          'High-speed Wi-Fi (500 Mbps)',
+          'Fully equipped kitchen',
+          'Washer & dryer',
+          'Dedicated workspace',
+          'EV charger',
+          'Air conditioning in every room',
+          'Rooftop terrace & plunge pool',
+          'Concierge & local experiences',
+          'Outdoor shower & hammmocks',
+          'Self check-in with keypad',
         ]
-    const amenitiesShowAll =
-      props.amenities?.showAll ?? "Show all 36 amenities"
+    const amenitiesShowAll = props.amenities?.showAll ?? 'Show all 36 amenities'
 
     const stepsSection = {
-      heading: props.steps?.heading ?? "Your stay, simplified",
+      heading: props.steps?.heading ?? 'Your stay, simplified',
       steps: props.steps?.steps?.length
         ? props.steps.steps
         : [
             {
-              num: "1",
-              title: "Reserve in 2 clicks",
+              num: '1',
+              title: 'Reserve in 2 clicks',
               description:
-                "Instant confirmation, flexible dates, and secure payment. No back-and-forth needed.",
+                'Instant confirmation, flexible dates, and secure payment. No back-and-forth needed.',
             },
             {
-              num: "2",
-              title: "Arrive seamlessly",
+              num: '2',
+              title: 'Arrive seamlessly',
               description:
-                "Keypad entry, a curated welcome guide, and a local concierge for restaurant reservations and tours.",
+                'Keypad entry, a curated welcome guide, and a local concierge for restaurant reservations and tours.',
             },
             {
-              num: "3",
-              title: "Leave with zero stress",
+              num: '3',
+              title: 'Leave with zero stress',
               description:
-                "Self checkout, fast review, and priority rebooking discounts for returning guests.",
+                'Self checkout, fast review, and priority rebooking discounts for returning guests.',
             },
           ],
     }
 
     const hostData = {
-      name: props.host?.name ?? "Sofia Reyes",
+      name: props.host?.name ?? 'Sofia Reyes',
       meta:
-        props.host?.meta ??
-        "Joined December 2015 · Superhost · 312 reviews",
+        props.host?.meta ?? 'Joined December 2015 · Superhost · 312 reviews',
       bio:
         props.host?.bio ??
-        "I am a Tulum native and an architect who rehabbed Casa Verde with a local builder over two years. I live two blocks away, run a small mezcaleria in town, and love helping guests find the quiet cenotes the tourists miss. My co-host Marco handles logistics so I can focus on making your stay special.",
+        'I am a Tulum native and an architect who rehabbed Casa Verde with a local builder over two years. I live two blocks away, run a small mezcaleria in town, and love helping guests find the quiet cenotes the tourists miss. My co-host Marco handles logistics so I can focus on making your stay special.',
       badges: props.host?.badges?.length
         ? props.host.badges
-        : ["Identity verified", "Response rate 100%", "Response time < 1 hour"],
+        : ['Identity verified', 'Response rate 100%', 'Response time < 1 hour'],
       avatarAlt:
         props.host?.avatarAlt ??
-        "Professional headshot of a smiling Latina woman with dark hair wearing a white linen shirt",
-      cta: props.host?.cta ?? "Read all 128 reviews",
+        'Professional headshot of a smiling Latina woman with dark hair wearing a white linen shirt',
+      cta: props.host?.cta ?? 'Read all 128 reviews',
     }
 
     const reviewsSection = {
-      summary: props.reviews?.summary ?? "4.96 · 128 Reviews",
+      summary: props.reviews?.summary ?? '4.96 · 128 Reviews',
       categories: props.reviews?.categories?.length
         ? props.reviews.categories
         : [
-            { label: "Cleanliness", score: "5.0", width: "99%" },
-            { label: "Accuracy", score: "4.9", width: "98%" },
-            { label: "Check-in", score: "5.0", width: "99%" },
-            { label: "Communication", score: "5.0", width: "100%" },
-            { label: "Location", score: "4.8", width: "95%" },
-            { label: "Value", score: "4.9", width: "97%" },
+            { label: 'Cleanliness', score: '5.0', width: '99%' },
+            { label: 'Accuracy', score: '4.9', width: '98%' },
+            { label: 'Check-in', score: '5.0', width: '99%' },
+            { label: 'Communication', score: '5.0', width: '100%' },
+            { label: 'Location', score: '4.8', width: '95%' },
+            { label: 'Value', score: '4.9', width: '97%' },
           ],
       items: props.reviews?.items?.length
         ? props.reviews.items
         : [
             {
-              name: "Daniel Porter",
-              locationDate: "Austin, TX · March 2026",
-              text: "We stayed for a week with two other couples and the space was perfect. The photos do not prepare you for how green and private the courtyard feels. Sofia recommended a cenote tour that was the highlight of our trip.",
+              name: 'Daniel Porter',
+              locationDate: 'Austin, TX · March 2026',
+              text: 'We stayed for a week with two other couples and the space was perfect. The photos do not prepare you for how green and private the courtyard feels. Sofia recommended a cenote tour that was the highlight of our trip.',
               avatarAlt:
-                "Professional headshot of a smiling man with short brown hair and a navy crew neck shirt",
+                'Professional headshot of a smiling man with short brown hair and a navy crew neck shirt',
             },
             {
-              name: "Priya Malhotra",
-              locationDate: "Toronto, ON · February 2026",
-              text: "Best Airbnb experience I have had in five years of traveling. Everything is designed right: fast Wi-Fi, hot water pressure that actually works, kitchen knives that are sharp, and a pool cleaned daily. Sofia was incredibly responsive.",
+              name: 'Priya Malhotra',
+              locationDate: 'Toronto, ON · February 2026',
+              text: 'Best Airbnb experience I have had in five years of traveling. Everything is designed right: fast Wi-Fi, hot water pressure that actually works, kitchen knives that are sharp, and a pool cleaned daily. Sofia was incredibly responsive.',
               avatarAlt:
-                "Professional headshot of a smiling young woman with curly hair wearing a beige sweater",
+                'Professional headshot of a smiling young woman with curly hair wearing a beige sweater',
             },
             {
-              name: "Liam O’Brien",
-              locationDate: "Dublin, Ireland · January 2026",
-              text: "The rooftop at sunset is unbeatable. We grilled fresh fish from the local market and ate under the string lights. Quiet neighborhood, safe to walk at night, bikes included. Already rebooked for November.",
+              name: 'Liam O’Brien',
+              locationDate: 'Dublin, Ireland · January 2026',
+              text: 'The rooftop at sunset is unbeatable. We grilled fresh fish from the local market and ate under the string lights. Quiet neighborhood, safe to walk at night, bikes included. Already rebooked for November.',
               avatarAlt:
-                "Professional headshot of a smiling man with glasses and a short beard wearing a charcoal t-shirt",
+                'Professional headshot of a smiling man with glasses and a short beard wearing a charcoal t-shirt',
             },
             {
-              name: "Ava Chen",
-              locationDate: "Singapore · December 2025",
-              text: "Traveled with my parents and two kids. The twin room was a hit, the outdoor shower was their adventure, and the concierge arranged a private van to Chichen Itza with cold water and snacks. 10/10.",
+              name: 'Ava Chen',
+              locationDate: 'Singapore · December 2025',
+              text: 'Traveled with my parents and two kids. The twin room was a hit, the outdoor shower was their adventure, and the concierge arranged a private van to Chichen Itza with cold water and snacks. 10/10.',
               avatarAlt:
-                "Professional headshot of a smiling woman with straight dark hair and gold hoop earrings",
+                'Professional headshot of a smiling woman with straight dark hair and gold hoop earrings',
             },
           ],
-      showAll: props.reviews?.showAll ?? "Show all 128 reviews",
+      showAll: props.reviews?.showAll ?? 'Show all 128 reviews',
     }
 
     const ctaSection = {
-      heading: props.cta?.heading ?? "Ready to escape to Tulum?",
+      heading: props.cta?.heading ?? 'Ready to escape to Tulum?',
       subheading:
         props.cta?.subheading ??
-        "Book Casa Verde today. Weekly discounts, flexible cancellation, and a local team to make your arrival effortless.",
-      primaryLabel: props.cta?.primaryLabel ?? "Check Availability",
-      secondaryLabel: props.cta?.secondaryLabel ?? "View Photos",
+        'Book Casa Verde today. Weekly discounts, flexible cancellation, and a local team to make your arrival effortless.',
+      primaryLabel: props.cta?.primaryLabel ?? 'Check Availability',
+      secondaryLabel: props.cta?.secondaryLabel ?? 'View Photos',
       note:
-        props.cta?.note ??
-        "Free cancellation up to 48 hours before arrival",
+        props.cta?.note ?? 'Free cancellation up to 48 hours before arrival',
       imageAlt:
         props.cta?.imageAlt ??
-        "Wide-angle view of a tropical valley with lush green hills and a winding river under golden morning light",
+        'Wide-angle view of a tropical valley with lush green hills and a winding river under golden morning light',
     }
 
     const faqSection = {
-      heading: props.faq?.heading ?? "Common questions",
+      heading: props.faq?.heading ?? 'Common questions',
       items: props.faq?.items?.length
         ? props.faq.items
         : [
             {
-              q: "How far is the beach?",
-              a: "Casa Verde is a 5-minute bike ride or 10-minute walk to the nearest public beach access. We provide complimentary bikes for all guests.",
+              q: 'How far is the beach?',
+              a: 'Casa Verde is a 5-minute bike ride or 10-minute walk to the nearest public beach access. We provide complimentary bikes for all guests.',
             },
             {
-              q: "Is the neighborhood safe?",
-              a: "Aldea Zama is a gated residential development with 24/7 private security patrols. It is considered one of the safest areas in Tulum.",
+              q: 'Is the neighborhood safe?',
+              a: 'Aldea Zama is a gated residential development with 24/7 private security patrols. It is considered one of the safest areas in Tulum.',
             },
             {
-              q: "Can I work remotely?",
-              a: "Yes. We have 500 Mbps fiber, multiple dedicated workspaces, UPS battery backup, and ergonomic chairs available on request.",
+              q: 'Can I work remotely?',
+              a: 'Yes. We have 500 Mbps fiber, multiple dedicated workspaces, UPS battery backup, and ergonomic chairs available on request.',
             },
             {
-              q: "Are pets allowed?",
-              a: "Well-trained dogs are welcome with prior notice. There is a small pet fee of $35 per stay to cover extra cleaning.",
+              q: 'Are pets allowed?',
+              a: 'Well-trained dogs are welcome with prior notice. There is a small pet fee of $35 per stay to cover extra cleaning.',
             },
             {
-              q: "Do you offer airport pickup?",
-              a: "We can arrange a private transfer from Cancun International Airport (CUN) for $120 USD each way. The drive is roughly 90 minutes.",
+              q: 'Do you offer airport pickup?',
+              a: 'We can arrange a private transfer from Cancun International Airport (CUN) for $120 USD each way. The drive is roughly 90 minutes.',
             },
             {
-              q: "What is the checkout process?",
-              a: "Checkout is at 11:00 AM. Leave the key in the lockbox, and a cleaner will arrive by noon. Late checkout is sometimes available for a fee.",
+              q: 'What is the checkout process?',
+              a: 'Checkout is at 11:00 AM. Leave the key in the lockbox, and a cleaner will arrive by noon. Late checkout is sometimes available for a fee.',
             },
           ],
     }
 
     const featuresSection = {
-      heading: props.features?.heading ?? "Things to know",
+      heading: props.features?.heading ?? 'Things to know',
       columns: props.features?.columns?.length
         ? props.features.columns
         : [
             {
-              heading: "House rules",
+              heading: 'House rules',
               items: [
-                "Check-in after 3:00 PM",
-                "Checkout before 11:00 AM",
-                "8 guests maximum",
-                "No smoking inside",
-                "No parties or events",
+                'Check-in after 3:00 PM',
+                'Checkout before 11:00 AM',
+                '8 guests maximum',
+                'No smoking inside',
+                'No parties or events',
               ],
             },
             {
-              heading: "Safety & property",
+              heading: 'Safety & property',
               items: [
-                "Carbon monoxide alarm",
-                "Smoke alarm",
-                "Security cameras on exterior",
-                "First aid kit available",
-                "Fire extinguisher in kitchen",
+                'Carbon monoxide alarm',
+                'Smoke alarm',
+                'Security cameras on exterior',
+                'First aid kit available',
+                'Fire extinguisher in kitchen',
               ],
             },
             {
-              heading: "Cancellation policy",
+              heading: 'Cancellation policy',
               items: [
-                "Free cancellation for 48 hours",
-                "Cancel before Jun 8 for a full refund",
-                "Partial refund up to 72 hours before",
-                "Reschedule without fees once",
+                'Free cancellation for 48 hours',
+                'Cancel before Jun 8 for a full refund',
+                'Partial refund up to 72 hours before',
+                'Reschedule without fees once',
               ],
             },
           ],
@@ -575,22 +580,22 @@ export const VacationRentalKimiPage2 = defineCapsule({
       items: props.stats?.items?.length
         ? props.stats.items
         : [
-            { value: "128", label: "Guest reviews" },
-            { value: "4.96", label: "Average rating" },
-            { value: "$245", label: "Per night" },
-            { value: "8", label: "Max guests" },
+            { value: '128', label: 'Guest reviews' },
+            { value: '4.96', label: 'Average rating' },
+            { value: '$245', label: 'Per night' },
+            { value: '8', label: 'Max guests' },
           ],
     }
 
     const logosSection = {
-      heading: props.logos?.heading ?? "As featured in",
+      heading: props.logos?.heading ?? 'As featured in',
       brands: props.logos?.brands?.length
         ? props.logos.brands
         : [
-            { name: "Travel&Co" },
-            { name: "StayWeekly" },
-            { name: "NomadList" },
-            { name: "TulumPost" },
+            { name: 'Travel&Co' },
+            { name: 'StayWeekly' },
+            { name: 'NomadList' },
+            { name: 'TulumPost' },
           ],
     }
 
@@ -599,34 +604,34 @@ export const VacationRentalKimiPage2 = defineCapsule({
         ? props.footer.columns
         : [
             {
-              heading: "Explore",
-              links: ["Gallery", "Amenities", "Reviews", "Host"],
+              heading: 'Explore',
+              links: ['Gallery', 'Amenities', 'Reviews', 'Host'],
             },
             {
-              heading: "Support",
+              heading: 'Support',
               links: [
-                "Help Center",
-                "Cancellation Options",
-                "Safety Information",
-                "Accessibility",
+                'Help Center',
+                'Cancellation Options',
+                'Safety Information',
+                'Accessibility',
               ],
             },
           ],
-      contactHeading: props.footer?.contactHeading ?? "Contact",
+      contactHeading: props.footer?.contactHeading ?? 'Contact',
       contactLines: props.footer?.contactLines?.length
         ? props.footer.contactLines
         : [
-            "+52 984 123 4567",
-            "hello@casaverde-tulum.com",
-            "Calle Itzamna, Aldea Zama",
-            "Tulum, Quintana Roo 77760",
+            '+52 984 123 4567',
+            'hello@casaverde-tulum.com',
+            'Calle Itzamna, Aldea Zama',
+            'Tulum, Quintana Roo 77760',
           ],
       copyright:
         props.footer?.copyright ??
         `© ${new Date().getFullYear()} Casa Verde Rentals. All rights reserved.`,
       legal: props.footer?.legal?.length
         ? props.footer.legal
-        : ["Privacy", "Terms", "Sitemap"],
+        : ['Privacy', 'Terms', 'Sitemap'],
     }
 
     const Logo = () => (
@@ -642,7 +647,7 @@ export const VacationRentalKimiPage2 = defineCapsule({
 
     const Star = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5 text-primary", className)}
+        className={cn('size-5 text-primary', className)}
         viewBox="0 0 24 24"
         fill="currentColor"
         aria-hidden="true"
@@ -754,7 +759,7 @@ export const VacationRentalKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -826,52 +831,63 @@ export const VacationRentalKimiPage2 = defineCapsule({
                     <div className="flex-1 overflow-y-auto px-6 py-5">
                       {bookings && bookings.length ? (
                         <div className="space-y-5">
-                          {bookings.map((bookingItem: { id: string; propertyTitle: string; totalAmount: string; checkInDate: string; checkOutDate: string; guests: string }) => (
-                            <div
-                              key={bookingItem.id}
-                              className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
-                            >
-                              <div className="aspect-square overflow-hidden rounded-lg bg-muted">
-                                <Image
-                                  alt={galleryImages[0]}
-                                  w={180}
-                                  h={180}
-                                  className="h-full w-full object-cover"
-                                />
-                              </div>
-                              <div className="min-w-0">
-                                <div className="flex items-start justify-between gap-3">
-                                  <div>
-                                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                      {brand}
+                          {bookings.map(
+                            (bookingItem: {
+                              id: string
+                              propertyTitle: string
+                              totalAmount: string
+                              checkInDate: string
+                              checkOutDate: string
+                              guests: string
+                            }) => (
+                              <div
+                                key={bookingItem.id}
+                                className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                              >
+                                <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                                  <Image
+                                    alt={galleryImages[0]}
+                                    w={180}
+                                    h={180}
+                                    className="h-full w-full object-cover"
+                                  />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                        {brand}
+                                      </p>
+                                      <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                        {bookingItem.propertyTitle}
+                                      </h3>
+                                    </div>
+                                    <p className="text-sm font-bold text-foreground">
+                                      {bookingItem.totalAmount}
                                     </p>
-                                    <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
-                                      {bookingItem.propertyTitle}
-                                    </h3>
                                   </div>
-                                  <p className="text-sm font-bold text-foreground">
-                                    {bookingItem.totalAmount}
-                                  </p>
-                                </div>
-                                <div className="mt-4 space-y-1 text-sm text-muted-foreground">
-                                  <p>Check in: {bookingItem.checkInDate}</p>
-                                  <p>Check out: {bookingItem.checkOutDate}</p>
-                                  <p>Guests: {bookingItem.guests}</p>
-                                </div>
-                                <div className="mt-4">
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="w-full rounded-full"
-                                    onClick={() => void cancelBooking(bookingItem.id)}
-                                  >
-                                    Cancel Booking
-                                  </Button>
+                                  <div className="mt-4 space-y-1 text-sm text-muted-foreground">
+                                    <p>Check in: {bookingItem.checkInDate}</p>
+                                    <p>Check out: {bookingItem.checkOutDate}</p>
+                                    <p>Guests: {bookingItem.guests}</p>
+                                  </div>
+                                  <div className="mt-4">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      className="w-full rounded-full"
+                                      onClick={() =>
+                                        void cancelBooking(bookingItem.id)
+                                      }
+                                    >
+                                      Cancel Booking
+                                    </Button>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          ))}
+                            ),
+                          )}
                         </div>
                       ) : (
                         <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
@@ -1005,15 +1021,11 @@ export const VacationRentalKimiPage2 = defineCapsule({
                   onClick={() => go(nav[4] ?? nav[0])}
                   className="hidden items-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors duration-200 hover:bg-primary/90 sm:inline-flex"
                 >
-                  {nav[4] ?? "Book Now"}
+                  {nav[4] ?? 'Book Now'}
                 </button>
 
                 {/* Mobile toggle via checkbox hack (no JS state) */}
-                <input
-                  type="checkbox"
-                  id="mnav"
-                  className="peer sr-only"
-                />
+                <input type="checkbox" id="mnav" className="peer sr-only" />
                 <label
                   htmlFor="mnav"
                   className="cursor-pointer rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted md:hidden"
@@ -1108,7 +1120,7 @@ export const VacationRentalKimiPage2 = defineCapsule({
                 onClick={() => go(nav[4] ?? nav[0])}
                 className="block rounded-lg bg-primary/10 px-3 py-2 text-base font-semibold text-primary"
               >
-                {nav[4] ?? "Book Now"}
+                {nav[4] ?? 'Book Now'}
               </button>
             </div>
           </div>
@@ -1130,13 +1142,15 @@ export const VacationRentalKimiPage2 = defineCapsule({
                   {listing.rating} · {listing.reviewCount}
                 </span>
                 <span className="text-muted-foreground">·</span>
-                <span className="text-muted-foreground">{listing.hostTier}</span>
+                <span className="text-muted-foreground">
+                  {listing.hostTier}
+                </span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => go("Share")}
+                onClick={() => go('Share')}
                 className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium text-foreground transition-colors duration-200 hover:bg-muted"
                 aria-label="Share this listing"
               >
@@ -1166,14 +1180,14 @@ export const VacationRentalKimiPage2 = defineCapsule({
                     : `Save ${listing.title} to favorites`
                 }
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium transition-colors duration-200 hover:bg-muted",
+                  'inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium transition-colors duration-200 hover:bg-muted',
                   isFavorite
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "text-foreground",
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'text-foreground',
                 )}
               >
                 <HeartIcon active={isFavorite} />
-                {isFavorite ? "Saved" : "Save"}
+                {isFavorite ? 'Saved' : 'Save'}
               </button>
             </div>
           </div>
@@ -1369,10 +1383,7 @@ export const VacationRentalKimiPage2 = defineCapsule({
                   </div>
                 </div>
 
-                <form
-                  className="mt-6 space-y-4"
-                  onSubmit={handleReserve}
-                >
+                <form className="mt-6 space-y-4" onSubmit={handleReserve}>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="rounded-xl border border-input px-3 py-2">
                       <label className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -1410,14 +1421,14 @@ export const VacationRentalKimiPage2 = defineCapsule({
                       onChange={(e) => setGuests(e.target.value)}
                     >
                       {[
-                        "1 guest",
-                        "2 guests",
-                        "3 guests",
-                        "4 guests",
-                        "5 guests",
-                        "6 guests",
-                        "7 guests",
-                        "8 guests",
+                        '1 guest',
+                        '2 guests',
+                        '3 guests',
+                        '4 guests',
+                        '5 guests',
+                        '6 guests',
+                        '7 guests',
+                        '8 guests',
                       ].map((opt) => (
                         <option key={opt} value={opt}>
                           {opt}
@@ -1425,10 +1436,7 @@ export const VacationRentalKimiPage2 = defineCapsule({
                       ))}
                     </select>
                   </div>
-                  <Button
-                    type="submit"
-                    className="w-full rounded-xl"
-                  >
+                  <Button type="submit" className="w-full rounded-xl">
                     {booking.reserveLabel}
                   </Button>
                   <p className="text-center text-sm text-muted-foreground">
@@ -1441,8 +1449,8 @@ export const VacationRentalKimiPage2 = defineCapsule({
                     <div
                       key={li.label}
                       className={cn(
-                        "flex justify-between",
-                        li.accent && "font-semibold text-primary",
+                        'flex justify-between',
+                        li.accent && 'font-semibold text-primary',
                       )}
                     >
                       <span>{li.label}</span>

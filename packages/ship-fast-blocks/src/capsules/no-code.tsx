@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
+} from '#/components/ui/sheet.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
+import { Button } from '#/components/ui/button.tsx'
 
 /**
  * NoCodeKimiPage — a complete, self-contained no-code / drag-and-drop app-builder
@@ -48,7 +48,7 @@ import { Button } from "#/components/ui/button.tsx"
  * supply ONLY content data; rich defaults make it render great with no props at all.
  */
 export const NoCodeKimiPage = defineCapsule({
-  name: "NoCodeKimiPage",
+  name: 'NoCodeKimiPage',
   description:
     "Complete no-code / low-code drag-and-drop app & website BUILDER SaaS landing page with a clean, bright, neutral product aesthetic: light canvas, soft-bordered cards, tinted icon tiles, and one bold inverse CTA band. Includes a two-column hero (live-status pill, stacked headline, dual CTAs, no-credit-card trust microcopy) beside a faux visual-EDITOR mockup (browser chrome, Components rail, gridded drag-and-drop canvas with a selected block, Properties panel, floating 'Published!' toast), a trusted-by logo strip, a 6-up feature grid (drag-and-drop builder, 200+ templates, mobile responsive, fast CDN, security, integrations), a 3-step how-it-works flow with photos, a filterable TEMPLATES gallery with hover-zoom thumbnails and category tags, a 3-tier pricing table (Starter free / Pro / Enterprise) with monthly-yearly toggle and highlighted popular plan, a 4-up stats band, a 3-column star-rated testimonials grid, an accordion FAQ, an inverse 'ready to build' CTA, and a multi-column footer with social icons. Use as the ROOT/home page for no-code / website-builder / app-builder / page-builder / form-builder / SaaS platform products, drag-and-drop site creators, template marketplaces, or any 'build without code' startup wanting a polished, conversion-focused product landing page. Supply content only — brand, nav, hero, features, steps, templates, pricing, stats, testimonials, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -185,9 +185,7 @@ export const NoCodeKimiPage = defineCapsule({
       .object({
         eyebrow: z.string().optional(),
         heading: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       })
       .optional(),
     /** Closing inverse CTA band. */
@@ -205,9 +203,7 @@ export const NoCodeKimiPage = defineCapsule({
       .object({
         description: z.string().optional(),
         columns: z
-          .array(
-            z.object({ title: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ title: z.string(), links: z.array(z.string()) }))
           .optional(),
         copyright: z.string().optional(),
         legal: z.array(z.string()).optional(),
@@ -265,10 +261,10 @@ export const NoCodeKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [projectsOpen, setProjectsOpen] = useState(false)
-    const brand = props.brand ?? "Buildr"
+    const brand = props.brand ?? 'Buildr'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "Templates", "Pricing", "Stories"]
+      : ['Features', 'Templates', 'Pricing', 'Stories']
 
     // Lakebed hooks
     const storedProjects = lakebed.useQuery('projects')
@@ -305,210 +301,210 @@ export const NoCodeKimiPage = defineCapsule({
     const safeProjects = storedProjects ?? []
     const projectCount = safeProjects.length
 
-    const heroBadge = props.hero?.badge ?? "Now with AI-powered components"
-    const headingTop = props.hero?.headingTop ?? "Build apps without code."
-    const headingAccent = props.hero?.headingAccent ?? "Drag, drop, launch."
+    const heroBadge = props.hero?.badge ?? 'Now with AI-powered components'
+    const headingTop = props.hero?.headingTop ?? 'Build apps without code.'
+    const headingAccent = props.hero?.headingAccent ?? 'Drag, drop, launch.'
     const heroSub =
       props.hero?.subheading ??
-      "Create stunning web and mobile apps in minutes. Choose from 200+ professionally designed templates, customize with our intuitive drag-and-drop builder, and publish instantly."
-    const heroPrimary = props.hero?.primaryCta ?? "Start building free"
-    const heroSecondary = props.hero?.secondaryCta ?? "Watch demo"
+      'Create stunning web and mobile apps in minutes. Choose from 200+ professionally designed templates, customize with our intuitive drag-and-drop builder, and publish instantly.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Start building free'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Watch demo'
     const heroTrust = props.hero?.trust?.length
       ? props.hero.trust
-      : ["No credit card required", "Free forever plan"]
-    const editorLabel = props.hero?.editorLabel ?? "Buildr Editor"
-    const heroToast = props.hero?.toast ?? "Published!"
+      : ['No credit card required', 'Free forever plan']
+    const editorLabel = props.hero?.editorLabel ?? 'Buildr Editor'
+    const heroToast = props.hero?.toast ?? 'Published!'
 
     const logosLabel =
-      props.logos?.label ?? "Trusted by 50,000+ teams worldwide"
+      props.logos?.label ?? 'Trusted by 50,000+ teams worldwide'
     const logoNames = props.logos?.names?.length
       ? props.logos.names
-      : ["stripe", "notion", "linear", "vercel", "shopify", "slack"]
+      : ['stripe', 'notion', 'linear', 'vercel', 'shopify', 'slack']
 
-    const featuresEyebrow = props.features?.eyebrow ?? "Features"
+    const featuresEyebrow = props.features?.eyebrow ?? 'Features'
     const featuresHeading =
-      props.features?.heading ?? "Everything you need to build amazing apps"
+      props.features?.heading ?? 'Everything you need to build amazing apps'
     const featuresDesc =
       props.features?.description ??
-      "From drag-and-drop design to powerful integrations, Buildr gives you all the tools to bring your ideas to life."
+      'From drag-and-drop design to powerful integrations, Buildr gives you all the tools to bring your ideas to life.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Drag & Drop Builder",
+            title: 'Drag & Drop Builder',
             description:
-              "Intuitive visual editor with 50+ pre-built components. Simply drag elements onto your canvas and arrange them exactly how you want.",
+              'Intuitive visual editor with 50+ pre-built components. Simply drag elements onto your canvas and arrange them exactly how you want.',
           },
           {
-            title: "200+ Templates",
+            title: '200+ Templates',
             description:
-              "Start with professionally designed templates for SaaS, e-commerce, portfolios, blogs, and more. Fully customizable to match your brand.",
+              'Start with professionally designed templates for SaaS, e-commerce, portfolios, blogs, and more. Fully customizable to match your brand.',
           },
           {
-            title: "Mobile Responsive",
+            title: 'Mobile Responsive',
             description:
-              "Every app automatically adapts to any screen size. Preview and fine-tune your design for desktop, tablet, and mobile in real-time.",
+              'Every app automatically adapts to any screen size. Preview and fine-tune your design for desktop, tablet, and mobile in real-time.',
           },
           {
-            title: "Lightning Fast",
+            title: 'Lightning Fast',
             description:
-              "Apps built on Buildr load instantly with global CDN delivery, automatic image optimization, and code minification built-in.",
+              'Apps built on Buildr load instantly with global CDN delivery, automatic image optimization, and code minification built-in.',
           },
           {
-            title: "Secure by Default",
+            title: 'Secure by Default',
             description:
               "SSL certificates, DDoS protection, and SOC 2 compliance included. Your data and your users' data are always protected.",
           },
           {
-            title: "100+ Integrations",
+            title: '100+ Integrations',
             description:
-              "Connect with Stripe, Airtable, Zapier, Make, and more. Automate workflows and add powerful functionality without code.",
+              'Connect with Stripe, Airtable, Zapier, Make, and more. Automate workflows and add powerful functionality without code.',
           },
         ]
 
-    const stepsEyebrow = props.steps?.eyebrow ?? "How It Works"
+    const stepsEyebrow = props.steps?.eyebrow ?? 'How It Works'
     const stepsHeading =
-      props.steps?.heading ?? "From idea to live app in 3 simple steps"
+      props.steps?.heading ?? 'From idea to live app in 3 simple steps'
     const stepsDesc =
       props.steps?.description ??
-      "No coding required. No setup headaches. Just pure creation."
+      'No coding required. No setup headaches. Just pure creation.'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Choose a Template",
+            title: 'Choose a Template',
             description:
-              "Browse 200+ professionally designed templates. Filter by category, style, or industry to find your perfect starting point.",
-            imageAlt: "Designer browsing template gallery on laptop screen",
+              'Browse 200+ professionally designed templates. Filter by category, style, or industry to find your perfect starting point.',
+            imageAlt: 'Designer browsing template gallery on laptop screen',
           },
           {
-            title: "Customize Everything",
+            title: 'Customize Everything',
             description:
-              "Drag, drop, and edit with our visual builder. Change colors, fonts, images, and content to match your brand perfectly.",
+              'Drag, drop, and edit with our visual builder. Change colors, fonts, images, and content to match your brand perfectly.',
             imageAlt:
-              "Person customizing app interface with drag and drop editor",
+              'Person customizing app interface with drag and drop editor',
           },
           {
-            title: "Publish & Grow",
+            title: 'Publish & Grow',
             description:
-              "Hit publish and your app goes live instantly. Get a custom domain, analytics, and scale as your audience grows.",
+              'Hit publish and your app goes live instantly. Get a custom domain, analytics, and scale as your audience grows.',
             imageAlt:
-              "Live analytics dashboard showing app performance metrics",
+              'Live analytics dashboard showing app performance metrics',
           },
         ]
 
-    const templatesEyebrow = props.templates?.eyebrow ?? "Templates Gallery"
+    const templatesEyebrow = props.templates?.eyebrow ?? 'Templates Gallery'
     const templatesHeading =
-      props.templates?.heading ?? "Start with a proven design"
+      props.templates?.heading ?? 'Start with a proven design'
     const templatesDesc =
       props.templates?.description ??
-      "Browse our collection of 200+ templates designed by industry experts. Each one is fully customizable and ready to make your own."
+      'Browse our collection of 200+ templates designed by industry experts. Each one is fully customizable and ready to make your own.'
     const templateFilters = props.templates?.filters?.length
       ? props.templates.filters
       : [
-          "All Templates",
-          "SaaS",
-          "E-commerce",
-          "Portfolio",
-          "Blog",
-          "Landing Page",
+          'All Templates',
+          'SaaS',
+          'E-commerce',
+          'Portfolio',
+          'Blog',
+          'Landing Page',
         ]
     const templatesViewAll =
-      props.templates?.viewAll ?? "View all 200+ templates"
+      props.templates?.viewAll ?? 'View all 200+ templates'
     const templateItems = props.templates?.items?.length
       ? props.templates.items
       : [
           {
-            title: "Analytics Dashboard",
-            tag: "SaaS",
-            description: "Perfect for data-driven apps",
-            imageAlt: "Modern SaaS dashboard template with analytics charts",
+            title: 'Analytics Dashboard',
+            tag: 'SaaS',
+            description: 'Perfect for data-driven apps',
+            imageAlt: 'Modern SaaS dashboard template with analytics charts',
           },
           {
-            title: "Modern Shop",
-            tag: "E-commerce",
-            description: "Sell products with style",
-            imageAlt: "E-commerce store template with product grid",
+            title: 'Modern Shop',
+            tag: 'E-commerce',
+            description: 'Sell products with style',
+            imageAlt: 'E-commerce store template with product grid',
           },
           {
-            title: "Creative Portfolio",
-            tag: "Portfolio",
-            description: "Showcase your best work",
-            imageAlt: "Creative portfolio template for designers",
+            title: 'Creative Portfolio',
+            tag: 'Portfolio',
+            description: 'Showcase your best work',
+            imageAlt: 'Creative portfolio template for designers',
           },
           {
-            title: "Minimal Blog",
-            tag: "Blog",
-            description: "Content-first design",
-            imageAlt: "Minimal blog template with clean typography",
+            title: 'Minimal Blog',
+            tag: 'Blog',
+            description: 'Content-first design',
+            imageAlt: 'Minimal blog template with clean typography',
           },
           {
-            title: "Startup Launch",
-            tag: "Landing Page",
-            description: "Convert visitors to users",
-            imageAlt: "Startup landing page template",
+            title: 'Startup Launch',
+            tag: 'Landing Page',
+            description: 'Convert visitors to users',
+            imageAlt: 'Startup landing page template',
           },
           {
-            title: "Event Registration",
-            tag: "Events",
-            description: "Manage events seamlessly",
-            imageAlt: "Event registration template with calendar",
+            title: 'Event Registration',
+            tag: 'Events',
+            description: 'Manage events seamlessly',
+            imageAlt: 'Event registration template with calendar',
           },
         ]
 
-    const pricingEyebrow = props.pricing?.eyebrow ?? "Pricing"
+    const pricingEyebrow = props.pricing?.eyebrow ?? 'Pricing'
     const pricingHeading =
-      props.pricing?.heading ?? "Simple, transparent pricing"
+      props.pricing?.heading ?? 'Simple, transparent pricing'
     const pricingDesc =
       props.pricing?.description ??
-      "Start free, scale as you grow. No hidden fees, no surprises."
-    const monthlyLabel = props.pricing?.monthlyLabel ?? "Monthly"
-    const yearlyLabel = props.pricing?.yearlyLabel ?? "Yearly"
-    const saveBadge = props.pricing?.saveBadge ?? "Save 20%"
+      'Start free, scale as you grow. No hidden fees, no surprises.'
+    const monthlyLabel = props.pricing?.monthlyLabel ?? 'Monthly'
+    const yearlyLabel = props.pricing?.yearlyLabel ?? 'Yearly'
+    const saveBadge = props.pricing?.saveBadge ?? 'Save 20%'
     const pricingPlans = props.pricing?.plans?.length
       ? props.pricing.plans
       : [
           {
-            name: "Starter",
-            tagline: "Perfect for side projects",
-            price: "$0",
-            period: "/month",
-            cta: "Start building free",
+            name: 'Starter',
+            tagline: 'Perfect for side projects',
+            price: '$0',
+            period: '/month',
+            cta: 'Start building free',
             features: [
-              "3 projects",
-              "50+ templates",
-              "Buildr subdomain",
-              "Community support",
+              '3 projects',
+              '50+ templates',
+              'Buildr subdomain',
+              'Community support',
             ],
           },
           {
-            name: "Pro",
-            tagline: "For serious creators",
-            price: "$29",
-            period: "/month",
-            cta: "Start 14-day trial",
+            name: 'Pro',
+            tagline: 'For serious creators',
+            price: '$29',
+            period: '/month',
+            cta: 'Start 14-day trial',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
             features: [
-              "Unlimited projects",
-              "200+ templates",
-              "Custom domain",
-              "10 team members",
-              "Priority support",
-              "Analytics dashboard",
+              'Unlimited projects',
+              '200+ templates',
+              'Custom domain',
+              '10 team members',
+              'Priority support',
+              'Analytics dashboard',
             ],
           },
           {
-            name: "Enterprise",
-            tagline: "For large organizations",
-            price: "Custom",
-            cta: "Contact sales",
+            name: 'Enterprise',
+            tagline: 'For large organizations',
+            price: 'Custom',
+            cta: 'Contact sales',
             features: [
-              "Everything in Pro",
-              "Unlimited team members",
-              "SSO & advanced security",
-              "Dedicated account manager",
-              "Custom SLA",
+              'Everything in Pro',
+              'Unlimited team members',
+              'SSO & advanced security',
+              'Dedicated account manager',
+              'Custom SLA',
             ],
           },
         ]
@@ -516,117 +512,116 @@ export const NoCodeKimiPage = defineCapsule({
     const statItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "50K+", label: "Apps created" },
-          { value: "200+", label: "Templates available" },
-          { value: "99.9%", label: "Uptime guaranteed" },
-          { value: "<1s", label: "Average load time" },
+          { value: '50K+', label: 'Apps created' },
+          { value: '200+', label: 'Templates available' },
+          { value: '99.9%', label: 'Uptime guaranteed' },
+          { value: '<1s', label: 'Average load time' },
         ]
 
-    const testimonialsEyebrow = props.testimonials?.eyebrow ?? "Testimonials"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'Testimonials'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Loved by creators worldwide"
+      props.testimonials?.heading ?? 'Loved by creators worldwide'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "See what our community is building with Buildr."
+      'See what our community is building with Buildr.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "I built my entire e-commerce store in a weekend without writing a single line of code. The templates are gorgeous and the editor is incredibly intuitive. Sales are up 40% since the redesign.",
-            name: "Sarah Chen",
-            role: "Founder, GreenLeaf Organics",
+              'I built my entire e-commerce store in a weekend without writing a single line of code. The templates are gorgeous and the editor is incredibly intuitive. Sales are up 40% since the redesign.',
+            name: 'Sarah Chen',
+            role: 'Founder, GreenLeaf Organics',
             avatarAlt:
-              "Professional headshot of Sarah Chen, founder of GreenLeaf Organics",
+              'Professional headshot of Sarah Chen, founder of GreenLeaf Organics',
           },
           {
             quote:
-              "As a designer without coding skills, I was always dependent on developers. Buildr changed everything. Now I prototype and launch full products myself. The integrations with Figma are seamless.",
-            name: "Marcus Johnson",
-            role: "Product Designer, TechFlow",
+              'As a designer without coding skills, I was always dependent on developers. Buildr changed everything. Now I prototype and launch full products myself. The integrations with Figma are seamless.',
+            name: 'Marcus Johnson',
+            role: 'Product Designer, TechFlow',
             avatarAlt:
-              "Professional headshot of Marcus Johnson, product designer at TechFlow",
+              'Professional headshot of Marcus Johnson, product designer at TechFlow',
           },
           {
             quote:
-              "We migrated our entire agency workflow to Buildr and cut project delivery time by 60%. The collaboration features let our whole team work together seamlessly. Clients are amazed at the speed.",
-            name: "Elena Rodriguez",
-            role: "CEO, Brightside Agency",
+              'We migrated our entire agency workflow to Buildr and cut project delivery time by 60%. The collaboration features let our whole team work together seamlessly. Clients are amazed at the speed.',
+            name: 'Elena Rodriguez',
+            role: 'CEO, Brightside Agency',
             avatarAlt:
-              "Professional headshot of Elena Rodriguez, CEO of Brightside Agency",
+              'Professional headshot of Elena Rodriguez, CEO of Brightside Agency',
           },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Frequently asked questions"
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Frequently asked questions'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "Do I need any coding knowledge to use Buildr?",
-            a: "Not at all! Buildr is designed for everyone, regardless of technical background. Our drag-and-drop interface lets you build professional apps visually. If you do know code, you can add custom HTML, CSS, and JavaScript for advanced customization.",
+            q: 'Do I need any coding knowledge to use Buildr?',
+            a: 'Not at all! Buildr is designed for everyone, regardless of technical background. Our drag-and-drop interface lets you build professional apps visually. If you do know code, you can add custom HTML, CSS, and JavaScript for advanced customization.',
           },
           {
-            q: "Can I use my own custom domain?",
+            q: 'Can I use my own custom domain?',
             a: "Yes! Pro and Enterprise plans support custom domains with free SSL certificates. Simply connect your domain in the settings, and we'll handle the DNS configuration automatically. Your site will be live on your domain within minutes.",
           },
           {
-            q: "What happens if I exceed my plan limits?",
+            q: 'What happens if I exceed my plan limits?',
             a: "We'll notify you when you're approaching your limits. You can upgrade anytime to unlock more features. Your app will never go offline unexpectedly — we prioritize keeping your site running smoothly.",
           },
           {
-            q: "Is there a free trial for paid plans?",
+            q: 'Is there a free trial for paid plans?',
             a: "Yes, all paid plans come with a 14-day free trial. No credit card required to start. You'll have full access to all features during the trial, and you can cancel anytime before being charged.",
           },
           {
-            q: "Can I export my app if I want to move elsewhere?",
+            q: 'Can I export my app if I want to move elsewhere?',
             a: "Absolutely. Your data belongs to you. Pro and Enterprise users can export clean, semantic HTML/CSS code of their apps anytime. We believe in building on Buildr because you love it, not because you're locked in.",
           },
           {
-            q: "Do you offer refunds?",
+            q: 'Do you offer refunds?',
             a: "Yes, we offer a 30-day money-back guarantee on all paid plans. If Buildr isn't the right fit for you, contact our support team within 30 days of your purchase for a full refund, no questions asked.",
           },
         ]
 
-    const ctaHeading =
-      props.cta?.heading ?? "Ready to build something amazing?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to build something amazing?'
     const ctaDesc =
       props.cta?.description ??
-      "Join 50,000+ creators who are already building with Buildr. Start for free, no credit card required."
-    const ctaPrimary = props.cta?.primaryCta ?? "Start building free"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Watch 2-min demo"
+      'Join 50,000+ creators who are already building with Buildr. Start for free, no credit card required.'
+    const ctaPrimary = props.cta?.primaryCta ?? 'Start building free'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'Watch 2-min demo'
     const ctaNote =
       props.cta?.note ??
-      "Free forever plan available • 14-day Pro trial • Cancel anytime"
+      'Free forever plan available • 14-day Pro trial • Cancel anytime'
 
     const footerDesc =
       props.footer?.description ??
-      "The no-code platform that empowers anyone to build beautiful, functional apps without writing code."
+      'The no-code platform that empowers anyone to build beautiful, functional apps without writing code.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Product",
+            title: 'Product',
             links: [
-              "Features",
-              "Templates",
-              "Pricing",
-              "Integrations",
-              "Changelog",
+              'Features',
+              'Templates',
+              'Pricing',
+              'Integrations',
+              'Changelog',
             ],
           },
           {
-            title: "Company",
-            links: ["About", "Blog", "Careers", "Press", "Partners"],
+            title: 'Company',
+            links: ['About', 'Blog', 'Careers', 'Press', 'Partners'],
           },
           {
-            title: "Resources",
+            title: 'Resources',
             links: [
-              "Documentation",
-              "Help Center",
-              "Community",
-              "Contact",
-              "Status",
+              'Documentation',
+              'Help Center',
+              'Community',
+              'Contact',
+              'Status',
             ],
           },
         ]
@@ -635,13 +630,13 @@ export const NoCodeKimiPage = defineCapsule({
       `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Cookies"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookies']
 
     // Brand logo tile — dark inverse square with the cube glyph (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-foreground text-background",
+          'grid place-items-center rounded-lg bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
@@ -758,20 +753,20 @@ export const NoCodeKimiPage = defineCapsule({
 
     // Tinted icon tiles rotate through token surfaces (the source used 6 palette hues).
     const featureIconTints = [
-      "bg-primary/10 text-primary",
-      "bg-secondary text-secondary-foreground",
-      "bg-accent text-accent-foreground",
-      "bg-chart-2/15 text-chart-2",
-      "bg-chart-4/15 text-chart-4",
-      "bg-chart-1/15 text-chart-1",
+      'bg-primary/10 text-primary',
+      'bg-secondary text-secondary-foreground',
+      'bg-accent text-accent-foreground',
+      'bg-chart-2/15 text-chart-2',
+      'bg-chart-4/15 text-chart-4',
+      'bg-chart-1/15 text-chart-1',
     ]
     const tagTints = [
-      "bg-chart-1 text-background",
-      "bg-chart-2 text-background",
-      "bg-chart-3 text-background",
-      "bg-chart-4 text-background",
-      "bg-primary text-primary-foreground",
-      "bg-chart-5 text-background",
+      'bg-chart-1 text-background',
+      'bg-chart-2 text-background',
+      'bg-chart-3 text-background',
+      'bg-chart-4 text-background',
+      'bg-primary text-primary-foreground',
+      'bg-chart-5 text-background',
     ]
     const featureIcons: ReactNode[] = [
       // cursor / drag
@@ -876,7 +871,7 @@ export const NoCodeKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -1066,7 +1061,13 @@ export const NoCodeKimiPage = defineCapsule({
                                   strokeLinejoin="round"
                                   viewBox="0 0 24 24"
                                 >
-                                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                                  <rect
+                                    x="3"
+                                    y="3"
+                                    width="18"
+                                    height="18"
+                                    rx="2"
+                                  />
                                   <path d="M3 9h18" />
                                   <path d="M9 21V9" />
                                 </svg>
@@ -1112,7 +1113,8 @@ export const NoCodeKimiPage = defineCapsule({
                           No projects yet
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Choose a template from the gallery to create your first project.
+                          Choose a template from the gallery to create your
+                          first project.
                         </p>
                       </div>
                     )}
@@ -1244,7 +1246,10 @@ export const NoCodeKimiPage = defineCapsule({
 
         <main>
           {/* Hero */}
-          <section className="relative overflow-hidden" aria-labelledby="nc-hero">
+          <section
+            className="relative overflow-hidden"
+            aria-labelledby="nc-hero"
+          >
             <div className="mx-auto max-w-7xl px-4 pb-24 pt-20 sm:px-6 lg:px-8 lg:pb-40 lg:pt-32">
               <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
                 <div className="text-center lg:text-left">
@@ -1258,7 +1263,7 @@ export const NoCodeKimiPage = defineCapsule({
                     id="nc-hero"
                     className="mb-6 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl"
                   >
-                    {headingTop}{" "}
+                    {headingTop}{' '}
                     <span className="text-muted-foreground">
                       {headingAccent}
                     </span>
@@ -1314,14 +1319,14 @@ export const NoCodeKimiPage = defineCapsule({
                         <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                           Components
                         </div>
-                        {["Text", "Image", "Button", "Form"].map((c, i) => (
+                        {['Text', 'Image', 'Button', 'Form'].map((c, i) => (
                           <div
                             key={c}
                             className="flex items-center gap-3 rounded-lg border border-border bg-card p-2 shadow-sm"
                           >
                             <div
                               className={cn(
-                                "grid size-8 place-items-center rounded",
+                                'grid size-8 place-items-center rounded',
                                 featureIconTints[i % featureIconTints.length],
                               )}
                             >
@@ -1340,9 +1345,9 @@ export const NoCodeKimiPage = defineCapsule({
                           className="absolute inset-0 opacity-40"
                           style={{
                             backgroundImage:
-                              "linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)",
-                            backgroundSize: "20px 20px",
-                            color: "var(--border)",
+                              'linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)',
+                            backgroundSize: '20px 20px',
+                            color: 'var(--border)',
                           }}
                         />
                         <div className="relative space-y-4">
@@ -1466,7 +1471,7 @@ export const NoCodeKimiPage = defineCapsule({
                   >
                     <div
                       className={cn(
-                        "mb-4 grid size-12 place-items-center rounded-xl transition-transform group-hover:scale-110",
+                        'mb-4 grid size-12 place-items-center rounded-xl transition-transform group-hover:scale-110',
                         featureIconTints[i % featureIconTints.length],
                       )}
                     >
@@ -1562,10 +1567,10 @@ export const NoCodeKimiPage = defineCapsule({
                       type="button"
                       onClick={() => go(f)}
                       className={cn(
-                        "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                        'rounded-full px-4 py-2 text-sm font-medium transition-colors',
                         i === 0
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                       )}
                     >
                       {f}
@@ -1613,7 +1618,7 @@ export const NoCodeKimiPage = defineCapsule({
                       <div className="p-6">
                         <span
                           className={cn(
-                            "mb-2 inline-block rounded px-2 py-1 text-xs font-medium",
+                            'mb-2 inline-block rounded px-2 py-1 text-xs font-medium',
                             tagTints[i % tagTints.length],
                           )}
                         >
@@ -1699,10 +1704,10 @@ export const NoCodeKimiPage = defineCapsule({
                     <div
                       key={plan.name}
                       className={cn(
-                        "relative rounded-2xl p-8 shadow-sm",
+                        'relative rounded-2xl p-8 shadow-sm',
                         featured
-                          ? "border border-foreground bg-foreground text-background shadow-xl"
-                          : "border border-border bg-card",
+                          ? 'border border-foreground bg-foreground text-background shadow-xl'
+                          : 'border border-border bg-card',
                       )}
                     >
                       {plan.badge && (
@@ -1715,18 +1720,20 @@ export const NoCodeKimiPage = defineCapsule({
                       <div className="mb-6">
                         <h3
                           className={cn(
-                            "mb-1 text-lg font-semibold",
-                            featured ? "text-background" : "text-card-foreground",
+                            'mb-1 text-lg font-semibold',
+                            featured
+                              ? 'text-background'
+                              : 'text-card-foreground',
                           )}
                         >
                           {plan.name}
                         </h3>
                         <p
                           className={cn(
-                            "text-sm",
+                            'text-sm',
                             featured
-                              ? "text-background/60"
-                              : "text-muted-foreground",
+                              ? 'text-background/60'
+                              : 'text-muted-foreground',
                           )}
                         >
                           {plan.tagline}
@@ -1735,8 +1742,10 @@ export const NoCodeKimiPage = defineCapsule({
                       <div className="mb-6">
                         <span
                           className={cn(
-                            "text-4xl font-bold",
-                            featured ? "text-background" : "text-card-foreground",
+                            'text-4xl font-bold',
+                            featured
+                              ? 'text-background'
+                              : 'text-card-foreground',
                           )}
                         >
                           {plan.price}
@@ -1745,8 +1754,8 @@ export const NoCodeKimiPage = defineCapsule({
                           <span
                             className={
                               featured
-                                ? "text-background/60"
-                                : "text-muted-foreground"
+                                ? 'text-background/60'
+                                : 'text-muted-foreground'
                             }
                           >
                             {plan.period}
@@ -1757,10 +1766,10 @@ export const NoCodeKimiPage = defineCapsule({
                         type="button"
                         onClick={() => go(plan.cta)}
                         className={cn(
-                          "mb-6 block w-full rounded-lg px-4 py-3 text-center font-medium transition-colors",
+                          'mb-6 block w-full rounded-lg px-4 py-3 text-center font-medium transition-colors',
                           featured
-                            ? "bg-background text-foreground hover:bg-background/90"
-                            : "border border-border text-card-foreground hover:bg-accent",
+                            ? 'bg-background text-foreground hover:bg-background/90'
+                            : 'border border-border text-card-foreground hover:bg-accent',
                         )}
                       >
                         {plan.cta}
@@ -1770,16 +1779,16 @@ export const NoCodeKimiPage = defineCapsule({
                           <li key={feat} className="flex items-start gap-3">
                             <Check
                               className={cn(
-                                "mt-0.5 size-5 shrink-0",
-                                featured ? "text-background" : "text-chart-2",
+                                'mt-0.5 size-5 shrink-0',
+                                featured ? 'text-background' : 'text-chart-2',
                               )}
                             />
                             <span
                               className={cn(
-                                "text-sm",
+                                'text-sm',
                                 featured
-                                  ? "text-background/80"
-                                  : "text-muted-foreground",
+                                  ? 'text-background/80'
+                                  : 'text-muted-foreground',
                               )}
                             >
                               {feat}
@@ -1839,10 +1848,7 @@ export const NoCodeKimiPage = defineCapsule({
                     key={t.name}
                     className="rounded-2xl border border-border bg-card p-6 shadow-sm"
                   >
-                    <div
-                      className="mb-4 flex gap-1"
-                      aria-label="5 star rating"
-                    >
+                    <div className="mb-4 flex gap-1" aria-label="5 star rating">
                       {Array.from({ length: 5 }).map((_, si) => (
                         <Star key={si} />
                       ))}
@@ -1967,7 +1973,7 @@ export const NoCodeKimiPage = defineCapsule({
                   {footerDesc}
                 </p>
                 <div className="flex gap-4">
-                  {(["Twitter", "GitHub", "LinkedIn"] as const).map(
+                  {(['Twitter', 'GitHub', 'LinkedIn'] as const).map(
                     (social) => (
                       <button
                         key={social}

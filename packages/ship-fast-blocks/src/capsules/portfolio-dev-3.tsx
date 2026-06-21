@@ -4,7 +4,7 @@ import { defineCapsule } from './openui.ts'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -24,9 +24,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const PortfolioDevKimiPage3 = defineCapsule({
-  name: "PortfolioDevKimiPage3",
+  name: 'PortfolioDevKimiPage3',
   description:
-    "Portfolio Dev third style sibling to PortfolioDevKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions. Now full-stack with Lakebed: persistent contact inquiries, Google auth, and a contact drawer for lead capture.",
+    'Portfolio Dev third style sibling to PortfolioDevKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions. Now full-stack with Lakebed: persistent contact inquiries, Google auth, and a contact drawer for lead capture.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const PortfolioDevKimiPage3 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -91,7 +93,12 @@ export const PortfolioDevKimiPage3 = defineCapsule({
         })
         return db.inquiries.all()
       },
-      addProject: ({ db }, title: string, description: string, category: string) => {
+      addProject: (
+        { db },
+        title: string,
+        description: string,
+        category: string,
+      ) => {
         db.projects.insert({
           title,
           description,
@@ -109,100 +116,115 @@ export const PortfolioDevKimiPage3 = defineCapsule({
     const [inquiryName, setInquiryName] = useState('')
     const [inquiryEmail, setInquiryEmail] = useState('')
     const [inquiryMessage, setInquiryMessage] = useState('')
-    const brand = props.brand ?? "Alex Chen Software Engineer Portfolio"
-    const nav = props.nav?.length ? props.nav : ["Alex Chen", "Projects", "Skills", "Open Source", "Testimonials", "Let's Talk"]
+    const brand = props.brand ?? 'Alex Chen Software Engineer Portfolio'
+    const nav = props.nav?.length
+      ? props.nav
+      : [
+          'Alex Chen',
+          'Projects',
+          'Skills',
+          'Open Source',
+          'Testimonials',
+          "Let's Talk",
+        ]
     const hero = {
-      eyebrow: "Portfolio Dev / Variant 3",
-      title: "Building resilient systems and elegant interfaces",
-      description: "Alex Chen Software Engineer Portfolio Skip to content Alex Chen Projects Skills Open Source Testimonials Let's Talk Projects Skills Open Source Testimonials Let's Talk Senior So...",
-      primaryCta: "Skip to content",
-      secondaryCta: "Alex Chen",
-      imageAlt: "Professional headshot of a smiling male software engineer in a navy sweater",
+      eyebrow: 'Portfolio Dev / Variant 3',
+      title: 'Building resilient systems and elegant interfaces',
+      description:
+        "Alex Chen Software Engineer Portfolio Skip to content Alex Chen Projects Skills Open Source Testimonials Let's Talk Projects Skills Open Source Testimonials Let's Talk Senior So...",
+      primaryCta: 'Skip to content',
+      secondaryCta: 'Alex Chen',
+      imageAlt:
+        'Professional headshot of a smiling male software engineer in a navy sweater',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Engineering Expertise",
-    "body": "Alex Chen Software Engineer Portfolio Skip to content Alex Chen Projects Skills Open Source Testimonials Let's Talk Projects Skills Open Source Testimonials Let's Talk Senior So...",
-    "items": [
-      "Featured Projects",
-      "Open Source Work",
-      "Consulting & Advisory"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "How We Will Work Together",
-    "body": "Portfolio Dev page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "What Colleagues Say",
-      "Frequently Asked Questions",
-      "Let's Build Your Next System"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Technical Toolkit",
-    "body": "Portfolio Dev page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Full-Stack Development",
-      "Cloud Architecture",
-      "API Design & Backend"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Featured Projects",
-    "body": "Portfolio Dev page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Database Optimization",
-      "DevOps & CI/CD",
-      "Technical Leadership"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "How We Will Work Together",
-    "alt": "Professional headshot of a smiling male software engineer in a navy sweater",
-    "caption": "Portfolio Dev generated page detail"
-  },
-  {
-    "title": "Technical Toolkit",
-    "alt": "Dark mode analytics dashboard displaying real-time user traffic metrics and revenue charts",
-    "caption": "Portfolio Dev generated page detail"
-  },
-  {
-    "title": "Featured Projects",
-    "alt": "Developer terminal showing command line interface compiling a Rust project",
-    "caption": "Portfolio Dev generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'Engineering Expertise',
+            body: "Alex Chen Software Engineer Portfolio Skip to content Alex Chen Projects Skills Open Source Testimonials Let's Talk Projects Skills Open Source Testimonials Let's Talk Senior So...",
+            items: [
+              'Featured Projects',
+              'Open Source Work',
+              'Consulting & Advisory',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'How We Will Work Together',
+            body: "Portfolio Dev page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'What Colleagues Say',
+              'Frequently Asked Questions',
+              "Let's Build Your Next System",
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Technical Toolkit',
+            body: "Portfolio Dev page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Full-Stack Development',
+              'Cloud Architecture',
+              'API Design & Backend',
+            ],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Featured Projects',
+            body: "Portfolio Dev page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Database Optimization',
+              'DevOps & CI/CD',
+              'Technical Leadership',
+            ],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'How We Will Work Together',
+            alt: 'Professional headshot of a smiling male software engineer in a navy sweater',
+            caption: 'Portfolio Dev generated page detail',
+          },
+          {
+            title: 'Technical Toolkit',
+            alt: 'Dark mode analytics dashboard displaying real-time user traffic metrics and revenue charts',
+            caption: 'Portfolio Dev generated page detail',
+          },
+          {
+            title: 'Featured Projects',
+            alt: 'Developer terminal showing command line interface compiling a Rust project',
+            caption: 'Portfolio Dev generated page detail',
+          },
+        ]
 
     const storedInquiries = lakebed.useQuery('inquiries')
-    const storedProjects = lakebed.useQuery('projects')
     const auth = lakebed.useAuth()
     const submitInquiry = lakebed.useMutation('submitInquiry')
-    const addProject = lakebed.useMutation('addProject')
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
@@ -232,7 +254,8 @@ export const PortfolioDevKimiPage3 = defineCapsule({
     const inquiryCount = safeInquiries.length
     const handleInquirySubmit = (e: React.FormEvent) => {
       e.preventDefault()
-      if (!inquiryName.trim() || !inquiryEmail.trim() || !inquiryMessage.trim()) return
+      if (!inquiryName.trim() || !inquiryEmail.trim() || !inquiryMessage.trim())
+        return
 
       void submitInquiry(inquiryName, inquiryEmail, inquiryMessage)
       setInquiryName('')
@@ -273,10 +296,19 @@ export const PortfolioDevKimiPage3 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -425,13 +457,17 @@ export const PortfolioDevKimiPage3 = defineCapsule({
                   <SheetHeader className="border-b border-border p-6">
                     <SheetTitle className="text-xl">Contact</SheetTitle>
                     <SheetDescription>
-                      Send a message to get in touch about projects or opportunities.
+                      Send a message to get in touch about projects or
+                      opportunities.
                     </SheetDescription>
                   </SheetHeader>
                   <div className="flex-1 overflow-y-auto px-6 py-5">
                     <form onSubmit={handleInquirySubmit} className="space-y-4">
                       <div>
-                        <label htmlFor="name" className="mb-2 block text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="name"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
                           Name
                         </label>
                         <input
@@ -445,7 +481,10 @@ export const PortfolioDevKimiPage3 = defineCapsule({
                         />
                       </div>
                       <div>
-                        <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="email"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
                           Email
                         </label>
                         <input
@@ -459,7 +498,10 @@ export const PortfolioDevKimiPage3 = defineCapsule({
                         />
                       </div>
                       <div>
-                        <label htmlFor="message" className="mb-2 block text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="message"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
                           Message
                         </label>
                         <textarea
@@ -475,13 +517,24 @@ export const PortfolioDevKimiPage3 = defineCapsule({
                     </form>
                     {safeInquiries.length > 0 && (
                       <div className="mt-6 border-t border-border pt-6">
-                        <h3 className="mb-3 text-sm font-semibold text-foreground">Recent Inquiries</h3>
+                        <h3 className="mb-3 text-sm font-semibold text-foreground">
+                          Recent Inquiries
+                        </h3>
                         <div className="space-y-3">
                           {safeInquiries.slice(0, 3).map((inquiry) => (
-                            <div key={inquiry.id} className="rounded-lg bg-muted/40 p-3">
-                              <p className="text-sm font-medium text-foreground">{inquiry.name}</p>
-                              <p className="text-xs text-muted-foreground">{inquiry.email}</p>
-                              <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{inquiry.message}</p>
+                            <div
+                              key={inquiry.id}
+                              className="rounded-lg bg-muted/40 p-3"
+                            >
+                              <p className="text-sm font-medium text-foreground">
+                                {inquiry.name}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {inquiry.email}
+                              </p>
+                              <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                                {inquiry.message}
+                              </p>
                             </div>
                           ))}
                         </div>
@@ -638,16 +691,28 @@ export const PortfolioDevKimiPage3 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -655,17 +720,31 @@ export const PortfolioDevKimiPage3 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
                         <button
                           key={item}
                           type="button"
-                          onClick={() => item === "Let's Build Your Next System" || item === "Let's Talk" ? setContactOpen(true) : go(item)}
+                          onClick={() =>
+                            item === "Let's Build Your Next System" ||
+                            item === "Let's Talk"
+                              ? setContactOpen(true)
+                              : go(item)
+                          }
                           className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                         >
                           <span>{item}</span>
@@ -682,8 +761,12 @@ export const PortfolioDevKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -695,11 +778,26 @@ export const PortfolioDevKimiPage3 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -710,9 +808,15 @@ export const PortfolioDevKimiPage3 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -728,10 +832,17 @@ export const PortfolioDevKimiPage3 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

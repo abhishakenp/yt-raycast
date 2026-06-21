@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,19 +14,19 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const MarketingAgencyKimiPage3 = defineCapsule({
-  name: "MarketingAgencyKimiPage3",
+  name: 'MarketingAgencyKimiPage3',
   description:
-    "Marketing Agency third style sibling to MarketingAgencyKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Marketing Agency third style sibling to MarketingAgencyKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -83,10 +85,17 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
     queries: {
       inquiries: ({ db }) => db.inquiries.orderBy('createdAt').all(),
       subscribers: ({ db }) => db.subscribers.all(),
-      serviceRequests: ({ db }) => db.serviceRequests.orderBy('createdAt').all(),
+      serviceRequests: ({ db }) =>
+        db.serviceRequests.orderBy('createdAt').all(),
     },
     mutations: {
-      submitInquiry: ({ db }, name: string, email: string, company: string, message: string) => {
+      submitInquiry: (
+        { db },
+        name: string,
+        email: string,
+        company: string,
+        message: string,
+      ) => {
         db.inquiries.insert({ name, email, company, message })
         return db.inquiries.all()
       },
@@ -97,7 +106,13 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
         }
         return db.subscribers.all()
       },
-      submitServiceRequest: ({ db }, serviceName: string, name: string, email: string, details: string) => {
+      submitServiceRequest: (
+        { db },
+        serviceName: string,
+        name: string,
+        email: string,
+        details: string,
+      ) => {
         db.serviceRequests.insert({ serviceName, name, email, details })
         return db.serviceRequests.all()
       },
@@ -109,94 +124,104 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
     const [inquiryOpen, setInquiryOpen] = useState(false)
     const [serviceRequestOpen, setServiceRequestOpen] = useState(false)
     const [selectedService, setSelectedService] = useState<string | null>(null)
-    const brand = props.brand ?? "Northgrowth Marketing & Growth Agency"
-    const nav = props.nav?.length ? props.nav : ["Northgrowth", "Services", "Case Studies", "Pricing", "Results", "FAQ"]
+    const brand = props.brand ?? 'Northgrowth Marketing & Growth Agency'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Northgrowth', 'Services', 'Case Studies', 'Pricing', 'Results', 'FAQ']
     const hero = {
-      eyebrow: "Marketing Agency / Variant 3",
+      eyebrow: 'Marketing Agency / Variant 3',
       title: "Growth isn't a guess. It's a system.",
-      description: "Northgrowth Marketing & Growth Agency Northgrowth Services Case Studies Pricing Results FAQ Book a Call Now booking Q3 2026 clients Growth isn't a guess. It's a system. Northgro...",
-      primaryCta: "Northgrowth",
-      secondaryCta: "Services",
-      imageAlt: "Dark-themed analytics dashboard showing growth metrics, charts and KPIs on a laptop screen",
+      description:
+        "Northgrowth Marketing & Growth Agency Northgrowth Services Case Studies Pricing Results FAQ Book a Call Now booking Q3 2026 clients Growth isn't a guess. It's a system. Northgro...",
+      primaryCta: 'Northgrowth',
+      secondaryCta: 'Services',
+      imageAlt:
+        'Dark-themed analytics dashboard showing growth metrics, charts and KPIs on a laptop screen',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Services built for scale",
-    "body": "Northgrowth Marketing & Growth Agency Northgrowth Services Case Studies Pricing Results FAQ Book a Call Now booking Q3 2026 clients Growth isn't a guess. It's a system. Northgro...",
-    "items": [
-      "What our partners say",
-      "Simple, transparent pricing",
-      "Frequently asked questions"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "How we work",
-    "body": "Marketing Agency page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Ready to build your growth engine?",
-      "Performance Marketing",
-      "SEO & Content"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Case studies",
-    "body": "Marketing Agency page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "CRO & Funnel Design",
-      "Creative Studio",
-      "Retention & Email"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "What our partners say",
-    "body": "Marketing Agency page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Strategy & Analytics",
-      "Growth Audit",
-      "Strategy Blueprint"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "How we work",
-    "alt": "Dark-themed analytics dashboard showing growth metrics, charts and KPIs on a laptop screen",
-    "caption": "Marketing Agency generated page detail"
-  },
-  {
-    "title": "Case studies",
-    "alt": "Modern ecommerce website analytics dashboard with sales charts and revenue graphs",
-    "caption": "Marketing Agency generated page detail"
-  },
-  {
-    "title": "What our partners say",
-    "alt": "Team of professionals collaborating around laptops in a modern office meeting room",
-    "caption": "Marketing Agency generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'Services built for scale',
+            body: "Northgrowth Marketing & Growth Agency Northgrowth Services Case Studies Pricing Results FAQ Book a Call Now booking Q3 2026 clients Growth isn't a guess. It's a system. Northgro...",
+            items: [
+              'What our partners say',
+              'Simple, transparent pricing',
+              'Frequently asked questions',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'How we work',
+            body: "Marketing Agency page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Ready to build your growth engine?',
+              'Performance Marketing',
+              'SEO & Content',
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Case studies',
+            body: "Marketing Agency page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'CRO & Funnel Design',
+              'Creative Studio',
+              'Retention & Email',
+            ],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'What our partners say',
+            body: "Marketing Agency page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Strategy & Analytics',
+              'Growth Audit',
+              'Strategy Blueprint',
+            ],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'How we work',
+            alt: 'Dark-themed analytics dashboard showing growth metrics, charts and KPIs on a laptop screen',
+            caption: 'Marketing Agency generated page detail',
+          },
+          {
+            title: 'Case studies',
+            alt: 'Modern ecommerce website analytics dashboard with sales charts and revenue graphs',
+            caption: 'Marketing Agency generated page detail',
+          },
+          {
+            title: 'What our partners say',
+            alt: 'Team of professionals collaborating around laptops in a modern office meeting room',
+            caption: 'Marketing Agency generated page detail',
+          },
+        ]
 
     const auth = lakebed.useAuth()
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
@@ -259,10 +284,19 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -394,7 +428,8 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
                   <SheetHeader className="border-b border-border p-6">
                     <SheetTitle className="text-xl">Contact Us</SheetTitle>
                     <SheetDescription>
-                      Send us a message and we'll get back to you within 24 hours.
+                      Send us a message and we'll get back to you within 24
+                      hours.
                     </SheetDescription>
                   </SheetHeader>
                   <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -404,16 +439,29 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
                       onSubmit={(e) => {
                         e.preventDefault()
                         const form = e.currentTarget
-                        const name = (form.elements.namedItem('name') as HTMLInputElement).value
-                        const email = (form.elements.namedItem('email') as HTMLInputElement).value
-                        const company = (form.elements.namedItem('company') as HTMLInputElement).value
-                        const message = (form.elements.namedItem('message') as HTMLTextAreaElement).value
+                        const name = (
+                          form.elements.namedItem('name') as HTMLInputElement
+                        ).value
+                        const email = (
+                          form.elements.namedItem('email') as HTMLInputElement
+                        ).value
+                        const company = (
+                          form.elements.namedItem('company') as HTMLInputElement
+                        ).value
+                        const message = (
+                          form.elements.namedItem(
+                            'message',
+                          ) as HTMLTextAreaElement
+                        ).value
                         void submitInquiry(name, email, company, message)
                         setInquiryOpen(false)
                       }}
                     >
                       <div className="space-y-2">
-                        <label htmlFor="name" className="text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="name"
+                          className="text-sm font-medium text-foreground"
+                        >
                           Name
                         </label>
                         <input
@@ -426,7 +474,10 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="email" className="text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="email"
+                          className="text-sm font-medium text-foreground"
+                        >
                           Email
                         </label>
                         <input
@@ -439,7 +490,10 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="company" className="text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="company"
+                          className="text-sm font-medium text-foreground"
+                        >
                           Company
                         </label>
                         <input
@@ -451,7 +505,10 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="message" className="text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="message"
+                          className="text-sm font-medium text-foreground"
+                        >
                           Message
                         </label>
                         <textarea
@@ -485,7 +542,10 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
                   </SheetFooter>
                 </SheetContent>
               </Sheet>
-              <Sheet open={serviceRequestOpen} onOpenChange={setServiceRequestOpen}>
+              <Sheet
+                open={serviceRequestOpen}
+                onOpenChange={setServiceRequestOpen}
+              >
                 <SheetContent
                   side="right"
                   className="w-full gap-0 p-0 sm:max-w-md"
@@ -493,7 +553,8 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
                   <SheetHeader className="border-b border-border p-6">
                     <SheetTitle className="text-xl">Request Service</SheetTitle>
                     <SheetDescription>
-                      Tell us about your project and we'll get back to you with a proposal.
+                      Tell us about your project and we'll get back to you with
+                      a proposal.
                     </SheetDescription>
                   </SheetHeader>
                   <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -504,16 +565,32 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
                         e.preventDefault()
                         const form = e.currentTarget
                         const serviceName = selectedService || 'General Inquiry'
-                        const name = (form.elements.namedItem('name') as HTMLInputElement).value
-                        const email = (form.elements.namedItem('email') as HTMLInputElement).value
-                        const details = (form.elements.namedItem('details') as HTMLTextAreaElement).value
-                        void submitServiceRequest(serviceName, name, email, details)
+                        const name = (
+                          form.elements.namedItem('name') as HTMLInputElement
+                        ).value
+                        const email = (
+                          form.elements.namedItem('email') as HTMLInputElement
+                        ).value
+                        const details = (
+                          form.elements.namedItem(
+                            'details',
+                          ) as HTMLTextAreaElement
+                        ).value
+                        void submitServiceRequest(
+                          serviceName,
+                          name,
+                          email,
+                          details,
+                        )
                         setServiceRequestOpen(false)
                         setSelectedService(null)
                       }}
                     >
                       <div className="space-y-2">
-                        <label htmlFor="service-name" className="text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="service-name"
+                          className="text-sm font-medium text-foreground"
+                        >
                           Service
                         </label>
                         <input
@@ -526,7 +603,10 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="name" className="text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="name"
+                          className="text-sm font-medium text-foreground"
+                        >
                           Name
                         </label>
                         <input
@@ -539,7 +619,10 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="email" className="text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="email"
+                          className="text-sm font-medium text-foreground"
+                        >
                           Email
                         </label>
                         <input
@@ -552,7 +635,10 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="details" className="text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="details"
+                          className="text-sm font-medium text-foreground"
+                        >
                           Project Details
                         </label>
                         <textarea
@@ -769,16 +855,28 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -786,10 +884,19 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -816,8 +923,12 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -829,11 +940,26 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -843,16 +969,21 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="rounded-lg border border-border bg-muted/40 p-8 md:p-10">
               <div className="mx-auto max-w-2xl text-center">
-                <h2 className="mb-4 text-3xl font-semibold tracking-tight">Stay Updated</h2>
+                <h2 className="mb-4 text-3xl font-semibold tracking-tight">
+                  Stay Updated
+                </h2>
                 <p className="mb-8 text-lg text-muted-foreground">
-                  Get the latest insights on growth marketing, industry trends, and agency news delivered to your inbox.
+                  Get the latest insights on growth marketing, industry trends,
+                  and agency news delivered to your inbox.
                 </p>
                 <form
                   className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
                   onSubmit={(e) => {
                     e.preventDefault()
                     const form = e.currentTarget
-                    const email = (form.elements.namedItem('email') as HTMLInputElement).value
+                    const email = (
+                      form.elements.namedItem('email') as HTMLInputElement
+                    ).value
                     void subscribe(email)
                     form.reset()
                   }}
@@ -873,7 +1004,8 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
                   </button>
                 </form>
                 <p className="mt-4 text-sm text-muted-foreground">
-                  By subscribing, you agree to our Privacy Policy. Unsubscribe anytime.
+                  By subscribing, you agree to our Privacy Policy. Unsubscribe
+                  anytime.
                 </p>
               </div>
             </div>
@@ -883,9 +1015,15 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -901,10 +1039,17 @@ export const MarketingAgencyKimiPage3 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

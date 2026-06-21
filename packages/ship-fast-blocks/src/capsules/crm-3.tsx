@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -13,8 +13,8 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 
 type LeadRow = {
   id?: string
@@ -26,9 +26,9 @@ type LeadRow = {
 }
 
 export const CrmKimiPage3 = defineCapsule({
-  name: "CrmKimiPage3",
+  name: 'CrmKimiPage3',
   description:
-    "Crm third style sibling to CrmKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Crm third style sibling to CrmKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -42,7 +42,9 @@ export const CrmKimiPage3 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -75,13 +77,13 @@ export const CrmKimiPage3 = defineCapsule({
       }),
     },
     queries: {
-      leads: ({ db }) => db.leads.orderBy("createdAt").all(),
+      leads: ({ db }) => db.leads.orderBy('createdAt').all(),
     },
     mutations: {
       addLead: ({ db }, name: string, company: string, source: string) => {
         const cleanName = name.trim()
-        const cleanCompany = company.trim() || "Guest account"
-        const cleanSource = source.trim() || "Manual"
+        const cleanCompany = company.trim() || 'Guest account'
+        const cleanSource = source.trim() || 'Manual'
 
         if (!cleanName) return db.leads.all()
 
@@ -89,7 +91,7 @@ export const CrmKimiPage3 = defineCapsule({
           name: cleanName,
           company: cleanCompany,
           source: cleanSource,
-          status: "New",
+          status: 'New',
           score: 1,
         })
 
@@ -100,15 +102,15 @@ export const CrmKimiPage3 = defineCapsule({
         if (!lead) return db.leads.all()
 
         const status =
-          lead.status === "New"
-            ? "Qualified"
-            : lead.status === "Qualified"
-              ? "Proposal"
-              : "Won"
+          lead.status === 'New'
+            ? 'Qualified'
+            : lead.status === 'Qualified'
+              ? 'Proposal'
+              : 'Won'
 
         db.leads.update(leadId, {
           status,
-          score: lead.status === "Won" ? lead.score : lead.score + 1,
+          score: lead.status === 'Won' ? lead.score : lead.score + 1,
         })
 
         return db.leads.all()
@@ -134,153 +136,152 @@ export const CrmKimiPage3 = defineCapsule({
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
     const authDisplayName =
-      auth.displayName || auth.user?.displayName || authEmail || "Account"
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
 
     const authLabel = auth.isLoading
-      ? "Checking..."
+      ? 'Checking...'
       : isSignedIn
         ? authDisplayName
-        : "Sign in"
+        : 'Sign in'
 
-    const brand = props.brand ?? "CloseFlow The CRM Built for Closing Deals"
+    const brand = props.brand ?? 'CloseFlow The CRM Built for Closing Deals'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "Pipeline", "Pricing", "Customers", "FAQ", "Sign in"]
+      : ['Features', 'Pipeline', 'Pricing', 'Customers', 'FAQ', 'Sign in']
     const hero = {
-      eyebrow: "Crm / Variant 3",
-      title: "The CRM that closes deals for you",
-      description: "CloseFlow The CRM Built for Closing Deals CloseFlow Features Pipeline Pricing Customers FAQ Sign in Get started Now with AI-powered deal scoring The CRM that closes deals for yo...",
-      primaryCta: "CloseFlow",
-      secondaryCta: "Features",
-      imageAlt: "Modern CRM dashboard interface showing sales pipeline with deal stages and analytics charts",
+      eyebrow: 'Crm / Variant 3',
+      title: 'The CRM that closes deals for you',
+      description:
+        'CloseFlow The CRM Built for Closing Deals CloseFlow Features Pipeline Pricing Customers FAQ Sign in Get started Now with AI-powered deal scoring The CRM that closes deals for yo...',
+      primaryCta: 'CloseFlow',
+      secondaryCta: 'Features',
+      imageAlt:
+        'Modern CRM dashboard interface showing sales pipeline with deal stages and analytics charts',
       ...props.hero,
     }
     const metrics = props.metrics?.length
       ? props.metrics
       : [
           {
-            "value": "24/7",
-            "label": "Responsive service"
+            value: '24/7',
+            label: 'Responsive service',
           },
           {
-            "value": "98%",
-            "label": "Positive outcomes"
+            value: '98%',
+            label: 'Positive outcomes',
           },
           {
-            "value": "4.9",
-            "label": "Average rating"
+            value: '4.9',
+            label: 'Average rating',
           },
           {
-            "value": "12+",
-            "label": "Core capabilities"
-          }
+            value: '12+',
+            label: 'Core capabilities',
+          },
         ]
     const sections = props.sections?.length
       ? props.sections
       : [
           {
-            "eyebrow": "Overview",
-            "title": "Everything you need to run your sales process",
-            "body": "CloseFlow The CRM Built for Closing Deals CloseFlow Features Pipeline Pricing Customers FAQ Sign in Get started Now with AI-powered deal scoring The CRM that closes deals for yo...",
-            "items": [
-              "Up and running in under 10 minutes",
-              "Simple pricing that scales with you",
-              "Loved by revenue teams everywhere"
-            ]
+            eyebrow: 'Overview',
+            title: 'Everything you need to run your sales process',
+            body: 'CloseFlow The CRM Built for Closing Deals CloseFlow Features Pipeline Pricing Customers FAQ Sign in Get started Now with AI-powered deal scoring The CRM that closes deals for yo...',
+            items: [
+              'Up and running in under 10 minutes',
+              'Simple pricing that scales with you',
+              'Loved by revenue teams everywhere',
+            ],
           },
           {
-            "eyebrow": "Experience",
-            "title": "See every deal. Never let one slip.",
-            "body": "Crm page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-            "items": [
-              "Questions? We have answers.",
-              "Ready to close more deals?",
-              "Visual Pipeline"
-            ]
+            eyebrow: 'Experience',
+            title: 'See every deal. Never let one slip.',
+            body: "Crm page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Questions? We have answers.',
+              'Ready to close more deals?',
+              'Visual Pipeline',
+            ],
           },
           {
-            "eyebrow": "Proof",
-            "title": "Plays nice with your entire stack",
-            "body": "Crm page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-            "items": [
-              "AI Deal Scoring",
-              "Smart Sequences",
-              "Revenue Analytics"
-            ]
+            eyebrow: 'Proof',
+            title: 'Plays nice with your entire stack',
+            body: "Crm page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['AI Deal Scoring', 'Smart Sequences', 'Revenue Analytics'],
           },
           {
-            "eyebrow": "Next steps",
-            "title": "Up and running in under 10 minutes",
-            "body": "Crm page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-            "items": [
-              "Team Collaboration",
-              "Enterprise Security",
-              "Import your data"
-            ]
-          }
+            eyebrow: 'Next steps',
+            title: 'Up and running in under 10 minutes',
+            body: "Crm page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Team Collaboration',
+              'Enterprise Security',
+              'Import your data',
+            ],
+          },
         ]
     const gallery = props.gallery?.length
       ? props.gallery
       : [
           {
-            "title": "See every deal. Never let one slip.",
-            "alt": "Modern CRM dashboard interface showing sales pipeline with deal stages and analytics charts",
-            "caption": "Crm generated page detail"
+            title: 'See every deal. Never let one slip.',
+            alt: 'Modern CRM dashboard interface showing sales pipeline with deal stages and analytics charts',
+            caption: 'Crm generated page detail',
           },
           {
-            "title": "Plays nice with your entire stack",
-            "alt": "Stark Technologies company logo displayed on a monitor",
-            "caption": "Crm generated page detail"
+            title: 'Plays nice with your entire stack',
+            alt: 'Stark Technologies company logo displayed on a monitor',
+            caption: 'Crm generated page detail',
           },
           {
-            "title": "Up and running in under 10 minutes",
-            "alt": "Meridian Labs company logo on a modern office wall",
-            "caption": "Crm generated page detail"
-          }
+            title: 'Up and running in under 10 minutes',
+            alt: 'Meridian Labs company logo on a modern office wall',
+            caption: 'Crm generated page detail',
+          },
         ]
 
-    const storedLeads = lakebed.useQuery("leads")
-    const addLead = lakebed.useMutation("addLead")
-    const advanceLead = lakebed.useMutation("advanceLead")
-    const removeLead = lakebed.useMutation("removeLead")
-    const clearLeads = lakebed.useMutation("clearLeads")
+    const storedLeads = lakebed.useQuery('leads')
+    const addLead = lakebed.useMutation('addLead')
+    const advanceLead = lakebed.useMutation('advanceLead')
+    const removeLead = lakebed.useMutation('removeLead')
+    const clearLeads = lakebed.useMutation('clearLeads')
 
     const seedLeads: LeadRow[] = [
       {
-        name: "AI Deal Scoring",
+        name: 'AI Deal Scoring',
         company: brand,
-        source: "Overview",
-        status: "Qualified",
+        source: 'Overview',
+        status: 'Qualified',
         score: 6,
       },
       {
-        name: "Smart Sequences",
+        name: 'Smart Sequences',
         company: brand,
-        source: "Proof",
-        status: "Qualified",
+        source: 'Proof',
+        status: 'Qualified',
         score: 5,
       },
       {
-        name: "Revenue Analytics",
+        name: 'Revenue Analytics',
         company: brand,
-        source: "Proof",
-        status: "Proposal",
+        source: 'Proof',
+        status: 'Proposal',
         score: 7,
       },
     ]
 
     const hasStoredLeads = Boolean(storedLeads && storedLeads.length > 0)
-    const leads = hasStoredLeads ? storedLeads : seedLeads
+    const leads: LeadRow[] =
+      storedLeads && storedLeads.length > 0 ? storedLeads : seedLeads
     const leadCount = storedLeads?.length ?? 0
     const leadScoreTotal = (storedLeads ?? []).reduce(
       (total, lead) => total + lead.score,
       0,
     )
     const canMutateLead = (lead: LeadRow): lead is LeadRow & { id: string } =>
-      typeof lead.id === "string"
+      typeof lead.id === 'string'
 
     const normalizedNav = new Set(nav.map((item) => item.trim().toLowerCase()))
-    const hasPipelineNavItem = normalizedNav.has("pipeline")
+    const hasPipelineNavItem = normalizedNav.has('pipeline')
 
     const handleSignIn = () => {
       if (auth.isLoading) return
@@ -290,7 +291,7 @@ export const CrmKimiPage3 = defineCapsule({
 
     const handleAuthClick = () => {
       if (isSignedIn) {
-        go("Account")
+        go('Account')
         return
       }
 
@@ -316,17 +317,26 @@ export const CrmKimiPage3 = defineCapsule({
     }
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
               {nav.map((item) => {
                 const lowered = item.trim().toLowerCase()
-                const isPipeline = lowered === "pipeline"
-                const isSignIn = lowered === "sign in" || lowered === "signin"
+                const isPipeline = lowered === 'pipeline'
+                const isSignIn = lowered === 'sign in' || lowered === 'signin'
 
                 return (
                   <button
@@ -404,7 +414,7 @@ export const CrmKimiPage3 = defineCapsule({
                   <button
                     type="button"
                     onClick={() => {
-                      trackLead(hero.secondaryCta, "Homepage actions")
+                      trackLead(hero.secondaryCta, 'Homepage actions')
                       go(hero.secondaryCta)
                     }}
                     className="rounded-md border border-border bg-card px-5 py-3 text-sm font-semibold text-card-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
@@ -414,16 +424,28 @@ export const CrmKimiPage3 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -431,10 +453,19 @@ export const CrmKimiPage3 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -461,13 +492,17 @@ export const CrmKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
                 onClick={() => {
-                  trackLead(hero.secondaryCta, "Gallery heading")
+                  trackLead(hero.secondaryCta, 'Gallery heading')
                   go(hero.secondaryCta)
                 }}
                 className="rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
@@ -477,11 +512,26 @@ export const CrmKimiPage3 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -492,14 +542,20 @@ export const CrmKimiPage3 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => {
-                    trackLead(hero.primaryCta, "Conversion block")
+                    trackLead(hero.primaryCta, 'Conversion block')
                     go(hero.primaryCta)
                   }}
                   className="rounded-md bg-background px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
@@ -517,8 +573,8 @@ export const CrmKimiPage3 = defineCapsule({
               <SheetTitle className="text-xl">Lead Pipeline</SheetTitle>
               <SheetDescription>
                 {leadCount > 0
-                  ? `${leadCount} lead${leadCount === 1 ? "" : "s"} currently tracked in this session.`
-                  : "No saved leads yet. Use page actions to capture leads into this pipeline."}
+                  ? `${leadCount} lead${leadCount === 1 ? '' : 's'} currently tracked in this session.`
+                  : 'No saved leads yet. Use page actions to capture leads into this pipeline.'}
               </SheetDescription>
             </SheetHeader>
             <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -536,12 +592,20 @@ export const CrmKimiPage3 = defineCapsule({
                             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                               {lead.source}
                             </p>
-                            <h3 className="mt-1 truncate text-sm font-bold text-foreground">{lead.name}</h3>
-                            <p className="mt-1 text-xs text-muted-foreground">{lead.company}</p>
+                            <h3 className="mt-1 truncate text-sm font-bold text-foreground">
+                              {lead.name}
+                            </h3>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {lead.company}
+                            </p>
                           </div>
-                          <span className="rounded-full border border-border bg-background px-2 py-1 text-xs font-semibold text-muted-foreground">{lead.status}</span>
+                          <span className="rounded-full border border-border bg-background px-2 py-1 text-xs font-semibold text-muted-foreground">
+                            {lead.status}
+                          </span>
                         </div>
-                        <p className="mt-3 text-xs text-muted-foreground">Confidence score: {lead.score}</p>
+                        <p className="mt-3 text-xs text-muted-foreground">
+                          Confidence score: {lead.score}
+                        </p>
                         <div className="mt-4 flex flex-wrap gap-2">
                           <Button
                             type="button"
@@ -553,7 +617,7 @@ export const CrmKimiPage3 = defineCapsule({
                             }}
                             disabled={!canMutateLead(lead)}
                           >
-                            {lead.status === "Won" ? "Closed" : "Advance"}
+                            {lead.status === 'Won' ? 'Closed' : 'Advance'}
                           </Button>
                           <Button
                             type="button"
@@ -576,8 +640,8 @@ export const CrmKimiPage3 = defineCapsule({
               ) : (
                 <div className="rounded-lg border border-dashed border-border bg-muted/40 p-6 text-center text-sm text-muted-foreground">
                   {hasStoredLeads
-                    ? "No leads are currently in this pipeline."
-                    : "Use the page actions to add leads to your pipeline."}
+                    ? 'No leads are currently in this pipeline.'
+                    : 'Use the page actions to add leads to your pipeline.'}
                 </div>
               )}
             </div>
@@ -585,11 +649,15 @@ export const CrmKimiPage3 = defineCapsule({
               <div className="w-full space-y-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Pipeline score</span>
-                  <span className="font-semibold text-foreground">{leadScoreTotal}</span>
+                  <span className="font-semibold text-foreground">
+                    {leadScoreTotal}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Tracked leads</span>
-                  <span className="font-semibold text-foreground">{leadCount}</span>
+                  <span className="font-semibold text-foreground">
+                    {leadCount}
+                  </span>
                 </div>
               </div>
               <Button
@@ -610,7 +678,7 @@ export const CrmKimiPage3 = defineCapsule({
                     className="w-full rounded-full"
                     onClick={() => {
                       setPipelineOpen(false)
-                      go("Account")
+                      go('Account')
                     }}
                   >
                     {authDisplayName}
@@ -638,7 +706,11 @@ export const CrmKimiPage3 = defineCapsule({
                 </Button>
               )}
               <SheetClose asChild>
-                <Button type="button" variant="secondary" className="w-full rounded-full">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full rounded-full"
+                >
                   Continue
                 </Button>
               </SheetClose>
@@ -648,12 +720,14 @@ export const CrmKimiPage3 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => {
                 const lowered = item.trim().toLowerCase()
-                const isPipeline = lowered === "pipeline"
-                const isSignIn = lowered === "sign in" || lowered === "signin"
+                const isPipeline = lowered === 'pipeline'
+                const isSignIn = lowered === 'sign in' || lowered === 'signin'
 
                 return (
                   <button

@@ -1,9 +1,9 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -13,14 +13,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * DocsKimiPage5 — a pastel multi-accent developer DOCUMENTATION / knowledge-base page.
@@ -41,9 +41,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * (positional); rich defaults render fully on zero args.
  */
 export const DocsKimiPage5 = defineCapsule({
-  name: "DocsKimiPage5",
+  name: 'DocsKimiPage5',
   description:
-    "Pastel multi-accent developer DOCUMENTATION / knowledge-base / developer-portal page — the fifth style sibling to DocsKimiPage. Features a sticky blurred top navbar with brand-gradient logo tile, a persistent left sidebar with grouped pastel-highlighted section navigation (Getting Started, Core Concepts, API Reference, Resources), a prominent search-hero band with popular-term pills, a colorful six-card category grid (Quick Start, API Reference, Guides, CLI Tools, Community, Support each with distinct accent-colored icon tiles), a step-by-step quick-start guide with dark syntax-highlighted code blocks (CLI install, env configuration, dev server, first SDK API call), a language-tabbed code example, an FAQ accordion with colored expand icons, a gradient CTA banner, and a five-column social footer. Use for developer-tooling startups, SaaS documentation, SDK guides, API reference, getting-started pages, or any product wanting a fresh, friendly, colorful technical documentation experience that stands apart from the more formal DocsKimiPage layout. Supply brand, nav labels, and optional content slots for search, sidebar, cards, guide, FAQ, CTA, and footer — the block owns all layout, spacing, and token-driven multi-color rotation.",
+    'Pastel multi-accent developer DOCUMENTATION / knowledge-base / developer-portal page — the fifth style sibling to DocsKimiPage. Features a sticky blurred top navbar with brand-gradient logo tile, a persistent left sidebar with grouped pastel-highlighted section navigation (Getting Started, Core Concepts, API Reference, Resources), a prominent search-hero band with popular-term pills, a colorful six-card category grid (Quick Start, API Reference, Guides, CLI Tools, Community, Support each with distinct accent-colored icon tiles), a step-by-step quick-start guide with dark syntax-highlighted code blocks (CLI install, env configuration, dev server, first SDK API call), a language-tabbed code example, an FAQ accordion with colored expand icons, a gradient CTA banner, and a five-column social footer. Use for developer-tooling startups, SaaS documentation, SDK guides, API reference, getting-started pages, or any product wanting a fresh, friendly, colorful technical documentation experience that stands apart from the more formal DocsKimiPage layout. Supply brand, nav labels, and optional content slots for search, sidebar, cards, guide, FAQ, CTA, and footer — the block owns all layout, spacing, and token-driven multi-color rotation.',
   props: z.object({
     /** Brand / product name shown in the navbar, sidebar context, and footer. */
     brand: z.string().optional(),
@@ -185,14 +185,13 @@ export const DocsKimiPage5 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [bookmarksOpen, setBookmarksOpen] = useState(false)
-    const brand = props.brand ?? "DevKit"
+    const brand = props.brand ?? 'DevKit'
 
     const bookmarks = lakebed.useQuery('bookmarks')
     const searchHistory = lakebed.useQuery('searchHistory')
     const addBookmark = lakebed.useMutation('addBookmark')
     const removeBookmark = lakebed.useMutation('removeBookmark')
     const addSearchHistory = lakebed.useMutation('addSearchHistory')
-    const clearSearchHistory = lakebed.useMutation('clearSearchHistory')
     const auth = lakebed.useAuth()
 
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
@@ -225,41 +224,46 @@ export const DocsKimiPage5 = defineCapsule({
     const bookmarkCount = bookmarks?.length ?? 0
     const nav = props.nav?.length
       ? props.nav
-      : ["Documentation", "API Reference", "Guides", "Community"]
+      : ['Documentation', 'API Reference', 'Guides', 'Community']
 
-    const searchTitle = props.search?.title ?? "How can we help you?"
+    const searchTitle = props.search?.title ?? 'How can we help you?'
     const searchSubtitle =
       props.search?.subtitle ??
-      "Search documentation, guides, and API references"
+      'Search documentation, guides, and API references'
     const searchPlaceholder =
-      props.search?.placeholder ?? "Search docs, APIs, guides..."
+      props.search?.placeholder ?? 'Search docs, APIs, guides...'
     const popularTerms = props.search?.popularTerms?.length
       ? props.search.popularTerms
-      : ["Authentication", "React SDK", "Webhooks", "Deployment"]
+      : ['Authentication', 'React SDK', 'Webhooks', 'Deployment']
 
     const sidebarGroups = props.sidebarGroups?.length
       ? props.sidebarGroups
       : [
           {
-            title: "Getting Started",
-            items: ["Introduction", "Quick Start", "Installation", "Configuration"],
-          },
-          {
-            title: "Core Concepts",
+            title: 'Getting Started',
             items: [
-              "Architecture",
-              "Components",
-              "State Management",
-              "Routing",
+              'Introduction',
+              'Quick Start',
+              'Installation',
+              'Configuration',
             ],
           },
           {
-            title: "API Reference",
-            items: ["REST API", "GraphQL", "Webhooks", "Authentication"],
+            title: 'Core Concepts',
+            items: [
+              'Architecture',
+              'Components',
+              'State Management',
+              'Routing',
+            ],
           },
           {
-            title: "Resources",
-            items: ["CLI Reference", "Changelog", "GitHub"],
+            title: 'API Reference',
+            items: ['REST API', 'GraphQL', 'Webhooks', 'Authentication'],
+          },
+          {
+            title: 'Resources',
+            items: ['CLI Reference', 'Changelog', 'GitHub'],
           },
         ]
 
@@ -267,57 +271,57 @@ export const DocsKimiPage5 = defineCapsule({
       ? props.categoryCards
       : [
           {
-            title: "Quick Start",
+            title: 'Quick Start',
             description:
-              "Get up and running in under 5 minutes with our step-by-step setup guide.",
-            cta: "Start building",
+              'Get up and running in under 5 minutes with our step-by-step setup guide.',
+            cta: 'Start building',
           },
           {
-            title: "API Reference",
+            title: 'API Reference',
             description:
-              "Complete REST and GraphQL API documentation with live examples.",
-            cta: "Explore APIs",
+              'Complete REST and GraphQL API documentation with live examples.',
+            cta: 'Explore APIs',
           },
           {
-            title: "Guides",
+            title: 'Guides',
             description:
-              "Step-by-step tutorials for common use cases and integrations.",
-            cta: "View guides",
+              'Step-by-step tutorials for common use cases and integrations.',
+            cta: 'View guides',
           },
           {
-            title: "CLI Tools",
+            title: 'CLI Tools',
             description:
-              "Command-line interface documentation and automation scripts.",
-            cta: "CLI docs",
+              'Command-line interface documentation and automation scripts.',
+            cta: 'CLI docs',
           },
           {
-            title: "Community",
+            title: 'Community',
             description:
-              "Join our Discord, browse the forum, and connect with other developers.",
-            cta: "Join community",
+              'Join our Discord, browse the forum, and connect with other developers.',
+            cta: 'Join community',
           },
           {
-            title: "Support",
+            title: 'Support',
             description:
-              "Get help from our team, report bugs, and submit feature requests.",
-            cta: "Get help",
+              'Get help from our team, report bugs, and submit feature requests.',
+            cta: 'Get help',
           },
         ]
 
     const guideData = {
-      badge: props.guide?.badge ?? "New in v3.2",
-      badgeDate: props.guide?.badgeDate ?? "Released May 28, 2026",
-      title: props.guide?.title ?? "Quick Start Guide",
+      badge: props.guide?.badge ?? 'New in v3.2',
+      badgeDate: props.guide?.badgeDate ?? 'Released May 28, 2026',
+      title: props.guide?.title ?? 'Quick Start Guide',
       intro:
         props.guide?.intro ??
-        "Get your first DevKit application running in under 5 minutes. This guide walks you through installation, configuration, and your first API call.",
+        'Get your first DevKit application running in under 5 minutes. This guide walks you through installation, configuration, and your first API call.',
       steps: props.guide?.steps?.length
         ? props.guide.steps
         : [
             {
               number: 1,
-              heading: "Install the CLI",
-              body: "Install the DevKit CLI globally using npm or your preferred package manager. The CLI provides scaffolding, local development server, and deployment tools.",
+              heading: 'Install the CLI',
+              body: 'Install the DevKit CLI globally using npm or your preferred package manager. The CLI provides scaffolding, local development server, and deployment tools.',
               codeBlock: `# Install DevKit CLI globally
 npm install -g @devkit/cli
 
@@ -328,22 +332,22 @@ devkit --version
 # Create a new project
 devkit create my-app --template react
 cd my-app`,
-              codeLabel: "terminal",
+              codeLabel: 'terminal',
             },
             {
               number: 2,
-              heading: "Configure your API key",
-              body: "Create a \`.env.local\` file in your project root and add your DevKit API key. Get your key from the dashboard.",
+              heading: 'Configure your API key',
+              body: 'Create a \`.env.local\` file in your project root and add your DevKit API key. Get your key from the dashboard.',
               codeBlock: `# DevKit API Configuration
 DEVKIT_API_KEY=dk_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 DEVKIT_REGION=us-east-1`,
-              codeLabel: ".env.local",
+              codeLabel: '.env.local',
               isEnvFile: true,
             },
             {
               number: 3,
-              heading: "Start the development server",
-              body: "Run the development server with hot module replacement. The CLI will automatically detect your framework and start the appropriate server.",
+              heading: 'Start the development server',
+              body: 'Run the development server with hot module replacement. The CLI will automatically detect your framework and start the appropriate server.',
               codeBlock: `# Start development server
 devkit dev
 
@@ -353,12 +357,12 @@ devkit dev
 # ║  Ready on http://localhost:3000          ║
 # ║  HMR Enabled                             ║
 # ╚══════════════════════════════════════════╝`,
-              codeLabel: "terminal",
+              codeLabel: 'terminal',
             },
             {
               number: 4,
-              heading: "Make your first API call",
-              body: "Use the DevKit JavaScript SDK to make your first authenticated API request. The SDK handles retries, caching, and error handling automatically.",
+              heading: 'Make your first API call',
+              body: 'Use the DevKit JavaScript SDK to make your first authenticated API request. The SDK handles retries, caching, and error handling automatically.',
               codeBlock: `// Import the DevKit SDK
 import { DevKit } from '@devkit/sdk';
 
@@ -374,17 +378,17 @@ const project = await dk.projects.create({
 });
 
 console.log(\`Created project: \${project.id}\`);`,
-              codeLabel: "JavaScript",
-              codeTabs: ["JavaScript", "TypeScript", "Python", "cURL"],
+              codeLabel: 'JavaScript',
+              codeTabs: ['JavaScript', 'TypeScript', 'Python', 'cURL'],
             },
           ],
-      nextStepsTitle: props.guide?.nextStepsTitle ?? "Next Steps",
+      nextStepsTitle: props.guide?.nextStepsTitle ?? 'Next Steps',
       nextStepsBody:
         props.guide?.nextStepsBody ??
-        "Now that you have your first project running, explore our guides to add authentication, database connections, and deployment configurations.",
+        'Now that you have your first project running, explore our guides to add authentication, database connections, and deployment configurations.',
       nextStepsLinks: props.guide?.nextStepsLinks?.length
         ? props.guide.nextStepsLinks
-        : ["Add Authentication", "Connect Database", "Deploy to Production"],
+        : ['Add Authentication', 'Connect Database', 'Deploy to Production'],
     }
 
     const faqItems = props.faq?.length
@@ -393,107 +397,109 @@ console.log(\`Created project: \${project.id}\`);`,
           {
             question: "What's included in the free tier?",
             answer:
-              "The free tier includes up to 10,000 API requests per month, 5 projects, 3 team members, and community support. Perfect for side projects and learning DevKit.",
+              'The free tier includes up to 10,000 API requests per month, 5 projects, 3 team members, and community support. Perfect for side projects and learning DevKit.',
           },
           {
-            question: "Can I self-host DevKit?",
+            question: 'Can I self-host DevKit?',
             answer:
-              "Yes, Enterprise customers can self-host DevKit on their own infrastructure. We provide Docker images, Kubernetes manifests, and Terraform modules for easy deployment.",
+              'Yes, Enterprise customers can self-host DevKit on their own infrastructure. We provide Docker images, Kubernetes manifests, and Terraform modules for easy deployment.',
           },
           {
-            question: "What frameworks are supported?",
+            question: 'What frameworks are supported?',
             answer:
-              "DevKit supports React, Next.js, Vue, Nuxt, Svelte, SvelteKit, Angular, and vanilla JavaScript. Our SDKs are also available for Python, Go, Ruby, and PHP.",
+              'DevKit supports React, Next.js, Vue, Nuxt, Svelte, SvelteKit, Angular, and vanilla JavaScript. Our SDKs are also available for Python, Go, Ruby, and PHP.',
           },
           {
-            question: "How do I report a bug or request a feature?",
+            question: 'How do I report a bug or request a feature?',
             answer:
-              "Report bugs through our GitHub Issues or contact support@devkit.io. For feature requests, use our public roadmap on Canny where the community can vote on ideas.",
+              'Report bugs through our GitHub Issues or contact support@devkit.io. For feature requests, use our public roadmap on Canny where the community can vote on ideas.',
           },
         ]
 
     const ctaData = {
-      title: props.cta?.title ?? "Ready to start building?",
+      title: props.cta?.title ?? 'Ready to start building?',
       subtitle:
         props.cta?.subtitle ??
-        "Join 50,000+ developers who use DevKit to ship faster. Start free, upgrade when you need more.",
-      primaryCta: props.cta?.primaryCta ?? "Get Started Free",
-      secondaryCta: props.cta?.secondaryCta ?? "View Documentation",
-      note: props.cta?.note ?? "No credit card required. 14-day free trial of Pro features.",
+        'Join 50,000+ developers who use DevKit to ship faster. Start free, upgrade when you need more.',
+      primaryCta: props.cta?.primaryCta ?? 'Get Started Free',
+      secondaryCta: props.cta?.secondaryCta ?? 'View Documentation',
+      note:
+        props.cta?.note ??
+        'No credit card required. 14-day free trial of Pro features.',
     }
 
     const footerData = {
       tagline:
         props.footer?.tagline ??
-        "The developer platform that helps you build, deploy, and scale applications faster.",
+        'The developer platform that helps you build, deploy, and scale applications faster.',
       columns: props.footer?.columns?.length
         ? props.footer.columns
         : [
             {
-              title: "Product",
+              title: 'Product',
               links: [
-                "Documentation",
-                "API Reference",
-                "CLI Tools",
-                "Pricing",
-                "Changelog",
+                'Documentation',
+                'API Reference',
+                'CLI Tools',
+                'Pricing',
+                'Changelog',
               ],
             },
             {
-              title: "Resources",
+              title: 'Resources',
               links: [
-                "Community",
-                "Support",
-                "Status",
-                "Partners",
-                "Templates",
+                'Community',
+                'Support',
+                'Status',
+                'Partners',
+                'Templates',
               ],
             },
             {
-              title: "Company",
-              links: ["About", "Blog", "Careers", "Contact", "Privacy"],
+              title: 'Company',
+              links: ['About', 'Blog', 'Careers', 'Contact', 'Privacy'],
             },
           ],
       legal: props.footer?.legal?.length
         ? props.footer.legal
-        : ["Terms", "Privacy", "Cookies"],
+        : ['Terms', 'Privacy', 'Cookies'],
       socials: props.footer?.socials?.length
         ? props.footer.socials
-        : ["GitHub", "Twitter", "Discord"],
-      copyright: props.footer?.copyright ?? "DevKit Inc. All rights reserved.",
+        : ['GitHub', 'Twitter', 'Discord'],
+      copyright: props.footer?.copyright ?? 'DevKit Inc. All rights reserved.',
     }
 
     // ── Accent rotations using semantic tokens ──────────────────────────
     const cardTint = [
-      "bg-primary/10 text-primary group-hover:bg-primary/20",
-      "bg-secondary/10 text-secondary group-hover:bg-secondary/20",
-      "bg-accent/10 text-accent group-hover:bg-accent/20",
-      "bg-chart-1/10 text-chart-1 group-hover:bg-chart-1/20",
-      "bg-chart-2/10 text-chart-2 group-hover:bg-chart-2/20",
-      "bg-chart-3/10 text-chart-3 group-hover:bg-chart-3/20",
+      'bg-primary/10 text-primary group-hover:bg-primary/20',
+      'bg-secondary/10 text-secondary group-hover:bg-secondary/20',
+      'bg-accent/10 text-accent group-hover:bg-accent/20',
+      'bg-chart-1/10 text-chart-1 group-hover:bg-chart-1/20',
+      'bg-chart-2/10 text-chart-2 group-hover:bg-chart-2/20',
+      'bg-chart-3/10 text-chart-3 group-hover:bg-chart-3/20',
     ]
 
     const cardHovers = [
-      "hover:border-primary/20",
-      "hover:border-secondary/20",
-      "hover:border-accent/20",
-      "hover:border-chart-1/20",
-      "hover:border-chart-2/20",
-      "hover:border-chart-3/20",
+      'hover:border-primary/20',
+      'hover:border-secondary/20',
+      'hover:border-accent/20',
+      'hover:border-chart-1/20',
+      'hover:border-chart-2/20',
+      'hover:border-chart-3/20',
     ]
 
     const stepTint = [
-      "bg-primary/10 text-primary",
-      "bg-secondary/10 text-secondary",
-      "bg-chart-1/10 text-chart-1",
-      "bg-chart-2/10 text-chart-2",
+      'bg-primary/10 text-primary',
+      'bg-secondary/10 text-secondary',
+      'bg-chart-1/10 text-chart-1',
+      'bg-chart-2/10 text-chart-2',
     ]
 
     const faqTint = [
-      "bg-primary/10 text-primary",
-      "bg-secondary/10 text-secondary",
-      "bg-chart-1/10 text-chart-1",
-      "bg-accent/10 text-accent",
+      'bg-primary/10 text-primary',
+      'bg-secondary/10 text-secondary',
+      'bg-chart-1/10 text-chart-1',
+      'bg-accent/10 text-accent',
     ]
 
     // ── Inline SVG icons ────────────────────────────────────────────────
@@ -593,7 +599,7 @@ console.log(\`Created project: \${project.id}\`);`,
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-primary to-secondary text-primary-foreground",
+          'grid shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-primary to-secondary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -615,12 +621,12 @@ console.log(\`Created project: \${project.id}\`);`,
 
     const socialIcon = (name: string) => {
       const n = name.toLowerCase()
-      if (n.includes("git")) {
+      if (n.includes('git')) {
         return (
           <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
         )
       }
-      if (n.includes("discord")) {
+      if (n.includes('discord')) {
         return (
           <path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028 14.09 14.09 0 001.226-1.994.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
         )
@@ -701,7 +707,10 @@ console.log(\`Created project: \${project.id}\`);`,
 
     const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
       <svg
-        className={cn('size-5', active ? 'text-primary' : 'text-muted-foreground')}
+        className={cn(
+          'size-5',
+          active ? 'text-primary' : 'text-muted-foreground',
+        )}
         fill={active ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="2"
@@ -733,7 +742,7 @@ console.log(\`Created project: \${project.id}\`);`,
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -817,7 +826,9 @@ console.log(\`Created project: \${project.id}\`);`,
                                 </div>
                                 <button
                                   type="button"
-                                  onClick={() => void removeBookmark(bookmark.title)}
+                                  onClick={() =>
+                                    void removeBookmark(bookmark.title)
+                                  }
                                   aria-label={`Remove ${bookmark.title} from bookmarks`}
                                   className="shrink-0 text-muted-foreground transition-colors hover:text-destructive"
                                 >
@@ -898,7 +909,10 @@ console.log(\`Created project: \${project.id}\`);`,
                       >
                         <div className="bg-muted/40 px-4 py-4">
                           <div className="flex items-center gap-3">
-                            <Avatar size="lg" className="ring-2 ring-background">
+                            <Avatar
+                              size="lg"
+                              className="ring-2 ring-background"
+                            >
                               {authPicture ? (
                                 <AvatarImage
                                   src={authPicture}
@@ -965,7 +979,7 @@ console.log(\`Created project: \${project.id}\`);`,
 
                   <button
                     type="button"
-                    onClick={() => go("Get Started")}
+                    onClick={() => go('Get Started')}
                     className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg transition-all hover:bg-primary/90"
                   >
                     Get Started
@@ -1095,10 +1109,10 @@ console.log(\`Created project: \${project.id}\`);`,
                               type="button"
                               onClick={() => go(item)}
                               className={cn(
-                                "block flex-1 rounded-xl px-3 py-2 text-left text-sm font-medium transition-colors",
+                                'block flex-1 rounded-xl px-3 py-2 text-left text-sm font-medium transition-colors',
                                 active
-                                  ? "bg-primary/10 text-primary"
-                                  : "text-muted-foreground hover:bg-muted/60 hover:text-primary",
+                                  ? 'bg-primary/10 text-primary'
+                                  : 'text-muted-foreground hover:bg-muted/60 hover:text-primary',
                               )}
                             >
                               {item}
@@ -1133,7 +1147,6 @@ console.log(\`Created project: \${project.id}\`);`,
 
           {/* ── Main ────────────────────────────────────────────────── */}
           <main className="min-w-0 flex-1">
-
             {/* Search Section */}
             <section className="px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
               <div className="mx-auto mb-8 max-w-3xl text-center">
@@ -1187,7 +1200,9 @@ console.log(\`Created project: \${project.id}\`);`,
                 ))}
                 {searchHistory && searchHistory.length > 0 && (
                   <>
-                    <span className="text-sm text-muted-foreground ml-2">Recent:</span>
+                    <span className="text-sm text-muted-foreground ml-2">
+                      Recent:
+                    </span>
                     {searchHistory.slice(0, 3).map((item) => (
                       <button
                         key={item.id}
@@ -1214,7 +1229,7 @@ console.log(\`Created project: \${project.id}\`);`,
                     <div
                       key={card.title}
                       className={cn(
-                        "group relative rounded-3xl border-2 border-border bg-card p-6 text-left transition-all shadow-lg hover:shadow-xl",
+                        'group relative rounded-3xl border-2 border-border bg-card p-6 text-left transition-all shadow-lg hover:shadow-xl',
                         cardHovers[i % cardHovers.length],
                       )}
                     >
@@ -1225,7 +1240,7 @@ console.log(\`Created project: \${project.id}\`);`,
                       />
                       <div
                         className={cn(
-                          "mb-4 grid size-12 place-items-center rounded-2xl",
+                          'mb-4 grid size-12 place-items-center rounded-2xl',
                           cardTint[i % cardTint.length],
                         )}
                       >
@@ -1249,7 +1264,11 @@ console.log(\`Created project: \${project.id}\`);`,
                             if (isBookmarked) {
                               void removeBookmark(card.title)
                             } else {
-                              void addBookmark(card.title, 'Categories', card.title)
+                              void addBookmark(
+                                card.title,
+                                'Categories',
+                                card.title,
+                              )
                             }
                           }}
                           aria-label={
@@ -1292,7 +1311,7 @@ console.log(\`Created project: \${project.id}\`);`,
                       <h3 className="mb-4 flex items-center gap-3 text-xl font-semibold text-foreground">
                         <span
                           className={cn(
-                            "flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-bold",
+                            'flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-bold',
                             stepTint[si % stepTint.length],
                           )}
                         >
@@ -1301,7 +1320,9 @@ console.log(\`Created project: \${project.id}\`);`,
                         {step.heading}
                       </h3>
                       {step.body && (
-                        <p className="mb-4 text-muted-foreground">{step.body}</p>
+                        <p className="mb-4 text-muted-foreground">
+                          {step.body}
+                        </p>
                       )}
                       {step.codeBlock && (
                         <div className="overflow-hidden rounded-2xl bg-foreground shadow-xl">
@@ -1321,10 +1342,10 @@ console.log(\`Created project: \${project.id}\`);`,
                                       type="button"
                                       onClick={() => go(tab)}
                                       className={cn(
-                                        "text-sm font-medium transition-colors",
+                                        'text-sm font-medium transition-colors',
                                         tab === step.codeLabel
-                                          ? "text-background"
-                                          : "text-muted-foreground hover:text-background",
+                                          ? 'text-background'
+                                          : 'text-muted-foreground hover:text-background',
                                       )}
                                     >
                                       {tab}
@@ -1343,7 +1364,7 @@ console.log(\`Created project: \${project.id}\`);`,
                               <button
                                 type="button"
                                 aria-label="Copy code"
-                                onClick={() => go("Copy")}
+                                onClick={() => go('Copy')}
                                 className="rounded-md p-1.5 text-muted-foreground transition-colors hover:text-background"
                               >
                                 <CopyIcon />
@@ -1453,7 +1474,7 @@ console.log(\`Created project: \${project.id}\`);`,
                         </span>
                         <span
                           className={cn(
-                            "flex size-8 shrink-0 items-center justify-center rounded-full transition-transform group-open:rotate-180",
+                            'flex size-8 shrink-0 items-center justify-center rounded-full transition-transform group-open:rotate-180',
                             faqTint[fi % faqTint.length],
                           )}
                         >
@@ -1528,13 +1549,13 @@ console.log(\`Created project: \${project.id}\`);`,
                       aria-label={social}
                       onClick={() => go(social)}
                       className={cn(
-                        "flex size-9 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors",
-                        social.toLowerCase().includes("git")
-                          ? "hover:bg-primary/10 hover:text-primary"
-                          : social.toLowerCase().includes("twitter") ||
-                              social.toLowerCase().includes("x")
-                            ? "hover:bg-accent/10 hover:text-accent"
-                            : "hover:bg-secondary/10 hover:text-secondary",
+                        'flex size-9 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors',
+                        social.toLowerCase().includes('git')
+                          ? 'hover:bg-primary/10 hover:text-primary'
+                          : social.toLowerCase().includes('twitter') ||
+                              social.toLowerCase().includes('x')
+                            ? 'hover:bg-accent/10 hover:text-accent'
+                            : 'hover:bg-secondary/10 hover:text-secondary',
                       )}
                     >
                       <svg

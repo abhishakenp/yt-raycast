@@ -4,7 +4,7 @@ import { defineCapsule } from './openui.ts'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -24,9 +24,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const BlogPostKimiPage4 = defineCapsule({
-  name: "BlogPostKimiPage4",
+  name: 'BlogPostKimiPage4',
   description:
-    "Blog Post fourth style sibling to BlogPostKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Blog Post fourth style sibling to BlogPostKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const BlogPostKimiPage4 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -74,12 +76,13 @@ export const BlogPostKimiPage4 = defineCapsule({
     },
     queries: {
       readingListItems: ({ db }) => db.readingList.orderBy('createdAt').all(),
-      subscriberCount: ({ db }) => db.subscribers.all().length,
-      isSubscribed: ({ db }, email: string) =>
-        db.subscribers.where('email', email).all().length > 0,
     },
     mutations: {
-      addToReadingList: ({ db }, articleTitle: string, articleEyebrow: string) => {
+      addToReadingList: (
+        { db },
+        articleTitle: string,
+        articleEyebrow: string,
+      ) => {
         const existing = db.readingList
           .where('articleTitle', articleTitle)
           .all()[0]
@@ -109,89 +112,108 @@ export const BlogPostKimiPage4 = defineCapsule({
     const [mobileOpen, setMobileOpen] = useState(false)
     const [subscribeOpen, setSubscribeOpen] = useState(false)
     const [subscribeEmail, setSubscribeEmail] = useState('')
-    const brand = props.brand ?? "The Methanol Revolution: How Maersk's New Fleet Is Rewriting the Rules of Ocean Freight"
-    const nav = props.nav?.length ? props.nav : ["The Logistical Review", "Maritime", "Technology", "Sustainability", "Supply Chain", "Subscribe"]
+    const brand =
+      props.brand ??
+      "The Methanol Revolution: How Maersk's New Fleet Is Rewriting the Rules of Ocean Freight"
+    const nav = props.nav?.length
+      ? props.nav
+      : [
+          'The Logistical Review',
+          'Maritime',
+          'Technology',
+          'Sustainability',
+          'Supply Chain',
+          'Subscribe',
+        ]
     const hero = {
-      eyebrow: "Blog Post / Variant 4",
-      title: "The Methanol Revolution: How Maersk's New Fleet Is Rewriting the Rules of Ocean Freight",
-      description: "The Methanol Revolution: How Maersk's New Fleet Is Rewriting the Rules of Ocean Freight | The Logistical Review The Logistical Review Maritime Technology Sustainability Supply C...",
-      primaryCta: "Subscribe",
-      secondaryCta: "The Logistical Review",
-      imageAlt: "Professional headshot of Eleanor Vance, a smiling woman with dark hair wearing a navy blazer",
+      eyebrow: 'Blog Post / Variant 4',
+      title:
+        "The Methanol Revolution: How Maersk's New Fleet Is Rewriting the Rules of Ocean Freight",
+      description:
+        "The Methanol Revolution: How Maersk's New Fleet Is Rewriting the Rules of Ocean Freight | The Logistical Review The Logistical Review Maritime Technology Sustainability Supply C...",
+      primaryCta: 'Subscribe',
+      secondaryCta: 'The Logistical Review',
+      imageAlt:
+        'Professional headshot of Eleanor Vance, a smiling woman with dark hair wearing a navy blazer',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "A Supply Chain for a New Fuel",
-    "body": "The Methanol Revolution: How Maersk's New Fleet Is Rewriting the Rules of Ocean Freight",
-    "items": [
-      "The New Fleet in Pictures",
-      "Expert Perspectives",
-      "Related Reading"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "The Scale Problem",
-    "body": "The Methanol Revolution: How Maersk's New Fleet Is Rewriting the Rules of Ocean Freight | The Logistical Review The Logistical Review Maritime Technology Sustainability Supply C...",
-    "items": [
-      "Weekly Maritime Intelligence",
-      "FuelEU Maritime: What Shippers Need to Know Before January 2025",
-      "Inside the World's First Methanol Bunkering Terminal"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "What It Means for Shippers",
-    "body": "Blog Post page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": []
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "The New Fleet in Pictures",
-    "body": "Blog Post page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": []
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "A Supply Chain for a New Fuel",
-    "alt": "Professional headshot of Eleanor Vance, a smiling woman with dark hair wearing a navy blazer",
-    "caption": "Blog Post generated page detail"
-  },
-  {
-    "title": "The Scale Problem",
-    "alt": "A massive container ship loaded with colorful cargo containers docked at a commercial port with gantry cranes silhouetted against a golden sunset sky",
-    "caption": "Blog Post generated page detail"
-  },
-  {
-    "title": "What It Means for Shippers",
-    "alt": "Close-up view of a large marine diesel engine with blue fuel pipes and brass fittings in a brightly lit engine room",
-    "caption": "Blog Post generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'A Supply Chain for a New Fuel',
+            body: "The Methanol Revolution: How Maersk's New Fleet Is Rewriting the Rules of Ocean Freight",
+            items: [
+              'The New Fleet in Pictures',
+              'Expert Perspectives',
+              'Related Reading',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'The Scale Problem',
+            body: "The Methanol Revolution: How Maersk's New Fleet Is Rewriting the Rules of Ocean Freight | The Logistical Review The Logistical Review Maritime Technology Sustainability Supply C...",
+            items: [
+              'Weekly Maritime Intelligence',
+              'FuelEU Maritime: What Shippers Need to Know Before January 2025',
+              "Inside the World's First Methanol Bunkering Terminal",
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'What It Means for Shippers',
+            body: "Blog Post page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'The New Fleet in Pictures',
+            body: "Blog Post page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'A Supply Chain for a New Fuel',
+            alt: 'Professional headshot of Eleanor Vance, a smiling woman with dark hair wearing a navy blazer',
+            caption: 'Blog Post generated page detail',
+          },
+          {
+            title: 'The Scale Problem',
+            alt: 'A massive container ship loaded with colorful cargo containers docked at a commercial port with gantry cranes silhouetted against a golden sunset sky',
+            caption: 'Blog Post generated page detail',
+          },
+          {
+            title: 'What It Means for Shippers',
+            alt: 'Close-up view of a large marine diesel engine with blue fuel pipes and brass fittings in a brightly lit engine room',
+            caption: 'Blog Post generated page detail',
+          },
+        ]
 
     const readingListItems = lakebed.useQuery('readingListItems')
-    const subscriberCount = lakebed.useQuery('subscriberCount')
     const addToReadingList = lakebed.useMutation('addToReadingList')
     const subscribe = lakebed.useMutation('subscribe')
     const auth = lakebed.useAuth()
@@ -280,10 +302,19 @@ export const BlogPostKimiPage4 = defineCapsule({
     }
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -444,7 +475,12 @@ export const BlogPostKimiPage4 = defineCapsule({
                             </div>
                             <button
                               type="button"
-                              onClick={() => void addToReadingList(item.articleTitle, item.articleEyebrow)}
+                              onClick={() =>
+                                void addToReadingList(
+                                  item.articleTitle,
+                                  item.articleEyebrow,
+                                )
+                              }
                               className="ml-3 text-muted-foreground transition-colors hover:text-destructive"
                               aria-label={`Remove ${item.articleTitle} from reading list`}
                             >
@@ -471,7 +507,8 @@ export const BlogPostKimiPage4 = defineCapsule({
                           No articles saved
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Click the bookmark icon on any article to save it for later.
+                          Click the bookmark icon on any article to save it for
+                          later.
                         </p>
                       </div>
                     )}
@@ -643,16 +680,28 @@ export const BlogPostKimiPage4 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -663,16 +712,27 @@ export const BlogPostKimiPage4 = defineCapsule({
                 const isInReadingList = isArticleInReadingList(section.title)
 
                 return (
-                  <article key={section.title} className="rounded-lg border border-border bg-card p-6">
+                  <article
+                    key={section.title}
+                    className="rounded-lg border border-border bg-card p-6"
+                  >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                        <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                        <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                        <p className="text-sm font-medium text-primary">
+                          {section.eyebrow}
+                        </p>
+                        <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                          {section.title}
+                        </h2>
+                        <p className="mt-3 leading-7 text-muted-foreground">
+                          {section.body}
+                        </p>
                       </div>
                       <button
                         type="button"
-                        onClick={() => void addToReadingList(section.title, section.eyebrow)}
+                        onClick={() =>
+                          void addToReadingList(section.title, section.eyebrow)
+                        }
                         aria-pressed={isInReadingList}
                         aria-label={
                           isInReadingList
@@ -713,8 +773,12 @@ export const BlogPostKimiPage4 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -726,11 +790,26 @@ export const BlogPostKimiPage4 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -741,9 +820,15 @@ export const BlogPostKimiPage4 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -759,10 +844,17 @@ export const BlogPostKimiPage4 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

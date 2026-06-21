@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -13,15 +13,14 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * MobileAppKimiPage9 — the 9th style sibling to MobileAppKimiPage.
@@ -40,9 +39,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * launches when a calm, trustworthy, high-conversion marketing page is desired.
  */
 export const MobileAppKimiPage9 = defineCapsule({
-  name: "MobileAppKimiPage9",
+  name: 'MobileAppKimiPage9',
   description:
-    "Warm, editorial mobile-app landing page (the 9th style sibling to MobileAppKimiPage) with a soft stone-and-sage aesthetic: split hero with gradient backdrop, phone mockup and floating streak card, App Store / Google Play buttons, a press-logo strip, a 6-up feature grid with colored icon tiles, a 3-step walkthrough with numbered circles and connector lines, a 4-up app gallery, an inverted stats band, a 3-up testimonial grid with star ratings and avatars, a 3-tier pricing table (Free / Pro / Family) with a highlighted featured plan, an expandable FAQ accordion, a final download CTA, and a multi-column footer with social icons. Ideal for wellness, meditation, fitness, productivity, or lifestyle iOS/Android app launches needing a calm, trustworthy, high-conversion marketing page.",
+    'Warm, editorial mobile-app landing page (the 9th style sibling to MobileAppKimiPage) with a soft stone-and-sage aesthetic: split hero with gradient backdrop, phone mockup and floating streak card, App Store / Google Play buttons, a press-logo strip, a 6-up feature grid with colored icon tiles, a 3-step walkthrough with numbered circles and connector lines, a 4-up app gallery, an inverted stats band, a 3-up testimonial grid with star ratings and avatars, a 3-tier pricing table (Free / Pro / Family) with a highlighted featured plan, an expandable FAQ accordion, a final download CTA, and a multi-column footer with social icons. Ideal for wellness, meditation, fitness, productivity, or lifestyle iOS/Android app launches needing a calm, trustworthy, high-conversion marketing page.',
   props: z.object({
     /** Brand / app name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -209,7 +208,12 @@ export const MobileAppKimiPage9 = defineCapsule({
       downloads: ({ db }) => db.downloads.orderBy('createdAt').all(),
     },
     mutations: {
-      selectPlan: ({ db }, planName: string, planPrice: string, email: string) => {
+      selectPlan: (
+        { db },
+        planName: string,
+        planPrice: string,
+        email: string,
+      ) => {
         db.subscriptions.insert({ planName, planPrice, email })
         return db.subscriptions.all()
       },
@@ -223,14 +227,16 @@ export const MobileAppKimiPage9 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [subscriptionOpen, setSubscriptionOpen] = useState(false)
-    const [selectedPlan, setSelectedPlan] = useState<{ name: string; price: string } | null>(null)
-    const brand = props.brand ?? "Zenith"
+    const [selectedPlan, setSelectedPlan] = useState<{
+      name: string
+      price: string
+    } | null>(null)
+    const brand = props.brand ?? 'Zenith'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "How It Works", "Pricing", "Stories", "Get Started"]
+      : ['Features', 'How It Works', 'Pricing', 'Stories', 'Get Started']
 
     const subscriptions = lakebed.useQuery('subscriptions')
-    const downloads = lakebed.useQuery('downloads')
     const selectPlan = lakebed.useMutation('selectPlan')
     const trackDownload = lakebed.useMutation('trackDownload')
     const auth = lakebed.useAuth()
@@ -261,159 +267,158 @@ export const MobileAppKimiPage9 = defineCapsule({
     }
 
     const hero = {
-      badge: props.hero?.badge ?? "Now on iOS & Android",
-      headingTop: props.hero?.headingTop ?? "Master Your",
-      headingAccent: props.hero?.headingAccent ?? "Daily Rituals",
+      badge: props.hero?.badge ?? 'Now on iOS & Android',
+      headingTop: props.hero?.headingTop ?? 'Master Your',
+      headingAccent: props.hero?.headingAccent ?? 'Daily Rituals',
       subheading:
         props.hero?.subheading ??
-        "Zenith transforms intention into action. Track habits that matter, build streaks that last, and discover patterns that unlock your best self.",
-      appStoreLabel: props.hero?.appStoreLabel ?? "App Store",
-      googlePlayLabel: props.hero?.googlePlayLabel ?? "Google Play",
-      rating: props.hero?.rating ?? "4.9 Rating",
-      downloads: props.hero?.downloads ?? "500K+ Downloads",
+        'Zenith transforms intention into action. Track habits that matter, build streaks that last, and discover patterns that unlock your best self.',
+      appStoreLabel: props.hero?.appStoreLabel ?? 'App Store',
+      googlePlayLabel: props.hero?.googlePlayLabel ?? 'Google Play',
+      rating: props.hero?.rating ?? '4.9 Rating',
+      downloads: props.hero?.downloads ?? '500K+ Downloads',
       imageAlt:
         props.hero?.imageAlt ??
-        "iPhone 15 Pro displaying Zenith habit tracking app with elegant dark interface showing daily streak and habit completion circles",
-      streakTitle: props.hero?.streakTitle ?? "47 Day Streak",
-      streakLabel: props.hero?.streakLabel ?? "Morning Meditation",
+        'iPhone 15 Pro displaying Zenith habit tracking app with elegant dark interface showing daily streak and habit completion circles',
+      streakTitle: props.hero?.streakTitle ?? '47 Day Streak',
+      streakLabel: props.hero?.streakLabel ?? 'Morning Meditation',
     }
 
-    const logosLabel = props.logos?.label ?? "Featured In"
+    const logosLabel = props.logos?.label ?? 'Featured In'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
-      : ["TechCrunch", "Wired", "The Verge", "Product Hunt", "Forbes"]
+      : ['TechCrunch', 'Wired', 'The Verge', 'Product Hunt', 'Forbes']
 
     const featuresHeading =
-      props.features?.heading ?? "Everything you need to build lasting habits"
+      props.features?.heading ?? 'Everything you need to build lasting habits'
     const featuresDesc =
       props.features?.description ??
-      "Thoughtfully designed tools that make consistency effortless and progress visible."
+      'Thoughtfully designed tools that make consistency effortless and progress visible.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Intelligent Reminders",
+            title: 'Intelligent Reminders',
             description:
-              "Context-aware notifications that adapt to your schedule. Never miss a habit, never feel nagged.",
+              'Context-aware notifications that adapt to your schedule. Never miss a habit, never feel nagged.',
           },
           {
-            title: "Beautiful Analytics",
+            title: 'Beautiful Analytics',
             description:
-              "Deep insights into your patterns. Weekly reviews, trend analysis, and completion forecasts.",
+              'Deep insights into your patterns. Weekly reviews, trend analysis, and completion forecasts.',
           },
           {
-            title: "Streak Mastery",
+            title: 'Streak Mastery',
             description:
-              "Build momentum with meaningful streaks. Protect your progress with flexible recovery options.",
+              'Build momentum with meaningful streaks. Protect your progress with flexible recovery options.',
           },
           {
-            title: "Mindful Design",
+            title: 'Mindful Design',
             description:
-              "A calm, distraction-free interface that makes habit tracking feel like a moment of peace.",
+              'A calm, distraction-free interface that makes habit tracking feel like a moment of peace.',
           },
           {
-            title: "Circle Accountability",
+            title: 'Circle Accountability',
             description:
-              "Share progress with trusted friends. Private circles that celebrate wins and support comebacks.",
+              'Share progress with trusted friends. Private circles that celebrate wins and support comebacks.',
           },
           {
-            title: "Time-Based Habits",
+            title: 'Time-Based Habits',
             description:
-              "Track duration-based activities. Reading, meditation, exercise — log minutes, not just checkmarks.",
+              'Track duration-based activities. Reading, meditation, exercise — log minutes, not just checkmarks.',
           },
         ]
 
-    const stepsHeading = props.steps?.heading ?? "How It Works"
+    const stepsHeading = props.steps?.heading ?? 'How It Works'
     const stepsDesc =
-      props.steps?.description ?? "Three steps to transformation"
+      props.steps?.description ?? 'Three steps to transformation'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Choose Your Habits",
+            title: 'Choose Your Habits',
             description:
-              "Select from 200+ curated templates or create custom habits. Set frequency, reminders, and targets that fit your life.",
+              'Select from 200+ curated templates or create custom habits. Set frequency, reminders, and targets that fit your life.',
           },
           {
-            title: "Track Daily",
+            title: 'Track Daily',
             description:
-              "A delightful check-in experience takes seconds. Widgets, shortcuts, and smart reminders keep you consistent.",
+              'A delightful check-in experience takes seconds. Widgets, shortcuts, and smart reminders keep you consistent.',
           },
           {
-            title: "Grow & Evolve",
+            title: 'Grow & Evolve',
             description:
-              "Weekly insights show your progress. Celebrate milestones, adjust targets, and build habits that stick.",
+              'Weekly insights show your progress. Celebrate milestones, adjust targets, and build habits that stick.',
           },
         ]
 
-    const galleryHeading = props.gallery?.heading ?? "App Gallery"
+    const galleryHeading = props.gallery?.heading ?? 'App Gallery'
     const galleryDesc =
-      props.gallery?.description ?? "Designed for daily delight"
+      props.gallery?.description ?? 'Designed for daily delight'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
           {
-            alt: "iPhone displaying Zenith habit tracker daily view with circular progress indicators for morning routine habits",
-            caption: "Daily Dashboard",
+            alt: 'iPhone displaying Zenith habit tracker daily view with circular progress indicators for morning routine habits',
+            caption: 'Daily Dashboard',
           },
           {
-            alt: "iPhone showing Zenith analytics screen with habit completion charts and weekly trend graphs",
-            caption: "Insight Analytics",
+            alt: 'iPhone showing Zenith analytics screen with habit completion charts and weekly trend graphs',
+            caption: 'Insight Analytics',
           },
           {
-            alt: "iPhone displaying Zenith streak calendar view with colorful completion badges and monthly overview",
-            caption: "Streak Calendar",
+            alt: 'iPhone displaying Zenith streak calendar view with colorful completion badges and monthly overview',
+            caption: 'Streak Calendar',
           },
           {
-            alt: "iPhone showing Zenith achievement badges screen with earned milestone rewards and trophy collection",
-            caption: "Achievements",
+            alt: 'iPhone showing Zenith achievement badges screen with earned milestone rewards and trophy collection',
+            caption: 'Achievements',
           },
         ]
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "500K+", label: "Active Users", accent: false },
-          { value: "12M+", label: "Habits Tracked", accent: true },
-          { value: "4.9", label: "App Store Rating", accent: false },
-          { value: "89%", label: "Retention Rate", accent: true },
+          { value: '500K+', label: 'Active Users', accent: false },
+          { value: '12M+', label: 'Habits Tracked', accent: true },
+          { value: '4.9', label: 'App Store Rating', accent: false },
+          { value: '89%', label: 'Retention Rate', accent: true },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ??
-      "Lives transformed, one habit at a time"
-    const testimonialsDesc = props.testimonials?.description ?? ""
+      props.testimonials?.heading ?? 'Lives transformed, one habit at a time'
+    const testimonialsDesc = props.testimonials?.description ?? ''
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
               '"Zenith helped me build a meditation practice that stuck. After 90 days, I\'m calmer, more focused, and finally consistent. The streak recovery feature saved me during a family emergency."',
-            name: "Sarah Chen",
-            role: "VP Marketing, Stripe",
+            name: 'Sarah Chen',
+            role: 'VP Marketing, Stripe',
             avatarAlt:
-              "Professional headshot of Sarah Chen, a marketing executive with shoulder-length dark hair and warm smile",
+              'Professional headshot of Sarah Chen, a marketing executive with shoulder-length dark hair and warm smile',
           },
           {
             quote:
-              "\"As a founder, my schedule is chaotic. Zenith's flexibility let me adapt my habits without guilt. The analytics showed me my peak performance hours — game changer for productivity.\"",
-            name: "Marcus Rodriguez",
-            role: "CEO, Nexus Labs",
+              '"As a founder, my schedule is chaotic. Zenith\'s flexibility let me adapt my habits without guilt. The analytics showed me my peak performance hours — game changer for productivity."',
+            name: 'Marcus Rodriguez',
+            role: 'CEO, Nexus Labs',
             avatarAlt:
-              "Professional headshot of Marcus Rodriguez, a tech founder with short curly hair and confident expression",
+              'Professional headshot of Marcus Rodriguez, a tech founder with short curly hair and confident expression',
           },
           {
             quote:
-              '"The Family plan transformed our household. We track shared goals like \'eat dinner together\' and \'weekend walks.\' Seeing our collective progress brought us closer. Worth every penny."',
-            name: "Elena Vasquez",
-            role: "Family Therapist",
+              "\"The Family plan transformed our household. We track shared goals like 'eat dinner together' and 'weekend walks.' Seeing our collective progress brought us closer. Worth every penny.\"",
+            name: 'Elena Vasquez',
+            role: 'Family Therapist',
             avatarAlt:
-              "Professional headshot of Elena Vasquez, a therapist with long wavy hair and warm approachable smile",
+              'Professional headshot of Elena Vasquez, a therapist with long wavy hair and warm approachable smile',
           },
         ]
 
     const pricingHeading =
-      props.pricing?.heading ?? "Simple, transparent pricing"
+      props.pricing?.heading ?? 'Simple, transparent pricing'
     const pricingDesc =
       props.pricing?.description ??
       "Start free. Upgrade when you're ready to go deeper."
@@ -421,106 +426,105 @@ export const MobileAppKimiPage9 = defineCapsule({
       ? props.pricing.tiers
       : [
           {
-            name: "Free",
-            tagline: "Perfect for getting started",
-            price: "$0",
-            period: "/month",
-            cta: "Get Started",
+            name: 'Free',
+            tagline: 'Perfect for getting started',
+            price: '$0',
+            period: '/month',
+            cta: 'Get Started',
             featured: false,
             features: [
-              "Up to 5 habits",
-              "Basic reminders",
-              "7-day history",
-              "Streak tracking",
+              'Up to 5 habits',
+              'Basic reminders',
+              '7-day history',
+              'Streak tracking',
             ],
           },
           {
-            name: "Pro",
-            tagline: "Billed annually ($59.88/year)",
-            price: "$4.99",
-            period: "/month",
-            cta: "Start Free Trial",
+            name: 'Pro',
+            tagline: 'Billed annually ($59.88/year)',
+            price: '$4.99',
+            period: '/month',
+            cta: 'Start Free Trial',
             featured: true,
             features: [
-              "Unlimited habits",
-              "Advanced analytics",
-              "Unlimited history",
-              "Widgets & shortcuts",
-              "Export data (CSV/JSON)",
+              'Unlimited habits',
+              'Advanced analytics',
+              'Unlimited history',
+              'Widgets & shortcuts',
+              'Export data (CSV/JSON)',
             ],
           },
           {
-            name: "Family",
-            tagline: "Billed annually ($119.88/year)",
-            price: "$9.99",
-            period: "/month",
-            cta: "Get Started",
+            name: 'Family',
+            tagline: 'Billed annually ($119.88/year)',
+            price: '$9.99',
+            period: '/month',
+            cta: 'Get Started',
             featured: false,
             features: [
-              "Everything in Pro",
-              "Up to 6 family members",
-              "Shared group habits",
-              "Family insights",
+              'Everything in Pro',
+              'Up to 6 family members',
+              'Shared group habits',
+              'Family insights',
             ],
           },
         ]
 
-    const faqHeading = props.faq?.heading ?? "Questions answered"
+    const faqHeading = props.faq?.heading ?? 'Questions answered'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "Can I use Zenith for free?",
+            question: 'Can I use Zenith for free?',
             answer:
               "Yes! The free plan includes up to 5 habits, basic reminders, 7-day history, and streak tracking. It's perfect for starting your habit journey. Upgrade to Pro when you're ready for unlimited habits and deeper analytics.",
           },
           {
-            question: "What happens if I break a streak?",
+            question: 'What happens if I break a streak?',
             answer:
               'Life happens. Pro users get 3 "Rest Days" per month that protect your streak. You can also use Recovery Mode to rebuild after a break without losing sight of your long-term progress. We believe in compassion, not perfection.',
           },
           {
-            question: "Can I export my data?",
+            question: 'Can I export my data?',
             answer:
-              "Pro and Family plans include full data export in CSV and JSON formats. Your data belongs to you. We also offer API access for power users who want to integrate with other tools.",
+              'Pro and Family plans include full data export in CSV and JSON formats. Your data belongs to you. We also offer API access for power users who want to integrate with other tools.',
           },
           {
-            question: "Is my data private and secure?",
+            question: 'Is my data private and secure?',
             answer:
               "Absolutely. Your data is encrypted at rest and in transit. We never sell your information. Pro users can enable end-to-end encryption for sensitive habits. We're SOC 2 Type II certified and GDPR compliant.",
           },
           {
-            question: "Can I cancel my subscription anytime?",
+            question: 'Can I cancel my subscription anytime?',
             answer:
               "Yes, cancel anytime with no questions asked. If you cancel, you'll keep Pro access until your billing period ends. We also offer a 30-day money-back guarantee if Zenith isn't right for you.",
           },
         ]
 
-    const ctaHeading =
-      props.cta?.heading ?? "Begin your transformation today"
+    const ctaHeading = props.cta?.heading ?? 'Begin your transformation today'
     const ctaDesc =
       props.cta?.description ??
-      "Join 500,000+ people building better lives, one habit at a time. Free forever to start."
-    const ctaAppStore = props.cta?.appStoreLabel ?? "App Store"
-    const ctaGooglePlay = props.cta?.googlePlayLabel ?? "Google Play"
+      'Join 500,000+ people building better lives, one habit at a time. Free forever to start.'
+    const ctaAppStore = props.cta?.appStoreLabel ?? 'App Store'
+    const ctaGooglePlay = props.cta?.googlePlayLabel ?? 'Google Play'
 
     const footerTagline =
       props.footer?.tagline ??
-      "Beautiful habit tracking for people who care about intentional living."
+      'Beautiful habit tracking for people who care about intentional living.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Product",
-            links: ["Features", "Pricing", "Changelog", "Roadmap"],
+            title: 'Product',
+            links: ['Features', 'Pricing', 'Changelog', 'Roadmap'],
           },
           {
-            title: "Company",
-            links: ["About", "Blog", "Careers", "Contact"],
+            title: 'Company',
+            links: ['About', 'Blog', 'Careers', 'Contact'],
           },
           {
-            title: "Legal",
-            links: ["Privacy", "Terms", "Security", "Cookies"],
+            title: 'Legal',
+            links: ['Privacy', 'Terms', 'Security', 'Cookies'],
           },
         ]
     const footerNote =
@@ -530,7 +534,7 @@ export const MobileAppKimiPage9 = defineCapsule({
     const BrandLogo = ({ className }: { className?: string }) => (
       <div
         className={cn(
-          "grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground",
+          'grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground',
           className,
         )}
       >
@@ -668,12 +672,12 @@ export const MobileAppKimiPage9 = defineCapsule({
     ]
 
     const iconStyles = [
-      { bg: "bg-primary/10", text: "text-primary" },
-      { bg: "bg-muted", text: "text-muted-foreground" },
-      { bg: "bg-accent/10", text: "text-accent" },
-      { bg: "bg-destructive/10", text: "text-destructive" },
-      { bg: "bg-secondary/10", text: "text-secondary" },
-      { bg: "bg-chart-3/10", text: "text-chart-3" },
+      { bg: 'bg-primary/10', text: 'text-primary' },
+      { bg: 'bg-muted', text: 'text-muted-foreground' },
+      { bg: 'bg-accent/10', text: 'text-accent' },
+      { bg: 'bg-destructive/10', text: 'text-destructive' },
+      { bg: 'bg-secondary/10', text: 'text-secondary' },
+      { bg: 'bg-chart-3/10', text: 'text-chart-3' },
     ]
 
     const ChevronDown = () => (
@@ -707,7 +711,11 @@ export const MobileAppKimiPage9 = defineCapsule({
       </svg>
     )
 
-    const handlePlanSelect = (tier: { name: string; price: string; period?: string }) => {
+    const handlePlanSelect = (tier: {
+      name: string
+      price: string
+      period?: string
+    }) => {
       setSelectedPlan({ name: tier.name, price: tier.price })
       setSubscriptionOpen(true)
     }
@@ -732,7 +740,7 @@ export const MobileAppKimiPage9 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -1130,7 +1138,7 @@ export const MobileAppKimiPage9 = defineCapsule({
                     >
                       <div
                         className={cn(
-                          "mb-6 grid size-12 place-items-center rounded-xl",
+                          'mb-6 grid size-12 place-items-center rounded-xl',
                           style.bg,
                           style.text,
                         )}
@@ -1169,10 +1177,10 @@ export const MobileAppKimiPage9 = defineCapsule({
                   <div key={step.title} className="relative text-center">
                     <div
                       className={cn(
-                        "mx-auto mb-6 grid size-16 place-items-center rounded-2xl text-2xl font-bold",
+                        'mx-auto mb-6 grid size-16 place-items-center rounded-2xl text-2xl font-bold',
                         i === 1
-                          ? "bg-muted text-foreground"
-                          : "bg-primary text-primary-foreground",
+                          ? 'bg-muted text-foreground'
+                          : 'bg-primary text-primary-foreground',
                       )}
                     >
                       {i + 1}
@@ -1240,8 +1248,8 @@ export const MobileAppKimiPage9 = defineCapsule({
                   <div key={s.label}>
                     <div
                       className={cn(
-                        "mb-2 text-4xl font-bold sm:text-5xl",
-                        s.accent ? "text-primary" : "text-card-foreground",
+                        'mb-2 text-4xl font-bold sm:text-5xl',
+                        s.accent ? 'text-primary' : 'text-card-foreground',
                       )}
                     >
                       {s.value}
@@ -1327,10 +1335,10 @@ export const MobileAppKimiPage9 = defineCapsule({
                   <div
                     key={tier.name}
                     className={cn(
-                      "relative rounded-2xl p-8",
+                      'relative rounded-2xl p-8',
                       tier.featured
-                        ? "bg-primary text-primary-foreground"
-                        : "border border-border bg-background",
+                        ? 'bg-primary text-primary-foreground'
+                        : 'border border-border bg-background',
                     )}
                   >
                     {tier.featured && (
@@ -1342,10 +1350,10 @@ export const MobileAppKimiPage9 = defineCapsule({
                     )}
                     <h3
                       className={cn(
-                        "text-lg font-semibold",
+                        'text-lg font-semibold',
                         tier.featured
-                          ? "text-primary-foreground"
-                          : "text-foreground",
+                          ? 'text-primary-foreground'
+                          : 'text-foreground',
                       )}
                     >
                       {tier.name}
@@ -1353,10 +1361,10 @@ export const MobileAppKimiPage9 = defineCapsule({
                     <div className="mt-4 flex items-baseline gap-1">
                       <span
                         className={cn(
-                          "text-4xl font-bold",
+                          'text-4xl font-bold',
                           tier.featured
-                            ? "text-primary-foreground"
-                            : "text-foreground",
+                            ? 'text-primary-foreground'
+                            : 'text-foreground',
                         )}
                       >
                         {tier.price}
@@ -1364,8 +1372,8 @@ export const MobileAppKimiPage9 = defineCapsule({
                       <span
                         className={cn(
                           tier.featured
-                            ? "text-primary-foreground/70"
-                            : "text-muted-foreground",
+                            ? 'text-primary-foreground/70'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {tier.period}
@@ -1374,10 +1382,10 @@ export const MobileAppKimiPage9 = defineCapsule({
                     {tier.tagline && (
                       <p
                         className={cn(
-                          "mt-2 text-sm",
+                          'mt-2 text-sm',
                           tier.featured
-                            ? "text-primary-foreground/70"
-                            : "text-muted-foreground",
+                            ? 'text-primary-foreground/70'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {tier.tagline}
@@ -1388,17 +1396,17 @@ export const MobileAppKimiPage9 = defineCapsule({
                         <li key={f} className="flex items-start gap-3">
                           <CheckIcon
                             className={cn(
-                              "mt-0.5 size-5 shrink-0",
+                              'mt-0.5 size-5 shrink-0',
                               tier.featured
-                                ? "text-primary-foreground"
-                                : "text-primary",
+                                ? 'text-primary-foreground'
+                                : 'text-primary',
                             )}
                           />
                           <span
                             className={cn(
                               tier.featured
-                                ? "text-primary-foreground/90"
-                                : "text-muted-foreground",
+                                ? 'text-primary-foreground/90'
+                                : 'text-muted-foreground',
                             )}
                           >
                             {f}
@@ -1410,10 +1418,10 @@ export const MobileAppKimiPage9 = defineCapsule({
                       type="button"
                       onClick={() => handlePlanSelect(tier)}
                       className={cn(
-                        "mt-8 w-full rounded-xl px-4 py-3 text-sm font-medium transition-colors",
+                        'mt-8 w-full rounded-xl px-4 py-3 text-sm font-medium transition-colors',
                         tier.featured
-                          ? "bg-background text-foreground hover:bg-muted"
-                          : "bg-muted text-foreground hover:bg-muted/80",
+                          ? 'bg-background text-foreground hover:bg-muted'
+                          : 'bg-muted text-foreground hover:bg-muted/80',
                       )}
                     >
                       {tier.cta}
@@ -1507,7 +1515,9 @@ export const MobileAppKimiPage9 = defineCapsule({
         <Sheet open={subscriptionOpen} onOpenChange={setSubscriptionOpen}>
           <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
             <SheetHeader className="border-b border-border p-6">
-              <SheetTitle className="text-xl">Subscribe to {selectedPlan?.name}</SheetTitle>
+              <SheetTitle className="text-xl">
+                Subscribe to {selectedPlan?.name}
+              </SheetTitle>
               <SheetDescription>
                 Complete your subscription to unlock all features.
               </SheetDescription>
@@ -1518,11 +1528,17 @@ export const MobileAppKimiPage9 = defineCapsule({
                   <div className="rounded-xl bg-muted/40 p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-muted-foreground">Selected Plan</p>
-                        <p className="text-lg font-bold text-foreground">{selectedPlan.name}</p>
+                        <p className="text-sm font-medium text-muted-foreground">
+                          Selected Plan
+                        </p>
+                        <p className="text-lg font-bold text-foreground">
+                          {selectedPlan.name}
+                        </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-primary">{selectedPlan.price}</p>
+                        <p className="text-2xl font-bold text-primary">
+                          {selectedPlan.price}
+                        </p>
                         <p className="text-sm text-muted-foreground">/month</p>
                       </div>
                     </div>
@@ -1533,7 +1549,10 @@ export const MobileAppKimiPage9 = defineCapsule({
                       <div className="flex items-center gap-3 rounded-lg bg-muted/40 p-4">
                         <Avatar size="sm" className="ring-2 ring-background">
                           {authPicture ? (
-                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
                           ) : null}
                           <AvatarFallback className="bg-foreground text-xs font-bold text-background">
                             {authInitials}
@@ -1553,7 +1572,11 @@ export const MobileAppKimiPage9 = defineCapsule({
                         className="w-full rounded-full"
                         onClick={() => {
                           if (authEmail) {
-                            void selectPlan(selectedPlan.name, selectedPlan.price, authEmail)
+                            void selectPlan(
+                              selectedPlan.name,
+                              selectedPlan.price,
+                              authEmail,
+                            )
                             setSubscriptionOpen(false)
                           }
                         }}
@@ -1564,7 +1587,10 @@ export const MobileAppKimiPage9 = defineCapsule({
                   ) : (
                     <form onSubmit={handleSubscribe} className="space-y-4">
                       <div>
-                        <label htmlFor="subscription-email" className="mb-2 block text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="subscription-email"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
                           Email Address
                         </label>
                         <input
@@ -1587,13 +1613,22 @@ export const MobileAppKimiPage9 = defineCapsule({
 
                   {subscriptions && subscriptions.length > 0 && (
                     <div className="rounded-xl border border-border bg-muted/30 p-4">
-                      <p className="mb-3 text-sm font-semibold text-foreground">Your Subscriptions</p>
+                      <p className="mb-3 text-sm font-semibold text-foreground">
+                        Your Subscriptions
+                      </p>
                       <div className="space-y-2">
                         {subscriptions.map((sub) => (
-                          <div key={sub.id} className="flex items-center justify-between rounded-lg bg-background p-3">
+                          <div
+                            key={sub.id}
+                            className="flex items-center justify-between rounded-lg bg-background p-3"
+                          >
                             <div>
-                              <p className="text-sm font-medium text-foreground">{sub.planName}</p>
-                              <p className="text-xs text-muted-foreground">{sub.planPrice}/month</p>
+                              <p className="text-sm font-medium text-foreground">
+                                {sub.planName}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {sub.planPrice}/month
+                              </p>
                             </div>
                             <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
                               Active
@@ -1659,11 +1694,7 @@ export const MobileAppKimiPage9 = defineCapsule({
             <div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
               <p className="text-sm text-muted-foreground">{footerNote}</p>
               <div className="flex items-center gap-4">
-                {([
-                  "Twitter",
-                  "GitHub",
-                  "Instagram",
-                ] as const).map((social) => (
+                {(['Twitter', 'GitHub', 'Instagram'] as const).map((social) => (
                   <button
                     key={social}
                     type="button"
@@ -1671,7 +1702,7 @@ export const MobileAppKimiPage9 = defineCapsule({
                     onClick={() => go(social)}
                     className="grid size-10 place-items-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                   >
-                    {social === "Twitter" && (
+                    {social === 'Twitter' && (
                       <svg
                         viewBox="0 0 24 24"
                         fill="currentColor"
@@ -1681,7 +1712,7 @@ export const MobileAppKimiPage9 = defineCapsule({
                         <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
                       </svg>
                     )}
-                    {social === "GitHub" && (
+                    {social === 'GitHub' && (
                       <svg
                         viewBox="0 0 24 24"
                         fill="currentColor"
@@ -1691,7 +1722,7 @@ export const MobileAppKimiPage9 = defineCapsule({
                         <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
                       </svg>
                     )}
-                    {social === "Instagram" && (
+                    {social === 'Instagram' && (
                       <svg
                         viewBox="0 0 24 24"
                         fill="currentColor"

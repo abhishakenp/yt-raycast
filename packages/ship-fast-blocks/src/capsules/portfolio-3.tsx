@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -24,9 +24,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const PortfolioKimiPage3 = defineCapsule({
-  name: "PortfolioKimiPage3",
+  name: 'PortfolioKimiPage3',
   description:
-    "Portfolio third style sibling to PortfolioKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Portfolio third style sibling to PortfolioKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const PortfolioKimiPage3 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -108,98 +110,103 @@ export const PortfolioKimiPage3 = defineCapsule({
     const go = useNavigate()
     const [contactOpen, setContactOpen] = useState(false)
     const [mobileOpen, setMobileOpen] = useState(false)
-    const brand = props.brand ?? "Elena Voss 3D Motion Designer & Art Director"
-    const nav = props.nav?.length ? props.nav : ["Elena Voss", "Work", "Services", "Process", "Investment", "Contact"]
+    const brand = props.brand ?? 'Elena Voss 3D Motion Designer & Art Director'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Elena Voss', 'Work', 'Services', 'Process', 'Investment', 'Contact']
     const hero = {
-      eyebrow: "Portfolio / Variant 3",
-      title: "Crafting Visual Gravity for Brands That Refuse to Blend In",
-      description: "Elena Voss 3D Motion Designer & Art Director Elena Voss Work Services Process Investment Contact Work Services Process Investment Contact 3D Motion Designer & Art Director Craft...",
-      primaryCta: "Elena Voss",
-      secondaryCta: "Work",
-      imageAlt: "Abstract 3D rendered liquid metal sculpture with iridescent reflections on a dark background",
+      eyebrow: 'Portfolio / Variant 3',
+      title: 'Crafting Visual Gravity for Brands That Refuse to Blend In',
+      description:
+        'Elena Voss 3D Motion Designer & Art Director Elena Voss Work Services Process Investment Contact Work Services Process Investment Contact 3D Motion Designer & Art Director Craft...',
+      primaryCta: 'Elena Voss',
+      secondaryCta: 'Work',
+      imageAlt:
+        'Abstract 3D rendered liquid metal sculpture with iridescent reflections on a dark background',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Capabilities",
-    "body": "Elena Voss 3D Motion Designer & Art Director Elena Voss Work Services Process Investment Contact Work Services Process Investment Contact 3D Motion Designer & Art Director Craft...",
-    "items": [
-      "Investment",
-      "Words From Collaborators",
-      "Common Questions"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "The Process",
-    "body": "Portfolio page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Ready to Move?",
-      "Cinematic Product Visualization",
-      "Brand Motion Systems"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Selected Work",
-    "body": "Portfolio page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Spatial & Immersive Design",
-      "Creative Direction",
-      "Discovery & Concept"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Investment",
-    "body": "Portfolio page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Previsualization",
-      "Production",
-      "Delivery & Adaptation"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "The Process",
-    "alt": "Abstract 3D rendered liquid metal sculpture with iridescent reflections on a dark background",
-    "caption": "Portfolio generated page detail"
-  },
-  {
-    "title": "Selected Work",
-    "alt": "Nike Air Max red sneaker floating against a white studio background",
-    "caption": "Portfolio generated page detail"
-  },
-  {
-    "title": "Investment",
-    "alt": "Silver Mercedes-Benz luxury sedan in a dark studio with dramatic rim lighting",
-    "caption": "Portfolio generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'Capabilities',
+            body: 'Elena Voss 3D Motion Designer & Art Director Elena Voss Work Services Process Investment Contact Work Services Process Investment Contact 3D Motion Designer & Art Director Craft...',
+            items: [
+              'Investment',
+              'Words From Collaborators',
+              'Common Questions',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'The Process',
+            body: "Portfolio page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Ready to Move?',
+              'Cinematic Product Visualization',
+              'Brand Motion Systems',
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Selected Work',
+            body: "Portfolio page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Spatial & Immersive Design',
+              'Creative Direction',
+              'Discovery & Concept',
+            ],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Investment',
+            body: "Portfolio page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['Previsualization', 'Production', 'Delivery & Adaptation'],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'The Process',
+            alt: 'Abstract 3D rendered liquid metal sculpture with iridescent reflections on a dark background',
+            caption: 'Portfolio generated page detail',
+          },
+          {
+            title: 'Selected Work',
+            alt: 'Nike Air Max red sneaker floating against a white studio background',
+            caption: 'Portfolio generated page detail',
+          },
+          {
+            title: 'Investment',
+            alt: 'Silver Mercedes-Benz luxury sedan in a dark studio with dramatic rim lighting',
+            caption: 'Portfolio generated page detail',
+          },
+        ]
 
     const storedProjects = lakebed.useQuery('projects')
     const favoriteProjectTitles = lakebed.useQuery('favoriteProjectTitles')
-    const inquiries = lakebed.useQuery('inquiries')
     const toggleFavorite = lakebed.useMutation('toggleFavorite')
     const submitInquiry = lakebed.useMutation('submitInquiry')
     const auth = lakebed.useAuth()
@@ -273,10 +280,19 @@ export const PortfolioKimiPage3 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -412,15 +428,26 @@ export const PortfolioKimiPage3 = defineCapsule({
                       onSubmit={(e) => {
                         e.preventDefault()
                         const form = e.currentTarget
-                        const name = (form.elements.namedItem('name') as HTMLInputElement).value
-                        const email = (form.elements.namedItem('email') as HTMLInputElement).value
-                        const message = (form.elements.namedItem('message') as HTMLTextAreaElement).value
+                        const name = (
+                          form.elements.namedItem('name') as HTMLInputElement
+                        ).value
+                        const email = (
+                          form.elements.namedItem('email') as HTMLInputElement
+                        ).value
+                        const message = (
+                          form.elements.namedItem(
+                            'message',
+                          ) as HTMLTextAreaElement
+                        ).value
                         void submitInquiry(name, email, message)
                         setContactOpen(false)
                       }}
                     >
                       <div className="space-y-2">
-                        <label htmlFor="name" className="text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="name"
+                          className="text-sm font-medium text-foreground"
+                        >
                           Name
                         </label>
                         <input
@@ -433,7 +460,10 @@ export const PortfolioKimiPage3 = defineCapsule({
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="email" className="text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="email"
+                          className="text-sm font-medium text-foreground"
+                        >
                           Email
                         </label>
                         <input
@@ -446,7 +476,10 @@ export const PortfolioKimiPage3 = defineCapsule({
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="message" className="text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="message"
+                          className="text-sm font-medium text-foreground"
+                        >
                           Message
                         </label>
                         <textarea
@@ -610,16 +643,28 @@ export const PortfolioKimiPage3 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -627,10 +672,19 @@ export const PortfolioKimiPage3 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -654,8 +708,12 @@ export const PortfolioKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -671,9 +729,18 @@ export const PortfolioKimiPage3 = defineCapsule({
                   favoriteProjectTitles?.has(item.title) ?? false
 
                 return (
-                  <article key={item.title} className="group overflow-hidden rounded-lg border border-border bg-card">
+                  <article
+                    key={item.title}
+                    className="group overflow-hidden rounded-lg border border-border bg-card"
+                  >
                     <div className="relative aspect-[4/3] overflow-hidden">
-                      <Image alt={item.alt} w={900} h={700} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <Image
+                        alt={item.alt}
+                        w={900}
+                        h={700}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
                       <button
                         type="button"
                         onClick={() => void toggleFavorite(item.title)}
@@ -694,8 +761,14 @@ export const PortfolioKimiPage3 = defineCapsule({
                       </button>
                     </div>
                     <div className="p-5">
-                      <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                      {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                      <h3 className="text-lg font-semibold text-card-foreground">
+                        {item.title}
+                      </h3>
+                      {item.caption ? (
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                          {item.caption}
+                        </p>
+                      ) : null}
                     </div>
                   </article>
                 )
@@ -707,9 +780,15 @@ export const PortfolioKimiPage3 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -725,10 +804,17 @@ export const PortfolioKimiPage3 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

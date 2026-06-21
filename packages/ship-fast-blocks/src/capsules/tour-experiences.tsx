@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,7 +12,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "#/components/ui/command.tsx"
+} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetClose,
@@ -22,14 +22,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * TourExperiencesKimiPage — a complete, self-contained tour / travel-experiences
@@ -55,7 +55,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * props at all.
  */
 export const TourExperiencesKimiPage = defineCapsule({
-  name: "TourExperiencesKimiPage",
+  name: 'TourExperiencesKimiPage',
   description:
     "Complete tour, travel and local-experiences MARKETPLACE / booking LANDING page with a clean, bright, editorial aesthetic: light canvas, neutral monochrome palette, image-forward destination tiles and soft rounded cards. Includes a centered hero (experience-count badge, large headline, inline destination search bar, and a 4-up destination photo grid with gradient overlays and experience counts), a 'featured in' press-logo strip, a 4-up trust/benefits feature grid (verified hosts, instant confirmation, flexible cancellation, 24/7 support), a 3-up trending-experiences card grid with photos, category chips, star ratings, locations, price-per-person and duration, a 3-step how-it-works timeline (discover, book, enjoy), a dark stats band, a 3-up traveler-review testimonial grid with star ratings and reviewer headshots, an FAQ accordion, a dark closing CTA, and a rich multi-column footer with social links. Use as the ROOT/home page for travel marketplaces, tour operators, activity and experience booking platforms, local-guide / city-tour businesses, adventure-travel, food-tour, cooking-class, hiking or excursion sites when a friendly, trustworthy, conversion-focused booking page with strong photography and social proof is wanted. Supply content only — brand, nav, hero, destinations, press, features, experiences, steps, stats, reviews, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -184,9 +184,7 @@ export const TourExperiencesKimiPage = defineCapsule({
       .object({
         description: z.string().optional(),
         columns: z
-          .array(
-            z.object({ title: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ title: z.string(), links: z.array(z.string()) }))
           .optional(),
         copyright: z.string().optional(),
         legal: z.array(z.string()).optional(),
@@ -227,7 +225,9 @@ export const TourExperiencesKimiPage = defineCapsule({
     },
     mutations: {
       bookExperience: ({ db }, experienceTitle: string, travelers: number) => {
-        const experience = db.experiences.where('title', experienceTitle).all()[0]
+        const experience = db.experiences
+          .where('title', experienceTitle)
+          .all()[0]
         if (!experience) return db.bookings.all()
 
         const existingBooking = db.bookings
@@ -247,10 +247,16 @@ export const TourExperiencesKimiPage = defineCapsule({
 
         return db.bookings.all()
       },
-      updateBookingTravelers: ({ db }, experienceId: string, travelers: number) => {
+      updateBookingTravelers: (
+        { db },
+        experienceId: string,
+        travelers: number,
+      ) => {
         const nextTravelers = Math.max(1, Math.floor(travelers))
 
-        for (const item of db.bookings.where('experienceId', experienceId).all()) {
+        for (const item of db.bookings
+          .where('experienceId', experienceId)
+          .all()) {
           if (nextTravelers >= 1) {
             db.bookings.update(item.id, { travelers: nextTravelers })
           } else {
@@ -261,7 +267,9 @@ export const TourExperiencesKimiPage = defineCapsule({
         return db.bookings.all()
       },
       removeBooking: ({ db }, experienceId: string) => {
-        for (const item of db.bookings.where('experienceId', experienceId).all()) {
+        for (const item of db.bookings
+          .where('experienceId', experienceId)
+          .all()) {
           db.bookings.delete(item.id)
         }
 
@@ -294,170 +302,166 @@ export const TourExperiencesKimiPage = defineCapsule({
     const [mobileOpen, setMobileOpen] = useState(false)
     const [searchOpen, setSearchOpen] = useState(false)
     const [bookingsOpen, setBookingsOpen] = useState(false)
-    const brand = props.brand ?? "Wanderlocal"
+    const brand = props.brand ?? 'Wanderlocal'
     const nav = props.nav?.length
       ? props.nav
-      : ["Experiences", "How it Works", "Destinations", "Reviews"]
+      : ['Experiences', 'How it Works', 'Destinations', 'Reviews']
 
-    const heroBadge =
-      props.hero?.badge ?? "Over 12,000 experiences worldwide"
+    const heroBadge = props.hero?.badge ?? 'Over 12,000 experiences worldwide'
     const heroHeading =
       props.hero?.heading ??
-      "Discover the world through authentic local experiences"
+      'Discover the world through authentic local experiences'
     const heroSub =
       props.hero?.subheading ??
-      "From hidden food tours in Tokyo to sunrise hikes in Patagonia. Book hand-picked experiences curated by locals who know best."
+      'From hidden food tours in Tokyo to sunrise hikes in Patagonia. Book hand-picked experiences curated by locals who know best.'
     const searchPlaceholder =
-      props.hero?.searchPlaceholder ?? "Where do you want to go?"
-    const searchCta = props.hero?.searchCta ?? "Find Experiences"
-    const signIn = props.hero?.signIn ?? "Sign In"
-    const getStarted = props.hero?.getStarted ?? "Get Started"
+      props.hero?.searchPlaceholder ?? 'Where do you want to go?'
+    const searchCta = props.hero?.searchCta ?? 'Find Experiences'
     const destinations = props.hero?.destinations?.length
       ? props.hero.destinations
       : [
-        {
-          name: "Kyoto",
-          count: "324 experiences",
-          imageAlt:
-            "Historic stone temple architecture in Kyoto with cherry blossoms",
-        },
-        {
-          name: "Santorini",
-          count: "156 experiences",
-          imageAlt:
-            "Santorini white buildings and blue domes overlooking the Mediterranean sea",
-        },
-        {
-          name: "Dubai",
-          count: "218 experiences",
-          imageAlt:
-            "Dubai skyline at dusk with Burj Khalifa and modern architecture",
-        },
-        {
-          name: "Paris",
-          count: "412 experiences",
-          imageAlt: "Eiffel Tower and Paris cityscape with blue sky",
-        },
-      ]
+          {
+            name: 'Kyoto',
+            count: '324 experiences',
+            imageAlt:
+              'Historic stone temple architecture in Kyoto with cherry blossoms',
+          },
+          {
+            name: 'Santorini',
+            count: '156 experiences',
+            imageAlt:
+              'Santorini white buildings and blue domes overlooking the Mediterranean sea',
+          },
+          {
+            name: 'Dubai',
+            count: '218 experiences',
+            imageAlt:
+              'Dubai skyline at dusk with Burj Khalifa and modern architecture',
+          },
+          {
+            name: 'Paris',
+            count: '412 experiences',
+            imageAlt: 'Eiffel Tower and Paris cityscape with blue sky',
+          },
+        ]
 
-    const pressLabel = props.press?.label ?? "Featured in"
+    const pressLabel = props.press?.label ?? 'Featured in'
     const pressLogos = props.press?.logos?.length
       ? props.press.logos
       : [
-        "Travel+Leisure",
-        "Condé Nast",
-        "Lonely Planet",
-        "AFAR",
-        "National Geographic",
-      ]
+          'Travel+Leisure',
+          'Condé Nast',
+          'Lonely Planet',
+          'AFAR',
+          'National Geographic',
+        ]
 
-    const featuresHeading =
-      props.features?.heading ?? "Why book with " + brand
+    const featuresHeading = props.features?.heading ?? 'Why book with ' + brand
     const featuresDesc =
       props.features?.description ??
-      "Every experience is hand-selected and vetted by our local experts for quality, authenticity, and safety."
+      'Every experience is hand-selected and vetted by our local experts for quality, authenticity, and safety.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
-        {
-          title: "Verified Hosts",
-          description:
-            "All hosts undergo rigorous identity verification and background checks before listing.",
-        },
-        {
-          title: "Instant Confirmation",
-          description:
-            "Book now, receive immediate confirmation. No waiting, no uncertainty.",
-        },
-        {
-          title: "Flexible Cancellation",
-          description:
-            "Free cancellation up to 24 hours before most experiences. Full refund guaranteed.",
-        },
-        {
-          title: "24/7 Support",
-          description:
-            "Our global support team is always available, wherever your travels take you.",
-        },
-      ]
+          {
+            title: 'Verified Hosts',
+            description:
+              'All hosts undergo rigorous identity verification and background checks before listing.',
+          },
+          {
+            title: 'Instant Confirmation',
+            description:
+              'Book now, receive immediate confirmation. No waiting, no uncertainty.',
+          },
+          {
+            title: 'Flexible Cancellation',
+            description:
+              'Free cancellation up to 24 hours before most experiences. Full refund guaranteed.',
+          },
+          {
+            title: '24/7 Support',
+            description:
+              'Our global support team is always available, wherever your travels take you.',
+          },
+        ]
 
-    const expHeading = props.experiences?.heading ?? "Trending experiences"
+    const expHeading = props.experiences?.heading ?? 'Trending experiences'
     const expDesc =
       props.experiences?.description ??
-      "Most booked activities this month by travelers worldwide"
+      'Most booked activities this month by travelers worldwide'
     const expViewAll =
-      props.experiences?.viewAll ?? "View all 12,000+ experiences"
-    const expLoadMore = props.experiences?.loadMore ?? "Load more experiences"
+      props.experiences?.viewAll ?? 'View all 12,000+ experiences'
+    const expLoadMore = props.experiences?.loadMore ?? 'Load more experiences'
     const expItems = props.experiences?.items?.length
       ? props.experiences.items
       : [
-        {
-          title: "Tuscan Wine & Cheese Pairing Experience",
-          category: "Food & Drink",
-          location: "Florence, Italy",
-          rating: "4.98",
-          reviews: "(2,847 reviews)",
-          price: "$95",
-          duration: "3 hours",
-          imageAlt:
-            "Gourmet food tasting spread with wine pairings at a Tuscan vineyard",
-        },
-        {
-          title: "Great Barrier Reef Scuba Diving Tour",
-          category: "Adventure",
-          location: "Cairns, Australia",
-          rating: "4.96",
-          reviews: "(1,523 reviews)",
-          price: "$189",
-          duration: "Full day",
-          imageAlt:
-            "Scuba divers exploring vibrant coral reef with tropical fish underwater",
-        },
-        {
-          title: "NYC Sunset Photography Walk",
-          category: "Photography",
-          location: "New York, USA",
-          rating: "4.94",
-          reviews: "(892 reviews)",
-          price: "$65",
-          duration: "2.5 hours",
-          imageAlt:
-            "New York City skyline at sunset with Brooklyn Bridge in foreground",
-        },
-        {
-          title: "Banff Lake Louise Sunrise Hike",
-          category: "Hiking",
-          location: "Banff, Canada",
-          rating: "4.99",
-          reviews: "(3,156 reviews)",
-          price: "$85",
-          duration: "4 hours",
-          imageAlt:
-            "Mountain hiker on rocky trail with misty alpine lake and snow peaks",
-        },
-        {
-          title: "Authentic Sushi Making Masterclass",
-          category: "Cooking Class",
-          location: "Tokyo, Japan",
-          rating: "4.97",
-          reviews: "(2,104 reviews)",
-          price: "$120",
-          duration: "3.5 hours",
-          imageAlt:
-            "Traditional Japanese cooking ingredients and utensils on wooden counter",
-        },
-        {
-          title: "Marrakech Medina & Souks Guided Tour",
-          category: "Cultural",
-          location: "Marrakech, Morocco",
-          rating: "4.92",
-          reviews: "(756 reviews)",
-          price: "$45",
-          duration: "4 hours",
-          imageAlt:
-            "Moroccan riad courtyard with intricate tile work and central fountain",
-        },
-      ]
+          {
+            title: 'Tuscan Wine & Cheese Pairing Experience',
+            category: 'Food & Drink',
+            location: 'Florence, Italy',
+            rating: '4.98',
+            reviews: '(2,847 reviews)',
+            price: '$95',
+            duration: '3 hours',
+            imageAlt:
+              'Gourmet food tasting spread with wine pairings at a Tuscan vineyard',
+          },
+          {
+            title: 'Great Barrier Reef Scuba Diving Tour',
+            category: 'Adventure',
+            location: 'Cairns, Australia',
+            rating: '4.96',
+            reviews: '(1,523 reviews)',
+            price: '$189',
+            duration: 'Full day',
+            imageAlt:
+              'Scuba divers exploring vibrant coral reef with tropical fish underwater',
+          },
+          {
+            title: 'NYC Sunset Photography Walk',
+            category: 'Photography',
+            location: 'New York, USA',
+            rating: '4.94',
+            reviews: '(892 reviews)',
+            price: '$65',
+            duration: '2.5 hours',
+            imageAlt:
+              'New York City skyline at sunset with Brooklyn Bridge in foreground',
+          },
+          {
+            title: 'Banff Lake Louise Sunrise Hike',
+            category: 'Hiking',
+            location: 'Banff, Canada',
+            rating: '4.99',
+            reviews: '(3,156 reviews)',
+            price: '$85',
+            duration: '4 hours',
+            imageAlt:
+              'Mountain hiker on rocky trail with misty alpine lake and snow peaks',
+          },
+          {
+            title: 'Authentic Sushi Making Masterclass',
+            category: 'Cooking Class',
+            location: 'Tokyo, Japan',
+            rating: '4.97',
+            reviews: '(2,104 reviews)',
+            price: '$120',
+            duration: '3.5 hours',
+            imageAlt:
+              'Traditional Japanese cooking ingredients and utensils on wooden counter',
+          },
+          {
+            title: 'Marrakech Medina & Souks Guided Tour',
+            category: 'Cultural',
+            location: 'Marrakech, Morocco',
+            rating: '4.92',
+            reviews: '(756 reviews)',
+            price: '$45',
+            duration: '4 hours',
+            imageAlt:
+              'Moroccan riad courtyard with intricate tile work and central fountain',
+          },
+        ]
     const normalizedExpItems = expItems.map((exp) => ({
       category: exp.category,
       duration: exp.duration,
@@ -470,7 +474,9 @@ export const TourExperiencesKimiPage = defineCapsule({
     }))
     const storedExperiences = lakebed.useQuery('experiences')
     const bookingLines = lakebed.useQuery('bookingLines')
-    const favoriteExperienceTitles = lakebed.useQuery('favoriteExperienceTitles')
+    const favoriteExperienceTitles = lakebed.useQuery(
+      'favoriteExperienceTitles',
+    )
     const auth = lakebed.useAuth()
     const bookExperience = lakebed.useMutation('bookExperience')
     const updateBookingTravelers = lakebed.useMutation('updateBookingTravelers')
@@ -508,189 +514,186 @@ export const TourExperiencesKimiPage = defineCapsule({
         : normalizedExpItems
     const safeBookingLines = bookingLines ?? []
     const bookingCount = safeBookingLines.length
-    const bookingTotal = safeBookingLines.reduce(
-      (total, item) => {
-        const price = Number.parseFloat(item.experience.price.replace(/[^0-9.]+/g, ''))
-        return total + (Number.isFinite(price) ? price : 0) * item.travelers
-      },
-      0,
-    )
+    const bookingTotal = safeBookingLines.reduce((total, item) => {
+      const price = Number.parseFloat(
+        item.experience.price.replace(/[^0-9.]+/g, ''),
+      )
+      return total + (Number.isFinite(price) ? price : 0) * item.travelers
+    }, 0)
 
-    const stepsHeading =
-      props.steps?.heading ?? "Book in three simple steps"
+    const stepsHeading = props.steps?.heading ?? 'Book in three simple steps'
     const stepsDesc =
       props.steps?.description ??
       "From discovery to departure, we've made the booking process effortless."
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
-        {
-          title: "Discover",
-          description:
-            "Browse thousands of hand-picked experiences. Filter by destination, activity type, price, and duration to find your perfect match.",
-        },
-        {
-          title: "Book Instantly",
-          description:
-            "Select your preferred date and time. Pay securely with credit card, PayPal, or Apple Pay. Receive instant confirmation.",
-        },
-        {
-          title: "Enjoy & Review",
-          description:
-            "Meet your host and immerse yourself in the experience. Share your story and photos to help future travelers decide.",
-        },
-      ]
+          {
+            title: 'Discover',
+            description:
+              'Browse thousands of hand-picked experiences. Filter by destination, activity type, price, and duration to find your perfect match.',
+          },
+          {
+            title: 'Book Instantly',
+            description:
+              'Select your preferred date and time. Pay securely with credit card, PayPal, or Apple Pay. Receive instant confirmation.',
+          },
+          {
+            title: 'Enjoy & Review',
+            description:
+              'Meet your host and immerse yourself in the experience. Share your story and photos to help future travelers decide.',
+          },
+        ]
 
     const statItems = props.stats?.items?.length
       ? props.stats.items
       : [
-        { value: "12,000+", label: "Curated experiences" },
-        { value: "850K+", label: "Happy travelers" },
-        { value: "4.8", label: "Average rating" },
-        { value: "180+", label: "Countries covered" },
-      ]
+          { value: '12,000+', label: 'Curated experiences' },
+          { value: '850K+', label: 'Happy travelers' },
+          { value: '4.8', label: 'Average rating' },
+          { value: '180+', label: 'Countries covered' },
+        ]
 
-    const reviewsHeading =
-      props.reviews?.heading ?? "What travelers are saying"
+    const reviewsHeading = props.reviews?.heading ?? 'What travelers are saying'
     const reviewsDesc =
       props.reviews?.description ??
-      "Real experiences from real people. Read verified reviews from our community of explorers."
+      'Real experiences from real people. Read verified reviews from our community of explorers.'
     const reviewItems = props.reviews?.items?.length
       ? props.reviews.items
       : [
-        {
-          quote:
-            "The Tuscany wine tour exceeded every expectation. Our guide Marco was incredibly knowledgeable about the region's history and the wine pairings were perfectly curated. A highlight of our Italy trip!",
-          name: "Sarah Chen",
-          meta: "San Francisco, CA · Tuscany Wine Tour",
-          avatarAlt:
-            "Professional headshot of Sarah Chen, a smiling marketing executive",
-        },
-        {
-          quote:
-            "Scuba diving the Great Barrier Reef was on my bucket list for years. The team was professional, the equipment top-notch, and seeing the coral up close was absolutely magical. Highly recommend!",
-          name: "Marcus Williams",
-          meta: "London, UK · Great Barrier Reef Dive",
-          avatarAlt:
-            "Professional headshot of Marcus Williams, a bearded software engineer",
-        },
-        {
-          quote:
-            "The sushi masterclass in Tokyo was incredible! Chef Nakamura taught us techniques passed down through generations. We made 8 different types of sushi and the final meal was restaurant quality.",
-          name: "Emily Rodriguez",
-          meta: "Madrid, Spain · Tokyo Sushi Class",
-          avatarAlt:
-            "Professional headshot of Emily Rodriguez, a smiling travel blogger",
-        },
-        {
-          quote:
-            "The NYC photography walk was exactly what I needed. Our guide James knew all the perfect spots and timing for golden hour shots. I came away with portfolio-worthy photos and new techniques.",
-          name: "David Park",
-          meta: "Seoul, Korea · NYC Photo Walk",
-          avatarAlt:
-            "Professional headshot of David Park, an Asian-American photographer",
-        },
-        {
-          quote:
-            "Waking up at 4am for the Banff sunrise hike was totally worth it. The alpine glow on the mountains was breathtaking, and our guide shared fascinating geology facts. A truly unforgettable morning.",
-          name: "Anna Mueller",
-          meta: "Berlin, Germany · Banff Hike",
-          avatarAlt:
-            "Professional headshot of Anna Mueller, a smiling German backpacker",
-        },
-        {
-          quote:
-            "Youssef, our guide in Marrakech, was phenomenal. He navigated the maze-like medina with ease and got us the best deals without the usual tourist hassle. The mint tea ceremony was a beautiful touch.",
-          name: "Thomas Anderson",
-          meta: "Sydney, Australia · Marrakech Tour",
-          avatarAlt:
-            "Professional headshot of Thomas Anderson, a bearded Australian adventure traveler",
-        },
-      ]
+          {
+            quote:
+              "The Tuscany wine tour exceeded every expectation. Our guide Marco was incredibly knowledgeable about the region's history and the wine pairings were perfectly curated. A highlight of our Italy trip!",
+            name: 'Sarah Chen',
+            meta: 'San Francisco, CA · Tuscany Wine Tour',
+            avatarAlt:
+              'Professional headshot of Sarah Chen, a smiling marketing executive',
+          },
+          {
+            quote:
+              'Scuba diving the Great Barrier Reef was on my bucket list for years. The team was professional, the equipment top-notch, and seeing the coral up close was absolutely magical. Highly recommend!',
+            name: 'Marcus Williams',
+            meta: 'London, UK · Great Barrier Reef Dive',
+            avatarAlt:
+              'Professional headshot of Marcus Williams, a bearded software engineer',
+          },
+          {
+            quote:
+              'The sushi masterclass in Tokyo was incredible! Chef Nakamura taught us techniques passed down through generations. We made 8 different types of sushi and the final meal was restaurant quality.',
+            name: 'Emily Rodriguez',
+            meta: 'Madrid, Spain · Tokyo Sushi Class',
+            avatarAlt:
+              'Professional headshot of Emily Rodriguez, a smiling travel blogger',
+          },
+          {
+            quote:
+              'The NYC photography walk was exactly what I needed. Our guide James knew all the perfect spots and timing for golden hour shots. I came away with portfolio-worthy photos and new techniques.',
+            name: 'David Park',
+            meta: 'Seoul, Korea · NYC Photo Walk',
+            avatarAlt:
+              'Professional headshot of David Park, an Asian-American photographer',
+          },
+          {
+            quote:
+              'Waking up at 4am for the Banff sunrise hike was totally worth it. The alpine glow on the mountains was breathtaking, and our guide shared fascinating geology facts. A truly unforgettable morning.',
+            name: 'Anna Mueller',
+            meta: 'Berlin, Germany · Banff Hike',
+            avatarAlt:
+              'Professional headshot of Anna Mueller, a smiling German backpacker',
+          },
+          {
+            quote:
+              'Youssef, our guide in Marrakech, was phenomenal. He navigated the maze-like medina with ease and got us the best deals without the usual tourist hassle. The mint tea ceremony was a beautiful touch.',
+            name: 'Thomas Anderson',
+            meta: 'Sydney, Australia · Marrakech Tour',
+            avatarAlt:
+              'Professional headshot of Thomas Anderson, a bearded Australian adventure traveler',
+          },
+        ]
 
-    const faqHeading = props.faq?.heading ?? "Frequently asked questions"
+    const faqHeading = props.faq?.heading ?? 'Frequently asked questions'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know about booking with " + brand + "."
+      'Everything you need to know about booking with ' + brand + '.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
-        {
-          question: "What happens after I book an experience?",
-          answer:
-            "You'll receive an instant confirmation email with all the details: meeting point, what to bring, and your host's contact information. You can also access your booking anytime through your account dashboard or our mobile app.",
-        },
-        {
-          question: "Can I cancel or reschedule my booking?",
-          answer:
-            "Absolutely. Most experiences offer free cancellation up to 24 hours before the start time for a full refund. Some experiences may have different policies, which are clearly displayed on the booking page. Rescheduling is also easy through your account.",
-        },
-        {
-          question: "Are the experiences safe and insured?",
-          answer:
-            "Yes. All hosts are verified and every experience is covered by our comprehensive liability insurance. For adventure activities, we only work with certified professionals and regularly audit safety equipment and procedures.",
-        },
-        {
-          question: "Do I need to tip my host or guide?",
-          answer:
-            "Tipping is never required but always appreciated if your host provided exceptional service. Our hosts are fairly compensated, so tip only if you feel the experience exceeded your expectations. In some cultures, tipping may be customary and your host will let you know.",
-        },
-        {
-          question: "Can I book for a private group or corporate event?",
-          answer:
-            "Yes! Many experiences can be booked privately for groups of any size. We also offer customized corporate events and team-building experiences. Contact our group bookings team at groups@wanderlocal.com for personalized assistance and group discounts.",
-        },
-      ]
+          {
+            question: 'What happens after I book an experience?',
+            answer:
+              "You'll receive an instant confirmation email with all the details: meeting point, what to bring, and your host's contact information. You can also access your booking anytime through your account dashboard or our mobile app.",
+          },
+          {
+            question: 'Can I cancel or reschedule my booking?',
+            answer:
+              'Absolutely. Most experiences offer free cancellation up to 24 hours before the start time for a full refund. Some experiences may have different policies, which are clearly displayed on the booking page. Rescheduling is also easy through your account.',
+          },
+          {
+            question: 'Are the experiences safe and insured?',
+            answer:
+              'Yes. All hosts are verified and every experience is covered by our comprehensive liability insurance. For adventure activities, we only work with certified professionals and regularly audit safety equipment and procedures.',
+          },
+          {
+            question: 'Do I need to tip my host or guide?',
+            answer:
+              'Tipping is never required but always appreciated if your host provided exceptional service. Our hosts are fairly compensated, so tip only if you feel the experience exceeded your expectations. In some cultures, tipping may be customary and your host will let you know.',
+          },
+          {
+            question: 'Can I book for a private group or corporate event?',
+            answer:
+              'Yes! Many experiences can be booked privately for groups of any size. We also offer customized corporate events and team-building experiences. Contact our group bookings team at groups@wanderlocal.com for personalized assistance and group discounts.',
+          },
+        ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to create memories?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to create memories?'
     const ctaDesc =
       props.cta?.description ??
       "Join over 850,000 travelers who've discovered extraordinary experiences. Your next adventure is just a click away."
-    const ctaPrimary = props.cta?.primaryCta ?? "Explore experiences"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Become a host"
+    const ctaPrimary = props.cta?.primaryCta ?? 'Explore experiences'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'Become a host'
     const ctaNote =
-      props.cta?.note ?? "Free to join · Instant booking · 24/7 support"
+      props.cta?.note ?? 'Free to join · Instant booking · 24/7 support'
 
     const footerDesc =
       props.footer?.description ??
-      "Discover authentic local experiences curated by passionate hosts in over 180 countries."
+      'Discover authentic local experiences curated by passionate hosts in over 180 countries.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
-        {
-          title: "Discover",
-          links: [
-            "All experiences",
-            "Destinations",
-            "Categories",
-            "Gift cards",
-            "Mobile app",
-          ],
-        },
-        {
-          title: "Company",
-          links: ["About us", "Careers", "Press", "Blog", "Partners"],
-        },
-        {
-          title: "Support",
-          links: [
-            "Help Center",
-            "Contact us",
-            "Cancellation options",
-            "Safety information",
-            "Accessibility",
-          ],
-        },
-      ]
+          {
+            title: 'Discover',
+            links: [
+              'All experiences',
+              'Destinations',
+              'Categories',
+              'Gift cards',
+              'Mobile app',
+            ],
+          },
+          {
+            title: 'Company',
+            links: ['About us', 'Careers', 'Press', 'Blog', 'Partners'],
+          },
+          {
+            title: 'Support',
+            links: [
+              'Help Center',
+              'Contact us',
+              'Cancellation options',
+              'Safety information',
+              'Accessibility',
+            ],
+          },
+        ]
     const footerCopyright =
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Policy", "Sitemap"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Sitemap']
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Twitter", "Instagram", "LinkedIn"]
+      : ['Twitter', 'Instagram', 'LinkedIn']
 
     // Brand globe mark (decorative inline SVG).
     const GlobeMark = ({ className }: { className?: string }) => (
@@ -877,7 +880,7 @@ export const TourExperiencesKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >

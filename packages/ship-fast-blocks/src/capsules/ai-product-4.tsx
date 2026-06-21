@@ -1,10 +1,11 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,7 +13,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "#/components/ui/command.tsx"
+} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetClose,
@@ -22,14 +23,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * AiProductKimiPage4 — warm editorial AI SaaS landing page (VARIANT 4).
@@ -57,9 +58,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * AI-product launches.
  */
 export const AiProductKimiPage4 = defineCapsule({
-  name: "AiProductKimiPage4",
+  name: 'AiProductKimiPage4',
   description:
-    "Complete AI-product / AI-SaaS LANDING page variant 4 (warm editorial style, fourth style sibling to AiProductKimiPage): serif typography, warm surfaces, a centered hero with full-bleed editorial image and floating quote card, a publication-trusted logo strip, a 6-up feature grid with tinted icon tiles, a dark 3-step onboarding timeline with oversized watermark numbers, a split gallery with a checklist and masonry image grid, a 3-tier pricing table with a dark featured Professional plan, a 4-up metrics band, a 6-card star-rated testimonial wall, an FAQ accordion with details/summary, a dark email-capture call-to-action with form input, and a rich multi-column footer with social links. Use for AI writing assistants, generative content platforms, author tools, or any AI SaaS that wants a literary, warm, conversion-focused landing page with features, pricing, social proof and FAQ. Supply content only — brand, nav, hero, logos, features, steps, gallery, pricing, stats, testimonials, faq, cta, footer; the block owns all layout and styling.",
+    'Complete AI-product / AI-SaaS LANDING page variant 4 (warm editorial style, fourth style sibling to AiProductKimiPage): serif typography, warm surfaces, a centered hero with full-bleed editorial image and floating quote card, a publication-trusted logo strip, a 6-up feature grid with tinted icon tiles, a dark 3-step onboarding timeline with oversized watermark numbers, a split gallery with a checklist and masonry image grid, a 3-tier pricing table with a dark featured Professional plan, a 4-up metrics band, a 6-card star-rated testimonial wall, an FAQ accordion with details/summary, a dark email-capture call-to-action with form input, and a rich multi-column footer with social links. Use for AI writing assistants, generative content platforms, author tools, or any AI SaaS that wants a literary, warm, conversion-focused landing page with features, pricing, social proof and FAQ. Supply content only — brand, nav, hero, logos, features, steps, gallery, pricing, stats, testimonials, faq, cta, footer; the block owns all layout and styling.',
   props: z.object({
     /** Brand / product name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -195,9 +196,7 @@ export const AiProductKimiPage4 = defineCapsule({
       .object({
         tagline: z.string().optional(),
         columns: z
-          .array(
-            z.object({ title: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ title: z.string(), links: z.array(z.string()) }))
           .optional(),
         copyright: z.string().optional(),
       })
@@ -222,7 +221,12 @@ export const AiProductKimiPage4 = defineCapsule({
         new Set(db.favorites.all().map((favorite) => favorite.featureName)),
     },
     mutations: {
-      createDocument: ({ db }, title: string, excerpt: string, category: string) => {
+      createDocument: (
+        { db },
+        title: string,
+        excerpt: string,
+        category: string,
+      ) => {
         db.documents.insert({
           title,
           excerpt,
@@ -255,10 +259,10 @@ export const AiProductKimiPage4 = defineCapsule({
     const [mobileOpen, setMobileOpen] = useState(false)
     const [searchOpen, setSearchOpen] = useState(false)
     const [documentsOpen, setDocumentsOpen] = useState(false)
-    const brand = props.brand ?? "VerseAI"
+    const brand = props.brand ?? 'VerseAI'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "Pricing", "Stories", "FAQ"]
+      : ['Features', 'Pricing', 'Stories', 'FAQ']
 
     const storedDocuments = lakebed.useQuery('documents')
     const favoriteFeatureNames = lakebed.useQuery('favoriteFeatureNames')
@@ -294,179 +298,178 @@ export const AiProductKimiPage4 = defineCapsule({
     const safeDocuments = storedDocuments ?? []
     const documentCount = safeDocuments.length
 
-    const heroBadge = props.hero?.badge ?? "Now with GPT-4 Turbo"
+    const heroBadge = props.hero?.badge ?? 'Now with GPT-4 Turbo'
     const heroHeadline =
       props.hero?.headline ??
-      "Write like the *masters*, publish like lightning."
+      'Write like the *masters*, publish like lightning.'
     const heroSubhead =
       props.hero?.subhead ??
-      "VerseAI helps authors, marketers, and teams draft essays, articles, and stories 10x faster. From first idea to polished prose—in minutes, not days."
-    const heroPrimary = props.hero?.primaryCta ?? "Start free trial"
-    const heroSecondary = props.hero?.secondaryCta ?? "Watch demo"
+      'VerseAI helps authors, marketers, and teams draft essays, articles, and stories 10x faster. From first idea to polished prose—in minutes, not days.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Start free trial'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Watch demo'
     const heroTrust =
-      props.hero?.trust ?? "14-day free trial · No credit card required"
+      props.hero?.trust ?? '14-day free trial · No credit card required'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Minimalist desk with vintage typewriter, coffee, and scattered papers in soft morning light"
+      'Minimalist desk with vintage typewriter, coffee, and scattered papers in soft morning light'
     const heroQuote =
-      props.hero?.quote ??
-      '"The best writing tool I\'ve used since Scrivener."'
+      props.hero?.quote ?? '"The best writing tool I\'ve used since Scrivener."'
     const heroQuoteAuthor =
-      props.hero?.quoteAuthor ?? "Margaret Chen, Pulitzer finalist"
+      props.hero?.quoteAuthor ?? 'Margaret Chen, Pulitzer finalist'
 
     const logosLabel =
-      props.logos?.label ?? "Trusted by writers at leading publications"
+      props.logos?.label ?? 'Trusted by writers at leading publications'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
       : [
-          { name: "The Atlantic", icon: "layers" },
-          { name: "Wired", icon: "square" },
-          { name: "Substack", icon: "circle" },
-          { name: "Medium", icon: "box" },
-          { name: "NYT Opinion", icon: "triangle" },
+          { name: 'The Atlantic', icon: 'layers' },
+          { name: 'Wired', icon: 'square' },
+          { name: 'Substack', icon: 'circle' },
+          { name: 'Medium', icon: 'box' },
+          { name: 'NYT Opinion', icon: 'triangle' },
         ]
 
     const featuresHeading =
       props.features?.heading ?? "The complete writer's toolkit"
     const featuresDesc =
       props.features?.description ??
-      "From brainstorming to final draft, every tool you need to write faster without losing your voice."
+      'From brainstorming to final draft, every tool you need to write faster without losing your voice.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Instant Outlines",
+            title: 'Instant Outlines',
             description:
-              "Type your premise, get a complete narrative arc in 30 seconds. Our AI structures your story beats so you can focus on prose.",
+              'Type your premise, get a complete narrative arc in 30 seconds. Our AI structures your story beats so you can focus on prose.',
           },
           {
-            title: "Style Matching",
+            title: 'Style Matching',
             description:
-              "Upload your past work. VerseAI learns your tone, vocabulary, and rhythm—then writes suggestions that sound like you.",
+              'Upload your past work. VerseAI learns your tone, vocabulary, and rhythm—then writes suggestions that sound like you.',
           },
           {
-            title: "Fact Checking",
+            title: 'Fact Checking',
             description:
-              "Every statistic and quote is cross-referenced against 200+ authoritative sources before it hits your draft.",
+              'Every statistic and quote is cross-referenced against 200+ authoritative sources before it hits your draft.',
           },
           {
-            title: "Deadline Mode",
+            title: 'Deadline Mode',
             description:
-              "Racing against the clock? Deadline Mode accelerates suggestions, reduces frills, and gets you publish-ready fast.",
+              'Racing against the clock? Deadline Mode accelerates suggestions, reduces frills, and gets you publish-ready fast.',
           },
           {
-            title: "Team Collaboration",
+            title: 'Team Collaboration',
             description:
-              "Shared workspaces, real-time comments, and version history. Built for editorial teams who move fast together.",
+              'Shared workspaces, real-time comments, and version history. Built for editorial teams who move fast together.',
           },
           {
-            title: "50+ Languages",
+            title: '50+ Languages',
             description:
-              "Write fluently in English, Spanish, Mandarin, French, German, Japanese, and more with native-level nuance.",
+              'Write fluently in English, Spanish, Mandarin, French, German, Japanese, and more with native-level nuance.',
           },
         ]
 
     const stepsHeading =
-      props.steps?.heading ?? "From idea to published in three steps"
+      props.steps?.heading ?? 'From idea to published in three steps'
     const stepsDesc =
       props.steps?.description ??
-      "No steep learning curve. Start writing better content in minutes, not weeks."
+      'No steep learning curve. Start writing better content in minutes, not weeks.'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Describe your piece",
+            title: 'Describe your piece',
             description:
               "Tell us what you're writing—an op-ed, a product description, a short story—and your target audience. Be as brief or detailed as you like.",
           },
           {
-            title: "Review your outline",
+            title: 'Review your outline',
             description:
-              "Our AI generates a structured outline with headings, talking points, and suggested word counts. Edit it, approve it, or start over.",
+              'Our AI generates a structured outline with headings, talking points, and suggested word counts. Edit it, approve it, or start over.',
           },
           {
-            title: "Draft and refine",
+            title: 'Draft and refine',
             description:
-              "Generate your first draft in seconds. Use inline suggestions to polish tone, expand arguments, or trim for length. Export when ready.",
+              'Generate your first draft in seconds. Use inline suggestions to polish tone, expand arguments, or trim for length. Export when ready.',
           },
         ]
 
-    const galleryBadge = props.gallery?.badge ?? "Inside the editor"
+    const galleryBadge = props.gallery?.badge ?? 'Inside the editor'
     const galleryHeading =
-      props.gallery?.heading ?? "An interface that disappears"
+      props.gallery?.heading ?? 'An interface that disappears'
     const galleryDesc =
       props.gallery?.description ??
-      "No distracting toolbars. No clunky sidebars. Just your words, gently enhanced by AI that knows when to suggest and when to stay quiet."
+      'No distracting toolbars. No clunky sidebars. Just your words, gently enhanced by AI that knows when to suggest and when to stay quiet.'
     const galleryChecklist = props.gallery?.checklist?.length
       ? props.gallery.checklist
       : [
-          "Distraction-free writing mode with focus sounds",
-          "Inline suggestions that feel like a thoughtful editor",
-          "One-click export to Word, Google Docs, Markdown, and PDF",
-          "Offline mode for writing on planes, trains, and retreats",
+          'Distraction-free writing mode with focus sounds',
+          'Inline suggestions that feel like a thoughtful editor',
+          'One-click export to Word, Google Docs, Markdown, and PDF',
+          'Offline mode for writing on planes, trains, and retreats',
         ]
-    const galleryStatValue = props.gallery?.statValue ?? "3.2M"
+    const galleryStatValue = props.gallery?.statValue ?? '3.2M'
     const galleryStatLabel =
-      props.gallery?.statLabel ?? "Articles written this month"
+      props.gallery?.statLabel ?? 'Articles written this month'
     const galleryImageAlt1 =
       props.gallery?.imageAlt1 ??
-      "Close-up of hands typing on a clean white laptop keyboard on a wooden desk"
+      'Close-up of hands typing on a clean white laptop keyboard on a wooden desk'
     const galleryImageAlt2 =
       props.gallery?.imageAlt2 ??
-      "Person journaling in a notebook with a fountain pen in warm café lighting"
+      'Person journaling in a notebook with a fountain pen in warm café lighting'
     const galleryQuote = props.gallery?.quote ?? '"It just works."'
     const galleryQuoteSub =
-      props.gallery?.quoteSub ?? "— 4.9/5 from 12,000+ writers"
+      props.gallery?.quoteSub ?? '— 4.9/5 from 12,000+ writers'
 
     const pricingHeading =
-      props.pricing?.heading ?? "Simple, transparent pricing"
+      props.pricing?.heading ?? 'Simple, transparent pricing'
     const pricingDesc =
       props.pricing?.description ??
       "Start free. Scale when you're ready. No hidden fees, no usage traps."
     const pricingNote =
-      props.pricing?.note ?? "Annual billing saves 20%. Cancel anytime."
+      props.pricing?.note ?? 'Annual billing saves 20%. Cancel anytime.'
     const pricingPlans = props.pricing?.plans?.length
       ? props.pricing.plans
       : [
           {
-            name: "Starter",
-            tagline: "For hobby writers trying AI",
-            price: "$0",
-            period: "/month",
-            cta: "Start for free",
+            name: 'Starter',
+            tagline: 'For hobby writers trying AI',
+            price: '$0',
+            period: '/month',
+            cta: 'Start for free',
             features: [
-              "5,000 words / month",
-              "Basic outlines",
-              "3 saved documents",
+              '5,000 words / month',
+              'Basic outlines',
+              '3 saved documents',
             ],
           },
           {
-            name: "Professional",
-            tagline: "For working writers",
-            price: "$29",
-            period: "/month",
-            cta: "Start 14-day trial",
+            name: 'Professional',
+            tagline: 'For working writers',
+            price: '$29',
+            period: '/month',
+            cta: 'Start 14-day trial',
             featured: true,
             features: [
-              "Unlimited words",
-              "Advanced outlines with research",
-              "Unlimited documents",
-              "Style matching (3 voices)",
-              "Priority support",
+              'Unlimited words',
+              'Advanced outlines with research',
+              'Unlimited documents',
+              'Style matching (3 voices)',
+              'Priority support',
             ],
           },
           {
-            name: "Team",
-            tagline: "For editorial teams",
-            price: "$79",
-            period: "/seat/month",
-            cta: "Contact sales",
+            name: 'Team',
+            tagline: 'For editorial teams',
+            price: '$79',
+            period: '/seat/month',
+            cta: 'Contact sales',
             features: [
-              "Everything in Pro",
-              "Shared team workspace",
-              "Unlimited style voices",
-              "Dedicated account manager",
-              "SSO and audit logs",
+              'Everything in Pro',
+              'Shared team workspace',
+              'Unlimited style voices',
+              'Dedicated account manager',
+              'SSO and audit logs',
             ],
           },
         ]
@@ -474,150 +477,159 @@ export const AiProductKimiPage4 = defineCapsule({
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "12,000+", label: "Active writers" },
-          { value: "3.2M", label: "Articles written" },
-          { value: "47 min", label: "Average time saved" },
-          { value: "4.9/5", label: "User satisfaction" },
+          { value: '12,000+', label: 'Active writers' },
+          { value: '3.2M', label: 'Articles written' },
+          { value: '47 min', label: 'Average time saved' },
+          { value: '4.9/5', label: 'User satisfaction' },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Loved by writers everywhere"
+      props.testimonials?.heading ?? 'Loved by writers everywhere'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "From Pulitzer finalists to indie bloggers, hear how VerseAI changed their writing process."
+      'From Pulitzer finalists to indie bloggers, hear how VerseAI changed their writing process.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
               "VerseAI doesn't just speed up my writing—it makes me a better writer. The suggestions feel like a brilliant editor whispering in my ear.",
-            name: "Margaret Chen",
-            role: "Pulitzer finalist, The Atlantic",
+            name: 'Margaret Chen',
+            role: 'Pulitzer finalist, The Atlantic',
             avatarAlt:
-              "Professional headshot of a smiling woman with shoulder-length brown hair",
+              'Professional headshot of a smiling woman with shoulder-length brown hair',
           },
           {
             quote:
               "I went from 4 articles a week to 12 without sacrificing quality. My editor thinks I've hired a ghostwriter. I just smile and say it's magic.",
             name: "James O'Brien",
-            role: "Tech columnist, Wired",
+            role: 'Tech columnist, Wired',
             avatarAlt:
-              "Professional headshot of a man with short dark hair and beard in a navy shirt",
+              'Professional headshot of a man with short dark hair and beard in a navy shirt',
           },
           {
             quote:
               "The style matching is uncanny. VerseAI captured my voice perfectly—witty, slightly sarcastic, data-driven. Readers haven't noticed a difference.",
-            name: "Sarah Mitchell",
-            role: "Founder, CryptoDaily Newsletter",
+            name: 'Sarah Mitchell',
+            role: 'Founder, CryptoDaily Newsletter',
             avatarAlt:
-              "Professional headshot of a woman with blonde hair and glasses in a black turtleneck",
+              'Professional headshot of a woman with blonde hair and glasses in a black turtleneck',
           },
           {
             quote:
-              "Our editorial team cut production time by 60%. Deadlines that used to induce panic are now just... Tuesday. VerseAI is our secret weapon.",
-            name: "David Park",
-            role: "Editor-in-Chief, FutureSync Media",
+              'Our editorial team cut production time by 60%. Deadlines that used to induce panic are now just... Tuesday. VerseAI is our secret weapon.',
+            name: 'David Park',
+            role: 'Editor-in-Chief, FutureSync Media',
             avatarAlt:
-              "Professional headshot of a man with curly hair and a friendly smile in a grey sweater",
+              'Professional headshot of a man with curly hair and a friendly smile in a grey sweater',
           },
           {
             quote:
               "As a non-native English speaker, VerseAI helps me sound natural and confident. I've doubled my freelance rates since I started using it.",
-            name: "Elena Voss",
-            role: "Freelance copywriter, Berlin",
+            name: 'Elena Voss',
+            role: 'Freelance copywriter, Berlin',
             avatarAlt:
-              "Professional headshot of a young woman with dark hair and natural makeup in a white blouse",
+              'Professional headshot of a young woman with dark hair and natural makeup in a white blouse',
           },
           {
             quote:
-              "I was skeptical. Then I wrote a 3,000-word feature in 90 minutes that normally takes 8 hours. VerseAI is now in my daily workflow.",
-            name: "Marcus Johnson",
-            role: "Staff writer, Sports Illustrated",
+              'I was skeptical. Then I wrote a 3,000-word feature in 90 minutes that normally takes 8 hours. VerseAI is now in my daily workflow.',
+            name: 'Marcus Johnson',
+            role: 'Staff writer, Sports Illustrated',
             avatarAlt:
-              "Professional headshot of a man with short hair and a confident expression in a blue shirt",
+              'Professional headshot of a man with short hair and a confident expression in a blue shirt',
           },
         ]
 
-    const faqHeading =
-      props.faq?.heading ?? "Questions? We've got answers."
+    const faqHeading = props.faq?.heading ?? "Questions? We've got answers."
     const faqDesc =
-      props.faq?.description ??
-      "Everything you need to know before you start."
+      props.faq?.description ?? 'Everything you need to know before you start.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "How does the AI know my writing style?",
+            question: 'How does the AI know my writing style?',
             answer:
-              "Upload 3-5 samples of your writing—blog posts, essays, emails, anything. Our AI analyzes your sentence structure, vocabulary choices, tone markers, and rhythm patterns. Within minutes, it builds a personalized voice model that guides all future suggestions to match your unique style.",
+              'Upload 3-5 samples of your writing—blog posts, essays, emails, anything. Our AI analyzes your sentence structure, vocabulary choices, tone markers, and rhythm patterns. Within minutes, it builds a personalized voice model that guides all future suggestions to match your unique style.',
           },
           {
-            question: "Is my content private and secure?",
+            question: 'Is my content private and secure?',
             answer:
-              "Absolutely. Your drafts are encrypted at rest and in transit. We never use your content to train our AI models, and we never share your work with third parties. Team plans include additional SSO, audit logs, and data retention controls for enterprise compliance.",
+              'Absolutely. Your drafts are encrypted at rest and in transit. We never use your content to train our AI models, and we never share your work with third parties. Team plans include additional SSO, audit logs, and data retention controls for enterprise compliance.',
           },
           {
-            question: "Can I cancel my subscription anytime?",
+            question: 'Can I cancel my subscription anytime?',
             answer:
               "Yes. No contracts, no cancellation fees. If you cancel, you'll keep access until the end of your current billing period. We also offer a 30-day money-back guarantee for new subscribers—if VerseAI doesn't transform your writing, we'll refund every penny.",
           },
           {
             question: "What's included in the free trial?",
             answer:
-              "The 14-day trial gives you full Professional plan access: unlimited words, all outline types, style matching, and priority support. No credit card required to start. At the end of the trial, choose a plan or automatically downgrade to the free Starter tier.",
+              'The 14-day trial gives you full Professional plan access: unlimited words, all outline types, style matching, and priority support. No credit card required to start. At the end of the trial, choose a plan or automatically downgrade to the free Starter tier.',
           },
           {
-            question: "Does VerseAI work offline?",
+            question: 'Does VerseAI work offline?',
             answer:
-              "Professional and Team plans include an offline mode for distraction-free writing. AI features like suggestions and outlines require connectivity, but you can write, edit, and organize drafts anywhere. Changes sync automatically when you reconnect.",
+              'Professional and Team plans include an offline mode for distraction-free writing. AI features like suggestions and outlines require connectivity, but you can write, edit, and organize drafts anywhere. Changes sync automatically when you reconnect.',
           },
           {
-            question: "How is this different from ChatGPT?",
+            question: 'How is this different from ChatGPT?',
             answer:
               "ChatGPT is a general-purpose AI. VerseAI is built specifically for writers—long-form content, editorial workflows, style consistency, and publication-ready formatting. We include fact-checking, citation tools, team collaboration, and export options that generic AI tools simply don't offer.",
           },
         ]
 
-    const ctaHeading =
-      props.cta?.heading ?? "Ready to write your best work?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to write your best work?'
     const ctaDesc =
       props.cta?.description ??
       "Join 12,000+ writers who've transformed their craft. Start your free 14-day trial today—no credit card required."
-    const ctaPlaceholder =
-      props.cta?.inputPlaceholder ?? "Enter your email"
-    const ctaButton = props.cta?.buttonLabel ?? "Start free trial"
+    const ctaPlaceholder = props.cta?.inputPlaceholder ?? 'Enter your email'
+    const ctaButton = props.cta?.buttonLabel ?? 'Start free trial'
     const ctaTrust =
-      props.cta?.trust ?? "14-day free trial · No credit card · Cancel anytime"
+      props.cta?.trust ?? '14-day free trial · No credit card · Cancel anytime'
     const ctaBadges = props.cta?.badges?.length
       ? props.cta.badges
-      : ["SOC 2 Compliant", "End-to-end encrypted"]
+      : ['SOC 2 Compliant', 'End-to-end encrypted']
 
     const footerTagline =
       props.footer?.tagline ??
-      "The generative writing assistant for serious writers. Draft faster, edit smarter, publish sooner."
+      'The generative writing assistant for serious writers. Draft faster, edit smarter, publish sooner.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Product",
-            links: ["Features", "Pricing", "Integrations", "Changelog", "Roadmap"],
+            title: 'Product',
+            links: [
+              'Features',
+              'Pricing',
+              'Integrations',
+              'Changelog',
+              'Roadmap',
+            ],
           },
           {
-            title: "Resources",
-            links: ["Documentation", "Tutorials", "Blog", "Style Guide", "Community"],
+            title: 'Resources',
+            links: [
+              'Documentation',
+              'Tutorials',
+              'Blog',
+              'Style Guide',
+              'Community',
+            ],
           },
           {
-            title: "Company",
-            links: ["About", "Careers", "Press", "Contact", "Status"],
+            title: 'Company',
+            links: ['About', 'Careers', 'Press', 'Contact', 'Status'],
           },
         ]
     const footerCopyright =
-      props.footer?.copyright ?? `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
+      props.footer?.copyright ??
+      `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "inline-flex items-center justify-center text-foreground",
+          'inline-flex items-center justify-center text-foreground',
           className,
         )}
         aria-hidden="true"
@@ -832,17 +844,17 @@ export const AiProductKimiPage4 = defineCapsule({
     ]
 
     const iconBg = [
-      "bg-primary/10 text-primary",
-      "bg-secondary/10 text-secondary-foreground",
-      "bg-accent/10 text-accent-foreground",
-      "bg-muted text-muted-foreground",
-      "bg-chart-1/10 text-chart-1",
-      "bg-chart-2/10 text-chart-2",
+      'bg-primary/10 text-primary',
+      'bg-secondary/10 text-secondary-foreground',
+      'bg-accent/10 text-accent-foreground',
+      'bg-muted text-muted-foreground',
+      'bg-chart-1/10 text-chart-1',
+      'bg-chart-2/10 text-chart-2',
     ]
 
     const publicationIcon = (type: string) => {
       switch (type) {
-        case "layers":
+        case 'layers':
           return (
             <svg
               className="size-6 text-muted-foreground"
@@ -853,7 +865,7 @@ export const AiProductKimiPage4 = defineCapsule({
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
             </svg>
           )
-        case "square":
+        case 'square':
           return (
             <svg
               className="size-6 text-muted-foreground"
@@ -864,7 +876,7 @@ export const AiProductKimiPage4 = defineCapsule({
               <rect x="3" y="3" width="18" height="18" rx="2" />
             </svg>
           )
-        case "circle":
+        case 'circle':
           return (
             <svg
               className="size-6 text-muted-foreground"
@@ -875,7 +887,7 @@ export const AiProductKimiPage4 = defineCapsule({
               <circle cx="12" cy="12" r="10" />
             </svg>
           )
-        case "box":
+        case 'box':
           return (
             <svg
               className="size-6 text-muted-foreground"
@@ -886,7 +898,7 @@ export const AiProductKimiPage4 = defineCapsule({
               <path d="M4 4h16v16H4z" />
             </svg>
           )
-        case "triangle":
+        case 'triangle':
           return (
             <svg
               className="size-6 text-muted-foreground"
@@ -914,7 +926,7 @@ export const AiProductKimiPage4 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased selection:bg-primary/20",
+          'min-h-svh bg-background text-foreground antialiased selection:bg-primary/20',
           props.className,
         )}
       >
@@ -1303,7 +1315,11 @@ export const AiProductKimiPage4 = defineCapsule({
                   className="gap-3 py-3"
                 >
                   <div className="size-12 overflow-hidden rounded-md bg-muted flex items-center justify-center">
-                    {featureIcons[featureItems.indexOf(feature) % featureIcons.length]}
+                    {
+                      featureIcons[
+                        featureItems.indexOf(feature) % featureIcons.length
+                      ]
+                    }
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-foreground">
@@ -1328,7 +1344,7 @@ export const AiProductKimiPage4 = defineCapsule({
                   {heroBadge}
                 </p>
                 <h1 className="mb-6 font-serif text-4xl font-semibold leading-tight tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-                  {heroHeadline.split("*").map((part, i) =>
+                  {heroHeadline.split('*').map((part, i) =>
                     i % 2 === 1 ? (
                       <em key={i} className="italic">
                         {part}
@@ -1404,7 +1420,7 @@ export const AiProductKimiPage4 = defineCapsule({
                     onClick={() => go(item.name)}
                     className="flex items-center gap-2 text-lg font-semibold text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    {publicationIcon(item.icon ?? "circle")}
+                    {publicationIcon(item.icon ?? 'circle')}
                     <span className="font-serif">{item.name}</span>
                   </button>
                 ))}
@@ -1425,14 +1441,15 @@ export const AiProductKimiPage4 = defineCapsule({
               </div>
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
                 {featureItems.map((item, i) => {
-                  const isFavorite = favoriteFeatureNames?.has(item.title) ?? false
+                  const isFavorite =
+                    favoriteFeatureNames?.has(item.title) ?? false
 
                   return (
                     <div key={item.title} className="group">
                       <div className="mb-5 flex items-start justify-between">
                         <div
                           className={cn(
-                            "grid size-12 place-items-center rounded-xl",
+                            'grid size-12 place-items-center rounded-xl',
                             iconBg[i % iconBg.length],
                           )}
                         >
@@ -1496,7 +1513,7 @@ export const AiProductKimiPage4 = defineCapsule({
                 {stepItems.map((step, i) => (
                   <div key={step.title} className="relative">
                     <div className="font-serif text-6xl font-bold text-background/20 md:text-7xl">
-                      {String(i + 1).padStart(2, "0")}
+                      {String(i + 1).padStart(2, '0')}
                     </div>
                     <div className="relative pt-4">
                       <div className="mb-5 grid size-12 place-items-center rounded-xl bg-background/10">
@@ -1605,10 +1622,10 @@ export const AiProductKimiPage4 = defineCapsule({
                   <div
                     key={plan.name}
                     className={cn(
-                      "relative flex flex-col rounded-2xl p-8",
+                      'relative flex flex-col rounded-2xl p-8',
                       plan.featured
-                        ? "bg-foreground text-background"
-                        : "border border-border bg-card",
+                        ? 'bg-foreground text-background'
+                        : 'border border-border bg-card',
                     )}
                   >
                     {plan.featured && (
@@ -1624,10 +1641,10 @@ export const AiProductKimiPage4 = defineCapsule({
                       </h3>
                       <p
                         className={cn(
-                          "text-sm",
+                          'text-sm',
                           plan.featured
-                            ? "text-background/70"
-                            : "text-muted-foreground",
+                            ? 'text-background/70'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {plan.tagline}
@@ -1640,8 +1657,8 @@ export const AiProductKimiPage4 = defineCapsule({
                       <span
                         className={cn(
                           plan.featured
-                            ? "text-background/70"
-                            : "text-muted-foreground",
+                            ? 'text-background/70'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {plan.period}
@@ -1649,20 +1666,23 @@ export const AiProductKimiPage4 = defineCapsule({
                     </div>
                     <ul className="mb-8 flex-1 space-y-3">
                       {plan.features.map((feat) => (
-                        <li key={feat} className="flex items-center gap-3 text-sm">
+                        <li
+                          key={feat}
+                          className="flex items-center gap-3 text-sm"
+                        >
                           <Check
                             className={cn(
-                              "size-4 shrink-0",
+                              'size-4 shrink-0',
                               plan.featured
-                                ? "text-background"
-                                : "text-primary",
+                                ? 'text-background'
+                                : 'text-primary',
                             )}
                           />
                           <span
                             className={cn(
                               plan.featured
-                                ? "text-background/70"
-                                : "text-muted-foreground",
+                                ? 'text-background/70'
+                                : 'text-muted-foreground',
                             )}
                           >
                             {feat}
@@ -1674,10 +1694,10 @@ export const AiProductKimiPage4 = defineCapsule({
                       type="button"
                       onClick={() => go(plan.cta)}
                       className={cn(
-                        "block w-full rounded-lg py-2.5 text-center text-sm font-medium transition-colors",
+                        'block w-full rounded-lg py-2.5 text-center text-sm font-medium transition-colors',
                         plan.featured
-                          ? "bg-background text-foreground hover:bg-background/90"
-                          : "border border-input hover:bg-accent",
+                          ? 'bg-background text-foreground hover:bg-background/90'
+                          : 'border border-input hover:bg-accent',
                       )}
                     >
                       {plan.cta}
@@ -1722,10 +1742,7 @@ export const AiProductKimiPage4 = defineCapsule({
               </div>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
                 {testimonialItems.map((t) => (
-                  <div
-                    key={t.name}
-                    className="rounded-xl bg-card p-6 md:p-8"
-                  >
+                  <div key={t.name} className="rounded-xl bg-card p-6 md:p-8">
                     <div className="mb-4 flex items-center gap-1">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star key={i} />
@@ -1854,7 +1871,7 @@ export const AiProductKimiPage4 = defineCapsule({
                 <div className="flex items-center gap-4">
                   <button
                     type="button"
-                    onClick={() => go("Twitter")}
+                    onClick={() => go('Twitter')}
                     className="text-background/70 transition-colors hover:text-background"
                     aria-label="Twitter"
                   >
@@ -1869,7 +1886,7 @@ export const AiProductKimiPage4 = defineCapsule({
                   </button>
                   <button
                     type="button"
-                    onClick={() => go("LinkedIn")}
+                    onClick={() => go('LinkedIn')}
                     className="text-background/70 transition-colors hover:text-background"
                     aria-label="LinkedIn"
                   >
@@ -1884,7 +1901,7 @@ export const AiProductKimiPage4 = defineCapsule({
                   </button>
                   <button
                     type="button"
-                    onClick={() => go("YouTube")}
+                    onClick={() => go('YouTube')}
                     className="text-background/70 transition-colors hover:text-background"
                     aria-label="YouTube"
                   >
@@ -1925,21 +1942,21 @@ export const AiProductKimiPage4 = defineCapsule({
               <div className="flex items-center gap-6">
                 <button
                   type="button"
-                  onClick={() => go("Privacy Policy")}
+                  onClick={() => go('Privacy Policy')}
                   className="text-background/70 transition-colors hover:text-background"
                 >
                   Privacy Policy
                 </button>
                 <button
                   type="button"
-                  onClick={() => go("Terms of Service")}
+                  onClick={() => go('Terms of Service')}
                   className="text-background/70 transition-colors hover:text-background"
                 >
                   Terms of Service
                 </button>
                 <button
                   type="button"
-                  onClick={() => go("Cookie Settings")}
+                  onClick={() => go('Cookie Settings')}
                   className="text-background/70 transition-colors hover:text-background"
                 >
                   Cookie Settings

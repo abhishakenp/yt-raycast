@@ -1,32 +1,14 @@
-import { useState } from 'react'
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '#/components/ui/sheet.tsx'
-import { Button } from '#/components/ui/button.tsx'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '#/components/ui/popover.tsx'
-import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 
 export const PhotographyKimiPage3 = defineCapsule({
-  name: "PhotographyKimiPage3",
+  name: 'PhotographyKimiPage3',
   description:
-    "Photography third style sibling to PhotographyKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Photography third style sibling to PhotographyKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +22,9 @@ export const PhotographyKimiPage3 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -81,7 +65,9 @@ export const PhotographyKimiPage3 = defineCapsule({
     queries: {
       bookings: ({ db }) => db.bookings.orderBy('createdAt').all(),
       favoriteGalleryItemTitles: ({ db }) =>
-        new Set(db.favorites.all().map((favorite) => favorite.galleryItemTitle)),
+        new Set(
+          db.favorites.all().map((favorite) => favorite.galleryItemTitle),
+        ),
     },
     mutations: {
       addBooking: ({ db }, serviceName: string, date: string) => {
@@ -121,187 +107,109 @@ export const PhotographyKimiPage3 = defineCapsule({
       },
     },
   },
-  component: ({ props, lakebed }) => {
+  component: ({ props }) => {
     const go = useNavigate()
-    const [bookingsOpen, setBookingsOpen] = useState(false)
-    const [inquiryOpen, setInquiryOpen] = useState(false)
-    const brand = props.brand ?? "Elena Voss Photography Portfolio"
-    const nav = props.nav?.length ? props.nav : ["Elena Voss", "Gallery", "Services", "Testimonials", "FAQ", "Contact"]
+    const brand = props.brand ?? 'Elena Voss Photography Portfolio'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Elena Voss', 'Gallery', 'Services', 'Testimonials', 'FAQ', 'Contact']
     const hero = {
-      eyebrow: "Photography / Variant 3",
-      title: "Capture the extraordinary in every frame",
-      description: "Elena Voss Photography Portfolio Elena Voss Gallery Services Testimonials FAQ Contact Gallery Services Testimonials FAQ Contact Elena Voss Photography Capture the extraordinary...",
-      primaryCta: "Elena Voss",
-      secondaryCta: "Gallery",
-      imageAlt: "dramatic mountain landscape at golden hour with layered ridges and warm light",
+      eyebrow: 'Photography / Variant 3',
+      title: 'Capture the extraordinary in every frame',
+      description:
+        'Elena Voss Photography Portfolio Elena Voss Gallery Services Testimonials FAQ Contact Gallery Services Testimonials FAQ Contact Elena Voss Photography Capture the extraordinary...',
+      primaryCta: 'Elena Voss',
+      secondaryCta: 'Gallery',
+      imageAlt:
+        'dramatic mountain landscape at golden hour with layered ridges and warm light',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Selected Works",
-    "body": "Elena Voss Photography Portfolio Elena Voss Gallery Services Testimonials FAQ Contact Gallery Services Testimonials FAQ Contact Elena Voss Photography Capture the extraordinary...",
-    "items": [
-      "Frequently Asked Questions",
-      "Ready to create something beautiful?",
-      "Portrait Session"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "Services & Pricing",
-    "body": "Photography page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Wedding Package",
-      "Commercial Shoot",
-      "Event Coverage"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Client Stories",
-    "body": "Photography page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": []
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Frequently Asked Questions",
-    "body": "Photography page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": []
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "Services & Pricing",
-    "alt": "dramatic mountain landscape at golden hour with layered ridges and warm light",
-    "caption": "Photography generated page detail"
-  },
-  {
-    "title": "Client Stories",
-    "alt": "close-up portrait of a young woman with natural light and soft bokeh background",
-    "caption": "Photography generated page detail"
-  },
-  {
-    "title": "Frequently Asked Questions",
-    "alt": "bride and groom holding hands during an outdoor wedding ceremony at sunset",
-    "caption": "Photography generated page detail"
-  }
-]
-
-    // Lakebed hooks
-    const bookings = lakebed.useQuery('bookings')
-    const favoriteGalleryItemTitles = lakebed.useQuery('favoriteGalleryItemTitles')
-    const auth = lakebed.useAuth()
-    const addBooking = lakebed.useMutation('addBooking')
-    const removeBooking = lakebed.useMutation('removeBooking')
-    const clearBookings = lakebed.useMutation('clearBookings')
-    const toggleFavorite = lakebed.useMutation('toggleFavorite')
-    const submitInquiry = lakebed.useMutation('submitInquiry')
-
-    const isSignedIn = auth.isAuthenticated && !auth.isGuest
-    const authEmail = auth.email || auth.user?.email
-    const authPicture = auth.picture || auth.user?.picture
-    const authDisplayName =
-      auth.displayName || auth.user?.displayName || authEmail || 'Account'
-    const authInitials =
-      authDisplayName
-        .split(/\s+/)
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((part) => part[0]?.toUpperCase())
-        .join('') || 'ME'
-    const authLabel = auth.isLoading
-      ? 'Checking...'
-      : isSignedIn
-        ? authDisplayName
-        : 'Sign in'
-
-    const handleSignIn = () => {
-      if (auth.isLoading) return
-      void lakebed.signInWithGoogle()
-    }
-
-    const handleSignOut = () => {
-      lakebed.signOut()
-    }
-
-    const safeBookings = bookings ?? []
-    const bookingCount = safeBookings.length
-
-    // --- shared sub-components ---
-
-    const HeartIcon = ({ active = false }: { active?: boolean }) => (
-      <svg
-        className={cn(
-          'size-5',
-          active ? 'text-primary-foreground' : 'text-foreground',
-        )}
-        fill={active ? 'currentColor' : 'none'}
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-      </svg>
-    )
-
-    const ChevronDown = () => (
-      <svg
-        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <polyline points="6 9 12 15 18 9" />
-      </svg>
-    )
-
-    const ArrowRight = () => (
-      <svg
-        className="size-4"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <line x1="5" y1="12" x2="19" y2="12" />
-        <polyline points="12 5 19 12 12 19" />
-      </svg>
-    )
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'Selected Works',
+            body: 'Elena Voss Photography Portfolio Elena Voss Gallery Services Testimonials FAQ Contact Gallery Services Testimonials FAQ Contact Elena Voss Photography Capture the extraordinary...',
+            items: [
+              'Frequently Asked Questions',
+              'Ready to create something beautiful?',
+              'Portrait Session',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'Services & Pricing',
+            body: "Photography page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['Wedding Package', 'Commercial Shoot', 'Event Coverage'],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Client Stories',
+            body: "Photography page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Frequently Asked Questions',
+            body: "Photography page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'Services & Pricing',
+            alt: 'dramatic mountain landscape at golden hour with layered ridges and warm light',
+            caption: 'Photography generated page detail',
+          },
+          {
+            title: 'Client Stories',
+            alt: 'close-up portrait of a young woman with natural light and soft bokeh background',
+            caption: 'Photography generated page detail',
+          },
+          {
+            title: 'Frequently Asked Questions',
+            alt: 'bride and groom holding hands during an outdoor wedding ceremony at sunset',
+            caption: 'Photography generated page detail',
+          },
+        ]
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -358,16 +266,28 @@ export const PhotographyKimiPage3 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -375,10 +295,19 @@ export const PhotographyKimiPage3 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -402,8 +331,12 @@ export const PhotographyKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -415,11 +348,26 @@ export const PhotographyKimiPage3 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -430,9 +378,15 @@ export const PhotographyKimiPage3 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -448,10 +402,17 @@ export const PhotographyKimiPage3 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

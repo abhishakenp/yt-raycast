@@ -1,19 +1,9 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { number, string, table } from "@ship-fast/lakebed/server"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "#/components/ui/sheet.tsx"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { string, table } from '@ship-fast/lakebed/server'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * DocsKimiPage — a complete, self-contained developer DOCUMENTATION / API-reference page.
@@ -40,9 +30,9 @@ import {
  * props at all.
  */
 export const DocsKimiPage = defineCapsule({
-  name: "DocsKimiPage",
+  name: 'DocsKimiPage',
   description:
-    "Complete developer DOCUMENTATION / API-reference / developer-portal page with a clean, light, content-dense docs layout: sticky blurred top navbar with search + GitHub, a persistent left sidebar (search box, grouped section navigation — Overview / Core Concepts / SDKs & Tools / Resources — and a version selector), and a wide reading column. The reading column includes an intro block (live status pill, page title, summary, Get Started + API Reference CTAs — no oversized hero), a getting-started quickstart card grid (Node.js / Python / Go / CLI / Webhooks / Errors with colored icon tiles), an installation section with dark syntax-highlighted code blocks (npm, pip, first API call) and copy buttons, a full API reference of endpoint cards (GET / POST / DELETE method badges, monospace routes, query/path parameter tables, JSON request bodies, danger callouts), an authentication section (secure-keys warning, bearer-token curl snippet, live vs test API-key types) and a four-column footer with social links. Use as a docs home, API reference, SDK guide, getting-started, developer portal, knowledge base, or technical-documentation index/detail page for an API platform, SaaS dev tool, library or framework when a structured, sidebar-driven, code-heavy reference is wanted. Supply content only — brand, nav, intro, quickstart, install, apiReference, auth, footer; the block owns all layout and styling.",
+    'Complete developer DOCUMENTATION / API-reference / developer-portal page with a clean, light, content-dense docs layout: sticky blurred top navbar with search + GitHub, a persistent left sidebar (search box, grouped section navigation — Overview / Core Concepts / SDKs & Tools / Resources — and a version selector), and a wide reading column. The reading column includes an intro block (live status pill, page title, summary, Get Started + API Reference CTAs — no oversized hero), a getting-started quickstart card grid (Node.js / Python / Go / CLI / Webhooks / Errors with colored icon tiles), an installation section with dark syntax-highlighted code blocks (npm, pip, first API call) and copy buttons, a full API reference of endpoint cards (GET / POST / DELETE method badges, monospace routes, query/path parameter tables, JSON request bodies, danger callouts), an authentication section (secure-keys warning, bearer-token curl snippet, live vs test API-key types) and a four-column footer with social links. Use as a docs home, API reference, SDK guide, getting-started, developer portal, knowledge base, or technical-documentation index/detail page for an API platform, SaaS dev tool, library or framework when a structured, sidebar-driven, code-heavy reference is wanted. Supply content only — brand, nav, intro, quickstart, install, apiReference, auth, footer; the block owns all layout and styling.',
   props: z.object({
     /** Brand / product name shown in the navbar, sidebar context and footer. */
     brand: z.string().optional(),
@@ -180,17 +170,15 @@ export const DocsKimiPage = defineCapsule({
       }),
     },
     queries: {
-      recentItems: ({ db }) => db.recentItems.orderBy("createdAt").all(),
-      savedTopics: ({ db }) => db.savedTopics.orderBy("createdAt").all(),
+      recentItems: ({ db }) => db.recentItems.orderBy('createdAt').all(),
+      savedTopics: ({ db }) => db.savedTopics.orderBy('createdAt').all(),
     },
     mutations: {
       recordVisit: ({ db }, title: string) => {
         const normalizedTitle = title.trim()
         if (!normalizedTitle) return db.recentItems.all()
 
-        const existing = db.recentItems
-          .where("title", normalizedTitle)
-          .all()[0]
+        const existing = db.recentItems.where('title', normalizedTitle).all()[0]
 
         if (existing) {
           db.recentItems.delete(existing.id)
@@ -201,7 +189,7 @@ export const DocsKimiPage = defineCapsule({
           route: normalizedTitle,
         })
 
-        return db.recentItems.orderBy("createdAt").all()
+        return db.recentItems.orderBy('createdAt').all()
       },
       removeRecentItem: ({ db }, id: string) => {
         const item = db.recentItems.get(id)
@@ -209,7 +197,7 @@ export const DocsKimiPage = defineCapsule({
           db.recentItems.delete(id)
         }
 
-        return db.recentItems.orderBy("createdAt").all()
+        return db.recentItems.orderBy('createdAt').all()
       },
       clearRecentItems: ({ db }) => {
         for (const item of db.recentItems.all()) {
@@ -222,7 +210,7 @@ export const DocsKimiPage = defineCapsule({
         const normalizedTitle = title.trim()
         if (!normalizedTitle) return db.savedTopics.all()
 
-        const exists = db.savedTopics.where("title", normalizedTitle).all()[0]
+        const exists = db.savedTopics.where('title', normalizedTitle).all()[0]
         if (!exists) {
           db.savedTopics.insert({
             title: normalizedTitle,
@@ -230,7 +218,7 @@ export const DocsKimiPage = defineCapsule({
           })
         }
 
-        return db.savedTopics.orderBy("createdAt").all()
+        return db.savedTopics.orderBy('createdAt').all()
       },
       removeSavedTopic: ({ db }, id: string) => {
         const topic = db.savedTopics.get(id)
@@ -238,7 +226,7 @@ export const DocsKimiPage = defineCapsule({
           db.savedTopics.delete(id)
         }
 
-        return db.savedTopics.orderBy("createdAt").all()
+        return db.savedTopics.orderBy('createdAt').all()
       },
       clearSavedTopics: ({ db }) => {
         for (const topic of db.savedTopics.all()) {
@@ -252,48 +240,59 @@ export const DocsKimiPage = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
-    const [activityOpen, setActivityOpen] = useState(false)
-    const brand = props.brand ?? "StackForge"
+    const [_activityOpen, setActivityOpen] = useState(false)
+    const brand = props.brand ?? 'StackForge'
     const nav = props.nav?.length
       ? props.nav
-      : ["Getting Started", "API Reference", "SDKs", "Changelog"]
-    const goToBrand = nav[0]
+      : ['Getting Started', 'API Reference', 'SDKs', 'Changelog']
+    const _goToBrand = nav[0]
 
     const auth = lakebed.useAuth()
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authDisplayName =
       (isSignedIn &&
-        ((auth.user?.displayName || auth.email || auth.user?.sub || nav[0]).trim())) ||
-      "Docs"
-    const handleSignIn = () => {
+        (
+          auth.user?.displayName ||
+          auth.email ||
+          auth.user?.id ||
+          nav[0]
+        ).trim()) ||
+      'Docs'
+    const _handleSignIn = () => {
       if (auth.isLoading) return
       void lakebed.signInWithGoogle()
     }
-    const handleSignOut = () => {
+    const _handleSignOut = () => {
       lakebed.signOut()
     }
-    const authLabel = auth.isLoading ? "Checking..." : isSignedIn ? "Sign out" : "Sign in"
-    const authButtonLabel = isSignedIn ? `Signed in ${authDisplayName}` : "Sign in"
+    const _authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? 'Sign out'
+        : 'Sign in'
+    const _authButtonLabel = isSignedIn
+      ? `Signed in ${authDisplayName}`
+      : 'Sign in'
 
-    const recentItems = lakebed.useQuery("recentItems")
-    const savedTopics = lakebed.useQuery("savedTopics")
-    const recordVisit = lakebed.useMutation("recordVisit")
-    const saveTopic = lakebed.useMutation("saveTopic")
-    const removeSavedTopic = lakebed.useMutation("removeSavedTopic")
-    const clearSavedTopics = lakebed.useMutation("clearSavedTopics")
-    const removeRecentItem = lakebed.useMutation("removeRecentItem")
-    const clearRecentItems = lakebed.useMutation("clearRecentItems")
+    const recentItems = lakebed.useQuery('recentItems')
+    const savedTopics = lakebed.useQuery('savedTopics')
+    const recordVisit = lakebed.useMutation('recordVisit')
+    const saveTopic = lakebed.useMutation('saveTopic')
+    const _removeSavedTopic = lakebed.useMutation('removeSavedTopic')
+    const _clearSavedTopics = lakebed.useMutation('clearSavedTopics')
+    const _removeRecentItem = lakebed.useMutation('removeRecentItem')
+    const _clearRecentItems = lakebed.useMutation('clearRecentItems')
 
-    const safeRecentItems = recentItems ?? []
-    const safeSavedTopics = savedTopics ?? []
+    const _safeRecentItems = recentItems ?? []
+    const _safeSavedTopics = savedTopics ?? []
 
-    const trackAndGo = (destination: string) => {
+    const _trackAndGo = (destination: string) => {
       if (destination.trim()) {
         void recordVisit(destination)
       }
       go(destination)
     }
-    const handleSaveAndGo = (destination: string) => {
+    const _handleSaveAndGo = (destination: string) => {
       if (destination.trim()) {
         void saveTopic(destination)
         void recordVisit(destination)
@@ -301,97 +300,113 @@ export const DocsKimiPage = defineCapsule({
       setActivityOpen(false)
       go(destination)
     }
+    void [
+      _activityOpen,
+      _goToBrand,
+      _handleSignIn,
+      _handleSignOut,
+      _authLabel,
+      _authButtonLabel,
+      _removeSavedTopic,
+      _clearSavedTopics,
+      _removeRecentItem,
+      _clearRecentItems,
+      _safeRecentItems,
+      _safeSavedTopics,
+      _trackAndGo,
+      _handleSaveAndGo,
+    ]
 
     const searchPlaceholder =
-      props.sidebar?.searchPlaceholder ?? "Search docs..."
+      props.sidebar?.searchPlaceholder ?? 'Search docs...'
     const sidebarGroups = props.sidebar?.groups?.length
       ? props.sidebar.groups
       : [
           {
-            title: "Overview",
-            items: ["Introduction", "Quick Start", "Installation"],
+            title: 'Overview',
+            items: ['Introduction', 'Quick Start', 'Installation'],
           },
           {
-            title: "Core Concepts",
+            title: 'Core Concepts',
             items: [
-              "Authentication",
-              "Endpoints",
-              "Rate Limits",
-              "Error Handling",
-              "Webhooks",
+              'Authentication',
+              'Endpoints',
+              'Rate Limits',
+              'Error Handling',
+              'Webhooks',
             ],
           },
           {
-            title: "SDKs & Tools",
-            items: ["Node.js SDK", "Python SDK", "Go SDK", "CLI Reference"],
+            title: 'SDKs & Tools',
+            items: ['Node.js SDK', 'Python SDK', 'Go SDK', 'CLI Reference'],
           },
           {
-            title: "Resources",
-            items: ["Changelog", "Community", "Support"],
+            title: 'Resources',
+            items: ['Changelog', 'Community', 'Support'],
           },
         ]
     const versions = props.sidebar?.versions?.length
       ? props.sidebar.versions
-      : ["v3.2 (Latest)", "v3.1", "v3.0", "v2.9"]
+      : ['v3.2 (Latest)', 'v3.1', 'v3.0', 'v2.9']
 
     const introBadge =
-      props.intro?.badge ?? "Documentation v3.2 — Updated May 28, 2026"
-    const introTitle = props.intro?.title ?? "Build APIs that scale"
+      props.intro?.badge ?? 'Documentation v3.2 — Updated May 28, 2026'
+    const introTitle = props.intro?.title ?? 'Build APIs that scale'
     const introDesc =
       props.intro?.description ??
-      "StackForge is the complete platform for building, deploying, and managing production-grade APIs. Get from zero to production in minutes, not months."
-    const introPrimary = props.intro?.primaryCta ?? "Get Started"
-    const introSecondary = props.intro?.secondaryCta ?? "API Reference"
+      'StackForge is the complete platform for building, deploying, and managing production-grade APIs. Get from zero to production in minutes, not months.'
+    const introPrimary = props.intro?.primaryCta ?? 'Get Started'
+    const introSecondary = props.intro?.secondaryCta ?? 'API Reference'
 
     const quickstartHeading =
-      props.quickstart?.heading ?? "Getting Started Cards"
+      props.quickstart?.heading ?? 'Getting Started Cards'
     const quickstartDesc =
       props.quickstart?.description ??
-      "Choose your path to integrate StackForge into your application."
+      'Choose your path to integrate StackForge into your application.'
     const quickstartCards = props.quickstart?.cards?.length
       ? props.quickstart.cards
       : [
           {
-            title: "Node.js Quickstart",
+            title: 'Node.js Quickstart',
             description:
-              "Get up and running with our Node.js SDK in under 5 minutes.",
-            cta: "Start building",
+              'Get up and running with our Node.js SDK in under 5 minutes.',
+            cta: 'Start building',
           },
           {
-            title: "Python Quickstart",
+            title: 'Python Quickstart',
             description:
-              "Install the Python SDK and make your first API call today.",
-            cta: "Start building",
+              'Install the Python SDK and make your first API call today.',
+            cta: 'Start building',
           },
           {
-            title: "Go Quickstart",
-            description: "Lightweight and fast. Integrate with our Go SDK.",
-            cta: "Start building",
+            title: 'Go Quickstart',
+            description: 'Lightweight and fast. Integrate with our Go SDK.',
+            cta: 'Start building',
           },
           {
-            title: "CLI Reference",
+            title: 'CLI Reference',
             description:
-              "Master the StackForge CLI for deployment and management.",
-            cta: "View commands",
+              'Master the StackForge CLI for deployment and management.',
+            cta: 'View commands',
           },
           {
-            title: "Webhooks Guide",
+            title: 'Webhooks Guide',
             description:
-              "Configure webhooks to receive real-time event notifications.",
-            cta: "Configure webhooks",
+              'Configure webhooks to receive real-time event notifications.',
+            cta: 'Configure webhooks',
           },
           {
-            title: "Error Handling",
+            title: 'Error Handling',
             description:
-              "Understand error codes and implement proper error handling.",
-            cta: "View errors",
+              'Understand error codes and implement proper error handling.',
+            cta: 'View errors',
           },
         ]
 
-    const installHeading = props.install?.heading ?? "Installation"
+    const installHeading = props.install?.heading ?? 'Installation'
     const installDesc =
       props.install?.description ??
-      "Install the StackForge SDK using your preferred package manager."
+      'Install the StackForge SDK using your preferred package manager.'
     const installNpm =
       props.install?.npm ??
       `# Install via npm
@@ -413,7 +428,7 @@ poetry add stackforge
 # Or with pipenv
 pipenv install stackforge`
     const firstCallHeading =
-      props.install?.firstCallHeading ?? "Make your first API call"
+      props.install?.firstCallHeading ?? 'Make your first API call'
     const firstCall =
       props.install?.firstCall ??
       `// Import the SDK
@@ -434,46 +449,46 @@ const project = await sf.projects.create({
 
 console.log(\`Project created: \${project.id}\`);`
 
-    const apiHeading = props.apiReference?.heading ?? "API Reference"
+    const apiHeading = props.apiReference?.heading ?? 'API Reference'
     const apiDesc =
       props.apiReference?.description ??
-      "Complete reference for all StackForge API endpoints and operations."
+      'Complete reference for all StackForge API endpoints and operations.'
     const endpoints = props.apiReference?.endpoints?.length
       ? props.apiReference.endpoints
       : [
           {
-            method: "GET",
-            path: "/v1/projects",
-            summary: "List all projects",
+            method: 'GET',
+            path: '/v1/projects',
+            summary: 'List all projects',
             description:
-              "Retrieve a paginated list of all projects in your organization.",
-            paramsLabel: "Query Parameters",
+              'Retrieve a paginated list of all projects in your organization.',
+            paramsLabel: 'Query Parameters',
             params: [
               {
-                name: "limit",
-                type: "integer",
+                name: 'limit',
+                type: 'integer',
                 description:
-                  "Number of results to return (max 100, default 20)",
+                  'Number of results to return (max 100, default 20)',
               },
               {
-                name: "cursor",
-                type: "string",
-                description: "Pagination cursor for fetching next page",
+                name: 'cursor',
+                type: 'string',
+                description: 'Pagination cursor for fetching next page',
               },
               {
-                name: "status",
-                type: "string",
-                description: "Filter by status: active, paused, archived",
+                name: 'status',
+                type: 'string',
+                description: 'Filter by status: active, paused, archived',
               },
             ],
           },
           {
-            method: "POST",
-            path: "/v1/projects",
-            summary: "Create a new project",
+            method: 'POST',
+            path: '/v1/projects',
+            summary: 'Create a new project',
             description:
-              "Create a new API project with the specified configuration.",
-            paramsLabel: "Request Body",
+              'Create a new API project with the specified configuration.',
+            paramsLabel: 'Request Body',
             body: `{
   "name": "E-commerce API",
   "description": "Backend API for online store",
@@ -486,96 +501,96 @@ console.log(\`Project created: \${project.id}\`);`
 }`,
           },
           {
-            method: "GET",
-            path: "/v1/projects/:id",
-            summary: "Retrieve a project",
-            description: "Get detailed information about a specific project.",
-            paramsLabel: "Path Parameters",
+            method: 'GET',
+            path: '/v1/projects/:id',
+            summary: 'Retrieve a project',
+            description: 'Get detailed information about a specific project.',
+            paramsLabel: 'Path Parameters',
             params: [
               {
-                name: "id",
-                type: "string *",
-                description: "Unique project identifier (proj_xxxxx)",
+                name: 'id',
+                type: 'string *',
+                description: 'Unique project identifier (proj_xxxxx)',
               },
             ],
           },
           {
-            method: "DELETE",
-            path: "/v1/projects/:id",
-            summary: "Delete a project",
+            method: 'DELETE',
+            path: '/v1/projects/:id',
+            summary: 'Delete a project',
             description:
-              "Permanently delete a project and all associated resources. This action cannot be undone.",
-            note: "Requires confirmation header: X-Confirm-Delete: true",
+              'Permanently delete a project and all associated resources. This action cannot be undone.',
+            note: 'Requires confirmation header: X-Confirm-Delete: true',
           },
         ]
 
-    const authHeading = props.auth?.heading ?? "Authentication"
+    const authHeading = props.auth?.heading ?? 'Authentication'
     const authDesc =
       props.auth?.description ??
-      "StackForge uses API keys to authenticate requests. You can view and manage your API keys in the Dashboard."
+      'StackForge uses API keys to authenticate requests. You can view and manage your API keys in the Dashboard.'
     const authWarningTitle =
-      props.auth?.warningTitle ?? "Keep your API keys secure"
+      props.auth?.warningTitle ?? 'Keep your API keys secure'
     const authWarningBody =
       props.auth?.warningBody ??
-      "Do not expose API keys in client-side code or public repositories. Use environment variables to store keys securely."
-    const bearerHeading = props.auth?.bearerHeading ?? "Bearer Token"
+      'Do not expose API keys in client-side code or public repositories. Use environment variables to store keys securely.'
+    const bearerHeading = props.auth?.bearerHeading ?? 'Bearer Token'
     const bearerDescription =
       props.auth?.bearerDescription ??
-      "Include your API key in the Authorization header of every request:"
+      'Include your API key in the Authorization header of every request:'
     const bearerCode =
       props.auth?.bearerCode ??
       `# Using curl
 curl https://api.stackforge.io/v1/projects \\
   -H "Authorization: Bearer sf_live_abc123xyz789"`
-    const keyTypesHeading = props.auth?.keyTypesHeading ?? "API Key Types"
+    const keyTypesHeading = props.auth?.keyTypesHeading ?? 'API Key Types'
     const keyTypes = props.auth?.keyTypes?.length
       ? props.auth.keyTypes
       : [
           {
-            label: "Live",
-            prefix: "sf_live_...",
+            label: 'Live',
+            prefix: 'sf_live_...',
             description:
-              "Production environment. Full access to all API endpoints.",
+              'Production environment. Full access to all API endpoints.',
           },
           {
-            label: "Test",
-            prefix: "sf_test_...",
-            description: "Sandbox environment. Isolated from production data.",
+            label: 'Test',
+            prefix: 'sf_test_...',
+            description: 'Sandbox environment. Isolated from production data.',
           },
         ]
 
     const footerTagline =
       props.footer?.tagline ??
-      "The complete platform for building, deploying, and managing production-grade APIs."
+      'The complete platform for building, deploying, and managing production-grade APIs.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Product",
-            links: ["Features", "Pricing", "Integrations", "Changelog"],
+            title: 'Product',
+            links: ['Features', 'Pricing', 'Integrations', 'Changelog'],
           },
           {
-            title: "Developers",
-            links: ["Documentation", "API Reference", "SDKs", "Status"],
+            title: 'Developers',
+            links: ['Documentation', 'API Reference', 'SDKs', 'Status'],
           },
           {
-            title: "Company",
-            links: ["About", "Blog", "Careers", "Contact"],
+            title: 'Company',
+            links: ['About', 'Blog', 'Careers', 'Contact'],
           },
         ]
-    const footerNote = props.footer?.note ?? "All rights reserved."
+    const footerNote = props.footer?.note ?? 'All rights reserved.'
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy", "Terms", "Cookies"]
+      : ['Privacy', 'Terms', 'Cookies']
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Twitter", "GitHub", "Discord"]
+      : ['Twitter', 'GitHub', 'Discord']
 
     // Brand logo tile — neutral square with a stacked-blocks glyph (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid shrink-0 place-items-center rounded-md bg-foreground text-background",
+          'grid shrink-0 place-items-center rounded-md bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
@@ -766,31 +781,31 @@ curl https://api.stackforge.io/v1/projects \\
 
     // Each tile gets a token tint + matching foreground text (rotates, no raw palette).
     const cardTints = [
-      "bg-chart-1/10 text-chart-1 group-hover:bg-chart-1/20",
-      "bg-chart-2/10 text-chart-2 group-hover:bg-chart-2/20",
-      "bg-chart-3/10 text-chart-3 group-hover:bg-chart-3/20",
-      "bg-muted text-foreground group-hover:bg-accent",
-      "bg-chart-4/10 text-chart-4 group-hover:bg-chart-4/20",
-      "bg-chart-5/10 text-chart-5 group-hover:bg-chart-5/20",
+      'bg-chart-1/10 text-chart-1 group-hover:bg-chart-1/20',
+      'bg-chart-2/10 text-chart-2 group-hover:bg-chart-2/20',
+      'bg-chart-3/10 text-chart-3 group-hover:bg-chart-3/20',
+      'bg-muted text-foreground group-hover:bg-accent',
+      'bg-chart-4/10 text-chart-4 group-hover:bg-chart-4/20',
+      'bg-chart-5/10 text-chart-5 group-hover:bg-chart-5/20',
     ]
 
     // HTTP method badge styling per method (token-only).
     const methodBadge = (method: string) => {
       const m = method.toUpperCase()
-      if (m === "POST") return "bg-chart-2/15 text-chart-2"
-      if (m === "DELETE") return "bg-destructive/15 text-destructive"
-      if (m === "PUT" || m === "PATCH") return "bg-chart-4/15 text-chart-4"
-      return "bg-chart-1/15 text-chart-1" // GET (and default)
+      if (m === 'POST') return 'bg-chart-2/15 text-chart-2'
+      if (m === 'DELETE') return 'bg-destructive/15 text-destructive'
+      if (m === 'PUT' || m === 'PATCH') return 'bg-chart-4/15 text-chart-4'
+      return 'bg-chart-1/15 text-chart-1' // GET (and default)
     }
 
     const socialIcon = (name: string) => {
       const n = name.toLowerCase()
-      if (n.includes("git")) {
+      if (n.includes('git')) {
         return (
           <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
         )
       }
-      if (n.includes("discord")) {
+      if (n.includes('discord')) {
         return (
           <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6521-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0025-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286z" />
         )
@@ -804,7 +819,7 @@ curl https://api.stackforge.io/v1/projects \\
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -850,7 +865,13 @@ curl https://api.stackforge.io/v1/projects \\
                   <button
                     type="button"
                     aria-label="GitHub repository"
-                    onClick={() => go(footerSocials.find((s) => s.toLowerCase().includes("git")) ?? nav[0])}
+                    onClick={() =>
+                      go(
+                        footerSocials.find((s) =>
+                          s.toLowerCase().includes('git'),
+                        ) ?? nav[0],
+                      )
+                    }
                     className="p-2 text-muted-foreground transition-colors hover:text-foreground"
                   >
                     <svg
@@ -860,7 +881,7 @@ curl https://api.stackforge.io/v1/projects \\
                       fill="currentColor"
                       aria-hidden="true"
                     >
-                      {socialIcon("github")}
+                      {socialIcon('github')}
                     </svg>
                   </button>
                 </div>
@@ -955,10 +976,10 @@ curl https://api.stackforge.io/v1/projects \\
                               type="button"
                               onClick={() => go(item)}
                               className={cn(
-                                "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
+                                'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors',
                                 active
-                                  ? "bg-muted font-medium text-foreground"
-                                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                                  ? 'bg-muted font-medium text-foreground'
+                                  : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
                               )}
                             >
                               {item}
@@ -1044,7 +1065,7 @@ curl https://api.stackforge.io/v1/projects \\
                   >
                     <div
                       className={cn(
-                        "mb-4 grid size-12 place-items-center rounded-xl transition-colors",
+                        'mb-4 grid size-12 place-items-center rounded-xl transition-colors',
                         cardTints[i % cardTints.length],
                       )}
                     >
@@ -1139,7 +1160,7 @@ curl https://api.stackforge.io/v1/projects \\
                     >
                       <span
                         className={cn(
-                          "rounded px-2 py-1 text-xs font-semibold",
+                          'rounded px-2 py-1 text-xs font-semibold',
                           methodBadge(ep.method),
                         )}
                       >
@@ -1160,16 +1181,16 @@ curl https://api.stackforge.io/v1/projects \\
                       {ep.params?.length ? (
                         <div className="space-y-3">
                           <div className="text-xs font-semibold uppercase text-muted-foreground">
-                            {ep.paramsLabel ?? "Parameters"}
+                            {ep.paramsLabel ?? 'Parameters'}
                           </div>
                           <table className="w-full text-sm">
                             <tbody className="divide-y divide-border">
                               {ep.params.map((p) => (
                                 <tr key={p.name}>
                                   <td className="py-2 pr-4 font-mono text-foreground">
-                                    {p.name.includes("*") ? (
+                                    {p.name.includes('*') ? (
                                       <>
-                                        {p.name.replace("*", "").trim()}{" "}
+                                        {p.name.replace('*', '').trim()}{' '}
                                         <span className="text-destructive">
                                           *
                                         </span>
@@ -1179,9 +1200,9 @@ curl https://api.stackforge.io/v1/projects \\
                                     )}
                                   </td>
                                   <td className="py-2 pr-4 text-muted-foreground">
-                                    {p.type.includes("*") ? (
+                                    {p.type.includes('*') ? (
                                       <>
-                                        {p.type.replace("*", "").trim()}{" "}
+                                        {p.type.replace('*', '').trim()}{' '}
                                         <span className="text-destructive">
                                           *
                                         </span>
@@ -1203,7 +1224,7 @@ curl https://api.stackforge.io/v1/projects \\
                       {ep.body ? (
                         <div className="space-y-3">
                           <div className="text-xs font-semibold uppercase text-muted-foreground">
-                            {ep.paramsLabel ?? "Request Body"}
+                            {ep.paramsLabel ?? 'Request Body'}
                           </div>
                           <div className="group relative">
                             <pre className="overflow-x-auto rounded-lg bg-foreground p-4 text-xs leading-relaxed text-background">
@@ -1305,10 +1326,10 @@ curl https://api.stackforge.io/v1/projects \\
                         <div className="mb-2 flex items-center gap-2">
                           <span
                             className={cn(
-                              "rounded px-2 py-0.5 text-xs font-medium",
+                              'rounded px-2 py-0.5 text-xs font-medium',
                               i === 0
-                                ? "bg-chart-2/15 text-chart-2"
-                                : "bg-muted text-muted-foreground",
+                                ? 'bg-chart-2/15 text-chart-2'
+                                : 'bg-muted text-muted-foreground',
                             )}
                           >
                             {kt.label}

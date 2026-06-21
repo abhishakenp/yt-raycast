@@ -1,16 +1,16 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
+} from '#/components/ui/popover.tsx'
 import {
   Sheet,
   SheetClose,
@@ -19,29 +19,29 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "#/components/ui/sheet.tsx"
+} from '#/components/ui/sheet.tsx'
 
 const parseCurrencyValue = (value: string) => {
-  const normalized = value.replace(/[^0-9.-]/g, "")
+  const normalized = value.replace(/[^0-9.-]/g, '')
   const numberValue = Number.parseFloat(normalized)
   return Number.isFinite(numberValue) ? numberValue : 0
 }
 
 const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("en-US", {
-    currency: "USD",
-    style: "currency",
+  new Intl.NumberFormat('en-US', {
+    currency: 'USD',
+    style: 'currency',
   }).format(Math.max(0, value))
 
 const parseTermToMonths = (term: string) => {
-  const parsed = Number.parseInt(term.replace(/[^0-9]/g, ""), 10)
+  const parsed = Number.parseInt(term.replace(/[^0-9]/g, ''), 10)
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 36
 }
 
 const estimateApr = (scoreLabel: string) => {
-  if (scoreLabel.toLowerCase().includes("excellent")) return 6.99
-  if (scoreLabel.toLowerCase().includes("good")) return 8.99
-  if (scoreLabel.toLowerCase().includes("fair")) return 12.99
+  if (scoreLabel.toLowerCase().includes('excellent')) return 6.99
+  if (scoreLabel.toLowerCase().includes('good')) return 8.99
+  if (scoreLabel.toLowerCase().includes('fair')) return 12.99
   return 16.99
 }
 
@@ -77,7 +77,7 @@ const estimateMonthlyPayment = (
  * ONLY content data; rich defaults make it render great with no props at all.
  */
 export const LendingKimiPage = defineCapsule({
-  name: "LendingKimiPage",
+  name: 'LendingKimiPage',
   description:
     "Complete personal-LENDING / loan marketing landing page with a calm, trustworthy fintech aesthetic: warm neutral canvas, clean white cards, a single near-ink brand color, and conversion-focused copy. Includes a split hero (transparent-rate headline, trust pills, dual CTAs) beside a live loan-calculator card (amount, credit score, term, est. APR & monthly payment), a press/'featured in' logos strip, a 6-up benefits grid (funds in 24h, no hidden fees, fixed rates, paperless, human support, soft credit check), a 3-step 'how it works' flow, an interactive personalized rate calculator with an estimated-offer summary, a transparent rates & fees band ($0 origination, $0 prepayment) with a sample APR payment-schedule table, a stats/about split with a photo and floating 5-star review card, a 3-up borrower-testimonials grid, an accordion FAQ, a dark 'ready to check your rate?' CTA band with security badges, and a multi-column footer with legal disclosures. Use as the ROOT/home page for personal-loan lenders, lending marketplaces, debt-consolidation services, fintech credit products, BNPL or financing brands, or any 'apply for a loan / check your rate' product when a clean, transparent, trust-building, APR-and-calculator-driven page is wanted. Supply content only — brand, nav, hero, calculator, logos, benefits, steps, rates, stats, testimonials, faq, cta, footer; the block owns all layout and styling.",
   lakebed: {
@@ -95,7 +95,7 @@ export const LendingKimiPage = defineCapsule({
       }),
     },
     queries: {
-      loanLeads: ({ db }) => db.loanLeads.orderBy("createdAt").all(),
+      loanLeads: ({ db }) => db.loanLeads.orderBy('createdAt').all(),
     },
     mutations: {
       addLoanLead: (
@@ -291,9 +291,7 @@ export const LendingKimiPage = defineCapsule({
       .object({
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       })
       .optional(),
     /** Dark "ready to check your rate?" CTA band. */
@@ -325,25 +323,26 @@ export const LendingKimiPage = defineCapsule({
     const [leadDrawerOpen, setLeadDrawerOpen] = useState(false)
     const auth = lakebed.useAuth()
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
-    const authEmail = auth.email || auth.user?.email || ""
+    const authEmail = auth.email || auth.user?.email || ''
     const authDisplayName =
-      auth.displayName || auth.user?.displayName || authEmail || "Guest"
-    const authInitials = authDisplayName
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join("") || "ME"
+      auth.displayName || auth.user?.displayName || authEmail || 'Guest'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
     const authPicture = auth.picture || auth.user?.picture
     const authLabel = auth.isLoading
-      ? "Checking..."
+      ? 'Checking...'
       : isSignedIn
         ? authDisplayName
-        : "Sign in"
-    const loanLeads = lakebed.useQuery("loanLeads")
-    const addLoanLead = lakebed.useMutation("addLoanLead")
-    const removeLoanLead = lakebed.useMutation("removeLoanLead")
-    const clearLoanLeads = lakebed.useMutation("clearLoanLeads")
+        : 'Sign in'
+    const loanLeads = lakebed.useQuery('loanLeads')
+    const addLoanLead = lakebed.useMutation('addLoanLead')
+    const removeLoanLead = lakebed.useMutation('removeLoanLead')
+    const clearLoanLeads = lakebed.useMutation('clearLoanLeads')
     const storedLeads = loanLeads ?? []
     const leadCount = storedLeads.length
     const leadSubtotal = storedLeads.reduce(
@@ -358,51 +357,50 @@ export const LendingKimiPage = defineCapsule({
       lakebed.signOut()
     }
 
-    const brand = props.brand ?? "ClearLoan"
+    const brand = props.brand ?? 'ClearLoan'
     const nav = props.nav?.length
       ? props.nav
-      : ["How it Works", "Rate Calculator", "Rates & Terms", "FAQ"]
+      : ['How it Works', 'Rate Calculator', 'Rates & Terms', 'FAQ']
 
-    const heroLead = props.hero?.headingLead ?? "Personal loans made"
-    const heroHighlight =
-      props.hero?.headingHighlight ?? "refreshingly simple"
+    const heroLead = props.hero?.headingLead ?? 'Personal loans made'
+    const heroHighlight = props.hero?.headingHighlight ?? 'refreshingly simple'
     const heroSub =
       props.hero?.subheading ??
-      "Borrow $1,000 to $50,000 with fixed rates starting at 6.99% APR. No hidden fees, no prepayment penalties, and funds as soon as tomorrow."
-    const heroPrimary = props.hero?.primaryCta ?? "Check Your Rate"
-    const heroSecondary = props.hero?.secondaryCta ?? "See How It Works"
+      'Borrow $1,000 to $50,000 with fixed rates starting at 6.99% APR. No hidden fees, no prepayment penalties, and funds as soon as tomorrow.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Check Your Rate'
+    const heroSecondary = props.hero?.secondaryCta ?? 'See How It Works'
     const heroTrust = props.hero?.trust?.length
       ? props.hero.trust
-      : ["No impact to credit score", "2-minute application"]
-    const heroCardTitle = props.hero?.cardTitle ?? "Loan Calculator"
+      : ['No impact to credit score', '2-minute application']
+    const heroCardTitle = props.hero?.cardTitle ?? 'Loan Calculator'
     const heroCardSubtitle =
-      props.hero?.cardSubtitle ?? "Estimate your monthly payment"
-    const heroAmountLabel = props.hero?.amountLabel ?? "Loan Amount"
-    const heroAmountValue = props.hero?.amountValue ?? "15000"
-    const heroScoreLabel = props.hero?.scoreLabel ?? "Credit Score"
+      props.hero?.cardSubtitle ?? 'Estimate your monthly payment'
+    const heroAmountLabel = props.hero?.amountLabel ?? 'Loan Amount'
+    const heroAmountValue = props.hero?.amountValue ?? '15000'
+    const heroScoreLabel = props.hero?.scoreLabel ?? 'Credit Score'
     const heroScoreOptions = props.hero?.scoreOptions?.length
       ? props.hero.scoreOptions
       : [
-          "Excellent (750+)",
-          "Good (700-749)",
-          "Fair (650-699)",
-          "Average (600-649)",
+          'Excellent (750+)',
+          'Good (700-749)',
+          'Fair (650-699)',
+          'Average (600-649)',
         ]
-    const heroTermLabel = props.hero?.termLabel ?? "Loan Term"
+    const heroTermLabel = props.hero?.termLabel ?? 'Loan Term'
     const heroTerms = props.hero?.terms?.length
       ? props.hero.terms
-      : ["36 mo", "48 mo", "60 mo"]
-    const heroAprLabel = props.hero?.aprLabel ?? "Est. APR"
-    const heroPaymentLabel = props.hero?.paymentLabel ?? "Monthly Payment"
-    const heroCardCta = props.hero?.cardCta ?? "Get My Personalized Rate"
+      : ['36 mo', '48 mo', '60 mo']
+    const heroAprLabel = props.hero?.aprLabel ?? 'Est. APR'
+    const heroPaymentLabel = props.hero?.paymentLabel ?? 'Monthly Payment'
+    const heroCardCta = props.hero?.cardCta ?? 'Get My Personalized Rate'
     const [heroAmount, setHeroAmount] = useState(
       () => parseCurrencyValue(heroAmountValue) || 15000,
     )
     const [heroTerm, setHeroTerm] = useState(
-      heroTerms.includes("48 mo") ? "48 mo" : heroTerms[0] ?? "36 mo",
+      heroTerms.includes('48 mo') ? '48 mo' : (heroTerms[0] ?? '36 mo'),
     )
     const [heroScore, setHeroScore] = useState(
-      heroScoreOptions[2] ?? heroScoreOptions[0] ?? "Average (600-649)",
+      heroScoreOptions[2] ?? heroScoreOptions[0] ?? 'Average (600-649)',
     )
 
     const heroApr = Math.max(
@@ -420,88 +418,89 @@ export const LendingKimiPage = defineCapsule({
     const heroLeadSource = `${heroPrimary} / Hero`
 
     const logosCaption =
-      props.logos?.caption ?? "Featured in and trusted by over 250,000 borrowers"
+      props.logos?.caption ??
+      'Featured in and trusted by over 250,000 borrowers'
     const logoNames = props.logos?.names?.length
       ? props.logos.names
-      : ["TechCrunch", "Forbes", "Bloomberg", "CNBC", "NerdWallet", "Bankrate"]
+      : ['TechCrunch', 'Forbes', 'Bloomberg', 'CNBC', 'NerdWallet', 'Bankrate']
 
     const benefitsHeading =
-      props.benefits?.heading ?? "Why borrowers choose ClearLoan"
+      props.benefits?.heading ?? 'Why borrowers choose ClearLoan'
     const benefitsDesc =
       props.benefits?.description ??
-      "No hidden fees, no surprises. Just honest lending with terms that work for you."
+      'No hidden fees, no surprises. Just honest lending with terms that work for you.'
     const benefitItems = props.benefits?.items?.length
       ? props.benefits.items
       : [
           {
-            title: "Funds in 24 hours",
+            title: 'Funds in 24 hours',
             description:
-              "Once approved, money hits your account as soon as the next business day. No waiting, no stress.",
+              'Once approved, money hits your account as soon as the next business day. No waiting, no stress.',
           },
           {
-            title: "No hidden fees",
+            title: 'No hidden fees',
             description:
-              "Zero origination fees, zero prepayment penalties, zero late fees. What you see is what you pay.",
+              'Zero origination fees, zero prepayment penalties, zero late fees. What you see is what you pay.',
           },
           {
-            title: "Fixed rates for life",
+            title: 'Fixed rates for life',
             description:
               "Your rate never changes. Budget with confidence knowing exactly what you'll pay every month.",
           },
           {
-            title: "Paperless application",
+            title: 'Paperless application',
             description:
-              "Apply in under 2 minutes from your phone or laptop. No printing, no faxing, no branch visits.",
+              'Apply in under 2 minutes from your phone or laptop. No printing, no faxing, no branch visits.',
           },
           {
-            title: "Human support",
+            title: 'Human support',
             description:
-              "Real people, real help. Our California-based team is available 7 days a week by phone or chat.",
+              'Real people, real help. Our California-based team is available 7 days a week by phone or chat.',
           },
           {
-            title: "Soft credit check",
+            title: 'Soft credit check',
             description:
               "Checking your rate won't affect your credit score. Apply with confidence, no strings attached.",
           },
         ]
 
-    const stepsHeading = props.steps?.heading ?? "How it works"
+    const stepsHeading = props.steps?.heading ?? 'How it works'
     const stepsDesc =
       props.steps?.description ??
-      "Three simple steps to get the funds you need."
+      'Three simple steps to get the funds you need.'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Check your rate",
+            title: 'Check your rate',
             description:
               "Tell us how much you need and what it's for. We'll show you personalized rates in 2 minutes—no impact to your credit score.",
-            note: "Takes 2 minutes",
+            note: 'Takes 2 minutes',
           },
           {
-            title: "Choose your terms",
+            title: 'Choose your terms',
             description:
-              "Pick the loan amount and term that fit your budget. Adjust your monthly payment until it feels right.",
-            note: "Takes 5 minutes",
+              'Pick the loan amount and term that fit your budget. Adjust your monthly payment until it feels right.',
+            note: 'Takes 5 minutes',
           },
           {
-            title: "Get funded",
+            title: 'Get funded',
             description:
               "E-sign your documents and we'll deposit funds directly to your bank account as soon as the next business day.",
-            note: "Next day delivery",
+            note: 'Next day delivery',
           },
         ]
 
     const calcHeading =
-      props.calculator?.heading ?? "Personalized rate calculator"
+      props.calculator?.heading ?? 'Personalized rate calculator'
     const calcDesc =
       props.calculator?.description ??
-      "See what you could save with a ClearLoan."
-    const calcDetailsTitle = props.calculator?.detailsTitle ?? "Loan Details"
-    const calcAmountLabel = props.calculator?.amountLabel ?? "Loan Amount"
-    const calcAmountValue = props.calculator?.amountValue ?? "20,000"
-    const calcAmountMin = props.calculator?.amountMin ?? "$1,000"
-    const calcAmountMax = props.calculator?.amountMax ?? "$50,000"
+      'See what you could save with a ClearLoan.'
+    const calcDetailsTitle = props.calculator?.detailsTitle ?? 'Loan Details'
+    const calcAmountLabel = props.calculator?.amountLabel ?? 'Loan Amount'
+    const calcAmountValue = props.calculator?.amountValue ?? '20,000'
+    const calcAmountMin = props.calculator?.amountMin ?? '$1,000'
+    const calcAmountMax = props.calculator?.amountMax ?? '$50,000'
     const calcAmountMinNumber = Math.max(
       0,
       Math.round(parseCurrencyValue(calcAmountMin)),
@@ -510,74 +509,75 @@ export const LendingKimiPage = defineCapsule({
       calcAmountMinNumber,
       Math.round(parseCurrencyValue(calcAmountMax)) || 50000,
     )
-    const calcPurposeLabel = props.calculator?.purposeLabel ?? "Loan Purpose"
+    const calcPurposeLabel = props.calculator?.purposeLabel ?? 'Loan Purpose'
     const calcPurposes = props.calculator?.purposes?.length
       ? props.calculator.purposes
       : [
-          "Debt Consolidation",
-          "Home Improvement",
-          "Medical Expenses",
-          "Auto Purchase",
-          "Education",
-          "Major Purchase",
-          "Vacation",
-          "Other",
+          'Debt Consolidation',
+          'Home Improvement',
+          'Medical Expenses',
+          'Auto Purchase',
+          'Education',
+          'Major Purchase',
+          'Vacation',
+          'Other',
         ]
-    const calcTermLabel = props.calculator?.termLabel ?? "Loan Term"
-    const calcTermValue = props.calculator?.termValue ?? "48 months"
+    const calcTermLabel = props.calculator?.termLabel ?? 'Loan Term'
+    const calcTermValue = props.calculator?.termValue ?? '48 months'
     const calcTerms = props.calculator?.terms?.length
       ? props.calculator.terms
-      : ["36 mo", "48 mo", "60 mo"]
+      : ['36 mo', '48 mo', '60 mo']
     const calcScoreLabel =
-      props.calculator?.scoreLabel ?? "Your Credit Score Range"
+      props.calculator?.scoreLabel ?? 'Your Credit Score Range'
     const calcScores = props.calculator?.scores?.length
       ? props.calculator.scores
       : [
-          { tier: "Excellent", range: "750+" },
-          { tier: "Good", range: "700-749" },
-          { tier: "Fair", range: "650-699" },
-          { tier: "Average", range: "600-649" },
+          { tier: 'Excellent', range: '750+' },
+          { tier: 'Good', range: '700-749' },
+          { tier: 'Fair', range: '650-699' },
+          { tier: 'Average', range: '600-649' },
         ]
-    const calcOfferTitle = props.calculator?.offerTitle ?? "Estimated Offer"
-    const calcPaymentLabel =
-      props.calculator?.paymentLabel ?? "Monthly Payment"
+    const calcOfferTitle = props.calculator?.offerTitle ?? 'Estimated Offer'
+    const calcPaymentLabel = props.calculator?.paymentLabel ?? 'Monthly Payment'
     const calcPaymentNote =
-      props.calculator?.paymentNote ?? "per month for 48 months"
+      props.calculator?.paymentNote ?? 'per month for 48 months'
     const calcSummary = props.calculator?.summary?.length
       ? props.calculator.summary
       : [
-          { label: "Loan Amount", value: "$20,000" },
-          { label: "Est. APR", value: "8.99%" },
-          { label: "Origination Fee", value: "$0" },
-          { label: "Total Interest", value: "$2,944" },
+          { label: 'Loan Amount', value: '$20,000' },
+          { label: 'Est. APR', value: '8.99%' },
+          { label: 'Origination Fee', value: '$0' },
+          { label: 'Total Interest', value: '$2,944' },
         ]
-    const calcCta = props.calculator?.cta ?? "Get My Real Rate"
+    const calcCta = props.calculator?.cta ?? 'Get My Real Rate'
     const calcCtaNote =
       props.calculator?.ctaNote ?? "Checking won't affect your credit score"
-    const [calcAmount, setCalcAmount] = useState(
-      () => {
-        const initialAmount = parseCurrencyValue(calcAmountValue) || 20000
-        return Math.min(
-          Math.max(initialAmount, calcAmountMinNumber || 0),
-          calcAmountMaxNumber || 50000,
-        )
-      },
-    )
+    const [calcAmount, setCalcAmount] = useState(() => {
+      const initialAmount = parseCurrencyValue(calcAmountValue) || 20000
+      return Math.min(
+        Math.max(initialAmount, calcAmountMinNumber || 0),
+        calcAmountMaxNumber || 50000,
+      )
+    })
     const [calcPurpose, setCalcPurpose] = useState(
-      calcPurposes[0] ?? "General financing",
+      calcPurposes[0] ?? 'General financing',
     )
     const [calcTerm, setCalcTerm] = useState(
-      calcTerms.includes("48 mo")
-        ? "48 mo"
-        : (calcTermValue as string) ||
-            calcTerms[0] ||
-            "36 mo",
+      calcTerms.includes('48 mo')
+        ? '48 mo'
+        : (calcTermValue as string) || calcTerms[0] || '36 mo',
     )
     const [calcScoreIndex, setCalcScoreIndex] = useState(
-      Math.min(Math.max(calcScores.findIndex((item) => item.tier === "Excellent"), 0), 3),
+      Math.min(
+        Math.max(
+          calcScores.findIndex((item) => item.tier === 'Excellent'),
+          0,
+        ),
+        3,
+      ),
     )
     const selectedCalcScore = calcScores[calcScoreIndex] ?? calcScores[0]
-    const calcApr = estimateApr(selectedCalcScore?.tier ?? "Average")
+    const calcApr = estimateApr(selectedCalcScore?.tier ?? 'Average')
     const calcTermMonths = parseTermToMonths(calcTerm)
     const calcMonthlyPayment = estimateMonthlyPayment(
       calcAmount,
@@ -585,14 +585,20 @@ export const LendingKimiPage = defineCapsule({
       calcTermMonths,
     )
     const calcSummaryRows = [
-      { label: calcSummary[0]?.label ?? "Loan Amount", value: formatCurrency(calcAmount) },
       {
-        label: calcSummary[1]?.label ?? "Est. APR",
+        label: calcSummary[0]?.label ?? 'Loan Amount',
+        value: formatCurrency(calcAmount),
+      },
+      {
+        label: calcSummary[1]?.label ?? 'Est. APR',
         value: `${calcApr.toFixed(2)}%`,
       },
-      { label: calcSummary[2]?.label ?? "Origination Fee", value: calcSummary[2]?.value ?? "$0" },
       {
-        label: calcSummary[3]?.label ?? "Total Interest",
+        label: calcSummary[2]?.label ?? 'Origination Fee',
+        value: calcSummary[2]?.value ?? '$0',
+      },
+      {
+        label: calcSummary[3]?.label ?? 'Total Interest',
         value: formatCurrency(calcMonthlyPayment * calcTermMonths - calcAmount),
       },
     ]
@@ -605,7 +611,7 @@ export const LendingKimiPage = defineCapsule({
         calcAmount,
         calcPurpose,
         calcTerm,
-        `${selectedCalcScore?.tier ?? "Average"} (${selectedCalcScore?.range ?? "600-649"})`,
+        `${selectedCalcScore?.tier ?? 'Average'} (${selectedCalcScore?.range ?? '600-649'})`,
         `${calcApr.toFixed(2)}%`,
         calcPaymentValueDisplay,
       )
@@ -642,7 +648,7 @@ export const LendingKimiPage = defineCapsule({
       go(ctaPrimary)
     }
 
-    const ratesHeading = props.rates?.heading ?? "Transparent rates & terms"
+    const ratesHeading = props.rates?.heading ?? 'Transparent rates & terms'
     const ratesDesc =
       props.rates?.description ??
       "No surprises, no hidden fees. Know exactly what you're getting."
@@ -650,205 +656,228 @@ export const LendingKimiPage = defineCapsule({
       ? props.rates.highlights
       : [
           {
-            value: "6.99%",
-            label: "Starting APR",
-            note: "For borrowers with excellent credit on 36-month terms",
+            value: '6.99%',
+            label: 'Starting APR',
+            note: 'For borrowers with excellent credit on 36-month terms',
           },
           {
-            value: "$0",
-            label: "Origination Fee",
-            note: "Unlike banks that charge up to 8%, we take zero fees upfront",
+            value: '$0',
+            label: 'Origination Fee',
+            note: 'Unlike banks that charge up to 8%, we take zero fees upfront',
           },
           {
-            value: "$0",
-            label: "Prepayment Penalty",
-            note: "Pay off your loan early anytime with no extra charges",
+            value: '$0',
+            label: 'Prepayment Penalty',
+            note: 'Pay off your loan early anytime with no extra charges',
           },
         ]
     const rateGuarantees = props.rates?.guarantees?.length
       ? props.rates.guarantees
       : [
           {
-            title: "No late fees",
+            title: 'No late fees',
             note: "Life happens. We don't penalize honest mistakes.",
           },
           {
-            title: "No check fees",
-            note: "No extra charges for paper checks or payment methods.",
+            title: 'No check fees',
+            note: 'No extra charges for paper checks or payment methods.',
           },
           {
-            title: "No annual fees",
-            note: "Pay for your loan once, not every year.",
+            title: 'No annual fees',
+            note: 'Pay for your loan once, not every year.',
           },
         ]
-    const tableTitle =
-      props.rates?.tableTitle ?? "Sample loan payment schedule"
+    const tableTitle = props.rates?.tableTitle ?? 'Sample loan payment schedule'
     const tableHead = props.rates?.tableHead?.length
       ? props.rates.tableHead
       : [
-          "Credit Tier",
-          "APR Range",
-          "$10,000 / 36 mo",
-          "$25,000 / 48 mo",
-          "$40,000 / 60 mo",
+          'Credit Tier',
+          'APR Range',
+          '$10,000 / 36 mo',
+          '$25,000 / 48 mo',
+          '$40,000 / 60 mo',
         ]
     const tableRows = props.rates?.tableRows?.length
       ? props.rates.tableRows
       : [
-          ["Excellent (750+)", "6.99% - 9.99%", "$308 - $323", "$563 - $621", "$782 - $889"],
-          ["Good (700-749)", "8.99% - 12.99%", "$318 - $337", "$597 - $666", "$835 - $956"],
-          ["Fair (650-699)", "12.99% - 16.99%", "$337 - $357", "$666 - $736", "$956 - $1,075"],
-          ["Average (600-649)", "16.99% - 24.99%", "$357 - $393", "$736 - $858", "$1,075 - $1,260"],
+          [
+            'Excellent (750+)',
+            '6.99% - 9.99%',
+            '$308 - $323',
+            '$563 - $621',
+            '$782 - $889',
+          ],
+          [
+            'Good (700-749)',
+            '8.99% - 12.99%',
+            '$318 - $337',
+            '$597 - $666',
+            '$835 - $956',
+          ],
+          [
+            'Fair (650-699)',
+            '12.99% - 16.99%',
+            '$337 - $357',
+            '$666 - $736',
+            '$956 - $1,075',
+          ],
+          [
+            'Average (600-649)',
+            '16.99% - 24.99%',
+            '$357 - $393',
+            '$736 - $858',
+            '$1,075 - $1,260',
+          ],
         ]
     const tableNote =
       props.rates?.tableNote ??
-      "* Rates shown are estimates. Your actual rate will be determined after application review. All loans subject to credit approval."
+      '* Rates shown are estimates. Your actual rate will be determined after application review. All loans subject to credit approval.'
 
     const statsHeading =
-      props.stats?.heading ?? "Trusted by over 250,000 borrowers"
+      props.stats?.heading ?? 'Trusted by over 250,000 borrowers'
     const statsDesc =
       props.stats?.description ??
       "Since 2019, we've helped people consolidate debt, fund major purchases, and achieve financial goals without the stress of traditional lending."
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "$1.2B+", label: "In loans funded" },
-          { value: "4.9/5", label: "Average rating" },
-          { value: "2 min", label: "Average application" },
-          { value: "24 hrs", label: "Average funding time" },
+          { value: '$1.2B+', label: 'In loans funded' },
+          { value: '4.9/5', label: 'Average rating' },
+          { value: '2 min', label: 'Average application' },
+          { value: '24 hrs', label: 'Average funding time' },
         ]
     const statsImageAlt =
       props.stats?.imageAlt ??
-      "diverse group of professionals collaborating in modern office setting"
+      'diverse group of professionals collaborating in modern office setting'
     const statsReviewQuote =
       props.stats?.reviewQuote ??
       "ClearLoan helped me consolidate $18,000 in credit card debt. I'm saving $340/month and paying off 3 years sooner."
-    const statsReviewName = props.stats?.reviewName ?? "Sarah Mitchell"
-    const statsReviewMeta = props.stats?.reviewMeta ?? "San Francisco, CA"
+    const statsReviewName = props.stats?.reviewName ?? 'Sarah Mitchell'
+    const statsReviewMeta = props.stats?.reviewMeta ?? 'San Francisco, CA'
     const statsReviewAvatarAlt =
       props.stats?.reviewAvatarAlt ??
-      "professional headshot of a smiling woman with brown hair in business attire"
+      'professional headshot of a smiling woman with brown hair in business attire'
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What our borrowers say"
+      props.testimonials?.heading ?? 'What our borrowers say'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Real stories from real people who achieved their financial goals."
+      'Real stories from real people who achieved their financial goals.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "I needed $12,000 for a kitchen renovation. The application took literally 90 seconds, and I had the money in my account the next morning. No stress, no hidden fees.",
-            name: "Marcus Chen",
-            meta: "Seattle, WA · Home Improvement Loan",
+              'I needed $12,000 for a kitchen renovation. The application took literally 90 seconds, and I had the money in my account the next morning. No stress, no hidden fees.',
+            name: 'Marcus Chen',
+            meta: 'Seattle, WA · Home Improvement Loan',
             avatarAlt:
-              "professional headshot of a smiling man with short dark hair and beard",
+              'professional headshot of a smiling man with short dark hair and beard',
           },
           {
             quote:
               "After my car broke down unexpectedly, I needed $8,000 fast. ClearLoan came through when my bank wouldn't even return my call. The rate was better than my credit union too.",
-            name: "Jennifer Park",
-            meta: "Denver, CO · Auto Repair Loan",
+            name: 'Jennifer Park',
+            meta: 'Denver, CO · Auto Repair Loan',
             avatarAlt:
-              "professional headshot of a smiling woman with blonde hair wearing casual attire",
+              'professional headshot of a smiling woman with blonde hair wearing casual attire',
           },
           {
             quote:
               "I consolidated $22,000 across three credit cards. My rate dropped from 24% to 9.5%, and I'm saving over $400 a month. I can finally see a path to being debt-free.",
-            name: "David Rodriguez",
-            meta: "Austin, TX · Debt Consolidation",
+            name: 'David Rodriguez',
+            meta: 'Austin, TX · Debt Consolidation',
             avatarAlt:
-              "professional headshot of a smiling man with glasses and business casual attire",
+              'professional headshot of a smiling man with glasses and business casual attire',
           },
         ]
 
-    const faqHeading = props.faq?.heading ?? "Frequently asked questions"
+    const faqHeading = props.faq?.heading ?? 'Frequently asked questions'
     const faqDesc =
-      props.faq?.description ?? "Everything you need to know about ClearLoan."
+      props.faq?.description ?? 'Everything you need to know about ClearLoan.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "What can I use a ClearLoan for?",
+            q: 'What can I use a ClearLoan for?',
             a: "You can use a ClearLoan for almost any personal purpose: debt consolidation, home improvements, medical expenses, auto purchases, education costs, major purchases, vacations, or unexpected expenses. We don't allow loans for illegal activities, gambling, or investing in securities.",
           },
           {
-            q: "Will checking my rate affect my credit score?",
-            a: "No. Checking your rate with ClearLoan uses a soft credit inquiry, which does not affect your credit score. Only if you choose to accept a loan offer and proceed with the full application will we perform a hard credit inquiry, which may have a small temporary impact on your score.",
+            q: 'Will checking my rate affect my credit score?',
+            a: 'No. Checking your rate with ClearLoan uses a soft credit inquiry, which does not affect your credit score. Only if you choose to accept a loan offer and proceed with the full application will we perform a hard credit inquiry, which may have a small temporary impact on your score.',
           },
           {
-            q: "How quickly will I receive my funds?",
+            q: 'How quickly will I receive my funds?',
             a: "Once your loan is approved and you e-sign your documents, we typically deposit funds directly to your bank account within 1 business day. In some cases, it may take up to 3 business days depending on your bank's processing times. You'll receive an email with tracking details as soon as the transfer is initiated.",
           },
           {
-            q: "Can I pay off my loan early?",
+            q: 'Can I pay off my loan early?',
             a: "Absolutely. You can pay off your ClearLoan in full at any time with zero prepayment penalties. You can also make additional principal payments anytime through your online account or mobile app. Paying early reduces the total interest you'll pay over the life of the loan.",
           },
           {
-            q: "What are the eligibility requirements?",
-            a: "To qualify for a ClearLoan, you must: be at least 18 years old (19 in Alabama and Nebraska), be a U.S. citizen or permanent resident, have a valid Social Security number, have a verifiable bank account, and have a minimum annual income of $25,000. We also consider your credit history, debt-to-income ratio, and other factors.",
+            q: 'What are the eligibility requirements?',
+            a: 'To qualify for a ClearLoan, you must: be at least 18 years old (19 in Alabama and Nebraska), be a U.S. citizen or permanent resident, have a valid Social Security number, have a verifiable bank account, and have a minimum annual income of $25,000. We also consider your credit history, debt-to-income ratio, and other factors.',
           },
           {
-            q: "What happens if I miss a payment?",
+            q: 'What happens if I miss a payment?',
             a: "Unlike traditional lenders, ClearLoan doesn't charge late fees. However, missed payments may be reported to credit bureaus and could impact your credit score. If you're having trouble making a payment, contact us immediately—our support team can work with you on options like payment date changes or temporary hardship programs.",
           },
           {
-            q: "How is ClearLoan different from a credit card?",
-            a: "ClearLoan offers fixed-rate installment loans with set monthly payments and a defined payoff date. Credit cards typically have variable rates, minimum payments that can keep you in debt longer, and no clear end date. Our loans are designed to help you pay off debt faster and save money on interest—our average borrower saves $4,200 compared to carrying the same balance on a credit card.",
+            q: 'How is ClearLoan different from a credit card?',
+            a: 'ClearLoan offers fixed-rate installment loans with set monthly payments and a defined payoff date. Credit cards typically have variable rates, minimum payments that can keep you in debt longer, and no clear end date. Our loans are designed to help you pay off debt faster and save money on interest—our average borrower saves $4,200 compared to carrying the same balance on a credit card.',
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to check your rate?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to check your rate?'
     const ctaDesc =
       props.cta?.description ??
       "It takes 2 minutes, won't affect your credit score, and could save you thousands compared to credit cards."
-    const ctaPrimary = props.cta?.primary ?? "Check My Rate"
-    const ctaPhone = props.cta?.phone ?? "Call (800) 555-1234"
+    const ctaPrimary = props.cta?.primary ?? 'Check My Rate'
+    const ctaPhone = props.cta?.phone ?? 'Call (800) 555-1234'
     const ctaBadges = props.cta?.badges?.length
       ? props.cta.badges
-      : ["256-bit SSL encryption", "Bank-level security", "No spam, ever"]
+      : ['256-bit SSL encryption', 'Bank-level security', 'No spam, ever']
 
     const footerTagline =
       props.footer?.tagline ??
-      "Simple, honest personal loans. No hidden fees, no surprises."
+      'Simple, honest personal loans. No hidden fees, no surprises.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Products",
+            title: 'Products',
             links: [
-              "Personal Loans",
-              "Debt Consolidation",
-              "Home Improvement",
-              "Medical Loans",
-              "Auto Loans",
+              'Personal Loans',
+              'Debt Consolidation',
+              'Home Improvement',
+              'Medical Loans',
+              'Auto Loans',
             ],
           },
           {
-            title: "Company",
-            links: ["About Us", "Careers", "Press", "Partners", "Contact"],
+            title: 'Company',
+            links: ['About Us', 'Careers', 'Press', 'Partners', 'Contact'],
           },
           {
-            title: "Resources",
+            title: 'Resources',
             links: [
-              "Help Center",
-              "Blog",
-              "Loan Calculator",
-              "Credit Education",
-              "Refer a Friend",
+              'Help Center',
+              'Blog',
+              'Loan Calculator',
+              'Credit Education',
+              'Refer a Friend',
             ],
           },
         ]
     const footerLegalLinks = props.footer?.legalLinks?.length
       ? props.footer.legalLinks
-      : ["Privacy Policy", "Terms of Service", "Cookie Policy", "Disclosures"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Disclosures']
     const footerCopyright =
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
     const footerDisclosure =
       props.footer?.disclosure ??
-      "ClearLoan Inc. NMLS ID #1234567. Loans are made by ClearLoan Inc. or lending partners. All loans are subject to credit approval. Your actual rate depends on credit score, loan amount, loan term, credit usage and history. Example: A $15,000 loan with an APR of 10.99% and 48 month term would have monthly payments of $384. The total amount paid would be $18,432. Annual percentage rates (APRs) through ClearLoan range from 6.99% to 24.99%."
+      'ClearLoan Inc. NMLS ID #1234567. Loans are made by ClearLoan Inc. or lending partners. All loans are subject to credit approval. Your actual rate depends on credit score, loan amount, loan term, credit usage and history. Example: A $15,000 loan with an APR of 10.99% and 48 month term would have monthly payments of $384. The total amount paid would be $18,432. Annual percentage rates (APRs) through ClearLoan range from 6.99% to 24.99%.'
 
     const Logo = ({ className }: { className?: string }) => (
       <svg
@@ -907,21 +936,21 @@ export const LendingKimiPage = defineCapsule({
     )
 
     const benefitIcons = [
-      "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
-      "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
-      "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6",
-      "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
-      "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z",
-      "M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z",
+      'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+      'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+      'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6',
+      'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+      'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
+      'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z',
     ]
 
     const inputCls =
-      "w-full rounded-lg border border-input bg-muted px-4 py-3 font-medium text-foreground transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-ring"
+      'w-full rounded-lg border border-input bg-muted px-4 py-3 font-medium text-foreground transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-ring'
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -972,7 +1001,9 @@ export const LendingKimiPage = defineCapsule({
                             {authInitials}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="max-w-24 truncate">{authDisplayName}</span>
+                        <span className="max-w-24 truncate">
+                          {authDisplayName}
+                        </span>
                       </button>
                     </PopoverTrigger>
                     <PopoverContent
@@ -989,7 +1020,7 @@ export const LendingKimiPage = defineCapsule({
                       <div className="space-y-2">
                         <button
                           type="button"
-                          onClick={() => go("Account")}
+                          onClick={() => go('Account')}
                           className="w-full rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-muted"
                         >
                           Account
@@ -1032,7 +1063,7 @@ export const LendingKimiPage = defineCapsule({
                   onClick={() => setLeadDrawerOpen(true)}
                   className="hidden h-9 w-9 items-center justify-center rounded-full border border-border text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:flex"
                 >
-                  {leadCount || "0"}
+                  {leadCount || '0'}
                 </button>
               </div>
             </div>
@@ -1040,10 +1071,7 @@ export const LendingKimiPage = defineCapsule({
         </header>
 
         <Sheet open={leadDrawerOpen} onOpenChange={setLeadDrawerOpen}>
-          <SheetContent
-            side="right"
-            className="w-full gap-0 p-0 sm:max-w-md"
-          >
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
             <SheetHeader className="border-b border-border p-6">
               <SheetTitle className="text-left">
                 Saved loan applications
@@ -1085,7 +1113,9 @@ export const LendingKimiPage = defineCapsule({
                               : parseCurrencyValue(`${lead.amount}`),
                           )}
                         </span>
-                        <span className="font-medium">{lead.estimatedMonthlyPayment}</span>
+                        <span className="font-medium">
+                          {lead.estimatedMonthlyPayment}
+                        </span>
                       </div>
                       <p className="mt-2 text-xs text-muted-foreground">
                         APR {lead.estimatedApr} · from {lead.source}
@@ -1148,7 +1178,7 @@ export const LendingKimiPage = defineCapsule({
               <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
                 <div className="max-w-2xl">
                   <h1 className="text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                    {heroLead}{" "}
+                    {heroLead}{' '}
                     <span className="text-muted-foreground">
                       {heroHighlight}
                     </span>
@@ -1240,7 +1270,7 @@ export const LendingKimiPage = defineCapsule({
                                 parseCurrencyValue(event.target.value) || 0,
                               )
                             }
-                            className={cn(inputCls, "pl-8")}
+                            className={cn(inputCls, 'pl-8')}
                           />
                         </div>
                       </div>
@@ -1251,7 +1281,7 @@ export const LendingKimiPage = defineCapsule({
                         <select
                           value={heroScore}
                           onChange={(event) => setHeroScore(event.target.value)}
-                          className={cn(inputCls, "appearance-none")}
+                          className={cn(inputCls, 'appearance-none')}
                         >
                           {heroScoreOptions.map((opt) => (
                             <option key={opt} className="bg-background">
@@ -1265,7 +1295,7 @@ export const LendingKimiPage = defineCapsule({
                           {heroTermLabel}
                         </label>
                         <div className="grid grid-cols-3 gap-3">
-                          {heroTerms.map((term, i) => (
+                          {heroTerms.map((term) => (
                             <button
                               key={term}
                               type="button"
@@ -1274,10 +1304,10 @@ export const LendingKimiPage = defineCapsule({
                                 go(`${heroTermLabel}: ${term}`)
                               }}
                               className={cn(
-                                "rounded-lg px-4 py-3 text-sm font-medium transition-colors",
+                                'rounded-lg px-4 py-3 text-sm font-medium transition-colors',
                                 heroTerm === term
-                                  ? "border-2 border-primary bg-muted text-foreground"
-                                  : "border border-border text-muted-foreground hover:border-primary hover:text-foreground",
+                                  ? 'border-2 border-primary bg-muted text-foreground'
+                                  : 'border border-border text-muted-foreground hover:border-primary hover:text-foreground',
                               )}
                             >
                               {term}
@@ -1487,7 +1517,8 @@ export const LendingKimiPage = defineCapsule({
                                   calcAmountMaxNumber,
                                   Math.max(
                                     calcAmountMinNumber,
-                                    Number.parseInt(event.target.value, 10) || 0,
+                                    Number.parseInt(event.target.value, 10) ||
+                                      0,
                                   ),
                                 ),
                               )
@@ -1506,8 +1537,13 @@ export const LendingKimiPage = defineCapsule({
                           </label>
                           <select
                             value={calcPurpose}
-                            onChange={(event) => setCalcPurpose(event.target.value)}
-                            className={cn(inputCls, "appearance-none font-normal")}
+                            onChange={(event) =>
+                              setCalcPurpose(event.target.value)
+                            }
+                            className={cn(
+                              inputCls,
+                              'appearance-none font-normal',
+                            )}
                           >
                             {calcPurposes.map((p) => (
                               <option key={p} className="bg-background">
@@ -1524,7 +1560,7 @@ export const LendingKimiPage = defineCapsule({
                             </span>
                           </div>
                           <div className="grid grid-cols-3 gap-3">
-                            {calcTerms.map((term, i) => (
+                            {calcTerms.map((term) => (
                               <button
                                 key={term}
                                 type="button"
@@ -1533,10 +1569,10 @@ export const LendingKimiPage = defineCapsule({
                                   go(`${calcTermLabel}: ${term}`)
                                 }}
                                 className={cn(
-                                  "rounded-lg px-4 py-3 text-sm font-medium transition-colors",
+                                  'rounded-lg px-4 py-3 text-sm font-medium transition-colors',
                                   calcTerm === term
-                                    ? "border-2 border-primary bg-muted text-foreground"
-                                    : "border border-border text-muted-foreground hover:border-primary hover:text-foreground",
+                                    ? 'border-2 border-primary bg-muted text-foreground'
+                                    : 'border border-border text-muted-foreground hover:border-primary hover:text-foreground',
                                 )}
                               >
                                 {term}
@@ -1558,10 +1594,10 @@ export const LendingKimiPage = defineCapsule({
                                   go(`Credit: ${s.tier}`)
                                 }}
                                 className={cn(
-                                  "rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors",
+                                  'rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors',
                                   calcScoreIndex === i
-                                    ? "border-2 border-primary bg-muted text-foreground"
-                                    : "border border-border text-muted-foreground hover:border-primary hover:text-foreground",
+                                    ? 'border-2 border-primary bg-muted text-foreground'
+                                    : 'border border-border text-muted-foreground hover:border-primary hover:text-foreground',
                                 )}
                               >
                                 <div className="font-semibold">{s.tier}</div>
@@ -1595,9 +1631,9 @@ export const LendingKimiPage = defineCapsule({
                             <div
                               key={row.label}
                               className={cn(
-                                "flex justify-between py-2",
+                                'flex justify-between py-2',
                                 i < calcSummaryRows.length - 1 &&
-                                  "border-b border-border",
+                                  'border-b border-border',
                               )}
                             >
                               <span className="text-muted-foreground">
@@ -1605,10 +1641,10 @@ export const LendingKimiPage = defineCapsule({
                               </span>
                               <span
                                 className={cn(
-                                  "font-medium",
-                                  row.value === "$0"
-                                    ? "text-primary"
-                                    : "text-foreground",
+                                  'font-medium',
+                                  row.value === '$0'
+                                    ? 'text-primary'
+                                    : 'text-foreground',
                                 )}
                               >
                                 {row.value}
@@ -1712,15 +1748,16 @@ export const LendingKimiPage = defineCapsule({
                         <tr
                           key={row[0]}
                           className={cn(
-                            ri < tableRows.length - 1 && "border-b border-border",
+                            ri < tableRows.length - 1 &&
+                              'border-b border-border',
                           )}
                         >
                           {row.map((cell, ci) => (
                             <td
                               key={ci}
                               className={cn(
-                                "px-4 py-3",
-                                ci === 0 && "font-medium",
+                                'px-4 py-3',
+                                ci === 0 && 'font-medium',
                               )}
                             >
                               {cell}
@@ -1731,7 +1768,9 @@ export const LendingKimiPage = defineCapsule({
                     </tbody>
                   </table>
                 </div>
-                <p className="mt-4 text-xs text-muted-foreground">{tableNote}</p>
+                <p className="mt-4 text-xs text-muted-foreground">
+                  {tableNote}
+                </p>
               </div>
             </div>
           </section>
@@ -1961,7 +2000,7 @@ export const LendingKimiPage = defineCapsule({
                   {footerTagline}
                 </p>
                 <div className="flex items-center gap-4">
-                  {(["Twitter", "Instagram", "LinkedIn"] as const).map(
+                  {(['Twitter', 'Instagram', 'LinkedIn'] as const).map(
                     (social) => (
                       <button
                         key={social}

@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -24,9 +24,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const MusicFestivalKimiPage2 = defineCapsule({
-  name: "MusicFestivalKimiPage2",
+  name: 'MusicFestivalKimiPage2',
   description:
-    "Music Festival second style sibling to MusicFestivalKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Music Festival second style sibling to MusicFestivalKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const MusicFestivalKimiPage2 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -85,8 +87,7 @@ export const MusicFestivalKimiPage2 = defineCapsule({
       lineup: ({ db }) => db.lineup.orderBy('createdAt').all(),
       favoriteArtistNames: ({ db }) =>
         new Set(db.favorites.all().map((favorite) => favorite.artistName)),
-      schedule: ({ db }) =>
-        db.schedule.orderBy('day').then('time').all(),
+      schedule: ({ db }) => db.schedule.orderBy('day').orderBy('time').all(),
     },
     mutations: {
       toggleFavorite: ({ db }, artistName: string) => {
@@ -102,7 +103,12 @@ export const MusicFestivalKimiPage2 = defineCapsule({
         db.favorites.insert({ artistName })
         return true
       },
-      addToSchedule: ({ db }, artistName: string, day: string, time: string) => {
+      addToSchedule: (
+        { db },
+        artistName: string,
+        day: string,
+        time: string,
+      ) => {
         const artist = db.lineup.where('name', artistName).all()[0]
         if (!artist) return db.schedule.all()
 
@@ -131,8 +137,10 @@ export const MusicFestivalKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [favoritesOpen, setFavoritesOpen] = useState(false)
     const [mobileOpen, setMobileOpen] = useState(false)
-    const brand = props.brand ?? "Solstice Sound Festival 2025"
-    const nav = props.nav?.length ? props.nav : ["Lineup", "Experience", "Gallery", "FAQ", "SOLSTICE .", "Get Tickets"]
+    const brand = props.brand ?? 'Solstice Sound Festival 2025'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Lineup', 'Experience', 'Gallery', 'FAQ', 'SOLSTICE .', 'Get Tickets']
 
     // Lakebed hooks
     const storedLineup = lakebed.useQuery('lineup')
@@ -207,9 +215,7 @@ export const MusicFestivalKimiPage2 = defineCapsule({
     ]
 
     const displayLineup =
-      storedLineup && storedLineup.length > 0
-        ? storedLineup
-        : defaultLineup
+      storedLineup && storedLineup.length > 0 ? storedLineup : defaultLineup
 
     const safeSchedule = schedule ?? []
     const favoriteCount = favoriteArtistNames?.size ?? 0
@@ -267,97 +273,106 @@ export const MusicFestivalKimiPage2 = defineCapsule({
     )
 
     const hero = {
-      eyebrow: "Music Festival / Variant 2",
-      title: "SOLSTICE SOUND",
-      description: "Solstice Sound Festival 2025 | Austin, TX August 15 17 SOLSTICE . Lineup Experience Gallery FAQ Get Tickets August 15 17, 2025 Zilker Park, Austin, TX SOLSTICE SOUND Three days....",
-      primaryCta: "Join",
-      secondaryCta: "SOLSTICE .",
-      imageAlt: "massive music festival crowd with hands raised under dramatic sunset sky and bright stage lights",
+      eyebrow: 'Music Festival / Variant 2',
+      title: 'SOLSTICE SOUND',
+      description:
+        'Solstice Sound Festival 2025 | Austin, TX August 15 17 SOLSTICE . Lineup Experience Gallery FAQ Get Tickets August 15 17, 2025 Zilker Park, Austin, TX SOLSTICE SOUND Three days....',
+      primaryCta: 'Join',
+      secondaryCta: 'SOLSTICE .',
+      imageAlt:
+        'massive music festival crowd with hands raised under dramatic sunset sky and bright stage lights',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "The Lineup",
-    "body": "Solstice Sound Festival 2025 | Austin, TX August 15 17 SOLSTICE . Lineup Experience Gallery FAQ Get Tickets August 15 17, 2025 Zilker Park, Austin, TX SOLSTICE SOUND Three days....",
-    "items": [
-      "The Gallery",
-      "Pick Your Pass",
-      "What Fans Say"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "More Than Music",
-    "body": "Music Festival page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Frequently Asked Questions",
-      "Ready for the Weekend?",
-      "Friday, August 15"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Plan Your Weekend",
-    "body": "Music Festival page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Saturday, August 16",
-      "Sunday, August 17",
-      "12 Unique Stages"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "The Gallery",
-    "body": "Music Festival page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Boutique Camping",
-      "Artisan Food Hall",
-      "Silent Disco"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "More Than Music",
-    "alt": "massive music festival crowd with hands raised under dramatic sunset sky and bright stage lights",
-    "caption": "Music Festival generated page detail"
-  },
-  {
-    "title": "Plan Your Weekend",
-    "alt": "silhouetted hip hop performer against explosive purple and red stage pyrotechnics",
-    "caption": "Music Festival generated page detail"
-  },
-  {
-    "title": "The Gallery",
-    "alt": "pop singer dancing on a brightly lit stage with swirling pink and blue spotlights",
-    "caption": "Music Festival generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'The Lineup',
+            body: 'Solstice Sound Festival 2025 | Austin, TX August 15 17 SOLSTICE . Lineup Experience Gallery FAQ Get Tickets August 15 17, 2025 Zilker Park, Austin, TX SOLSTICE SOUND Three days....',
+            items: ['The Gallery', 'Pick Your Pass', 'What Fans Say'],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'More Than Music',
+            body: "Music Festival page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Frequently Asked Questions',
+              'Ready for the Weekend?',
+              'Friday, August 15',
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Plan Your Weekend',
+            body: "Music Festival page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Saturday, August 16',
+              'Sunday, August 17',
+              '12 Unique Stages',
+            ],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'The Gallery',
+            body: "Music Festival page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['Boutique Camping', 'Artisan Food Hall', 'Silent Disco'],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'More Than Music',
+            alt: 'massive music festival crowd with hands raised under dramatic sunset sky and bright stage lights',
+            caption: 'Music Festival generated page detail',
+          },
+          {
+            title: 'Plan Your Weekend',
+            alt: 'silhouetted hip hop performer against explosive purple and red stage pyrotechnics',
+            caption: 'Music Festival generated page detail',
+          },
+          {
+            title: 'The Gallery',
+            alt: 'pop singer dancing on a brightly lit stage with swirling pink and blue spotlights',
+            caption: 'Music Festival generated page detail',
+          },
+        ]
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -403,11 +418,13 @@ export const MusicFestivalKimiPage2 = defineCapsule({
                   </SheetHeader>
                   <div className="flex-1 overflow-y-auto px-6 py-5">
                     {displayLineup.filter((artist) =>
-                      favoriteArtistNames?.has(artist.name)
+                      favoriteArtistNames?.has(artist.name),
                     ).length ? (
                       <div className="space-y-4">
                         {displayLineup
-                          .filter((artist) => favoriteArtistNames?.has(artist.name))
+                          .filter((artist) =>
+                            favoriteArtistNames?.has(artist.name),
+                          )
                           .map((artist) => (
                             <div
                               key={artist.name}
@@ -423,8 +440,12 @@ export const MusicFestivalKimiPage2 = defineCapsule({
                                   />
                                 </div>
                                 <div>
-                                  <p className="font-semibold text-foreground">{artist.name}</p>
-                                  <p className="text-sm text-muted-foreground">{artist.genre}</p>
+                                  <p className="font-semibold text-foreground">
+                                    {artist.name}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {artist.genre}
+                                  </p>
                                 </div>
                               </div>
                               <button
@@ -444,14 +465,19 @@ export const MusicFestivalKimiPage2 = defineCapsule({
                           No favorites yet
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Heart artists from the lineup to build your personal list.
+                          Heart artists from the lineup to build your personal
+                          list.
                         </p>
                       </div>
                     )}
                   </div>
                   <SheetFooter className="border-t border-border p-6">
                     <SheetClose asChild>
-                      <Button type="button" variant="secondary" className="w-full rounded-full">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full rounded-full"
+                      >
                         Close
                       </Button>
                     </SheetClose>
@@ -691,16 +717,28 @@ export const MusicFestivalKimiPage2 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -709,8 +747,12 @@ export const MusicFestivalKimiPage2 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Artist Lineup</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Featured Performers</h2>
+                <p className="text-sm font-medium text-primary">
+                  Artist Lineup
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Featured Performers
+                </h2>
               </div>
               <button
                 type="button"
@@ -722,8 +764,11 @@ export const MusicFestivalKimiPage2 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
               {displayLineup.map((artist) => {
-                const isFavorite = favoriteArtistNames?.has(artist.name) ?? false
-                const inSchedule = safeSchedule.some((s) => s.artistName === artist.name)
+                const isFavorite =
+                  favoriteArtistNames?.has(artist.name) ?? false
+                const inSchedule = safeSchedule.some(
+                  (s: { artistName: string }) => s.artistName === artist.name,
+                )
 
                 return (
                   <article key={artist.name} className="group">
@@ -766,18 +811,24 @@ export const MusicFestivalKimiPage2 = defineCapsule({
                         <span>{artist.day}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-foreground">{artist.time}</span>
+                        <span className="text-sm font-medium text-foreground">
+                          {artist.time}
+                        </span>
                         {isSignedIn && (
                           <Button
                             type="button"
                             size="sm"
-                            variant={inSchedule ? "default" : "outline"}
+                            variant={inSchedule ? 'default' : 'outline'}
                             className="rounded-full"
                             onClick={() => {
                               if (inSchedule) {
                                 void removeFromSchedule(artist.name)
                               } else {
-                                void addToSchedule(artist.name, artist.day, artist.time)
+                                void addToSchedule(
+                                  artist.name,
+                                  artist.day,
+                                  artist.time,
+                                )
                               }
                             }}
                           >
@@ -795,10 +846,19 @@ export const MusicFestivalKimiPage2 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -822,8 +882,12 @@ export const MusicFestivalKimiPage2 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -835,11 +899,26 @@ export const MusicFestivalKimiPage2 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -850,9 +929,15 @@ export const MusicFestivalKimiPage2 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -868,10 +953,17 @@ export const MusicFestivalKimiPage2 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

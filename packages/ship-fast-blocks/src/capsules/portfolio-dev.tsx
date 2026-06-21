@@ -4,7 +4,7 @@ import { defineCapsule } from './openui.ts'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   ArrowRight,
   ChevronDown,
@@ -253,7 +253,6 @@ export const PortfolioDevKimiPage = defineCapsule({
     const brand = props.brand ?? 'Alex Chen'
 
     const favoriteProjectTitles = lakebed.useQuery('favoriteProjectTitles')
-    const contactSubmissions = lakebed.useQuery('contactSubmissions')
     const toggleFavorite = lakebed.useMutation('toggleFavorite')
     const submitContact = lakebed.useMutation('submitContact')
     const auth = lakebed.useAuth()
@@ -1152,10 +1151,12 @@ export const PortfolioDevKimiPage = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Send a message</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Send a message
+                      </SheetTitle>
                       <SheetDescription>
-                        Get in touch with {brand}. We'll get back to you
-                        within 24 hours.
+                        Get in touch with {brand}. We'll get back to you within
+                        24 hours.
                       </SheetDescription>
                     </SheetHeader>
                     <div className="flex-1 overflow-y-auto px-6 py-5">

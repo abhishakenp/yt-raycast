@@ -1,27 +1,26 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * PlumbingHvacKimiPage — a complete, self-contained local home-services LANDING
@@ -45,7 +44,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * supply ONLY content data; rich defaults make it render great with no props.
  */
 export const PlumbingHvacKimiPage = defineCapsule({
-  name: "PlumbingHvacKimiPage",
+  name: 'PlumbingHvacKimiPage',
   description:
     "Complete local home-services LANDING page for a PLUMBING and HVAC contractor (plumber, heating/cooling, AC repair, furnace, water heater, drain cleaning, emergency 24/7 service). Bright, trustworthy trades aesthetic on a light canvas with a sky-blue brand accent. Includes a photo-backed hero with a live 24/7 emergency badge, dual CTAs and a phone number, plus a license/insured/same-day/upfront-pricing trust row; a trust-badge strip (A+ BBB, licensed, satisfaction-guaranteed); a 6-up services grid (emergency plumbing, drain cleaning, water heaters, AC repair & install, heating, maintenance plans) with icons and checklists; a 4-step 'How It Works' process; an 'Our Work' image gallery with hover overlays; a 3-tier transparent pricing block with a featured maintenance plan; a brand-colored stats band (years in business, 5-star reviews, response time); a 6-up star-rating customer testimonial grid with headshots; an accordion FAQ; a high-contrast emergency CTA band with a call button; and a 4-column footer with services, company, and contact details. Use as the ROOT/home page for plumbers, HVAC companies, heating & cooling contractors, water-heater/furnace/AC installers, drain specialists, handyman trades, or any local home-services business wanting a conversion-focused page with strong local trust, transparent pricing, and emergency-call prominence. Supply content only — brand, nav, hero, badges, services, steps, gallery, pricing, stats, testimonials, faq, emergencyCta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -106,7 +105,9 @@ export const PlumbingHvacKimiPage = defineCapsule({
       .object({
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z.array(z.object({ caption: z.string(), alt: z.string() })).optional(),
+        items: z
+          .array(z.object({ caption: z.string(), alt: z.string() }))
+          .optional(),
       })
       .optional(),
     /** Transparent pricing block. */
@@ -135,7 +136,9 @@ export const PlumbingHvacKimiPage = defineCapsule({
     /** Brand-colored stats band. */
     stats: z
       .object({
-        items: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+        items: z
+          .array(z.object({ value: z.string(), label: z.string() }))
+          .optional(),
       })
       .optional(),
     /** Customer testimonial grid. */
@@ -244,7 +247,7 @@ export const PlumbingHvacKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [bookingOpen, setBookingOpen] = useState(false)
-    const brand = props.brand ?? "FlowGuard"
+    const brand = props.brand ?? 'FlowGuard'
 
     const serviceRequests = lakebed.useQuery('serviceRequests')
     const favoriteServiceNames = lakebed.useQuery('favoriteServiceNames')
@@ -283,235 +286,235 @@ export const PlumbingHvacKimiPage = defineCapsule({
     const requestCount = safeServiceRequests.length
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Pricing", "About", "Reviews", "FAQ"]
+      : ['Services', 'Pricing', 'About', 'Reviews', 'FAQ']
 
     const heroBadge =
-      props.hero?.badge ?? "24/7 Emergency Service Available Now"
+      props.hero?.badge ?? '24/7 Emergency Service Available Now'
     const heroHeadingTop =
       props.hero?.headingTop ?? "Denver's Trusted Plumbing &"
-    const heroHighlight = props.hero?.highlight ?? "HVAC Experts"
+    const heroHighlight = props.hero?.highlight ?? 'HVAC Experts'
     const heroSub =
       props.hero?.subheading ??
-      "Licensed master plumbers and certified HVAC technicians serving the Denver metro area since 1998. Same-day repairs, transparent pricing, and a 100% satisfaction guarantee on every job."
-    const heroPrimary = props.hero?.primaryCta ?? "Schedule Service"
-    const heroPhone = props.hero?.phone ?? "(303) 555-0147"
+      'Licensed master plumbers and certified HVAC technicians serving the Denver metro area since 1998. Same-day repairs, transparent pricing, and a 100% satisfaction guarantee on every job.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Schedule Service'
+    const heroPhone = props.hero?.phone ?? '(303) 555-0147'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Professional plumber installing copper pipes in residential bathroom renovation"
+      'Professional plumber installing copper pipes in residential bathroom renovation'
     const heroTrust = props.hero?.trust?.length
       ? props.hero.trust
-      : ["Licensed & Insured", "Same-Day Service", "Upfront Pricing"]
+      : ['Licensed & Insured', 'Same-Day Service', 'Upfront Pricing']
 
     const badgesHeading =
       props.badges?.heading ??
-      "Trusted by homeowners across the Denver metro area"
+      'Trusted by homeowners across the Denver metro area'
     const badgeItems = props.badges?.items?.length
       ? props.badges.items
       : [
-          "A+ BBB Rating",
-          "24/7 Available",
-          "Licensed Pros",
-          "Fair Pricing",
-          "Satisfaction Guaranteed",
-          "Fast Response",
+          'A+ BBB Rating',
+          '24/7 Available',
+          'Licensed Pros',
+          'Fair Pricing',
+          'Satisfaction Guaranteed',
+          'Fast Response',
         ]
 
     const servicesHeading =
-      props.services?.heading ?? "Comprehensive Home Services"
+      props.services?.heading ?? 'Comprehensive Home Services'
     const servicesDesc =
       props.services?.description ??
-      "From emergency repairs to complete system installations, our licensed technicians handle every job with precision and care."
+      'From emergency repairs to complete system installations, our licensed technicians handle every job with precision and care.'
     const serviceItems = props.services?.items?.length
       ? props.services.items
       : [
           {
-            title: "Emergency Plumbing",
+            title: 'Emergency Plumbing',
             description:
-              "24/7 emergency response for burst pipes, major leaks, sewer backups, and water heater failures. Average arrival time: 45 minutes.",
+              '24/7 emergency response for burst pipes, major leaks, sewer backups, and water heater failures. Average arrival time: 45 minutes.',
             points: [
-              "Burst pipe repair",
-              "Water heater repair",
-              "Sewer line backup clearing",
+              'Burst pipe repair',
+              'Water heater repair',
+              'Sewer line backup clearing',
             ],
           },
           {
-            title: "Drain Cleaning",
+            title: 'Drain Cleaning',
             description:
-              "Professional drain cleaning using hydro-jetting and auger technology. Clear stubborn clogs and prevent future blockages.",
+              'Professional drain cleaning using hydro-jetting and auger technology. Clear stubborn clogs and prevent future blockages.',
             points: [
-              "Kitchen sink unclogging",
-              "Main line hydro-jetting",
-              "Video pipe inspection",
+              'Kitchen sink unclogging',
+              'Main line hydro-jetting',
+              'Video pipe inspection',
             ],
           },
           {
-            title: "Water Heaters",
+            title: 'Water Heaters',
             description:
-              "Expert installation and repair of traditional tank and tankless water heaters. Energy-efficient options available with rebate assistance.",
+              'Expert installation and repair of traditional tank and tankless water heaters. Energy-efficient options available with rebate assistance.',
             points: [
-              "Tankless installation",
-              "Heat pump water heaters",
-              "Repair & maintenance",
+              'Tankless installation',
+              'Heat pump water heaters',
+              'Repair & maintenance',
             ],
           },
           {
-            title: "AC Repair & Install",
+            title: 'AC Repair & Install',
             description:
-              "Complete air conditioning services for Colorado summers. Fast repairs, efficient installations, and seasonal tune-ups.",
+              'Complete air conditioning services for Colorado summers. Fast repairs, efficient installations, and seasonal tune-ups.',
             points: [
-              "Same-day AC repair",
-              "Central AC installation",
-              "Ductless mini-split systems",
+              'Same-day AC repair',
+              'Central AC installation',
+              'Ductless mini-split systems',
             ],
           },
           {
-            title: "Heating Services",
+            title: 'Heating Services',
             description:
-              "Furnace repair, replacement, and maintenance. Keep your home warm through Denver winters with reliable heating solutions.",
+              'Furnace repair, replacement, and maintenance. Keep your home warm through Denver winters with reliable heating solutions.',
             points: [
-              "Furnace repair & install",
-              "Heat pump systems",
-              "Boiler services",
+              'Furnace repair & install',
+              'Heat pump systems',
+              'Boiler services',
             ],
           },
           {
-            title: "Maintenance Plans",
+            title: 'Maintenance Plans',
             description:
-              "Prevent costly breakdowns with our Comfort Shield maintenance program. Bi-annual inspections, priority scheduling, and repair discounts.",
+              'Prevent costly breakdowns with our Comfort Shield maintenance program. Bi-annual inspections, priority scheduling, and repair discounts.',
             points: [
-              "Spring AC tune-up",
-              "Fall furnace inspection",
-              "15% repair discount",
+              'Spring AC tune-up',
+              'Fall furnace inspection',
+              '15% repair discount',
             ],
           },
         ]
 
-    const stepsHeading = props.steps?.heading ?? "How It Works"
+    const stepsHeading = props.steps?.heading ?? 'How It Works'
     const stepsDesc =
       props.steps?.description ??
-      "From your first call to the final inspection, we keep you informed every step of the way."
+      'From your first call to the final inspection, we keep you informed every step of the way.'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Request Service",
+            title: 'Request Service',
             description:
-              "Call (303) 555-0147 or book online. Our team is available 24/7 for emergencies.",
+              'Call (303) 555-0147 or book online. Our team is available 24/7 for emergencies.',
           },
           {
-            title: "Diagnosis",
+            title: 'Diagnosis',
             description:
-              "Our licensed technician arrives, diagnoses the issue, and explains your options clearly.",
+              'Our licensed technician arrives, diagnoses the issue, and explains your options clearly.',
           },
           {
-            title: "Upfront Quote",
+            title: 'Upfront Quote',
             description:
-              "Receive a written estimate with transparent pricing. No surprises, no hidden fees.",
+              'Receive a written estimate with transparent pricing. No surprises, no hidden fees.',
           },
           {
-            title: "Quality Work",
+            title: 'Quality Work',
             description:
-              "Expert repair or installation with premium parts. Backed by our satisfaction guarantee.",
+              'Expert repair or installation with premium parts. Backed by our satisfaction guarantee.',
           },
         ]
 
-    const galleryHeading = props.gallery?.heading ?? "Our Work"
+    const galleryHeading = props.gallery?.heading ?? 'Our Work'
     const galleryDesc =
       props.gallery?.description ??
-      "See the quality craftsmanship that has earned us over 3,500 five-star reviews."
+      'See the quality craftsmanship that has earned us over 3,500 five-star reviews.'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
           {
-            caption: "Complete Bath Remodel",
-            alt: "Modern bathroom renovation with white subway tile, glass shower enclosure, and polished chrome fixtures",
+            caption: 'Complete Bath Remodel',
+            alt: 'Modern bathroom renovation with white subway tile, glass shower enclosure, and polished chrome fixtures',
           },
           {
-            caption: "Commercial HVAC Install",
-            alt: "Industrial HVAC ductwork installation with silver insulated pipes running through commercial ceiling",
+            caption: 'Commercial HVAC Install',
+            alt: 'Industrial HVAC ductwork installation with silver insulated pipes running through commercial ceiling',
           },
           {
-            caption: "Tankless Water Heater",
-            alt: "Tankless water heater mounted on utility wall with copper piping and pressure relief valve",
+            caption: 'Tankless Water Heater',
+            alt: 'Tankless water heater mounted on utility wall with copper piping and pressure relief valve',
           },
           {
-            caption: "AC System Replacement",
-            alt: "Newly installed central air conditioning outdoor condenser unit on concrete pad with surrounding landscaping",
+            caption: 'AC System Replacement',
+            alt: 'Newly installed central air conditioning outdoor condenser unit on concrete pad with surrounding landscaping',
           },
           {
-            caption: "Kitchen Repipe Project",
-            alt: "Luxury kitchen with farmhouse sink, marble countertops, and brass plumbing fixtures under pendant lighting",
+            caption: 'Kitchen Repipe Project',
+            alt: 'Luxury kitchen with farmhouse sink, marble countertops, and brass plumbing fixtures under pendant lighting',
           },
           {
-            caption: "Furnace Installation",
-            alt: "High-efficiency gas furnace installation in basement utility room with white PVC vent piping",
+            caption: 'Furnace Installation',
+            alt: 'High-efficiency gas furnace installation in basement utility room with white PVC vent piping',
           },
         ]
 
-    const pricingHeading = props.pricing?.heading ?? "Transparent Pricing"
+    const pricingHeading = props.pricing?.heading ?? 'Transparent Pricing'
     const pricingDesc =
       props.pricing?.description ??
       "No hidden fees, no surprises. Know exactly what you'll pay before we start."
     const pricingNote =
       props.pricing?.note ??
-      "Installation pricing varies by system size and configuration."
+      'Installation pricing varies by system size and configuration.'
     const pricingNoteCta =
-      props.pricing?.noteCta ?? "Request a free in-home estimate"
+      props.pricing?.noteCta ?? 'Request a free in-home estimate'
     const pricingPlans = props.pricing?.plans?.length
       ? props.pricing.plans
       : [
           {
-            name: "Service Call",
-            blurb: "Diagnostic fee for repairs and troubleshooting",
-            price: "$89",
-            unit: "diagnostic",
+            name: 'Service Call',
+            blurb: 'Diagnostic fee for repairs and troubleshooting',
+            price: '$89',
+            unit: 'diagnostic',
             features: [
-              "Complete system diagnosis",
-              "Written repair estimate",
-              "Waived with repair",
+              'Complete system diagnosis',
+              'Written repair estimate',
+              'Waived with repair',
             ],
-            cta: "Book Service Call",
+            cta: 'Book Service Call',
           },
           {
-            name: "Drain Cleaning",
-            blurb: "Clear stubborn clogs with professional equipment",
-            price: "$149",
-            unit: "starting",
+            name: 'Drain Cleaning',
+            blurb: 'Clear stubborn clogs with professional equipment',
+            price: '$149',
+            unit: 'starting',
             features: [
-              "Kitchen or bathroom drain",
-              "Professional auger cleaning",
-              "30-day clog-free guarantee",
+              'Kitchen or bathroom drain',
+              'Professional auger cleaning',
+              '30-day clog-free guarantee',
             ],
-            cta: "Schedule Cleaning",
+            cta: 'Schedule Cleaning',
           },
           {
-            name: "Comfort Shield Plan",
-            blurb: "Annual maintenance for peace of mind",
-            price: "$19",
-            unit: "/month",
+            name: 'Comfort Shield Plan',
+            blurb: 'Annual maintenance for peace of mind',
+            price: '$19',
+            unit: '/month',
             features: [
-              "2 seasonal tune-ups/year",
-              "Priority scheduling",
-              "15% off all repairs",
-              "No overtime charges",
+              '2 seasonal tune-ups/year',
+              'Priority scheduling',
+              '15% off all repairs',
+              'No overtime charges',
             ],
-            cta: "Join Comfort Shield",
+            cta: 'Join Comfort Shield',
             featured: true,
-            badge: "POPULAR",
+            badge: 'POPULAR',
           },
         ]
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "26", label: "Years in Business" },
-          { value: "3,500+", label: "5-Star Reviews" },
-          { value: "45 min", label: "Average Response" },
-          { value: "24/7", label: "Emergency Service" },
+          { value: '26', label: 'Years in Business' },
+          { value: '3,500+', label: '5-Star Reviews' },
+          { value: '45 min', label: 'Average Response' },
+          { value: '24/7', label: 'Emergency Service' },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Our Customers Say"
+      props.testimonials?.heading ?? 'What Our Customers Say'
     const testimonialsDesc =
       props.testimonials?.description ??
       "Don't just take our word for it. Here's what homeowners across Denver have to say."
@@ -521,134 +524,136 @@ export const PlumbingHvacKimiPage = defineCapsule({
           {
             quote:
               "Our water heater burst at 11 PM on a Saturday. FlowGuard had someone at our door within 40 minutes. Professional, fast, and fairly priced. Can't recommend them enough!",
-            name: "Sarah Mitchell",
-            location: "Cherry Creek, Denver",
+            name: 'Sarah Mitchell',
+            location: 'Cherry Creek, Denver',
             avatarAlt:
-              "Professional headshot of Sarah Mitchell, smiling woman with blonde hair in business casual attire",
+              'Professional headshot of Sarah Mitchell, smiling woman with blonde hair in business casual attire',
           },
           {
             quote:
               "We've used FlowGuard for both plumbing and HVAC work. Replaced our furnace last winter and AC this summer. Both installations were flawless. Their maintenance plan is worth every penny.",
-            name: "Michael Torres",
-            location: "Highlands Ranch",
+            name: 'Michael Torres',
+            location: 'Highlands Ranch',
             avatarAlt:
-              "Professional headshot of Michael Torres, middle-aged man with glasses and friendly expression",
+              'Professional headshot of Michael Torres, middle-aged man with glasses and friendly expression',
           },
           {
             quote:
-              "The technician explained everything clearly and gave us multiple options. No pressure, just honest advice. The tankless water heater install saved us $40/month on energy bills!",
-            name: "Jennifer Park",
-            location: "Boulder, CO",
+              'The technician explained everything clearly and gave us multiple options. No pressure, just honest advice. The tankless water heater install saved us $40/month on energy bills!',
+            name: 'Jennifer Park',
+            location: 'Boulder, CO',
             avatarAlt:
-              "Professional headshot of Jennifer Park, smiling Asian woman with dark hair wearing business attire",
+              'Professional headshot of Jennifer Park, smiling Asian woman with dark hair wearing business attire',
           },
           {
             quote:
               "We manage 12 rental properties and FlowGuard is our go-to for all plumbing and HVAC. They've done over 50 jobs for us with consistent quality. Dependable and professional every time.",
-            name: "David Chen",
-            location: "Property Manager, Aurora",
+            name: 'David Chen',
+            location: 'Property Manager, Aurora',
             avatarAlt:
-              "Professional headshot of David Chen, middle-aged businessman in suit jacket",
+              'Professional headshot of David Chen, middle-aged businessman in suit jacket',
           },
           {
             quote:
-              "AC went out during the heat wave in July. They came the same day, diagnosed the issue quickly, and had it fixed within 2 hours. The price was exactly what they quoted. Outstanding service!",
-            name: "Amanda Rodriguez",
-            location: "Lakewood, CO",
+              'AC went out during the heat wave in July. They came the same day, diagnosed the issue quickly, and had it fixed within 2 hours. The price was exactly what they quoted. Outstanding service!',
+            name: 'Amanda Rodriguez',
+            location: 'Lakewood, CO',
             avatarAlt:
-              "Professional headshot of Amanda Rodriguez, young woman with curly brown hair and warm smile",
+              'Professional headshot of Amanda Rodriguez, young woman with curly brown hair and warm smile',
           },
           {
             quote:
-              "Full home repipe completed in 3 days. The crew was respectful, cleaned up daily, and the work is immaculate. Passed inspection on the first try. Worth every penny for the peace of mind.",
-            name: "Robert Williams",
-            location: "Wash Park, Denver",
+              'Full home repipe completed in 3 days. The crew was respectful, cleaned up daily, and the work is immaculate. Passed inspection on the first try. Worth every penny for the peace of mind.',
+            name: 'Robert Williams',
+            location: 'Wash Park, Denver',
             avatarAlt:
-              "Professional headshot of Robert Williams, older gentleman with gray hair and beard wearing casual shirt",
+              'Professional headshot of Robert Williams, older gentleman with gray hair and beard wearing casual shirt',
           },
         ]
 
-    const faqHeading = props.faq?.heading ?? "Frequently Asked Questions"
+    const faqHeading = props.faq?.heading ?? 'Frequently Asked Questions'
     const faqDesc =
-      props.faq?.description ?? "Everything you need to know about our services."
+      props.faq?.description ??
+      'Everything you need to know about our services.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "Do you offer 24/7 emergency service?",
+            q: 'Do you offer 24/7 emergency service?',
             a: "Yes, we provide true 24/7/365 emergency service for plumbing and HVAC emergencies. Whether it's a burst pipe at midnight or an AC failure on a holiday weekend, our on-call technicians are ready to respond. Emergency calls are typically answered within 5 minutes, and our average arrival time is 45 minutes in the Denver metro area.",
           },
           {
-            q: "What areas do you serve?",
-            a: "We serve the entire Denver metropolitan area including Denver, Aurora, Lakewood, Thornton, Westminster, Arvada, Highlands Ranch, Centennial, Boulder, and surrounding communities. Same-day service is available within a 30-mile radius of downtown Denver. For locations outside this area, please call to confirm availability.",
+            q: 'What areas do you serve?',
+            a: 'We serve the entire Denver metropolitan area including Denver, Aurora, Lakewood, Thornton, Westminster, Arvada, Highlands Ranch, Centennial, Boulder, and surrounding communities. Same-day service is available within a 30-mile radius of downtown Denver. For locations outside this area, please call to confirm availability.',
           },
           {
-            q: "Are your technicians licensed and insured?",
+            q: 'Are your technicians licensed and insured?',
             a: "Absolutely. All our technicians are licensed by the State of Colorado and carry full liability and workers' compensation insurance. Our plumbers hold Master or Journeyman licenses, and our HVAC technicians are EPA certified for refrigerant handling. We conduct thorough background checks and drug testing on all employees.",
           },
           {
-            q: "Do you provide free estimates?",
+            q: 'Do you provide free estimates?',
             a: "Yes, we provide free in-home estimates for installations and larger projects. The $89 service call fee for repairs is waived entirely if you choose to proceed with the recommended work. You'll receive a detailed, written estimate before any work begins—no surprises, no hidden fees.",
           },
           {
-            q: "What payment options do you accept?",
-            a: "We accept all major credit cards (Visa, MasterCard, American Express, Discover), debit cards, checks, and cash. For larger installations, we offer financing options through Synchrony Financial with approved credit, including 0% interest plans for qualified buyers. Military and senior discounts are also available.",
+            q: 'What payment options do you accept?',
+            a: 'We accept all major credit cards (Visa, MasterCard, American Express, Discover), debit cards, checks, and cash. For larger installations, we offer financing options through Synchrony Financial with approved credit, including 0% interest plans for qualified buyers. Military and senior discounts are also available.',
           },
           {
-            q: "What is your warranty policy?",
+            q: 'What is your warranty policy?',
             a: "We stand behind our work with comprehensive warranties. Repairs carry a 1-year parts and labor warranty. New installations include manufacturer warranties (typically 10 years on parts) plus our own 2-year labor warranty. Drain cleaning includes a 30-day clog-free guarantee—if the same drain clogs within 30 days, we'll return at no charge.",
           },
         ]
 
     const ecBadge =
-      props.emergencyCta?.badge ?? "24/7 Emergency Service Available"
-    const ecHeading = props.emergencyCta?.heading ?? "Need Emergency Service?"
+      props.emergencyCta?.badge ?? '24/7 Emergency Service Available'
+    const ecHeading = props.emergencyCta?.heading ?? 'Need Emergency Service?'
     const ecDesc =
       props.emergencyCta?.description ??
-      "Burst pipe? No heat? AC failure? Our licensed technicians are standing by right now. Average response time:"
-    const ecResponse = props.emergencyCta?.responseTime ?? "45 minutes"
-    const ecCall = props.emergencyCta?.callCta ?? "Call (303) 555-0147"
-    const ecSchedule = props.emergencyCta?.scheduleCta ?? "Schedule Non-Emergency"
+      'Burst pipe? No heat? AC failure? Our licensed technicians are standing by right now. Average response time:'
+    const ecResponse = props.emergencyCta?.responseTime ?? '45 minutes'
+    const ecCall = props.emergencyCta?.callCta ?? 'Call (303) 555-0147'
+    const ecSchedule =
+      props.emergencyCta?.scheduleCta ?? 'Schedule Non-Emergency'
     const ecNote =
       props.emergencyCta?.note ??
-      "Emergency rates apply 6 PM - 7 AM weekdays, all weekend, and holidays. Comfort Shield members pay no emergency fees."
+      'Emergency rates apply 6 PM - 7 AM weekdays, all weekend, and holidays. Comfort Shield members pay no emergency fees.'
 
     const footerAbout =
       props.footer?.about ??
       "Denver's trusted plumbing and HVAC experts since 1998. Licensed, insured, and committed to your comfort."
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Facebook", "Twitter", "Instagram"]
-    const footerServicesTitle = props.footer?.servicesTitle ?? "Services"
+      : ['Facebook', 'Twitter', 'Instagram']
+    const footerServicesTitle = props.footer?.servicesTitle ?? 'Services'
     const footerServices = props.footer?.services?.length
       ? props.footer.services
       : [
-          "Emergency Plumbing",
-          "Drain Cleaning",
-          "Water Heaters",
-          "AC Repair & Install",
-          "Heating Services",
-          "Maintenance Plans",
+          'Emergency Plumbing',
+          'Drain Cleaning',
+          'Water Heaters',
+          'AC Repair & Install',
+          'Heating Services',
+          'Maintenance Plans',
         ]
-    const footerCompanyTitle = props.footer?.companyTitle ?? "Company"
+    const footerCompanyTitle = props.footer?.companyTitle ?? 'Company'
     const footerCompany = props.footer?.company?.length
       ? props.footer.company
-      : ["About Us", "Our Team", "Careers", "Blog", "Financing", "Contact"]
-    const footerContactTitle = props.footer?.contactTitle ?? "Contact Us"
-    const footerPhone = props.footer?.phone ?? "(303) 555-0147"
-    const footerEmail = props.footer?.email ?? "service@flowguard.com"
+      : ['About Us', 'Our Team', 'Careers', 'Blog', 'Financing', 'Contact']
+    const footerContactTitle = props.footer?.contactTitle ?? 'Contact Us'
+    const footerPhone = props.footer?.phone ?? '(303) 555-0147'
+    const footerEmail = props.footer?.email ?? 'service@flowguard.com'
     const footerAddress = props.footer?.address?.length
       ? props.footer.address
-      : ["2450 S Colorado Blvd", "Denver, CO 80222"]
+      : ['2450 S Colorado Blvd', 'Denver, CO 80222']
     const footerHours = props.footer?.hours?.length
       ? props.footer.hours
-      : ["Mon-Fri: 7AM-7PM", "Sat-Sun: 8AM-5PM", "24/7 Emergency"]
+      : ['Mon-Fri: 7AM-7PM', 'Sat-Sun: 8AM-5PM', '24/7 Emergency']
     const footerCopyright =
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand} Plumbing & HVAC. All rights reserved.`
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "License Info"]
+      : ['Privacy Policy', 'Terms of Service', 'License Info']
 
     // Decorative brand bolt mark.
     const Bolt = ({ className }: { className?: string }) => (
@@ -927,7 +932,7 @@ export const PlumbingHvacKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -944,7 +949,9 @@ export const PlumbingHvacKimiPage = defineCapsule({
                 <span className="grid size-10 place-items-center rounded-lg bg-primary text-primary-foreground">
                   <Bolt className="size-6" />
                 </span>
-                <span className="text-xl font-bold text-foreground">{brand}</span>
+                <span className="text-xl font-bold text-foreground">
+                  {brand}
+                </span>
               </button>
 
               <div className="hidden items-center gap-8 md:flex">
@@ -1081,7 +1088,9 @@ export const PlumbingHvacKimiPage = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Service Requests</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Service Requests
+                      </SheetTitle>
                       <SheetDescription>
                         {requestCount > 0
                           ? `${requestCount} service request${requestCount === 1 ? '' : 's'} in progress.`
@@ -1142,7 +1151,8 @@ export const PlumbingHvacKimiPage = defineCapsule({
                             No service requests
                           </p>
                           <p className="mt-2 text-sm text-muted-foreground">
-                            Book a service from our Services section to get started.
+                            Book a service from our Services section to get
+                            started.
                           </p>
                         </div>
                       )}
@@ -1161,7 +1171,10 @@ export const PlumbingHvacKimiPage = defineCapsule({
                 <button
                   type="button"
                   onClick={() => {
-                    void bookService('Quote Request', 'Quote request from navbar')
+                    void bookService(
+                      'Quote Request',
+                      'Quote request from navbar',
+                    )
                     setBookingOpen(true)
                   }}
                   className="rounded-full bg-primary px-6 py-2.5 font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-lg"
@@ -1285,11 +1298,14 @@ export const PlumbingHvacKimiPage = defineCapsule({
             <div className="max-w-2xl">
               <div className="mb-6 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-2">
                 <span className="mr-2 size-2 animate-pulse rounded-full bg-primary" />
-                <span className="text-sm font-medium text-primary">{heroBadge}</span>
+                <span className="text-sm font-medium text-primary">
+                  {heroBadge}
+                </span>
               </div>
 
               <h1 className="mb-6 text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-6xl">
-                {heroHeadingTop} <span className="text-primary">{heroHighlight}</span>
+                {heroHeadingTop}{' '}
+                <span className="text-primary">{heroHighlight}</span>
               </h1>
 
               <p className="mb-8 text-lg leading-relaxed text-muted-foreground sm:text-xl">
@@ -1300,7 +1316,10 @@ export const PlumbingHvacKimiPage = defineCapsule({
                 <button
                   type="button"
                   onClick={() => {
-                    void bookService('General Service', 'Service request from hero')
+                    void bookService(
+                      'General Service',
+                      'Service request from hero',
+                    )
                     setBookingOpen(true)
                   }}
                   className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl"
@@ -1355,7 +1374,9 @@ export const PlumbingHvacKimiPage = defineCapsule({
                   <div className="mb-2 grid size-16 place-items-center rounded-full bg-muted text-muted-foreground">
                     {badgeIcons[i % badgeIcons.length]}
                   </div>
-                  <span className="text-xs font-semibold text-foreground">{b}</span>
+                  <span className="text-xs font-semibold text-foreground">
+                    {b}
+                  </span>
                 </div>
               ))}
             </div>
@@ -1405,7 +1426,9 @@ export const PlumbingHvacKimiPage = defineCapsule({
                     <h3 className="mb-3 text-xl font-bold text-foreground">
                       {item.title}
                     </h3>
-                    <p className="mb-4 text-muted-foreground">{item.description}</p>
+                    <p className="mb-4 text-muted-foreground">
+                      {item.description}
+                    </p>
                     <ul className="mb-6 space-y-2 text-sm text-muted-foreground">
                       {item.points.map((p) => (
                         <li key={p} className="flex items-center">
@@ -1450,7 +1473,9 @@ export const PlumbingHvacKimiPage = defineCapsule({
                     <h3 className="mb-2 text-lg font-bold text-card-foreground">
                       {step.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground">{step.description}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {step.description}
+                    </p>
                   </div>
                   {i < stepItems.length - 1 && (
                     <div
@@ -1489,7 +1514,9 @@ export const PlumbingHvacKimiPage = defineCapsule({
                     className="h-64 w-full object-cover transition-transform group-hover:scale-105"
                   />
                   <div className="absolute inset-0 flex items-end bg-gradient-to-t from-foreground/60 to-transparent p-6">
-                    <span className="font-semibold text-background">{g.caption}</span>
+                    <span className="font-semibold text-background">
+                      {g.caption}
+                    </span>
                   </div>
                 </button>
               ))}
@@ -1511,10 +1538,10 @@ export const PlumbingHvacKimiPage = defineCapsule({
                 <div
                   key={plan.name}
                   className={cn(
-                    "relative overflow-hidden rounded-2xl bg-card",
+                    'relative overflow-hidden rounded-2xl bg-card',
                     plan.featured
-                      ? "border-2 border-primary shadow-lg"
-                      : "border border-border shadow-sm",
+                      ? 'border-2 border-primary shadow-lg'
+                      : 'border border-border shadow-sm',
                   )}
                 >
                   {plan.badge && (
@@ -1526,12 +1553,16 @@ export const PlumbingHvacKimiPage = defineCapsule({
                     <h3 className="mb-2 text-xl font-bold text-card-foreground">
                       {plan.name}
                     </h3>
-                    <p className="mb-6 text-sm text-muted-foreground">{plan.blurb}</p>
+                    <p className="mb-6 text-sm text-muted-foreground">
+                      {plan.blurb}
+                    </p>
                     <div className="mb-6 flex items-baseline">
                       <span className="text-4xl font-bold text-card-foreground">
                         {plan.price}
                       </span>
-                      <span className="ml-2 text-muted-foreground">{plan.unit}</span>
+                      <span className="ml-2 text-muted-foreground">
+                        {plan.unit}
+                      </span>
                     </div>
                     <ul className="mb-8 space-y-3 text-sm text-muted-foreground">
                       {plan.features.map((f) => (
@@ -1548,10 +1579,10 @@ export const PlumbingHvacKimiPage = defineCapsule({
                         setBookingOpen(true)
                       }}
                       className={cn(
-                        "w-full rounded-full px-6 py-3 font-semibold transition-colors",
+                        'w-full rounded-full px-6 py-3 font-semibold transition-colors',
                         plan.featured
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                          : "bg-secondary text-secondary-foreground hover:bg-accent",
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'bg-secondary text-secondary-foreground hover:bg-accent',
                       )}
                     >
                       {plan.cta}
@@ -1561,14 +1592,14 @@ export const PlumbingHvacKimiPage = defineCapsule({
               ))}
             </div>
             <p className="mt-8 text-center text-sm text-muted-foreground">
-              {pricingNote}{" "}
+              {pricingNote}{' '}
               <button
                 type="button"
                 onClick={() => go(pricingNoteCta)}
                 className="text-primary hover:underline"
               >
                 {pricingNoteCta}
-              </button>{" "}
+              </button>{' '}
               for accurate pricing.
             </p>
           </div>
@@ -1597,7 +1628,9 @@ export const PlumbingHvacKimiPage = defineCapsule({
               <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
                 {testimonialsHeading}
               </h2>
-              <p className="text-lg text-muted-foreground">{testimonialsDesc}</p>
+              <p className="text-lg text-muted-foreground">
+                {testimonialsDesc}
+              </p>
             </div>
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {testimonialItems.map((t) => (
@@ -1620,8 +1653,12 @@ export const PlumbingHvacKimiPage = defineCapsule({
                       className="mr-4 size-12 rounded-full object-cover"
                     />
                     <div>
-                      <div className="font-semibold text-foreground">{t.name}</div>
-                      <div className="text-sm text-muted-foreground">{t.location}</div>
+                      <div className="font-semibold text-foreground">
+                        {t.name}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {t.location}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1656,7 +1693,9 @@ export const PlumbingHvacKimiPage = defineCapsule({
                       <ChevronDown className="size-5" />
                     </span>
                   </summary>
-                  <div className="px-6 pb-6 text-muted-foreground">{item.a}</div>
+                  <div className="px-6 pb-6 text-muted-foreground">
+                    {item.a}
+                  </div>
                 </details>
               ))}
             </div>
@@ -1668,15 +1707,20 @@ export const PlumbingHvacKimiPage = defineCapsule({
           <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
             <div className="mb-6 inline-flex items-center rounded-full border border-destructive/30 bg-destructive/20 px-4 py-2">
               <span className="mr-2 size-2 animate-pulse rounded-full bg-destructive" />
-              <span className="text-sm font-medium text-destructive">{ecBadge}</span>
+              <span className="text-sm font-medium text-destructive">
+                {ecBadge}
+              </span>
             </div>
 
             <h2 className="mb-6 text-3xl font-bold text-background sm:text-4xl lg:text-5xl">
               {ecHeading}
             </h2>
             <p className="mx-auto mb-8 max-w-2xl text-xl text-background/70">
-              {ecDesc}{" "}
-              <span className="font-semibold text-background">{ecResponse}</span>.
+              {ecDesc}{' '}
+              <span className="font-semibold text-background">
+                {ecResponse}
+              </span>
+              .
             </p>
 
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
@@ -1713,7 +1757,9 @@ export const PlumbingHvacKimiPage = defineCapsule({
                   <span className="grid size-10 place-items-center rounded-lg bg-primary text-primary-foreground">
                     <Bolt className="size-6" />
                   </span>
-                  <span className="text-xl font-bold text-foreground">{brand}</span>
+                  <span className="text-xl font-bold text-foreground">
+                    {brand}
+                  </span>
                 </div>
                 <p className="mb-6 text-sm">{footerAbout}</p>
                 <div className="flex gap-4">
@@ -1865,7 +1911,9 @@ export const PlumbingHvacKimiPage = defineCapsule({
                         <span
                           key={line}
                           className={
-                            i === footerHours.length - 1 ? "text-primary" : undefined
+                            i === footerHours.length - 1
+                              ? 'text-primary'
+                              : undefined
                           }
                         >
                           {line}

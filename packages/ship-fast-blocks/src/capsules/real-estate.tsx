@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,7 +12,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "#/components/ui/command.tsx"
+} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetClose,
@@ -22,14 +22,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * RealEstateKimiPage — a complete, self-contained real-estate / property
@@ -55,7 +55,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * data; rich defaults make it render great with no props at all.
  */
 export const RealEstateKimiPage = defineCapsule({
-  name: "RealEstateKimiPage",
+  name: 'RealEstateKimiPage',
   description:
     "Complete real-estate / property-brokerage / realty LANDING page with a clean, editorial, neutral aesthetic: light canvas, crisp bordered cards and a sticky blurred navbar. Includes a split hero (headline, supporting copy, dual CTAs, inline KPI strip, floating 'verified listings' badge over a hero home photo), a 4-field PROPERTY SEARCH bar (location, property type, price range, search button), a 3-up 'why choose us' features grid with icons, a 6-up FEATURED LISTINGS grid of property cards (For Sale / For Rent status badge, street address, beds/baths/sqft specs, price and view-details action), a 4-up AGENTS roster with headshots and email/call/LinkedIn links, a 3-up star-rated TESTIMONIALS grid with client avatars, a dark contact CTA band with call/email buttons and a request-a-consultation form, plus a 4-column footer with quick links, company links, contact details, social icons and a legal bottom bar. Use as the ROOT/home page for real-estate agencies, property brokerages, realtors, home-listing marketplaces, rental platforms, luxury estates or relocation services when a trustworthy, photo-led property page with search, listings and agent social proof is wanted. Supply content only — brand, nav, hero, search, features, listings, agents, testimonials, contact, footer; the block owns all layout and styling.",
   props: z.object({
@@ -277,177 +277,176 @@ export const RealEstateKimiPage = defineCapsule({
     const [mobileOpen, setMobileOpen] = useState(false)
     const [savedOpen, setSavedOpen] = useState(false)
     const [searchOpen, setSearchOpen] = useState(false)
-    const brand = props.brand ?? "Apex Realty"
+    const brand = props.brand ?? 'Apex Realty'
     const nav = props.nav?.length
       ? props.nav
-      : ["Listings", "Agents", "About", "Testimonials", "Contact"]
+      : ['Listings', 'Agents', 'About', 'Testimonials', 'Contact']
 
     const headingTop = props.hero?.headingTop ?? "Find a place you'll"
-    const heroHighlight = props.hero?.highlight ?? "love calling home"
+    const heroHighlight = props.hero?.highlight ?? 'love calling home'
     const heroSub =
       props.hero?.subheading ??
-      "Discover over 2,500 properties for sale and rent across the country. Our expert agents help you navigate the market with confidence."
-    const heroPrimary = props.hero?.primaryCta ?? "Browse Listings"
-    const heroSecondary = props.hero?.secondaryCta ?? "Meet Our Agents"
-    const heroPhone = props.hero?.phone ?? "(123) 456-7890"
+      'Discover over 2,500 properties for sale and rent across the country. Our expert agents help you navigate the market with confidence.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Browse Listings'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Meet Our Agents'
+    const heroPhone = props.hero?.phone ?? '(123) 456-7890'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Modern luxury home exterior with large windows and manicured lawn at golden hour"
-    const heroBadgeTitle = props.hero?.badgeTitle ?? "Verified Listings"
+      'Modern luxury home exterior with large windows and manicured lawn at golden hour'
+    const heroBadgeTitle = props.hero?.badgeTitle ?? 'Verified Listings'
     const heroBadgeSubtitle =
-      props.hero?.badgeSubtitle ?? "Every property verified"
+      props.hero?.badgeSubtitle ?? 'Every property verified'
     const heroStats = props.hero?.stats?.length
       ? props.hero.stats
       : [
-          { value: "2,500+", label: "Properties Listed" },
-          { value: "850+", label: "Happy Clients" },
-          { value: "24", label: "Expert Agents" },
+          { value: '2,500+', label: 'Properties Listed' },
+          { value: '850+', label: 'Happy Clients' },
+          { value: '24', label: 'Expert Agents' },
         ]
 
-    const searchLocationLabel = props.search?.locationLabel ?? "Location"
+    const searchLocationLabel = props.search?.locationLabel ?? 'Location'
     const searchLocations = props.search?.locations?.length
       ? props.search.locations
       : [
-          "All Locations",
-          "San Francisco, CA",
-          "Los Angeles, CA",
-          "New York, NY",
-          "Miami, FL",
-          "Seattle, WA",
-          "Austin, TX",
+          'All Locations',
+          'San Francisco, CA',
+          'Los Angeles, CA',
+          'New York, NY',
+          'Miami, FL',
+          'Seattle, WA',
+          'Austin, TX',
         ]
-    const searchTypeLabel = props.search?.typeLabel ?? "Property Type"
+    const searchTypeLabel = props.search?.typeLabel ?? 'Property Type'
     const searchTypes = props.search?.types?.length
       ? props.search.types
       : [
-          "All Types",
-          "Single Family Home",
-          "Condominium",
-          "Townhouse",
-          "Multi-Family",
-          "Commercial",
+          'All Types',
+          'Single Family Home',
+          'Condominium',
+          'Townhouse',
+          'Multi-Family',
+          'Commercial',
         ]
-    const searchPriceLabel = props.search?.priceLabel ?? "Price Range"
+    const searchPriceLabel = props.search?.priceLabel ?? 'Price Range'
     const searchPrices = props.search?.prices?.length
       ? props.search.prices
       : [
-          "Any Price",
-          "$0 - $500,000",
-          "$500,000 - $1,000,000",
-          "$1,000,000 - $2,000,000",
-          "$2,000,000+",
+          'Any Price',
+          '$0 - $500,000',
+          '$500,000 - $1,000,000',
+          '$1,000,000 - $2,000,000',
+          '$2,000,000+',
         ]
-    const searchSubmit = props.search?.submit ?? "Search Properties"
+    const searchSubmit = props.search?.submit ?? 'Search Properties'
 
-    const featuresHeading =
-      props.features?.heading ?? "Why choose Apex Realty"
+    const featuresHeading = props.features?.heading ?? 'Why choose Apex Realty'
     const featuresDesc =
       props.features?.description ??
-      "We combine local expertise with modern technology to deliver an exceptional real estate experience."
+      'We combine local expertise with modern technology to deliver an exceptional real estate experience.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Trusted Experience",
+            title: 'Trusted Experience',
             description:
               "With over 15 years in the market, we've helped more than 850 families find their dream homes. Our reputation is built on trust and results.",
           },
           {
-            title: "Fast Process",
+            title: 'Fast Process',
             description:
-              "Our streamlined approach means less waiting and more moving. Average closing time is 30% faster than the industry standard.",
+              'Our streamlined approach means less waiting and more moving. Average closing time is 30% faster than the industry standard.',
           },
           {
-            title: "Expert Team",
+            title: 'Expert Team',
             description:
-              "Our 24 certified agents know every neighborhood. From first-time buyers to luxury investors, we have specialists for every need.",
+              'Our 24 certified agents know every neighborhood. From first-time buyers to luxury investors, we have specialists for every need.',
           },
         ]
 
-    const listingsHeading = props.listings?.heading ?? "Featured Listings"
+    const listingsHeading = props.listings?.heading ?? 'Featured Listings'
     const listingsDesc =
       props.listings?.description ??
-      "Hand-picked properties currently available on the market"
+      'Hand-picked properties currently available on the market'
     const listingsViewAll =
-      props.listings?.viewAll ?? "View all 2,500+ listings"
+      props.listings?.viewAll ?? 'View all 2,500+ listings'
     const listingItems = props.listings?.items?.length
       ? props.listings.items
       : [
           {
-            title: "Modern Hillside Villa",
-            status: "For Sale",
-            listed: "Listed 3 days ago",
-            address: "2847 Angelo Drive, Los Angeles, CA",
-            beds: "5 beds",
-            baths: "4 baths",
-            sqft: "4,200 sqft",
-            price: "$3,850,000",
+            title: 'Modern Hillside Villa',
+            status: 'For Sale',
+            listed: 'Listed 3 days ago',
+            address: '2847 Angelo Drive, Los Angeles, CA',
+            beds: '5 beds',
+            baths: '4 baths',
+            sqft: '4,200 sqft',
+            price: '$3,850,000',
             imageAlt:
-              "Modern hillside villa with floor-to-ceiling glass windows overlooking Los Angeles city lights at dusk",
+              'Modern hillside villa with floor-to-ceiling glass windows overlooking Los Angeles city lights at dusk',
           },
           {
-            title: "Downtown Skyline Penthouse",
-            status: "For Rent",
+            title: 'Downtown Skyline Penthouse',
+            status: 'For Rent',
             forRent: true,
-            listed: "Listed 1 week ago",
-            address: "888 W 7th Street, Los Angeles, CA",
-            beds: "3 beds",
-            baths: "3 baths",
-            sqft: "2,850 sqft",
-            price: "$8,500",
-            priceSuffix: "/mo",
+            listed: 'Listed 1 week ago',
+            address: '888 W 7th Street, Los Angeles, CA',
+            beds: '3 beds',
+            baths: '3 baths',
+            sqft: '2,850 sqft',
+            price: '$8,500',
+            priceSuffix: '/mo',
             imageAlt:
-              "Contemporary glass penthouse apartment with wraparound terrace and city skyline views",
+              'Contemporary glass penthouse apartment with wraparound terrace and city skyline views',
           },
           {
-            title: "Craftsman Garden Bungalow",
-            status: "For Sale",
-            listed: "Listed 2 weeks ago",
-            address: "4521 Meridian Ave, Seattle, WA",
-            beds: "4 beds",
-            baths: "2.5 baths",
-            sqft: "2,100 sqft",
-            price: "$985,000",
+            title: 'Craftsman Garden Bungalow',
+            status: 'For Sale',
+            listed: 'Listed 2 weeks ago',
+            address: '4521 Meridian Ave, Seattle, WA',
+            beds: '4 beds',
+            baths: '2.5 baths',
+            sqft: '2,100 sqft',
+            price: '$985,000',
             imageAlt:
-              "Charming craftsman bungalow with wraparound porch and mature garden landscaping",
+              'Charming craftsman bungalow with wraparound porch and mature garden landscaping',
           },
           {
-            title: "Waterfront Estate",
-            status: "For Sale",
-            listed: "Listed today",
-            address: "1240 Biscayne Blvd, Miami Beach, FL",
-            beds: "6 beds",
-            baths: "7 baths",
-            sqft: "8,500 sqft",
-            price: "$12,500,000",
+            title: 'Waterfront Estate',
+            status: 'For Sale',
+            listed: 'Listed today',
+            address: '1240 Biscayne Blvd, Miami Beach, FL',
+            beds: '6 beds',
+            baths: '7 baths',
+            sqft: '8,500 sqft',
+            price: '$12,500,000',
             imageAlt:
-              "Luxurious waterfront estate with infinity pool and private dock on Miami Beach",
+              'Luxurious waterfront estate with infinity pool and private dock on Miami Beach',
           },
           {
-            title: "Pacific Heights Townhouse",
-            status: "For Rent",
+            title: 'Pacific Heights Townhouse',
+            status: 'For Rent',
             forRent: true,
-            listed: "Listed 5 days ago",
-            address: "2240 Vallejo Street, San Francisco, CA",
-            beds: "3 beds",
-            baths: "2.5 baths",
-            sqft: "1,950 sqft",
-            price: "$6,200",
-            priceSuffix: "/mo",
+            listed: 'Listed 5 days ago',
+            address: '2240 Vallejo Street, San Francisco, CA',
+            beds: '3 beds',
+            baths: '2.5 baths',
+            sqft: '1,950 sqft',
+            price: '$6,200',
+            priceSuffix: '/mo',
             imageAlt:
-              "Sleek modern townhouse in San Francisco with bay windows and rooftop deck",
+              'Sleek modern townhouse in San Francisco with bay windows and rooftop deck',
           },
           {
-            title: "Mid-Century Modern Retreat",
-            status: "For Sale",
-            listed: "Listed 4 days ago",
-            address: "1804 Alta Vista Ave, Austin, TX",
-            beds: "4 beds",
-            baths: "3 baths",
-            sqft: "2,400 sqft",
-            price: "$1,250,000",
+            title: 'Mid-Century Modern Retreat',
+            status: 'For Sale',
+            listed: 'Listed 4 days ago',
+            address: '1804 Alta Vista Ave, Austin, TX',
+            beds: '4 beds',
+            baths: '3 baths',
+            sqft: '2,400 sqft',
+            price: '$1,250,000',
             imageAlt:
-              "Mid-century modern home in Austin with open floor plan and native Texas landscaping",
+              'Mid-century modern home in Austin with open floor plan and native Texas landscaping',
           },
         ]
 
@@ -504,122 +503,121 @@ export const RealEstateKimiPage = defineCapsule({
     const safeSavedPropertyTitles = savedPropertyTitles ?? new Set<string>()
     const savedCount = safeSavedPropertyTitles.size
 
-    const agentsHeading = props.agents?.heading ?? "Meet Our Expert Agents"
+    const agentsHeading = props.agents?.heading ?? 'Meet Our Expert Agents'
     const agentsDesc =
       props.agents?.description ??
-      "Our team of 24 certified professionals brings local expertise and personalized service to every transaction."
-    const agentsViewAll = props.agents?.viewAll ?? "View all 24 agents"
+      'Our team of 24 certified professionals brings local expertise and personalized service to every transaction.'
+    const agentsViewAll = props.agents?.viewAll ?? 'View all 24 agents'
     const agentItems = props.agents?.items?.length
       ? props.agents.items
       : [
           {
-            name: "Sarah Chen",
-            role: "Senior Agent • San Francisco",
+            name: 'Sarah Chen',
+            role: 'Senior Agent • San Francisco',
             imageAlt:
-              "Professional headshot of Sarah Chen, a real estate agent with warm smile",
+              'Professional headshot of Sarah Chen, a real estate agent with warm smile',
           },
           {
-            name: "Marcus Williams",
-            role: "Luxury Specialist • Miami",
+            name: 'Marcus Williams',
+            role: 'Luxury Specialist • Miami',
             imageAlt:
-              "Professional headshot of Marcus Williams, a real estate agent in a navy suit",
+              'Professional headshot of Marcus Williams, a real estate agent in a navy suit',
           },
           {
-            name: "Jennifer Park",
+            name: 'Jennifer Park',
             role: "Buyer's Agent • Seattle",
             imageAlt:
-              "Professional headshot of Jennifer Park, a real estate agent with confident expression",
+              'Professional headshot of Jennifer Park, a real estate agent with confident expression',
           },
           {
-            name: "David Rodriguez",
-            role: "Investment Advisor • Austin",
+            name: 'David Rodriguez',
+            role: 'Investment Advisor • Austin',
             imageAlt:
-              "Professional headshot of David Rodriguez, a real estate agent with friendly demeanor",
+              'Professional headshot of David Rodriguez, a real estate agent with friendly demeanor',
           },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Our Clients Say"
+      props.testimonials?.heading ?? 'What Our Clients Say'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Real stories from real people who found their perfect home with Apex Realty."
+      'Real stories from real people who found their perfect home with Apex Realty.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "Sarah Chen made our first home buying experience seamless. She was patient, knowledgeable, and always available to answer our questions. We closed on our dream home in Pacific Heights within 45 days.",
-            name: "Emily Thompson",
-            role: "First-time Buyer, San Francisco",
-            avatarAlt: "Portrait of Emily Thompson, a satisfied client",
+              'Sarah Chen made our first home buying experience seamless. She was patient, knowledgeable, and always available to answer our questions. We closed on our dream home in Pacific Heights within 45 days.',
+            name: 'Emily Thompson',
+            role: 'First-time Buyer, San Francisco',
+            avatarAlt: 'Portrait of Emily Thompson, a satisfied client',
           },
           {
             quote:
-              "Marcus helped us sell our Miami Beach property above asking price in just 12 days. His marketing strategy and negotiation skills are unmatched. He truly understands the luxury market.",
-            name: "Robert Kim",
-            role: "Property Investor, Miami",
-            avatarAlt: "Portrait of Robert Kim, a satisfied client",
+              'Marcus helped us sell our Miami Beach property above asking price in just 12 days. His marketing strategy and negotiation skills are unmatched. He truly understands the luxury market.',
+            name: 'Robert Kim',
+            role: 'Property Investor, Miami',
+            avatarAlt: 'Portrait of Robert Kim, a satisfied client',
           },
           {
             quote:
-              "After relocating from New York, Jennifer found us the perfect family home in Seattle within our budget. Her knowledge of school districts and neighborhoods was invaluable for our family of four.",
-            name: "Amanda Foster",
-            role: "Relocating Family, Seattle",
-            avatarAlt: "Portrait of Amanda Foster, a satisfied client",
+              'After relocating from New York, Jennifer found us the perfect family home in Seattle within our budget. Her knowledge of school districts and neighborhoods was invaluable for our family of four.',
+            name: 'Amanda Foster',
+            role: 'Relocating Family, Seattle',
+            avatarAlt: 'Portrait of Amanda Foster, a satisfied client',
           },
         ]
 
     const contactHeading =
-      props.contact?.heading ?? "Ready to find your dream home?"
+      props.contact?.heading ?? 'Ready to find your dream home?'
     const contactDesc =
       props.contact?.description ??
-      "Let our experienced agents guide you through every step of the process. Schedule a free consultation today and take the first step toward your new home."
-    const contactCallCta =
-      props.contact?.callCta ?? "Call (123) 456-7890"
-    const contactEmailCta = props.contact?.emailCta ?? "Email Us"
+      'Let our experienced agents guide you through every step of the process. Schedule a free consultation today and take the first step toward your new home.'
+    const contactCallCta = props.contact?.callCta ?? 'Call (123) 456-7890'
+    const contactEmailCta = props.contact?.emailCta ?? 'Email Us'
     const contactFormHeading =
-      props.contact?.formHeading ?? "Request a Consultation"
-    const contactSubmit = props.contact?.submit ?? "Schedule Consultation"
+      props.contact?.formHeading ?? 'Request a Consultation'
+    const contactSubmit = props.contact?.submit ?? 'Schedule Consultation'
     const contactInterests = props.contact?.interests?.length
       ? props.contact.interests
       : [
-          "Buying a home",
-          "Selling a home",
-          "Renting a property",
-          "Investment properties",
-          "Just exploring",
+          'Buying a home',
+          'Selling a home',
+          'Renting a property',
+          'Investment properties',
+          'Just exploring',
         ]
 
     const footerAbout =
       props.footer?.about ??
-      "Helping families find their perfect homes since 2009. Your trusted partner in real estate across the nation."
+      'Helping families find their perfect homes since 2009. Your trusted partner in real estate across the nation.'
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Facebook", "Instagram", "LinkedIn"]
-    const footerQuickTitle = props.footer?.quickLinksTitle ?? "Quick Links"
+      : ['Facebook', 'Instagram', 'LinkedIn']
+    const footerQuickTitle = props.footer?.quickLinksTitle ?? 'Quick Links'
     const footerQuickLinks = props.footer?.quickLinks?.length
       ? props.footer.quickLinks
       : [
-          "Property Listings",
-          "Our Agents",
-          "Buy a Home",
-          "Sell a Home",
-          "Rent a Property",
+          'Property Listings',
+          'Our Agents',
+          'Buy a Home',
+          'Sell a Home',
+          'Rent a Property',
         ]
-    const footerCompanyTitle = props.footer?.companyTitle ?? "Company"
+    const footerCompanyTitle = props.footer?.companyTitle ?? 'Company'
     const footerCompanyLinks = props.footer?.companyLinks?.length
       ? props.footer.companyLinks
-      : ["About Us", "Careers", "Press", "Blog", "Contact"]
-    const footerContactTitle = props.footer?.contactTitle ?? "Contact"
+      : ['About Us', 'Careers', 'Press', 'Blog', 'Contact']
+    const footerContactTitle = props.footer?.contactTitle ?? 'Contact'
     const footerAddress =
-      props.footer?.address ?? "123 Market Street, San Francisco, CA 94105"
-    const footerPhone = props.footer?.phone ?? "(123) 456-7890"
-    const footerEmail = props.footer?.email ?? "hello@apexrealty.com"
+      props.footer?.address ?? '123 Market Street, San Francisco, CA 94105'
+    const footerPhone = props.footer?.phone ?? '(123) 456-7890'
+    const footerEmail = props.footer?.email ?? 'hello@apexrealty.com'
     const footerCopyright =
-      props.footer?.copyright ?? "© 2026 Apex Realty. All rights reserved."
+      props.footer?.copyright ?? '© 2026 Apex Realty. All rights reserved.'
     const footerLegal = props.footer?.legalLinks?.length
       ? props.footer.legalLinks
-      : ["Privacy Policy", "Terms of Service", "Cookie Policy"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
 
     // Brand logo mark — house glyph (decorative brand asset).
     const HomeMark = ({ className }: { className?: string }) => (
@@ -639,7 +637,13 @@ export const RealEstateKimiPage = defineCapsule({
       </svg>
     )
 
-    const HeartIcon = ({ active = false, className }: { active?: boolean; className?: string }) => (
+    const HeartIcon = ({
+      active = false,
+      className,
+    }: {
+      active?: boolean
+      className?: string
+    }) => (
       <svg
         className={cn(
           'size-5',
@@ -819,11 +823,17 @@ export const RealEstateKimiPage = defineCapsule({
       </svg>
     )
 
-    const FeatureIcon = ({ i, className }: { i: number; className?: string }) => {
+    const FeatureIcon = ({
+      i,
+      className,
+    }: {
+      i: number
+      className?: string
+    }) => {
       const paths = [
-        "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
-        "M13 10V3L4 14h7v7l9-11h-7z",
-        "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z",
+        'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+        'M13 10V3L4 14h7v7l9-11h-7z',
+        'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
       ]
       return (
         <svg
@@ -843,9 +853,15 @@ export const RealEstateKimiPage = defineCapsule({
       )
     }
 
-    const SocialIcon = ({ name, className }: { name: string; className?: string }) => {
+    const SocialIcon = ({
+      name,
+      className,
+    }: {
+      name: string
+      className?: string
+    }) => {
       const key = name.toLowerCase()
-      if (key.includes("face")) {
+      if (key.includes('face')) {
         return (
           <svg
             className={className}
@@ -857,7 +873,7 @@ export const RealEstateKimiPage = defineCapsule({
           </svg>
         )
       }
-      if (key.includes("insta")) {
+      if (key.includes('insta')) {
         return (
           <svg
             className={className}
@@ -873,15 +889,15 @@ export const RealEstateKimiPage = defineCapsule({
     }
 
     const inputCls =
-      "w-full rounded-xl border border-border bg-secondary px-4 py-3 text-secondary-foreground placeholder-muted-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
+      'w-full rounded-xl border border-border bg-secondary px-4 py-3 text-secondary-foreground placeholder-muted-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring'
 
     const selectCls =
-      "w-full appearance-none cursor-pointer rounded-xl border border-input bg-background py-3 pl-10 pr-4 text-sm text-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
+      'w-full appearance-none cursor-pointer rounded-xl border border-input bg-background py-3 pl-10 pr-4 text-sm text-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring'
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -1059,7 +1075,9 @@ export const RealEstateKimiPage = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Saved Properties</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Saved Properties
+                      </SheetTitle>
                       <SheetDescription>
                         {savedCount > 0
                           ? `${savedCount} propert${savedCount === 1 ? 'y' : 'ies'} saved for this session.`
@@ -1341,7 +1359,7 @@ export const RealEstateKimiPage = defineCapsule({
               <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
                 <div className="space-y-8">
                   <h1 className="text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                    {headingTop}{" "}
+                    {headingTop}{' '}
                     <span className="text-muted-foreground">
                       {heroHighlight}
                     </span>
@@ -1611,10 +1629,10 @@ export const RealEstateKimiPage = defineCapsule({
                         <div className="mb-3 flex items-center gap-2">
                           <span
                             className={cn(
-                              "rounded-full px-2.5 py-1 text-xs font-medium",
+                              'rounded-full px-2.5 py-1 text-xs font-medium',
                               forRent
-                                ? "bg-accent text-accent-foreground"
-                                : "bg-primary/10 text-primary",
+                                ? 'bg-accent text-accent-foreground'
+                                : 'bg-primary/10 text-primary',
                             )}
                           >
                             {p.status}
@@ -1826,20 +1844,22 @@ export const RealEstateKimiPage = defineCapsule({
                     onSubmit={(e) => {
                       e.preventDefault()
                       const form = e.currentTarget
-                      const firstName =
-                        (form.elements.namedItem('re-first') as HTMLInputElement)
-                          .value
-                      const lastName =
-                        (form.elements.namedItem('re-last') as HTMLInputElement)
-                          .value
-                      const email =
-                        (form.elements.namedItem('re-email') as HTMLInputElement)
-                          .value
-                      const phone =
-                        (form.elements.namedItem('re-phone') as HTMLInputElement)
-                          .value
+                      const firstName = (
+                        form.elements.namedItem('re-first') as HTMLInputElement
+                      ).value
+                      const lastName = (
+                        form.elements.namedItem('re-last') as HTMLInputElement
+                      ).value
+                      const email = (
+                        form.elements.namedItem('re-email') as HTMLInputElement
+                      ).value
+                      const phone = (
+                        form.elements.namedItem('re-phone') as HTMLInputElement
+                      ).value
                       const interest = (
-                        form.elements.namedItem('re-interest') as HTMLSelectElement
+                        form.elements.namedItem(
+                          're-interest',
+                        ) as HTMLSelectElement
                       ).value
 
                       if (firstName && lastName && email && phone && interest) {
@@ -1925,11 +1945,17 @@ export const RealEstateKimiPage = defineCapsule({
                       </label>
                       <select
                         id="re-interest"
-                        className={cn(inputCls, "cursor-pointer appearance-none")}
+                        className={cn(
+                          inputCls,
+                          'cursor-pointer appearance-none',
+                        )}
                         required
                       >
                         {contactInterests.map((opt) => (
-                          <option key={opt} className="bg-background text-foreground">
+                          <option
+                            key={opt}
+                            className="bg-background text-foreground"
+                          >
                             {opt}
                           </option>
                         ))}

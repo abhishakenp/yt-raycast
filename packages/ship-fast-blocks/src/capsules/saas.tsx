@@ -1,26 +1,25 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * SaasKimiPage — a complete, self-contained AI-product SaaS LANDING page.
@@ -45,7 +44,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * HTML make it render great with no props at all.
  */
 export const SaasKimiPage = defineCapsule({
-  name: "SaasKimiPage",
+  name: 'SaasKimiPage',
   description:
     "Complete AI-product / SaaS LANDING page with a polished, premium indigo aesthetic: glassy sticky navbar, a split hero pairing bold gradient-accented copy with a live AI-chat assistant mockup card (chat bubbles + calendar preview), a 'trusted by' grayscale logo strip, a 6-up colored-icon feature grid, a numbered how-it-works band, a 3-up testimonial row with star ratings, an indigo stats band, a 3-tier pricing table (with a highlighted 'most popular' plan), an interactive FAQ accordion, a gradient CTA banner, and a rich multi-column dark footer. Use as the ROOT/home page for AI tools, SaaS apps, productivity/scheduling/automation products, developer tools, or modern B2B startups when a conversion-focused page with social proof, pricing, FAQ and a product-demo visual is wanted. Supply content only — brand, nav, hero, features, steps, testimonials, stats, pricing, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -70,7 +69,7 @@ export const SaasKimiPage = defineCapsule({
         chat: z
           .array(
             z.object({
-              from: z.enum(["ai", "user"]),
+              from: z.enum(['ai', 'user']),
               avatar: z.string().optional(),
               text: z.string(),
             }),
@@ -82,7 +81,7 @@ export const SaasKimiPage = defineCapsule({
             z.object({
               time: z.string(),
               label: z.string().optional(),
-              tone: z.enum(["free", "busy", "success"]).optional(),
+              tone: z.enum(['free', 'busy', 'success']).optional(),
             }),
           )
           .optional(),
@@ -229,33 +228,33 @@ export const SaasKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [contactOpen, setContactOpen] = useState(false)
-    const [contactName, setContactName] = useState("")
-    const [contactEmail, setContactEmail] = useState("")
-    const [contactMessage, setContactMessage] = useState("")
-    const brand = props.brand ?? "Chronos AI"
+    const [contactName, setContactName] = useState('')
+    const [contactEmail, setContactEmail] = useState('')
+    const [contactMessage, setContactMessage] = useState('')
+    const brand = props.brand ?? 'Chronos AI'
 
-    const subscribers = lakebed.useQuery("subscribers")
-    const contacts = lakebed.useQuery("contacts")
-    const addSubscriber = lakebed.useMutation("addSubscriber")
-    const addContact = lakebed.useMutation("addContact")
+    const subscribers = lakebed.useQuery('subscribers')
+    const contacts = lakebed.useQuery('contacts')
+    const addSubscriber = lakebed.useMutation('addSubscriber')
+    const addContact = lakebed.useMutation('addContact')
     const auth = lakebed.useAuth()
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
     const authDisplayName =
-      auth.displayName || auth.user?.displayName || authEmail || "Account"
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
     const authInitials =
       authDisplayName
         .split(/\s+/)
         .filter(Boolean)
         .slice(0, 2)
         .map((part) => part[0]?.toUpperCase())
-        .join("") || "ME"
+        .join('') || 'ME'
     const authLabel = auth.isLoading
-      ? "Checking..."
+      ? 'Checking...'
       : isSignedIn
         ? authDisplayName
-        : "Sign in"
+        : 'Sign in'
 
     const handleSignIn = () => {
       if (auth.isLoading) return
@@ -270,9 +269,9 @@ export const SaasKimiPage = defineCapsule({
       e.preventDefault()
       if (contactName && contactEmail && contactMessage) {
         void addContact(contactName, contactEmail, contactMessage)
-        setContactName("")
-        setContactEmail("")
-        setContactMessage("")
+        setContactName('')
+        setContactEmail('')
+        setContactMessage('')
         setContactOpen(false)
       }
     }
@@ -280,238 +279,238 @@ export const SaasKimiPage = defineCapsule({
     const handleNewsletterSubmit = (e: React.FormEvent) => {
       e.preventDefault()
       const form = e.target as HTMLFormElement
-      const emailInput = form.elements.namedItem("email") as HTMLInputElement
+      const emailInput = form.elements.namedItem('email') as HTMLInputElement
       if (emailInput?.value) {
         void addSubscriber(emailInput.value)
-        emailInput.value = ""
+        emailInput.value = ''
       }
     }
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "How It Works", "Pricing", "Testimonials", "FAQ"]
+      : ['Features', 'How It Works', 'Pricing', 'Testimonials', 'FAQ']
 
     const heroBadge =
-      props.hero?.badge ?? "Now with GPT-4 scheduling intelligence"
-    const heroHeading = props.hero?.heading ?? "Reclaim your day with"
-    const heroHighlight = props.hero?.highlight ?? "AI-powered scheduling"
+      props.hero?.badge ?? 'Now with GPT-4 scheduling intelligence'
+    const heroHeading = props.hero?.heading ?? 'Reclaim your day with'
+    const heroHighlight = props.hero?.highlight ?? 'AI-powered scheduling'
     const heroSub =
       props.hero?.subheading ??
-      "Chronos AI reads your calendar, understands your priorities, and automatically schedules meetings at the perfect time. No more back-and-forth emails. No more double-bookings. Just focus."
-    const heroPrimary = props.hero?.primaryCta ?? "Start free trial"
-    const heroSecondary = props.hero?.secondaryCta ?? "See how it works"
+      'Chronos AI reads your calendar, understands your priorities, and automatically schedules meetings at the perfect time. No more back-and-forth emails. No more double-bookings. Just focus.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Start free trial'
+    const heroSecondary = props.hero?.secondaryCta ?? 'See how it works'
     const heroProof =
-      props.hero?.socialProof ?? "Trusted by 12,000+ busy professionals"
-    const demoTitle = props.hero?.demoTitle ?? "Chronos Assistant"
+      props.hero?.socialProof ?? 'Trusted by 12,000+ busy professionals'
+    const demoTitle = props.hero?.demoTitle ?? 'Chronos Assistant'
     const chat = props.hero?.chat?.length
       ? props.hero.chat
       : [
           {
-            from: "ai" as const,
-            avatar: "AI",
-            text: "Good morning! I see you have 3 meeting requests today. Shall I find the best slots?",
+            from: 'ai' as const,
+            avatar: 'AI',
+            text: 'Good morning! I see you have 3 meeting requests today. Shall I find the best slots?',
           },
           {
-            from: "user" as const,
-            avatar: "JD",
-            text: "Yes, prioritize the product review with Sarah",
+            from: 'user' as const,
+            avatar: 'JD',
+            text: 'Yes, prioritize the product review with Sarah',
           },
           {
-            from: "ai" as const,
-            avatar: "AI",
-            text: "Done. I found Tuesday 2pm for Sarah. Also moved your standup to avoid the conflict.",
+            from: 'ai' as const,
+            avatar: 'AI',
+            text: 'Done. I found Tuesday 2pm for Sarah. Also moved your standup to avoid the conflict.',
           },
         ]
     const calendar = props.hero?.calendar?.length
       ? props.hero.calendar
       : [
-          { time: "9am", tone: "free" as const },
-          { time: "10am", label: "Standup (moved)", tone: "busy" as const },
+          { time: '9am', tone: 'free' as const },
+          { time: '10am', label: 'Standup (moved)', tone: 'busy' as const },
           {
-            time: "2pm",
-            label: "Product Review — Sarah",
-            tone: "success" as const,
+            time: '2pm',
+            label: 'Product Review — Sarah',
+            tone: 'success' as const,
           },
         ]
 
-    const logosLabel = props.logos?.label ?? "Trusted by teams at"
+    const logosLabel = props.logos?.label ?? 'Trusted by teams at'
     const logoNames = props.logos?.names?.length
       ? props.logos.names
       : [
-          "Linear",
-          "Notion",
-          "Vercel",
-          "Figma",
-          "Stripe",
-          "Slack",
-          "GitHub",
-          "Anthropic",
+          'Linear',
+          'Notion',
+          'Vercel',
+          'Figma',
+          'Stripe',
+          'Slack',
+          'GitHub',
+          'Anthropic',
         ]
 
-    const featuresTag = props.features?.tag ?? "Features"
+    const featuresTag = props.features?.tag ?? 'Features'
     const featuresHeading =
-      props.features?.heading ?? "Your calendar, but it actually works for you"
+      props.features?.heading ?? 'Your calendar, but it actually works for you'
     const featuresDesc =
       props.features?.description ??
-      "Stop treating your calendar like a static grid. Chronos AI turns it into a dynamic assistant that protects your time and eliminates scheduling friction."
+      'Stop treating your calendar like a static grid. Chronos AI turns it into a dynamic assistant that protects your time and eliminates scheduling friction.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Smart Auto-Scheduling",
+            title: 'Smart Auto-Scheduling',
             description:
-              "Chronos analyzes your priorities, energy levels, and existing commitments to automatically place meetings at optimal times. No more 9am standups after late-night deploys.",
+              'Chronos analyzes your priorities, energy levels, and existing commitments to automatically place meetings at optimal times. No more 9am standups after late-night deploys.',
           },
           {
-            title: "Natural Language Commands",
+            title: 'Natural Language Commands',
             description:
               '"Find 30 minutes with the design team before Thursday." Chronos understands context, checks availability across time zones, and proposes the best options instantly.',
           },
           {
-            title: "Conflict Resolution",
+            title: 'Conflict Resolution',
             description:
-              "Double-booked? Chronos detects overlaps instantly and suggests alternative times to all attendees. It can even auto-reschedule lower-priority meetings on your behalf.",
+              'Double-booked? Chronos detects overlaps instantly and suggests alternative times to all attendees. It can even auto-reschedule lower-priority meetings on your behalf.',
           },
           {
-            title: "Cross-Company Scheduling",
+            title: 'Cross-Company Scheduling',
             description:
               'Schedule with external partners without the "what about Tuesday?" ping-pong. Chronos shares your availability privately and lets them book directly into open slots.',
           },
           {
-            title: "Focus Time Guard",
+            title: 'Focus Time Guard',
             description:
               'Set rules like "No meetings before 10am" or "Protect 2-hour deep work blocks." Chronos defends your boundaries and politely declines or reschedules violating invites.',
           },
           {
-            title: "Weekly Scheduling Insights",
+            title: 'Weekly Scheduling Insights',
             description:
-              "Get a digest every Monday showing how you spent your time, meeting load trends, and suggestions for better calendar hygiene. Turn data into better habits.",
+              'Get a digest every Monday showing how you spent your time, meeting load trends, and suggestions for better calendar hygiene. Turn data into better habits.',
           },
         ]
 
-    const stepsTag = props.steps?.tag ?? "How It Works"
+    const stepsTag = props.steps?.tag ?? 'How It Works'
     const stepsHeading =
-      props.steps?.heading ?? "From chaos to clarity in 3 steps"
+      props.steps?.heading ?? 'From chaos to clarity in 3 steps'
     const stepsDesc =
       props.steps?.description ??
-      "Chronos AI integrates with your existing calendar in under 2 minutes. No migration, no disruption, no learning curve."
+      'Chronos AI integrates with your existing calendar in under 2 minutes. No migration, no disruption, no learning curve.'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Connect your calendars",
+            title: 'Connect your calendars',
             description:
-              "Link Google Calendar, Outlook, or Apple Calendar with one click. Chronos reads your existing events and preferences—no data entry required.",
+              'Link Google Calendar, Outlook, or Apple Calendar with one click. Chronos reads your existing events and preferences—no data entry required.',
           },
           {
-            title: "Set your rules",
+            title: 'Set your rules',
             description:
-              "Tell Chronos when you prefer meetings, how much focus time you need, and which types of events take priority. It learns and adapts over time.",
+              'Tell Chronos when you prefer meetings, how much focus time you need, and which types of events take priority. It learns and adapts over time.',
           },
           {
-            title: "Let AI handle the rest",
+            title: 'Let AI handle the rest',
             description:
-              "Chronos schedules, reschedules, and protects your time automatically. You review suggestions via chat or email—approve with one tap.",
+              'Chronos schedules, reschedules, and protects your time automatically. You review suggestions via chat or email—approve with one tap.',
           },
         ]
 
-    const testimonialsTag = props.testimonials?.tag ?? "Testimonials"
+    const testimonialsTag = props.testimonials?.tag ?? 'Testimonials'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Loved by people who value their time"
+      props.testimonials?.heading ?? 'Loved by people who value their time'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Join thousands of professionals who have eliminated scheduling headaches and reclaimed hours every week."
+      'Join thousands of professionals who have eliminated scheduling headaches and reclaimed hours every week.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "Chronos has completely changed how I work. I used to spend 45 minutes every morning shuffling meetings around. Now I just check my phone once, tap approve, and my entire day is optimized.",
-            name: "Sarah Chen",
-            role: "VP of Product, Notion",
+              'Chronos has completely changed how I work. I used to spend 45 minutes every morning shuffling meetings around. Now I just check my phone once, tap approve, and my entire day is optimized.',
+            name: 'Sarah Chen',
+            role: 'VP of Product, Notion',
           },
           {
             quote:
               "The focus time guard alone is worth the subscription. I finally have uninterrupted blocks for deep work. My team's output increased noticeably within the first month.",
-            name: "David Park",
-            role: "Engineering Lead, Linear",
+            name: 'David Park',
+            role: 'Engineering Lead, Linear',
           },
           {
             quote:
               "I was skeptical about AI scheduling, but Chronos understands context in a way that surprised me. It knows not to book client calls right after my gym sessions. That's not automation—that's intelligence.",
-            name: "Elena Rodriguez",
-            role: "Founder, Stellar Studio",
+            name: 'Elena Rodriguez',
+            role: 'Founder, Stellar Studio',
           },
         ]
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "12,000+", label: "Active Professionals" },
-          { value: "2.4M", label: "Meetings Scheduled" },
-          { value: "8.5 hrs", label: "Avg. Time Saved Weekly" },
-          { value: "99.8%", label: "Scheduling Accuracy" },
+          { value: '12,000+', label: 'Active Professionals' },
+          { value: '2.4M', label: 'Meetings Scheduled' },
+          { value: '8.5 hrs', label: 'Avg. Time Saved Weekly' },
+          { value: '99.8%', label: 'Scheduling Accuracy' },
         ]
 
-    const pricingTag = props.pricing?.tag ?? "Pricing"
+    const pricingTag = props.pricing?.tag ?? 'Pricing'
     const pricingHeading =
-      props.pricing?.heading ?? "Simple, transparent pricing"
+      props.pricing?.heading ?? 'Simple, transparent pricing'
     const pricingDesc =
       props.pricing?.description ??
-      "Start free. Upgrade when you need more power. No hidden fees, no annual contracts required."
+      'Start free. Upgrade when you need more power. No hidden fees, no annual contracts required.'
     const pricingPlans = props.pricing?.plans?.length
       ? props.pricing.plans
       : [
           {
-            name: "Free",
-            description: "For individuals getting started",
-            currency: "$",
-            price: "0",
-            period: "/mo",
+            name: 'Free',
+            description: 'For individuals getting started',
+            currency: '$',
+            price: '0',
+            period: '/mo',
             features: [
-              "1 calendar connection",
-              "10 AI schedules/month",
-              "Basic conflict detection",
-              "Email support",
+              '1 calendar connection',
+              '10 AI schedules/month',
+              'Basic conflict detection',
+              'Email support',
             ],
-            cta: "Get started free",
+            cta: 'Get started free',
             popular: false,
           },
           {
-            name: "Pro",
-            description: "For busy professionals",
-            currency: "$",
-            price: "12",
-            period: "/mo",
+            name: 'Pro',
+            description: 'For busy professionals',
+            currency: '$',
+            price: '12',
+            period: '/mo',
             features: [
-              "Unlimited calendars",
-              "Unlimited AI scheduling",
-              "Smart conflict resolution",
-              "Focus time guard",
-              "Priority support",
+              'Unlimited calendars',
+              'Unlimited AI scheduling',
+              'Smart conflict resolution',
+              'Focus time guard',
+              'Priority support',
             ],
-            cta: "Start 14-day trial",
+            cta: 'Start 14-day trial',
             popular: true,
           },
           {
-            name: "Team",
-            description: "For teams that sync together",
-            currency: "$",
-            price: "39",
-            period: "/mo",
+            name: 'Team',
+            description: 'For teams that sync together',
+            currency: '$',
+            price: '39',
+            period: '/mo',
             features: [
-              "Everything in Pro",
-              "Up to 10 team members",
-              "Shared team availability",
-              "Analytics dashboard",
-              "Dedicated account manager",
+              'Everything in Pro',
+              'Up to 10 team members',
+              'Shared team availability',
+              'Analytics dashboard',
+              'Dedicated account manager',
             ],
-            cta: "Contact sales",
+            cta: 'Contact sales',
             popular: false,
           },
         ]
 
-    const faqTag = props.faq?.tag ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Questions? Answered."
+    const faqTag = props.faq?.tag ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Questions? Answered.'
     const faqDesc =
       props.faq?.description ??
       "Everything you need to know about Chronos AI. Can't find what you're looking for? Reach out to our team."
@@ -519,57 +518,62 @@ export const SaasKimiPage = defineCapsule({
       ? props.faq.items
       : [
           {
-            question: "How does Chronos AI protect my calendar data?",
+            question: 'How does Chronos AI protect my calendar data?',
             answer:
-              "We use bank-level AES-256 encryption for all data at rest and TLS 1.3 for data in transit. We are SOC 2 Type II certified and GDPR compliant. Your calendar data is never used to train AI models, and you can delete your data permanently at any time with one click.",
+              'We use bank-level AES-256 encryption for all data at rest and TLS 1.3 for data in transit. We are SOC 2 Type II certified and GDPR compliant. Your calendar data is never used to train AI models, and you can delete your data permanently at any time with one click.',
           },
           {
-            question: "Can I use Chronos with multiple calendar providers?",
+            question: 'Can I use Chronos with multiple calendar providers?',
             answer:
-              "Absolutely. Chronos syncs across Google Calendar, Microsoft Outlook, Apple iCloud, and CalDAV. You can connect unlimited calendars on Pro and Team plans, and Chronos will automatically resolve conflicts across all of them.",
+              'Absolutely. Chronos syncs across Google Calendar, Microsoft Outlook, Apple iCloud, and CalDAV. You can connect unlimited calendars on Pro and Team plans, and Chronos will automatically resolve conflicts across all of them.',
           },
           {
-            question: "What happens if Chronos schedules something I don't want?",
+            question:
+              "What happens if Chronos schedules something I don't want?",
             answer:
               'By default, Chronos sends you a suggestion before committing any change. You can approve, modify, or decline with one tap. As you build trust, you can enable "Auto-pilot mode" for specific event types while keeping manual approval for others.',
           },
           {
-            question: "Is there a limit on how many people I can schedule with?",
+            question:
+              'Is there a limit on how many people I can schedule with?',
             answer:
               "No. You can schedule with anyone, even if they don't use Chronos. For external attendees, Chronos sends a smart scheduling link that respects your availability while letting them pick a time. No account required on their end.",
           },
           {
-            question: "Can I cancel my subscription anytime?",
+            question: 'Can I cancel my subscription anytime?',
             answer:
               "Yes. There are no annual contracts or cancellation fees. If you cancel, you'll keep access until the end of your billing period. We also offer a 30-day money-back guarantee—no questions asked.",
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to take back your time?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to take back your time?'
     const ctaSub =
       props.cta?.subheading ??
-      "Join 12,000+ professionals who have eliminated scheduling chaos. Start your free trial today—no credit card required."
-    const ctaPrimary = props.cta?.primaryCta ?? "Start free 14-day trial"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Talk to sales"
+      'Join 12,000+ professionals who have eliminated scheduling chaos. Start your free trial today—no credit card required.'
+    const ctaPrimary = props.cta?.primaryCta ?? 'Start free 14-day trial'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'Talk to sales'
 
     const footerTagline =
       props.footer?.tagline ??
-      "The intelligent scheduling assistant that eliminates calendar chaos and gives you back hours every week."
+      'The intelligent scheduling assistant that eliminates calendar chaos and gives you back hours every week.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Product",
-            links: ["Features", "Pricing", "Integrations", "Changelog"],
+            title: 'Product',
+            links: ['Features', 'Pricing', 'Integrations', 'Changelog'],
           },
-          { title: "Company", links: ["About", "Blog", "Careers", "Press Kit"] },
           {
-            title: "Support",
+            title: 'Company',
+            links: ['About', 'Blog', 'Careers', 'Press Kit'],
+          },
+          {
+            title: 'Support',
             links: [
-              "Help Center",
-              "Privacy Policy",
-              "Terms of Service",
-              "Security",
+              'Help Center',
+              'Privacy Policy',
+              'Terms of Service',
+              'Security',
             ],
           },
         ]
@@ -583,7 +587,7 @@ export const SaasKimiPage = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm",
+          'grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm',
           className,
         )}
         aria-hidden="true"
@@ -665,12 +669,12 @@ export const SaasKimiPage = defineCapsule({
 
     // Feature icon tints rotate through chart data-viz tokens + primary for a multi-color decorative set.
     const featureIconTints = [
-      "bg-chart-1/10 text-chart-1",
-      "bg-chart-2/10 text-chart-2",
-      "bg-chart-3/10 text-chart-3",
-      "bg-chart-4/10 text-chart-4",
-      "bg-chart-5/10 text-chart-5",
-      "bg-primary/10 text-primary",
+      'bg-chart-1/10 text-chart-1',
+      'bg-chart-2/10 text-chart-2',
+      'bg-chart-3/10 text-chart-3',
+      'bg-chart-4/10 text-chart-4',
+      'bg-chart-5/10 text-chart-5',
+      'bg-primary/10 text-primary',
     ]
 
     const featureIcons: ReactNode[] = [
@@ -777,7 +781,7 @@ export const SaasKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "flex min-h-svh flex-col bg-background text-foreground antialiased",
+          'flex min-h-svh flex-col bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -858,7 +862,7 @@ export const SaasKimiPage = defineCapsule({
                             {authDisplayName}
                           </p>
                           <p className="truncate text-xs text-muted-foreground">
-                            {authEmail ?? "Signed in to this session"}
+                            {authEmail ?? 'Signed in to this session'}
                           </p>
                         </div>
                       </div>
@@ -866,7 +870,7 @@ export const SaasKimiPage = defineCapsule({
                     <div className="p-2">
                       <button
                         type="button"
-                        onClick={() => go("Account")}
+                        onClick={() => go('Account')}
                         className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         Account
@@ -874,7 +878,7 @@ export const SaasKimiPage = defineCapsule({
                       </button>
                       <button
                         type="button"
-                        onClick={() => go("Settings")}
+                        onClick={() => go('Settings')}
                         className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         Settings
@@ -916,7 +920,10 @@ export const SaasKimiPage = defineCapsule({
                     Get Started
                   </button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
                   <SheetHeader className="border-b border-border p-6">
                     <SheetTitle className="text-xl">Contact Sales</SheetTitle>
                     <SheetDescription>
@@ -1017,7 +1024,9 @@ export const SaasKimiPage = defineCapsule({
                       type="button"
                       className="rounded-full"
                       onClick={handleContactSubmit}
-                      disabled={!contactName || !contactEmail || !contactMessage}
+                      disabled={
+                        !contactName || !contactEmail || !contactMessage
+                      }
                     >
                       Send Message
                     </Button>
@@ -1086,7 +1095,7 @@ export const SaasKimiPage = defineCapsule({
                             {authDisplayName}
                           </p>
                           <p className="truncate text-xs text-muted-foreground">
-                            {authEmail ?? "Signed in"}
+                            {authEmail ?? 'Signed in'}
                           </p>
                         </div>
                       </div>
@@ -1137,10 +1146,8 @@ export const SaasKimiPage = defineCapsule({
                   {heroBadge}
                 </span>
                 <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                  {heroHeading}{" "}
-                  <span className="text-primary">
-                    {heroHighlight}
-                  </span>
+                  {heroHeading}{' '}
+                  <span className="text-primary">{heroHighlight}</span>
                 </h1>
                 <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
                   {heroSub}
@@ -1177,12 +1184,12 @@ export const SaasKimiPage = defineCapsule({
                 </div>
                 <div className="mt-10 flex flex-wrap items-center gap-4">
                   <div className="flex" aria-hidden="true">
-                    {["a", "b", "c", "d"].map((id, i) => (
+                    {['a', 'b', 'c', 'd'].map((id, i) => (
                       <span
                         key={id}
                         className={cn(
-                          "grid size-9 place-items-center rounded-full border-2 border-background bg-gradient-to-br from-primary/70 to-primary text-[0.625rem] font-bold text-primary-foreground",
-                          i > 0 && "-ml-2",
+                          'grid size-9 place-items-center rounded-full border-2 border-background bg-gradient-to-br from-primary/70 to-primary text-[0.625rem] font-bold text-primary-foreground',
+                          i > 0 && '-ml-2',
                         )}
                       >
                         {String.fromCharCode(65 + i)}
@@ -1211,32 +1218,32 @@ export const SaasKimiPage = defineCapsule({
                       <div
                         key={i}
                         className={cn(
-                          "mb-4 flex items-start gap-3",
-                          msg.from === "user" && "flex-row-reverse",
+                          'mb-4 flex items-start gap-3',
+                          msg.from === 'user' && 'flex-row-reverse',
                         )}
                       >
                         <span
                           className={cn(
-                            "grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold",
-                            msg.from === "ai"
-                              ? "bg-primary/10 text-primary"
-                              : "bg-accent text-accent-foreground",
+                            'grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold',
+                            msg.from === 'ai'
+                              ? 'bg-primary/10 text-primary'
+                              : 'bg-accent text-accent-foreground',
                           )}
                         >
-                          {msg.avatar ?? (msg.from === "ai" ? "AI" : "JD")}
+                          {msg.avatar ?? (msg.from === 'ai' ? 'AI' : 'JD')}
                         </span>
                         <div
                           className={cn(
-                            "max-w-[80%] rounded-xl px-4 py-2.5 text-sm leading-relaxed",
-                            msg.from === "ai"
-                              ? "rounded-bl-sm bg-muted text-foreground"
-                              : "rounded-br-sm bg-primary text-primary-foreground",
+                            'max-w-[80%] rounded-xl px-4 py-2.5 text-sm leading-relaxed',
+                            msg.from === 'ai'
+                              ? 'rounded-bl-sm bg-muted text-foreground'
+                              : 'rounded-br-sm bg-primary text-primary-foreground',
                           )}
                         >
                           {msg.text}
-                          {msg.from === "ai" && i === chat.length - 1 ? (
+                          {msg.from === 'ai' && i === chat.length - 1 ? (
                             <div className="mt-2 flex flex-wrap gap-1">
-                              {["Accept all", "Modify"].map((chip) => (
+                              {['Accept all', 'Modify'].map((chip) => (
                                 <span
                                   key={chip}
                                   className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-[0.8125rem] font-medium text-muted-foreground"
@@ -1262,12 +1269,12 @@ export const SaasKimiPage = defineCapsule({
                           </span>
                           <div
                             className={cn(
-                              "flex h-7 flex-1 items-center rounded-sm border px-2 text-[0.6875rem] font-semibold",
-                              row.tone === "success"
-                                ? "border-chart-2/30 bg-chart-2/10 text-chart-2"
-                                : row.tone === "busy"
-                                  ? "border-primary/30 bg-primary/10 text-primary"
-                                  : "border-border/60 bg-background",
+                              'flex h-7 flex-1 items-center rounded-sm border px-2 text-[0.6875rem] font-semibold',
+                              row.tone === 'success'
+                                ? 'border-chart-2/30 bg-chart-2/10 text-chart-2'
+                                : row.tone === 'busy'
+                                  ? 'border-primary/30 bg-primary/10 text-primary'
+                                  : 'border-border/60 bg-background',
                             )}
                           >
                             {row.label}
@@ -1322,7 +1329,7 @@ export const SaasKimiPage = defineCapsule({
                   >
                     <div
                       className={cn(
-                        "mb-5 grid size-11 place-items-center rounded-xl",
+                        'mb-5 grid size-11 place-items-center rounded-xl',
                         featureIconTints[i % featureIconTints.length],
                       )}
                     >
@@ -1462,10 +1469,10 @@ export const SaasKimiPage = defineCapsule({
                   <article
                     key={plan.name}
                     className={cn(
-                      "relative flex flex-col rounded-2xl bg-card p-8",
+                      'relative flex flex-col rounded-2xl bg-card p-8',
                       plan.popular
-                        ? "border border-primary shadow-[0_0_0_1px_var(--color-primary),0_10px_15px_-3px_rgba(0,0,0,0.1)] md:scale-105 md:z-10"
-                        : "border border-border/60 shadow-sm",
+                        ? 'border border-primary shadow-[0_0_0_1px_var(--color-primary),0_10px_15px_-3px_rgba(0,0,0,0.1)] md:scale-105 md:z-10'
+                        : 'border border-border/60 shadow-sm',
                     )}
                   >
                     {plan.popular ? (
@@ -1509,10 +1516,10 @@ export const SaasKimiPage = defineCapsule({
                       type="button"
                       onClick={() => go(plan.cta)}
                       className={cn(
-                        "w-full rounded-lg px-5 py-2.5 text-[0.9375rem] font-semibold transition-all",
+                        'w-full rounded-lg px-5 py-2.5 text-[0.9375rem] font-semibold transition-all',
                         plan.popular
-                          ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-[0_1px_3px_rgba(79,70,229,0.3)] hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(79,70,229,0.35)]"
-                          : "border border-border bg-background text-foreground shadow-sm hover:bg-muted",
+                          ? 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-[0_1px_3px_rgba(79,70,229,0.3)] hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(79,70,229,0.35)]'
+                          : 'border border-border bg-background text-foreground shadow-sm hover:bg-muted',
                       )}
                     >
                       {plan.cta}
@@ -1541,7 +1548,10 @@ export const SaasKimiPage = defineCapsule({
                 {faqItems.map((item, i) => {
                   const open = openFaq === i
                   return (
-                    <div key={item.question} className="border-b border-border/60">
+                    <div
+                      key={item.question}
+                      className="border-b border-border/60"
+                    >
                       <button
                         type="button"
                         aria-expanded={open}
@@ -1560,8 +1570,8 @@ export const SaasKimiPage = defineCapsule({
                           strokeLinejoin="round"
                           aria-hidden="true"
                           className={cn(
-                            "shrink-0 text-muted-foreground transition-transform",
-                            open && "rotate-180",
+                            'shrink-0 text-muted-foreground transition-transform',
+                            open && 'rotate-180',
                           )}
                         >
                           <polyline points="6 9 12 15 18 9" />
@@ -1569,10 +1579,10 @@ export const SaasKimiPage = defineCapsule({
                       </button>
                       <div
                         className={cn(
-                          "grid overflow-hidden transition-all duration-300",
+                          'grid overflow-hidden transition-all duration-300',
                           open
-                            ? "grid-rows-[1fr] pb-5 opacity-100"
-                            : "grid-rows-[0fr] opacity-0",
+                            ? 'grid-rows-[1fr] pb-5 opacity-100'
+                            : 'grid-rows-[0fr] opacity-0',
                         )}
                       >
                         <p className="min-h-0 text-[0.9375rem] leading-relaxed text-muted-foreground">
@@ -1642,7 +1652,8 @@ export const SaasKimiPage = defineCapsule({
                   </form>
                   {subscribers && subscribers.length > 0 && (
                     <p className="mt-4 text-sm text-primary-foreground/70">
-                      {subscribers.length} subscriber{subscribers.length === 1 ? "" : "s"}
+                      {subscribers.length} subscriber
+                      {subscribers.length === 1 ? '' : 's'}
                     </p>
                   )}
                 </div>
@@ -1692,16 +1703,16 @@ export const SaasKimiPage = defineCapsule({
                 {(
                   [
                     {
-                      label: "Twitter",
-                      path: "M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z",
+                      label: 'Twitter',
+                      path: 'M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z',
                     },
                     {
-                      label: "LinkedIn",
-                      path: "M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z",
+                      label: 'LinkedIn',
+                      path: 'M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z',
                     },
                     {
-                      label: "GitHub",
-                      path: "M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22",
+                      label: 'GitHub',
+                      path: 'M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22',
                     },
                   ] as const
                 ).map((social) => (
@@ -1723,7 +1734,7 @@ export const SaasKimiPage = defineCapsule({
                       strokeLinejoin="round"
                       aria-hidden="true"
                     >
-                      {social.label === "LinkedIn" ? (
+                      {social.label === 'LinkedIn' ? (
                         <>
                           <path d={social.path} />
                           <rect x="2" y="9" width="4" height="12" />

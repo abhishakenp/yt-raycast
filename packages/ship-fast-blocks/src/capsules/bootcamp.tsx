@@ -1,10 +1,11 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import type { ReactNode } from 'react'
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +15,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * BootcampKimiPage — a complete, self-contained coding-BOOTCAMP / career-school
@@ -48,7 +49,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * content data; rich defaults make it render great with no props at all.
  */
 export const BootcampKimiPage = defineCapsule({
-  name: "BootcampKimiPage",
+  name: 'BootcampKimiPage',
   description:
     "Complete coding-BOOTCAMP, dev-school and career-changer LANDING page with a clean, bright, trust-forward education aesthetic: light canvas, sky-blue brand accent, rounded cards and lots of whitespace. Includes a split hero (live next-cohort badge, bold 'become a full-stack developer in 16 weeks' headline, dual CTAs, job-guarantee trust row, glowing cohort photo with a graduates-placed stat chip), an employer-logo trust strip, a 6-up curriculum/modules grid with icon tiles and week-by-week bullet lists, a 4-step 'how it works' admissions path, a world-class mentors gallery (headshot cards + classroom photos), a 3-tier pricing/financing comparison (upfront, monthly, income-share/ISA), a proven-outcomes stats band with placement rate / salary progress bars, a 6-up student-story testimonial grid with 5-star ratings, an accordion FAQ, a high-contrast apply CTA with a real multi-field application form, and a 4-column footer. Use as the ROOT/home page for coding bootcamps, software-engineering academies, data/UX/cyber bootcamps, online dev courses, career-switch programs, vocational tech schools or any cohort-based education brand selling outcomes, mentorship and job placement. Supply content only — brand, nav, hero, logos, curriculum, steps, mentors, pricing, outcomes, testimonials, faq, apply CTA, footer; the block owns all layout and styling.",
   props: z.object({
@@ -189,9 +190,7 @@ export const BootcampKimiPage = defineCapsule({
         eyebrow: z.string().optional(),
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       })
       .optional(),
     /** High-contrast apply CTA + application form. */
@@ -210,9 +209,7 @@ export const BootcampKimiPage = defineCapsule({
       .object({
         tagline: z.string().optional(),
         columns: z
-          .array(
-            z.object({ title: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ title: z.string(), links: z.array(z.string()) }))
           .optional(),
         socials: z.array(z.string()).optional(),
         legal: z.array(z.string()).optional(),
@@ -239,12 +236,23 @@ export const BootcampKimiPage = defineCapsule({
         new Set(db.savedPrograms.all().map((saved) => saved.programName)),
     },
     mutations: {
-      submitApplication: ({ db }, data: { firstName: string; lastName: string; email: string; program: string; occupation: string }) => {
+      submitApplication: (
+        { db },
+        data: {
+          firstName: string
+          lastName: string
+          email: string
+          program: string
+          occupation: string
+        },
+      ) => {
         db.applications.insert(data)
         return db.applications.all()
       },
       toggleSavedProgram: ({ db }, programName: string) => {
-        const existing = db.savedPrograms.where('programName', programName).all()[0]
+        const existing = db.savedPrograms
+          .where('programName', programName)
+          .all()[0]
         if (existing) {
           db.savedPrograms.delete(existing.id)
           return false
@@ -264,10 +272,10 @@ export const BootcampKimiPage = defineCapsule({
     const go = useNavigate()
     const [applicationsOpen, setApplicationsOpen] = useState(false)
     const [mobileOpen, setMobileOpen] = useState(false)
-    const brand = props.brand ?? "CodeCraft Academy"
+    const brand = props.brand ?? 'CodeCraft Academy'
     const nav = props.nav?.length
       ? props.nav
-      : ["Curriculum", "Outcomes", "Mentors", "Pricing", "FAQ"]
+      : ['Curriculum', 'Outcomes', 'Mentors', 'Pricing', 'FAQ']
 
     const applications = lakebed.useQuery('applications')
     const savedProgramNames = lakebed.useQuery('savedProgramNames')
@@ -300,141 +308,139 @@ export const BootcampKimiPage = defineCapsule({
       lakebed.signOut()
     }
 
-    const heroBadge = props.hero?.badge ?? "Next cohort starts July 14, 2025"
-    const heroHeadingTop =
-      props.hero?.headingTop ?? "Become a Full-Stack"
-    const heroHighlight = props.hero?.highlight ?? "Developer in 16 Weeks"
+    const heroBadge = props.hero?.badge ?? 'Next cohort starts July 14, 2025'
+    const heroHeadingTop = props.hero?.headingTop ?? 'Become a Full-Stack'
+    const heroHighlight = props.hero?.highlight ?? 'Developer in 16 Weeks'
     const heroSub =
       props.hero?.subheading ??
-      "Join 2,400+ graduates who transformed their careers. Learn JavaScript, React, Node.js, and PostgreSQL through hands-on projects with 1:1 mentorship from senior engineers at Google, Stripe, and Airbnb."
-    const heroPrimary = props.hero?.primaryCta ?? "Start Your Application"
-    const heroSecondary = props.hero?.secondaryCta ?? "View Curriculum"
+      'Join 2,400+ graduates who transformed their careers. Learn JavaScript, React, Node.js, and PostgreSQL through hands-on projects with 1:1 mentorship from senior engineers at Google, Stripe, and Airbnb.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Start Your Application'
+    const heroSecondary = props.hero?.secondaryCta ?? 'View Curriculum'
     const heroTrust = props.hero?.trust?.length
       ? props.hero.trust
-      : ["Job guarantee", "89% placement rate", "Income share option"]
+      : ['Job guarantee', '89% placement rate', 'Income share option']
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "diverse group of students collaborating on laptops in a modern coding workspace"
-    const heroStatValue = props.hero?.statValue ?? "2,400+"
-    const heroStatLabel = props.hero?.statLabel ?? "graduates placed"
+      'diverse group of students collaborating on laptops in a modern coding workspace'
+    const heroStatValue = props.hero?.statValue ?? '2,400+'
+    const heroStatLabel = props.hero?.statLabel ?? 'graduates placed'
 
     const logosLabel =
-      props.logos?.label ?? "Our graduates work at leading tech companies"
+      props.logos?.label ?? 'Our graduates work at leading tech companies'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
-      : ["GitHub", "Google", "Stripe", "Airbnb", "Shopify", "Spotify"]
+      : ['GitHub', 'Google', 'Stripe', 'Airbnb', 'Shopify', 'Spotify']
 
-    const curriculumEyebrow = props.curriculum?.eyebrow ?? "The Curriculum"
+    const curriculumEyebrow = props.curriculum?.eyebrow ?? 'The Curriculum'
     const curriculumHeading =
-      props.curriculum?.heading ??
-      "Everything you need to ship production code"
+      props.curriculum?.heading ?? 'Everything you need to ship production code'
     const curriculumDesc =
       props.curriculum?.description ??
-      "Master the modern full-stack through hands-on projects. Build 12 real applications while learning from industry veterans."
+      'Master the modern full-stack through hands-on projects. Build 12 real applications while learning from industry veterans.'
     const curriculumItems = props.curriculum?.items?.length
       ? props.curriculum.items
       : [
           {
-            title: "Frontend Foundations",
+            title: 'Frontend Foundations',
             description:
-              "Weeks 1-4: HTML5, CSS3, JavaScript ES6+, DOM manipulation, responsive design with Tailwind CSS.",
+              'Weeks 1-4: HTML5, CSS3, JavaScript ES6+, DOM manipulation, responsive design with Tailwind CSS.',
             points: [
-              "Semantic HTML & accessibility",
-              "CSS Grid & Flexbox mastery",
-              "Modern JavaScript patterns",
-              "Project: Portfolio website",
+              'Semantic HTML & accessibility',
+              'CSS Grid & Flexbox mastery',
+              'Modern JavaScript patterns',
+              'Project: Portfolio website',
             ],
           },
           {
-            title: "React & UI Engineering",
+            title: 'React & UI Engineering',
             description:
-              "Weeks 5-8: React 18, Hooks, state management with Redux Toolkit, component architecture.",
+              'Weeks 5-8: React 18, Hooks, state management with Redux Toolkit, component architecture.',
             points: [
-              "Component composition patterns",
-              "Context API & Redux Toolkit",
-              "React Query for server state",
-              "Project: E-commerce storefront",
+              'Component composition patterns',
+              'Context API & Redux Toolkit',
+              'React Query for server state',
+              'Project: E-commerce storefront',
             ],
           },
           {
-            title: "Backend & APIs",
+            title: 'Backend & APIs',
             description:
-              "Weeks 9-11: Node.js, Express, RESTful API design, authentication with JWT, middleware patterns.",
+              'Weeks 9-11: Node.js, Express, RESTful API design, authentication with JWT, middleware patterns.',
             points: [
-              "REST API design principles",
-              "JWT & session authentication",
-              "Express middleware patterns",
-              "Project: Task management API",
+              'REST API design principles',
+              'JWT & session authentication',
+              'Express middleware patterns',
+              'Project: Task management API',
             ],
           },
           {
-            title: "Databases & Storage",
+            title: 'Databases & Storage',
             description:
-              "Weeks 12-13: PostgreSQL, Prisma ORM, data modeling, migrations, indexing strategies.",
+              'Weeks 12-13: PostgreSQL, Prisma ORM, data modeling, migrations, indexing strategies.',
             points: [
-              "Relational data modeling",
-              "Prisma ORM fundamentals",
-              "Query optimization & indexing",
-              "Project: Social platform backend",
+              'Relational data modeling',
+              'Prisma ORM fundamentals',
+              'Query optimization & indexing',
+              'Project: Social platform backend',
             ],
           },
           {
-            title: "DevOps & Deployment",
+            title: 'DevOps & Deployment',
             description:
-              "Weeks 14-15: Docker, CI/CD pipelines, AWS/Vercel deployment, monitoring, security best practices.",
+              'Weeks 14-15: Docker, CI/CD pipelines, AWS/Vercel deployment, monitoring, security best practices.',
             points: [
-              "Docker containerization",
-              "GitHub Actions CI/CD",
-              "Cloud deployment strategies",
-              "Project: Full-stack deployment",
+              'Docker containerization',
+              'GitHub Actions CI/CD',
+              'Cloud deployment strategies',
+              'Project: Full-stack deployment',
             ],
           },
           {
-            title: "Career Services",
+            title: 'Career Services',
             description:
-              "Week 16: Interview prep, portfolio refinement, salary negotiation, and job placement support.",
+              'Week 16: Interview prep, portfolio refinement, salary negotiation, and job placement support.',
             points: [
-              "Technical interview coaching",
-              "Portfolio & GitHub review",
-              "Salary negotiation workshop",
-              "Direct employer introductions",
+              'Technical interview coaching',
+              'Portfolio & GitHub review',
+              'Salary negotiation workshop',
+              'Direct employer introductions',
             ],
           },
         ]
 
-    const stepsEyebrow = props.steps?.eyebrow ?? "How It Works"
-    const stepsHeading = props.steps?.heading ?? "Your path to a tech career"
+    const stepsEyebrow = props.steps?.eyebrow ?? 'How It Works'
+    const stepsHeading = props.steps?.heading ?? 'Your path to a tech career'
     const stepsDesc =
       props.steps?.description ??
-      "From application to job offer — we support you every step of the way."
+      'From application to job offer — we support you every step of the way.'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Apply Online",
+            title: 'Apply Online',
             description:
-              "Complete our 15-minute application. No prior experience required — just logical thinking and determination.",
+              'Complete our 15-minute application. No prior experience required — just logical thinking and determination.',
           },
           {
-            title: "Admission Call",
+            title: 'Admission Call',
             description:
-              "Chat with our admissions team about your goals. We ensure the program is right for your career aspirations.",
+              'Chat with our admissions team about your goals. We ensure the program is right for your career aspirations.',
           },
           {
-            title: "Complete Bootcamp",
+            title: 'Complete Bootcamp',
             description:
-              "16 weeks of intensive, hands-on learning. Daily standups, code reviews, and 1:1 mentorship sessions.",
+              '16 weeks of intensive, hands-on learning. Daily standups, code reviews, and 1:1 mentorship sessions.',
           },
           {
-            title: "Land Your Job",
+            title: 'Land Your Job',
             description:
-              "Work with our career team to land interviews. Average graduate salary: $78,000 — $95,000 first year.",
+              'Work with our career team to land interviews. Average graduate salary: $78,000 — $95,000 first year.',
           },
         ]
 
-    const mentorsEyebrow = props.mentors?.eyebrow ?? "World-Class Mentors"
+    const mentorsEyebrow = props.mentors?.eyebrow ?? 'World-Class Mentors'
     const mentorsHeading =
-      props.mentors?.heading ?? "Learn from engineers at top tech companies"
+      props.mentors?.heading ?? 'Learn from engineers at top tech companies'
     const mentorsDesc =
       props.mentors?.description ??
       "Daily 1:1 mentorship and code reviews from senior developers who've built systems serving millions."
@@ -442,246 +448,244 @@ export const BootcampKimiPage = defineCapsule({
       ? props.mentors.items
       : [
           {
-            name: "Sarah Chen",
-            role: "Senior Staff Engineer • 8 years experience",
-            company: "Google",
+            name: 'Sarah Chen',
+            role: 'Senior Staff Engineer • 8 years experience',
+            company: 'Google',
           },
           {
-            name: "Marcus Johnson",
-            role: "Principal Engineer • 12 years experience",
-            company: "Stripe",
+            name: 'Marcus Johnson',
+            role: 'Principal Engineer • 12 years experience',
+            company: 'Stripe',
           },
           {
-            name: "Priya Sharma",
-            role: "Engineering Manager • 10 years experience",
-            company: "Netflix",
+            name: 'Priya Sharma',
+            role: 'Engineering Manager • 10 years experience',
+            company: 'Netflix',
           },
           {
-            name: "David Kim",
-            role: "Tech Lead • 9 years experience",
-            company: "Airbnb",
+            name: 'David Kim',
+            role: 'Tech Lead • 9 years experience',
+            company: 'Airbnb',
           },
         ]
     const mentorPhotos = props.mentors?.photos?.length
       ? props.mentors.photos
       : [
-          "coding bootcamp classroom with students learning on laptops",
-          "students collaborating on a group programming project",
-          "modern tech workspace with developers working at standing desks",
+          'coding bootcamp classroom with students learning on laptops',
+          'students collaborating on a group programming project',
+          'modern tech workspace with developers working at standing desks',
         ]
 
-    const pricingEyebrow = props.pricing?.eyebrow ?? "Investment"
-    const pricingHeading =
-      props.pricing?.heading ?? "Flexible payment options"
+    const pricingEyebrow = props.pricing?.eyebrow ?? 'Investment'
+    const pricingHeading = props.pricing?.heading ?? 'Flexible payment options'
     const pricingDesc =
       props.pricing?.description ??
-      "Choose the plan that works for your financial situation. All options include the same curriculum and job guarantee."
+      'Choose the plan that works for your financial situation. All options include the same curriculum and job guarantee.'
     const pricingItems = props.pricing?.items?.length
       ? props.pricing.items
       : [
           {
-            name: "Upfront Payment",
-            blurb: "Pay in full before the cohort starts",
-            price: "$12,500",
-            unit: "one-time",
+            name: 'Upfront Payment',
+            blurb: 'Pay in full before the cohort starts',
+            price: '$12,500',
+            unit: 'one-time',
             features: [
-              "Save $2,000 vs. other options",
-              "No future payments",
-              "Job guarantee included",
+              'Save $2,000 vs. other options',
+              'No future payments',
+              'Job guarantee included',
             ],
-            cta: "Select Plan",
+            cta: 'Select Plan',
           },
           {
-            name: "Monthly Payment",
-            blurb: "Spread the cost over 12 months",
-            price: "$1,125",
-            unit: "/month",
+            name: 'Monthly Payment',
+            blurb: 'Spread the cost over 12 months',
+            price: '$1,125',
+            unit: '/month',
             features: [
-              "0% interest financing",
-              "No credit check required",
-              "Job guarantee included",
+              '0% interest financing',
+              'No credit check required',
+              'Job guarantee included',
             ],
-            cta: "Select Plan",
+            cta: 'Select Plan',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Income Share",
-            blurb: "Pay nothing until you earn $50k+",
-            price: "$0",
-            unit: "upfront",
+            name: 'Income Share',
+            blurb: 'Pay nothing until you earn $50k+',
+            price: '$0',
+            unit: 'upfront',
             features: [
-              "10% of income for 24 months",
-              "Capped at $16,500 total",
-              "Only pay if you succeed",
+              '10% of income for 24 months',
+              'Capped at $16,500 total',
+              'Only pay if you succeed',
             ],
-            cta: "Select Plan",
+            cta: 'Select Plan',
           },
         ]
     const pricingFootnote =
       props.pricing?.footnote ??
-      "Scholarships available for underrepresented groups in tech."
-    const pricingFootnoteCta = props.pricing?.footnoteCta ?? "Learn more →"
+      'Scholarships available for underrepresented groups in tech.'
+    const pricingFootnoteCta = props.pricing?.footnoteCta ?? 'Learn more →'
 
-    const outcomesEyebrow = props.outcomes?.eyebrow ?? "Proven Outcomes"
+    const outcomesEyebrow = props.outcomes?.eyebrow ?? 'Proven Outcomes'
     const outcomesHeading =
-      props.outcomes?.heading ?? "Results that speak for themselves"
+      props.outcomes?.heading ?? 'Results that speak for themselves'
     const outcomesDesc =
       props.outcomes?.description ??
-      "Our graduates consistently achieve life-changing career outcomes within 6 months of completion."
+      'Our graduates consistently achieve life-changing career outcomes within 6 months of completion.'
     const outcomeStats = props.outcomes?.stats?.length
       ? props.outcomes.stats
       : [
-          { value: "89%", label: "Job placement rate within 6 months" },
-          { value: "$85k", label: "Average starting salary" },
-          { value: "2,400+", label: "Graduates placed since 2019" },
-          { value: "4.9/5", label: "Student satisfaction rating" },
+          { value: '89%', label: 'Job placement rate within 6 months' },
+          { value: '$85k', label: 'Average starting salary' },
+          { value: '2,400+', label: 'Graduates placed since 2019' },
+          { value: '4.9/5', label: 'Student satisfaction rating' },
         ]
     const outcomeBars = props.outcomes?.bars?.length
       ? props.outcomes.bars
       : [
-          { value: "$52k", label: "Average student income before", pct: 55 },
-          { value: "$85k", label: "Average graduate salary after", pct: 85 },
-          { value: "$33k+", label: "Average salary increase", pct: 63 },
+          { value: '$52k', label: 'Average student income before', pct: 55 },
+          { value: '$85k', label: 'Average graduate salary after', pct: 85 },
+          { value: '$33k+', label: 'Average salary increase', pct: 63 },
         ]
 
-    const testimonialsEyebrow =
-      props.testimonials?.eyebrow ?? "Student Stories"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'Student Stories'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Career transformations that inspire"
+      props.testimonials?.heading ?? 'Career transformations that inspire'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Meet our graduates who went from zero coding experience to thriving tech careers."
+      'Meet our graduates who went from zero coding experience to thriving tech careers.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
-            name: "Jessica Martinez",
-            role: "Former Teacher → Frontend Developer",
+            name: 'Jessica Martinez',
+            role: 'Former Teacher → Frontend Developer',
             quote:
               "I was teaching elementary school and felt stuck. CodeCraft Academy gave me the skills and confidence to pivot into tech. Now I'm a Frontend Developer at Shopify earning $92,000.",
           },
           {
-            name: "Michael Park",
-            role: "Former Accountant → Full-Stack Engineer",
+            name: 'Michael Park',
+            role: 'Former Accountant → Full-Stack Engineer',
             quote:
-              "The mentorship was the game-changer for me. Having a senior engineer review my code daily accelerated my learning tenfold. Landed my dream job at Airbnb within 3 weeks of graduating.",
+              'The mentorship was the game-changer for me. Having a senior engineer review my code daily accelerated my learning tenfold. Landed my dream job at Airbnb within 3 weeks of graduating.',
           },
           {
-            name: "Amanda Foster",
-            role: "Former Retail Manager → Backend Developer",
+            name: 'Amanda Foster',
+            role: 'Former Retail Manager → Backend Developer',
             quote:
-              "I was managing a retail store and feeling burned out. The Income Share Agreement meant I could quit my job and focus entirely on learning. Best decision I ever made — now making $88k at Spotify.",
+              'I was managing a retail store and feeling burned out. The Income Share Agreement meant I could quit my job and focus entirely on learning. Best decision I ever made — now making $88k at Spotify.',
           },
           {
-            name: "David Chen",
-            role: "Former Marketing → Software Engineer",
+            name: 'David Chen',
+            role: 'Former Marketing → Software Engineer',
             quote:
-              "Coming from a non-technical background, I was intimidated. But the curriculum is designed for beginners and the support system is incredible. Started at Stripe 2 months after graduation.",
+              'Coming from a non-technical background, I was intimidated. But the curriculum is designed for beginners and the support system is incredible. Started at Stripe 2 months after graduation.',
           },
           {
-            name: "Sofia Ramirez",
-            role: "Former Nurse → Web Developer",
+            name: 'Sofia Ramirez',
+            role: 'Former Nurse → Web Developer',
             quote:
-              "I was a nurse for 8 years and wanted a change. The part-time option let me keep working while learning. The job guarantee gave me peace of mind. Now at Netflix earning more than double my nursing salary.",
+              'I was a nurse for 8 years and wanted a change. The part-time option let me keep working while learning. The job guarantee gave me peace of mind. Now at Netflix earning more than double my nursing salary.',
           },
           {
-            name: "James Wilson",
-            role: "Former Construction → Senior Developer",
+            name: 'James Wilson',
+            role: 'Former Construction → Senior Developer',
             quote:
-              "At 35, I thought it was too late to switch careers. CodeCraft proved me wrong. The part-time program was perfect for my schedule. Promoted to Senior Dev at Uber within 18 months of starting.",
+              'At 35, I thought it was too late to switch careers. CodeCraft proved me wrong. The part-time program was perfect for my schedule. Promoted to Senior Dev at Uber within 18 months of starting.',
           },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Common questions answered"
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Common questions answered'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know about the bootcamp experience."
+      'Everything you need to know about the bootcamp experience.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "Do I need prior programming experience?",
-            a: "No prior experience is required. Our curriculum is designed for absolute beginners. We look for logical thinkers who are motivated to learn. Many of our most successful graduates came from completely non-technical backgrounds like teaching, nursing, marketing, and construction.",
+            q: 'Do I need prior programming experience?',
+            a: 'No prior experience is required. Our curriculum is designed for absolute beginners. We look for logical thinkers who are motivated to learn. Many of our most successful graduates came from completely non-technical backgrounds like teaching, nursing, marketing, and construction.',
           },
           {
-            q: "What is the time commitment?",
-            a: "The full-time program requires 40+ hours per week for 16 weeks — Monday through Friday, 9am to 5pm. We also offer a part-time option (20 hours/week for 32 weeks) for those who need to continue working. Both programs deliver identical curriculum and outcomes.",
+            q: 'What is the time commitment?',
+            a: 'The full-time program requires 40+ hours per week for 16 weeks — Monday through Friday, 9am to 5pm. We also offer a part-time option (20 hours/week for 32 weeks) for those who need to continue working. Both programs deliver identical curriculum and outcomes.',
           },
           {
-            q: "How does the job guarantee work?",
+            q: 'How does the job guarantee work?',
             a: 'If you complete the program, participate in career services, and don\'t receive a qualifying job offer within 6 months, we\'ll refund your tuition in full. A "qualifying offer" means a full-time software development position paying at least $50,000 annually. This guarantee reflects our confidence in our curriculum and career support.',
           },
           {
-            q: "Is the program remote or in-person?",
+            q: 'Is the program remote or in-person?',
             a: "Our program is fully remote with live, interactive instruction. You'll attend daily standups, pair programming sessions, and mentor meetings via video call. This format allows us to bring together students and mentors from around the world while letting you learn from home.",
           },
           {
-            q: "What kind of computer do I need?",
+            q: 'What kind of computer do I need?',
             a: "You'll need a Mac, Windows, or Linux laptop with at least 8GB of RAM (16GB recommended) and a reliable internet connection. We provide all software licenses and tools you'll need during the program.",
           },
           {
-            q: "Are there scholarships available?",
-            a: "Yes, we offer $2,000 scholarships for underrepresented groups in tech, including women, people of color, LGBTQ+ individuals, veterans, and people with disabilities. These scholarships are stackable with our payment plans. Contact our admissions team for details.",
+            q: 'Are there scholarships available?',
+            a: 'Yes, we offer $2,000 scholarships for underrepresented groups in tech, including women, people of color, LGBTQ+ individuals, veterans, and people with disabilities. These scholarships are stackable with our payment plans. Contact our admissions team for details.',
           },
         ]
 
     const applyHeading =
-      props.apply?.heading ?? "Ready to start your tech career?"
+      props.apply?.heading ?? 'Ready to start your tech career?'
     const applyDesc =
       props.apply?.description ??
-      "Applications are open for our July 14, 2025 cohort. Spots fill quickly — join 2,400+ graduates who transformed their lives."
+      'Applications are open for our July 14, 2025 cohort. Spots fill quickly — join 2,400+ graduates who transformed their lives.'
     const applyPrograms = props.apply?.programs?.length
       ? props.apply.programs
-      : ["Full-time (16 weeks)", "Part-time (32 weeks)"]
-    const applySubmit = props.apply?.submit ?? "Start Your Application"
+      : ['Full-time (16 weeks)', 'Part-time (32 weeks)']
+    const applySubmit = props.apply?.submit ?? 'Start Your Application'
     const applyFineprint =
       props.apply?.fineprint ??
       "By applying, you agree to our Terms and Privacy Policy. We'll never spam you."
     const applyTrust = props.apply?.trust?.length
       ? props.apply.trust
-      : ["Job guarantee", "1-on-1 mentorship", "Career support"]
+      : ['Job guarantee', '1-on-1 mentorship', 'Career support']
 
     const footerTagline =
       props.footer?.tagline ??
-      "Transforming careers through accessible, hands-on coding education since 2019."
+      'Transforming careers through accessible, hands-on coding education since 2019.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Program",
-            links: ["Curriculum", "Mentors", "Pricing", "Schedule a Call"],
+            title: 'Program',
+            links: ['Curriculum', 'Mentors', 'Pricing', 'Schedule a Call'],
           },
           {
-            title: "Company",
-            links: ["About Us", "Careers", "Blog", "Press"],
+            title: 'Company',
+            links: ['About Us', 'Careers', 'Blog', 'Press'],
           },
           {
-            title: "Support",
-            links: ["FAQ", "Contact", "Student Login", "Employer Partners"],
+            title: 'Support',
+            links: ['FAQ', 'Contact', 'Student Login', 'Employer Partners'],
           },
         ]
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Twitter", "GitHub", "LinkedIn"]
+      : ['Twitter', 'GitHub', 'LinkedIn']
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Policy"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Policy']
 
     // Brand logo tile — solid token tile with the brand initials (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary font-bold text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary font-bold text-primary-foreground',
           className,
         )}
         aria-hidden="true"
       >
         {brand
-          .split(" ")
+          .split(' ')
           .map((w) => w.charAt(0))
-          .join("")
+          .join('')
           .slice(0, 2)
           .toUpperCase()}
       </span>
@@ -859,12 +863,12 @@ export const BootcampKimiPage = defineCapsule({
     )
 
     const inputCls =
-      "w-full rounded-lg border border-input bg-background px-4 py-2.5 text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
+      'w-full rounded-lg border border-input bg-background px-4 py-2.5 text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20'
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -1061,8 +1065,8 @@ export const BootcampKimiPage = defineCapsule({
                           No applications yet
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Submit your first application to start your journey to a
-                          tech career.
+                          Submit your first application to start your journey to
+                          a tech career.
                         </p>
                       </div>
                     )}
@@ -1258,9 +1262,9 @@ export const BootcampKimiPage = defineCapsule({
                     <div className="flex items-center gap-3">
                       <div className="flex -space-x-2">
                         {[
-                          "professional headshot of a female graduate",
-                          "professional headshot of a male graduate",
-                          "professional headshot of a smiling graduate",
+                          'professional headshot of a female graduate',
+                          'professional headshot of a male graduate',
+                          'professional headshot of a smiling graduate',
                         ].map((a) => (
                           <Image
                             key={a}
@@ -1321,7 +1325,9 @@ export const BootcampKimiPage = defineCapsule({
                 <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
                   {curriculumHeading}
                 </h2>
-                <p className="text-lg text-muted-foreground">{curriculumDesc}</p>
+                <p className="text-lg text-muted-foreground">
+                  {curriculumDesc}
+                </p>
               </div>
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {curriculumItems.map((mod, i) => (
@@ -1455,10 +1461,10 @@ export const BootcampKimiPage = defineCapsule({
                   <div
                     key={plan.name}
                     className={cn(
-                      "relative rounded-2xl bg-card p-8",
+                      'relative rounded-2xl bg-card p-8',
                       plan.featured
-                        ? "border-2 border-primary"
-                        : "border border-border",
+                        ? 'border-2 border-primary'
+                        : 'border border-border',
                     )}
                   >
                     {plan.badge && (
@@ -1476,7 +1482,10 @@ export const BootcampKimiPage = defineCapsule({
                       <span className="text-4xl font-bold text-card-foreground">
                         {plan.price}
                       </span>
-                      <span className="text-muted-foreground"> {plan.unit}</span>
+                      <span className="text-muted-foreground">
+                        {' '}
+                        {plan.unit}
+                      </span>
                     </div>
                     <ul className="mb-8 space-y-3 text-sm">
                       {plan.features.map((f) => (
@@ -1501,7 +1510,9 @@ export const BootcampKimiPage = defineCapsule({
                             : 'text-muted-foreground hover:text-foreground',
                         )}
                       >
-                        <HeartIcon active={savedProgramNames?.has(plan.name) ?? false} />
+                        <HeartIcon
+                          active={savedProgramNames?.has(plan.name) ?? false}
+                        />
                         {savedProgramNames?.has(plan.name) ? 'Saved' : 'Save'}
                       </button>
                     </div>
@@ -1511,10 +1522,10 @@ export const BootcampKimiPage = defineCapsule({
                         setApplicationsOpen(true)
                       }}
                       className={cn(
-                        "w-full rounded-lg py-3 font-medium transition-colors",
+                        'w-full rounded-lg py-3 font-medium transition-colors',
                         plan.featured
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                          : "border border-border text-foreground hover:border-primary",
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'border border-border text-foreground hover:border-primary',
                       )}
                     >
                       {plan.cta}
@@ -1523,7 +1534,7 @@ export const BootcampKimiPage = defineCapsule({
                 ))}
               </div>
               <p className="mt-8 text-center text-sm text-muted-foreground">
-                {pricingFootnote}{" "}
+                {pricingFootnote}{' '}
                 <button
                   type="button"
                   onClick={() => go(pricingFootnoteCta)}
@@ -1674,14 +1685,34 @@ export const BootcampKimiPage = defineCapsule({
                   onSubmit={(e) => {
                     e.preventDefault()
                     const form = e.currentTarget
-                    const firstName = (form.querySelector('#bootcamp-first') as HTMLInputElement)?.value
-                    const lastName = (form.querySelector('#bootcamp-last') as HTMLInputElement)?.value
-                    const email = (form.querySelector('#bootcamp-email') as HTMLInputElement)?.value
-                    const program = (form.querySelector('#bootcamp-program') as HTMLSelectElement)?.value
-                    const occupation = (form.querySelector('#bootcamp-occupation') as HTMLInputElement)?.value
+                    const firstName = (
+                      form.querySelector('#bootcamp-first') as HTMLInputElement
+                    )?.value
+                    const lastName = (
+                      form.querySelector('#bootcamp-last') as HTMLInputElement
+                    )?.value
+                    const email = (
+                      form.querySelector('#bootcamp-email') as HTMLInputElement
+                    )?.value
+                    const program = (
+                      form.querySelector(
+                        '#bootcamp-program',
+                      ) as HTMLSelectElement
+                    )?.value
+                    const occupation = (
+                      form.querySelector(
+                        '#bootcamp-occupation',
+                      ) as HTMLInputElement
+                    )?.value
 
                     if (firstName && lastName && email && program) {
-                      void submitApplication({ firstName, lastName, email, program, occupation: occupation || '' })
+                      void submitApplication({
+                        firstName,
+                        lastName,
+                        email,
+                        program,
+                        occupation: occupation || '',
+                      })
                       setApplicationsOpen(true)
                       form.reset()
                     }
@@ -1743,7 +1774,7 @@ export const BootcampKimiPage = defineCapsule({
                     </label>
                     <select
                       id="bootcamp-program"
-                      className={cn(inputCls, "appearance-none")}
+                      className={cn(inputCls, 'appearance-none')}
                     >
                       {applyPrograms.map((p) => (
                         <option key={p} className="bg-background">
@@ -1805,9 +1836,9 @@ export const BootcampKimiPage = defineCapsule({
                     className="grid size-8 place-items-center rounded-lg bg-background text-sm font-bold text-foreground"
                   >
                     {brand
-                      .split(" ")
+                      .split(' ')
                       .map((w) => w.charAt(0))
-                      .join("")
+                      .join('')
                       .slice(0, 2)
                       .toUpperCase()}
                   </span>

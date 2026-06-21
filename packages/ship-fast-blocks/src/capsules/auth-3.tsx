@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -13,20 +13,19 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const AuthKimiPage3 = defineCapsule({
-  name: "AuthKimiPage3",
+  name: 'AuthKimiPage3',
   description:
-    "Auth third style sibling to AuthKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Auth third style sibling to AuthKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +39,9 @@ export const AuthKimiPage3 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -90,7 +91,11 @@ export const AuthKimiPage3 = defineCapsule({
         return db.userPreferences.all()
       },
       recordSession: ({ db }, email: string, device: string) => {
-        db.authSessions.insert({ email, lastLogin: new Date().toISOString(), device })
+        db.authSessions.insert({
+          email,
+          lastLogin: new Date().toISOString(),
+          device,
+        })
         return db.authSessions.all()
       },
     },
@@ -98,84 +103,92 @@ export const AuthKimiPage3 = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [settingsOpen, setSettingsOpen] = useState(false)
-    const brand = props.brand ?? "Sign In"
-    const nav = props.nav?.length ? props.nav : ["Overview", "Services", "Work", "Pricing", "Contact"]
+    const brand = props.brand ?? 'Sign In'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Overview', 'Services', 'Work', 'Pricing', 'Contact']
     const hero = {
-      eyebrow: "Auth / Variant 3",
-      title: "Welcome Back",
-      description: "Sign In Welcome Back Enter your credentials to access your account Email Address Password Remember me Forgot password? Sign In Or sign in with Don't have an account? Create one",
-      primaryCta: "Sign In",
-      secondaryCta: "Forgot password?",
-      imageAlt: "auth hero scene",
+      eyebrow: 'Auth / Variant 3',
+      title: 'Welcome Back',
+      description:
+        "Sign In Welcome Back Enter your credentials to access your account Email Address Password Remember me Forgot password? Sign In Or sign in with Don't have an account? Create one",
+      primaryCta: 'Sign In',
+      secondaryCta: 'Forgot password?',
+      imageAlt: 'auth hero scene',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Auth strategy",
-    "body": "Sign In Welcome Back Enter your credentials to access your account Email Address Password Remember me Forgot password? Sign In Or sign in with Don't have an account? Create one",
-    "items": []
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "Auth services",
-    "body": "Auth page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": []
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Auth results",
-    "body": "Auth page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": []
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Auth support",
-    "body": "Auth page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": []
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "Auth visual 1",
-    "alt": "auth hero scene",
-    "caption": "Auth generated page detail"
-  },
-  {
-    "title": "Auth visual 2",
-    "alt": "auth customer experience",
-    "caption": "Auth generated page detail"
-  },
-  {
-    "title": "Auth visual 3",
-    "alt": "auth service detail",
-    "caption": "Auth generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'Auth strategy',
+            body: "Sign In Welcome Back Enter your credentials to access your account Email Address Password Remember me Forgot password? Sign In Or sign in with Don't have an account? Create one",
+            items: [],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'Auth services',
+            body: "Auth page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Auth results',
+            body: "Auth page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Auth support',
+            body: "Auth page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'Auth visual 1',
+            alt: 'auth hero scene',
+            caption: 'Auth generated page detail',
+          },
+          {
+            title: 'Auth visual 2',
+            alt: 'auth customer experience',
+            caption: 'Auth generated page detail',
+          },
+          {
+            title: 'Auth visual 3',
+            alt: 'auth service detail',
+            caption: 'Auth generated page detail',
+          },
+        ]
 
     const userPreferences = lakebed.useQuery('userPreferences')
     const authSessions = lakebed.useQuery('authSessions')
     const auth = lakebed.useAuth()
     const updatePreference = lakebed.useMutation('updatePreference')
-    const recordSession = lakebed.useMutation('recordSession')
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
@@ -234,10 +247,19 @@ export const AuthKimiPage3 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -398,16 +420,28 @@ export const AuthKimiPage3 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -415,10 +449,19 @@ export const AuthKimiPage3 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -442,8 +485,12 @@ export const AuthKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -455,11 +502,26 @@ export const AuthKimiPage3 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -470,9 +532,15 @@ export const AuthKimiPage3 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -497,7 +565,9 @@ export const AuthKimiPage3 = defineCapsule({
             <div className="flex-1 overflow-y-auto px-6 py-5">
               <div className="space-y-6">
                 <div>
-                  <h3 className="mb-3 text-sm font-semibold text-foreground">User Preferences</h3>
+                  <h3 className="mb-3 text-sm font-semibold text-foreground">
+                    User Preferences
+                  </h3>
                   {userPreferences && userPreferences.length > 0 ? (
                     <div className="space-y-3">
                       {userPreferences.map((pref) => (
@@ -529,7 +599,9 @@ export const AuthKimiPage3 = defineCapsule({
                 </div>
 
                 <div>
-                  <h3 className="mb-3 text-sm font-semibold text-foreground">Recent Sessions</h3>
+                  <h3 className="mb-3 text-sm font-semibold text-foreground">
+                    Recent Sessions
+                  </h3>
                   {authSessions && authSessions.length > 0 ? (
                     <div className="space-y-2">
                       {authSessions.slice(0, 5).map((session) => (
@@ -582,7 +654,11 @@ export const AuthKimiPage3 = defineCapsule({
                   className="rounded-full"
                   onClick={() => {
                     if (authEmail) {
-                      void updatePreference(authEmail, 'notifications', 'enabled')
+                      void updatePreference(
+                        authEmail,
+                        'notifications',
+                        'enabled',
+                      )
                     }
                   }}
                   disabled={!isSignedIn}
@@ -605,10 +681,17 @@ export const AuthKimiPage3 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

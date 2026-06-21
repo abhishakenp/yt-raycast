@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * TeamKimiPage — a complete, self-contained "Our Team / About Us" company page.
@@ -45,7 +45,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * ONLY content data; rich defaults make it render great with no props at all.
  */
 export const TeamKimiPage = defineCapsule({
-  name: "TeamKimiPage",
+  name: 'TeamKimiPage',
   description:
     "Complete 'Our Team / About Us' company page with a clean, editorial, light aesthetic: generous whitespace, large semibold headings, a muted neutral palette and grayscale-to-color headshot hovers. Includes an eyebrow + big-statement hero, a leadership card grid (portrait, name, role, bio and LinkedIn/Twitter/GitHub social links), a row of round department-lead avatars, an inverted dark stats band (team members, countries, years, projects), a split culture section pairing principle bullets with a photo collage, a 'life at the company' square photo gallery, a numbered 01/02/03 values trio, employee testimonial quotes with avatars, a dark careers/benefits split with hero photo and 'view open positions' CTA, a centered 'let's work together' contact CTA, and a multi-column footer with company/services/contact columns and social icons. Use as the ROOT page for a team page, about-us page, meet-the-team / leadership / people page, company culture page, or careers/hiring landing for agencies, studios, startups, consultancies and professional-services firms when showcasing the humans, culture, values and open roles behind a brand. Supply content only — brand, nav, hero, leadership, departmentLeads, stats, culture, gallery, values, testimonials, careers, contact, footer; the block owns all layout and styling.",
   props: z.object({
@@ -221,125 +221,127 @@ export const TeamKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [contactOpen, setContactOpen] = useState(false)
-    const [inquiryName, setInquiryName] = useState("")
-    const [inquiryEmail, setInquiryEmail] = useState("")
-    const [inquiryMessage, setInquiryMessage] = useState("")
-    const brand = props.brand ?? "Blueprint"
+    const [inquiryName, setInquiryName] = useState('')
+    const [inquiryEmail, setInquiryEmail] = useState('')
+    const [inquiryMessage, setInquiryMessage] = useState('')
+    const brand = props.brand ?? 'Blueprint'
     const nav = props.nav?.length
       ? props.nav
-      : ["Team", "Culture", "Values", "Careers", "Get in touch"]
+      : ['Team', 'Culture', 'Values', 'Careers', 'Get in touch']
 
-    const heroEyebrow = props.hero?.eyebrow ?? "About Us"
-    const heroHeading = props.hero?.heading ?? "The people behind the work"
+    const heroEyebrow = props.hero?.eyebrow ?? 'About Us'
+    const heroHeading = props.hero?.heading ?? 'The people behind the work'
     const heroSub =
       props.hero?.subheading ??
       "Meet the leadership, designers, engineers, and strategists who shape Blueprint Studios. We're a collective of 47 craftspeople across 8 countries, united by a shared commitment to exceptional digital experiences."
-    const heroCta = props.hero?.cta ?? "Get in touch"
+    const heroCta = props.hero?.cta ?? 'Get in touch'
 
-    const leadershipHeading = props.leadership?.heading ?? "Leadership"
+    const leadershipHeading = props.leadership?.heading ?? 'Leadership'
     const leadershipDesc =
       props.leadership?.description ??
-      "The experienced practitioners guiding our vision and operations."
+      'The experienced practitioners guiding our vision and operations.'
     const defaultLeadershipMembers = [
-          {
-            name: "Marcus Chen",
-            role: "CEO & Co-founder",
-            bio: "Former design director at IDEO. Marcus leads company strategy and client partnerships. Based in San Francisco. 18 years in product design.",
-            photoAlt:
-              "Professional headshot of Marcus Chen, CEO and co-founder, wearing a navy blazer with a confident expression",
-            socials: ["LinkedIn", "Twitter"],
-          },
-          {
-            name: "Sarah Williams",
-            role: "CTO & Co-founder",
-            bio: "Previously principal engineer at Stripe. Sarah architects our technical infrastructure and engineering culture. Based in Seattle. 15 years in software engineering.",
-            photoAlt:
-              "Professional headshot of Sarah Williams, CTO and co-founder, with a warm smile and modern glasses",
-            socials: ["LinkedIn", "GitHub"],
-          },
-          {
-            name: "David Park",
-            role: "Chief Operating Officer",
-            bio: "Former McKinsey consultant. David oversees operations, finance, and team scaling. Based in New York. 12 years in operational leadership.",
-            photoAlt:
-              "Professional headshot of David Park, chief operating officer, in a charcoal sweater with a thoughtful expression",
-            socials: ["LinkedIn"],
-          },
-          {
-            name: "Elena Rodriguez",
-            role: "Design Director",
-            bio: "Former lead at Pentagram. Elena shapes our design philosophy and mentors the creative team. Based in London. 14 years in brand and digital design.",
-            photoAlt:
-              "Professional headshot of Elena Rodriguez, design director, with creative styling and a confident smile",
-            socials: ["LinkedIn", "Dribbble"],
-          },
-          {
-            name: "James Okonkwo",
-            role: "Engineering Director",
-            bio: "Ex-Google staff engineer. James leads our technical teams and engineering standards. Based in Berlin. 16 years in software architecture.",
-            photoAlt:
-              "Professional headshot of James Okonkwo, engineering director, wearing casual tech-company attire",
-            socials: ["LinkedIn", "GitHub"],
-          },
-          {
-            name: "Priya Sharma",
-            role: "Strategy Director",
-            bio: "Former Bain strategist. Priya leads client strategy and business transformation. Based in Singapore. 13 years in management consulting.",
-            photoAlt:
-              "Professional headshot of Priya Sharma, strategy director, with an intelligent expression and professional attire",
-            socials: ["LinkedIn"],
-          },
-        ]
-    const leadershipMembers = (props.leadership?.members?.length
-      ? props.leadership.members
-      : defaultLeadershipMembers
+      {
+        name: 'Marcus Chen',
+        role: 'CEO & Co-founder',
+        bio: 'Former design director at IDEO. Marcus leads company strategy and client partnerships. Based in San Francisco. 18 years in product design.',
+        photoAlt:
+          'Professional headshot of Marcus Chen, CEO and co-founder, wearing a navy blazer with a confident expression',
+        socials: ['LinkedIn', 'Twitter'],
+      },
+      {
+        name: 'Sarah Williams',
+        role: 'CTO & Co-founder',
+        bio: 'Previously principal engineer at Stripe. Sarah architects our technical infrastructure and engineering culture. Based in Seattle. 15 years in software engineering.',
+        photoAlt:
+          'Professional headshot of Sarah Williams, CTO and co-founder, with a warm smile and modern glasses',
+        socials: ['LinkedIn', 'GitHub'],
+      },
+      {
+        name: 'David Park',
+        role: 'Chief Operating Officer',
+        bio: 'Former McKinsey consultant. David oversees operations, finance, and team scaling. Based in New York. 12 years in operational leadership.',
+        photoAlt:
+          'Professional headshot of David Park, chief operating officer, in a charcoal sweater with a thoughtful expression',
+        socials: ['LinkedIn'],
+      },
+      {
+        name: 'Elena Rodriguez',
+        role: 'Design Director',
+        bio: 'Former lead at Pentagram. Elena shapes our design philosophy and mentors the creative team. Based in London. 14 years in brand and digital design.',
+        photoAlt:
+          'Professional headshot of Elena Rodriguez, design director, with creative styling and a confident smile',
+        socials: ['LinkedIn', 'Dribbble'],
+      },
+      {
+        name: 'James Okonkwo',
+        role: 'Engineering Director',
+        bio: 'Ex-Google staff engineer. James leads our technical teams and engineering standards. Based in Berlin. 16 years in software architecture.',
+        photoAlt:
+          'Professional headshot of James Okonkwo, engineering director, wearing casual tech-company attire',
+        socials: ['LinkedIn', 'GitHub'],
+      },
+      {
+        name: 'Priya Sharma',
+        role: 'Strategy Director',
+        bio: 'Former Bain strategist. Priya leads client strategy and business transformation. Based in Singapore. 13 years in management consulting.',
+        photoAlt:
+          'Professional headshot of Priya Sharma, strategy director, with an intelligent expression and professional attire',
+        socials: ['LinkedIn'],
+      },
+    ]
+    const leadershipMembers = (
+      props.leadership?.members?.length
+        ? props.leadership.members
+        : defaultLeadershipMembers
     ).map((member, index) => ({
       ...member,
       socials: member.socials?.length
         ? member.socials
-        : defaultLeadershipMembers[index % defaultLeadershipMembers.length].socials,
+        : defaultLeadershipMembers[index % defaultLeadershipMembers.length]
+            .socials,
     }))
 
-    const deptHeading = props.departmentLeads?.heading ?? "Department Leads"
+    const deptHeading = props.departmentLeads?.heading ?? 'Department Leads'
     const deptPeople = props.departmentLeads?.people?.length
       ? props.departmentLeads.people
       : [
           {
-            name: "Thomas Anderson",
-            role: "Product Lead",
-            photoAlt: "Professional headshot of Thomas Anderson, product lead",
+            name: 'Thomas Anderson',
+            role: 'Product Lead',
+            photoAlt: 'Professional headshot of Thomas Anderson, product lead',
           },
           {
-            name: "Laura Kim",
-            role: "UX Research Lead",
-            photoAlt: "Professional headshot of Laura Kim, UX research lead",
+            name: 'Laura Kim',
+            role: 'UX Research Lead',
+            photoAlt: 'Professional headshot of Laura Kim, UX research lead',
           },
           {
-            name: "Michael Torres",
-            role: "Creative Tech Lead",
+            name: 'Michael Torres',
+            role: 'Creative Tech Lead',
             photoAlt:
-              "Professional headshot of Michael Torres, creative technology lead",
+              'Professional headshot of Michael Torres, creative technology lead',
           },
           {
-            name: "Anna Schmidt",
-            role: "Client Services Lead",
+            name: 'Anna Schmidt',
+            role: 'Client Services Lead',
             photoAlt:
-              "Professional headshot of Anna Schmidt, client services lead",
+              'Professional headshot of Anna Schmidt, client services lead',
           },
         ]
 
     const statsItems = props.stats?.length
       ? props.stats
       : [
-          { value: "47", label: "Team members" },
-          { value: "8", label: "Countries" },
-          { value: "12", label: "Years active" },
-          { value: "156", label: "Projects shipped" },
+          { value: '47', label: 'Team members' },
+          { value: '8', label: 'Countries' },
+          { value: '12', label: 'Years active' },
+          { value: '156', label: 'Projects shipped' },
         ]
 
-    const cultureEyebrow = props.culture?.eyebrow ?? "Our Culture"
+    const cultureEyebrow = props.culture?.eyebrow ?? 'Our Culture'
     const cultureHeading =
-      props.culture?.heading ?? "Built on craft, collaboration, and care"
+      props.culture?.heading ?? 'Built on craft, collaboration, and care'
     const cultureDesc =
       props.culture?.description ??
       "We believe the best work happens when talented people feel supported, challenged, and empowered. Our culture isn't defined by ping-pong tables or slogans—it's in how we treat each other, how we approach problems, and how we show up for our clients every day."
@@ -347,104 +349,103 @@ export const TeamKimiPage = defineCapsule({
       ? props.culture.principles
       : [
           {
-            title: "Collaboration first",
+            title: 'Collaboration first',
             description:
               "No brilliant jerks. Every project is a team sport, and everyone's voice matters.",
           },
           {
-            title: "Craft obsession",
+            title: 'Craft obsession',
             description:
-              "We sweat the details. From animation curves to API responses, quality is non-negotiable.",
+              'We sweat the details. From animation curves to API responses, quality is non-negotiable.',
           },
           {
-            title: "Sustainable pace",
+            title: 'Sustainable pace',
             description:
-              "No crunch culture. We plan realistically, scope thoughtfully, and respect life outside work.",
+              'No crunch culture. We plan realistically, scope thoughtfully, and respect life outside work.',
           },
         ]
     const cultureImageAlts = props.culture?.imageAlts?.length
       ? props.culture.imageAlts
       : [
-          "Team collaboration moment in a studio office with designers working together at a large table",
-          "Creative team brainstorming session in a modern workspace with whiteboards and post-it notes",
+          'Team collaboration moment in a studio office with designers working together at a large table',
+          'Creative team brainstorming session in a modern workspace with whiteboards and post-it notes',
         ]
 
-    const galleryHeading = props.gallery?.heading ?? "Life at Blueprint"
+    const galleryHeading = props.gallery?.heading ?? 'Life at Blueprint'
     const galleryDesc =
       props.gallery?.description ??
-      "Glimpses of our workspaces, retreats, and everyday moments."
+      'Glimpses of our workspaces, retreats, and everyday moments.'
     const galleryImageAlts = props.gallery?.imageAlts?.length
       ? props.gallery.imageAlts
       : [
-          "Modern minimalist office interior with natural light and plants",
-          "Team workshop session with designers presenting work on a large screen",
-          "Two colleagues having a focused discussion over a laptop in a bright office space",
-          "Team meeting around a conference table with presentation materials",
-          "Office lounge area with comfortable seating and a bookshelf for casual meetings",
-          "Team celebrating a successful project launch in an office kitchen area",
-          "Designer working on a large monitor with sketches and wireframes visible",
-          "Group photo of team members at a company retreat in an outdoor setting",
+          'Modern minimalist office interior with natural light and plants',
+          'Team workshop session with designers presenting work on a large screen',
+          'Two colleagues having a focused discussion over a laptop in a bright office space',
+          'Team meeting around a conference table with presentation materials',
+          'Office lounge area with comfortable seating and a bookshelf for casual meetings',
+          'Team celebrating a successful project launch in an office kitchen area',
+          'Designer working on a large monitor with sketches and wireframes visible',
+          'Group photo of team members at a company retreat in an outdoor setting',
         ]
 
-    const valuesHeading = props.values?.heading ?? "Our Values"
+    const valuesHeading = props.values?.heading ?? 'Our Values'
     const valuesDesc =
       props.values?.description ??
-      "The principles that guide our decisions, big and small."
+      'The principles that guide our decisions, big and small.'
     const valueItems = props.values?.items?.length
       ? props.values.items
       : [
           {
-            title: "Design with purpose",
+            title: 'Design with purpose',
             description:
-              "Every pixel should earn its place. We create work that communicates clearly, functions beautifully, and serves real human needs.",
+              'Every pixel should earn its place. We create work that communicates clearly, functions beautifully, and serves real human needs.',
           },
           {
-            title: "Own the outcome",
+            title: 'Own the outcome',
             description:
               "We don't just deliver files—we partner for results. If our work doesn't perform, we haven't done our job.",
           },
           {
-            title: "Grow together",
+            title: 'Grow together',
             description:
               "We invest in each other's growth. Mentorship, feedback, and continuous learning are woven into our daily practice.",
           },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What our team says"
+      props.testimonials?.heading ?? 'What our team says'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Honest perspectives from the people who work here."
+      'Honest perspectives from the people who work here.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
               "The level of craft here is unmatched. I've learned more in two years at Blueprint than in five years elsewhere. Everyone genuinely cares about the work.",
-            name: "Robert Chen",
-            role: "Senior Designer, 2 years",
-            avatarAlt:
-              "Professional headshot of Robert Chen, senior designer",
+            name: 'Robert Chen',
+            role: 'Senior Designer, 2 years',
+            avatarAlt: 'Professional headshot of Robert Chen, senior designer',
           },
           {
             quote:
-              "Remote-first done right. I work from Amsterdam but feel deeply connected to my team. The async communication culture is thoughtful and inclusive.",
-            name: "Emma van der Berg",
-            role: "Frontend Engineer, 3 years",
+              'Remote-first done right. I work from Amsterdam but feel deeply connected to my team. The async communication culture is thoughtful and inclusive.',
+            name: 'Emma van der Berg',
+            role: 'Frontend Engineer, 3 years',
             avatarAlt:
-              "Professional headshot of Emma van der Berg, frontend engineer",
+              'Professional headshot of Emma van der Berg, frontend engineer',
           },
           {
             quote:
-              "As a parent, flexibility matters. Blueprint respects my time and trusts me to do great work on my own schedule. That trust goes both ways.",
-            name: "Jennifer Walsh",
-            role: "Project Manager, 4 years",
+              'As a parent, flexibility matters. Blueprint respects my time and trusts me to do great work on my own schedule. That trust goes both ways.',
+            name: 'Jennifer Walsh',
+            role: 'Project Manager, 4 years',
             avatarAlt:
-              "Professional headshot of Jennifer Walsh, project manager",
+              'Professional headshot of Jennifer Walsh, project manager',
           },
         ]
 
-    const careersEyebrow = props.careers?.eyebrow ?? "Join Us"
+    const careersEyebrow = props.careers?.eyebrow ?? 'Join Us'
     const careersHeading =
       props.careers?.heading ?? "We're always looking for exceptional people"
     const careersDesc =
@@ -453,78 +454,78 @@ export const TeamKimiPage = defineCapsule({
     const careersBenefits = props.careers?.benefits?.length
       ? props.careers.benefits
       : [
-          "Competitive salary + equity",
-          "Remote-first with quarterly team retreats",
-          "Health, dental, vision (100% covered)",
-          "$3,000 annual learning budget",
-          "Unlimited PTO with minimum 20 days encouraged",
+          'Competitive salary + equity',
+          'Remote-first with quarterly team retreats',
+          'Health, dental, vision (100% covered)',
+          '$3,000 annual learning budget',
+          'Unlimited PTO with minimum 20 days encouraged',
         ]
-    const careersCta = props.careers?.cta ?? "View open positions"
+    const careersCta = props.careers?.cta ?? 'View open positions'
     const careersImageAlt =
       props.careers?.imageAlt ??
-      "Team members collaborating in a bright modern workspace with large windows"
+      'Team members collaborating in a bright modern workspace with large windows'
 
     const contactHeading = props.contact?.heading ?? "Let's work together"
     const contactDesc =
       props.contact?.description ??
       "Have a project in mind? We'd love to hear about it. Tell us what you're building and we'll get back to you within 24 hours."
-    const contactPrimary = props.contact?.primaryCta ?? "Start a project"
-    const contactEmail = props.contact?.email ?? "hello@blueprint.studio"
+    const contactPrimary = props.contact?.primaryCta ?? 'Start a project'
+    const contactEmail = props.contact?.email ?? 'hello@blueprint.studio'
 
     const footerTagline =
       props.footer?.tagline ??
-      "Crafting exceptional digital experiences since 2012."
-    const footerNote = props.footer?.note ?? "All rights reserved."
+      'Crafting exceptional digital experiences since 2012.'
+    const footerNote = props.footer?.note ?? 'All rights reserved.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
-          { title: "Company", links: ["About", "Team", "Careers", "Press"] },
+          { title: 'Company', links: ['About', 'Team', 'Careers', 'Press'] },
           {
-            title: "Services",
+            title: 'Services',
             links: [
-              "Brand Strategy",
-              "Product Design",
-              "Development",
-              "Consulting",
+              'Brand Strategy',
+              'Product Design',
+              'Development',
+              'Consulting',
             ],
           },
         ]
     const footerContact = props.footer?.contact?.length
       ? props.footer.contact
       : [
-          "hello@blueprint.studio",
-          "+1 (415) 555-0123",
-          "555 Mission Street",
-          "San Francisco, CA 94105",
+          'hello@blueprint.studio',
+          '+1 (415) 555-0123',
+          '555 Mission Street',
+          'San Francisco, CA 94105',
         ]
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Twitter", "LinkedIn", "Instagram"]
+      : ['Twitter', 'LinkedIn', 'Instagram']
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service"]
+      : ['Privacy Policy', 'Terms of Service']
 
-    const favoriteMemberNames = lakebed.useQuery("favoriteMemberNames")
-    const toggleFavorite = lakebed.useMutation("toggleFavorite")
-    const submitInquiry = lakebed.useMutation("submitInquiry")
+    const favoriteMemberNames = lakebed.useQuery('favoriteMemberNames')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const submitInquiry = lakebed.useMutation('submitInquiry')
     const auth = lakebed.useAuth()
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
     const authDisplayName =
-      auth.displayName || auth.user?.displayName || authEmail || "Account"
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
     const authInitials =
       authDisplayName
         .split(/\s+/)
         .filter(Boolean)
         .slice(0, 2)
         .map((part) => part[0]?.toUpperCase())
-        .join("") || "ME"
+        .join('') || 'ME'
     const authLabel = auth.isLoading
-      ? "Checking..."
+      ? 'Checking...'
       : isSignedIn
         ? authDisplayName
-        : "Sign in"
+        : 'Sign in'
     const handleSignIn = () => {
       if (auth.isLoading) return
 
@@ -535,13 +536,17 @@ export const TeamKimiPage = defineCapsule({
     }
     const handleSubmitInquiry = (e: React.FormEvent) => {
       e.preventDefault()
-      if (!inquiryName.trim() || !inquiryEmail.trim() || !inquiryMessage.trim()) {
+      if (
+        !inquiryName.trim() ||
+        !inquiryEmail.trim() ||
+        !inquiryMessage.trim()
+      ) {
         return
       }
       void submitInquiry(inquiryName, inquiryEmail, inquiryMessage)
-      setInquiryName("")
-      setInquiryEmail("")
-      setInquiryMessage("")
+      setInquiryName('')
+      setInquiryEmail('')
+      setInquiryMessage('')
       setContactOpen(false)
     }
 
@@ -594,10 +599,10 @@ export const TeamKimiPage = defineCapsule({
     const HeartIcon = ({ active = false }: { active?: boolean }) => (
       <svg
         className={cn(
-          "size-5",
-          active ? "text-primary-foreground" : "text-foreground",
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
         )}
-        fill={active ? "currentColor" : "none"}
+        fill={active ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -673,7 +678,7 @@ export const TeamKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -765,7 +770,7 @@ export const TeamKimiPage = defineCapsule({
                               {authDisplayName}
                             </p>
                             <p className="truncate text-xs text-muted-foreground">
-                              {authEmail ?? "Signed in to this session"}
+                              {authEmail ?? 'Signed in to this session'}
                             </p>
                           </div>
                         </div>
@@ -773,7 +778,7 @@ export const TeamKimiPage = defineCapsule({
                       <div className="p-2">
                         <button
                           type="button"
-                          onClick={() => go("Account")}
+                          onClick={() => go('Account')}
                           className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           Account
@@ -867,7 +872,7 @@ export const TeamKimiPage = defineCapsule({
                             {authDisplayName}
                           </p>
                           <p className="truncate text-xs text-muted-foreground">
-                            {authEmail ?? "Signed in"}
+                            {authEmail ?? 'Signed in'}
                           </p>
                         </div>
                       </div>
@@ -969,10 +974,10 @@ export const TeamKimiPage = defineCapsule({
                               : `Add ${member.name} to favorites`
                           }
                           className={cn(
-                            "absolute top-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105",
+                            'absolute top-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
                             isFavorite
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-background/90 text-foreground hover:bg-background",
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-background/90 text-foreground hover:bg-background',
                           )}
                         >
                           <HeartIcon active={isFavorite} />
@@ -1091,8 +1096,8 @@ export const TeamKimiPage = defineCapsule({
                       h={800}
                       loading="lazy"
                       className={cn(
-                        "h-64 w-full rounded-lg object-cover md:h-80",
-                        i === 1 && "mt-8",
+                        'h-64 w-full rounded-lg object-cover md:h-80',
+                        i === 1 && 'mt-8',
                       )}
                     />
                   ))}
@@ -1146,7 +1151,7 @@ export const TeamKimiPage = defineCapsule({
                   >
                     <div className="mb-6 flex size-12 items-center justify-center rounded-lg bg-muted">
                       <span className="text-2xl font-bold text-foreground">
-                        {String(i + 1).padStart(2, "0")}
+                        {String(i + 1).padStart(2, '0')}
                       </span>
                     </div>
                     <h3 className="mb-3 text-xl font-semibold text-foreground">
@@ -1279,7 +1284,10 @@ export const TeamKimiPage = defineCapsule({
                       </SheetDescription>
                     </SheetHeader>
                     <div className="flex-1 overflow-y-auto px-6 py-5">
-                      <form onSubmit={handleSubmitInquiry} className="space-y-4">
+                      <form
+                        onSubmit={handleSubmitInquiry}
+                        className="space-y-4"
+                      >
                         <div>
                           <label
                             htmlFor="inquiry-name"

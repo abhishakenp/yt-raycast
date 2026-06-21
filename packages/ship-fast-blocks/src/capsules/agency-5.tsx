@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -24,9 +24,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const AgencyKimiPage5 = defineCapsule({
-  name: "AgencyKimiPage5",
+  name: 'AgencyKimiPage5',
   description:
-    "Agency fifth style sibling to AgencyKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Agency fifth style sibling to AgencyKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const AgencyKimiPage5 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -111,88 +113,91 @@ export const AgencyKimiPage5 = defineCapsule({
     const [inquiryName, setInquiryName] = useState('')
     const [inquiryEmail, setInquiryEmail] = useState('')
     const [inquiryMessage, setInquiryMessage] = useState('')
-    const brand = props.brand ?? "Creative Agency"
-    const nav = props.nav?.length ? props.nav : ["Portfolio", "Services", "Team", "Blog", "Contact"]
+    const brand = props.brand ?? 'Creative Agency'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Portfolio', 'Services', 'Team', 'Blog', 'Contact']
     const hero = {
-      eyebrow: "Agency / Variant 5",
-      title: "Design That Drives Results",
-      description: "Creative Agency PixelPerfect Portfolio Services Team Blog Contact Design That Drives Results We craft digital experiences that help brands grow and succeed in the modern world....",
-      primaryCta: "Contact",
-      secondaryCta: "View Our Work",
-      imageAlt: "agency hero scene",
+      eyebrow: 'Agency / Variant 5',
+      title: 'Design That Drives Results',
+      description:
+        'Creative Agency PixelPerfect Portfolio Services Team Blog Contact Design That Drives Results We craft digital experiences that help brands grow and succeed in the modern world....',
+      primaryCta: 'Contact',
+      secondaryCta: 'View Our Work',
+      imageAlt: 'agency hero scene',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "What We Do",
-    "body": "Creative Agency PixelPerfect Portfolio Services Team Blog Contact Design That Drives Results We craft digital experiences that help brands grow and succeed in the modern world....",
-    "items": [
-      "Brand Identity",
-      "Web Design",
-      "UI/UX Design"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "Featured Projects",
-    "body": "Agency page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Development",
-      "Tech Startup Rebrand",
-      "E-commerce Platform"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Ready to Start Your Project?",
-    "body": "Agency page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Mobile App Design"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Brand Identity",
-    "body": "Agency page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": []
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "Featured Projects",
-    "alt": "agency hero scene",
-    "caption": "Agency generated page detail"
-  },
-  {
-    "title": "Ready to Start Your Project?",
-    "alt": "agency customer experience",
-    "caption": "Agency generated page detail"
-  },
-  {
-    "title": "Brand Identity",
-    "alt": "agency service detail",
-    "caption": "Agency generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'What We Do',
+            body: 'Creative Agency PixelPerfect Portfolio Services Team Blog Contact Design That Drives Results We craft digital experiences that help brands grow and succeed in the modern world....',
+            items: ['Brand Identity', 'Web Design', 'UI/UX Design'],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'Featured Projects',
+            body: "Agency page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Development',
+              'Tech Startup Rebrand',
+              'E-commerce Platform',
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Ready to Start Your Project?',
+            body: "Agency page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['Mobile App Design'],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Brand Identity',
+            body: "Agency page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'Featured Projects',
+            alt: 'agency hero scene',
+            caption: 'Agency generated page detail',
+          },
+          {
+            title: 'Ready to Start Your Project?',
+            alt: 'agency customer experience',
+            caption: 'Agency generated page detail',
+          },
+          {
+            title: 'Brand Identity',
+            alt: 'agency service detail',
+            caption: 'Agency generated page detail',
+          },
+        ]
     const normalizedGalleryItems = gallery.map((item) => ({
       title: item.title,
       alt: item.alt,
@@ -234,7 +239,8 @@ export const AgencyKimiPage5 = defineCapsule({
         : normalizedGalleryItems
     const handleSubmitInquiry = (e: React.FormEvent) => {
       e.preventDefault()
-      if (!inquiryName.trim() || !inquiryEmail.trim() || !inquiryMessage.trim()) return
+      if (!inquiryName.trim() || !inquiryEmail.trim() || !inquiryMessage.trim())
+        return
 
       void submitInquiry(inquiryName, inquiryEmail, inquiryMessage)
       setInquiryName('')
@@ -277,10 +283,19 @@ export const AgencyKimiPage5 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -404,13 +419,17 @@ export const AgencyKimiPage5 = defineCapsule({
                   <SheetHeader className="border-b border-border p-6">
                     <SheetTitle className="text-xl">Contact Us</SheetTitle>
                     <SheetDescription>
-                      Send us a message and we'll get back to you within 24 hours.
+                      Send us a message and we'll get back to you within 24
+                      hours.
                     </SheetDescription>
                   </SheetHeader>
                   <div className="flex-1 overflow-y-auto px-6 py-5">
                     <form onSubmit={handleSubmitInquiry} className="space-y-4">
                       <div>
-                        <label htmlFor="name" className="mb-2 block text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="name"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
                           Name
                         </label>
                         <input
@@ -424,7 +443,10 @@ export const AgencyKimiPage5 = defineCapsule({
                         />
                       </div>
                       <div>
-                        <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="email"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
                           Email
                         </label>
                         <input
@@ -438,7 +460,10 @@ export const AgencyKimiPage5 = defineCapsule({
                         />
                       </div>
                       <div>
-                        <label htmlFor="message" className="mb-2 block text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="message"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
                           Message
                         </label>
                         <textarea
@@ -458,7 +483,11 @@ export const AgencyKimiPage5 = defineCapsule({
                       type="button"
                       className="w-full rounded-full"
                       onClick={handleSubmitInquiry}
-                      disabled={!inquiryName.trim() || !inquiryEmail.trim() || !inquiryMessage.trim()}
+                      disabled={
+                        !inquiryName.trim() ||
+                        !inquiryEmail.trim() ||
+                        !inquiryMessage.trim()
+                      }
                     >
                       Send Message
                     </Button>
@@ -604,16 +633,28 @@ export const AgencyKimiPage5 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -621,10 +662,19 @@ export const AgencyKimiPage5 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -648,8 +698,12 @@ export const AgencyKimiPage5 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -661,12 +715,22 @@ export const AgencyKimiPage5 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {displayProjects.map((item) => {
-                const isFavorite = favoriteProjectTitles?.has(item.title) ?? false
+                const isFavorite =
+                  favoriteProjectTitles?.has(item.title) ?? false
 
                 return (
-                  <article key={item.title} className="group overflow-hidden rounded-lg border border-border bg-card">
+                  <article
+                    key={item.title}
+                    className="group overflow-hidden rounded-lg border border-border bg-card"
+                  >
                     <div className="relative">
-                      <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                      <Image
+                        alt={item.alt}
+                        w={900}
+                        h={700}
+                        loading="lazy"
+                        className="aspect-[4/3] w-full object-cover"
+                      />
                       <button
                         type="button"
                         onClick={() => void toggleFavorite(item.title)}
@@ -687,8 +751,14 @@ export const AgencyKimiPage5 = defineCapsule({
                       </button>
                     </div>
                     <div className="p-5">
-                      <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                      {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                      <h3 className="text-lg font-semibold text-card-foreground">
+                        {item.title}
+                      </h3>
+                      {item.caption ? (
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                          {item.caption}
+                        </p>
+                      ) : null}
                     </div>
                   </article>
                 )
@@ -700,9 +770,15 @@ export const AgencyKimiPage5 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -718,10 +794,17 @@ export const AgencyKimiPage5 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

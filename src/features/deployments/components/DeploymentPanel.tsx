@@ -119,8 +119,7 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
     lakebedTarget?.artifactReady !== true &&
     deploymentStatus?.provider !== 'lakebed'
   const lakebedProgressPercent = artifactProgressPercent(lakebedTarget)
-  const showLakebedProgress =
-    waitingTarget === 'lakebed' && lakebedPreparing
+  const showLakebedProgress = waitingTarget === 'lakebed' && lakebedPreparing
   const lakebedProgressBackground =
     showLakebedProgress && lakebedProgressPercent > 0
       ? `linear-gradient(110deg, rgba(34, 211, 238, 0.16) 0%, rgba(34, 211, 238, 0.08) ${lakebedProgressPercent}%, transparent ${lakebedProgressPercent}%, transparent 100%)`
@@ -152,14 +151,12 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
           target: 'lakebed',
           anonymousOwnerSecret,
         })
-        if (result.status !== 'ready') return
+        if (!result || result.status !== 'ready') return
         setWaitingTarget(undefined)
       } catch (ensureError) {
         setWaitingTarget(undefined)
         setError(
-          ensureError instanceof Error
-            ? ensureError.message
-            : 'Publish failed',
+          ensureError instanceof Error ? ensureError.message : 'Publish failed',
         )
         return
       }
@@ -173,18 +170,21 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
           ? undefined
           : readAnonymousOwnerSecret(window.localStorage, sessionId)
 
-      const result = (await (target === 'shipfast'
+      const result = await (target === 'shipfast'
         ? publishPreview({
             lookup: sessionId,
             anonymousOwnerSecret,
           })
-        : publishLakebedViaApi(sessionId, anonymousOwnerSecret)))
+        : publishLakebedViaApi(sessionId, anonymousOwnerSecret))
 
-      if (typeof window !== 'undefined' && result.url) {
-        window.open(result.url, '_blank', 'noopener,noreferrer')
+      const resultUrl = result?.url
+      if (typeof window !== 'undefined' && resultUrl) {
+        window.open(resultUrl, '_blank', 'noopener,noreferrer')
       }
     } catch (publishError) {
-      setError(publishError instanceof Error ? publishError.message : 'Publish failed')
+      setError(
+        publishError instanceof Error ? publishError.message : 'Publish failed',
+      )
     } finally {
       setActiveTarget(undefined)
       setPendingPublicTarget(undefined)
@@ -305,8 +305,8 @@ export const DeploymentPanel = ({ sessionId }: DeploymentPanelProps) => {
             {activeTarget === 'lakebed'
               ? 'Publishing...'
               : showLakebedProgress && lakebedProgressPercent > 0
-              ? `${lakebedProgressPercent}%`
-              : targetDetails.lakebed.description}
+                ? `${lakebedProgressPercent}%`
+                : targetDetails.lakebed.description}
           </span>
         </span>
         <span

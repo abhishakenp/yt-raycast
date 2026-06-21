@@ -1,10 +1,10 @@
-import { type ReactNode, useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { type ReactNode, useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -44,7 +44,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
  * routes through `useNavigate` so nothing is a dead "#".
  */
 export const PortfolioKimiPage = defineCapsule({
-  name: "PortfolioKimiPage",
+  name: 'PortfolioKimiPage',
   description:
     "Complete dark, cinematic 3D / motion-designer / art-director PORTFOLIO home page (use as the ROOT/home route). Deep near-black canvas with a single cyan accent, radial glows, and crisp display headings. Includes a fixed blur navbar, a split hero (role eyebrow, big headline with a cyan accent word, dual CTAs, and a showreel card with a play overlay + caption), a client wordmark strip, a selected-work gallery of project cards (thumbnail, title, blurb, tool tags), an about split (portrait, multi-paragraph bio, inline stats), a services grid of line-icon capability tiles, a metrics band, a testimonials grid with monogram avatars + roles, a radial-glow contact CTA (email + book-a-call), and a 4-column footer (brand, sitemap, social, legal). Best when the prompt is a creative individual's personal site — 3D artist, motion designer, CGI/VFX, art director, animator, or visual designer — who wants a premium, moody, high-craft showcase to display reel-style work and get hired. Supply content only; the block owns all layout, gradients, and styling.",
   props: z.object({
@@ -57,14 +57,29 @@ export const PortfolioKimiPage = defineCapsule({
     /** Hero section content. */
     hero: z
       .object({
-        eyebrow: z.string().describe("small uppercase role line above the headline").optional(),
-        headlineLead: z.string().describe("first part of the headline, plain weight").optional(),
-        headlineAccent: z.string().describe("word rendered in the cyan accent").optional(),
-        headlineTail: z.string().describe("remainder of the headline after the accent word").optional(),
+        eyebrow: z
+          .string()
+          .describe('small uppercase role line above the headline')
+          .optional(),
+        headlineLead: z
+          .string()
+          .describe('first part of the headline, plain weight')
+          .optional(),
+        headlineAccent: z
+          .string()
+          .describe('word rendered in the cyan accent')
+          .optional(),
+        headlineTail: z
+          .string()
+          .describe('remainder of the headline after the accent word')
+          .optional(),
         description: z.string().optional(),
         primaryCta: z.string().optional(),
         secondaryCta: z.string().optional(),
-        reelAlt: z.string().describe("alt for the showreel thumbnail image").optional(),
+        reelAlt: z
+          .string()
+          .describe('alt for the showreel thumbnail image')
+          .optional(),
         reelCaption: z.string().optional(),
       })
       .optional(),
@@ -82,7 +97,9 @@ export const PortfolioKimiPage = defineCapsule({
               title: z.string(),
               description: z.string(),
               tags: z.array(z.string()),
-              alt: z.string().describe("short description of the project still"),
+              alt: z
+                .string()
+                .describe('short description of the project still'),
             }),
           )
           .optional(),
@@ -95,7 +112,9 @@ export const PortfolioKimiPage = defineCapsule({
         title: z.string().optional(),
         imageAlt: z.string().optional(),
         paragraphs: z.array(z.string()).optional(),
-        stats: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+        stats: z
+          .array(z.object({ value: z.string(), label: z.string() }))
+          .optional(),
       })
       .optional(),
     /** Services / capabilities grid. */
@@ -104,18 +123,24 @@ export const PortfolioKimiPage = defineCapsule({
         label: z.string().optional(),
         title: z.string().optional(),
         description: z.string().optional(),
-        items: z.array(z.object({ title: z.string(), description: z.string() })).optional(),
+        items: z
+          .array(z.object({ title: z.string(), description: z.string() }))
+          .optional(),
       })
       .optional(),
     /** Key-metrics band. */
-    stats: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    stats: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     /** Testimonials grid. */
     testimonials: z
       .object({
         label: z.string().optional(),
         title: z.string().optional(),
         items: z
-          .array(z.object({ text: z.string(), name: z.string(), role: z.string() }))
+          .array(
+            z.object({ text: z.string(), name: z.string(), role: z.string() }),
+          )
           .optional(),
       })
       .optional(),
@@ -179,7 +204,15 @@ export const PortfolioKimiPage = defineCapsule({
         db.favorites.insert({ projectTitle })
         return true
       },
-      submitInquiry: ({ db }, data: { name: string; email: string; message: string; projectInterest: string }) => {
+      submitInquiry: (
+        { db },
+        data: {
+          name: string
+          email: string
+          message: string
+          projectInterest: string
+        },
+      ) => {
         db.inquiries.insert(data)
         return db.inquiries.all()
       },
@@ -188,9 +221,14 @@ export const PortfolioKimiPage = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [inquiryOpen, setInquiryOpen] = useState(false)
-    const [inquiryForm, setInquiryForm] = useState({ name: '', email: '', message: '', projectInterest: '' })
+    const [inquiryForm, setInquiryForm] = useState({
+      name: '',
+      email: '',
+      message: '',
+      projectInterest: '',
+    })
 
-    const brand = props.brand ?? "Kaelen Vance"
+    const brand = props.brand ?? 'Kaelen Vance'
     const brandShort = brand.split(/\s+/)[0] || brand
 
     const storedProjects = lakebed.useQuery('projects')
@@ -224,89 +262,93 @@ export const PortfolioKimiPage = defineCapsule({
       lakebed.signOut()
     }
 
-    const nav = props.nav?.length ? props.nav : ["Work", "About", "Services", "Contact"]
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Work', 'About', 'Services', 'Contact']
     const navCta = props.navCta ?? "Let's Talk"
 
     const hero = {
-      eyebrow: props.hero?.eyebrow ?? "3D Motion Designer & Art Director",
-      headlineLead: props.hero?.headlineLead ?? "Crafting",
-      headlineAccent: props.hero?.headlineAccent ?? "dimensional",
-      headlineTail: props.hero?.headlineTail ?? "stories that move.",
+      eyebrow: props.hero?.eyebrow ?? '3D Motion Designer & Art Director',
+      headlineLead: props.hero?.headlineLead ?? 'Crafting',
+      headlineAccent: props.hero?.headlineAccent ?? 'dimensional',
+      headlineTail: props.hero?.headlineTail ?? 'stories that move.',
       description:
         props.hero?.description ??
-        "I help brands, studios, and studios build unforgettable visual worlds — from cinematic brand films to immersive product launches. Every frame is built to perform.",
-      primaryCta: props.hero?.primaryCta ?? "View Selected Work",
-      secondaryCta: props.hero?.secondaryCta ?? "Start a Project",
+        'I help brands, studios, and studios build unforgettable visual worlds — from cinematic brand films to immersive product launches. Every frame is built to perform.',
+      primaryCta: props.hero?.primaryCta ?? 'View Selected Work',
+      secondaryCta: props.hero?.secondaryCta ?? 'Start a Project',
       reelAlt:
         props.hero?.reelAlt ??
-        "Abstract 3D glass and light composition representing a motion design reel",
-      reelCaption: props.hero?.reelCaption ?? "2024 Showreel — 2:34",
+        'Abstract 3D glass and light composition representing a motion design reel',
+      reelCaption: props.hero?.reelCaption ?? '2024 Showreel — 2:34',
     }
 
     const clients = props.clients?.length
       ? props.clients
-      : ["Nike", "Spotify", "Apple", "Google", "Riot Games", "Sonos", "Epic Games", "Netflix"]
+      : [
+          'Nike',
+          'Spotify',
+          'Apple',
+          'Google',
+          'Riot Games',
+          'Sonos',
+          'Epic Games',
+          'Netflix',
+        ]
 
     const gallery = {
-      label: props.gallery?.label ?? "Selected Work",
-      title: props.gallery?.title ?? "Projects that pushed boundaries",
+      label: props.gallery?.label ?? 'Selected Work',
+      title: props.gallery?.title ?? 'Projects that pushed boundaries',
       description:
         props.gallery?.description ??
-        "A curated set of brand films, product launches, and title sequences built over the last three years.",
+        'A curated set of brand films, product launches, and title sequences built over the last three years.',
       items: props.gallery?.items?.length
         ? props.gallery.items
         : [
             {
-              title: "Neon Drift",
+              title: 'Neon Drift',
               description:
-                "Launch film for a cyberpunk racing title. High-speed camera logic, volumetric neons, and procedural city layouts built in C4D and rendered with Redshift.",
-              tags: ["C4D", "Redshift", "Brand Film"],
-              alt: "Neon Drift cyberpunk racing game brand film with neon-lit vehicles",
+                'Launch film for a cyberpunk racing title. High-speed camera logic, volumetric neons, and procedural city layouts built in C4D and rendered with Redshift.',
+              tags: ['C4D', 'Redshift', 'Brand Film'],
+              alt: 'Neon Drift cyberpunk racing game brand film with neon-lit vehicles',
             },
             {
-              title: "Aether",
+              title: 'Aether',
               description:
-                "Product reveal for a flagship noise-canceling headphone. Fluid sculpting, spectral lighting, and a restrained material palette in Houdini and Octane.",
-              tags: ["Houdini", "Octane", "Product"],
-              alt: "Aether abstract fluid sculptural forms for a luxury audio brand",
+                'Product reveal for a flagship noise-canceling headphone. Fluid sculpting, spectral lighting, and a restrained material palette in Houdini and Octane.',
+              tags: ['Houdini', 'Octane', 'Product'],
+              alt: 'Aether abstract fluid sculptural forms for a luxury audio brand',
             },
             {
-              title: "Pulse",
+              title: 'Pulse',
               description:
-                "Main title for a sci-fi thriller series. Kinetic typography, procedural corridor generation, and aggressive camera motion in Blender and After Effects.",
-              tags: ["Blender", "After Effects", "Title Sequence"],
-              alt: "Pulse kinetic typography and dark corridors for a streaming title sequence",
+                'Main title for a sci-fi thriller series. Kinetic typography, procedural corridor generation, and aggressive camera motion in Blender and After Effects.',
+              tags: ['Blender', 'After Effects', 'Title Sequence'],
+              alt: 'Pulse kinetic typography and dark corridors for a streaming title sequence',
             },
             {
-              title: "Meridian",
+              title: 'Meridian',
               description:
-                "Keynote opener for a cloud infrastructure platform. Real-time environmental storytelling with Lumen, Nanite, and cinematic sequencing in Unreal Engine 5.",
-              tags: ["Unreal Engine 5", "Real-Time", "Keynote"],
-              alt: "Meridian vast architectural landscape rendered in Unreal Engine 5",
+                'Keynote opener for a cloud infrastructure platform. Real-time environmental storytelling with Lumen, Nanite, and cinematic sequencing in Unreal Engine 5.',
+              tags: ['Unreal Engine 5', 'Real-Time', 'Keynote'],
+              alt: 'Meridian vast architectural landscape rendered in Unreal Engine 5',
             },
             {
-              title: "Chromatica",
+              title: 'Chromatica',
               description:
-                "Music video for an electronic artist. Particle sims, iridescent shaders, and beat-synced camera cuts driven by X-Particles and C4D.",
-              tags: ["C4D", "X-Particles", "Music Video"],
-              alt: "Chromatica iridescent particle fields for an electronic music video",
+                'Music video for an electronic artist. Particle sims, iridescent shaders, and beat-synced camera cuts driven by X-Particles and C4D.',
+              tags: ['C4D', 'X-Particles', 'Music Video'],
+              alt: 'Chromatica iridescent particle fields for an electronic music video',
             },
             {
-              title: "Silica",
+              title: 'Silica',
               description:
-                "Commercial for a sustainable architecture practice. Brutalist form language, natural daylighting, and restrained camera choreography in Blender and Redshift.",
-              tags: ["Blender", "Redshift", "Commercial"],
-              alt: "Silica brutalist concrete forms for a sustainable architecture firm",
+                'Commercial for a sustainable architecture practice. Brutalist form language, natural daylighting, and restrained camera choreography in Blender and Redshift.',
+              tags: ['Blender', 'Redshift', 'Commercial'],
+              alt: 'Silica brutalist concrete forms for a sustainable architecture firm',
             },
           ],
     }
-
-    const normalizedGalleryItems = gallery.items.map((item) => ({
-      alt: item.alt,
-      description: item.description,
-      tags: item.tags.join(','),
-      title: item.title,
-    }))
 
     const displayProjects =
       storedProjects && storedProjects.length > 0
@@ -319,9 +361,11 @@ export const PortfolioKimiPage = defineCapsule({
         : gallery.items
 
     const about = {
-      label: props.about?.label ?? "About",
-      title: props.about?.title ?? "Obsessed with craft, driven by story.",
-      imageAlt: props.about?.imageAlt ?? "Portrait of Kaelen Vance in a studio environment",
+      label: props.about?.label ?? 'About',
+      title: props.about?.title ?? 'Obsessed with craft, driven by story.',
+      imageAlt:
+        props.about?.imageAlt ??
+        'Portrait of Kaelen Vance in a studio environment',
       paragraphs: props.about?.paragraphs?.length
         ? props.about.paragraphs
         : [
@@ -332,50 +376,50 @@ export const PortfolioKimiPage = defineCapsule({
       stats: props.about?.stats?.length
         ? props.about.stats
         : [
-            { value: "8+", label: "Years Experience" },
-            { value: "120+", label: "Projects Delivered" },
-            { value: "14", label: "Industry Awards" },
+            { value: '8+', label: 'Years Experience' },
+            { value: '120+', label: 'Projects Delivered' },
+            { value: '14', label: 'Industry Awards' },
           ],
     }
 
     const services = {
-      label: props.services?.label ?? "Services",
-      title: props.services?.title ?? "What I can build with you",
+      label: props.services?.label ?? 'Services',
+      title: props.services?.title ?? 'What I can build with you',
       description:
         props.services?.description ??
-        "From initial concept through final delivery, I offer end-to-end creative production tailored to campaigns, launches, and evergreen content.",
+        'From initial concept through final delivery, I offer end-to-end creative production tailored to campaigns, launches, and evergreen content.',
       items: props.services?.items?.length
         ? props.services.items
         : [
             {
-              title: "3D Motion Design",
+              title: '3D Motion Design',
               description:
-                "Cinematic animation for brand films, product reveals, and social campaigns. Full pipeline from modeling to comp.",
+                'Cinematic animation for brand films, product reveals, and social campaigns. Full pipeline from modeling to comp.',
             },
             {
-              title: "Art Direction",
+              title: 'Art Direction',
               description:
-                "Visual strategy, mood systems, and style frames that align creative output with brand positioning and campaign goals.",
+                'Visual strategy, mood systems, and style frames that align creative output with brand positioning and campaign goals.',
             },
             {
-              title: "Visual Effects",
+              title: 'Visual Effects',
               description:
-                "Particle simulations, fluid dynamics, destruction, and atmospheric effects that integrate cleanly with live action or CG.",
+                'Particle simulations, fluid dynamics, destruction, and atmospheric effects that integrate cleanly with live action or CG.',
             },
             {
-              title: "Concept Development",
+              title: 'Concept Development',
               description:
-                "Early-stage ideation, storyboarding, and look exploration to lock a strong creative direction before production begins.",
+                'Early-stage ideation, storyboarding, and look exploration to lock a strong creative direction before production begins.',
             },
             {
-              title: "Look Development",
+              title: 'Look Development',
               description:
-                "Material authoring, lighting rigs, and rendering setups built for consistency, speed, and photoreal or stylized output.",
+                'Material authoring, lighting rigs, and rendering setups built for consistency, speed, and photoreal or stylized output.',
             },
             {
-              title: "Creative Consulting",
+              title: 'Creative Consulting',
               description:
-                "Advisory for in-house teams, agency partners, and startups navigating production complexity, tooling, or pipeline setup.",
+                'Advisory for in-house teams, agency partners, and startups navigating production complexity, tooling, or pipeline setup.',
             },
           ],
     }
@@ -383,57 +427,60 @@ export const PortfolioKimiPage = defineCapsule({
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "8+", label: "Years Experience" },
-          { value: "120+", label: "Projects Shipped" },
-          { value: "14", label: "Awards Won" },
-          { value: "3B+", label: "Views Generated" },
+          { value: '8+', label: 'Years Experience' },
+          { value: '120+', label: 'Projects Shipped' },
+          { value: '14', label: 'Awards Won' },
+          { value: '3B+', label: 'Views Generated' },
         ]
 
     const testimonials = {
-      label: props.testimonials?.label ?? "Testimonials",
-      title: props.testimonials?.title ?? "Words from collaborators",
+      label: props.testimonials?.label ?? 'Testimonials',
+      title: props.testimonials?.title ?? 'Words from collaborators',
       items: props.testimonials?.items?.length
         ? props.testimonials.items
         : [
             {
-              text: "Kaelen has an almost unfair ability to translate a vague creative brief into something that makes the room go quiet. The Aether launch outperformed every benchmark we had.",
-              name: "Jordan Meyers",
-              role: "Creative Director, Sonos",
+              text: 'Kaelen has an almost unfair ability to translate a vague creative brief into something that makes the room go quiet. The Aether launch outperformed every benchmark we had.',
+              name: 'Jordan Meyers',
+              role: 'Creative Director, Sonos',
             },
             {
-              text: "We brought Kaelen in to art-direct a tricky title sequence under an impossible timeline. The work was elegant, fast, and required almost zero revision. A true pro.",
-              name: "Sara Lin",
-              role: "Executive Producer, Netflix",
+              text: 'We brought Kaelen in to art-direct a tricky title sequence under an impossible timeline. The work was elegant, fast, and required almost zero revision. A true pro.',
+              name: 'Sara Lin',
+              role: 'Executive Producer, Netflix',
             },
             {
-              text: "His technical depth in Houdini and real-time pipelines saved us months of R&D. More importantly, the final frames were beautiful and on-brand without feeling safe.",
-              name: "David Rhodes",
-              role: "VP Brand, Riot Games",
+              text: 'His technical depth in Houdini and real-time pipelines saved us months of R&D. More importantly, the final frames were beautiful and on-brand without feeling safe.',
+              name: 'David Rhodes',
+              role: 'VP Brand, Riot Games',
             },
           ],
     }
 
     const contact = {
-      label: props.contact?.label ?? "Start a Project",
-      title: props.contact?.title ?? "Have a story that needs dimension?",
+      label: props.contact?.label ?? 'Start a Project',
+      title: props.contact?.title ?? 'Have a story that needs dimension?',
       description:
         props.contact?.description ??
         "I'm currently accepting new projects for Q3 2025. If you have a campaign, launch, or film that needs bold 3D motion, let's talk.",
-      email: props.contact?.email ?? "hello@kaelenvance.com",
-      cta: props.contact?.cta ?? "Book a Call",
+      email: props.contact?.email ?? 'hello@kaelenvance.com',
+      cta: props.contact?.cta ?? 'Book a Call',
     }
 
     const footer = {
       description:
         props.footer?.description ??
-        "3D Motion Designer & Art Director crafting dimensional stories for brands, studios, and screens.",
+        '3D Motion Designer & Art Director crafting dimensional stories for brands, studios, and screens.',
       socials: props.footer?.socials?.length
         ? props.footer.socials
-        : ["Vimeo", "Instagram", "LinkedIn", "Behance"],
-      legal: props.footer?.legal?.length ? props.footer.legal : ["Privacy Policy", "Terms of Use"],
+        : ['Vimeo', 'Instagram', 'LinkedIn', 'Behance'],
+      legal: props.footer?.legal?.length
+        ? props.footer.legal
+        : ['Privacy Policy', 'Terms of Use'],
       copyright:
-        props.footer?.copyright ?? `© ${new Date().getFullYear()} ${brand}. All rights reserved.`,
-      note: props.footer?.note ?? "Designed & built with obsessive care.",
+        props.footer?.copyright ??
+        `© ${new Date().getFullYear()} ${brand}. All rights reserved.`,
+      note: props.footer?.note ?? 'Designed & built with obsessive care.',
     }
 
     // Initials for the testimonial monogram avatars (decorative brand-style asset).
@@ -441,37 +488,97 @@ export const PortfolioKimiPage = defineCapsule({
       name
         .split(/\s+/)
         .map((w) => w[0])
-        .join("")
+        .join('')
         .slice(0, 2)
         .toUpperCase()
 
     // Line icons for the services grid (mirrors the source SVG set, in order).
     const serviceIcons: ReactNode[] = [
-      <svg key="layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5.5 w-5.5" aria-hidden="true">
+      <svg
+        key="layers"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-5.5 w-5.5"
+        aria-hidden="true"
+      >
         <path d="M12 2 2 7l10 5 10-5-10-5z" />
         <path d="M2 17l10 5 10-5" />
         <path d="M2 12l10 5 10-5" />
       </svg>,
-      <svg key="info" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5.5 w-5.5" aria-hidden="true">
+      <svg
+        key="info"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-5.5 w-5.5"
+        aria-hidden="true"
+      >
         <circle cx="12" cy="12" r="10" />
         <path d="M12 16v-4" />
         <path d="M12 8h.01" />
       </svg>,
-      <svg key="shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5.5 w-5.5" aria-hidden="true">
+      <svg
+        key="shield"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-5.5 w-5.5"
+        aria-hidden="true"
+      >
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
       </svg>,
-      <svg key="target" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5.5 w-5.5" aria-hidden="true">
+      <svg
+        key="target"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-5.5 w-5.5"
+        aria-hidden="true"
+      >
         <path d="M2 12h6" />
         <path d="M22 12h-6" />
         <path d="M12 2v6" />
         <path d="M12 22v-6" />
         <circle cx="12" cy="12" r="3" />
       </svg>,
-      <svg key="eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5.5 w-5.5" aria-hidden="true">
+      <svg
+        key="eye"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-5.5 w-5.5"
+        aria-hidden="true"
+      >
         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
         <circle cx="12" cy="12" r="3" />
       </svg>,
-      <svg key="users" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5.5 w-5.5" aria-hidden="true">
+      <svg
+        key="users"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-5.5 w-5.5"
+        aria-hidden="true"
+      >
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
         <circle cx="9" cy="7" r="4" />
         <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
@@ -691,7 +798,10 @@ export const PortfolioKimiPage = defineCapsule({
                   <div className="flex-1 overflow-y-auto px-6 py-5">
                     <form onSubmit={handleInquirySubmit} className="space-y-4">
                       <div>
-                        <label htmlFor="inquiry-name" className="mb-2 block text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="inquiry-name"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
                           Name
                         </label>
                         <input
@@ -699,13 +809,21 @@ export const PortfolioKimiPage = defineCapsule({
                           type="text"
                           required
                           value={inquiryForm.name}
-                          onChange={(e) => setInquiryForm({ ...inquiryForm, name: e.target.value })}
+                          onChange={(e) =>
+                            setInquiryForm({
+                              ...inquiryForm,
+                              name: e.target.value,
+                            })
+                          }
                           className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                           placeholder="Your name"
                         />
                       </div>
                       <div>
-                        <label htmlFor="inquiry-email" className="mb-2 block text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="inquiry-email"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
                           Email
                         </label>
                         <input
@@ -713,26 +831,42 @@ export const PortfolioKimiPage = defineCapsule({
                           type="email"
                           required
                           value={inquiryForm.email}
-                          onChange={(e) => setInquiryForm({ ...inquiryForm, email: e.target.value })}
+                          onChange={(e) =>
+                            setInquiryForm({
+                              ...inquiryForm,
+                              email: e.target.value,
+                            })
+                          }
                           className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                           placeholder="your@email.com"
                         />
                       </div>
                       <div>
-                        <label htmlFor="inquiry-project" className="mb-2 block text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="inquiry-project"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
                           Project Interest
                         </label>
                         <input
                           id="inquiry-project"
                           type="text"
                           value={inquiryForm.projectInterest}
-                          onChange={(e) => setInquiryForm({ ...inquiryForm, projectInterest: e.target.value })}
+                          onChange={(e) =>
+                            setInquiryForm({
+                              ...inquiryForm,
+                              projectInterest: e.target.value,
+                            })
+                          }
                           className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                           placeholder="What type of project?"
                         />
                       </div>
                       <div>
-                        <label htmlFor="inquiry-message" className="mb-2 block text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="inquiry-message"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
                           Message
                         </label>
                         <textarea
@@ -740,7 +874,12 @@ export const PortfolioKimiPage = defineCapsule({
                           required
                           rows={4}
                           value={inquiryForm.message}
-                          onChange={(e) => setInquiryForm({ ...inquiryForm, message: e.target.value })}
+                          onChange={(e) =>
+                            setInquiryForm({
+                              ...inquiryForm,
+                              message: e.target.value,
+                            })
+                          }
                           className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
                           placeholder="Tell me about your project..."
                         />
@@ -785,7 +924,8 @@ export const PortfolioKimiPage = defineCapsule({
                     {hero.eyebrow}
                   </p>
                   <h1 className="mb-5 text-[clamp(2.6rem,6vw,4.5rem)] font-bold leading-[1.15] tracking-[-0.03em]">
-                    {hero.headlineLead} <span className="text-primary">{hero.headlineAccent}</span>
+                    {hero.headlineLead}{' '}
+                    <span className="text-primary">{hero.headlineAccent}</span>
                     <br />
                     {hero.headlineTail}
                   </h1>
@@ -825,7 +965,11 @@ export const PortfolioKimiPage = defineCapsule({
                   />
                   <span className="absolute inset-0 flex items-center justify-center bg-background/25 transition-colors duration-300 group-hover:bg-background/15">
                     <span className="flex h-[72px] w-[72px] items-center justify-center rounded-full border border-foreground/20 bg-foreground/10 backdrop-blur-md transition-all duration-300 group-hover:scale-105 group-hover:bg-foreground/20">
-                      <svg viewBox="0 0 24 24" className="ml-1 h-6 w-6 fill-foreground" aria-hidden="true">
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="ml-1 h-6 w-6 fill-foreground"
+                        aria-hidden="true"
+                      >
                         <path d="M8 5v14l11-7z" />
                       </svg>
                     </span>
@@ -839,7 +983,10 @@ export const PortfolioKimiPage = defineCapsule({
           </header>
 
           {/* ── Client logos ─────────────────────────────────────── */}
-          <section aria-label="Trusted by leading brands" className="border-y border-border bg-card py-12">
+          <section
+            aria-label="Trusted by leading brands"
+            className="border-y border-border bg-card py-12"
+          >
             <div className="mx-auto max-w-[1200px] px-6">
               <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-9 opacity-60 md:gap-x-16 md:gap-y-10">
                 {clients.map((client) => (
@@ -863,10 +1010,15 @@ export const PortfolioKimiPage = defineCapsule({
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">
                   {gallery.label}
                 </p>
-                <h2 id="gallery-heading" className="text-[clamp(1.8rem,4vw,2.8rem)] font-bold leading-[1.15] tracking-[-0.02em]">
+                <h2
+                  id="gallery-heading"
+                  className="text-[clamp(1.8rem,4vw,2.8rem)] font-bold leading-[1.15] tracking-[-0.02em]"
+                >
                   {gallery.title}
                 </h2>
-                <p className="max-w-[560px] text-[1.05rem] text-muted-foreground">{gallery.description}</p>
+                <p className="max-w-[560px] text-[1.05rem] text-muted-foreground">
+                  {gallery.description}
+                </p>
               </div>
 
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -912,8 +1064,12 @@ export const PortfolioKimiPage = defineCapsule({
                         </button>
                       </div>
                       <div className="p-6">
-                        <h3 className="mb-1.5 text-xl font-semibold">{item.title}</h3>
-                        <p className="text-sm leading-[1.6] text-muted-foreground">{item.description}</p>
+                        <h3 className="mb-1.5 text-xl font-semibold">
+                          {item.title}
+                        </h3>
+                        <p className="text-sm leading-[1.6] text-muted-foreground">
+                          {item.description}
+                        </p>
                         <div className="mt-3.5 flex flex-wrap gap-2">
                           {item.tags.map((tag) => (
                             <span
@@ -933,7 +1089,10 @@ export const PortfolioKimiPage = defineCapsule({
           </section>
 
           {/* ── About ────────────────────────────────────────────── */}
-          <section className="border-y border-border bg-card py-24" aria-labelledby="about-heading">
+          <section
+            className="border-y border-border bg-card py-24"
+            aria-labelledby="about-heading"
+          >
             <div className="mx-auto max-w-[1200px] px-6">
               <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
                 <div className="aspect-[4/5] overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-muted to-card">
@@ -949,11 +1108,17 @@ export const PortfolioKimiPage = defineCapsule({
                   <p className="mb-4 inline-block text-xs font-semibold uppercase tracking-[0.12em] text-primary">
                     {about.label}
                   </p>
-                  <h2 id="about-heading" className="mb-5 text-[clamp(1.8rem,4vw,2.6rem)] font-bold leading-[1.15] tracking-[-0.02em]">
+                  <h2
+                    id="about-heading"
+                    className="mb-5 text-[clamp(1.8rem,4vw,2.6rem)] font-bold leading-[1.15] tracking-[-0.02em]"
+                  >
                     {about.title}
                   </h2>
                   {about.paragraphs.map((p, i) => (
-                    <p key={i} className="mb-4.5 text-[1.05rem] leading-[1.75] text-muted-foreground">
+                    <p
+                      key={i}
+                      className="mb-4.5 text-[1.05rem] leading-[1.75] text-muted-foreground"
+                    >
                       {p}
                     </p>
                   ))}
@@ -981,10 +1146,15 @@ export const PortfolioKimiPage = defineCapsule({
                 <p className="mb-4 inline-block text-xs font-semibold uppercase tracking-[0.12em] text-primary">
                   {services.label}
                 </p>
-                <h2 id="services-heading" className="mb-3 text-[clamp(1.8rem,4vw,2.8rem)] font-bold leading-[1.15] tracking-[-0.02em]">
+                <h2
+                  id="services-heading"
+                  className="mb-3 text-[clamp(1.8rem,4vw,2.8rem)] font-bold leading-[1.15] tracking-[-0.02em]"
+                >
                   {services.title}
                 </h2>
-                <p className="text-[1.05rem] text-muted-foreground">{services.description}</p>
+                <p className="text-[1.05rem] text-muted-foreground">
+                  {services.description}
+                </p>
               </div>
 
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -996,7 +1166,9 @@ export const PortfolioKimiPage = defineCapsule({
                     <div className="mb-4.5 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                       {serviceIcons[i % serviceIcons.length]}
                     </div>
-                    <h3 className="mb-2 text-[1.1rem] font-semibold">{item.title}</h3>
+                    <h3 className="mb-2 text-[1.1rem] font-semibold">
+                      {item.title}
+                    </h3>
                     <p className="text-[0.9375rem] leading-[1.65] text-muted-foreground">
                       {item.description}
                     </p>
@@ -1007,7 +1179,10 @@ export const PortfolioKimiPage = defineCapsule({
           </section>
 
           {/* ── Stats band ───────────────────────────────────────── */}
-          <section aria-label="Key metrics" className="border-y border-border bg-muted py-[72px]">
+          <section
+            aria-label="Key metrics"
+            className="border-y border-border bg-muted py-[72px]"
+          >
             <div className="mx-auto max-w-[1200px] px-6">
               <div className="grid grid-cols-2 gap-8 text-center md:grid-cols-4 md:gap-6">
                 {stats.map((s) => (
@@ -1015,7 +1190,9 @@ export const PortfolioKimiPage = defineCapsule({
                     <strong className="mb-2 block text-[2.25rem] font-bold leading-none text-primary">
                       {s.value}
                     </strong>
-                    <span className="text-sm text-muted-foreground">{s.label}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {s.label}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -1029,7 +1206,10 @@ export const PortfolioKimiPage = defineCapsule({
                 <p className="mb-4 inline-block text-xs font-semibold uppercase tracking-[0.12em] text-primary">
                   {testimonials.label}
                 </p>
-                <h2 id="testimonials-heading" className="text-[clamp(1.8rem,4vw,2.8rem)] font-bold leading-[1.15] tracking-[-0.02em]">
+                <h2
+                  id="testimonials-heading"
+                  className="text-[clamp(1.8rem,4vw,2.8rem)] font-bold leading-[1.15] tracking-[-0.02em]"
+                >
                   {testimonials.title}
                 </h2>
               </div>
@@ -1051,8 +1231,12 @@ export const PortfolioKimiPage = defineCapsule({
                         {initials(t.name)}
                       </div>
                       <div>
-                        <div className="text-[0.9375rem] font-semibold">{t.name}</div>
-                        <div className="text-[0.8125rem] text-muted-foreground">{t.role}</div>
+                        <div className="text-[0.9375rem] font-semibold">
+                          {t.name}
+                        </div>
+                        <div className="text-[0.8125rem] text-muted-foreground">
+                          {t.role}
+                        </div>
                       </div>
                     </footer>
                   </blockquote>
@@ -1062,7 +1246,10 @@ export const PortfolioKimiPage = defineCapsule({
           </section>
 
           {/* ── Contact CTA ──────────────────────────────────────── */}
-          <section className="relative overflow-hidden py-[100px]" aria-labelledby="cta-heading">
+          <section
+            className="relative overflow-hidden py-[100px]"
+            aria-labelledby="cta-heading"
+          >
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 bg-[radial-gradient(800px_400px_at_20%_120%,var(--primary),transparent),radial-gradient(600px_300px_at_90%_-20%,var(--primary),transparent)] opacity-[0.08]"
@@ -1071,10 +1258,15 @@ export const PortfolioKimiPage = defineCapsule({
               <p className="mb-4 inline-block text-xs font-semibold uppercase tracking-[0.12em] text-primary">
                 {contact.label}
               </p>
-              <h2 id="cta-heading" className="mb-4 text-[clamp(1.8rem,4vw,2.8rem)] font-bold leading-[1.15] tracking-[-0.02em]">
+              <h2
+                id="cta-heading"
+                className="mb-4 text-[clamp(1.8rem,4vw,2.8rem)] font-bold leading-[1.15] tracking-[-0.02em]"
+              >
                 {contact.title}
               </h2>
-              <p className="mb-9 text-lg leading-[1.7] text-muted-foreground">{contact.description}</p>
+              <p className="mb-9 text-lg leading-[1.7] text-muted-foreground">
+                {contact.description}
+              </p>
               <div className="flex flex-wrap justify-center gap-3.5">
                 <a
                   href={`mailto:${contact.email}`}

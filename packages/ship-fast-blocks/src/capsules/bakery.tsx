@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * BakeryKimiPage — a complete, self-contained artisan-bakery LANDING page.
@@ -45,7 +45,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * props at all.
  */
 export const BakeryKimiPage = defineCapsule({
-  name: "BakeryKimiPage",
+  name: 'BakeryKimiPage',
   description:
     "Complete artisan-bakery / craft-bread shop LANDING page with a warm, editorial, light aesthetic: serif display headings, neutral stone surfaces, amber-mapped primary accents, and a slow-fermentation craft mood. Includes a split hero (Est. eyebrow, serif headline, dual CTAs, open-hours + address chips, floating Certified-Organic badge over a sourdough photo), a press/featured-in logo strip, a 3-up 'why our bread is different' feature trio with icons, a full daily menu (Artisan Breads and Pastries columns plus a Cakes & Special Orders grid, each item priced), a 3-step 'how to order' guide (pre-order / call / walk-in), a masonry bakery gallery, a dark stats band, a 3-up 5-star review grid with headshots, an accordion FAQ, a dark 'ready to order' CTA with a bread-basket photo, a visit/contact block with address + hours + contact + parking and a map placeholder, and a footer with social links and a newsletter signup. Use as the ROOT/home page for bakeries, patisseries, sourdough / artisan-bread shops, cafes, pastry kitchens, dessert and cake studios, coffee-and-bake spots, or any local food maker wanting a cozy, premium, conversion-focused site with menu, ordering, gallery and social proof. Supply content only — brand, nav, hero, features, menu, steps, gallery, stats, testimonials, faq, cta, visit, footer; the block owns all layout and styling.",
   props: z.object({
@@ -316,7 +316,7 @@ export const BakeryKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [cartOpen, setCartOpen] = useState(false)
-    const brand = props.brand ?? "Flour & Stone"
+    const brand = props.brand ?? 'Flour & Stone'
 
     const priceAmount = (price: string) => {
       const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ''))
@@ -330,94 +330,172 @@ export const BakeryKimiPage = defineCapsule({
 
     const nav = props.nav?.length
       ? props.nav
-      : ["Menu", "Our Story", "Gallery", "Order", "Visit"]
+      : ['Menu', 'Our Story', 'Gallery', 'Order', 'Visit']
 
-    const heroEyebrow = props.hero?.eyebrow ?? "Est. 2018 — Portland, Oregon"
+    const heroEyebrow = props.hero?.eyebrow ?? 'Est. 2018 — Portland, Oregon'
     const heroHeading =
       props.hero?.heading ??
-      "Artisan breads & pastries baked daily with stone-milled flour"
+      'Artisan breads & pastries baked daily with stone-milled flour'
     const heroSub =
       props.hero?.subheading ??
-      "Every loaf tells a story of slow fermentation, organic grains, and time-honored techniques. From our signature sourdough to buttery croissants, we craft each item with intention and care."
-    const heroPrimary = props.hero?.primaryCta ?? "Order for Pickup"
-    const heroSecondary = props.hero?.secondaryCta ?? "Visit Our Bakery"
-    const heroHours = props.hero?.hoursChip ?? "Open 7am–4pm Daily"
-    const heroAddress = props.hero?.addressChip ?? "1423 Oak Street"
+      'Every loaf tells a story of slow fermentation, organic grains, and time-honored techniques. From our signature sourdough to buttery croissants, we craft each item with intention and care.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Order for Pickup'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Visit Our Bakery'
+    const heroHours = props.hero?.hoursChip ?? 'Open 7am–4pm Daily'
+    const heroAddress = props.hero?.addressChip ?? '1423 Oak Street'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Golden crusty artisan sourdough bread loaves arranged on a wooden cutting board in a sunlit bakery"
-    const heroBadgeTitle = props.hero?.badgeTitle ?? "Certified Organic"
-    const heroBadgeSub = props.hero?.badgeSubtitle ?? "Stone-milled grains"
+      'Golden crusty artisan sourdough bread loaves arranged on a wooden cutting board in a sunlit bakery'
+    const heroBadgeTitle = props.hero?.badgeTitle ?? 'Certified Organic'
+    const heroBadgeSub = props.hero?.badgeSubtitle ?? 'Stone-milled grains'
 
-    const logosLabel = props.logos?.label ?? "Featured in"
+    const logosLabel = props.logos?.label ?? 'Featured in'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
-      : ["Portland Monthly", "Eater PDX", "Bon Appétit", "The Oregonian", "Food & Wine"]
+      : [
+          'Portland Monthly',
+          'Eater PDX',
+          'Bon Appétit',
+          'The Oregonian',
+          'Food & Wine',
+        ]
 
     const featuresHeading =
-      props.features?.heading ?? "Why our bread is different"
+      props.features?.heading ?? 'Why our bread is different'
     const featuresDesc =
       props.features?.description ??
-      "We believe great bread takes time. Our 36-hour fermentation process develops complex flavors that mass-produced bread simply cannot match."
+      'We believe great bread takes time. Our 36-hour fermentation process develops complex flavors that mass-produced bread simply cannot match.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Local Grains",
+            title: 'Local Grains',
             description:
-              "We partner with Camas Country Mill in Eugene for organic wheat, rye, and spelt. Our flour travels less than 100 miles from field to bakery.",
+              'We partner with Camas Country Mill in Eugene for organic wheat, rye, and spelt. Our flour travels less than 100 miles from field to bakery.',
           },
           {
-            title: "Slow Fermentation",
+            title: 'Slow Fermentation',
             description:
-              "Our sourdough levain matures for 12 hours before mixing. Each loaf undergoes a full 36-hour cold ferment for optimal flavor and digestibility.",
+              'Our sourdough levain matures for 12 hours before mixing. Each loaf undergoes a full 36-hour cold ferment for optimal flavor and digestibility.',
           },
           {
-            title: "No Shortcuts",
+            title: 'No Shortcuts',
             description:
-              "No commercial yeast, no dough conditioners, no preservatives. Just flour, water, salt, and time. The way bread has been made for millennia.",
+              'No commercial yeast, no dough conditioners, no preservatives. Just flour, water, salt, and time. The way bread has been made for millennia.',
           },
         ]
 
-    const menuHeading = props.menu?.heading ?? "Our Daily Menu"
+    const menuHeading = props.menu?.heading ?? 'Our Daily Menu'
     const menuDesc =
       props.menu?.description ??
-      "Available from 7am until sold out. Call ahead for large orders or custom cakes."
-    const breadsTitle = props.menu?.breadsTitle ?? "Artisan Breads"
-    const breadsEmoji = props.menu?.breadsEmoji ?? "🍞"
+      'Available from 7am until sold out. Call ahead for large orders or custom cakes.'
+    const breadsTitle = props.menu?.breadsTitle ?? 'Artisan Breads'
+    const breadsEmoji = props.menu?.breadsEmoji ?? '🍞'
     const breads = props.menu?.breads?.length
       ? props.menu.breads
       : [
-          { name: "Country Sourdough", description: "Organic wheat, 36-hour ferment, crispy crust", price: "$9" },
-          { name: "Seeded Multigrain", description: "Sunflower, sesame, flax, and pumpkin seeds", price: "$10" },
-          { name: "Rustic Rye", description: "70% rye flour, caraway, molasses", price: "$9" },
-          { name: "Olive & Herb Fougasse", description: "Kalamata olives, rosemary, sea salt", price: "$8" },
-          { name: "Baguette Tradition", description: "Classic French style, crackling crust", price: "$5" },
-          { name: "Cinnamon Raisin Swirl", description: "Overnight-soaked raisins, Ceylon cinnamon", price: "$10" },
+          {
+            name: 'Country Sourdough',
+            description: 'Organic wheat, 36-hour ferment, crispy crust',
+            price: '$9',
+          },
+          {
+            name: 'Seeded Multigrain',
+            description: 'Sunflower, sesame, flax, and pumpkin seeds',
+            price: '$10',
+          },
+          {
+            name: 'Rustic Rye',
+            description: '70% rye flour, caraway, molasses',
+            price: '$9',
+          },
+          {
+            name: 'Olive & Herb Fougasse',
+            description: 'Kalamata olives, rosemary, sea salt',
+            price: '$8',
+          },
+          {
+            name: 'Baguette Tradition',
+            description: 'Classic French style, crackling crust',
+            price: '$5',
+          },
+          {
+            name: 'Cinnamon Raisin Swirl',
+            description: 'Overnight-soaked raisins, Ceylon cinnamon',
+            price: '$10',
+          },
         ]
-    const pastriesTitle = props.menu?.pastriesTitle ?? "Pastries & Viennoiserie"
-    const pastriesEmoji = props.menu?.pastriesEmoji ?? "🥐"
+    const pastriesTitle = props.menu?.pastriesTitle ?? 'Pastries & Viennoiserie'
+    const pastriesEmoji = props.menu?.pastriesEmoji ?? '🥐'
     const pastries = props.menu?.pastries?.length
       ? props.menu.pastries
       : [
-          { name: "Butter Croissant", description: "Laminated with European-style butter, 27 layers", price: "$4.50" },
-          { name: "Chocolate Almond Croissant", description: "Double-baked with Valrhona chocolate frangipane", price: "$5.50" },
-          { name: "Kouign-Amann", description: "Breton specialty, caramelized sugar crust", price: "$5" },
-          { name: "Morning Bun", description: "Orange zest, cinnamon, caramelized exterior", price: "$4.50" },
-          { name: "Seasonal Fruit Danish", description: "Current: Oregon berry compote with vanilla cream", price: "$5" },
-          { name: "Canelé de Bordeaux", description: "Rum and vanilla custard, dark caramelized shell", price: "$4" },
+          {
+            name: 'Butter Croissant',
+            description: 'Laminated with European-style butter, 27 layers',
+            price: '$4.50',
+          },
+          {
+            name: 'Chocolate Almond Croissant',
+            description: 'Double-baked with Valrhona chocolate frangipane',
+            price: '$5.50',
+          },
+          {
+            name: 'Kouign-Amann',
+            description: 'Breton specialty, caramelized sugar crust',
+            price: '$5',
+          },
+          {
+            name: 'Morning Bun',
+            description: 'Orange zest, cinnamon, caramelized exterior',
+            price: '$4.50',
+          },
+          {
+            name: 'Seasonal Fruit Danish',
+            description: 'Current: Oregon berry compote with vanilla cream',
+            price: '$5',
+          },
+          {
+            name: 'Canelé de Bordeaux',
+            description: 'Rum and vanilla custard, dark caramelized shell',
+            price: '$4',
+          },
         ]
-    const cakesTitle = props.menu?.cakesTitle ?? "Cakes & Special Orders"
-    const cakesEmoji = props.menu?.cakesEmoji ?? "🎂"
+    const cakesTitle = props.menu?.cakesTitle ?? 'Cakes & Special Orders'
+    const cakesEmoji = props.menu?.cakesEmoji ?? '🎂'
     const cakes = props.menu?.cakes?.length
       ? props.menu.cakes
       : [
-          { name: "Whole Wheat Sandwich Loaf", description: "Soft crumb, honey-sweetened, sliced", price: "$7" },
-          { name: "Brioche Hamburger Buns (4)", description: "Buttery, sesame-crusted, bakery favorite", price: "$8" },
-          { name: "Flourless Chocolate Cake", description: "6-inch, ganache glaze (48hr notice)", price: "$38" },
-          { name: "Tarte Tatin", description: "Caramelized apple, puff pastry (weekends only)", price: "$32" },
-          { name: "Seasonal Fruit Galette", description: "9-inch, rustic free-form tart", price: "$28" },
-          { name: "Custom Celebration Cake", description: "Consultation required, 1 week notice", price: "From $75" },
+          {
+            name: 'Whole Wheat Sandwich Loaf',
+            description: 'Soft crumb, honey-sweetened, sliced',
+            price: '$7',
+          },
+          {
+            name: 'Brioche Hamburger Buns (4)',
+            description: 'Buttery, sesame-crusted, bakery favorite',
+            price: '$8',
+          },
+          {
+            name: 'Flourless Chocolate Cake',
+            description: '6-inch, ganache glaze (48hr notice)',
+            price: '$38',
+          },
+          {
+            name: 'Tarte Tatin',
+            description: 'Caramelized apple, puff pastry (weekends only)',
+            price: '$32',
+          },
+          {
+            name: 'Seasonal Fruit Galette',
+            description: '9-inch, rustic free-form tart',
+            price: '$28',
+          },
+          {
+            name: 'Custom Celebration Cake',
+            description: 'Consultation required, 1 week notice',
+            price: 'From $75',
+          },
         ]
 
     // Lakebed hooks
@@ -476,9 +554,15 @@ export const BakeryKimiPage = defineCapsule({
         : normalizedMenuItems
 
     // Group display menu items by category
-    const displayBreads = displayMenuItems.filter((item) => item.category === 'breads')
-    const displayPastries = displayMenuItems.filter((item) => item.category === 'pastries')
-    const displayCakes = displayMenuItems.filter((item) => item.category === 'cakes')
+    const displayBreads = displayMenuItems.filter(
+      (item) => item.category === 'breads',
+    )
+    const displayPastries = displayMenuItems.filter(
+      (item) => item.category === 'pastries',
+    )
+    const displayCakes = displayMenuItems.filter(
+      (item) => item.category === 'cakes',
+    )
 
     // Cart calculations
     const safeCartLines = cartLines ?? []
@@ -492,197 +576,203 @@ export const BakeryKimiPage = defineCapsule({
     )
     const cartTotal = cartSubtotal
 
-    const stepsHeading = props.steps?.heading ?? "How to order"
+    const stepsHeading = props.steps?.heading ?? 'How to order'
     const stepsDesc =
       props.steps?.description ??
-      "Three simple ways to get your hands on fresh bread."
+      'Three simple ways to get your hands on fresh bread.'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Pre-order online",
+            title: 'Pre-order online',
             description:
-              "Reserve your favorites by 6pm the day before. Pick up anytime during business hours. Guaranteed availability.",
-            note: "Best for: Large orders, special items, busy weekends",
+              'Reserve your favorites by 6pm the day before. Pick up anytime during business hours. Guaranteed availability.',
+            note: 'Best for: Large orders, special items, busy weekends',
           },
           {
-            title: "Call ahead",
+            title: 'Call ahead',
             description:
-              "Phone in your order for same-day pickup. We set aside your items and have them ready at the counter.",
-            note: "(503) 555-0142",
+              'Phone in your order for same-day pickup. We set aside your items and have them ready at the counter.',
+            note: '(503) 555-0142',
           },
           {
-            title: "Walk in",
+            title: 'Walk in',
             description:
-              "Visit us at 1423 Oak Street. First come, first served. Popular items often sell out by midday.",
-            note: "Open 7am–4pm daily",
+              'Visit us at 1423 Oak Street. First come, first served. Popular items often sell out by midday.',
+            note: 'Open 7am–4pm daily',
           },
         ]
 
-    const galleryHeading = props.gallery?.heading ?? "Inside the bakery"
+    const galleryHeading = props.gallery?.heading ?? 'Inside the bakery'
     const galleryDesc =
       props.gallery?.description ??
-      "A glimpse into our daily process, from mixing to the final loaf."
+      'A glimpse into our daily process, from mixing to the final loaf.'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
           "Baker's hands shaping round sourdough bread boules on a floured wooden work surface",
-          "Close-up of golden brown artisan bread crust showing detailed scoring pattern",
-          "Rows of fresh buttery croissants cooling on a wire rack in a bakery kitchen",
-          "Rustic bakery interior with wooden shelves displaying various artisan bread loaves",
-          "Freshly baked sourdough bread loaves with dark crusty exterior arranged on linen",
-          "Baker mixing bread dough in a large stainless steel bowl with flour",
-          "Assorted colorful French macarons displayed in a glass case at a pastry shop",
-          "Decorated layered chocolate cake with frosting and fresh berries on a cake stand",
+          'Close-up of golden brown artisan bread crust showing detailed scoring pattern',
+          'Rows of fresh buttery croissants cooling on a wire rack in a bakery kitchen',
+          'Rustic bakery interior with wooden shelves displaying various artisan bread loaves',
+          'Freshly baked sourdough bread loaves with dark crusty exterior arranged on linen',
+          'Baker mixing bread dough in a large stainless steel bowl with flour',
+          'Assorted colorful French macarons displayed in a glass case at a pastry shop',
+          'Decorated layered chocolate cake with frosting and fresh berries on a cake stand',
         ]
 
     const statItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "6+", label: "Years baking" },
-          { value: "200+", label: "Loaves daily" },
-          { value: "36", label: "Hour ferment" },
-          { value: "3", label: "Local grain farms" },
+          { value: '6+', label: 'Years baking' },
+          { value: '200+', label: 'Loaves daily' },
+          { value: '36', label: 'Hour ferment' },
+          { value: '3', label: 'Local grain farms' },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What our neighbors say"
+      props.testimonials?.heading ?? 'What our neighbors say'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Reviews from regulars who make Flour & Stone part of their routine."
+      'Reviews from regulars who make Flour & Stone part of their routine.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
               "I've been coming here every Saturday for three years. The seeded multigrain is the only bread my kids will eat. You can taste the difference real fermentation makes.",
-            name: "Sarah Chen",
-            role: "Regular since 2021",
+            name: 'Sarah Chen',
+            role: 'Regular since 2021',
             avatarAlt:
-              "Professional headshot of a smiling woman with shoulder-length brown hair",
+              'Professional headshot of a smiling woman with shoulder-length brown hair',
           },
           {
             quote:
               "Ordered a custom cake for my daughter's birthday. Not only was it beautiful, but the flavor was incredible. The flourless chocolate cake is now our family tradition.",
-            name: "Marcus Thompson",
-            role: "Catering client",
+            name: 'Marcus Thompson',
+            role: 'Catering client',
             avatarAlt:
-              "Professional headshot of a smiling middle-aged man with glasses and short gray hair",
+              'Professional headshot of a smiling middle-aged man with glasses and short gray hair',
           },
           {
             quote:
               "As a chef myself, I'm picky about bread. This is the real deal. The fermentation, the crust, the chew—everything is textbook perfect. I send all my friends here.",
-            name: "Elena Rodriguez",
-            role: "Chef at La Maison",
+            name: 'Elena Rodriguez',
+            role: 'Chef at La Maison',
             avatarAlt:
-              "Professional headshot of a smiling woman with curly dark hair wearing a white chef coat",
+              'Professional headshot of a smiling woman with curly dark hair wearing a white chef coat',
           },
         ]
 
-    const faqHeading = props.faq?.heading ?? "Common questions"
+    const faqHeading = props.faq?.heading ?? 'Common questions'
     const faqDesc =
       props.faq?.description ??
-      "Quick answers to the questions we hear most often."
+      'Quick answers to the questions we hear most often.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "Do I need to pre-order, or can I just walk in?",
+            question: 'Do I need to pre-order, or can I just walk in?',
             answer:
-              "Walk-ins are always welcome! However, popular items like our kouign-amann and chocolate almond croissants often sell out by 10am on weekends. For large orders (6+ items) or special cakes, we recommend pre-ordering online or calling ahead.",
+              'Walk-ins are always welcome! However, popular items like our kouign-amann and chocolate almond croissants often sell out by 10am on weekends. For large orders (6+ items) or special cakes, we recommend pre-ordering online or calling ahead.',
           },
           {
-            question: "How far in advance should I order a custom cake?",
+            question: 'How far in advance should I order a custom cake?',
             answer:
               "We require at least one week's notice for custom celebration cakes. During holiday periods (Thanksgiving, Christmas, Valentine's Day), we recommend booking 2-3 weeks ahead as our calendar fills quickly.",
           },
           {
-            question: "Do you offer gluten-free or vegan options?",
+            question: 'Do you offer gluten-free or vegan options?',
             answer:
               "We bake a limited selection of gluten-free items daily—check our online menu for today's offerings. Please note that all products are made in a facility that processes wheat, so we cannot guarantee items are celiac-safe. We do not currently offer vegan pastries.",
           },
           {
-            question: "Can you deliver or ship bread?",
+            question: 'Can you deliver or ship bread?',
             answer:
               "We offer local delivery within 5 miles of the bakery for orders over $50. Unfortunately, we do not ship bread—freshness is too important to us. If you're visiting from out of town, grab a loaf to take home; most breads keep well for 3-4 days or freeze beautifully.",
           },
           {
-            question: "Do you wholesale to restaurants?",
+            question: 'Do you wholesale to restaurants?',
             answer:
               "Yes, we partner with a select group of local restaurants and cafes. Our wholesale clients include Tusk, Ava Gene's, and Coquine. For wholesale inquiries, please email us at wholesale@flourandstone.com with details about your establishment and volume needs.",
           },
           {
             question: "What's the best way to store your bread?",
             answer:
-              "Keep your loaf cut-side down on a cutting board (uncovered) for up to 3 days. For longer storage, wrap tightly in plastic and freeze for up to 3 months. Never refrigerate bread—it accelerates staling. To revive a loaf, spritz with water and bake at 375°F for 8-10 minutes.",
+              'Keep your loaf cut-side down on a cutting board (uncovered) for up to 3 days. For longer storage, wrap tightly in plastic and freeze for up to 3 months. Never refrigerate bread—it accelerates staling. To revive a loaf, spritz with water and bake at 375°F for 8-10 minutes.',
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to order?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to order?'
     const ctaDesc =
       props.cta?.description ??
-      "Pre-order by 6pm today for guaranteed pickup tomorrow. Skip the line and reserve your favorites."
-    const ctaButton = props.cta?.button ?? "Start Your Order"
-    const ctaPhoneLabel = props.cta?.phoneLabel ?? "or call us at"
-    const ctaPhone = props.cta?.phone ?? "(503) 555-0142"
+      'Pre-order by 6pm today for guaranteed pickup tomorrow. Skip the line and reserve your favorites.'
+    const ctaButton = props.cta?.button ?? 'Start Your Order'
+    const ctaPhoneLabel = props.cta?.phoneLabel ?? 'or call us at'
+    const ctaPhone = props.cta?.phone ?? '(503) 555-0142'
     const ctaImageAlt =
       props.cta?.imageAlt ??
-      "Wicker basket filled with assorted fresh artisan breads on a bakery counter"
+      'Wicker basket filled with assorted fresh artisan breads on a bakery counter'
 
-    const visitHeading = props.visit?.heading ?? "Visit us"
+    const visitHeading = props.visit?.heading ?? 'Visit us'
     const visitItems = props.visit?.items?.length
       ? props.visit.items
       : [
           {
-            title: "Address",
+            title: 'Address',
             lines: [
-              "1423 Oak Street",
-              "Portland, OR 97205",
-              "Corner of Oak & 15th, Buckman neighborhood",
+              '1423 Oak Street',
+              'Portland, OR 97205',
+              'Corner of Oak & 15th, Buckman neighborhood',
             ],
           },
           {
-            title: "Hours",
+            title: 'Hours',
             lines: [
-              "Tuesday–Sunday: 7am – 4pm",
-              "Monday: Closed",
-              "Kitchen opens at 6am for prep",
+              'Tuesday–Sunday: 7am – 4pm',
+              'Monday: Closed',
+              'Kitchen opens at 6am for prep',
             ],
           },
           {
-            title: "Contact",
-            lines: ["(503) 555-0142", "hello@flourandstone.com"],
+            title: 'Contact',
+            lines: ['(503) 555-0142', 'hello@flourandstone.com'],
           },
           {
-            title: "Parking",
+            title: 'Parking',
             lines: [
-              "Street parking available on Oak St. and 15th Ave.",
-              "Free 2-hour parking in the lot behind the building.",
+              'Street parking available on Oak St. and 15th Ave.',
+              'Free 2-hour parking in the lot behind the building.',
             ],
           },
         ]
-    const mapLabel = props.visit?.mapLabel ?? "Map placeholder"
-    const mapSub = props.visit?.mapSub ?? "1423 Oak Street, Portland, OR"
+    const mapLabel = props.visit?.mapLabel ?? 'Map placeholder'
+    const mapSub = props.visit?.mapSub ?? '1423 Oak Street, Portland, OR'
 
     const footerTagline =
       props.footer?.tagline ??
-      "Artisan breads and pastries baked daily in Portland, Oregon since 2018."
+      'Artisan breads and pastries baked daily in Portland, Oregon since 2018.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
-          { title: "Shop", links: ["Daily Menu", "Special Orders", "Wholesale", "Gift Cards"] },
-          { title: "Company", links: ["Our Story", "Grain Partners", "Careers", "Press"] },
+          {
+            title: 'Shop',
+            links: ['Daily Menu', 'Special Orders', 'Wholesale', 'Gift Cards'],
+          },
+          {
+            title: 'Company',
+            links: ['Our Story', 'Grain Partners', 'Careers', 'Press'],
+          },
         ]
-    const newsletterTitle = props.footer?.newsletterTitle ?? "Newsletter"
+    const newsletterTitle = props.footer?.newsletterTitle ?? 'Newsletter'
     const newsletterText =
-      props.footer?.newsletterText ?? "Get weekly menu updates and baking tips."
-    const newsletterCta = props.footer?.newsletterCta ?? "Join"
+      props.footer?.newsletterText ?? 'Get weekly menu updates and baking tips.'
+    const newsletterCta = props.footer?.newsletterCta ?? 'Join'
     const copyright =
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand} Bakery. All rights reserved.`
     const legalLinks = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service"]
+      : ['Privacy Policy', 'Terms of Service']
 
     const ArrowRight = () => (
       <svg
@@ -836,20 +926,6 @@ export const BakeryKimiPage = defineCapsule({
       </div>
     )
 
-    const PriceRow = ({
-      item,
-    }: {
-      item: { name: string; description: string; price: string }
-    }) => (
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h4 className="font-semibold text-card-foreground">{item.name}</h4>
-          <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
-        </div>
-        <span className="font-semibold text-card-foreground">{item.price}</span>
-      </div>
-    )
-
     const HeartIcon = ({ active = false }: { active?: boolean }) => (
       <svg
         className={cn(
@@ -886,7 +962,7 @@ export const BakeryKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -1065,7 +1141,11 @@ export const BakeryKimiPage = defineCapsule({
                             >
                               <div className="aspect-square overflow-hidden rounded-lg bg-muted">
                                 <div className="flex h-full w-full items-center justify-center text-4xl">
-                                  {item.menuItem.category === 'breads' ? '🍞' : item.menuItem.category === 'pastries' ? '🥐' : '🎂'}
+                                  {item.menuItem.category === 'breads'
+                                    ? '🍞'
+                                    : item.menuItem.category === 'pastries'
+                                      ? '🥐'
+                                      : '🎂'}
                                 </div>
                               </div>
                               <div className="min-w-0">
@@ -1303,7 +1383,7 @@ export const BakeryKimiPage = defineCapsule({
                   <div className="flex flex-wrap gap-4">
                     <button
                       type="button"
-                      onClick={() => go("Order")}
+                      onClick={() => go('Order')}
                       className="inline-flex items-center rounded-lg bg-foreground px-6 py-3 font-medium text-background transition-colors hover:bg-foreground/90"
                     >
                       {heroPrimary}
@@ -1313,7 +1393,7 @@ export const BakeryKimiPage = defineCapsule({
                     </button>
                     <button
                       type="button"
-                      onClick={() => go("Visit")}
+                      onClick={() => go('Visit')}
                       className="inline-flex items-center rounded-lg border border-border px-6 py-3 font-medium text-foreground transition-colors hover:bg-card"
                     >
                       {heroSecondary}
@@ -1444,10 +1524,15 @@ export const BakeryKimiPage = defineCapsule({
                       const isFavorite =
                         favoriteMenuItemNames?.has(item.name) ?? false
                       return (
-                        <div key={item.name} className="flex items-start justify-between gap-4">
+                        <div
+                          key={item.name}
+                          className="flex items-start justify-between gap-4"
+                        >
                           <div className="flex-1">
                             <div className="flex items-start justify-between gap-2">
-                              <h4 className="font-semibold text-card-foreground">{item.name}</h4>
+                              <h4 className="font-semibold text-card-foreground">
+                                {item.name}
+                              </h4>
                               <button
                                 type="button"
                                 onClick={() => void toggleFavorite(item.name)}
@@ -1467,10 +1552,14 @@ export const BakeryKimiPage = defineCapsule({
                                 <HeartIcon active={isFavorite} />
                               </button>
                             </div>
-                            <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                              {item.description}
+                            </p>
                           </div>
                           <div className="flex flex-col items-end gap-2">
-                            <span className="font-semibold text-card-foreground">{item.price}</span>
+                            <span className="font-semibold text-card-foreground">
+                              {item.price}
+                            </span>
                             <Button
                               type="button"
                               size="sm"
@@ -1502,10 +1591,15 @@ export const BakeryKimiPage = defineCapsule({
                       const isFavorite =
                         favoriteMenuItemNames?.has(item.name) ?? false
                       return (
-                        <div key={item.name} className="flex items-start justify-between gap-4">
+                        <div
+                          key={item.name}
+                          className="flex items-start justify-between gap-4"
+                        >
                           <div className="flex-1">
                             <div className="flex items-start justify-between gap-2">
-                              <h4 className="font-semibold text-card-foreground">{item.name}</h4>
+                              <h4 className="font-semibold text-card-foreground">
+                                {item.name}
+                              </h4>
                               <button
                                 type="button"
                                 onClick={() => void toggleFavorite(item.name)}
@@ -1525,10 +1619,14 @@ export const BakeryKimiPage = defineCapsule({
                                 <HeartIcon active={isFavorite} />
                               </button>
                             </div>
-                            <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                              {item.description}
+                            </p>
                           </div>
                           <div className="flex flex-col items-end gap-2">
-                            <span className="font-semibold text-card-foreground">{item.price}</span>
+                            <span className="font-semibold text-card-foreground">
+                              {item.price}
+                            </span>
                             <Button
                               type="button"
                               size="sm"
@@ -1563,7 +1661,9 @@ export const BakeryKimiPage = defineCapsule({
                     return (
                       <div key={item.name} className="flex flex-col gap-2">
                         <div className="flex items-start justify-between gap-2">
-                          <h4 className="font-semibold text-card-foreground">{item.name}</h4>
+                          <h4 className="font-semibold text-card-foreground">
+                            {item.name}
+                          </h4>
                           <button
                             type="button"
                             onClick={() => void toggleFavorite(item.name)}
@@ -1583,9 +1683,13 @@ export const BakeryKimiPage = defineCapsule({
                             <HeartIcon active={isFavorite} />
                           </button>
                         </div>
-                        <p className="text-sm text-muted-foreground">{item.description}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {item.description}
+                        </p>
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-semibold text-card-foreground">{item.price}</span>
+                          <span className="font-semibold text-card-foreground">
+                            {item.price}
+                          </span>
                           <Button
                             type="button"
                             size="sm"
@@ -1620,7 +1724,7 @@ export const BakeryKimiPage = defineCapsule({
                 {stepItems.map((step, i) => (
                   <div key={step.title} className="relative">
                     <div className="absolute -left-2 -top-4 text-6xl font-bold text-muted">
-                      {String(i + 1).padStart(2, "0")}
+                      {String(i + 1).padStart(2, '0')}
                     </div>
                     <div className="relative h-full rounded-xl bg-muted p-8">
                       <div className="mb-6 grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">
@@ -1655,13 +1759,13 @@ export const BakeryKimiPage = defineCapsule({
                 {[0, 1, 2, 3].map((col) => (
                   <div key={col} className="space-y-4">
                     <Image
-                      alt={galleryItems[col * 2 % galleryItems.length]}
+                      alt={galleryItems[(col * 2) % galleryItems.length]}
                       w={400}
                       h={500}
                       loading="lazy"
                       className={cn(
-                        "w-full rounded-xl object-cover",
-                        col % 2 === 0 ? "h-64" : "h-48",
+                        'w-full rounded-xl object-cover',
+                        col % 2 === 0 ? 'h-64' : 'h-48',
                       )}
                     />
                     <Image
@@ -1670,8 +1774,8 @@ export const BakeryKimiPage = defineCapsule({
                       h={col % 2 === 0 ? 300 : 500}
                       loading="lazy"
                       className={cn(
-                        "w-full rounded-xl object-cover",
-                        col % 2 === 0 ? "h-48" : "h-64",
+                        'w-full rounded-xl object-cover',
+                        col % 2 === 0 ? 'h-48' : 'h-64',
                       )}
                     />
                   </div>
@@ -1722,8 +1826,12 @@ export const BakeryKimiPage = defineCapsule({
                         className="size-12 rounded-full object-cover"
                       />
                       <div>
-                        <p className="font-semibold text-foreground">{t.name}</p>
-                        <p className="text-sm text-muted-foreground">{t.role}</p>
+                        <p className="font-semibold text-foreground">
+                          {t.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {t.role}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1791,7 +1899,7 @@ export const BakeryKimiPage = defineCapsule({
                     <div className="space-y-4">
                       <button
                         type="button"
-                        onClick={() => go("Order")}
+                        onClick={() => go('Order')}
                         className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:w-auto"
                       >
                         <span className="mr-2">
@@ -1812,7 +1920,7 @@ export const BakeryKimiPage = defineCapsule({
                         {ctaButton}
                       </button>
                       <p className="text-sm text-background/60">
-                        {ctaPhoneLabel}{" "}
+                        {ctaPhoneLabel}{' '}
                         <button
                           type="button"
                           onClick={() => go(ctaPhone)}
@@ -1858,7 +1966,10 @@ export const BakeryKimiPage = defineCapsule({
                         <InfoIcon key="i" />,
                       ]
                       return (
-                        <div key={item.title} className="flex items-start gap-4">
+                        <div
+                          key={item.title}
+                          className="flex items-start gap-4"
+                        >
                           <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
                             {visitIcons[i % visitIcons.length]}
                           </div>
@@ -1870,9 +1981,10 @@ export const BakeryKimiPage = defineCapsule({
                               <p
                                 key={line}
                                 className={cn(
-                                  li === item.lines.length - 1 && item.lines.length > 1
-                                    ? "mt-1 text-sm text-muted-foreground"
-                                    : "text-muted-foreground",
+                                  li === item.lines.length - 1 &&
+                                    item.lines.length > 1
+                                    ? 'mt-1 text-sm text-muted-foreground'
+                                    : 'text-muted-foreground',
                                 )}
                               >
                                 {line}
@@ -1921,7 +2033,7 @@ export const BakeryKimiPage = defineCapsule({
                 </span>
                 <p className="mt-4 text-sm leading-relaxed">{footerTagline}</p>
                 <div className="mt-6 flex gap-4">
-                  {(["Instagram", "Facebook"] as const).map((social) => (
+                  {(['Instagram', 'Facebook'] as const).map((social) => (
                     <button
                       key={social}
                       type="button"
@@ -1929,7 +2041,7 @@ export const BakeryKimiPage = defineCapsule({
                       onClick={() => go(social)}
                       className="grid size-10 place-items-center rounded-lg bg-background/10 text-background transition-colors hover:bg-background/20"
                     >
-                      {social === "Instagram" ? (
+                      {social === 'Instagram' ? (
                         <svg
                           width="20"
                           height="20"

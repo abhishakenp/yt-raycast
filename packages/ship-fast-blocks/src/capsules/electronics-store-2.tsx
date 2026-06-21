@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   CommandDialog,
@@ -45,7 +45,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
  * with heavy product density, bundle upsells, and social proof is wanted.
  */
 export const ElectronicsStoreKimiPage2 = defineCapsule({
-  name: "ElectronicsStoreKimiPage2",
+  name: 'ElectronicsStoreKimiPage2',
   description:
     "A dark, high-contrast electronics and gadgets e-commerce STOREFRONT / home page block that is the second style sibling to ElectronicsStoreKimiPage, offering a moody, immersive dark aesthetic rather than the clean light canvas of the first variant. Features a sticky navbar with search, cart and Shop Now CTA, a split hero with an animated 'Summer Tech Sale Live' pulse badge, bold gradient headline, dual CTAs and a social-proof avatar stack with star ratings and customer count, a hero image with a floating 'Free Express Shipping' guarantee card, a trusted-tech-brand logo strip (Apple, Samsung, Sony, Bose, Logitech, Nvidia), a 4-up benefits grid (Free Fast Shipping, 2-Year Warranty, 30-Day Returns, 24/7 Expert Support), a high-contrast stats band (50K+ shipped, 12.4K customers, 4.9/5 rating, 24h support), an 8-product deals grid with discount badges, category tags, star ratings and floating add-to-cart buttons (Sony WH-1000XM5, Apple Watch, Keychron, Galaxy S25 Ultra, iPad Pro, Bose QC Ultra, Meta Quest 3, JBL Flip 6), a 3-tier bundle pricing section with a highlighted Creator Pro 'Most Popular' tier and checklist features, a 4-step numbered How It Works flow with a connecting gradient line, a 3-up verified-buyer testimonials row with 5-star ratings and avatars, a 6-item FAQ accordion, a vibrant newsletter CTA with email capture form, and a multi-column footer with brand story, social links (Twitter, Instagram, YouTube, Discord), Shop / Support / Company columns, copyright and payment method imagery. All nav items, CTAs, footer links and form submits route through useNavigate. Surfaces map strictly to semantic tokens so the block is theme-injectable later.",
   props: z.object({
@@ -295,8 +295,8 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
     const [searchOpen, setSearchOpen] = useState(false)
     const [cartOpen, setCartOpen] = useState(false)
 
-    const priceAmount = (price: string) => {
-      const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ''))
+    const priceAmount = (price: string | undefined) => {
+      const amount = Number.parseFloat((price ?? '').replace(/[^0-9.]+/g, ''))
       return Number.isFinite(amount) ? amount : 0
     }
     const formatCurrency = (amount: number) =>
@@ -305,159 +305,158 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
         style: 'currency',
       }).format(amount)
 
-    const brand = props.brand ?? "VoltCity"
+    const brand = props.brand ?? 'VoltCity'
     const nav = props.nav?.length
       ? props.nav
-      : ["Deals", "Products", "How It Works", "Reviews", "FAQ"]
+      : ['Deals', 'Products', 'How It Works', 'Reviews', 'FAQ']
 
-    const heroBadge = props.hero?.badge ?? "Summer Tech Sale Live"
-    const heroHeading = props.hero?.heading ?? "Power Up Your"
-    const heroHighlight = props.hero?.highlight ?? "Digital Life"
+    const heroBadge = props.hero?.badge ?? 'Summer Tech Sale Live'
+    const heroHeading = props.hero?.heading ?? 'Power Up Your'
+    const heroHighlight = props.hero?.highlight ?? 'Digital Life'
     const heroSub =
       props.hero?.subheading ??
-      "Discover cutting-edge gadgets, premium audio, smart home tech, and gaming gear. Up to 60% off flagship devices through June 15."
-    const heroPrimary = props.hero?.primaryCta ?? "Shop Deals"
-    const heroSecondary = props.hero?.secondaryCta ?? "Learn More"
+      'Discover cutting-edge gadgets, premium audio, smart home tech, and gaming gear. Up to 60% off flagship devices through June 15.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Shop Deals'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Learn More'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "collection of modern electronics and gadgets arranged on a dark surface"
-    const heroFloatTitle = props.hero?.floatTitle ?? "Free Express Shipping"
-    const heroFloatDesc = props.hero?.floatDesc ?? "On orders over $99"
+      'collection of modern electronics and gadgets arranged on a dark surface'
+    const heroFloatTitle = props.hero?.floatTitle ?? 'Free Express Shipping'
+    const heroFloatDesc = props.hero?.floatDesc ?? 'On orders over $99'
 
     const logosCaption =
-      props.logos?.caption ?? "Trusted by leading tech brands"
+      props.logos?.caption ?? 'Trusted by leading tech brands'
     const logoBrands = props.logos?.brands?.length
       ? props.logos.brands
-      : ["Apple", "Samsung", "Sony", "Bose", "Logitech", "Nvidia"]
+      : ['Apple', 'Samsung', 'Sony', 'Bose', 'Logitech', 'Nvidia']
 
     const features = props.features?.length
       ? props.features
       : [
           {
-            title: "Free Fast Shipping",
+            title: 'Free Fast Shipping',
             description:
-              "Free 2-day express on orders over $99. Same-day delivery available in 40+ metro areas.",
+              'Free 2-day express on orders over $99. Same-day delivery available in 40+ metro areas.',
           },
           {
-            title: "2-Year Warranty",
+            title: '2-Year Warranty',
             description:
-              "Every product comes with our hassle-free 2-year warranty. No questions asked replacements.",
+              'Every product comes with our hassle-free 2-year warranty. No questions asked replacements.',
           },
           {
-            title: "30-Day Returns",
+            title: '30-Day Returns',
             description:
-              "Changed your mind? Return any item within 30 days for a full refund. We even cover return shipping.",
+              'Changed your mind? Return any item within 30 days for a full refund. We even cover return shipping.',
           },
           {
-            title: "24/7 Expert Support",
+            title: '24/7 Expert Support',
             description:
-              "Our tech-savvy support team is available round the clock via chat, email, or phone.",
+              'Our tech-savvy support team is available round the clock via chat, email, or phone.',
           },
         ]
 
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "50K+", label: "Products Shipped" },
-          { value: "12.4K", label: "Happy Customers" },
-          { value: "4.9/5", label: "Average Rating" },
-          { value: "24h", label: "Support Response" },
+          { value: '50K+', label: 'Products Shipped' },
+          { value: '12.4K', label: 'Happy Customers' },
+          { value: '4.9/5', label: 'Average Rating' },
+          { value: '24h', label: 'Support Response' },
         ]
 
     const productsHeading = props.products?.heading ?? "This Week's Deals"
     const productsSub =
       props.products?.subheading ??
-      "Hand-picked discounts on premium tech. Sale ends June 15, 2026."
-    const productsViewAll = props.products?.viewAll ?? "View All Products"
+      'Hand-picked discounts on premium tech. Sale ends June 15, 2026.'
+    const productsViewAll = props.products?.viewAll ?? 'View All Products'
     const productItems = props.products?.items?.length
       ? props.products.items
       : [
           {
-            category: "Audio",
-            title: "Sony WH-1000XM5",
-            description: "Industry-leading noise canceling wireless headphones",
-            price: "$279",
-            originalPrice: "$429",
-            discount: "-35%",
-            rating: "4.8",
+            category: 'Audio',
+            title: 'Sony WH-1000XM5',
+            description: 'Industry-leading noise canceling wireless headphones',
+            price: '$279',
+            originalPrice: '$429',
+            discount: '-35%',
+            rating: '4.8',
             imageAlt:
-              "over-ear wireless headphones with matte black finish and cushioned ear cups",
+              'over-ear wireless headphones with matte black finish and cushioned ear cups',
           },
           {
-            category: "Wearables",
-            title: "Apple Watch Series 10",
-            description: "Advanced health sensors, always-on Retina display",
-            price: "$299",
-            originalPrice: "$399",
-            discount: "-25%",
-            rating: "4.9",
+            category: 'Wearables',
+            title: 'Apple Watch Series 10',
+            description: 'Advanced health sensors, always-on Retina display',
+            price: '$299',
+            originalPrice: '$399',
+            discount: '-25%',
+            rating: '4.9',
             imageAlt:
-              "white smartwatch with round face and silicone band displayed on wrist",
+              'white smartwatch with round face and silicone band displayed on wrist',
           },
           {
-            category: "Gaming",
-            title: "Keychron Q1 Pro",
-            description: "Wireless custom mechanical keyboard, QMK/VIA",
-            price: "$119",
-            originalPrice: "$199",
-            discount: "-40%",
-            rating: "4.7",
+            category: 'Gaming',
+            title: 'Keychron Q1 Pro',
+            description: 'Wireless custom mechanical keyboard, QMK/VIA',
+            price: '$119',
+            originalPrice: '$199',
+            discount: '-40%',
+            rating: '4.7',
             imageAlt:
-              "compact mechanical gaming keyboard with RGB backlighting",
+              'compact mechanical gaming keyboard with RGB backlighting',
           },
           {
-            category: "Smartphones",
-            title: "Galaxy S25 Ultra",
-            description: "200MP camera, S Pen, titanium frame, AI powered",
-            price: "$1,039",
-            originalPrice: "$1,299",
-            discount: "-20%",
-            rating: "4.8",
+            category: 'Smartphones',
+            title: 'Galaxy S25 Ultra',
+            description: '200MP camera, S Pen, titanium frame, AI powered',
+            price: '$1,039',
+            originalPrice: '$1,299',
+            discount: '-20%',
+            rating: '4.8',
             imageAlt:
-              "modern smartphone with edge-to-edge OLED display showing colorful wallpaper",
+              'modern smartphone with edge-to-edge OLED display showing colorful wallpaper',
           },
           {
-            category: "Tablets",
+            category: 'Tablets',
             title: 'iPad Pro 13" M4',
-            description: "Ultra Retina XDR, M4 chip, professional creativity",
-            price: "$909",
-            originalPrice: "$1,299",
-            discount: "-30%",
-            rating: "4.9",
-            imageAlt: "sleek tablet with stylus pen on a wooden desk",
+            description: 'Ultra Retina XDR, M4 chip, professional creativity',
+            price: '$909',
+            originalPrice: '$1,299',
+            discount: '-30%',
+            rating: '4.9',
+            imageAlt: 'sleek tablet with stylus pen on a wooden desk',
           },
           {
-            category: "Audio",
-            title: "Bose QuietComfort Ultra",
-            description: "Spatial audio, world-class noise cancellation",
-            price: "$164",
-            originalPrice: "$299",
-            discount: "-45%",
-            rating: "4.6",
+            category: 'Audio',
+            title: 'Bose QuietComfort Ultra',
+            description: 'Spatial audio, world-class noise cancellation',
+            price: '$164',
+            originalPrice: '$299',
+            discount: '-45%',
+            rating: '4.6',
             imageAlt:
-              "wireless earbuds in an open charging case with LED indicator",
+              'wireless earbuds in an open charging case with LED indicator',
           },
           {
-            category: "VR",
-            title: "Meta Quest 3",
-            description:
-              "Mixed reality, 4K+ Infinite Display, Snapdragon XR2",
-            price: "$424",
-            originalPrice: "$499",
-            discount: "-15%",
-            rating: "4.7",
-            imageAlt: "VR headset with controllers on a dark background",
+            category: 'VR',
+            title: 'Meta Quest 3',
+            description: 'Mixed reality, 4K+ Infinite Display, Snapdragon XR2',
+            price: '$424',
+            originalPrice: '$499',
+            discount: '-15%',
+            rating: '4.7',
+            imageAlt: 'VR headset with controllers on a dark background',
           },
           {
-            category: "Audio",
-            title: "JBL Flip 6",
-            description: "Waterproof portable speaker, 12 hours playtime",
-            price: "$64",
-            originalPrice: "$129",
-            discount: "-50%",
-            rating: "4.5",
+            category: 'Audio',
+            title: 'JBL Flip 6',
+            description: 'Waterproof portable speaker, 12 hours playtime',
+            price: '$64',
+            originalPrice: '$129',
+            discount: '-50%',
+            rating: '4.5',
             imageAlt:
-              "portable bluetooth speaker with cylindrical shape and fabric mesh exterior",
+              'portable bluetooth speaker with cylindrical shape and fabric mesh exterior',
           },
         ]
 
@@ -506,10 +505,20 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
     const handleSignOut = () => {
       lakebed.signOut()
     }
-    const displayProducts =
+    const displayProducts = (
       storedProducts && storedProducts.length > 0
         ? storedProducts
         : normalizedProductItems
+    ).map((product) => ({
+      category: product.category ?? '',
+      title: product.title ?? '',
+      description: product.description ?? '',
+      price: product.price ?? '',
+      originalPrice: product.originalPrice ?? '',
+      discount: product.discount ?? '',
+      rating: product.rating ?? '',
+      imageAlt: product.imageAlt ?? '',
+    }))
     const safeCartLines = cartLines ?? []
     const cartItemCount = safeCartLines.reduce(
       (total, item) => total + item.quantity,
@@ -522,200 +531,200 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
     const shipping = cartSubtotal > 0 && cartSubtotal < 99 ? 12 : 0
     const cartTotal = cartSubtotal + shipping
 
-    const bundlesHeading = props.bundles?.heading ?? "Bundle & Save"
+    const bundlesHeading = props.bundles?.heading ?? 'Bundle & Save'
     const bundlesSub =
       props.bundles?.subheading ??
-      "Curated tech bundles at unbeatable prices. Perfect for upgrading your setup."
+      'Curated tech bundles at unbeatable prices. Perfect for upgrading your setup.'
     const bundleItems = props.bundles?.items?.length
       ? props.bundles.items
       : [
           {
-            name: "Work From Home",
-            price: "$199",
-            originalPrice: "$289",
+            name: 'Work From Home',
+            price: '$199',
+            originalPrice: '$289',
             isPopular: false,
             includes: [
-              "Logitech MX Master 3S Mouse",
-              "Keychron K3 Ultra-Slim Keyboard",
-              "Anker 737 Power Bank 24K mAh",
-              "USB-C Hub 7-in-1 Adapter",
+              'Logitech MX Master 3S Mouse',
+              'Keychron K3 Ultra-Slim Keyboard',
+              'Anker 737 Power Bank 24K mAh',
+              'USB-C Hub 7-in-1 Adapter',
             ],
           },
           {
-            name: "Creator Pro",
-            price: "$449",
-            originalPrice: "$679",
+            name: 'Creator Pro',
+            price: '$449',
+            originalPrice: '$679',
             isPopular: true,
             includes: [
-              "Sony ZV-E10 II Vlog Camera",
-              "Rode VideoMic Pro+ Shotgun Mic",
-              "Elgato Key Light Air LED Panel",
-              "256GB SDXC UHS-II Memory Card",
-              "Premium Carrying Case",
+              'Sony ZV-E10 II Vlog Camera',
+              'Rode VideoMic Pro+ Shotgun Mic',
+              'Elgato Key Light Air LED Panel',
+              '256GB SDXC UHS-II Memory Card',
+              'Premium Carrying Case',
             ],
           },
           {
-            name: "Gaming Elite",
-            price: "$899",
-            originalPrice: "$1,249",
+            name: 'Gaming Elite',
+            price: '$899',
+            originalPrice: '$1,249',
             isPopular: false,
             includes: [
-              "SteelSeries Arctis Nova Pro Wireless",
-              "Razer DeathAdder V3 Pro Mouse",
-              "Corsair K70 RGB Pro Keyboard",
+              'SteelSeries Arctis Nova Pro Wireless',
+              'Razer DeathAdder V3 Pro Mouse',
+              'Corsair K70 RGB Pro Keyboard',
               '27" LG UltraGear QHD 165Hz Monitor',
             ],
           },
         ]
 
-    const stepsHeading = props.steps?.heading ?? "How It Works"
+    const stepsHeading = props.steps?.heading ?? 'How It Works'
     const stepsSub =
       props.steps?.subheading ??
-      "From browsing to unboxing in four simple steps."
+      'From browsing to unboxing in four simple steps.'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            number: "01",
-            title: "Browse & Compare",
+            number: '01',
+            title: 'Browse & Compare',
             description:
-              "Explore thousands of products with detailed specs, real reviews, and expert guides.",
+              'Explore thousands of products with detailed specs, real reviews, and expert guides.',
           },
           {
-            number: "02",
-            title: "Add to Cart",
+            number: '02',
+            title: 'Add to Cart',
             description:
-              "Build your order with bundles for extra savings. Apply promo codes at checkout.",
+              'Build your order with bundles for extra savings. Apply promo codes at checkout.',
           },
           {
-            number: "03",
-            title: "Fast Shipping",
+            number: '03',
+            title: 'Fast Shipping',
             description:
-              "Free 2-day express delivery. Track your package in real-time from warehouse to door.",
+              'Free 2-day express delivery. Track your package in real-time from warehouse to door.',
           },
           {
-            number: "04",
-            title: "Enjoy & Review",
+            number: '04',
+            title: 'Enjoy & Review',
             description:
-              "Unbox, set up, and love your new tech. Share your experience and earn loyalty points.",
+              'Unbox, set up, and love your new tech. Share your experience and earn loyalty points.',
           },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Our Customers Say"
+      props.testimonials?.heading ?? 'What Our Customers Say'
     const testimonialsSub =
       props.testimonials?.subheading ??
-      "Real reviews from real tech lovers. Verified purchases only."
+      'Real reviews from real tech lovers. Verified purchases only.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "Ordered the Sony WH-1000XM5 on Monday, had them Tuesday afternoon. The price beat Amazon by $40 and the packaging was pristine. VoltCity is now my go-to for audio gear.",
-            name: "Marcus Chen",
-            role: "Audio Engineer, Austin TX",
+              'Ordered the Sony WH-1000XM5 on Monday, had them Tuesday afternoon. The price beat Amazon by $40 and the packaging was pristine. VoltCity is now my go-to for audio gear.',
+            name: 'Marcus Chen',
+            role: 'Audio Engineer, Austin TX',
             avatarAlt:
-              "professional headshot of a man in his thirties with short brown hair and a friendly smile",
+              'professional headshot of a man in his thirties with short brown hair and a friendly smile',
           },
           {
             quote:
-              "The Creator Pro bundle saved me over $200 on my vlogging setup. Everything arrived in one box, perfectly packed. The camera guide they emailed was a nice touch too.",
-            name: "Sofia Reyes",
-            role: "YouTuber, Los Angeles CA",
+              'The Creator Pro bundle saved me over $200 on my vlogging setup. Everything arrived in one box, perfectly packed. The camera guide they emailed was a nice touch too.',
+            name: 'Sofia Reyes',
+            role: 'YouTuber, Los Angeles CA',
             avatarAlt:
-              "professional headshot of a young woman with dark hair and warm smile",
+              'professional headshot of a young woman with dark hair and warm smile',
           },
           {
             quote:
-              "Had a minor issue with my mechanical keyboard. Support responded in 8 minutes and sent a replacement same day. That level of service is rare these days. Highly recommended.",
-            name: "David Okafor",
-            role: "Software Developer, Seattle WA",
+              'Had a minor issue with my mechanical keyboard. Support responded in 8 minutes and sent a replacement same day. That level of service is rare these days. Highly recommended.',
+            name: 'David Okafor',
+            role: 'Software Developer, Seattle WA',
             avatarAlt:
-              "professional headshot of a man with a beard wearing a dark sweater",
+              'professional headshot of a man with a beard wearing a dark sweater',
           },
         ]
 
-    const faqHeading = props.faq?.heading ?? "Questions & Answers"
+    const faqHeading = props.faq?.heading ?? 'Questions & Answers'
     const faqSub =
-      props.faq?.subheading ?? "Everything you need to know before you buy."
+      props.faq?.subheading ?? 'Everything you need to know before you buy.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "Do you ship internationally?",
-            a: "Yes, we ship to over 50 countries worldwide. Shipping costs and delivery times vary by location. US customers enjoy free 2-day express shipping on orders over $99. International orders typically arrive within 5-10 business days.",
+            q: 'Do you ship internationally?',
+            a: 'Yes, we ship to over 50 countries worldwide. Shipping costs and delivery times vary by location. US customers enjoy free 2-day express shipping on orders over $99. International orders typically arrive within 5-10 business days.',
           },
           {
-            q: "What is your return policy?",
-            a: "We offer a 30-day no-questions-asked return policy on all unopened items. For opened items, returns are accepted within 30 days if the product is in like-new condition with all original packaging. We even cover return shipping for defective or incorrect items.",
+            q: 'What is your return policy?',
+            a: 'We offer a 30-day no-questions-asked return policy on all unopened items. For opened items, returns are accepted within 30 days if the product is in like-new condition with all original packaging. We even cover return shipping for defective or incorrect items.',
           },
           {
-            q: "Are your products covered by warranty?",
-            a: "Every product sold on VoltCity comes with our complimentary 2-year VoltCare warranty. This covers manufacturing defects and hardware failures. Manufacturer warranties also apply where applicable and may extend beyond our coverage period.",
+            q: 'Are your products covered by warranty?',
+            a: 'Every product sold on VoltCity comes with our complimentary 2-year VoltCare warranty. This covers manufacturing defects and hardware failures. Manufacturer warranties also apply where applicable and may extend beyond our coverage period.',
           },
           {
-            q: "How do I track my order?",
+            q: 'How do I track my order?',
             a: "Once your order ships, you will receive an email with a tracking number and a link to our real-time tracking portal. You can also track orders by logging into your VoltCity account and visiting the 'My Orders' section.",
           },
           {
-            q: "Do you offer price matching?",
-            a: "Absolutely. If you find a lower price on an identical in-stock item from an authorized retailer within 14 days of purchase, we will match it and beat it by 5%. Just contact our support team with proof of the lower price.",
+            q: 'Do you offer price matching?',
+            a: 'Absolutely. If you find a lower price on an identical in-stock item from an authorized retailer within 14 days of purchase, we will match it and beat it by 5%. Just contact our support team with proof of the lower price.',
           },
           {
-            q: "Can I cancel or modify my order?",
-            a: "Orders can be modified or canceled within 1 hour of placing them, or until they enter the warehouse processing stage whichever comes first. Contact support immediately for fastest assistance. Once shipped, orders cannot be canceled but can be returned.",
+            q: 'Can I cancel or modify my order?',
+            a: 'Orders can be modified or canceled within 1 hour of placing them, or until they enter the warehouse processing stage whichever comes first. Contact support immediately for fastest assistance. Once shipped, orders cannot be canceled but can be returned.',
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to Upgrade?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to Upgrade?'
     const ctaDesc =
       props.cta?.description ??
-      "Join 12,000+ tech enthusiasts who shop smarter. Get exclusive early access to drops, flash sales, and member-only discounts delivered to your inbox."
-    const ctaPlaceholder = props.cta?.placeholder ?? "Enter your email"
-    const ctaSubmit = props.cta?.submit ?? "Subscribe"
+      'Join 12,000+ tech enthusiasts who shop smarter. Get exclusive early access to drops, flash sales, and member-only discounts delivered to your inbox.'
+    const ctaPlaceholder = props.cta?.placeholder ?? 'Enter your email'
+    const ctaSubmit = props.cta?.submit ?? 'Subscribe'
     const ctaDisclaimer =
-      props.cta?.disclaimer ?? "No spam, ever. Unsubscribe anytime."
+      props.cta?.disclaimer ?? 'No spam, ever. Unsubscribe anytime.'
     const ctaImageAlt =
       props.cta?.imageAlt ??
-      "modern gadgets and devices neatly arranged on a clean white desk"
+      'modern gadgets and devices neatly arranged on a clean white desk'
 
     const footerDesc =
       props.footer?.description ??
-      "Your trusted destination for premium electronics and gadgets. Free shipping, expert support, and prices that beat the big box stores."
+      'Your trusted destination for premium electronics and gadgets. Free shipping, expert support, and prices that beat the big box stores.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Shop",
+            title: 'Shop',
             links: [
-              "New Arrivals",
-              "Best Sellers",
-              "Deals & Bundles",
-              "Audio & Headphones",
-              "Smart Home",
-              "Gaming Gear",
+              'New Arrivals',
+              'Best Sellers',
+              'Deals & Bundles',
+              'Audio & Headphones',
+              'Smart Home',
+              'Gaming Gear',
             ],
           },
           {
-            title: "Support",
+            title: 'Support',
             links: [
-              "Help Center",
-              "Order Status",
-              "Shipping Info",
-              "Returns & Exchanges",
-              "Warranty Claims",
-              "Contact Us",
+              'Help Center',
+              'Order Status',
+              'Shipping Info',
+              'Returns & Exchanges',
+              'Warranty Claims',
+              'Contact Us',
             ],
           },
           {
-            title: "Company",
+            title: 'Company',
             links: [
-              "About Us",
-              "Careers",
-              "Press",
-              "Affiliate Program",
-              "Privacy Policy",
-              "Terms of Service",
+              'About Us',
+              'Careers',
+              'Press',
+              'Affiliate Program',
+              'Privacy Policy',
+              'Terms of Service',
             ],
           },
         ]
@@ -725,7 +734,7 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5", className)}
+        className={cn('size-5', className)}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -740,7 +749,7 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
 
     const Star = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-4", className)}
+        className={cn('size-4', className)}
         viewBox="0 0 20 20"
         fill="currentColor"
         aria-hidden="true"
@@ -751,7 +760,7 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
 
     const Check = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5 shrink-0 mt-0.5", className)}
+        className={cn('size-5 shrink-0 mt-0.5', className)}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -761,21 +770,6 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
         aria-hidden="true"
       >
         <path d="M5 13l4 4L19 7" />
-      </svg>
-    )
-
-    const Plus = ({ className }: { className?: string }) => (
-      <svg
-        className={cn("size-5", className)}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M12 4v16m8-8H4" />
       </svg>
     )
 
@@ -880,34 +874,34 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
 
     const socials = [
       {
-        label: "Twitter",
-        path: "M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z",
+        label: 'Twitter',
+        path: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z',
       },
       {
-        label: "Instagram",
-        path: "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z",
+        label: 'Instagram',
+        path: 'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z',
       },
       {
-        label: "YouTube",
-        path: "M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z",
+        label: 'YouTube',
+        path: 'M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z',
       },
       {
-        label: "Discord",
-        path: "M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028 14.09 14.09 0 001.226-1.994.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z",
+        label: 'Discord',
+        path: 'M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028 14.09 14.09 0 001.226-1.994.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z',
       },
     ]
 
     const paymentAlts = [
-      "Visa credit card logo",
-      "Mastercard credit card logo",
-      "American Express credit card logo",
-      "PayPal payment logo",
+      'Visa credit card logo',
+      'Mastercard credit card logo',
+      'American Express credit card logo',
+      'PayPal payment logo',
     ]
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -1192,8 +1186,8 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
                           No products in cart
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Add an item from This Week's Deals to start a cart for this
-                          session.
+                          Add an item from This Week's Deals to start a cart for
+                          this session.
                         </p>
                       </div>
                     )}
@@ -1392,7 +1386,10 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
 
         <main>
           {/* Hero */}
-          <section className="relative overflow-hidden" aria-label="Hero banner">
+          <section
+            className="relative overflow-hidden"
+            aria-label="Hero banner"
+          >
             <div className="absolute inset-0 bg-gradient-to-br from-background via-card to-background" />
             <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-primary/10 to-transparent" />
             <div className="absolute -right-40 -top-40 size-96 rounded-full bg-primary/10 blur-3xl" />
@@ -1409,7 +1406,7 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
                   </div>
 
                   <h1 className="text-4xl font-black leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-7xl">
-                    {heroHeading}{" "}
+                    {heroHeading}{' '}
                     <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60">
                       {heroHighlight}
                     </span>
@@ -1471,7 +1468,7 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
                         ))}
                       </div>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        <strong className="text-foreground">12,400+</strong>{" "}
+                        <strong className="text-foreground">12,400+</strong>{' '}
                         happy customers
                       </p>
                     </div>
@@ -1540,8 +1537,8 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
                   Why Choose {brand}
                 </h2>
                 <p className="text-lg text-muted-foreground">
-                  We do not just sell gadgets. We deliver peace of mind with every
-                  order.
+                  We do not just sell gadgets. We deliver peace of mind with
+                  every order.
                 </p>
               </div>
 
@@ -1588,7 +1585,11 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
           </section>
 
           {/* Products */}
-          <section id="products" className="py-20 sm:py-28" aria-label="Product catalog">
+          <section
+            id="products"
+            className="py-20 sm:py-28"
+            aria-label="Product catalog"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
@@ -1609,8 +1610,7 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
 
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {displayProducts.map((p) => {
-                  const isFavorite =
-                    favoriteProductNames?.has(p.title) ?? false
+                  const isFavorite = favoriteProductNames?.has(p.title) ?? false
 
                   return (
                     <article
@@ -1619,7 +1619,7 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
                     >
                       <div className="relative aspect-square overflow-hidden bg-muted">
                         <Image
-                          alt={p.imageAlt ?? ""}
+                          alt={p.imageAlt ?? ''}
                           w={600}
                           h={600}
                           loading="lazy"
@@ -1693,7 +1693,11 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
           </section>
 
           {/* Bundles */}
-          <section id="deals" className="py-20 sm:py-28 bg-muted/40" aria-label="Bundle deals">
+          <section
+            id="deals"
+            className="py-20 sm:py-28 bg-muted/40"
+            aria-label="Bundle deals"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="mx-auto mb-16 max-w-3xl text-center">
                 <h2 className="mb-4 text-3xl font-black tracking-tight text-foreground sm:text-4xl lg:text-5xl">
@@ -1707,10 +1711,10 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
                   <div
                     key={b.name}
                     className={cn(
-                      "relative rounded-2xl border bg-card p-8 transition-all",
+                      'relative rounded-2xl border bg-card p-8 transition-all',
                       b.isPopular
-                        ? "border-2 border-primary shadow-xl"
-                        : "border-border hover:border-border/70",
+                        ? 'border-2 border-primary shadow-xl'
+                        : 'border-border hover:border-border/70',
                     )}
                   >
                     {b.isPopular && (
@@ -1720,8 +1724,8 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
                     )}
                     <h3
                       className={cn(
-                        "mb-2 text-lg font-bold",
-                        b.isPopular ? "text-primary" : "text-muted-foreground",
+                        'mb-2 text-lg font-bold',
+                        b.isPopular ? 'text-primary' : 'text-muted-foreground',
                       )}
                     >
                       {b.name}
@@ -1739,10 +1743,10 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
                         <li
                           key={item}
                           className={cn(
-                            "flex items-start gap-3 text-sm",
+                            'flex items-start gap-3 text-sm',
                             b.isPopular
-                              ? "text-foreground"
-                              : "text-muted-foreground",
+                              ? 'text-foreground'
+                              : 'text-muted-foreground',
                           )}
                         >
                           <Check className="text-primary" />
@@ -1753,14 +1757,14 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
                     <Button
                       type="button"
                       onClick={() => {
-                        void addToCart(b.name)
+                        void addToCart(b.name ?? '')
                         setCartOpen(true)
                       }}
                       className={cn(
-                        "w-full rounded-xl py-3 font-semibold transition-colors",
+                        'w-full rounded-xl py-3 font-semibold transition-colors',
                         b.isPopular
-                          ? "bg-primary font-bold text-primary-foreground hover:bg-primary/90"
-                          : "border border-border bg-muted text-foreground hover:bg-accent",
+                          ? 'bg-primary font-bold text-primary-foreground hover:bg-primary/90'
+                          : 'border border-border bg-muted text-foreground hover:bg-accent',
                       )}
                     >
                       Add Bundle
@@ -1772,7 +1776,11 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
           </section>
 
           {/* Steps */}
-          <section id="how-it-works" className="py-20 sm:py-28" aria-label="How it works">
+          <section
+            id="how-it-works"
+            className="py-20 sm:py-28"
+            aria-label="How it works"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="mx-auto mb-16 max-w-3xl text-center">
                 <h2 className="mb-4 text-3xl font-black tracking-tight text-foreground sm:text-4xl lg:text-5xl">
@@ -1834,7 +1842,7 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
                     </p>
                     <div className="flex items-center gap-3">
                       <Image
-                        alt={t.avatarAlt ?? ""}
+                        alt={t.avatarAlt ?? ''}
                         w={100}
                         h={100}
                         className="size-10 rounded-full object-cover"
@@ -1843,7 +1851,9 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
                         <p className="text-sm font-semibold text-foreground">
                           {t.name}
                         </p>
-                        <p className="text-xs text-muted-foreground">{t.role}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t.role}
+                        </p>
                       </div>
                     </div>
                   </article>
@@ -1853,7 +1863,11 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
           </section>
 
           {/* FAQ */}
-          <section id="faq" className="py-20 sm:py-28" aria-label="Frequently asked questions">
+          <section
+            id="faq"
+            className="py-20 sm:py-28"
+            aria-label="Frequently asked questions"
+          >
             <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
               <div className="mb-16 text-center">
                 <h2 className="mb-4 text-3xl font-black tracking-tight text-foreground sm:text-4xl lg:text-5xl">
@@ -1886,7 +1900,11 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
           </section>
 
           {/* CTA */}
-          <section id="cta" className="py-20 sm:py-28" aria-label="Call to action">
+          <section
+            id="cta"
+            className="py-20 sm:py-28"
+            aria-label="Call to action"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary/80">
                 <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-primary-foreground/10 to-transparent" />
@@ -1987,7 +2005,9 @@ export const ElectronicsStoreKimiPage2 = defineCapsule({
               </div>
               {footerColumns.map((col) => (
                 <div key={col.title}>
-                  <h4 className="mb-4 font-bold text-foreground">{col.title}</h4>
+                  <h4 className="mb-4 font-bold text-foreground">
+                    {col.title}
+                  </h4>
                   <ul className="space-y-2.5">
                     {col.links?.map((link) => (
                       <li key={link}>

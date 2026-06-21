@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,19 +14,19 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
+} from '#/components/ui/popover.tsx'
 
 export const MarketingKimiPage2 = defineCapsule({
-  name: "MarketingKimiPage2",
+  name: 'MarketingKimiPage2',
   description:
-    "Marketing second style sibling to MarketingKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Marketing second style sibling to MarketingKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const MarketingKimiPage2 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -79,21 +81,21 @@ export const MarketingKimiPage2 = defineCapsule({
       }),
     },
     queries: {
-      subscribers: ({ db }) => db.subscribers.orderBy("createdAt").all(),
-      savedItems: ({ db }) => db.savedItems.orderBy("createdAt").all(),
+      subscribers: ({ db }) => db.subscribers.orderBy('createdAt').all(),
+      savedItems: ({ db }) => db.savedItems.orderBy('createdAt').all(),
       savedTitles: ({ db }) =>
         new Set(db.savedItems.all().map((item) => item.title)),
     },
     mutations: {
       subscribe: ({ db }, email: string) => {
-        const existing = db.subscribers.where("email", email).all()[0]
+        const existing = db.subscribers.where('email', email).all()[0]
         if (!existing) {
           db.subscribers.insert({ email })
         }
         return db.subscribers.all()
       },
       toggleSaved: ({ db }, title: string, section: string) => {
-        const existing = db.savedItems.where("title", title).all()[0]
+        const existing = db.savedItems.where('title', title).all()[0]
         if (existing) {
           db.savedItems.delete(existing.id)
           return false
@@ -120,92 +122,123 @@ export const MarketingKimiPage2 = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [drawerOpen, setDrawerOpen] = useState(false)
-    const [emailInput, setEmailInput] = useState("")
+    const [emailInput, setEmailInput] = useState('')
     const [subscribed, setSubscribed] = useState(false)
 
-    const brand = props.brand ?? "Stride Ship Faster. Stress Less."
-    const nav = props.nav?.length ? props.nav : ["Features", "Customers", "Pricing", "FAQ", "Sign in", "Get started"]
+    const brand = props.brand ?? 'Stride Ship Faster. Stress Less.'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Features', 'Customers', 'Pricing', 'FAQ', 'Sign in', 'Get started']
     const hero = {
-      eyebrow: "Marketing / Variant 2",
-      title: "Ship faster. Stress less.",
-      description: "Stride Ship Faster. Stress Less. Stride Features Customers Pricing FAQ Sign in Get started Features Customers Pricing FAQ Sign in Get started Now with AI sprint planning Ship fa...",
-      primaryCta: "Features",
-      secondaryCta: "Customers",
-      imageAlt: "professional headshot of a customer named David Park, a smiling startup founder",
+      eyebrow: 'Marketing / Variant 2',
+      title: 'Ship faster. Stress less.',
+      description:
+        'Stride Ship Faster. Stress Less. Stride Features Customers Pricing FAQ Sign in Get started Features Customers Pricing FAQ Sign in Get started Now with AI sprint planning Ship fa...',
+      primaryCta: 'Features',
+      secondaryCta: 'Customers',
+      imageAlt:
+        'professional headshot of a customer named David Park, a smiling startup founder',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-      { value: "24/7", label: "Responsive service" },
-      { value: "98%", label: "Positive outcomes" },
-      { value: "4.9", label: "Average rating" },
-      { value: "12+", label: "Core capabilities" },
-    ]
-    const sections = props.sections?.length ? props.sections : [
-      {
-        eyebrow: "Overview",
-        title: "Everything you need to move faster",
-        body: "Stride Ship Faster. Stress Less. Stride Features Customers Pricing FAQ Sign in Get started Features Customers Pricing FAQ Sign in Get started Now with AI sprint planning Ship fa...",
-        items: ["Loved by engineering leaders", "Simple, transparent pricing", "Frequently asked questions"],
-      },
-      {
-        eyebrow: "Experience",
-        title: "Get started in minutes, not months",
-        body: "Marketing page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-        items: ["Ready to ship faster?", "AI Sprint Planning", "Cycle Time Analytics"],
-      },
-      {
-        eyebrow: "Proof",
-        title: "Inside the platform",
-        body: "Marketing page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-        items: ["Ephemeral Environments", "One-Click Integrations", "Smart Notifications"],
-      },
-      {
-        eyebrow: "Next steps",
-        title: "Loved by engineering leaders",
-        body: "Marketing page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-        items: ["Enterprise Security", "Connect your codebase", "Let the AI analyze velocity"],
-      },
-    ]
-    const gallery = props.gallery?.length ? props.gallery : [
-      {
-        title: "Get started in minutes, not months",
-        alt: "professional headshot of a customer named David Park, a smiling startup founder",
-        caption: "Marketing generated page detail",
-      },
-      {
-        title: "Inside the platform",
-        alt: "professional headshot of a customer named Sarah Chen, a smiling engineering executive with short dark hair",
-        caption: "Marketing generated page detail",
-      },
-      {
-        title: "Loved by engineering leaders",
-        alt: "professional headshot of a customer named Marcus Whitfield, a bearded technology executive",
-        caption: "Marketing generated page detail",
-      },
-    ]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          { value: '24/7', label: 'Responsive service' },
+          { value: '98%', label: 'Positive outcomes' },
+          { value: '4.9', label: 'Average rating' },
+          { value: '12+', label: 'Core capabilities' },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'Everything you need to move faster',
+            body: 'Stride Ship Faster. Stress Less. Stride Features Customers Pricing FAQ Sign in Get started Features Customers Pricing FAQ Sign in Get started Now with AI sprint planning Ship fa...',
+            items: [
+              'Loved by engineering leaders',
+              'Simple, transparent pricing',
+              'Frequently asked questions',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'Get started in minutes, not months',
+            body: "Marketing page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Ready to ship faster?',
+              'AI Sprint Planning',
+              'Cycle Time Analytics',
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Inside the platform',
+            body: "Marketing page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Ephemeral Environments',
+              'One-Click Integrations',
+              'Smart Notifications',
+            ],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Loved by engineering leaders',
+            body: "Marketing page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Enterprise Security',
+              'Connect your codebase',
+              'Let the AI analyze velocity',
+            ],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'Get started in minutes, not months',
+            alt: 'professional headshot of a customer named David Park, a smiling startup founder',
+            caption: 'Marketing generated page detail',
+          },
+          {
+            title: 'Inside the platform',
+            alt: 'professional headshot of a customer named Sarah Chen, a smiling engineering executive with short dark hair',
+            caption: 'Marketing generated page detail',
+          },
+          {
+            title: 'Loved by engineering leaders',
+            alt: 'professional headshot of a customer named Marcus Whitfield, a bearded technology executive',
+            caption: 'Marketing generated page detail',
+          },
+        ]
 
     // Lakebed hooks
-    const savedItems = lakebed.useQuery("savedItems")
-    const savedTitles = lakebed.useQuery("savedTitles")
-    const subscribers = lakebed.useQuery("subscribers")
+    const savedItems = lakebed.useQuery('savedItems')
+    const savedTitles = lakebed.useQuery('savedTitles')
+    const subscribers = lakebed.useQuery('subscribers')
     const auth = lakebed.useAuth()
-    const toggleSaved = lakebed.useMutation("toggleSaved")
-    const removeSaved = lakebed.useMutation("removeSaved")
-    const clearSaved = lakebed.useMutation("clearSaved")
-    const subscribe = lakebed.useMutation("subscribe")
+    const toggleSaved = lakebed.useMutation('toggleSaved')
+    const removeSaved = lakebed.useMutation('removeSaved')
+    const clearSaved = lakebed.useMutation('clearSaved')
+    const subscribe = lakebed.useMutation('subscribe')
 
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
-    const authDisplayName = auth.displayName || auth.user?.displayName || authEmail || "Account"
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
     const authInitials =
       authDisplayName
         .split(/\s+/)
         .filter(Boolean)
         .slice(0, 2)
         .map((part: string) => part[0]?.toUpperCase())
-        .join("") || "ME"
-    const authLabel = auth.isLoading ? "Checking..." : isSignedIn ? authDisplayName : "Sign in"
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
 
     const safeSavedItems = savedItems ?? []
     const savedCount = safeSavedItems.length
@@ -226,26 +259,13 @@ export const MarketingKimiPage2 = defineCapsule({
       </svg>
     )
 
-    const ArrowRight = () => (
-      <svg
-        className="size-4"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <line x1="5" y1="12" x2="19" y2="12" />
-        <polyline points="12 5 19 12 12 19" />
-      </svg>
-    )
-
     const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
       <svg
-        className={cn("size-4", active ? "text-primary-foreground" : "text-foreground")}
-        fill={active ? "currentColor" : "none"}
+        className={cn(
+          'size-4',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -258,10 +278,19 @@ export const MarketingKimiPage2 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -286,26 +315,52 @@ export const MarketingKimiPage2 = defineCapsule({
                       aria-label="Open account menu"
                       className="hidden h-9 max-w-44 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
                     >
-                      <Avatar size="sm" className="ring-2 ring-background" aria-hidden="true">
-                        {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
                         <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
                           {authInitials}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">{authDisplayName}</span>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
                       <ChevronDown />
                     </button>
                   </PopoverTrigger>
-                  <PopoverContent align="end" sideOffset={10} className="w-64 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl">
+                  <PopoverContent
+                    align="end"
+                    sideOffset={10}
+                    className="w-64 overflow-hidden rounded-xl border-border bg-background p-0 shadow-xl"
+                  >
                     <div className="bg-muted/40 px-4 py-3">
                       <div className="flex items-center gap-3">
                         <Avatar size="lg" className="ring-2 ring-background">
-                          {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
-                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">{authInitials}</AvatarFallback>
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-foreground text-sm font-bold text-background">
+                            {authInitials}
+                          </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-bold text-foreground">{authDisplayName}</p>
-                          <p className="truncate text-xs text-muted-foreground">{authEmail ?? "Signed in to this session"}</p>
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -323,12 +378,16 @@ export const MarketingKimiPage2 = defineCapsule({
               ) : (
                 <button
                   type="button"
-                  onClick={() => { if (!auth.isLoading) void lakebed.signInWithGoogle() }}
+                  onClick={() => {
+                    if (!auth.isLoading) void lakebed.signInWithGoogle()
+                  }}
                   disabled={auth.isLoading}
                   aria-label="Sign in with Google"
                   className="hidden h-9 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
                 >
-                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">G</span>
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
                   <span>{authLabel}</span>
                 </button>
               )}
@@ -349,23 +408,33 @@ export const MarketingKimiPage2 = defineCapsule({
                     ) : null}
                   </button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
                   <SheetHeader className="border-b border-border p-6">
                     <SheetTitle className="text-xl">Reading list</SheetTitle>
                     <SheetDescription>
                       {savedCount > 0
-                        ? `${savedCount} saved item${savedCount === 1 ? "" : "s"}.`
-                        : "Bookmark sections to read later."}
+                        ? `${savedCount} saved item${savedCount === 1 ? '' : 's'}.`
+                        : 'Bookmark sections to read later.'}
                     </SheetDescription>
                   </SheetHeader>
                   <div className="flex-1 overflow-y-auto px-6 py-5">
                     {safeSavedItems.length ? (
                       <div className="space-y-3">
                         {safeSavedItems.map((item) => (
-                          <div key={item.id} className="flex items-start justify-between gap-3 rounded-lg border border-border bg-card p-4">
+                          <div
+                            key={item.id}
+                            className="flex items-start justify-between gap-3 rounded-lg border border-border bg-card p-4"
+                          >
                             <div className="min-w-0">
-                              <p className="text-xs font-medium uppercase tracking-wider text-primary">{item.section}</p>
-                              <p className="mt-1 text-sm font-semibold text-card-foreground">{item.title}</p>
+                              <p className="text-xs font-medium uppercase tracking-wider text-primary">
+                                {item.section}
+                              </p>
+                              <p className="mt-1 text-sm font-semibold text-card-foreground">
+                                {item.title}
+                              </p>
                             </div>
                             <button
                               type="button"
@@ -379,18 +448,28 @@ export const MarketingKimiPage2 = defineCapsule({
                       </div>
                     ) : (
                       <div className="flex min-h-48 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
-                        <p className="text-base font-semibold text-foreground">Nothing saved yet</p>
-                        <p className="mt-2 text-sm text-muted-foreground">Click the bookmark icon on any section to save it here.</p>
+                        <p className="text-base font-semibold text-foreground">
+                          Nothing saved yet
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Click the bookmark icon on any section to save it
+                          here.
+                        </p>
                       </div>
                     )}
                   </div>
 
                   {/* Inline subscribe form */}
                   <div className="border-t border-border px-6 py-4">
-                    <p className="mb-2 text-sm font-semibold text-foreground">Stay in the loop</p>
+                    <p className="mb-2 text-sm font-semibold text-foreground">
+                      Stay in the loop
+                    </p>
                     {subscribed ? (
                       <p className="text-sm text-muted-foreground">
-                        ✓ You're subscribed!{subscriberCount > 1 ? ` (${subscriberCount} total)` : ""}
+                        ✓ You're subscribed!
+                        {subscriberCount > 1
+                          ? ` (${subscriberCount} total)`
+                          : ''}
                       </p>
                     ) : (
                       <form
@@ -399,7 +478,7 @@ export const MarketingKimiPage2 = defineCapsule({
                           if (!emailInput.trim()) return
                           void subscribe(emailInput.trim())
                           setSubscribed(true)
-                          setEmailInput("")
+                          setEmailInput('')
                         }}
                         className="flex gap-2"
                       >
@@ -412,7 +491,9 @@ export const MarketingKimiPage2 = defineCapsule({
                           onChange={(e) => setEmailInput(e.target.value)}
                           className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                         />
-                        <Button type="submit" size="sm">Subscribe</Button>
+                        <Button type="submit" size="sm">
+                          Subscribe
+                        </Button>
                       </form>
                     )}
                   </div>
@@ -429,7 +510,11 @@ export const MarketingKimiPage2 = defineCapsule({
                         Clear all
                       </Button>
                       <SheetClose asChild>
-                        <Button type="button" variant="secondary" className="rounded-full">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
                           Done
                         </Button>
                       </SheetClose>
@@ -481,16 +566,28 @@ export const MarketingKimiPage2 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -500,24 +597,42 @@ export const MarketingKimiPage2 = defineCapsule({
               {sections.map((section, index) => {
                 const isSaved = savedTitles?.has(section.title) ?? false
                 return (
-                  <article key={section.title} className="rounded-lg border border-border bg-card p-6">
+                  <article
+                    key={section.title}
+                    className="rounded-lg border border-border bg-card p-6"
+                  >
                     <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
+                      <p className="text-sm font-medium text-primary">
+                        {section.eyebrow}
+                      </p>
                       <button
                         type="button"
-                        onClick={() => { void toggleSaved(section.title, section.eyebrow); if (!isSaved) setDrawerOpen(true) }}
+                        onClick={() => {
+                          void toggleSaved(section.title, section.eyebrow)
+                          if (!isSaved) setDrawerOpen(true)
+                        }}
                         aria-pressed={isSaved}
-                        aria-label={isSaved ? `Remove "${section.title}" from reading list` : `Save "${section.title}" to reading list`}
+                        aria-label={
+                          isSaved
+                            ? `Remove "${section.title}" from reading list`
+                            : `Save "${section.title}" to reading list`
+                        }
                         className={cn(
-                          "grid size-7 place-items-center rounded-md transition-colors",
-                          isSaved ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                          'grid size-7 place-items-center rounded-md transition-colors',
+                          isSaved
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                         )}
                       >
                         <BookmarkIcon active={isSaved} />
                       </button>
                     </div>
-                    <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                    <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                    <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                      {section.title}
+                    </h2>
+                    <p className="mt-3 leading-7 text-muted-foreground">
+                      {section.body}
+                    </p>
                     {section.items?.length ? (
                       <div className="mt-5 grid gap-2">
                         {section.items.map((item) => (
@@ -542,8 +657,12 @@ export const MarketingKimiPage2 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -555,11 +674,26 @@ export const MarketingKimiPage2 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -570,9 +704,15 @@ export const MarketingKimiPage2 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -588,10 +728,17 @@ export const MarketingKimiPage2 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

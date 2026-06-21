@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -24,9 +24,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const FeaturesKimiPage = defineCapsule({
-  name: "FeaturesKimiPage",
+  name: 'FeaturesKimiPage',
   description:
-    "Features 1th style sibling to FeaturesKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Features 1th style sibling to FeaturesKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const FeaturesKimiPage = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -74,14 +76,18 @@ export const FeaturesKimiPage = defineCapsule({
     },
     mutations: {
       saveFeature: ({ db }, featureName: string, sectionTitle: string) => {
-        const existing = db.savedFeatures.where('featureName', featureName).all()[0]
+        const existing = db.savedFeatures
+          .where('featureName', featureName)
+          .all()[0]
         if (existing) return db.savedFeatures.all()
 
         db.savedFeatures.insert({ featureName, sectionTitle })
         return db.savedFeatures.all()
       },
       removeFeature: ({ db }, featureName: string) => {
-        for (const item of db.savedFeatures.where('featureName', featureName).all()) {
+        for (const item of db.savedFeatures
+          .where('featureName', featureName)
+          .all()) {
           db.savedFeatures.delete(item.id)
         }
         return db.savedFeatures.all()
@@ -97,94 +103,100 @@ export const FeaturesKimiPage = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [savedOpen, setSavedOpen] = useState(false)
-    const brand = props.brand ?? "Nexus The Operating System for Modern Teams"
-    const nav = props.nav?.length ? props.nav : ["Nexus", "Features", "Pricing", "Customers", "FAQ", "Sign in"]
+    const brand = props.brand ?? 'Nexus The Operating System for Modern Teams'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Nexus', 'Features', 'Pricing', 'Customers', 'FAQ', 'Sign in']
     const hero = {
-      eyebrow: "Features / Variant 1",
-      title: "The operating system for modern teams",
-      description: "Nexus The Operating System for Modern Teams Nexus Features Pricing Customers FAQ Sign in Get started The operating system for modern teams Nexus brings your tasks, docs, and con...",
-      primaryCta: "Subscribe",
-      secondaryCta: "Nexus",
-      imageAlt: "Diverse team of professionals collaborating around laptops in a bright modern open-plan office",
+      eyebrow: 'Features / Variant 1',
+      title: 'The operating system for modern teams',
+      description:
+        'Nexus The Operating System for Modern Teams Nexus Features Pricing Customers FAQ Sign in Get started The operating system for modern teams Nexus brings your tasks, docs, and con...',
+      primaryCta: 'Subscribe',
+      secondaryCta: 'Nexus',
+      imageAlt:
+        'Diverse team of professionals collaborating around laptops in a bright modern open-plan office',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Everything your team needs",
-    "body": "Nexus The Operating System for Modern Teams Nexus Features Pricing Customers FAQ Sign in Get started The operating system for modern teams Nexus brings your tasks, docs, and con...",
-    "items": [
-      "Simple, transparent pricing",
-      "Loved by operations leaders",
-      "Frequently asked questions"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "Set up in minutes, not months",
-    "body": "Features page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Ready to streamline your operations?",
-      "Smart Workflows",
-      "Real-time Docs"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "See it in action",
-    "body": "Features page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Team Alignment",
-      "Project Tracking",
-      "Deep Analytics"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Simple, transparent pricing",
-    "body": "Features page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "50+ Integrations",
-      "Real-time docs that actually stay organized",
-      "Workflows that run while you sleep"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "Set up in minutes, not months",
-    "alt": "Diverse team of professionals collaborating around laptops in a bright modern open-plan office",
-    "caption": "Features generated page detail"
-  },
-  {
-    "title": "See it in action",
-    "alt": "Clean analytics dashboard interface displaying colorful charts and key metrics on a large desktop monitor",
-    "caption": "Features generated page detail"
-  },
-  {
-    "title": "Simple, transparent pricing",
-    "alt": "Close-up of a laptop screen showing data visualizations with line graphs and performance statistics",
-    "caption": "Features generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'Everything your team needs',
+            body: 'Nexus The Operating System for Modern Teams Nexus Features Pricing Customers FAQ Sign in Get started The operating system for modern teams Nexus brings your tasks, docs, and con...',
+            items: [
+              'Simple, transparent pricing',
+              'Loved by operations leaders',
+              'Frequently asked questions',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'Set up in minutes, not months',
+            body: "Features page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Ready to streamline your operations?',
+              'Smart Workflows',
+              'Real-time Docs',
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'See it in action',
+            body: "Features page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['Team Alignment', 'Project Tracking', 'Deep Analytics'],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Simple, transparent pricing',
+            body: "Features page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              '50+ Integrations',
+              'Real-time docs that actually stay organized',
+              'Workflows that run while you sleep',
+            ],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'Set up in minutes, not months',
+            alt: 'Diverse team of professionals collaborating around laptops in a bright modern open-plan office',
+            caption: 'Features generated page detail',
+          },
+          {
+            title: 'See it in action',
+            alt: 'Clean analytics dashboard interface displaying colorful charts and key metrics on a large desktop monitor',
+            caption: 'Features generated page detail',
+          },
+          {
+            title: 'Simple, transparent pricing',
+            alt: 'Close-up of a laptop screen showing data visualizations with line graphs and performance statistics',
+            caption: 'Features generated page detail',
+          },
+        ]
 
     const savedFeatures = lakebed.useQuery('savedFeatures')
     const saveFeature = lakebed.useMutation('saveFeature')
@@ -252,7 +264,10 @@ export const FeaturesKimiPage = defineCapsule({
 
     const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
       <svg
-        className={cn('size-5', active ? 'text-primary-foreground' : 'text-foreground')}
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
         fill={active ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="2"
@@ -266,12 +281,17 @@ export const FeaturesKimiPage = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
           <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 lg:h-20">
             <button
               type="button"
-              onClick={() => go("Home")}
+              onClick={() => go('Home')}
               className="text-left text-lg font-semibold tracking-tight text-foreground"
             >
               {brand}
@@ -436,7 +456,9 @@ export const FeaturesKimiPage = defineCapsule({
                             </div>
                             <button
                               type="button"
-                              onClick={() => void removeFeature(item.featureName)}
+                              onClick={() =>
+                                void removeFeature(item.featureName)
+                              }
                               className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                             >
                               Remove
@@ -450,7 +472,8 @@ export const FeaturesKimiPage = defineCapsule({
                           No saved features
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Click the bookmark icon on any feature to save it for later.
+                          Click the bookmark icon on any feature to save it for
+                          later.
                         </p>
                       </div>
                     )}
@@ -513,16 +536,28 @@ export const FeaturesKimiPage = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -530,15 +565,24 @@ export const FeaturesKimiPage = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => {
                         const isSaved = safeSavedFeatures.some(
-                          (saved) => saved.featureName === item
+                          (saved) => saved.featureName === item,
                         )
                         return (
                           <div
@@ -596,8 +640,12 @@ export const FeaturesKimiPage = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -609,11 +657,26 @@ export const FeaturesKimiPage = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -624,9 +687,15 @@ export const FeaturesKimiPage = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -642,10 +711,17 @@ export const FeaturesKimiPage = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

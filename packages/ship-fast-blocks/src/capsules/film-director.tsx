@@ -1,27 +1,26 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * FilmDirectorKimiPage — a complete, self-contained portfolio LANDING page for a
@@ -54,9 +53,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * - Reactive queries and mutations for inquiries and favorites
  */
 export const FilmDirectorKimiPage = defineCapsule({
-  name: "FilmDirectorKimiPage",
+  name: 'FilmDirectorKimiPage',
   description:
-    "Complete film-director / cinematographer / director-of-photography PORTFOLIO landing page with a clean, editorial, light-canvas aesthetic, thin display typography, generous whitespace, and inverted near-black cinematic bands for the work reel, pricing, and contact. Includes a fixed navbar with Google auth and account menu, a split hero (eyebrow label, thin headline with one emphasized word, Watch Reel + View Projects CTAs, a 3-up KPI strip, and a tall 4:5 portrait), a trusted-by brand-logo strip, a 6-up services grid with icon tiles (commercial direction, cinematography, creative development, documentary, music videos, post production), a dark Selected Work reel grid of project cards with play buttons, category tags, favorite toggles, and a load-more button, a split numbered How-We-Work process with a 3:4 photo and a floating client quote card, a stats band (projects, awards, views, festival selections) with award credits (Cannes Lions, AICP, Sundance), a 6-up client-testimonial grid with avatars, a 3-tier Investment pricing table with a highlighted Most Popular dark plan, a 6-item FAQ accordion, a dark contact CTA with an inquiry drawer form (name, email, project type, message) and phone/studio/representation/social details, and a slim footer. Full-stack features: Lakebed-powered inquiry submission, project favorites with persistent state, Google auth with account menu, reactive queries and mutations. Use as the ROOT/home page for filmmakers, directors, cinematographers, DPs, video production houses, commercial/narrative/documentary/music-video creatives, or motion/film portfolios when a premium, cinematic, conversion-focused page with strong reel showcase, social proof, clear pricing, and inquiry capture is wanted. Supply content only — brand, nav, hero, logos, services, work, process, stats, testimonials, pricing, faq, contact, footer; the block owns all layout and styling.",
+    'Complete film-director / cinematographer / director-of-photography PORTFOLIO landing page with a clean, editorial, light-canvas aesthetic, thin display typography, generous whitespace, and inverted near-black cinematic bands for the work reel, pricing, and contact. Includes a fixed navbar with Google auth and account menu, a split hero (eyebrow label, thin headline with one emphasized word, Watch Reel + View Projects CTAs, a 3-up KPI strip, and a tall 4:5 portrait), a trusted-by brand-logo strip, a 6-up services grid with icon tiles (commercial direction, cinematography, creative development, documentary, music videos, post production), a dark Selected Work reel grid of project cards with play buttons, category tags, favorite toggles, and a load-more button, a split numbered How-We-Work process with a 3:4 photo and a floating client quote card, a stats band (projects, awards, views, festival selections) with award credits (Cannes Lions, AICP, Sundance), a 6-up client-testimonial grid with avatars, a 3-tier Investment pricing table with a highlighted Most Popular dark plan, a 6-item FAQ accordion, a dark contact CTA with an inquiry drawer form (name, email, project type, message) and phone/studio/representation/social details, and a slim footer. Full-stack features: Lakebed-powered inquiry submission, project favorites with persistent state, Google auth with account menu, reactive queries and mutations. Use as the ROOT/home page for filmmakers, directors, cinematographers, DPs, video production houses, commercial/narrative/documentary/music-video creatives, or motion/film portfolios when a premium, cinematic, conversion-focused page with strong reel showcase, social proof, clear pricing, and inquiry capture is wanted. Supply content only — brand, nav, hero, logos, services, work, process, stats, testimonials, pricing, faq, contact, footer; the block owns all layout and styling.',
   props: z.object({
     /** Director / studio name shown in the navbar. */
     brand: z.string().optional(),
@@ -230,7 +229,13 @@ export const FilmDirectorKimiPage = defineCapsule({
         new Set(db.favorites.all().map((favorite) => favorite.projectTitle)),
     },
     mutations: {
-      submitInquiry: ({ db }, name: string, email: string, projectType: string, message: string) => {
+      submitInquiry: (
+        { db },
+        name: string,
+        email: string,
+        projectType: string,
+        message: string,
+      ) => {
         db.inquiries.insert({ name, email, projectType, message })
         return db.inquiries.all()
       },
@@ -253,14 +258,14 @@ export const FilmDirectorKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [inquiryOpen, setInquiryOpen] = useState(false)
-    const [inquiryName, setInquiryName] = useState("")
-    const [inquiryEmail, setInquiryEmail] = useState("")
-    const [inquiryProjectType, setInquiryProjectType] = useState("")
-    const [inquiryMessage, setInquiryMessage] = useState("")
-    const brand = props.brand ?? "Marcus Chen"
+    const [inquiryName, setInquiryName] = useState('')
+    const [inquiryEmail, setInquiryEmail] = useState('')
+    const [inquiryProjectType, setInquiryProjectType] = useState('')
+    const [inquiryMessage, setInquiryMessage] = useState('')
+    const brand = props.brand ?? 'Marcus Chen'
     const nav = props.nav?.length
       ? props.nav
-      : ["Work", "Services", "About", "Get in Touch"]
+      : ['Work', 'Services', 'About', 'Get in Touch']
 
     const favoriteProjectTitles = lakebed.useQuery('favoriteProjectTitles')
     const toggleFavorite = lakebed.useMutation('toggleFavorite')
@@ -292,377 +297,376 @@ export const FilmDirectorKimiPage = defineCapsule({
       lakebed.signOut()
     }
 
-    const heroEyebrow = props.hero?.eyebrow ?? "Film Director & Cinematographer"
-    const heroHeading = props.hero?.heading ?? "Visual stories that resonate"
-    const heroHighlight = props.hero?.highlight ?? "resonate"
+    const heroEyebrow = props.hero?.eyebrow ?? 'Film Director & Cinematographer'
+    const heroHeading = props.hero?.heading ?? 'Visual stories that resonate'
+    const heroHighlight = props.hero?.highlight ?? 'resonate'
     const heroSub =
       props.hero?.subheading ??
-      "Crafting cinematic narratives for brands, agencies, and artists. From concept to final cut, I bring vision and precision to every frame."
-    const heroPrimary = props.hero?.primaryCta ?? "Watch Reel"
-    const heroSecondary = props.hero?.secondaryCta ?? "View Projects"
+      'Crafting cinematic narratives for brands, agencies, and artists. From concept to final cut, I bring vision and precision to every frame.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Watch Reel'
+    const heroSecondary = props.hero?.secondaryCta ?? 'View Projects'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "cinematic behind-the-scenes shot of a film director operating a professional cinema camera on a commercial set with lighting equipment visible"
+      'cinematic behind-the-scenes shot of a film director operating a professional cinema camera on a commercial set with lighting equipment visible'
     const heroStats = props.hero?.stats?.length
       ? props.hero.stats
       : [
-          { value: "12+", label: "Years Experience" },
-          { value: "87", label: "Projects Delivered" },
-          { value: "14", label: "Industry Awards" },
+          { value: '12+', label: 'Years Experience' },
+          { value: '87', label: 'Projects Delivered' },
+          { value: '14', label: 'Industry Awards' },
         ]
 
     const logosLabel =
-      props.logos?.label ?? "Trusted by leading brands and agencies"
+      props.logos?.label ?? 'Trusted by leading brands and agencies'
     const logoBrands = props.logos?.brands?.length
       ? props.logos.brands
-      : ["NIKE", "APPLE", "SONY", "NETFLIX", "SPOTIFY", "ADOBE"]
+      : ['NIKE', 'APPLE', 'SONY', 'NETFLIX', 'SPOTIFY', 'ADOBE']
 
-    const servicesHeading = props.services?.heading ?? "Services"
+    const servicesHeading = props.services?.heading ?? 'Services'
     const servicesDesc =
       props.services?.description ??
-      "Full-service video production from concept development through post-production, tailored for commercial, narrative, and documentary projects."
+      'Full-service video production from concept development through post-production, tailored for commercial, narrative, and documentary projects.'
     const serviceItems = props.services?.items?.length
       ? props.services.items
       : [
           {
-            title: "Commercial Direction",
+            title: 'Commercial Direction',
             description:
-              "Brand films, product launches, and advertising campaigns that connect with audiences and drive results.",
+              'Brand films, product launches, and advertising campaigns that connect with audiences and drive results.',
           },
           {
-            title: "Cinematography",
+            title: 'Cinematography',
             description:
-              "Award-winning DP work for features, shorts, music videos, and high-end commercial productions.",
+              'Award-winning DP work for features, shorts, music videos, and high-end commercial productions.',
           },
           {
-            title: "Creative Development",
+            title: 'Creative Development',
             description:
-              "Storyboarding, visual treatment design, and creative consulting from pre-production through delivery.",
+              'Storyboarding, visual treatment design, and creative consulting from pre-production through delivery.',
           },
           {
-            title: "Documentary",
+            title: 'Documentary',
             description:
-              "Long and short-form documentary production with journalistic integrity and cinematic vision.",
+              'Long and short-form documentary production with journalistic integrity and cinematic vision.',
           },
           {
-            title: "Music Videos",
+            title: 'Music Videos',
             description:
-              "Visual storytelling for artists and labels, from intimate performance pieces to high-concept narratives.",
+              'Visual storytelling for artists and labels, from intimate performance pieces to high-concept narratives.',
           },
           {
-            title: "Post Production",
+            title: 'Post Production',
             description:
-              "Color grading, editing supervision, and delivery for broadcast, theatrical, and digital platforms.",
+              'Color grading, editing supervision, and delivery for broadcast, theatrical, and digital platforms.',
           },
         ]
 
-    const workHeading = props.work?.heading ?? "Selected Work"
+    const workHeading = props.work?.heading ?? 'Selected Work'
     const workDesc =
       props.work?.description ??
-      "A curated selection of recent projects across commercial, narrative, and documentary filmmaking."
+      'A curated selection of recent projects across commercial, narrative, and documentary filmmaking.'
     const workFilters = props.work?.filters?.length
       ? props.work.filters
-      : ["All", "Commercial", "Narrative", "Documentary"]
-    const workLoadMore = props.work?.loadMore ?? "Load More Projects"
+      : ['All', 'Commercial', 'Narrative', 'Documentary']
+    const workLoadMore = props.work?.loadMore ?? 'Load More Projects'
     const workItems = props.work?.items?.length
       ? props.work.items
       : [
           {
-            tag: "Commercial",
-            title: "Velocity Automotive",
-            role: "Director / DP",
+            tag: 'Commercial',
+            title: 'Velocity Automotive',
+            role: 'Director / DP',
             imageAlt:
-              "dramatic cinematic still from a luxury car commercial showing a sleek vehicle on a winding coastal road at golden hour",
+              'dramatic cinematic still from a luxury car commercial showing a sleek vehicle on a winding coastal road at golden hour',
           },
           {
-            tag: "Narrative",
-            title: "Echoes of Rain",
-            role: "Short Film — 2024",
+            tag: 'Narrative',
+            title: 'Echoes of Rain',
+            role: 'Short Film — 2024',
             imageAlt:
-              "atmospheric still from an independent film scene showing two actors in intimate conversation at a rain-soaked diner booth",
+              'atmospheric still from an independent film scene showing two actors in intimate conversation at a rain-soaked diner booth',
           },
           {
-            tag: "Documentary",
-            title: "The North Face: Boundless",
-            role: "Director",
+            tag: 'Documentary',
+            title: 'The North Face: Boundless',
+            role: 'Director',
             imageAlt:
-              "stunning mountain landscape cinematography shot for outdoor brand campaign showing hiker silhouetted against dramatic alpine peaks",
+              'stunning mountain landscape cinematography shot for outdoor brand campaign showing hiker silhouetted against dramatic alpine peaks',
           },
           {
-            tag: "Music Video",
-            title: "Midnight Bloom — Aurora",
-            role: "Director / Cinematographer",
+            tag: 'Music Video',
+            title: 'Midnight Bloom — Aurora',
+            role: 'Director / Cinematographer',
             imageAlt:
-              "dynamic concert photography still from a music video shoot showing a performer on stage with dramatic purple and blue stage lighting",
+              'dynamic concert photography still from a music video shoot showing a performer on stage with dramatic purple and blue stage lighting',
           },
           {
-            tag: "Fashion Film",
-            title: "Maison Lumière SS24",
-            role: "Director",
+            tag: 'Fashion Film',
+            title: 'Maison Lumière SS24',
+            role: 'Director',
             imageAlt:
-              "elegant product cinematography still from a fashion brand film showing model in flowing silk dress against minimalist white background with soft lighting",
+              'elegant product cinematography still from a fashion brand film showing model in flowing silk dress against minimalist white background with soft lighting',
           },
           {
-            tag: "Corporate",
-            title: "Notion — Work Reimagined",
-            role: "Director / DP",
+            tag: 'Corporate',
+            title: 'Notion — Work Reimagined',
+            role: 'Director / DP',
             imageAlt:
-              "candid documentary-style photograph from a tech startup culture film showing diverse team collaborating in modern glass-walled office space",
+              'candid documentary-style photograph from a tech startup culture film showing diverse team collaborating in modern glass-walled office space',
           },
           {
-            tag: "Documentary",
+            tag: 'Documentary',
             title: "Chef's Table: Origins",
-            role: "Cinematographer — Ep. 3, 5, 7",
+            role: 'Cinematographer — Ep. 3, 5, 7',
             imageAlt:
-              "artistic food cinematography still from a culinary documentary showing chef hands plating an exquisite dish in professional kitchen with steam rising",
+              'artistic food cinematography still from a culinary documentary showing chef hands plating an exquisite dish in professional kitchen with steam rising',
           },
           {
-            tag: "Live Event",
-            title: "Electric Forest 2024",
-            role: "Director of Photography",
+            tag: 'Live Event',
+            title: 'Electric Forest 2024',
+            role: 'Director of Photography',
             imageAlt:
-              "vibrant electronic music festival scene with crowd silhouettes against massive LED stage displays and laser light show",
+              'vibrant electronic music festival scene with crowd silhouettes against massive LED stage displays and laser light show',
           },
           {
-            tag: "Narrative",
+            tag: 'Narrative',
             title: "The Watchmaker's Son",
-            role: "Short Film — Festival Circuit",
+            role: 'Short Film — Festival Circuit',
             imageAlt:
               "intimate close-up still from a narrative film showing an elderly actor's weathered hands holding a vintage pocket watch in soft window light",
           },
         ]
 
-    const processEyebrow = props.process?.eyebrow ?? "The Process"
-    const processHeading = props.process?.heading ?? "How we work together"
+    const processEyebrow = props.process?.eyebrow ?? 'The Process'
+    const processHeading = props.process?.heading ?? 'How we work together'
     const processDesc =
       props.process?.description ??
-      "Every project begins with understanding your vision and ends with delivering a film that exceeds expectations. My process is collaborative, transparent, and designed to bring out the best in every story."
+      'Every project begins with understanding your vision and ends with delivering a film that exceeds expectations. My process is collaborative, transparent, and designed to bring out the best in every story.'
     const processImageAlt =
       props.process?.imageAlt ??
-      "film director reviewing footage on a professional monitor in a color grading suite with calibrated displays and dim ambient lighting"
+      'film director reviewing footage on a professional monitor in a color grading suite with calibrated displays and dim ambient lighting'
     const processSteps = props.process?.steps?.length
       ? props.process.steps
       : [
           {
-            title: "Discovery & Concept",
+            title: 'Discovery & Concept',
             description:
               "We start with deep conversations about your goals, audience, and vision. I develop creative treatments and storyboards that capture the essence of what we're building.",
           },
           {
-            title: "Pre-Production",
+            title: 'Pre-Production',
             description:
-              "Casting, location scouting, shot lists, and schedules. Every detail is planned to ensure a smooth production day and the highest quality footage.",
+              'Casting, location scouting, shot lists, and schedules. Every detail is planned to ensure a smooth production day and the highest quality footage.',
           },
           {
-            title: "Production",
+            title: 'Production',
             description:
-              "On set, I focus on capturing authentic performances and stunning visuals. My approach balances creative spontaneity with meticulous technical execution.",
+              'On set, I focus on capturing authentic performances and stunning visuals. My approach balances creative spontaneity with meticulous technical execution.',
           },
           {
-            title: "Post-Production",
+            title: 'Post-Production',
             description:
-              "Editing, color grading, sound design, and final delivery. I work with top-tier post houses and colorists to ensure your film looks and sounds its best.",
+              'Editing, color grading, sound design, and final delivery. I work with top-tier post houses and colorists to ensure your film looks and sounds its best.',
           },
         ]
     const processQuote =
       props.process?.quote ??
-      "Marcus has an incredible eye for detail and a gift for bringing out authentic performances."
-    const processQuoteName = props.process?.quoteName ?? "Sarah Mitchell"
+      'Marcus has an incredible eye for detail and a gift for bringing out authentic performances.'
+    const processQuoteName = props.process?.quoteName ?? 'Sarah Mitchell'
     const processQuoteRole =
-      props.process?.quoteRole ?? "Creative Director, Nike Global"
+      props.process?.quoteRole ?? 'Creative Director, Nike Global'
 
     const statMetrics = props.stats?.metrics?.length
       ? props.stats.metrics
       : [
-          { value: "87", label: "Projects Completed" },
-          { value: "14", label: "Industry Awards" },
-          { value: "40M+", label: "Combined Views" },
-          { value: "6", label: "Festival Selections" },
+          { value: '87', label: 'Projects Completed' },
+          { value: '14', label: 'Industry Awards' },
+          { value: '40M+', label: 'Combined Views' },
+          { value: '6', label: 'Festival Selections' },
         ]
     const statAwards = props.stats?.awards?.length
       ? props.stats.awards
       : [
-          { name: "Cannes Lions", detail: "Gold Winner 2023" },
-          { name: "AICP Awards", detail: "Best Direction 2024" },
-          { name: "Sundance", detail: "Official Selection 2024" },
+          { name: 'Cannes Lions', detail: 'Gold Winner 2023' },
+          { name: 'AICP Awards', detail: 'Best Direction 2024' },
+          { name: 'Sundance', detail: 'Official Selection 2024' },
         ]
 
-    const testimonialsHeading = props.testimonials?.heading ?? "Client Words"
+    const testimonialsHeading = props.testimonials?.heading ?? 'Client Words'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "What creative directors, brand managers, and fellow filmmakers say about working together."
+      'What creative directors, brand managers, and fellow filmmakers say about working together.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
-            name: "Sarah Mitchell",
-            role: "Creative Director, Nike",
+            name: 'Sarah Mitchell',
+            role: 'Creative Director, Nike',
             quote:
-              "Marcus has an incredible eye for detail and a gift for bringing out authentic performances. The campaign exceeded all our KPIs and won a Cannes Lion.",
+              'Marcus has an incredible eye for detail and a gift for bringing out authentic performances. The campaign exceeded all our KPIs and won a Cannes Lion.',
             avatarAlt:
-              "professional headshot of a smiling female creative director with short brown hair wearing minimalist black clothing",
+              'professional headshot of a smiling female creative director with short brown hair wearing minimalist black clothing',
           },
           {
-            name: "David Park",
-            role: "Executive Producer, Pulse Films",
+            name: 'David Park',
+            role: 'Executive Producer, Pulse Films',
             quote:
               "Working with Marcus is seamless. He comes prepared, communicates clearly, and delivers footage that's always beautifully composed. A true professional.",
             avatarAlt:
-              "professional headshot of a male film producer in his forties with glasses and graying beard wearing a casual button shirt",
+              'professional headshot of a male film producer in his forties with glasses and graying beard wearing a casual button shirt',
           },
           {
-            name: "Emma Larsson",
-            role: "VP Marketing, Spotify",
+            name: 'Emma Larsson',
+            role: 'VP Marketing, Spotify',
             quote:
-              "Marcus directed our global brand film with such care and vision. He understood our brand instantly and elevated the concept beyond what we imagined.",
+              'Marcus directed our global brand film with such care and vision. He understood our brand instantly and elevated the concept beyond what we imagined.',
             avatarAlt:
-              "professional headshot of a female marketing executive with blonde hair wearing elegant business attire and subtle jewelry",
+              'professional headshot of a female marketing executive with blonde hair wearing elegant business attire and subtle jewelry',
           },
           {
-            name: "Julian Reyes",
-            role: "Artist, Midnight Bloom",
+            name: 'Julian Reyes',
+            role: 'Artist, Midnight Bloom',
             quote:
               "The music video Marcus created for us captured the exact emotion of the song. He's a director who truly listens and understands artistic vision.",
             avatarAlt:
-              "professional headshot of a young male indie musician with curly dark hair and artistic style wearing a vintage jacket",
+              'professional headshot of a young male indie musician with curly dark hair and artistic style wearing a vintage jacket',
           },
           {
-            name: "Robert Chen",
-            role: "Founder, Chen & Partners",
+            name: 'Robert Chen',
+            role: 'Founder, Chen & Partners',
             quote:
               "We've worked with Marcus on six campaigns now. He consistently delivers cinematic quality while staying on time and on budget. Our go-to director.",
             avatarAlt:
-              "professional headshot of a mature male advertising agency founder with distinguished gray hair wearing a premium suit",
+              'professional headshot of a mature male advertising agency founder with distinguished gray hair wearing a premium suit',
           },
           {
-            name: "Nina Okafor",
-            role: "Producer, Netflix Documentaries",
+            name: 'Nina Okafor',
+            role: 'Producer, Netflix Documentaries',
             quote:
               "Marcus's cinematography on Chef's Table was breathtaking. He finds beauty in the smallest details and elevates every frame to art.",
             avatarAlt:
-              "professional headshot of a female documentary producer with dark hair and natural makeup wearing practical outdoor clothing",
+              'professional headshot of a female documentary producer with dark hair and natural makeup wearing practical outdoor clothing',
           },
         ]
 
-    const pricingHeading = props.pricing?.heading ?? "Investment"
+    const pricingHeading = props.pricing?.heading ?? 'Investment'
     const pricingDesc =
       props.pricing?.description ??
-      "Transparent pricing for different project scopes. Every package includes full production services from concept to delivery."
+      'Transparent pricing for different project scopes. Every package includes full production services from concept to delivery.'
     const pricingTiers = props.pricing?.tiers?.length
       ? props.pricing.tiers
       : [
           {
-            name: "Essential",
-            price: "$15,000",
-            suffix: "+",
+            name: 'Essential',
+            price: '$15,000',
+            suffix: '+',
             description:
-              "Perfect for brand stories, testimonials, and social content.",
+              'Perfect for brand stories, testimonials, and social content.',
             features: [
-              "1 day of production",
-              "1-2 minute final cut",
-              "Basic color grading",
-              "2 revision rounds",
-              "Licensed music",
+              '1 day of production',
+              '1-2 minute final cut',
+              'Basic color grading',
+              '2 revision rounds',
+              'Licensed music',
             ],
-            cta: "Get Started",
+            cta: 'Get Started',
           },
           {
-            name: "Professional",
-            price: "$35,000",
-            suffix: "+",
+            name: 'Professional',
+            price: '$35,000',
+            suffix: '+',
             description:
-              "Comprehensive campaigns, brand films, and commercial spots.",
+              'Comprehensive campaigns, brand films, and commercial spots.',
             features: [
-              "2-3 days of production",
-              "2-3 minute final cut",
-              "Premium color grade",
-              "Custom sound design",
-              "3 revision rounds",
-              "Multiple deliverables",
+              '2-3 days of production',
+              '2-3 minute final cut',
+              'Premium color grade',
+              'Custom sound design',
+              '3 revision rounds',
+              'Multiple deliverables',
             ],
-            cta: "Get Started",
+            cta: 'Get Started',
             popular: true,
-            popularLabel: "Most Popular",
+            popularLabel: 'Most Popular',
           },
           {
-            name: "Premium",
-            price: "Custom",
+            name: 'Premium',
+            price: 'Custom',
             description:
-              "Multi-spot campaigns, documentary series, and high-end productions.",
+              'Multi-spot campaigns, documentary series, and high-end productions.',
             features: [
-              "Multi-day production",
-              "Multiple deliverables",
-              "Feature-film quality",
-              "Dedicated post team",
-              "Unlimted revisions",
-              "Global locations",
+              'Multi-day production',
+              'Multiple deliverables',
+              'Feature-film quality',
+              'Dedicated post team',
+              'Unlimted revisions',
+              'Global locations',
             ],
-            cta: "Contact for Quote",
+            cta: 'Contact for Quote',
           },
         ]
 
-    const faqHeading = props.faq?.heading ?? "Common Questions"
+    const faqHeading = props.faq?.heading ?? 'Common Questions'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know about working together."
+      'Everything you need to know about working together.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "What is your typical project timeline?",
+            question: 'What is your typical project timeline?',
             answer:
-              "Most projects take 4-8 weeks from kickoff to final delivery. This includes 1-2 weeks for pre-production (casting, locations, shot lists), 1-3 days of filming, and 2-4 weeks for post-production. Rush timelines are possible with advance notice and may incur additional fees.",
+              'Most projects take 4-8 weeks from kickoff to final delivery. This includes 1-2 weeks for pre-production (casting, locations, shot lists), 1-3 days of filming, and 2-4 weeks for post-production. Rush timelines are possible with advance notice and may incur additional fees.',
           },
           {
-            question: "Do you work with international clients?",
+            question: 'Do you work with international clients?',
             answer:
               "Absolutely. I've filmed projects across North America, Europe, and Asia. I'm based in Los Angeles but travel frequently for productions. Remote pre-production via video calls works seamlessly, and I've built relationships with local crews in major cities worldwide.",
           },
           {
-            question: "What equipment do you shoot on?",
+            question: 'What equipment do you shoot on?',
             answer:
               "I typically shoot on ARRI Alexa Mini LF or Sony Venice 2 for high-end projects, and RED Komodo for more nimble productions. I work with talented DP colleagues for projects requiring specific expertise. All equipment packages are customized to the project's creative and budgetary needs.",
           },
           {
-            question: "How do you handle music licensing?",
+            question: 'How do you handle music licensing?',
             answer:
-              "Music is integral to my process. For Essential packages, I use high-quality licensed tracks from premium libraries. For Professional and Premium projects, I work with composers for custom scores or license commercial tracks through my network of music supervisors. All licensing is handled professionally and included in your quote.",
+              'Music is integral to my process. For Essential packages, I use high-quality licensed tracks from premium libraries. For Professional and Premium projects, I work with composers for custom scores or license commercial tracks through my network of music supervisors. All licensing is handled professionally and included in your quote.',
           },
           {
-            question: "Can you work with our existing agency team?",
+            question: 'Can you work with our existing agency team?',
             answer:
               "Of course. I regularly collaborate with creative directors, art directors, and account teams from agencies large and small. I'm experienced in taking creative direction while also bringing my own visual perspective to elevate the work. Clear communication and shared references ensure we're aligned throughout.",
           },
           {
-            question: "What deliverables do you provide?",
+            question: 'What deliverables do you provide?',
             answer:
-              "Every project includes the master cut in 4K or HD, along with format-specific versions for social platforms (9:16 vertical, 1:1 square, 16:9). I also provide still frames for press use, and can deliver raw footage on request. Color-graded versions for broadcast specs are available upon request.",
+              'Every project includes the master cut in 4K or HD, along with format-specific versions for social platforms (9:16 vertical, 1:1 square, 16:9). I also provide still frames for press use, and can deliver raw footage on request. Color-graded versions for broadcast specs are available upon request.',
           },
         ]
 
     const contactHeading =
-      props.contact?.heading ?? "Ready to create something remarkable?"
+      props.contact?.heading ?? 'Ready to create something remarkable?'
     const contactDesc =
       props.contact?.description ??
       "Let's discuss your project, timeline, and vision. I'm currently booking projects for Q3 2025."
-    const contactEmail = props.contact?.email ?? "hello@marcuschen.film"
-    const contactPhone = props.contact?.phone ?? "+1 (310) 555-1234"
-    const contactStudioLabel = props.contact?.studioLabel ?? "Studio"
+    const contactPhone = props.contact?.phone ?? '+1 (310) 555-1234'
+    const contactStudioLabel = props.contact?.studioLabel ?? 'Studio'
     const contactStudio =
-      props.contact?.studio ?? "1247 Abbot Kinney Blvd, Venice, CA 90291"
-    const contactRepLabel = props.contact?.repLabel ?? "Representation"
+      props.contact?.studio ?? '1247 Abbot Kinney Blvd, Venice, CA 90291'
+    const contactRepLabel = props.contact?.repLabel ?? 'Representation'
     const contactRep =
       props.contact?.rep ??
-      "Samantha Wright, United Talent Agency, samantha.wright@uta.com"
-    const contactSocialLabel = props.contact?.socialLabel ?? "Social"
+      'Samantha Wright, United Talent Agency, samantha.wright@uta.com'
+    const contactSocialLabel = props.contact?.socialLabel ?? 'Social'
     const contactSocial = props.contact?.social?.length
       ? props.contact.social
-      : ["Instagram", "Vimeo", "LinkedIn"]
+      : ['Instagram', 'Vimeo', 'LinkedIn']
 
-    const footerNote = props.footer?.note ?? "All rights reserved."
+    const footerNote = props.footer?.note ?? 'All rights reserved.'
     const footerLinks = props.footer?.links?.length
       ? props.footer.links
-      : ["Privacy", "Terms", "Credits"]
+      : ['Privacy', 'Terms', 'Credits']
 
     const PlayIcon = ({ className }: { className?: string }) => (
       <svg
@@ -845,9 +849,7 @@ export const FilmDirectorKimiPage = defineCapsule({
     ]
 
     const renderHeading = () => {
-      const idx = heroHighlight
-        ? heroHeading.indexOf(heroHighlight)
-        : -1
+      const idx = heroHighlight ? heroHeading.indexOf(heroHighlight) : -1
       if (idx === -1) return heroHeading
       return (
         <>
@@ -861,7 +863,7 @@ export const FilmDirectorKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -1217,10 +1219,10 @@ export const FilmDirectorKimiPage = defineCapsule({
                       type="button"
                       onClick={() => go(f)}
                       className={cn(
-                        "rounded-md px-4 py-2 transition-colors",
+                        'rounded-md px-4 py-2 transition-colors',
                         i === 0
-                          ? "border border-background hover:bg-background hover:text-foreground"
-                          : "text-background/70 hover:text-background",
+                          ? 'border border-background hover:bg-background hover:text-foreground'
+                          : 'text-background/70 hover:text-background',
                       )}
                     >
                       {f}
@@ -1445,23 +1447,23 @@ export const FilmDirectorKimiPage = defineCapsule({
                   <div
                     key={tier.name}
                     className={cn(
-                      "relative rounded-md p-8",
+                      'relative rounded-md p-8',
                       tier.popular
-                        ? "bg-foreground text-background"
-                        : "border border-border bg-card text-card-foreground",
+                        ? 'bg-foreground text-background'
+                        : 'border border-border bg-card text-card-foreground',
                     )}
                   >
                     {tier.popular && (
                       <div className="absolute right-0 top-0 rounded-bl-md bg-background px-3 py-1 text-xs text-foreground">
-                        {tier.popularLabel ?? "Most Popular"}
+                        {tier.popularLabel ?? 'Most Popular'}
                       </div>
                     )}
                     <p
                       className={cn(
-                        "mb-2 text-sm uppercase tracking-wider",
+                        'mb-2 text-sm uppercase tracking-wider',
                         tier.popular
-                          ? "text-background/70"
-                          : "text-muted-foreground",
+                          ? 'text-background/70'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {tier.name}
@@ -1472,8 +1474,8 @@ export const FilmDirectorKimiPage = defineCapsule({
                         <span
                           className={
                             tier.popular
-                              ? "text-background/70"
-                              : "text-muted-foreground"
+                              ? 'text-background/70'
+                              : 'text-muted-foreground'
                           }
                         >
                           {tier.suffix}
@@ -1482,10 +1484,10 @@ export const FilmDirectorKimiPage = defineCapsule({
                     </div>
                     <p
                       className={cn(
-                        "mb-6 text-sm",
+                        'mb-6 text-sm',
                         tier.popular
-                          ? "text-background/70"
-                          : "text-muted-foreground",
+                          ? 'text-background/70'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {tier.description}
@@ -1502,10 +1504,10 @@ export const FilmDirectorKimiPage = defineCapsule({
                       type="button"
                       onClick={() => go(tier.cta)}
                       className={cn(
-                        "w-full rounded-md py-3 text-sm transition-colors",
+                        'w-full rounded-md py-3 text-sm transition-colors',
                         tier.popular
-                          ? "bg-background text-foreground hover:bg-background/90"
-                          : "border border-border hover:border-foreground",
+                          ? 'bg-background text-foreground hover:bg-background/90'
+                          : 'border border-border hover:border-foreground',
                       )}
                     >
                       {tier.cta}
@@ -1584,7 +1586,8 @@ export const FilmDirectorKimiPage = defineCapsule({
                     <SheetHeader className="border-b border-border p-6">
                       <SheetTitle className="text-xl">Send Inquiry</SheetTitle>
                       <SheetDescription>
-                        Tell us about your project and we'll get back to you within 24 hours.
+                        Tell us about your project and we'll get back to you
+                        within 24 hours.
                       </SheetDescription>
                     </SheetHeader>
                     <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -1592,11 +1595,16 @@ export const FilmDirectorKimiPage = defineCapsule({
                         className="space-y-4"
                         onSubmit={(e) => {
                           e.preventDefault()
-                          void submitInquiry(inquiryName, inquiryEmail, inquiryProjectType, inquiryMessage)
-                          setInquiryName("")
-                          setInquiryEmail("")
-                          setInquiryProjectType("")
-                          setInquiryMessage("")
+                          void submitInquiry(
+                            inquiryName,
+                            inquiryEmail,
+                            inquiryProjectType,
+                            inquiryMessage,
+                          )
+                          setInquiryName('')
+                          setInquiryEmail('')
+                          setInquiryProjectType('')
+                          setInquiryMessage('')
                           setInquiryOpen(false)
                         }}
                       >
@@ -1644,7 +1652,9 @@ export const FilmDirectorKimiPage = defineCapsule({
                           <select
                             id="inquiry-project-type"
                             value={inquiryProjectType}
-                            onChange={(e) => setInquiryProjectType(e.target.value)}
+                            onChange={(e) =>
+                              setInquiryProjectType(e.target.value)
+                            }
                             required
                             className="w-full rounded-md border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                           >
@@ -1690,14 +1700,24 @@ export const FilmDirectorKimiPage = defineCapsule({
                         type="button"
                         className="rounded-full"
                         onClick={() => {
-                          void submitInquiry(inquiryName, inquiryEmail, inquiryProjectType, inquiryMessage)
-                          setInquiryName("")
-                          setInquiryEmail("")
-                          setInquiryProjectType("")
-                          setInquiryMessage("")
+                          void submitInquiry(
+                            inquiryName,
+                            inquiryEmail,
+                            inquiryProjectType,
+                            inquiryMessage,
+                          )
+                          setInquiryName('')
+                          setInquiryEmail('')
+                          setInquiryProjectType('')
+                          setInquiryMessage('')
                           setInquiryOpen(false)
                         }}
-                        disabled={!inquiryName || !inquiryEmail || !inquiryProjectType || !inquiryMessage}
+                        disabled={
+                          !inquiryName ||
+                          !inquiryEmail ||
+                          !inquiryProjectType ||
+                          !inquiryMessage
+                        }
                       >
                         Send Inquiry
                       </Button>

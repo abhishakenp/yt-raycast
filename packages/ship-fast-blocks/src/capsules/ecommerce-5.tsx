@@ -24,9 +24,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const EcommerceKimiPage5 = defineCapsule({
-  name: "EcommerceKimiPage5",
+  name: 'EcommerceKimiPage5',
   description:
-    "Ecommerce fifth style sibling to EcommerceKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Ecommerce fifth style sibling to EcommerceKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const EcommerceKimiPage5 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -83,12 +85,107 @@ export const EcommerceKimiPage5 = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
+  lakebed: {
+    schema: {
+      products: table({
+        alt: string(),
+        badge: string(),
+        brand: string(),
+        image: string(),
+        name: string(),
+        oldPrice: string(),
+        price: string(),
+      }),
+      cartItems: table({
+        productId: string(),
+        quantity: number(),
+      }),
+      favorites: table({
+        productName: string(),
+      }),
+    },
+    queries: {
+      products: ({ db }) => db.products.orderBy('createdAt').all(),
+      cartLines: ({ db }) =>
+        db.cartItems.all().flatMap((item) => {
+          const product = db.products.get(item.productId)
+          return product ? [{ ...item, product }] : []
+        }),
+      favoriteProductNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.productName)),
+    },
+    mutations: {
+      addToCart: ({ db }, productName: string) => {
+        const product = db.products.where('name', productName).all()[0]
+        if (!product) return db.cartItems.all()
+
+        const existingItem = db.cartItems
+          .where('productId', product.id)
+          .all()[0]
+
+        if (existingItem) {
+          db.cartItems.update(existingItem.id, {
+            quantity: existingItem.quantity + 1,
+          })
+        } else {
+          db.cartItems.insert({
+            productId: product.id,
+            quantity: 1,
+          })
+        }
+
+        return db.cartItems.all()
+      },
+      updateCartQuantity: ({ db }, productId: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+
+        for (const item of db.cartItems.where('productId', productId).all()) {
+          if (nextQuantity) {
+            db.cartItems.update(item.id, { quantity: nextQuantity })
+          } else {
+            db.cartItems.delete(item.id)
+          }
+        }
+
+        return db.cartItems.all()
+      },
+      removeFromCart: ({ db }, productId: string) => {
+        for (const item of db.cartItems.where('productId', productId).all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return db.cartItems.all()
+      },
+      clearCart: ({ db }) => {
+        for (const item of db.cartItems.all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return []
+      },
+      toggleFavorite: ({ db }, productName: string) => {
+        const existingFavorite = db.favorites
+          .where('productName', productName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ productName })
+        return true
+      },
+    },
+  },
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [cartOpen, setCartOpen] = useState(false)
-    const brand = props.brand ?? "E"
-    const nav = props.nav?.length ? props.nav : ["New Arrivals", "Dresses", "Tops", "Sale"]
+    const brand = props.brand ?? 'E'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['New Arrivals', 'Dresses', 'Tops', 'Sale']
 
     const priceAmount = (price: string) => {
       const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ''))
@@ -101,82 +198,82 @@ export const EcommerceKimiPage5 = defineCapsule({
       }).format(amount)
 
     const hero = {
-      eyebrow: "Ecommerce / Variant 5",
-      title: "Summer Collection",
-      description: "E-commerce Storefront StyleCo New Arrivals Dresses Tops Sale 2 Summer Collection Elevate your style with our latest arrivals Shop Collection Browse Categories Dresses Tops & Blo...",
-      primaryCta: "Shop Collection",
-      secondaryCta: "Add to Bag",
-      imageAlt: "ecommerce hero scene",
+      eyebrow: 'Ecommerce / Variant 5',
+      title: 'Summer Collection',
+      description:
+        'E-commerce Storefront StyleCo New Arrivals Dresses Tops Sale 2 Summer Collection Elevate your style with our latest arrivals Shop Collection Browse Categories Dresses Tops & Blo...',
+      primaryCta: 'Shop Collection',
+      secondaryCta: 'Add to Bag',
+      imageAlt: 'ecommerce hero scene',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Browse Categories",
-    "body": "E-commerce Storefront StyleCo New Arrivals Dresses Tops Sale 2 Summer Collection Elevate your style with our latest arrivals Shop Collection Browse Categories Dresses Tops & Blo...",
-    "items": [
-      "Tops & Blouses",
-      "Floral Maxi Dress",
-      "Silk Blouse"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "Trending Now",
-    "body": "Ecommerce page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "High-Waist Skirt",
-      "Linen Trousers"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Join Our Newsletter",
-    "body": "Ecommerce page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": []
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Tops & Blouses",
-    "body": "Ecommerce page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": []
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "Trending Now",
-    "alt": "ecommerce hero scene",
-    "caption": "Ecommerce generated page detail"
-  },
-  {
-    "title": "Join Our Newsletter",
-    "alt": "ecommerce customer experience",
-    "caption": "Ecommerce generated page detail"
-  },
-  {
-    "title": "Dresses",
-    "alt": "ecommerce service detail",
-    "caption": "Ecommerce generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'Browse Categories',
+            body: 'E-commerce Storefront StyleCo New Arrivals Dresses Tops Sale 2 Summer Collection Elevate your style with our latest arrivals Shop Collection Browse Categories Dresses Tops & Blo...',
+            items: ['Tops & Blouses', 'Floral Maxi Dress', 'Silk Blouse'],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'Trending Now',
+            body: "Ecommerce page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['High-Waist Skirt', 'Linen Trousers'],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Join Our Newsletter',
+            body: "Ecommerce page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Tops & Blouses',
+            body: "Ecommerce page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'Trending Now',
+            alt: 'ecommerce hero scene',
+            caption: 'Ecommerce generated page detail',
+          },
+          {
+            title: 'Join Our Newsletter',
+            alt: 'ecommerce customer experience',
+            caption: 'Ecommerce generated page detail',
+          },
+          {
+            title: 'Dresses',
+            alt: 'ecommerce service detail',
+            caption: 'Ecommerce generated page detail',
+          },
+        ]
 
     const productsHeading = props.products?.heading ?? 'New Arrivals'
     const productsSub =
@@ -353,12 +450,17 @@ export const EcommerceKimiPage5 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
           <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 lg:h-20">
             <button
               type="button"
-              onClick={() => go("Home")}
+              onClick={() => go('Home')}
               className="text-left text-lg font-semibold tracking-tight text-foreground"
             >
               {brand}
@@ -787,16 +889,28 @@ export const EcommerceKimiPage5 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -804,10 +918,19 @@ export const EcommerceKimiPage5 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -831,8 +954,12 @@ export const EcommerceKimiPage5 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -844,11 +971,27 @@ export const EcommerceKimiPage5 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} src={item.image} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    src={item.image}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -893,8 +1036,7 @@ export const EcommerceKimiPage5 = defineCapsule({
                         <span
                           className={cn(
                             'absolute left-3 top-3 rounded px-2 py-1 text-xs font-semibold text-primary-foreground',
-                            product.badge === 'Sale' ||
-                              product.badge === '-15%'
+                            product.badge === 'Sale' || product.badge === '-15%'
                               ? 'bg-destructive'
                               : 'bg-foreground',
                           )}
@@ -960,9 +1102,15 @@ export const EcommerceKimiPage5 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -978,10 +1126,17 @@ export const EcommerceKimiPage5 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

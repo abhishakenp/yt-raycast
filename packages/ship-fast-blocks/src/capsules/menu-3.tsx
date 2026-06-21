@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,19 +14,19 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const MenuKimiPage3 = defineCapsule({
-  name: "MenuKimiPage3",
+  name: 'MenuKimiPage3',
   description:
-    "Menu third style sibling to MenuKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Menu third style sibling to MenuKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const MenuKimiPage3 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -113,7 +115,9 @@ export const MenuKimiPage3 = defineCapsule({
       updateOrderQuantity: ({ db }, menuItemId: string, quantity: number) => {
         const nextQuantity = Math.max(0, Math.floor(quantity))
 
-        for (const item of db.orderItems.where('menuItemId', menuItemId).all()) {
+        for (const item of db.orderItems
+          .where('menuItemId', menuItemId)
+          .all()) {
           if (nextQuantity) {
             db.orderItems.update(item.id, { quantity: nextQuantity })
           } else {
@@ -124,7 +128,9 @@ export const MenuKimiPage3 = defineCapsule({
         return db.orderItems.all()
       },
       removeFromOrder: ({ db }, menuItemId: string) => {
-        for (const item of db.orderItems.where('menuItemId', menuItemId).all()) {
+        for (const item of db.orderItems
+          .where('menuItemId', menuItemId)
+          .all()) {
           db.orderItems.delete(item.id)
         }
 
@@ -156,94 +162,100 @@ export const MenuKimiPage3 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [orderOpen, setOrderOpen] = useState(false)
-    const brand = props.brand ?? "Restaurant Menu"
-    const nav = props.nav?.length ? props.nav : ["Reservations", "Private Events"]
+    const brand = props.brand ?? 'Restaurant Menu'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Reservations', 'Private Events']
     const hero = {
-      eyebrow: "Menu / Variant 3",
-      title: "Seasonal Menu",
-      description: "Restaurant Menu SAGE & OAK Menu Reservations Private Events Seasonal Menu Farm-to-table cuisine inspired by nature Small Plates Heirloom Tomato Salad Mixed heirloom tomatoes, bu...",
-      primaryCta: "Menu",
-      secondaryCta: "Reservations",
-      imageAlt: "menu hero scene",
+      eyebrow: 'Menu / Variant 3',
+      title: 'Seasonal Menu',
+      description:
+        'Restaurant Menu SAGE & OAK Menu Reservations Private Events Seasonal Menu Farm-to-table cuisine inspired by nature Small Plates Heirloom Tomato Salad Mixed heirloom tomatoes, bu...',
+      primaryCta: 'Menu',
+      secondaryCta: 'Reservations',
+      imageAlt: 'menu hero scene',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Small Plates",
-    "body": "Restaurant Menu SAGE & OAK Menu Reservations Private Events Seasonal Menu Farm-to-table cuisine inspired by nature Small Plates Heirloom Tomato Salad Mixed heirloom tomatoes, bu...",
-    "items": [
-      "Roasted Beet Carpaccio",
-      "Duck Confit Spring Rolls",
-      "Pan-Roasted Duck Breast"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "Heirloom Tomato Salad",
-    "body": "Menu page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Grilled Branzino",
-      "Braised Short Rib",
-      "Wild Mushroom Pasta"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Charred Octopus",
-    "body": "Menu page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Truffle Fries",
-      "Roasted Brussels Sprouts",
-      "Creamed Spinach"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Roasted Beet Carpaccio",
-    "body": "Menu page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Market Vegetables"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "Entrees",
-    "alt": "menu hero scene",
-    "caption": "Menu generated page detail"
-  },
-  {
-    "title": "Sides",
-    "alt": "menu customer experience",
-    "caption": "Menu generated page detail"
-  },
-  {
-    "title": "Heirloom Tomato Salad",
-    "alt": "menu service detail",
-    "caption": "Menu generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'Small Plates',
+            body: 'Restaurant Menu SAGE & OAK Menu Reservations Private Events Seasonal Menu Farm-to-table cuisine inspired by nature Small Plates Heirloom Tomato Salad Mixed heirloom tomatoes, bu...',
+            items: [
+              'Roasted Beet Carpaccio',
+              'Duck Confit Spring Rolls',
+              'Pan-Roasted Duck Breast',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'Heirloom Tomato Salad',
+            body: "Menu page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Grilled Branzino',
+              'Braised Short Rib',
+              'Wild Mushroom Pasta',
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Charred Octopus',
+            body: "Menu page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Truffle Fries',
+              'Roasted Brussels Sprouts',
+              'Creamed Spinach',
+            ],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Roasted Beet Carpaccio',
+            body: "Menu page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['Market Vegetables'],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'Entrees',
+            alt: 'menu hero scene',
+            caption: 'Menu generated page detail',
+          },
+          {
+            title: 'Sides',
+            alt: 'menu customer experience',
+            caption: 'Menu generated page detail',
+          },
+          {
+            title: 'Heirloom Tomato Salad',
+            alt: 'menu service detail',
+            caption: 'Menu generated page detail',
+          },
+        ]
 
-    const storedMenuItems = lakebed.useQuery('menuItems')
     const orderLines = lakebed.useQuery('orderLines')
     const favoriteMenuItemNames = lakebed.useQuery('favoriteMenuItemNames')
     const auth = lakebed.useAuth()
@@ -288,24 +300,6 @@ export const MenuKimiPage3 = defineCapsule({
         style: 'currency',
       }).format(amount)
 
-    const allMenuItems = sections.flatMap((section) =>
-      (section.items ?? []).map((item) => ({
-        name: item,
-        category: section.title,
-        price: '$18',
-        description: section.body,
-      }))
-    )
-    const normalizedMenuItems = allMenuItems.map((item) => ({
-      name: item.name,
-      category: item.category,
-      price: item.price,
-      description: item.description,
-    }))
-    const displayMenuItems =
-      storedMenuItems && storedMenuItems.length > 0
-        ? storedMenuItems
-        : normalizedMenuItems
     const safeOrderLines = orderLines ?? []
     const orderItemCount = safeOrderLines.reduce(
       (total, item) => total + item.quantity,
@@ -367,10 +361,19 @@ export const MenuKimiPage3 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -780,27 +783,48 @@ export const MenuKimiPage3 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
 
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
-              {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+              {sections.map((section) => (
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => {
@@ -850,8 +874,12 @@ export const MenuKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -863,11 +891,26 @@ export const MenuKimiPage3 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -878,9 +921,15 @@ export const MenuKimiPage3 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -896,10 +945,17 @@ export const MenuKimiPage3 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

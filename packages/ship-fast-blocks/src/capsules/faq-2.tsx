@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -24,9 +24,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const FaqKimiPage2 = defineCapsule({
-  name: "FaqKimiPage2",
+  name: 'FaqKimiPage2',
   description:
-    "Faq second style sibling to FaqKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Faq second style sibling to FaqKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const FaqKimiPage2 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -128,94 +130,95 @@ export const FaqKimiPage2 = defineCapsule({
     const handleSignOut = () => {
       lakebed.signOut()
     }
-    const brand = props.brand ?? "Relay Help Center Answers, Guides & Support"
-    const nav = props.nav?.length ? props.nav : ["Relay", "Topics", "FAQ", "Support Plans", "Guides", "Get Help"]
+    const brand = props.brand ?? 'Relay Help Center Answers, Guides & Support'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Relay', 'Topics', 'FAQ', 'Support Plans', 'Guides', 'Get Help']
     const hero = {
-      eyebrow: "Faq / Variant 2",
-      title: "How can we help you today?",
-      description: "Relay Help Center Answers, Guides & Support Relay Topics FAQ Support Plans Guides Get Help How can we help you today? Search our knowledge base of 12,000+ articles, browse curat...",
-      primaryCta: "Relay",
-      secondaryCta: "Topics",
-      imageAlt: "Abstract flowing gradient shapes in purple and magenta",
+      eyebrow: 'Faq / Variant 2',
+      title: 'How can we help you today?',
+      description:
+        'Relay Help Center Answers, Guides & Support Relay Topics FAQ Support Plans Guides Get Help How can we help you today? Search our knowledge base of 12,000+ articles, browse curat...',
+      primaryCta: 'Relay',
+      secondaryCta: 'Topics',
+      imageAlt: 'Abstract flowing gradient shapes in purple and magenta',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Browse by topic",
-    "body": "Relay Help Center Answers, Guides & Support Relay Topics FAQ Support Plans Guides Get Help How can we help you today? Search our knowledge base of 12,000+ articles, browse curat...",
-    "items": [
-      "Choose your support level",
-      "Loved by teams everywhere",
-      "Frequently asked questions"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "Get answers in three simple steps",
-    "body": "Faq page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Still need help?",
-      "Getting Started",
-      "Billing & Plans"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "See it in action",
-    "body": "Faq page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "API & Developers",
-      "Security & Compliance",
-      "Integrations"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Choose your support level",
-    "body": "Faq page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Troubleshooting",
-      "Community",
-      "Business"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "Get answers in three simple steps",
-    "alt": "Abstract flowing gradient shapes in purple and magenta",
-    "caption": "Faq generated page detail"
-  },
-  {
-    "title": "See it in action",
-    "alt": "Friendly customer support representative wearing a headset at a modern desk",
-    "caption": "Faq generated page detail"
-  },
-  {
-    "title": "Choose your support level",
-    "alt": "Stripe company logo placeholder",
-    "caption": "Faq generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'Browse by topic',
+            body: 'Relay Help Center Answers, Guides & Support Relay Topics FAQ Support Plans Guides Get Help How can we help you today? Search our knowledge base of 12,000+ articles, browse curat...',
+            items: [
+              'Choose your support level',
+              'Loved by teams everywhere',
+              'Frequently asked questions',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'Get answers in three simple steps',
+            body: "Faq page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['Still need help?', 'Getting Started', 'Billing & Plans'],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'See it in action',
+            body: "Faq page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'API & Developers',
+              'Security & Compliance',
+              'Integrations',
+            ],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Choose your support level',
+            body: "Faq page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['Troubleshooting', 'Community', 'Business'],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'Get answers in three simple steps',
+            alt: 'Abstract flowing gradient shapes in purple and magenta',
+            caption: 'Faq generated page detail',
+          },
+          {
+            title: 'See it in action',
+            alt: 'Friendly customer support representative wearing a headset at a modern desk',
+            caption: 'Faq generated page detail',
+          },
+          {
+            title: 'Choose your support level',
+            alt: 'Stripe company logo placeholder',
+            caption: 'Faq generated page detail',
+          },
+        ]
 
     const safeSavedArticles = savedArticles ?? []
     const savedCount = safeSavedArticles.length
@@ -272,10 +275,19 @@ export const FaqKimiPage2 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -456,7 +468,8 @@ export const FaqKimiPage2 = defineCapsule({
                           No saved articles
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Bookmark articles from the sections below to save them for later.
+                          Bookmark articles from the sections below to save them
+                          for later.
                         </p>
                       </div>
                     )}
@@ -620,16 +633,28 @@ export const FaqKimiPage2 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -637,18 +662,35 @@ export const FaqKimiPage2 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => {
-                const isSaved = safeSavedArticles.some((saved) => saved.title === section.title)
+                const isSaved = safeSavedArticles.some(
+                  (saved) => saved.title === section.title,
+                )
                 return (
-                  <article key={section.title} className="rounded-lg border border-border bg-card p-6">
+                  <article
+                    key={section.title}
+                    className="rounded-lg border border-border bg-card p-6"
+                  >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                        <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                        <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                        <p className="text-sm font-medium text-primary">
+                          {section.eyebrow}
+                        </p>
+                        <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                          {section.title}
+                        </h2>
+                        <p className="mt-3 leading-7 text-muted-foreground">
+                          {section.body}
+                        </p>
                       </div>
                       <button
                         type="button"
-                        onClick={() => void saveArticle(section.title, section.eyebrow, section.body)}
+                        onClick={() =>
+                          void saveArticle(
+                            section.title,
+                            section.eyebrow,
+                            section.body,
+                          )
+                        }
                         aria-pressed={isSaved}
                         aria-label={
                           isSaved
@@ -689,8 +731,12 @@ export const FaqKimiPage2 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -702,11 +748,26 @@ export const FaqKimiPage2 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -717,9 +778,15 @@ export const FaqKimiPage2 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -735,10 +802,17 @@ export const FaqKimiPage2 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

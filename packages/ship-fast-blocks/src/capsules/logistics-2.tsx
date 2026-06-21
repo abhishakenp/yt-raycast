@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,13 +14,13 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
+} from '#/components/ui/sheet.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * LogisticsKimiPage2 — TEMPLATE VARIANT 2 for logistics. A faithful Tailwind v4
@@ -37,7 +37,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * dark footer with social icons.
  */
 export const LogisticsKimiPage2 = defineCapsule({
-  name: "LogisticsKimiPage2",
+  name: 'LogisticsKimiPage2',
   description:
     "Second, visually DISTINCT logistics/shipping/freight LANDING page variant (alternative to LogisticsKimiPage) with a bold, energetic, high-contrast aesthetic: dark on-dark hero band on a deep primary surface with a dot-grid backdrop, an orange-style accent primary, a 'Now in 180+ Countries' animated pulse pill, and a big floating white shipment-tracking card. Use as the ROOT/home page for global-logistics providers, freight forwarders, shipping carriers, courier and parcel companies, supply-chain, warehousing, customs-brokerage, fulfillment, cargo and transport businesses when a punchy, conversion-focused dark-hero alternative is wanted. Sections: sticky navbar with phone + Get Quote CTA; split hero (headline 'Global Logistics. Delivered Fast.', subtext, two CTAs, trust badges) beside a real-time shipment-tracking widget card (tracking-number input, Track Now button, popular-search chips, and shipments/on-time/support quick stats); grayscale 'trusted by' client logo strip; a 6-up services grid (Express Shipping, Freight Forwarding, Warehousing, Cargo Insurance, Supply Chain Analytics, Reverse Logistics — each with an icon, blurb and check-bullet feature list); a dark numbered four-step 'Ship in 4 Simple Steps' how-it-works flow; a 6-image global-infrastructure gallery with port/ocean/warehouse/fleet/air/command-center caption overlays; a full-bleed primary KPI stat band (180+ countries, 2.4M shipments/mo, 45 warehouses, 98.7% on-time) plus a secondary 6-up stat row; a 3-tier pricing table (Starter / Business 'Most Popular' / Enterprise with feature lists); three five-star customer testimonials with avatars; an accordion FAQ; a high-contrast dark closing CTA ('Ready to Ship Smarter?'); and a rich 5-column dark footer with services/company/support columns and social links. Supply content only — brand, nav, hero, logos, services, steps, gallery, stats, pricing, testimonials, faq, cta, footer; the block owns all layout and styling and uses semantic theme tokens only. Prefer this when a logistics page was already generated and a different second style is requested.",
   props: z.object({
@@ -235,7 +235,12 @@ export const LogisticsKimiPage2 = defineCapsule({
         new Set(db.savedQuotes.all().map((saved) => saved.quoteId)),
     },
     mutations: {
-      addShipment: ({ db }, trackingNumber: string, origin: string, destination: string) => {
+      addShipment: (
+        { db },
+        trackingNumber: string,
+        origin: string,
+        destination: string,
+      ) => {
         db.shipments.insert({
           trackingNumber,
           origin,
@@ -245,7 +250,13 @@ export const LogisticsKimiPage2 = defineCapsule({
         })
         return db.shipments.all()
       },
-      addQuote: ({ db }, origin: string, destination: string, weight: string, serviceType: string) => {
+      addQuote: (
+        { db },
+        origin: string,
+        destination: string,
+        weight: string,
+        serviceType: string,
+      ) => {
         const estimatedCost = Math.floor(Math.random() * 500 + 50).toString()
         db.quotes.insert({
           origin,
@@ -277,16 +288,13 @@ export const LogisticsKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [quotesOpen, setQuotesOpen] = useState(false)
-    const brand = props.brand ?? "SwiftRoute"
+    const brand = props.brand ?? 'SwiftRoute'
 
     // Lakebed queries and mutations
-    const storedShipments = lakebed.useQuery('shipments')
     const storedQuotes = lakebed.useQuery('quotes')
-    const savedQuoteIds = lakebed.useQuery('savedQuoteIds')
     const auth = lakebed.useAuth()
     const addShipment = lakebed.useMutation('addShipment')
     const addQuote = lakebed.useMutation('addQuote')
-    const toggleSavedQuote = lakebed.useMutation('toggleSavedQuote')
     const removeQuote = lakebed.useMutation('removeQuote')
 
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
@@ -320,124 +328,124 @@ export const LogisticsKimiPage2 = defineCapsule({
     const quoteCount = safeQuotes.length
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Track", "Solutions", "About", "Contact"]
+      : ['Services', 'Track', 'Solutions', 'About', 'Contact']
 
-    const heroPill = props.hero?.pill ?? "Now in 180+ Countries"
-    const headingTop = props.hero?.headingTop ?? "Global Logistics."
-    const heroHighlight = props.hero?.highlight ?? "Delivered Fast."
+    const heroPill = props.hero?.pill ?? 'Now in 180+ Countries'
+    const headingTop = props.hero?.headingTop ?? 'Global Logistics.'
+    const heroHighlight = props.hero?.highlight ?? 'Delivered Fast.'
     const heroSub =
       props.hero?.subheading ??
-      "Track shipments in real-time, manage freight across continents, and reduce logistics costs by up to 35%. Trusted by 12,000+ businesses worldwide since 2008."
-    const heroPrimary = props.hero?.primaryCta ?? "Get Instant Quote"
-    const heroSecondary = props.hero?.secondaryCta ?? "Explore Services"
+      'Track shipments in real-time, manage freight across continents, and reduce logistics costs by up to 35%. Trusted by 12,000+ businesses worldwide since 2008.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Get Instant Quote'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Explore Services'
     const heroBadges = props.hero?.badges?.length
       ? props.hero.badges
-      : ["4.9/5 TrustScore", "ISO 9001 Certified", "AEO Certified"]
-    const heroPhone = props.hero?.phone ?? "1-800-SWIFT-99"
-    const trackTitle = props.hero?.trackTitle ?? "Track Your Shipment"
+      : ['4.9/5 TrustScore', 'ISO 9001 Certified', 'AEO Certified']
+    const heroPhone = props.hero?.phone ?? '1-800-SWIFT-99'
+    const trackTitle = props.hero?.trackTitle ?? 'Track Your Shipment'
     const trackSubtitle =
-      props.hero?.trackSubtitle ?? "Real-time updates on your delivery"
+      props.hero?.trackSubtitle ?? 'Real-time updates on your delivery'
     const trackPlaceholder =
-      props.hero?.trackPlaceholder ?? "Enter tracking number (e.g., SR-7843921)"
-    const trackButton = props.hero?.trackButton ?? "Track Now"
-    const popularLabel = props.hero?.popularLabel ?? "Popular Searches"
+      props.hero?.trackPlaceholder ?? 'Enter tracking number (e.g., SR-7843921)'
+    const trackButton = props.hero?.trackButton ?? 'Track Now'
+    const popularLabel = props.hero?.popularLabel ?? 'Popular Searches'
     const popular = props.hero?.popular?.length
       ? props.hero.popular
-      : ["SR-7843921", "SR-9023847", "SR-5567283"]
+      : ['SR-7843921', 'SR-9023847', 'SR-5567283']
     const quickStats = props.hero?.quickStats?.length
       ? props.hero.quickStats
       : [
-          { value: "2.4M+", label: "Shipments/mo" },
-          { value: "98.7%", label: "On-time" },
-          { value: "24/7", label: "Support" },
+          { value: '2.4M+', label: 'Shipments/mo' },
+          { value: '98.7%', label: 'On-time' },
+          { value: '24/7', label: 'Support' },
         ]
 
     const logosHeading =
-      props.logos?.heading ?? "Trusted by leading companies worldwide"
+      props.logos?.heading ?? 'Trusted by leading companies worldwide'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
       : [
-          "TechCorp",
-          "GlobalMart",
-          "FastRetail",
-          "PowerGrid",
-          "ApexAuto",
-          "SecureBank",
+          'TechCorp',
+          'GlobalMart',
+          'FastRetail',
+          'PowerGrid',
+          'ApexAuto',
+          'SecureBank',
         ]
 
-    const servicesEyebrow = props.services?.eyebrow ?? "Our Services"
+    const servicesEyebrow = props.services?.eyebrow ?? 'Our Services'
     const servicesHeading =
-      props.services?.heading ?? "Comprehensive Logistics Solutions"
+      props.services?.heading ?? 'Comprehensive Logistics Solutions'
     const servicesDesc =
       props.services?.description ??
-      "From express delivery to complex supply chain management, we provide end-to-end logistics services tailored to your business needs."
+      'From express delivery to complex supply chain management, we provide end-to-end logistics services tailored to your business needs.'
     const serviceItems = props.services?.items?.length
       ? props.services.items
       : [
           {
-            title: "Express Shipping",
+            title: 'Express Shipping',
             description:
-              "Next-day and same-day delivery options for urgent shipments. Guaranteed delivery windows with full insurance coverage.",
+              'Next-day and same-day delivery options for urgent shipments. Guaranteed delivery windows with full insurance coverage.',
             features: [
-              "Delivery in 24-48 hours",
-              "Real-time tracking",
-              "From $12.99 domestic",
+              'Delivery in 24-48 hours',
+              'Real-time tracking',
+              'From $12.99 domestic',
             ],
           },
           {
-            title: "Freight Forwarding",
+            title: 'Freight Forwarding',
             description:
-              "International freight solutions by air, ocean, and road. Customs clearance and documentation handled end-to-end.",
+              'International freight solutions by air, ocean, and road. Customs clearance and documentation handled end-to-end.',
             features: [
-              "Air, sea & land freight",
-              "Customs brokerage included",
-              "180+ country coverage",
+              'Air, sea & land freight',
+              'Customs brokerage included',
+              '180+ country coverage',
             ],
           },
           {
-            title: "Warehousing",
+            title: 'Warehousing',
             description:
-              "Strategic storage facilities across 45 global locations. Inventory management, pick-pack, and fulfillment services.",
+              'Strategic storage facilities across 45 global locations. Inventory management, pick-pack, and fulfillment services.',
             features: [
-              "2.5M sq ft globally",
-              "WMS integration",
-              "Same-day fulfillment",
+              '2.5M sq ft globally',
+              'WMS integration',
+              'Same-day fulfillment',
             ],
           },
           {
-            title: "Cargo Insurance",
+            title: 'Cargo Insurance',
             description:
-              "Comprehensive coverage for all shipment types. Claims processed within 48 hours with dedicated support.",
+              'Comprehensive coverage for all shipment types. Claims processed within 48 hours with dedicated support.',
             features: [
-              "All-risk coverage",
-              "48hr claim processing",
-              "Up to $5M coverage",
+              'All-risk coverage',
+              '48hr claim processing',
+              'Up to $5M coverage',
             ],
           },
           {
-            title: "Supply Chain Analytics",
+            title: 'Supply Chain Analytics',
             description:
-              "AI-powered insights to optimize your logistics. Predict demand, reduce costs, and improve delivery performance.",
+              'AI-powered insights to optimize your logistics. Predict demand, reduce costs, and improve delivery performance.',
             features: [
-              "Real-time dashboards",
-              "Predictive analytics",
-              "API integration",
+              'Real-time dashboards',
+              'Predictive analytics',
+              'API integration',
             ],
           },
           {
-            title: "Reverse Logistics",
+            title: 'Reverse Logistics',
             description:
-              "Streamlined returns management and product refurbishment. Reduce waste and recover value from returned goods.",
+              'Streamlined returns management and product refurbishment. Reduce waste and recover value from returned goods.',
             features: [
-              "Returns processing",
-              "Product refurbishment",
-              "Eco-friendly disposal",
+              'Returns processing',
+              'Product refurbishment',
+              'Eco-friendly disposal',
             ],
           },
         ]
 
-    const stepsEyebrow = props.steps?.eyebrow ?? "How It Works"
-    const stepsHeading = props.steps?.heading ?? "Ship in 4 Simple Steps"
+    const stepsEyebrow = props.steps?.eyebrow ?? 'How It Works'
+    const stepsHeading = props.steps?.heading ?? 'Ship in 4 Simple Steps'
     const stepsDesc =
       props.steps?.description ??
       "From quote to delivery, we've streamlined the entire shipping process for maximum efficiency."
@@ -445,261 +453,262 @@ export const LogisticsKimiPage2 = defineCapsule({
       ? props.steps.items
       : [
           {
-            title: "Get Quote",
+            title: 'Get Quote',
             description:
-              "Enter shipment details and get instant pricing. Compare options across all transport modes.",
+              'Enter shipment details and get instant pricing. Compare options across all transport modes.',
           },
           {
-            title: "Book Shipment",
+            title: 'Book Shipment',
             description:
-              "Confirm booking online or with your account manager. Schedule pickup at your convenience.",
+              'Confirm booking online or with your account manager. Schedule pickup at your convenience.',
           },
           {
-            title: "We Handle It",
+            title: 'We Handle It',
             description:
-              "Pickup, transport, customs clearance, and delivery. Track your shipment in real-time 24/7.",
+              'Pickup, transport, customs clearance, and delivery. Track your shipment in real-time 24/7.',
           },
           {
-            title: "Delivered",
+            title: 'Delivered',
             description:
-              "Receive delivery confirmation with POD signature. Rate your experience and book again.",
+              'Receive delivery confirmation with POD signature. Rate your experience and book again.',
           },
         ]
 
-    const galleryEyebrow = props.gallery?.eyebrow ?? "Our Operations"
-    const galleryHeading = props.gallery?.heading ?? "Global Infrastructure"
+    const galleryEyebrow = props.gallery?.eyebrow ?? 'Our Operations'
+    const galleryHeading = props.gallery?.heading ?? 'Global Infrastructure'
     const galleryDesc =
       props.gallery?.description ??
-      "State-of-the-art facilities and fleet ensuring reliable delivery across continents."
+      'State-of-the-art facilities and fleet ensuring reliable delivery across continents.'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
           {
-            alt: "Aerial view of a modern shipping port with container ships and cargo cranes at sunset",
-            title: "Port of Rotterdam Hub",
+            alt: 'Aerial view of a modern shipping port with container ships and cargo cranes at sunset',
+            title: 'Port of Rotterdam Hub',
             caption: "Europe's largest logistics facility",
           },
           {
-            alt: "Large cargo container ship sailing on the open ocean with blue sky",
-            title: "Ocean Freight Fleet",
-            caption: "45 vessels across major routes",
+            alt: 'Large cargo container ship sailing on the open ocean with blue sky',
+            title: 'Ocean Freight Fleet',
+            caption: '45 vessels across major routes',
           },
           {
-            alt: "Interior of a modern automated warehouse with tall shelving and conveyor systems",
-            title: "Automated Warehouse",
-            caption: "Dubai Smart Logistics Center",
+            alt: 'Interior of a modern automated warehouse with tall shelving and conveyor systems',
+            title: 'Automated Warehouse',
+            caption: 'Dubai Smart Logistics Center',
           },
           {
-            alt: "Fleet of modern delivery trucks parked at a logistics distribution center",
-            title: "Ground Fleet",
-            caption: "2,400+ vehicles worldwide",
+            alt: 'Fleet of modern delivery trucks parked at a logistics distribution center',
+            title: 'Ground Fleet',
+            caption: '2,400+ vehicles worldwide',
           },
           {
-            alt: "Commercial cargo airplane at an airport gate during loading operations",
-            title: "Air Cargo Network",
-            caption: "Daily flights to 180+ airports",
+            alt: 'Commercial cargo airplane at an airport gate during loading operations',
+            title: 'Air Cargo Network',
+            caption: 'Daily flights to 180+ airports',
           },
           {
-            alt: "Logistics control room with multiple screens showing shipment tracking maps and data dashboards",
-            title: "Command Center",
-            caption: "24/7 global monitoring",
+            alt: 'Logistics control room with multiple screens showing shipment tracking maps and data dashboards',
+            title: 'Command Center',
+            caption: '24/7 global monitoring',
           },
         ]
 
     const statsPrimary = props.stats?.primary?.length
       ? props.stats.primary
       : [
-          { value: "180+", label: "Countries Served" },
-          { value: "2.4M", label: "Shipments/Month" },
-          { value: "45", label: "Global Warehouses" },
-          { value: "98.7%", label: "On-Time Delivery" },
+          { value: '180+', label: 'Countries Served' },
+          { value: '2.4M', label: 'Shipments/Month' },
+          { value: '45', label: 'Global Warehouses' },
+          { value: '98.7%', label: 'On-Time Delivery' },
         ]
     const statsSecondary = props.stats?.secondary?.length
       ? props.stats.secondary
       : [
-          { value: "12K+", label: "Business Clients" },
-          { value: "2,400+", label: "Vehicles" },
-          { value: "45", label: "Cargo Ships" },
-          { value: "180", label: "Airports" },
-          { value: "2.5M", label: "Sq Ft Storage" },
-          { value: "18", label: "Years Experience" },
+          { value: '12K+', label: 'Business Clients' },
+          { value: '2,400+', label: 'Vehicles' },
+          { value: '45', label: 'Cargo Ships' },
+          { value: '180', label: 'Airports' },
+          { value: '2.5M', label: 'Sq Ft Storage' },
+          { value: '18', label: 'Years Experience' },
         ]
 
-    const pricingEyebrow = props.pricing?.eyebrow ?? "Pricing"
+    const pricingEyebrow = props.pricing?.eyebrow ?? 'Pricing'
     const pricingHeading =
-      props.pricing?.heading ?? "Simple, Transparent Pricing"
+      props.pricing?.heading ?? 'Simple, Transparent Pricing'
     const pricingDesc =
       props.pricing?.description ??
-      "Choose the plan that fits your shipping volume. All plans include real-time tracking and insurance."
+      'Choose the plan that fits your shipping volume. All plans include real-time tracking and insurance.'
     const pricingTiers = props.pricing?.tiers?.length
       ? props.pricing.tiers
       : [
           {
-            name: "Starter",
-            tagline: "For small businesses",
-            price: "$0",
-            unit: "/month",
-            note: "Pay per shipment with competitive rates",
+            name: 'Starter',
+            tagline: 'For small businesses',
+            price: '$0',
+            unit: '/month',
+            note: 'Pay per shipment with competitive rates',
             features: [
-              "Up to 50 shipments/month",
-              "Real-time tracking",
-              "$100K insurance coverage",
-              "Email support",
+              'Up to 50 shipments/month',
+              'Real-time tracking',
+              '$100K insurance coverage',
+              'Email support',
             ],
-            cta: "Get Started",
+            cta: 'Get Started',
           },
           {
-            name: "Business",
-            tagline: "For growing companies",
-            price: "$299",
-            unit: "/month",
-            note: "Volume discounts and priority handling",
+            name: 'Business',
+            tagline: 'For growing companies',
+            price: '$299',
+            unit: '/month',
+            note: 'Volume discounts and priority handling',
             features: [
-              "Up to 500 shipments/month",
-              "15% volume discount",
-              "$500K insurance coverage",
-              "Priority customer support",
-              "API access",
+              'Up to 500 shipments/month',
+              '15% volume discount',
+              '$500K insurance coverage',
+              'Priority customer support',
+              'API access',
             ],
-            cta: "Start Free Trial",
-            badge: "Most Popular",
+            cta: 'Start Free Trial',
+            badge: 'Most Popular',
             featured: true,
           },
           {
-            name: "Enterprise",
-            tagline: "For large organizations",
-            price: "Custom",
-            note: "Tailored solutions for complex supply chains",
+            name: 'Enterprise',
+            tagline: 'For large organizations',
+            price: 'Custom',
+            note: 'Tailored solutions for complex supply chains',
             features: [
-              "Unlimited shipments",
-              "Custom pricing tiers",
-              "$5M+ insurance coverage",
-              "Dedicated account manager",
-              "Custom integrations",
+              'Unlimited shipments',
+              'Custom pricing tiers',
+              '$5M+ insurance coverage',
+              'Dedicated account manager',
+              'Custom integrations',
             ],
-            cta: "Contact Sales",
+            cta: 'Contact Sales',
           },
         ]
 
-    const testimonialsEyebrow = props.testimonials?.eyebrow ?? "Testimonials"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'Testimonials'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Trusted by 12,000+ Businesses"
+      props.testimonials?.heading ?? 'Trusted by 12,000+ Businesses'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "See what our customers say about working with SwiftRoute Logistics."
+      'See what our customers say about working with SwiftRoute Logistics.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "SwiftRoute has transformed our supply chain. We reduced shipping costs by 28% and our delivery times improved significantly. Their API integration was seamless with our Shopify store.",
-            name: "Sarah Chen",
-            role: "COO, TechStyle Inc.",
+              'SwiftRoute has transformed our supply chain. We reduced shipping costs by 28% and our delivery times improved significantly. Their API integration was seamless with our Shopify store.',
+            name: 'Sarah Chen',
+            role: 'COO, TechStyle Inc.',
             avatarAlt:
-              "Professional headshot of a smiling female business executive with dark hair",
+              'Professional headshot of a smiling female business executive with dark hair',
           },
           {
             quote:
               "We've been working with SwiftRoute for 5 years now. Their global reach and reliability are unmatched. Even during peak seasons, they deliver on their promises. Highly recommended!",
-            name: "Marcus Johnson",
-            role: "Director of Logistics, Apex Manufacturing",
+            name: 'Marcus Johnson',
+            role: 'Director of Logistics, Apex Manufacturing',
             avatarAlt:
-              "Professional headshot of a middle-aged male logistics manager in a suit",
+              'Professional headshot of a middle-aged male logistics manager in a suit',
           },
           {
             quote:
-              "The real-time tracking and analytics dashboard have given us unprecedented visibility into our supply chain. Customer service is responsive and always helpful. A true logistics partner.",
-            name: "Emily Rodriguez",
-            role: "VP Supply Chain, GlobalMart",
+              'The real-time tracking and analytics dashboard have given us unprecedented visibility into our supply chain. Customer service is responsive and always helpful. A true logistics partner.',
+            name: 'Emily Rodriguez',
+            role: 'VP Supply Chain, GlobalMart',
             avatarAlt:
-              "Professional headshot of a young female supply chain professional with glasses",
+              'Professional headshot of a young female supply chain professional with glasses',
           },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Frequently Asked Questions"
-    const faqDesc = props.faq?.description ?? "Got questions? We've got answers."
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Frequently Asked Questions'
+    const faqDesc =
+      props.faq?.description ?? "Got questions? We've got answers."
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "How do I track my shipment?",
-            a: "You can track your shipment using the tracking widget on our homepage or by logging into your account dashboard. Simply enter your tracking number (starting with \"SR-\") to see real-time updates on your shipment's location, estimated delivery time, and delivery confirmation. We also send email and SMS notifications at key milestones.",
+            q: 'How do I track my shipment?',
+            a: 'You can track your shipment using the tracking widget on our homepage or by logging into your account dashboard. Simply enter your tracking number (starting with "SR-") to see real-time updates on your shipment\'s location, estimated delivery time, and delivery confirmation. We also send email and SMS notifications at key milestones.',
           },
           {
-            q: "What countries do you ship to?",
+            q: 'What countries do you ship to?',
             a: "SwiftRoute Logistics operates in 180+ countries worldwide. We have major hubs in North America, Europe, Asia-Pacific, Middle East, Africa, and South America. Whether you need domestic delivery within a country or international shipping across continents, we've got you covered with our comprehensive network.",
           },
           {
-            q: "How is shipping cost calculated?",
-            a: "Shipping costs are calculated based on several factors: weight and dimensions of the package, origin and destination locations, shipping speed (standard, express, or same-day), and any additional services like insurance or signature confirmation. Use our instant quote tool to get accurate pricing for your specific shipment.",
+            q: 'How is shipping cost calculated?',
+            a: 'Shipping costs are calculated based on several factors: weight and dimensions of the package, origin and destination locations, shipping speed (standard, express, or same-day), and any additional services like insurance or signature confirmation. Use our instant quote tool to get accurate pricing for your specific shipment.',
           },
           {
-            q: "What is your insurance coverage?",
-            a: "All shipments include basic insurance coverage based on your plan: Starter includes up to $100K, Business includes up to $500K, and Enterprise plans can be customized up to $5M+. Additional coverage can be purchased for high-value items. Claims are typically processed within 48 hours of submission.",
+            q: 'What is your insurance coverage?',
+            a: 'All shipments include basic insurance coverage based on your plan: Starter includes up to $100K, Business includes up to $500K, and Enterprise plans can be customized up to $5M+. Additional coverage can be purchased for high-value items. Claims are typically processed within 48 hours of submission.',
           },
           {
-            q: "Can I integrate SwiftRoute with my e-commerce platform?",
-            a: "Yes! We offer seamless integrations with major e-commerce platforms including Shopify, WooCommerce, Magento, BigCommerce, and custom APIs for enterprise systems. Our REST API and webhooks allow you to automate shipping label generation, track orders in real-time, and sync inventory across all your sales channels.",
+            q: 'Can I integrate SwiftRoute with my e-commerce platform?',
+            a: 'Yes! We offer seamless integrations with major e-commerce platforms including Shopify, WooCommerce, Magento, BigCommerce, and custom APIs for enterprise systems. Our REST API and webhooks allow you to automate shipping label generation, track orders in real-time, and sync inventory across all your sales channels.',
           },
           {
-            q: "What are your delivery timeframes?",
-            a: "Delivery timeframes vary by service type and destination. Domestic express deliveries typically arrive within 24-48 hours, while standard ground shipping takes 3-5 business days. International shipments range from 2-7 business days for express air freight to 15-30 days for ocean freight. Get an accurate estimate using our quote tool with your specific route.",
+            q: 'What are your delivery timeframes?',
+            a: 'Delivery timeframes vary by service type and destination. Domestic express deliveries typically arrive within 24-48 hours, while standard ground shipping takes 3-5 business days. International shipments range from 2-7 business days for express air freight to 15-30 days for ocean freight. Get an accurate estimate using our quote tool with your specific route.',
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to Ship Smarter?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to Ship Smarter?'
     const ctaDesc =
       props.cta?.description ??
-      "Join 12,000+ businesses that trust SwiftRoute for their logistics needs. Get your first quote in under 60 seconds."
-    const ctaPrimary = props.cta?.primary ?? "Get Instant Quote"
-    const ctaSecondary = props.cta?.secondary ?? "Talk to Sales"
+      'Join 12,000+ businesses that trust SwiftRoute for their logistics needs. Get your first quote in under 60 seconds.'
+    const ctaPrimary = props.cta?.primary ?? 'Get Instant Quote'
+    const ctaSecondary = props.cta?.secondary ?? 'Talk to Sales'
     const ctaNote =
       props.cta?.note ??
-      "No credit card required. Free account setup. Cancel anytime."
+      'No credit card required. Free account setup. Cancel anytime.'
 
-    const footerTagline = props.footer?.tagline ?? "LOGISTICS"
+    const footerTagline = props.footer?.tagline ?? 'LOGISTICS'
     const footerBlurb =
       props.footer?.blurb ??
-      "Global logistics solutions for businesses of all sizes. Shipping to 180+ countries with industry-leading reliability."
-    const footerServicesTitle = props.footer?.servicesTitle ?? "Services"
+      'Global logistics solutions for businesses of all sizes. Shipping to 180+ countries with industry-leading reliability.'
+    const footerServicesTitle = props.footer?.servicesTitle ?? 'Services'
     const footerServicesLinks = props.footer?.servicesLinks?.length
       ? props.footer.servicesLinks
       : [
-          "Express Shipping",
-          "Freight Forwarding",
-          "Warehousing",
-          "Cargo Insurance",
-          "Supply Chain Analytics",
+          'Express Shipping',
+          'Freight Forwarding',
+          'Warehousing',
+          'Cargo Insurance',
+          'Supply Chain Analytics',
         ]
-    const footerCompanyTitle = props.footer?.companyTitle ?? "Company"
+    const footerCompanyTitle = props.footer?.companyTitle ?? 'Company'
     const footerCompanyLinks = props.footer?.companyLinks?.length
       ? props.footer.companyLinks
-      : ["About Us", "Careers", "Press", "Partners", "Sustainability"]
-    const footerSupportTitle = props.footer?.supportTitle ?? "Support"
+      : ['About Us', 'Careers', 'Press', 'Partners', 'Sustainability']
+    const footerSupportTitle = props.footer?.supportTitle ?? 'Support'
     const footerSupportLinks = props.footer?.supportLinks?.length
       ? props.footer.supportLinks
       : [
-          "Help Center",
-          "Track Shipment",
-          "File a Claim",
-          "Contact Us",
-          "API Documentation",
+          'Help Center',
+          'Track Shipment',
+          'File a Claim',
+          'Contact Us',
+          'API Documentation',
         ]
     const footerCopyright =
-      props.footer?.copyright ?? "SwiftRoute Logistics. All rights reserved."
+      props.footer?.copyright ?? 'SwiftRoute Logistics. All rights reserved.'
     const footerLegalLinks = props.footer?.legalLinks?.length
       ? props.footer.legalLinks
-      : ["Privacy Policy", "Terms of Service", "Cookie Settings"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Twitter", "Facebook", "LinkedIn"]
+      : ['Twitter', 'Facebook', 'LinkedIn']
 
     // Brand bolt mark on a primary tile (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground",
+          'grid shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -720,7 +729,7 @@ export const LogisticsKimiPage2 = defineCapsule({
 
     const Check = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-4 shrink-0", className)}
+        className={cn('size-4 shrink-0', className)}
         viewBox="0 0 20 20"
         fill="currentColor"
         aria-hidden="true"
@@ -735,7 +744,7 @@ export const LogisticsKimiPage2 = defineCapsule({
 
     const Star = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5", className)}
+        className={cn('size-5', className)}
         viewBox="0 0 20 20"
         fill="currentColor"
         aria-hidden="true"
@@ -777,43 +786,103 @@ export const LogisticsKimiPage2 = defineCapsule({
 
     const serviceIcons: ReactNode[] = [
       // express / bolt
-      <svg key="express" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="express"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M13 10V3L4 14h7v7l9-11h-7z" />
       </svg>,
       // freight / globe
-      <svg key="freight" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="freight"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>,
       // warehouse / box
-      <svg key="warehouse" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="warehouse"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
       </svg>,
       // insurance / shield-check
-      <svg key="insurance" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="insurance"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
       </svg>,
       // analytics / doc-chart
-      <svg key="analytics" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="analytics"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>,
       // reverse / clock
-      <svg key="reverse" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="reverse"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>,
     ]
     const iconTints = [
-      "bg-primary/10 text-primary",
-      "bg-accent text-accent-foreground",
-      "bg-secondary text-secondary-foreground",
-      "bg-chart-2/15 text-chart-2",
-      "bg-chart-4/15 text-chart-4",
-      "bg-primary/10 text-primary",
+      'bg-primary/10 text-primary',
+      'bg-accent text-accent-foreground',
+      'bg-secondary text-secondary-foreground',
+      'bg-chart-2/15 text-chart-2',
+      'bg-chart-4/15 text-chart-4',
+      'bg-primary/10 text-primary',
     ]
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -856,7 +925,16 @@ export const LogisticsKimiPage2 = defineCapsule({
                   onClick={() => go(heroPhone)}
                   className="hidden items-center gap-2 text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground lg:inline-flex"
                 >
-                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    className="size-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                   <span>{heroPhone}</span>
@@ -1002,7 +1080,6 @@ export const LogisticsKimiPage2 = defineCapsule({
                       {safeQuotes.length ? (
                         <div className="space-y-5">
                           {safeQuotes.map((quote) => {
-                            const isSaved = savedQuoteIds?.has(quote.id) ?? false
                             return (
                               <div
                                 key={quote.id}
@@ -1050,7 +1127,8 @@ export const LogisticsKimiPage2 = defineCapsule({
                             No quotes saved
                           </p>
                           <p className="mt-2 text-sm text-muted-foreground">
-                            Get a quote from the hero section to start building your shipping plan.
+                            Get a quote from the hero section to start building
+                            your shipping plan.
                           </p>
                         </div>
                       )}
@@ -1104,7 +1182,16 @@ export const LogisticsKimiPage2 = defineCapsule({
                   onClick={() => setMobileOpen((v: boolean) => !v)}
                   className="p-2 text-primary-foreground/80 transition-colors hover:text-primary-foreground lg:hidden"
                 >
-                  <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    className="size-6"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
                 </button>
@@ -1193,8 +1280,8 @@ export const LogisticsKimiPage2 = defineCapsule({
               aria-hidden="true"
               style={{
                 backgroundImage:
-                  "radial-gradient(circle at 25% 25%, currentColor 1px, transparent 1px)",
-                backgroundSize: "40px 40px",
+                  'radial-gradient(circle at 25% 25%, currentColor 1px, transparent 1px)',
+                backgroundSize: '40px 40px',
               }}
             />
             <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
@@ -1218,7 +1305,12 @@ export const LogisticsKimiPage2 = defineCapsule({
                     <button
                       type="button"
                       onClick={() => {
-                        void addQuote('New York', 'Los Angeles', '10 lbs', 'Express')
+                        void addQuote(
+                          'New York',
+                          'Los Angeles',
+                          '10 lbs',
+                          'Express',
+                        )
                         setQuotesOpen(true)
                       }}
                       className="rounded-xl bg-background px-8 py-4 text-lg font-bold text-foreground shadow-lg transition-transform hover:scale-105"
@@ -1248,7 +1340,16 @@ export const LogisticsKimiPage2 = defineCapsule({
                 <div className="rounded-2xl bg-card p-6 text-card-foreground shadow-2xl lg:p-8">
                   <div className="mb-6 flex items-center gap-3">
                     <div className="grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">
-                      <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <svg
+                        className="size-6"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
                         <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                       </svg>
                     </div>
@@ -1264,10 +1365,16 @@ export const LogisticsKimiPage2 = defineCapsule({
                     onSubmit={(e) => {
                       e.preventDefault()
                       const form = e.currentTarget
-                      const input = form.querySelector('input') as HTMLInputElement
+                      const input = form.querySelector(
+                        'input',
+                      ) as HTMLInputElement
                       const trackingNumber = input.value.trim()
                       if (trackingNumber) {
-                        void addShipment(trackingNumber, 'Origin', 'Destination')
+                        void addShipment(
+                          trackingNumber,
+                          'Origin',
+                          'Destination',
+                        )
                         setQuotesOpen(true)
                       }
                       go(nav.find((n) => /track/i.test(n)) ?? trackButton)
@@ -1281,7 +1388,16 @@ export const LogisticsKimiPage2 = defineCapsule({
                         aria-label={trackTitle}
                         className="w-full rounded-xl border-2 border-input bg-muted px-4 py-4 pl-12 text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-ring/20"
                       />
-                      <svg className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <svg
+                        className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
                         <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
                     </div>
@@ -1372,7 +1488,7 @@ export const LogisticsKimiPage2 = defineCapsule({
                   >
                     <div
                       className={cn(
-                        "mb-6 grid size-14 place-items-center rounded-2xl transition-transform group-hover:scale-110",
+                        'mb-6 grid size-14 place-items-center rounded-2xl transition-transform group-hover:scale-110',
                         iconTints[i % iconTints.length],
                       )}
                     >
@@ -1525,10 +1641,10 @@ export const LogisticsKimiPage2 = defineCapsule({
                     <div
                       key={tier.name}
                       className={cn(
-                        "relative rounded-2xl bg-card p-8 transition-shadow",
+                        'relative rounded-2xl bg-card p-8 transition-shadow',
                         featured
-                          ? "border-2 border-primary shadow-xl"
-                          : "border border-border hover:shadow-xl",
+                          ? 'border-2 border-primary shadow-xl'
+                          : 'border border-border hover:shadow-xl',
                       )}
                     >
                       {tier.badge ? (
@@ -1564,14 +1680,19 @@ export const LogisticsKimiPage2 = defineCapsule({
                       <button
                         type="button"
                         onClick={() => {
-                          void addQuote('Origin', 'Destination', 'Weight', tier.name)
+                          void addQuote(
+                            'Origin',
+                            'Destination',
+                            'Weight',
+                            tier.name,
+                          )
                           setQuotesOpen(true)
                         }}
                         className={cn(
-                          "w-full rounded-xl py-3 font-semibold transition-colors",
+                          'w-full rounded-xl py-3 font-semibold transition-colors',
                           featured
-                            ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                            : "border-2 border-input text-foreground hover:border-primary hover:text-primary",
+                            ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                            : 'border-2 border-input text-foreground hover:border-primary hover:text-primary',
                         )}
                       >
                         {tier.cta}
@@ -1684,7 +1805,16 @@ export const LogisticsKimiPage2 = defineCapsule({
                   }}
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-background px-10 py-4 text-lg font-bold text-foreground shadow-lg transition-transform hover:scale-105"
                 >
-                  <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    className="size-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                   {ctaPrimary}
@@ -1694,7 +1824,16 @@ export const LogisticsKimiPage2 = defineCapsule({
                   onClick={() => go(ctaSecondary)}
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-primary-foreground/30 bg-primary-foreground/10 px-10 py-4 text-lg font-bold text-primary-foreground transition-colors hover:bg-primary-foreground/20"
                 >
-                  <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    className="size-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                   {ctaSecondary}

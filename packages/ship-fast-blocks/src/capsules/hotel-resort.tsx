@@ -1,11 +1,11 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
-import { Button } from "#/components/ui/button.tsx"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Sheet,
   SheetClose,
@@ -15,7 +15,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
+} from '#/components/ui/sheet.tsx'
 
 const calculateStayNights = (checkIn: string, checkOut: string) => {
   if (!checkIn || !checkOut) return 0
@@ -51,9 +51,9 @@ const calculateStayNights = (checkIn: string, checkOut: string) => {
  * supply ONLY content data; rich defaults make it render great with no props.
  */
 export const HotelResortKimiPage = defineCapsule({
-  name: "HotelResortKimiPage",
+  name: 'HotelResortKimiPage',
   description:
-    "Complete luxury HOTEL, RESORT & SPA landing page with an editorial, airy, high-end hospitality aesthetic: warm sand/stone light canvas, refined charcoal typography, thin oversized headlines and a single gold accent. Includes a full-bleed oceanfront photo hero (location eyebrow, dual CTAs, Forbes-rating / private-beach trust badges), a 4-up KPI stats band (suites, Michelin stars, spa sq ft, miles of beach), a 6-up amenities grid with image-zoom cards (spa, dining, pools, fitness, beach, events), a 3-up rooms & suites pricing grid with per-night rates, amenity chips and a highlighted Popular suite, a masonry photo gallery, a split booking section pairing 3 numbered how-it-works steps with a real check-in/check-out availability form, a 3-up guest testimonials grid with 5-star ratings and avatars, an accordion FAQ (cancellation, breakfast, check-in, parking, pets), a full-bleed image CTA with booking + call buttons, and a rich 4-column footer with newsletter signup, contact details and social links. Use as the ROOT/home page for luxury hotels, beach or coastal resorts, spa retreats, boutique inns, villas, vacation rentals, or wellness destinations when an elegant, photo-led, booking-focused page with rooms, amenities and reviews is wanted. Supply content only — brand, nav, hero, stats, amenities, rooms, gallery, booking, testimonials, faq, cta, footer; the block owns all layout and styling.",
+    'Complete luxury HOTEL, RESORT & SPA landing page with an editorial, airy, high-end hospitality aesthetic: warm sand/stone light canvas, refined charcoal typography, thin oversized headlines and a single gold accent. Includes a full-bleed oceanfront photo hero (location eyebrow, dual CTAs, Forbes-rating / private-beach trust badges), a 4-up KPI stats band (suites, Michelin stars, spa sq ft, miles of beach), a 6-up amenities grid with image-zoom cards (spa, dining, pools, fitness, beach, events), a 3-up rooms & suites pricing grid with per-night rates, amenity chips and a highlighted Popular suite, a masonry photo gallery, a split booking section pairing 3 numbered how-it-works steps with a real check-in/check-out availability form, a 3-up guest testimonials grid with 5-star ratings and avatars, an accordion FAQ (cancellation, breakfast, check-in, parking, pets), a full-bleed image CTA with booking + call buttons, and a rich 4-column footer with newsletter signup, contact details and social links. Use as the ROOT/home page for luxury hotels, beach or coastal resorts, spa retreats, boutique inns, villas, vacation rentals, or wellness destinations when an elegant, photo-led, booking-focused page with rooms, amenities and reviews is wanted. Supply content only — brand, nav, hero, stats, amenities, rooms, gallery, booking, testimonials, faq, cta, footer; the block owns all layout and styling.',
   props: z.object({
     /** Resort / brand name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -166,9 +166,7 @@ export const HotelResortKimiPage = defineCapsule({
         eyebrow: z.string().optional(),
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       })
       .optional(),
     /** Full-bleed image CTA. */
@@ -215,7 +213,7 @@ export const HotelResortKimiPage = defineCapsule({
       }),
     },
     queries: {
-      reservations: ({ db }) => db.reservations.orderBy("createdAt").all(),
+      reservations: ({ db }) => db.reservations.orderBy('createdAt').all(),
     },
     mutations: {
       addReservation: (
@@ -244,7 +242,7 @@ export const HotelResortKimiPage = defineCapsule({
           checkOut: normalizedCheckOut,
           guests: normalizedGuests,
           roomType: normalizedRoomType,
-          status: "Pending",
+          status: 'Pending',
         })
         return db.reservations.all()
       },
@@ -266,13 +264,13 @@ export const HotelResortKimiPage = defineCapsule({
         if (!normalizedEmail) return db.newsletterSubscribers.all()
 
         const existing = db.newsletterSubscribers
-          .where("email", normalizedEmail)
+          .where('email', normalizedEmail)
           .all()[0]
 
         if (!existing) {
           db.newsletterSubscribers.insert({
             email: normalizedEmail,
-            source: source.trim() || "footer",
+            source: source.trim() || 'footer',
           })
         }
 
@@ -284,18 +282,18 @@ export const HotelResortKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [reservationOpen, setReservationOpen] = useState(false)
-    const storedReservations = lakebed.useQuery("reservations")
-    const addReservation = lakebed.useMutation("addReservation")
-    const cancelReservation = lakebed.useMutation("cancelReservation")
-    const clearReservations = lakebed.useMutation("clearReservations")
-    const subscribeNewsletter = lakebed.useMutation("subscribeNewsletter")
+    const storedReservations = lakebed.useQuery('reservations')
+    const addReservation = lakebed.useMutation('addReservation')
+    const cancelReservation = lakebed.useMutation('cancelReservation')
+    const clearReservations = lakebed.useMutation('clearReservations')
+    const subscribeNewsletter = lakebed.useMutation('subscribeNewsletter')
     const auth = lakebed.useAuth()
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authLabel = auth.isLoading
-      ? "Checking..."
+      ? 'Checking...'
       : isSignedIn
-        ? auth.displayName || auth.user?.displayName || auth.email || "Account"
-        : "Sign in"
+        ? auth.displayName || auth.user?.displayName || auth.email || 'Account'
+        : 'Sign in'
     const handleSignIn = () => {
       if (auth.isLoading) return
       void lakebed.signInWithGoogle()
@@ -304,302 +302,300 @@ export const HotelResortKimiPage = defineCapsule({
       lakebed.signOut()
     }
 
-    const brand = props.brand ?? "Azure Coast"
+    const brand = props.brand ?? 'Azure Coast'
     const nav = props.nav?.length
       ? props.nav
-      : ["Rooms & Suites", "Amenities", "Gallery", "Dining", "Contact"]
+      : ['Rooms & Suites', 'Amenities', 'Gallery', 'Dining', 'Contact']
 
-    const heroLocation = props.hero?.location ?? "Malibu, California"
-    const heroHeadingTop = props.hero?.headingTop ?? "Where the Pacific"
-    const heroHeadingBottom = props.hero?.headingBottom ?? "meets perfection"
+    const heroLocation = props.hero?.location ?? 'Malibu, California'
+    const heroHeadingTop = props.hero?.headingTop ?? 'Where the Pacific'
+    const heroHeadingBottom = props.hero?.headingBottom ?? 'meets perfection'
     const heroSub =
       props.hero?.subheading ??
-      "Escape to Azure Coast Resort & Spa, an award-winning oceanfront sanctuary. Experience private beach access, world-class dining, and restorative wellness in our 47 exclusive suites."
-    const heroPrimary = props.hero?.primaryCta ?? "Check Availability"
-    const heroSecondary = props.hero?.secondaryCta ?? "Explore Suites"
+      'Escape to Azure Coast Resort & Spa, an award-winning oceanfront sanctuary. Experience private beach access, world-class dining, and restorative wellness in our 47 exclusive suites.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Check Availability'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Explore Suites'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Aerial view of luxury oceanfront resort with infinity pool overlooking turquoise waters at sunset"
+      'Aerial view of luxury oceanfront resort with infinity pool overlooking turquoise waters at sunset'
     const heroBadges = props.hero?.badges?.length
       ? props.hero.badges
-      : ["5-Star Forbes Rating", "Private Beach Access"]
+      : ['5-Star Forbes Rating', 'Private Beach Access']
 
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "47", label: "Exclusive Suites" },
-          { value: "3", label: "Michelin Stars" },
-          { value: "12K", label: "Sq Ft Spa" },
-          { value: "1.2", label: "Miles of Beach" },
+          { value: '47', label: 'Exclusive Suites' },
+          { value: '3', label: 'Michelin Stars' },
+          { value: '12K', label: 'Sq Ft Spa' },
+          { value: '1.2', label: 'Miles of Beach' },
         ]
 
-    const amenityEyebrow = props.amenities?.eyebrow ?? "Amenities"
-    const amenityHeading =
-      props.amenities?.heading ?? "Every detail considered"
+    const amenityEyebrow = props.amenities?.eyebrow ?? 'Amenities'
+    const amenityHeading = props.amenities?.heading ?? 'Every detail considered'
     const amenityDesc =
       props.amenities?.description ??
-      "From sunrise yoga on the beach to private chef dinners, experience amenities designed for the discerning traveler."
+      'From sunrise yoga on the beach to private chef dinners, experience amenities designed for the discerning traveler.'
     const amenityItems = props.amenities?.items?.length
       ? props.amenities.items
       : [
           {
-            title: "Azure Spa & Wellness",
+            title: 'Azure Spa & Wellness',
             description:
-              "12,000 square feet of tranquility featuring 14 treatment rooms, hydrotherapy pools, and signature ocean-inspired therapies.",
+              '12,000 square feet of tranquility featuring 14 treatment rooms, hydrotherapy pools, and signature ocean-inspired therapies.',
             imageAlt:
-              "Luxury spa treatment room with massage tables, warm lighting, and ocean views",
+              'Luxury spa treatment room with massage tables, warm lighting, and ocean views',
           },
           {
-            title: "Coastal Dining",
+            title: 'Coastal Dining',
             description:
-              "Three restaurants including Selene, our Michelin-starred tasting menu experience featuring locally-sourced California cuisine.",
+              'Three restaurants including Selene, our Michelin-starred tasting menu experience featuring locally-sourced California cuisine.',
             imageAlt:
-              "Elegant fine dining restaurant interior with white tablecloths and ambient lighting",
+              'Elegant fine dining restaurant interior with white tablecloths and ambient lighting',
           },
           {
-            title: "Oceanfront Pools",
+            title: 'Oceanfront Pools',
             description:
-              "Three temperature-controlled pools including our signature infinity pool with private cabanas and full beverage service.",
+              'Three temperature-controlled pools including our signature infinity pool with private cabanas and full beverage service.',
             imageAlt:
-              "Infinity edge swimming pool overlooking the ocean with lounge chairs",
+              'Infinity edge swimming pool overlooking the ocean with lounge chairs',
           },
           {
-            title: "Fitness Center",
+            title: 'Fitness Center',
             description:
-              "24-hour state-of-the-art facility with Peloton bikes, free weights, and daily yoga, Pilates, and meditation classes.",
+              '24-hour state-of-the-art facility with Peloton bikes, free weights, and daily yoga, Pilates, and meditation classes.',
             imageAlt:
-              "Modern fitness center with floor-to-ceiling windows overlooking the ocean",
+              'Modern fitness center with floor-to-ceiling windows overlooking the ocean',
           },
           {
-            title: "Private Beach Access",
+            title: 'Private Beach Access',
             description:
-              "1.2 miles of pristine coastline with complimentary beach chairs, umbrellas, and evening bonfire experiences by reservation.",
+              '1.2 miles of pristine coastline with complimentary beach chairs, umbrellas, and evening bonfire experiences by reservation.',
             imageAlt:
-              "Beach bonfire setup at dusk with comfortable seating and ocean waves",
+              'Beach bonfire setup at dusk with comfortable seating and ocean waves',
           },
           {
-            title: "Events & Weddings",
+            title: 'Events & Weddings',
             description:
-              "8,500 square feet of event space including our oceanfront terrace, perfect for intimate gatherings up to 200 guests.",
+              '8,500 square feet of event space including our oceanfront terrace, perfect for intimate gatherings up to 200 guests.',
             imageAlt:
-              "Elegant event space with ocean views set for a wedding reception",
+              'Elegant event space with ocean views set for a wedding reception',
           },
         ]
 
-    const roomEyebrow = props.rooms?.eyebrow ?? "Accommodations"
-    const roomHeading = props.rooms?.heading ?? "Suites & Villas"
+    const roomEyebrow = props.rooms?.eyebrow ?? 'Accommodations'
+    const roomHeading = props.rooms?.heading ?? 'Suites & Villas'
     const roomDesc =
       props.rooms?.description ??
-      "Each of our 47 accommodations features ocean views, private terraces, and bespoke furnishings. All rates include daily breakfast and resort amenities."
-    const roomCta = props.rooms?.cta ?? "View Details"
+      'Each of our 47 accommodations features ocean views, private terraces, and bespoke furnishings. All rates include daily breakfast and resort amenities.'
+    const roomCta = props.rooms?.cta ?? 'View Details'
     const roomItems = props.rooms?.items?.length
       ? props.rooms.items
       : [
           {
-            name: "Coastal Suite",
-            price: "$685",
-            meta: "650 sq ft | Ocean view | King bed",
+            name: 'Coastal Suite',
+            price: '$685',
+            meta: '650 sq ft | Ocean view | King bed',
             description:
-              "Elegant retreat with private balcony, soaking tub, and curated minibar featuring local wines and artisanal snacks.",
+              'Elegant retreat with private balcony, soaking tub, and curated minibar featuring local wines and artisanal snacks.',
             imageAlt:
-              "Luxury ocean view suite bedroom with king bed, floor-to-ceiling windows, and private balcony",
-            tags: ["Ocean View", "Private Balcony"],
+              'Luxury ocean view suite bedroom with king bed, floor-to-ceiling windows, and private balcony',
+            tags: ['Ocean View', 'Private Balcony'],
           },
           {
-            name: "Azure Suite",
-            price: "$1,250",
-            meta: "1,100 sq ft | Panoramic view | King bed + Sofa bed",
+            name: 'Azure Suite',
+            price: '$1,250',
+            meta: '1,100 sq ft | Panoramic view | King bed + Sofa bed',
             description:
-              "Separate living area, dual bathrooms, and oversized terrace with outdoor seating. Includes evening turndown and welcome champagne.",
+              'Separate living area, dual bathrooms, and oversized terrace with outdoor seating. Includes evening turndown and welcome champagne.',
             imageAlt:
-              "Luxury premium suite living area with panoramic ocean views and modern furnishings",
-            tags: ["Panoramic View", "Butler Service", "Outdoor Terrace"],
+              'Luxury premium suite living area with panoramic ocean views and modern furnishings',
+            tags: ['Panoramic View', 'Butler Service', 'Outdoor Terrace'],
             featured: true,
-            badge: "Popular",
+            badge: 'Popular',
           },
           {
-            name: "Coastal Villa",
-            price: "$2,400",
-            meta: "2,400 sq ft | Private pool | 2 Bedrooms",
+            name: 'Coastal Villa',
+            price: '$2,400',
+            meta: '2,400 sq ft | Private pool | 2 Bedrooms',
             description:
-              "Ultimate privacy with heated plunge pool, outdoor shower, full kitchen, and dedicated concierge. Perfect for extended stays.",
+              'Ultimate privacy with heated plunge pool, outdoor shower, full kitchen, and dedicated concierge. Perfect for extended stays.',
             imageAlt:
-              "Presidential villa with private pool, expansive deck, and direct ocean views",
-            tags: ["Private Pool", "Full Kitchen", "Concierge"],
+              'Presidential villa with private pool, expansive deck, and direct ocean views',
+            tags: ['Private Pool', 'Full Kitchen', 'Concierge'],
           },
         ]
 
-    const galleryEyebrow = props.gallery?.eyebrow ?? "Gallery"
-    const galleryHeading =
-      props.gallery?.heading ?? "A glimpse of paradise"
+    const galleryEyebrow = props.gallery?.eyebrow ?? 'Gallery'
+    const galleryHeading = props.gallery?.heading ?? 'A glimpse of paradise'
     const galleryDesc =
       props.gallery?.description ??
-      "Experience the beauty of Azure Coast through moments captured by our guests and photographers."
+      'Experience the beauty of Azure Coast through moments captured by our guests and photographers.'
     const galleryImages = props.gallery?.images?.length
       ? props.gallery.images
       : [
-          "Stunning aerial view of resort pool deck and beach with turquoise Pacific Ocean",
-          "Elegant resort lounge area with comfortable seating and ocean sunset views",
-          "Luxury spa massage room with warm lighting and natural decor elements",
-          "Gourmet plated dish with fresh seafood and seasonal vegetables",
-          "Golden hour on private beach with gentle waves and empty lounge chairs",
-          "Resort exterior architecture with white walls and palm trees at sunset",
-          "Couple enjoying sunset cocktails on private balcony overlooking ocean",
+          'Stunning aerial view of resort pool deck and beach with turquoise Pacific Ocean',
+          'Elegant resort lounge area with comfortable seating and ocean sunset views',
+          'Luxury spa massage room with warm lighting and natural decor elements',
+          'Gourmet plated dish with fresh seafood and seasonal vegetables',
+          'Golden hour on private beach with gentle waves and empty lounge chairs',
+          'Resort exterior architecture with white walls and palm trees at sunset',
+          'Couple enjoying sunset cocktails on private balcony overlooking ocean',
         ]
 
-    const bookingEyebrow = props.booking?.eyebrow ?? "Reservations"
-    const bookingHeading = props.booking?.heading ?? "Book your escape"
+    const bookingEyebrow = props.booking?.eyebrow ?? 'Reservations'
+    const bookingHeading = props.booking?.heading ?? 'Book your escape'
     const bookingDesc =
       props.booking?.description ??
-      "Secure your preferred dates in just a few steps. Flexible cancellation up to 48 hours before arrival."
+      'Secure your preferred dates in just a few steps. Flexible cancellation up to 48 hours before arrival.'
     const bookingSteps = props.booking?.steps?.length
       ? props.booking.steps
       : [
           {
-            title: "Choose Your Dates",
+            title: 'Choose Your Dates',
             description:
-              "Select your check-in and check-out dates. Peak season runs June through August; book early for best availability.",
+              'Select your check-in and check-out dates. Peak season runs June through August; book early for best availability.',
           },
           {
-            title: "Select Your Suite",
+            title: 'Select Your Suite',
             description:
-              "Browse our room categories and choose the perfect accommodation for your stay. Filter by view, size, and amenities.",
+              'Browse our room categories and choose the perfect accommodation for your stay. Filter by view, size, and amenities.',
           },
           {
-            title: "Confirm & Enjoy",
+            title: 'Confirm & Enjoy',
             description:
-              "Complete your reservation with our secure checkout. Receive instant confirmation and start planning your experience.",
+              'Complete your reservation with our secure checkout. Receive instant confirmation and start planning your experience.',
           },
         ]
-    const bookingFormHeading = props.booking?.formHeading ?? "Check Availability"
-    const bookingSubmit = props.booking?.submit ?? "Check Availability"
+    const bookingFormHeading =
+      props.booking?.formHeading ?? 'Check Availability'
+    const bookingSubmit = props.booking?.submit ?? 'Check Availability'
     const bookingNote =
       props.booking?.note ??
-      "Best rate guarantee • Free cancellation up to 48 hours"
+      'Best rate guarantee • Free cancellation up to 48 hours'
     const guestOptions = props.booking?.guestOptions?.length
       ? props.booking.guestOptions
       : [
-          "2 Adults",
-          "2 Adults, 1 Child",
-          "2 Adults, 2 Children",
-          "3 Adults",
-          "4 Adults",
+          '2 Adults',
+          '2 Adults, 1 Child',
+          '2 Adults, 2 Children',
+          '3 Adults',
+          '4 Adults',
         ]
     const roomOptions = props.booking?.roomOptions?.length
       ? props.booking.roomOptions
-      : ["All Room Types", "Coastal Suite", "Azure Suite", "Coastal Villa"]
+      : ['All Room Types', 'Coastal Suite', 'Azure Suite', 'Coastal Villa']
 
     const testimonialEyebrow =
-      props.testimonials?.eyebrow ?? "Guest Experiences"
+      props.testimonials?.eyebrow ?? 'Guest Experiences'
     const testimonialHeading =
-      props.testimonials?.heading ?? "What our guests say"
+      props.testimonials?.heading ?? 'What our guests say'
     const testimonialDesc =
       props.testimonials?.description ??
-      "Rated 4.9/5 across 2,400+ reviews on TripAdvisor, Google, and Booking.com"
+      'Rated 4.9/5 across 2,400+ reviews on TripAdvisor, Google, and Booking.com'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "We celebrated our anniversary here and it exceeded every expectation. The Azure Suite was magnificent, the staff anticipated our needs before we even asked. Already planning our return.",
-            name: "Margaret Chen",
-            meta: "San Francisco, CA • March 2026",
+              'We celebrated our anniversary here and it exceeded every expectation. The Azure Suite was magnificent, the staff anticipated our needs before we even asked. Already planning our return.',
+            name: 'Margaret Chen',
+            meta: 'San Francisco, CA • March 2026',
             avatarAlt:
-              "Professional headshot of a smiling woman with shoulder-length brown hair",
+              'Professional headshot of a smiling woman with shoulder-length brown hair',
           },
           {
             quote:
               "The spa experience alone is worth the trip. I've visited wellness retreats worldwide and Azure's treatments are simply world-class. The heated pool at sunrise is pure magic.",
-            name: "Robert Mitchell",
-            meta: "London, UK • February 2026",
+            name: 'Robert Mitchell',
+            meta: 'London, UK • February 2026',
             avatarAlt:
-              "Professional headshot of a smiling middle-aged man with short gray hair",
+              'Professional headshot of a smiling middle-aged man with short gray hair',
           },
           {
             quote:
-              "We hosted our company retreat here and the service was impeccable. From the private dining setup to the team-building activities, everything was flawlessly executed.",
-            name: "Sarah Johnson",
-            meta: "Austin, TX • January 2026",
+              'We hosted our company retreat here and the service was impeccable. From the private dining setup to the team-building activities, everything was flawlessly executed.',
+            name: 'Sarah Johnson',
+            meta: 'Austin, TX • January 2026',
             avatarAlt:
-              "Professional headshot of a confident woman with blonde hair and warm smile",
+              'Professional headshot of a confident woman with blonde hair and warm smile',
           },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Common questions"
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Common questions'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know before booking your stay at Azure Coast."
+      'Everything you need to know before booking your stay at Azure Coast.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "What is your cancellation policy?",
+            q: 'What is your cancellation policy?',
             a: "Reservations may be cancelled free of charge up to 48 hours before arrival for a full refund. Cancellations within 48 hours incur a charge of one night's stay. Special packages and peak season dates may have different terms.",
           },
           {
-            q: "Is breakfast included with my stay?",
-            a: "Yes, all room rates include complimentary daily breakfast at our Ocean Terrace restaurant, featuring a full buffet and made-to-order options from 7:00 AM to 10:30 AM.",
+            q: 'Is breakfast included with my stay?',
+            a: 'Yes, all room rates include complimentary daily breakfast at our Ocean Terrace restaurant, featuring a full buffet and made-to-order options from 7:00 AM to 10:30 AM.',
           },
           {
-            q: "Do you accommodate dietary restrictions?",
+            q: 'Do you accommodate dietary restrictions?',
             a: "Absolutely. All our restaurants offer extensive vegan, vegetarian, gluten-free, and allergen-conscious options. Please inform us of any dietary needs when making your reservation, and our culinary team will ensure you're fully accommodated.",
           },
           {
-            q: "What time is check-in and check-out?",
-            a: "Check-in begins at 3:00 PM and check-out is at 11:00 AM. Early check-in and late check-out are available upon request, subject to availability. Additional fees may apply for guaranteed early arrival.",
+            q: 'What time is check-in and check-out?',
+            a: 'Check-in begins at 3:00 PM and check-out is at 11:00 AM. Early check-in and late check-out are available upon request, subject to availability. Additional fees may apply for guaranteed early arrival.',
           },
           {
-            q: "Is parking available?",
-            a: "Complimentary valet parking is included with all reservations. Self-parking is also available in our covered garage. Electric vehicle charging stations are provided at no additional cost.",
+            q: 'Is parking available?',
+            a: 'Complimentary valet parking is included with all reservations. Self-parking is also available in our covered garage. Electric vehicle charging stations are provided at no additional cost.',
           },
           {
-            q: "Are pets allowed?",
-            a: "We welcome dogs up to 50 lbs in select Coastal Suites and Coastal Villas. A $150 cleaning fee applies per stay. Our concierge can arrange pet-sitting services, dog walking, and special pet amenities upon request.",
+            q: 'Are pets allowed?',
+            a: 'We welcome dogs up to 50 lbs in select Coastal Suites and Coastal Villas. A $150 cleaning fee applies per stay. Our concierge can arrange pet-sitting services, dog walking, and special pet amenities upon request.',
           },
         ]
 
-    const ctaEyebrow = props.cta?.eyebrow ?? "Limited Availability"
-    const ctaHeading =
-      props.cta?.heading ?? "Begin your Azure Coast experience"
+    const ctaEyebrow = props.cta?.eyebrow ?? 'Limited Availability'
+    const ctaHeading = props.cta?.heading ?? 'Begin your Azure Coast experience'
     const ctaDesc =
       props.cta?.description ??
-      "Book direct for exclusive perks: complimentary room upgrade, late checkout, and a $100 resort credit. Summer availability is filling quickly."
-    const ctaPrimary = props.cta?.primaryCta ?? "Check Availability"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Call 1-800-555-1234"
+      'Book direct for exclusive perks: complimentary room upgrade, late checkout, and a $100 resort credit. Summer availability is filling quickly.'
+    const ctaPrimary = props.cta?.primaryCta ?? 'Check Availability'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'Call 1-800-555-1234'
     const ctaImageAlt =
       props.cta?.imageAlt ??
-      "Sunset view over ocean from luxury resort balcony with warm golden lighting"
+      'Sunset view over ocean from luxury resort balcony with warm golden lighting'
 
     const footerAbout =
       props.footer?.about ??
-      "An award-winning oceanfront resort offering luxury accommodations, world-class dining, and restorative wellness experiences on the California coast."
-    const footerExploreHeading = props.footer?.exploreHeading ?? "Explore"
+      'An award-winning oceanfront resort offering luxury accommodations, world-class dining, and restorative wellness experiences on the California coast.'
+    const footerExploreHeading = props.footer?.exploreHeading ?? 'Explore'
     const footerExploreLinks = props.footer?.exploreLinks?.length
       ? props.footer.exploreLinks
-      : ["Rooms & Suites", "Spa & Wellness", "Dining", "Gallery", "Gift Cards"]
-    const footerContactHeading = props.footer?.contactHeading ?? "Contact"
+      : ['Rooms & Suites', 'Spa & Wellness', 'Dining', 'Gallery', 'Gift Cards']
+    const footerContactHeading = props.footer?.contactHeading ?? 'Contact'
     const footerContactLines = props.footer?.contactLines?.length
       ? props.footer.contactLines
       : [
-          "34780 Pacific Coast Highway",
-          "Malibu, CA 90265",
-          "1-800-555-1234",
-          "reservations@azurecoast.com",
+          '34780 Pacific Coast Highway',
+          'Malibu, CA 90265',
+          '1-800-555-1234',
+          'reservations@azurecoast.com',
         ]
     const footerNewsletterHeading =
-      props.footer?.newsletterHeading ?? "Newsletter"
+      props.footer?.newsletterHeading ?? 'Newsletter'
     const footerNewsletterText =
       props.footer?.newsletterText ??
-      "Receive exclusive offers and resort updates."
-    const footerNewsletterCta = props.footer?.newsletterCta ?? "Join"
-    const footerNote = props.footer?.note ?? "All rights reserved."
+      'Receive exclusive offers and resort updates.'
+    const footerNewsletterCta = props.footer?.newsletterCta ?? 'Join'
+    const footerNote = props.footer?.note ?? 'All rights reserved.'
     const footerLegalLinks = props.footer?.legalLinks?.length
       ? props.footer.legalLinks
-      : ["Privacy Policy", "Terms of Service", "Accessibility"]
+      : ['Privacy Policy', 'Terms of Service', 'Accessibility']
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Instagram", "Facebook", "Twitter"]
+      : ['Instagram', 'Facebook', 'Twitter']
 
     const reservationRows = storedReservations ?? []
     const reservationCount = reservationRows.length
@@ -625,7 +621,7 @@ export const HotelResortKimiPage = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-full font-light",
+          'grid place-items-center rounded-full font-light',
           className,
         )}
         aria-hidden="true"
@@ -635,12 +631,12 @@ export const HotelResortKimiPage = defineCapsule({
     )
 
     const inputCls =
-      "w-full rounded-md border border-input bg-background px-4 py-3 text-sm text-foreground transition-colors focus:border-ring focus:outline-none"
+      'w-full rounded-md border border-input bg-background px-4 py-3 text-sm text-foreground transition-colors focus:border-ring focus:outline-none'
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -673,7 +669,7 @@ export const HotelResortKimiPage = defineCapsule({
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go("Call")}
+                  onClick={() => go('Call')}
                   className="hidden text-sm text-muted-foreground lg:block"
                 >
                   1-800-555-1234
@@ -712,13 +708,16 @@ export const HotelResortKimiPage = defineCapsule({
                       ) : null}
                     </button>
                   </SheetTrigger>
-                  <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
                     <SheetHeader className="border-b border-border p-6">
                       <SheetTitle>Your reservations</SheetTitle>
                       <SheetDescription>
                         {reservationCount
-                          ? `${reservationCount} booking request${reservationCount === 1 ? "" : "s"} saved.`
-                          : "No reservations yet."}
+                          ? `${reservationCount} booking request${reservationCount === 1 ? '' : 's'} saved.`
+                          : 'No reservations yet.'}
                       </SheetDescription>
                     </SheetHeader>
                     <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -745,7 +744,9 @@ export const HotelResortKimiPage = defineCapsule({
                                   </div>
                                   <button
                                     type="button"
-                                    onClick={() => void cancelReservation(reservation.id)}
+                                    onClick={() =>
+                                      void cancelReservation(reservation.id)
+                                    }
                                     className="text-xs font-semibold text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground"
                                   >
                                     Cancel
@@ -755,7 +756,9 @@ export const HotelResortKimiPage = defineCapsule({
                                   {reservation.checkIn} → {reservation.checkOut}
                                 </p>
                                 <p className="mt-1 text-xs text-muted-foreground">
-                                  {nights > 0 ? `${nights} night${nights === 1 ? "" : "s"}` : "Dates not set"}
+                                  {nights > 0
+                                    ? `${nights} night${nights === 1 ? '' : 's'}`
+                                    : 'Dates not set'}
                                 </p>
                                 <p className="mt-2 text-xs font-medium text-foreground">
                                   {reservation.status}
@@ -767,7 +770,8 @@ export const HotelResortKimiPage = defineCapsule({
                       ) : (
                         <div className="flex min-h-44 items-center justify-center rounded-md border border-dashed border-border bg-muted/50 px-4 text-center">
                           <p className="text-sm text-muted-foreground">
-                            Start a reservation from the booking form to review it here.
+                            Start a reservation from the booking form to review
+                            it here.
                           </p>
                         </div>
                       )}
@@ -780,7 +784,7 @@ export const HotelResortKimiPage = defineCapsule({
                       <Button
                         type="button"
                         onClick={() => {
-                          go("Reservations")
+                          go('Reservations')
                           setReservationOpen(false)
                         }}
                         className="w-full rounded-md"
@@ -798,7 +802,11 @@ export const HotelResortKimiPage = defineCapsule({
                           Clear
                         </Button>
                         <SheetClose asChild>
-                          <Button type="button" variant="secondary" className="w-full rounded-md">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="w-full rounded-md"
+                          >
                             Continue
                           </Button>
                         </SheetClose>
@@ -810,7 +818,7 @@ export const HotelResortKimiPage = defineCapsule({
                   <>
                     <button
                       type="button"
-                      onClick={() => go("Profile")}
+                      onClick={() => go('Profile')}
                       className="hidden text-sm text-muted-foreground lg:block"
                     >
                       {authLabel}
@@ -1056,8 +1064,8 @@ export const HotelResortKimiPage = defineCapsule({
                   <div
                     key={room.name}
                     className={cn(
-                      "overflow-hidden rounded-lg bg-card text-card-foreground",
-                      room.featured && "ring-2 ring-primary",
+                      'overflow-hidden rounded-lg bg-card text-card-foreground',
+                      room.featured && 'ring-2 ring-primary',
                     )}
                   >
                     <div className="aspect-[4/3] overflow-hidden">
@@ -1106,10 +1114,10 @@ export const HotelResortKimiPage = defineCapsule({
                         type="button"
                         onClick={() => go(room.name)}
                         className={cn(
-                          "block w-full rounded-md px-6 py-3 text-center text-sm font-medium transition-colors",
+                          'block w-full rounded-md px-6 py-3 text-center text-sm font-medium transition-colors',
                           room.featured
-                            ? "bg-foreground text-background hover:bg-foreground/90"
-                            : "border border-foreground text-foreground hover:bg-foreground hover:text-background",
+                            ? 'bg-foreground text-background hover:bg-foreground/90'
+                            : 'border border-foreground text-foreground hover:bg-foreground hover:text-background',
                         )}
                       >
                         {roomCta}
@@ -1140,8 +1148,8 @@ export const HotelResortKimiPage = defineCapsule({
                   <div
                     key={alt}
                     className={cn(
-                      i === 0 && "lg:col-span-2 lg:row-span-2",
-                      (i === 5 || i === 6) && "lg:col-span-2",
+                      i === 0 && 'lg:col-span-2 lg:row-span-2',
+                      (i === 5 || i === 6) && 'lg:col-span-2',
                     )}
                   >
                     <Image
@@ -1150,10 +1158,10 @@ export const HotelResortKimiPage = defineCapsule({
                       h={i === 0 ? 1200 : 600}
                       loading="lazy"
                       className={cn(
-                        "w-full rounded-lg object-cover",
+                        'w-full rounded-lg object-cover',
                         i === 0
-                          ? "min-h-[300px] lg:size-full lg:min-h-full"
-                          : "h-48 lg:h-56",
+                          ? 'min-h-[300px] lg:size-full lg:min-h-full'
+                          : 'h-48 lg:h-56',
                       )}
                     />
                   </div>
@@ -1203,16 +1211,11 @@ export const HotelResortKimiPage = defineCapsule({
                     onSubmit={(e) => {
                       e.preventDefault()
                       const formData = new FormData(e.currentTarget)
-                      const checkIn = String(formData.get("checkin") ?? "")
-                      const checkOut = String(formData.get("checkout") ?? "")
-                      const guests = String(formData.get("guests") ?? "")
-                      const roomType = String(formData.get("roomType") ?? "")
-                      void addReservation(
-                        checkIn,
-                        checkOut,
-                        guests,
-                        roomType,
-                      )
+                      const checkIn = String(formData.get('checkin') ?? '')
+                      const checkOut = String(formData.get('checkout') ?? '')
+                      const guests = String(formData.get('guests') ?? '')
+                      const roomType = String(formData.get('roomType') ?? '')
+                      void addReservation(checkIn, checkOut, guests, roomType)
                       setReservationOpen(true)
                       go(bookingSubmit)
                     }}
@@ -1489,7 +1492,7 @@ export const HotelResortKimiPage = defineCapsule({
                 <h4 className="mb-6 font-medium">{footerContactHeading}</h4>
                 <ul className="space-y-3 text-sm text-background/60">
                   {footerContactLines.map((line, i) => (
-                    <li key={line} className={i === 2 ? "pt-2" : undefined}>
+                    <li key={line} className={i === 2 ? 'pt-2' : undefined}>
                       {i >= 2 ? (
                         <button
                           type="button"
@@ -1515,8 +1518,8 @@ export const HotelResortKimiPage = defineCapsule({
                   onSubmit={(e) => {
                     e.preventDefault()
                     const formData = new FormData(e.currentTarget)
-                    const email = String(formData.get("newsletter-email") ?? "")
-                    void subscribeNewsletter(email, "footer-newsletter")
+                    const email = String(formData.get('newsletter-email') ?? '')
+                    void subscribeNewsletter(email, 'footer-newsletter')
                     go(footerNewsletterCta)
                   }}
                 >

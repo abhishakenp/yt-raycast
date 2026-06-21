@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
@@ -24,9 +24,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const InvestingKimiPage3 = defineCapsule({
-  name: "InvestingKimiPage3",
+  name: 'InvestingKimiPage3',
   description:
-    "Investing third style sibling to InvestingKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Investing third style sibling to InvestingKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const InvestingKimiPage3 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -83,7 +85,13 @@ export const InvestingKimiPage3 = defineCapsule({
       portfolio: ({ db }) => db.portfolio.orderBy('createdAt').all(),
     },
     mutations: {
-      addToWatchlist: ({ db }, symbol: string, name: string, price: string, change: string) => {
+      addToWatchlist: (
+        { db },
+        symbol: string,
+        name: string,
+        price: string,
+        change: string,
+      ) => {
         const existing = db.watchlist.where('symbol', symbol).all()[0]
         if (!existing) {
           db.watchlist.insert({ symbol, name, price, change })
@@ -96,13 +104,27 @@ export const InvestingKimiPage3 = defineCapsule({
         }
         return db.watchlist.all()
       },
-      addToPortfolio: ({ db }, symbol: string, name: string, shares: number, avgPrice: string, currentPrice: string) => {
+      addToPortfolio: (
+        { db },
+        symbol: string,
+        name: string,
+        shares: number,
+        avgPrice: string,
+        currentPrice: string,
+      ) => {
         const existing = db.portfolio.where('symbol', symbol).all()[0]
         if (existing) {
           const totalShares = existing.shares + shares
-          const totalCost = Number.parseFloat(existing.avgPrice.replace(/[^0-9.]+/g, '')) * existing.shares + Number.parseFloat(avgPrice.replace(/[^0-9.]+/g, '')) * shares
+          const totalCost =
+            Number.parseFloat(existing.avgPrice.replace(/[^0-9.]+/g, '')) *
+              existing.shares +
+            Number.parseFloat(avgPrice.replace(/[^0-9.]+/g, '')) * shares
           const newAvgPrice = `$${(totalCost / totalShares).toFixed(2)}`
-          db.portfolio.update(existing.id, { shares: totalShares, avgPrice: newAvgPrice, currentPrice })
+          db.portfolio.update(existing.id, {
+            shares: totalShares,
+            avgPrice: newAvgPrice,
+            currentPrice,
+          })
         } else {
           db.portfolio.insert({ symbol, name, shares, avgPrice, currentPrice })
         }
@@ -120,8 +142,10 @@ export const InvestingKimiPage3 = defineCapsule({
     const go = useNavigate()
     const [watchlistOpen, setWatchlistOpen] = useState(false)
     const [portfolioOpen, setPortfolioOpen] = useState(false)
-    const brand = props.brand ?? "Meridian Investing & Trading Platform"
-    const nav = props.nav?.length ? props.nav : ["Meridian", "Markets", "Features", "Pricing", "Support", "Log in"]
+    const brand = props.brand ?? 'Meridian Investing & Trading Platform'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Meridian', 'Markets', 'Features', 'Pricing', 'Support', 'Log in']
 
     const watchlist = lakebed.useQuery('watchlist')
     const portfolio = lakebed.useQuery('portfolio')
@@ -133,9 +157,20 @@ export const InvestingKimiPage3 = defineCapsule({
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
-    const authDisplayName = auth.displayName || auth.user?.displayName || authEmail || 'Account'
-    const authInitials = authDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('') || 'ME'
-    const authLabel = auth.isLoading ? 'Checking...' : isSignedIn ? authDisplayName : 'Sign in'
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
 
     const handleSignIn = () => {
       if (auth.isLoading) return
@@ -185,7 +220,10 @@ export const InvestingKimiPage3 = defineCapsule({
 
     const StarIcon = ({ filled = false }: { filled?: boolean }) => (
       <svg
-        className={cn('size-5', filled ? 'text-primary' : 'text-muted-foreground')}
+        className={cn(
+          'size-5',
+          filled ? 'text-primary' : 'text-muted-foreground',
+        )}
         fill={filled ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="2"
@@ -198,97 +236,113 @@ export const InvestingKimiPage3 = defineCapsule({
       </svg>
     )
     const hero = {
-      eyebrow: "Investing / Variant 3",
-      title: "Invest with precision. Trade with confidence.",
-      description: "Meridian Investing & Trading Platform Meridian Markets Features Pricing Support Log in Get Started Live markets now open Invest with precision. Trade with confidence. Real-time...",
-      primaryCta: "Get Started Free",
-      secondaryCta: "Meridian",
-      imageAlt: "professional headshot of a female trader",
+      eyebrow: 'Investing / Variant 3',
+      title: 'Invest with precision. Trade with confidence.',
+      description:
+        'Meridian Investing & Trading Platform Meridian Markets Features Pricing Support Log in Get Started Live markets now open Invest with precision. Trade with confidence. Real-time...',
+      primaryCta: 'Get Started Free',
+      secondaryCta: 'Meridian',
+      imageAlt: 'professional headshot of a female trader',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Everything you need to outperform",
-    "body": "Meridian Investing & Trading Platform Meridian Markets Features Pricing Support Log in Get Started Live markets now open Invest with precision. Trade with confidence. Real-time...",
-    "items": [
-      "Simple, transparent pricing",
-      "Trusted by serious investors",
-      "Frequently asked questions"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "Start trading in three minutes",
-    "body": "Investing page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Start building wealth today",
-      "Live Market Ticker June 1, 2026",
-      "Real-Time Market Data"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Inside the platform",
-    "body": "Investing page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Zero Commission Trades",
-      "Advanced Charting",
-      "Portfolio Analytics"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Simple, transparent pricing",
-    "body": "Investing page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Tax-Loss Harvesting",
-      "Institutional Security",
-      "Create your account"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "Start trading in three minutes",
-    "alt": "professional headshot of a female trader",
-    "caption": "Investing generated page detail"
-  },
-  {
-    "title": "Inside the platform",
-    "alt": "professional headshot of a male investor",
-    "caption": "Investing generated page detail"
-  },
-  {
-    "title": "Simple, transparent pricing",
-    "alt": "professional headshot of a young analyst",
-    "caption": "Investing generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'Everything you need to outperform',
+            body: 'Meridian Investing & Trading Platform Meridian Markets Features Pricing Support Log in Get Started Live markets now open Invest with precision. Trade with confidence. Real-time...',
+            items: [
+              'Simple, transparent pricing',
+              'Trusted by serious investors',
+              'Frequently asked questions',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'Start trading in three minutes',
+            body: "Investing page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Start building wealth today',
+              'Live Market Ticker June 1, 2026',
+              'Real-Time Market Data',
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Inside the platform',
+            body: "Investing page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Zero Commission Trades',
+              'Advanced Charting',
+              'Portfolio Analytics',
+            ],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Simple, transparent pricing',
+            body: "Investing page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Tax-Loss Harvesting',
+              'Institutional Security',
+              'Create your account',
+            ],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'Start trading in three minutes',
+            alt: 'professional headshot of a female trader',
+            caption: 'Investing generated page detail',
+          },
+          {
+            title: 'Inside the platform',
+            alt: 'professional headshot of a male investor',
+            caption: 'Investing generated page detail',
+          },
+          {
+            title: 'Simple, transparent pricing',
+            alt: 'professional headshot of a young analyst',
+            caption: 'Investing generated page detail',
+          },
+        ]
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -319,7 +373,10 @@ export const InvestingKimiPage3 = defineCapsule({
                     ) : null}
                   </button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
                   <SheetHeader className="border-b border-border p-6">
                     <SheetTitle className="text-xl">Watchlist</SheetTitle>
                     <SheetDescription>
@@ -338,19 +395,34 @@ export const InvestingKimiPage3 = defineCapsule({
                           >
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
-                                <span className="font-semibold text-foreground">{item.symbol}</span>
-                                <span className="text-sm text-muted-foreground">{item.name}</span>
+                                <span className="font-semibold text-foreground">
+                                  {item.symbol}
+                                </span>
+                                <span className="text-sm text-muted-foreground">
+                                  {item.name}
+                                </span>
                               </div>
                               <div className="mt-1 flex items-center gap-3">
-                                <span className="font-bold text-foreground">{item.price}</span>
-                                <span className={cn('text-sm font-medium', item.change.startsWith('+') ? 'text-primary' : 'text-destructive')}>
+                                <span className="font-bold text-foreground">
+                                  {item.price}
+                                </span>
+                                <span
+                                  className={cn(
+                                    'text-sm font-medium',
+                                    item.change.startsWith('+')
+                                      ? 'text-primary'
+                                      : 'text-destructive',
+                                  )}
+                                >
                                   {item.change}
                                 </span>
                               </div>
                             </div>
                             <button
                               type="button"
-                              onClick={() => void removeFromWatchlist(item.symbol)}
+                              onClick={() =>
+                                void removeFromWatchlist(item.symbol)
+                              }
                               className="ml-3 rounded-md border border-border px-3 py-1 text-sm font-medium text-foreground transition-colors hover:bg-accent"
                             >
                               Remove
@@ -360,14 +432,22 @@ export const InvestingKimiPage3 = defineCapsule({
                       </div>
                     ) : (
                       <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
-                        <p className="text-base font-semibold text-foreground">No items in watchlist</p>
-                        <p className="mt-2 text-sm text-muted-foreground">Add stocks to track their performance.</p>
+                        <p className="text-base font-semibold text-foreground">
+                          No items in watchlist
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Add stocks to track their performance.
+                        </p>
                       </div>
                     )}
                   </div>
                   <SheetFooter className="border-t border-border p-6">
                     <SheetClose asChild>
-                      <Button type="button" variant="outline" className="w-full rounded-full">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full rounded-full"
+                      >
                         Close
                       </Button>
                     </SheetClose>
@@ -403,7 +483,10 @@ export const InvestingKimiPage3 = defineCapsule({
                     ) : null}
                   </button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
                   <SheetHeader className="border-b border-border p-6">
                     <SheetTitle className="text-xl">Portfolio</SheetTitle>
                     <SheetDescription>
@@ -416,10 +499,17 @@ export const InvestingKimiPage3 = defineCapsule({
                     {portfolio && portfolio.length > 0 ? (
                       <div className="space-y-3">
                         {portfolio.map((item) => {
-                          const currentValue = Number.parseFloat(item.currentPrice.replace(/[^0-9.]+/g, '')) * item.shares
-                          const costBasis = Number.parseFloat(item.avgPrice.replace(/[^0-9.]+/g, '')) * item.shares
+                          const currentValue =
+                            Number.parseFloat(
+                              item.currentPrice.replace(/[^0-9.]+/g, ''),
+                            ) * item.shares
+                          const costBasis =
+                            Number.parseFloat(
+                              item.avgPrice.replace(/[^0-9.]+/g, ''),
+                            ) * item.shares
                           const gainLoss = currentValue - costBasis
-                          const gainLossPercent = costBasis > 0 ? (gainLoss / costBasis) * 100 : 0
+                          const gainLossPercent =
+                            costBasis > 0 ? (gainLoss / costBasis) * 100 : 0
 
                           return (
                             <div
@@ -428,25 +518,51 @@ export const InvestingKimiPage3 = defineCapsule({
                             >
                               <div className="flex-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-foreground">{item.symbol}</span>
-                                  <span className="text-sm text-muted-foreground">{item.name}</span>
+                                  <span className="font-semibold text-foreground">
+                                    {item.symbol}
+                                  </span>
+                                  <span className="text-sm text-muted-foreground">
+                                    {item.name}
+                                  </span>
                                 </div>
                                 <div className="mt-1 flex items-center gap-3">
-                                  <span className="text-sm text-muted-foreground">{item.shares} shares</span>
-                                  <span className="font-bold text-foreground">{formatCurrency(currentValue)}</span>
+                                  <span className="text-sm text-muted-foreground">
+                                    {item.shares} shares
+                                  </span>
+                                  <span className="font-bold text-foreground">
+                                    {formatCurrency(currentValue)}
+                                  </span>
                                 </div>
                                 <div className="mt-1 flex items-center gap-2">
-                                  <span className={cn('text-sm font-medium', gainLoss >= 0 ? 'text-primary' : 'text-destructive')}>
-                                    {gainLoss >= 0 ? '+' : ''}{formatCurrency(gainLoss)}
+                                  <span
+                                    className={cn(
+                                      'text-sm font-medium',
+                                      gainLoss >= 0
+                                        ? 'text-primary'
+                                        : 'text-destructive',
+                                    )}
+                                  >
+                                    {gainLoss >= 0 ? '+' : ''}
+                                    {formatCurrency(gainLoss)}
                                   </span>
-                                  <span className={cn('text-sm', gainLoss >= 0 ? 'text-primary' : 'text-destructive')}>
-                                    ({gainLoss >= 0 ? '+' : ''}{gainLossPercent.toFixed(2)}%)
+                                  <span
+                                    className={cn(
+                                      'text-sm',
+                                      gainLoss >= 0
+                                        ? 'text-primary'
+                                        : 'text-destructive',
+                                    )}
+                                  >
+                                    ({gainLoss >= 0 ? '+' : ''}
+                                    {gainLossPercent.toFixed(2)}%)
                                   </span>
                                 </div>
                               </div>
                               <button
                                 type="button"
-                                onClick={() => void removeFromPortfolio(item.symbol)}
+                                onClick={() =>
+                                  void removeFromPortfolio(item.symbol)
+                                }
                                 className="ml-3 rounded-md border border-border px-3 py-1 text-sm font-medium text-foreground transition-colors hover:bg-accent"
                               >
                                 Remove
@@ -457,14 +573,22 @@ export const InvestingKimiPage3 = defineCapsule({
                       </div>
                     ) : (
                       <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
-                        <p className="text-base font-semibold text-foreground">No positions in portfolio</p>
-                        <p className="mt-2 text-sm text-muted-foreground">Start building your investment portfolio.</p>
+                        <p className="text-base font-semibold text-foreground">
+                          No positions in portfolio
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Start building your investment portfolio.
+                        </p>
                       </div>
                     )}
                   </div>
                   <SheetFooter className="border-t border-border p-6">
                     <SheetClose asChild>
-                      <Button type="button" variant="outline" className="w-full rounded-full">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full rounded-full"
+                      >
                         Close
                       </Button>
                     </SheetClose>
@@ -479,9 +603,16 @@ export const InvestingKimiPage3 = defineCapsule({
                       type="button"
                       className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
                     >
-                      <Avatar size="sm" className="ring-2 ring-background" aria-hidden="true">
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
                         {authPicture ? (
-                          <AvatarImage src={authPicture} alt={authDisplayName} />
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
                         ) : null}
                         <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
                           {authInitials}
@@ -502,7 +633,10 @@ export const InvestingKimiPage3 = defineCapsule({
                       <div className="flex items-center gap-3">
                         <Avatar size="lg" className="ring-2 ring-background">
                           {authPicture ? (
-                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
                           ) : null}
                           <AvatarFallback className="bg-foreground text-sm font-bold text-background">
                             {authInitials}
@@ -551,7 +685,7 @@ export const InvestingKimiPage3 = defineCapsule({
                 <button
                   type="button"
                   onClick={handleSignIn}
-                  disabled={auth.isLoading}
+                  disabled={auth.isLoading || undefined}
                   className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
                 >
                   <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
@@ -604,7 +738,12 @@ export const InvestingKimiPage3 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
@@ -612,10 +751,26 @@ export const InvestingKimiPage3 = defineCapsule({
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric, index) => {
               const sampleMetrics = [
-                { value: '$2.4M', label: 'Assets tracked', action: () => setPortfolioOpen(true) },
-                { value: '98%', label: 'Positive outcomes', action: () => setWatchlistOpen(true) },
-                { value: '4.9', label: 'Average rating', action: () => go('Reviews') },
-                { value: '12+', label: 'Core capabilities', action: () => go('Features') },
+                {
+                  value: '$2.4M',
+                  label: 'Assets tracked',
+                  action: () => setPortfolioOpen(true),
+                },
+                {
+                  value: '98%',
+                  label: 'Positive outcomes',
+                  action: () => setWatchlistOpen(true),
+                },
+                {
+                  value: '4.9',
+                  label: 'Average rating',
+                  action: () => go('Reviews'),
+                },
+                {
+                  value: '12+',
+                  label: 'Core capabilities',
+                  action: () => go('Features'),
+                },
               ]
               const metricData = sampleMetrics[index % sampleMetrics.length]
 
@@ -626,8 +781,12 @@ export const InvestingKimiPage3 = defineCapsule({
                   onClick={metricData.action}
                   className="rounded-lg border border-border bg-card p-5 text-left transition-colors hover:bg-accent"
                 >
-                  <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+                  <p className="text-3xl font-semibold text-card-foreground">
+                    {metric.value}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {metric.label}
+                  </p>
                 </button>
               )
             })}
@@ -635,21 +794,51 @@ export const InvestingKimiPage3 = defineCapsule({
 
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
-              {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+              {sections.map((section, _index) => (
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item, itemIndex) => {
                         const sampleStocks = [
-                          { symbol: 'TSLA', name: 'Tesla Inc.', price: '$248.50', change: '+3.2%' },
-                          { symbol: 'NVDA', name: 'NVIDIA Corp.', price: '$875.30', change: '+4.1%' },
-                          { symbol: 'AMZN', name: 'Amazon.com', price: '$178.25', change: '-1.2%' },
-                          { symbol: 'META', name: 'Meta Platforms', price: '$505.75', change: '+2.8%' },
+                          {
+                            symbol: 'TSLA',
+                            name: 'Tesla Inc.',
+                            price: '$248.50',
+                            change: '+3.2%',
+                          },
+                          {
+                            symbol: 'NVDA',
+                            name: 'NVIDIA Corp.',
+                            price: '$875.30',
+                            change: '+4.1%',
+                          },
+                          {
+                            symbol: 'AMZN',
+                            name: 'Amazon.com',
+                            price: '$178.25',
+                            change: '-1.2%',
+                          },
+                          {
+                            symbol: 'META',
+                            name: 'Meta Platforms',
+                            price: '$505.75',
+                            change: '+2.8%',
+                          },
                         ]
-                        const stock = sampleStocks[itemIndex % sampleStocks.length]
+                        const stock =
+                          sampleStocks[itemIndex % sampleStocks.length]
 
                         return (
                           <div
@@ -666,7 +855,14 @@ export const InvestingKimiPage3 = defineCapsule({
                             <div className="flex items-center gap-2">
                               <button
                                 type="button"
-                                onClick={() => void addToWatchlist(stock.symbol, stock.name, stock.price, stock.change)}
+                                onClick={() =>
+                                  void addToWatchlist(
+                                    stock.symbol,
+                                    stock.name,
+                                    stock.price,
+                                    stock.change,
+                                  )
+                                }
                                 className="rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-accent"
                                 title="Add to watchlist"
                               >
@@ -674,7 +870,15 @@ export const InvestingKimiPage3 = defineCapsule({
                               </button>
                               <button
                                 type="button"
-                                onClick={() => void addToPortfolio(stock.symbol, stock.name, 5, stock.price, stock.price)}
+                                onClick={() =>
+                                  void addToPortfolio(
+                                    stock.symbol,
+                                    stock.name,
+                                    5,
+                                    stock.price,
+                                    stock.price,
+                                  )
+                                }
                                 className="rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-accent"
                                 title="Add to portfolio"
                               >
@@ -694,8 +898,12 @@ export const InvestingKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -708,35 +916,91 @@ export const InvestingKimiPage3 = defineCapsule({
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item, index) => {
                 const sampleStocks = [
-                  { symbol: 'AAPL', name: 'Apple Inc.', price: '$189.50', change: '+2.3%' },
-                  { symbol: 'MSFT', name: 'Microsoft Corp.', price: '$378.90', change: '+1.8%' },
-                  { symbol: 'GOOGL', name: 'Alphabet Inc.', price: '$141.20', change: '-0.5%' },
+                  {
+                    symbol: 'AAPL',
+                    name: 'Apple Inc.',
+                    price: '$189.50',
+                    change: '+2.3%',
+                  },
+                  {
+                    symbol: 'MSFT',
+                    name: 'Microsoft Corp.',
+                    price: '$378.90',
+                    change: '+1.8%',
+                  },
+                  {
+                    symbol: 'GOOGL',
+                    name: 'Alphabet Inc.',
+                    price: '$141.20',
+                    change: '-0.5%',
+                  },
                 ]
                 const stock = sampleStocks[index % sampleStocks.length]
-                const isInWatchlist = watchlist && watchlist.some((w) => w.symbol === stock.symbol)
+                const isInWatchlist = !!(
+                  watchlist && watchlist.some((w) => w.symbol === stock.symbol)
+                )
 
                 return (
-                  <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
+                  <article
+                    key={item.title}
+                    className="overflow-hidden rounded-lg border border-border bg-card"
+                  >
                     <div className="relative">
-                      <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                      <Image
+                        alt={item.alt}
+                        w={900}
+                        h={700}
+                        loading="lazy"
+                        className="aspect-[4/3] w-full object-cover"
+                      />
                       <button
                         type="button"
-                        onClick={() => isInWatchlist ? void removeFromWatchlist(stock.symbol) : void addToWatchlist(stock.symbol, stock.name, stock.price, stock.change)}
+                        onClick={() =>
+                          isInWatchlist
+                            ? void removeFromWatchlist(stock.symbol)
+                            : void addToWatchlist(
+                                stock.symbol,
+                                stock.name,
+                                stock.price,
+                                stock.change,
+                              )
+                        }
                         className="absolute top-3 right-3 grid size-10 place-items-center rounded-full bg-background/90 shadow-md transition-all hover:scale-105"
-                        title={isInWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
+                        title={
+                          isInWatchlist
+                            ? 'Remove from watchlist'
+                            : 'Add to watchlist'
+                        }
                       >
                         <StarIcon filled={isInWatchlist} />
                       </button>
                     </div>
                     <div className="p-5">
                       <div className="mb-2 flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                        <span className="text-sm font-bold text-foreground">{stock.price}</span>
+                        <h3 className="text-lg font-semibold text-card-foreground">
+                          {item.title}
+                        </h3>
+                        <span className="text-sm font-bold text-foreground">
+                          {stock.price}
+                        </span>
                       </div>
-                      {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                      {item.caption ? (
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                          {item.caption}
+                        </p>
+                      ) : null}
                       <div className="mt-3 flex items-center gap-2">
-                        <span className="text-xs font-medium text-muted-foreground">{stock.symbol}</span>
-                        <span className={cn('text-xs font-medium', stock.change.startsWith('+') ? 'text-primary' : 'text-destructive')}>
+                        <span className="text-xs font-medium text-muted-foreground">
+                          {stock.symbol}
+                        </span>
+                        <span
+                          className={cn(
+                            'text-xs font-medium',
+                            stock.change.startsWith('+')
+                              ? 'text-primary'
+                              : 'text-destructive',
+                          )}
+                        >
                           {stock.change}
                         </span>
                       </div>
@@ -751,9 +1015,15 @@ export const InvestingKimiPage3 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <div className="flex flex-col gap-3">
                   <button
@@ -778,10 +1048,17 @@ export const InvestingKimiPage3 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

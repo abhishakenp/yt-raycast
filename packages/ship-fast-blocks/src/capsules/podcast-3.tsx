@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
@@ -24,9 +24,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const PodcastKimiPage3 = defineCapsule({
-  name: "PodcastKimiPage3",
+  name: 'PodcastKimiPage3',
   description:
-    "Podcast third style sibling to PodcastKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Podcast third style sibling to PodcastKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const PodcastKimiPage3 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -82,7 +84,9 @@ export const PodcastKimiPage3 = defineCapsule({
         const existingItem = db.queue.where('episodeId', episodeTitle).all()[0]
         if (existingItem) return db.queue.all()
 
-        const maxPosition = db.queue.all().reduce((max, item) => Math.max(max, item.position), 0)
+        const maxPosition = db.queue
+          .all()
+          .reduce((max, item) => Math.max(max, item.position), 0)
         db.queue.insert({
           episodeId: episodeTitle,
           position: maxPosition + 1,
@@ -103,7 +107,9 @@ export const PodcastKimiPage3 = defineCapsule({
         return []
       },
       toggleFavorite: ({ db }, episodeTitle: string) => {
-        const existingFavorite = db.favorites.where('episodeTitle', episodeTitle).all()[0]
+        const existingFavorite = db.favorites
+          .where('episodeTitle', episodeTitle)
+          .all()[0]
         if (existingFavorite) {
           db.favorites.delete(existingFavorite.id)
           return false
@@ -116,95 +122,102 @@ export const PodcastKimiPage3 = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [queueOpen, setQueueOpen] = useState(false)
-    const brand = props.brand ?? "Signal & Noise A Podcast About Building the Future"
-    const nav = props.nav?.length ? props.nav : ["Signal & Noise", "Episodes", "About", "Premium", "FAQ", "Subscribe"]
+    const brand =
+      props.brand ?? 'Signal & Noise A Podcast About Building the Future'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Signal & Noise', 'Episodes', 'About', 'Premium', 'FAQ', 'Subscribe']
 
     const hero = {
-      eyebrow: "Podcast / Variant 3",
-      title: "The signal in a world of noise.",
-      description: "Signal & Noise A Podcast About Building the Future Signal & Noise Episodes About Premium FAQ Subscribe Episode 247 Out Now The signal in a world of noise. Deep conversations wit...",
-      primaryCta: "Listen Now",
-      secondaryCta: "Subscribe Free",
-      imageAlt: "Professional podcast studio with microphone and acoustic panels",
+      eyebrow: 'Podcast / Variant 3',
+      title: 'The signal in a world of noise.',
+      description:
+        'Signal & Noise A Podcast About Building the Future Signal & Noise Episodes About Premium FAQ Subscribe Episode 247 Out Now The signal in a world of noise. Deep conversations wit...',
+      primaryCta: 'Listen Now',
+      secondaryCta: 'Subscribe Free',
+      imageAlt:
+        'Professional podcast studio with microphone and acoustic panels',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "What makes this different",
-    "body": "Signal & Noise A Podcast About Building the Future Signal & Noise Episodes About Premium FAQ Subscribe Episode 247 Out Now The signal in a world of noise. Deep conversations wit...",
-    "items": [
-      "Go deeper with Premium",
-      "What listeners say",
-      "Frequently asked questions"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "Start listening in 60 seconds",
-    "body": "Podcast page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Ready to tune in?",
-      "Studio-Grade Audio",
-      "Deep-Dive Format"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Latest episodes",
-    "body": "Podcast page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Verified Experts",
-      "Choose your app",
-      "Hit Subscribe"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Go deeper with Premium",
-    "body": "Podcast page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Tune in Tuesdays",
-      "Dr. Sarah Kim on Building Conscious Machines",
-      "The Fintech Founder Who Laughed at Stripe"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "Start listening in 60 seconds",
-    "alt": "Professional podcast studio with microphone and acoustic panels",
-    "caption": "Podcast generated page detail"
-  },
-  {
-    "title": "Latest episodes",
-    "alt": "Professional headshot of a smiling male founder",
-    "caption": "Podcast generated page detail"
-  },
-  {
-    "title": "Go deeper with Premium",
-    "alt": "Professional headshot of a smiling female engineer",
-    "caption": "Podcast generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'What makes this different',
+            body: 'Signal & Noise A Podcast About Building the Future Signal & Noise Episodes About Premium FAQ Subscribe Episode 247 Out Now The signal in a world of noise. Deep conversations wit...',
+            items: [
+              'Go deeper with Premium',
+              'What listeners say',
+              'Frequently asked questions',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'Start listening in 60 seconds',
+            body: "Podcast page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Ready to tune in?',
+              'Studio-Grade Audio',
+              'Deep-Dive Format',
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Latest episodes',
+            body: "Podcast page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['Verified Experts', 'Choose your app', 'Hit Subscribe'],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Go deeper with Premium',
+            body: "Podcast page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Tune in Tuesdays',
+              'Dr. Sarah Kim on Building Conscious Machines',
+              'The Fintech Founder Who Laughed at Stripe',
+            ],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'Start listening in 60 seconds',
+            alt: 'Professional podcast studio with microphone and acoustic panels',
+            caption: 'Podcast generated page detail',
+          },
+          {
+            title: 'Latest episodes',
+            alt: 'Professional headshot of a smiling male founder',
+            caption: 'Podcast generated page detail',
+          },
+          {
+            title: 'Go deeper with Premium',
+            alt: 'Professional headshot of a smiling female engineer',
+            caption: 'Podcast generated page detail',
+          },
+        ]
 
     const queueItems = lakebed.useQuery('queueItems')
     const favoriteEpisodeTitles = lakebed.useQuery('favoriteEpisodeTitles')
@@ -217,14 +230,20 @@ export const PodcastKimiPage3 = defineCapsule({
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
-    const authDisplayName = auth.displayName || auth.user?.displayName || authEmail || 'Account'
-    const authInitials = authDisplayName
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join('') || 'ME'
-    const authLabel = auth.isLoading ? 'Checking...' : isSignedIn ? authDisplayName : 'Sign in'
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
 
     const handleSignIn = () => {
       if (auth.isLoading) return
@@ -271,7 +290,10 @@ export const PodcastKimiPage3 = defineCapsule({
 
     const HeartIcon = ({ active = false }: { active?: boolean }) => (
       <svg
-        className={cn('size-5', active ? 'text-primary-foreground' : 'text-foreground')}
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
         fill={active ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="2"
@@ -285,10 +307,19 @@ export const PodcastKimiPage3 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -312,13 +343,24 @@ export const PodcastKimiPage3 = defineCapsule({
                       aria-label="Open account menu"
                       className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
                     >
-                      <Avatar size="sm" className="ring-2 ring-background" aria-hidden="true">
-                        {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
+                        {authPicture ? (
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
+                        ) : null}
                         <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
                           {authInitials}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">{authDisplayName}</span>
+                      <span className="hidden max-w-24 truncate text-sm font-semibold md:block">
+                        {authDisplayName}
+                      </span>
                       <ChevronDown />
                     </button>
                   </PopoverTrigger>
@@ -330,14 +372,23 @@ export const PodcastKimiPage3 = defineCapsule({
                     <div className="bg-muted/40 px-4 py-4">
                       <div className="flex items-center gap-3">
                         <Avatar size="lg" className="ring-2 ring-background">
-                          {authPicture ? <AvatarImage src={authPicture} alt={authDisplayName} /> : null}
+                          {authPicture ? (
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
+                          ) : null}
                           <AvatarFallback className="bg-foreground text-sm font-bold text-background">
                             {authInitials}
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-bold text-foreground">{authDisplayName}</p>
-                          <p className="truncate text-xs text-muted-foreground">{authEmail ?? 'Signed in to this session'}</p>
+                          <p className="truncate text-sm font-bold text-foreground">
+                            {authDisplayName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {authEmail ?? 'Signed in to this session'}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -378,7 +429,9 @@ export const PodcastKimiPage3 = defineCapsule({
                   aria-label="Sign in with Google"
                   className="hidden h-10 items-center gap-2 rounded-full bg-foreground px-4 text-sm font-semibold text-background shadow-sm transition hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:inline-flex"
                 >
-                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">G</span>
+                  <span className="grid size-5 place-items-center rounded-full bg-background text-xs font-black text-foreground">
+                    G
+                  </span>
                   <span>{authLabel}</span>
                 </button>
               )}
@@ -389,7 +442,15 @@ export const PodcastKimiPage3 = defineCapsule({
                     aria-label="Queue"
                     className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                    >
                       <path d="M12 2v20M2 12h20" />
                     </svg>
                     {queueCount > 0 ? (
@@ -399,7 +460,10 @@ export const PodcastKimiPage3 = defineCapsule({
                     ) : null}
                   </button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
                   <SheetHeader className="border-b border-border p-6">
                     <SheetTitle className="text-xl">Queue</SheetTitle>
                     <SheetDescription>
@@ -417,12 +481,18 @@ export const PodcastKimiPage3 = defineCapsule({
                             className="flex items-center justify-between rounded-lg border border-border bg-background p-4"
                           >
                             <div className="min-w-0 flex-1">
-                              <h3 className="truncate text-sm font-semibold text-foreground">{item.episodeId}</h3>
-                              <span className="text-xs font-medium text-primary">#{item.position}</span>
+                              <h3 className="truncate text-sm font-semibold text-foreground">
+                                {item.episodeId}
+                              </h3>
+                              <span className="text-xs font-medium text-primary">
+                                #{item.position}
+                              </span>
                             </div>
                             <button
                               type="button"
-                              onClick={() => void removeFromQueue(item.episodeId)}
+                              onClick={() =>
+                                void removeFromQueue(item.episodeId)
+                              }
                               className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                             >
                               Remove
@@ -432,8 +502,13 @@ export const PodcastKimiPage3 = defineCapsule({
                       </div>
                     ) : (
                       <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
-                        <p className="text-base font-semibold text-foreground">No episodes in queue</p>
-                        <p className="mt-2 text-sm text-muted-foreground">Add episodes from the sections below to build your listening queue.</p>
+                        <p className="text-base font-semibold text-foreground">
+                          No episodes in queue
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Add episodes from the sections below to build your
+                          listening queue.
+                        </p>
                       </div>
                     )}
                   </div>
@@ -448,7 +523,11 @@ export const PodcastKimiPage3 = defineCapsule({
                       Clear Queue
                     </Button>
                     <SheetClose asChild>
-                      <Button type="button" variant="secondary" className="w-full rounded-full">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full rounded-full"
+                      >
                         Continue
                       </Button>
                     </SheetClose>
@@ -498,31 +577,53 @@ export const PodcastKimiPage3 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
 
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
-              {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+              {sections.map((section) => (
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => {
-                        const isFavorite = favoriteEpisodeTitles?.has(item) ?? false
+                        const isFavorite =
+                          favoriteEpisodeTitles?.has(item) ?? false
                         return (
                           <div
                             key={item}
@@ -540,7 +641,11 @@ export const PodcastKimiPage3 = defineCapsule({
                                 type="button"
                                 onClick={() => void toggleFavorite(item)}
                                 aria-pressed={isFavorite}
-                                aria-label={isFavorite ? `Remove ${item} from favorites` : `Add ${item} to favorites`}
+                                aria-label={
+                                  isFavorite
+                                    ? `Remove ${item} from favorites`
+                                    : `Add ${item} to favorites`
+                                }
                                 className="grid size-6 place-items-center rounded-full hover:bg-muted"
                               >
                                 <HeartIcon active={isFavorite} />
@@ -554,7 +659,15 @@ export const PodcastKimiPage3 = defineCapsule({
                                 aria-label={`Add ${item} to queue`}
                                 className="grid size-6 place-items-center rounded-full hover:bg-muted"
                               >
-                                <svg className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                                <svg
+                                  className="size-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 24 24"
+                                >
                                   <path d="M12 2v20M2 12h20" />
                                 </svg>
                               </button>
@@ -572,8 +685,12 @@ export const PodcastKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -585,29 +702,49 @@ export const PodcastKimiPage3 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => {
-                const isFavorite = favoriteEpisodeTitles?.has(item.title) ?? false
+                const isFavorite =
+                  favoriteEpisodeTitles?.has(item.title) ?? false
                 return (
-                  <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
+                  <article
+                    key={item.title}
+                    className="overflow-hidden rounded-lg border border-border bg-card"
+                  >
                     <div className="relative">
-                      <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                      <Image
+                        alt={item.alt}
+                        w={900}
+                        h={700}
+                        loading="lazy"
+                        className="aspect-[4/3] w-full object-cover"
+                      />
                       <button
                         type="button"
                         onClick={() => void toggleFavorite(item.title)}
                         aria-pressed={isFavorite}
-                        aria-label={isFavorite ? `Remove ${item.title} from favorites` : `Add ${item.title} to favorites`}
+                        aria-label={
+                          isFavorite
+                            ? `Remove ${item.title} from favorites`
+                            : `Add ${item.title} to favorites`
+                        }
                         className={cn(
                           'absolute top-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
                           isFavorite
                             ? 'bg-primary text-primary-foreground'
-                            : 'bg-background/90 text-foreground'
+                            : 'bg-background/90 text-foreground',
                         )}
                       >
                         <HeartIcon active={isFavorite} />
                       </button>
                     </div>
                     <div className="p-5">
-                      <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                      {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                      <h3 className="text-lg font-semibold text-card-foreground">
+                        {item.title}
+                      </h3>
+                      {item.caption ? (
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                          {item.caption}
+                        </p>
+                      ) : null}
                       <button
                         type="button"
                         onClick={() => {
@@ -629,9 +766,15 @@ export const PodcastKimiPage3 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -647,10 +790,17 @@ export const PodcastKimiPage3 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

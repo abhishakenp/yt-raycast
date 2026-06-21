@@ -1,11 +1,11 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
-import type { ReactNode } from "react"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
+import type { ReactNode } from 'react'
 import {
   CommandDialog,
   CommandEmpty,
@@ -13,7 +13,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "#/components/ui/command.tsx"
+} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetClose,
@@ -23,14 +23,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * OnlineCourseKimiPage — a complete, self-contained online-learning / e-learning
@@ -50,9 +50,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * banner, and a rich multi-column footer.
  */
 export const OnlineCourseKimiPage = defineCapsule({
-  name: "OnlineCourseKimiPage",
+  name: 'OnlineCourseKimiPage',
   description:
-    "Complete online-course / e-learning platform LANDING page with a clean, trustworthy, light editorial aesthetic (neutral slate palette, whitespace, rounded cards). Includes a split hero (enrollment badge, big headline, dual CTAs, avatar social-proof row, showcase photo with floating certificate + rating cards), a trusted-by company logo strip, a 6-up feature grid with tinted icon tiles, a popular-courses catalog grid (thumbnail, category chip, duration, instructor avatar, discounted price with struck-through original, bestseller/new badges), an industry-expert instructors row with star ratings, a dark stats band, a 3-up student testimonials grid, a 3-tier pricing table (Starter / Professional most-popular / Enterprise with check + cross feature lists), an FAQ accordion, an email-signup CTA banner, and a multi-column footer. Use as the ROOT/home page for online course platforms, e-learning marketplaces, MOOCs, bootcamps, coding/design/business academies, training providers, education startups, or any skill-learning subscription product. Supply content only — brand, nav, hero, features, courses, instructors, stats, testimonials, pricing, faq, cta, footer; the block owns all layout and styling.",
+    'Complete online-course / e-learning platform LANDING page with a clean, trustworthy, light editorial aesthetic (neutral slate palette, whitespace, rounded cards). Includes a split hero (enrollment badge, big headline, dual CTAs, avatar social-proof row, showcase photo with floating certificate + rating cards), a trusted-by company logo strip, a 6-up feature grid with tinted icon tiles, a popular-courses catalog grid (thumbnail, category chip, duration, instructor avatar, discounted price with struck-through original, bestseller/new badges), an industry-expert instructors row with star ratings, a dark stats band, a 3-up student testimonials grid, a 3-tier pricing table (Starter / Professional most-popular / Enterprise with check + cross feature lists), an FAQ accordion, an email-signup CTA banner, and a multi-column footer. Use as the ROOT/home page for online course platforms, e-learning marketplaces, MOOCs, bootcamps, coding/design/business academies, training providers, education startups, or any skill-learning subscription product. Supply content only — brand, nav, hero, features, courses, instructors, stats, testimonials, pricing, faq, cta, footer; the block owns all layout and styling.',
   props: z.object({
     /** Brand / platform name shown in navbar and footer. */
     brand: z.string().optional(),
@@ -182,9 +182,7 @@ export const OnlineCourseKimiPage = defineCapsule({
       .object({
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       })
       .optional(),
     /** Email-signup CTA banner. */
@@ -202,9 +200,7 @@ export const OnlineCourseKimiPage = defineCapsule({
       .object({
         about: z.string().optional(),
         columns: z
-          .array(
-            z.object({ heading: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ heading: z.string(), links: z.array(z.string()) }))
           .optional(),
         copyright: z.string().optional(),
         legal: z.array(z.string()).optional(),
@@ -265,14 +261,18 @@ export const OnlineCourseKimiPage = defineCapsule({
       updateProgress: ({ db }, courseId: string, progress: number) => {
         const nextProgress = Math.max(0, Math.min(100, Math.floor(progress)))
 
-        for (const item of db.enrolledCourses.where('courseId', courseId).all()) {
+        for (const item of db.enrolledCourses
+          .where('courseId', courseId)
+          .all()) {
           db.enrolledCourses.update(item.id, { progress: nextProgress })
         }
 
         return db.enrolledCourses.all()
       },
       unenrollFromCourse: ({ db }, courseId: string) => {
-        for (const item of db.enrolledCourses.where('courseId', courseId).all()) {
+        for (const item of db.enrolledCourses
+          .where('courseId', courseId)
+          .all()) {
           db.enrolledCourses.delete(item.id)
         }
 
@@ -298,145 +298,145 @@ export const OnlineCourseKimiPage = defineCapsule({
     const [mobileOpen, setMobileOpen] = useState(false)
     const [searchOpen, setSearchOpen] = useState(false)
     const [enrollmentsOpen, setEnrollmentsOpen] = useState(false)
-    const brand = props.brand ?? "LearnSpace"
+    const brand = props.brand ?? 'LearnSpace'
     const nav = props.nav?.length
       ? props.nav
-      : ["Courses", "Instructors", "Pricing", "FAQ"]
+      : ['Courses', 'Instructors', 'Pricing', 'FAQ']
 
     const heroBadge =
-      props.hero?.badge ?? "Over 50,000 students enrolled this month"
+      props.hero?.badge ?? 'Over 50,000 students enrolled this month'
     const heroHeading =
-      props.hero?.heading ?? "Master the skills that shape the future"
+      props.hero?.heading ?? 'Master the skills that shape the future'
     const heroSub =
       props.hero?.subheading ??
-      "Learn from industry experts with hands-on projects, earn recognized certificates, and join a community of 2 million+ learners advancing their careers."
-    const heroPrimary = props.hero?.primaryCta ?? "Explore Courses"
-    const heroSecondary = props.hero?.secondaryCta ?? "Watch Demo"
+      'Learn from industry experts with hands-on projects, earn recognized certificates, and join a community of 2 million+ learners advancing their careers.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Explore Courses'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Watch Demo'
     const heroSocial =
-      props.hero?.socialProof ?? "Joined by 2,400+ learners this week"
+      props.hero?.socialProof ?? 'Joined by 2,400+ learners this week'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "diverse group of young professionals collaborating around a laptop in a modern office"
-    const certTitle = props.hero?.certTitle ?? "Certificate Issued"
-    const certSubtitle = props.hero?.certSubtitle ?? "Sarah completed UX Design"
-    const heroRating = props.hero?.rating ?? "4.9/5"
-    const heroRatingNote = props.hero?.ratingNote ?? "From 12,847 reviews"
+      'diverse group of young professionals collaborating around a laptop in a modern office'
+    const certTitle = props.hero?.certTitle ?? 'Certificate Issued'
+    const certSubtitle = props.hero?.certSubtitle ?? 'Sarah completed UX Design'
+    const heroRating = props.hero?.rating ?? '4.9/5'
+    const heroRatingNote = props.hero?.ratingNote ?? 'From 12,847 reviews'
 
     const logosLabel =
-      props.logos?.label ?? "Trusted by teams at leading companies"
+      props.logos?.label ?? 'Trusted by teams at leading companies'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
-      : ["Stripe", "Notion", "Figma", "Shopify", "Slack", "Airbnb"]
+      : ['Stripe', 'Notion', 'Figma', 'Shopify', 'Slack', 'Airbnb']
 
     const featuresHeading =
-      props.features?.heading ?? "Everything you need to learn effectively"
+      props.features?.heading ?? 'Everything you need to learn effectively'
     const featuresDesc =
       props.features?.description ??
-      "Our platform is designed to help you succeed with practical, career-focused education."
+      'Our platform is designed to help you succeed with practical, career-focused education.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Expert Video Lessons",
+            title: 'Expert Video Lessons',
             description:
-              "High-quality, professionally produced video content from industry experts with real-world experience.",
+              'High-quality, professionally produced video content from industry experts with real-world experience.',
           },
           {
-            title: "Hands-On Projects",
+            title: 'Hands-On Projects',
             description:
-              "Build a portfolio of real projects. Apply what you learn immediately with guided exercises and challenges.",
+              'Build a portfolio of real projects. Apply what you learn immediately with guided exercises and challenges.',
           },
           {
-            title: "Community Support",
+            title: 'Community Support',
             description:
-              "Join discussion forums, study groups, and get help from peers and mentors whenever you need it.",
+              'Join discussion forums, study groups, and get help from peers and mentors whenever you need it.',
           },
           {
-            title: "Learn at Your Pace",
+            title: 'Learn at Your Pace',
             description:
               "Lifetime access to all courses. No deadlines or pressure. Learn when it's convenient for you.",
           },
           {
-            title: "Verified Certificates",
+            title: 'Verified Certificates',
             description:
-              "Earn industry-recognized certificates to showcase on your LinkedIn and resume. Employers trust our credentials.",
+              'Earn industry-recognized certificates to showcase on your LinkedIn and resume. Employers trust our credentials.',
           },
           {
-            title: "Career Resources",
+            title: 'Career Resources',
             description:
-              "Access resume templates, interview prep guides, job boards, and 1:1 career coaching sessions.",
+              'Access resume templates, interview prep guides, job boards, and 1:1 career coaching sessions.',
           },
         ]
 
-    const coursesHeading = props.courses?.heading ?? "Popular Courses"
+    const coursesHeading = props.courses?.heading ?? 'Popular Courses'
     const coursesDesc =
       props.courses?.description ??
-      "Explore our most enrolled courses, hand-picked by our community of learners."
-    const coursesViewAll = props.courses?.viewAll ?? "View All Courses"
+      'Explore our most enrolled courses, hand-picked by our community of learners.'
+    const coursesViewAll = props.courses?.viewAll ?? 'View All Courses'
     const courseItems = props.courses?.items?.length
       ? props.courses.items
       : [
           {
-            title: "Complete Web Development Bootcamp 2024",
+            title: 'Complete Web Development Bootcamp 2024',
             description:
-              "Master HTML, CSS, JavaScript, React, Node.js and more. Build 16 projects for your portfolio.",
-            category: "Development",
-            duration: "48 hours",
-            instructor: "Dr. Angela Yu",
-            price: "$89.99",
-            originalPrice: "$199.99",
-            badge: "Bestseller",
+              'Master HTML, CSS, JavaScript, React, Node.js and more. Build 16 projects for your portfolio.',
+            category: 'Development',
+            duration: '48 hours',
+            instructor: 'Dr. Angela Yu',
+            price: '$89.99',
+            originalPrice: '$199.99',
+            badge: 'Bestseller',
           },
           {
-            title: "Python for Data Science and Machine Learning",
+            title: 'Python for Data Science and Machine Learning',
             description:
-              "Learn Python, NumPy, Pandas, Matplotlib, Scikit-Learn, and TensorFlow. Real-world datasets included.",
-            category: "Data Science",
-            duration: "32 hours",
-            instructor: "Jose Portilla",
-            price: "$94.99",
-            originalPrice: "$129.99",
-            badge: "New",
+              'Learn Python, NumPy, Pandas, Matplotlib, Scikit-Learn, and TensorFlow. Real-world datasets included.',
+            category: 'Data Science',
+            duration: '32 hours',
+            instructor: 'Jose Portilla',
+            price: '$94.99',
+            originalPrice: '$129.99',
+            badge: 'New',
           },
           {
-            title: "UI/UX Design Specialization",
+            title: 'UI/UX Design Specialization',
             description:
-              "Master Figma, user research, wireframing, prototyping, and design systems. Build a complete case study.",
-            category: "Design",
-            duration: "24 hours",
-            instructor: "Sarah Chen",
-            price: "$79.99",
-            originalPrice: "$149.99",
+              'Master Figma, user research, wireframing, prototyping, and design systems. Build a complete case study.',
+            category: 'Design',
+            duration: '24 hours',
+            instructor: 'Sarah Chen',
+            price: '$79.99',
+            originalPrice: '$149.99',
           },
           {
-            title: "Digital Marketing Masterclass",
+            title: 'Digital Marketing Masterclass',
             description:
-              "SEO, SEM, social media marketing, email campaigns, Google Analytics, and content strategy from scratch.",
-            category: "Marketing",
-            duration: "28 hours",
-            instructor: "Phil Ebiner",
-            price: "$84.99",
-            originalPrice: "$179.99",
+              'SEO, SEM, social media marketing, email campaigns, Google Analytics, and content strategy from scratch.',
+            category: 'Marketing',
+            duration: '28 hours',
+            instructor: 'Phil Ebiner',
+            price: '$84.99',
+            originalPrice: '$179.99',
           },
           {
-            title: "MBA in a Box: Business Management",
+            title: 'MBA in a Box: Business Management',
             description:
-              "Leadership, finance, accounting, strategy, and operations. Everything you need to run a business.",
-            category: "Business",
-            duration: "20 hours",
-            instructor: "Chris Haroun",
-            price: "$69.99",
-            originalPrice: "$199.99",
+              'Leadership, finance, accounting, strategy, and operations. Everything you need to run a business.',
+            category: 'Business',
+            duration: '20 hours',
+            instructor: 'Chris Haroun',
+            price: '$69.99',
+            originalPrice: '$199.99',
           },
           {
-            title: "Graphic Design Bootcamp",
+            title: 'Graphic Design Bootcamp',
             description:
-              "Photoshop, Illustrator, InDesign, and design theory. Create logos, posters, and brand identities.",
-            category: "Creative",
-            duration: "36 hours",
-            instructor: "Lindsay Marsh",
-            price: "$74.99",
-            originalPrice: "$149.99",
+              'Photoshop, Illustrator, InDesign, and design theory. Create logos, posters, and brand identities.',
+            category: 'Creative',
+            duration: '36 hours',
+            instructor: 'Lindsay Marsh',
+            price: '$74.99',
+            originalPrice: '$149.99',
           },
         ]
     const normalizedCourseItems = courseItems.map((course) => ({
@@ -454,7 +454,6 @@ export const OnlineCourseKimiPage = defineCapsule({
     const savedCourseTitles = lakebed.useQuery('savedCourseTitles')
     const auth = lakebed.useAuth()
     const enrollInCourse = lakebed.useMutation('enrollInCourse')
-    const updateProgress = lakebed.useMutation('updateProgress')
     const unenrollFromCourse = lakebed.useMutation('unenrollFromCourse')
     const toggleSaveCourse = lakebed.useMutation('toggleSaveCourse')
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
@@ -490,150 +489,149 @@ export const OnlineCourseKimiPage = defineCapsule({
     const enrollmentCount = safeEnrolledCourses.length
 
     const instructorsHeading =
-      props.instructors?.heading ?? "Learn from industry experts"
+      props.instructors?.heading ?? 'Learn from industry experts'
     const instructorsDesc =
       props.instructors?.description ??
-      "Our instructors are professionals working at top companies with years of real-world experience."
+      'Our instructors are professionals working at top companies with years of real-world experience.'
     const instructorItems = props.instructors?.items?.length
       ? props.instructors.items
       : [
           {
-            name: "Jose Portilla",
-            role: "Head of Data Science",
-            bio: "Ex-Apple, taught 2M+ students in Python and data science fundamentals.",
-            rating: "4.9",
-            reviews: "42k reviews",
+            name: 'Jose Portilla',
+            role: 'Head of Data Science',
+            bio: 'Ex-Apple, taught 2M+ students in Python and data science fundamentals.',
+            rating: '4.9',
+            reviews: '42k reviews',
           },
           {
-            name: "Dr. Angela Yu",
-            role: "Senior Developer",
+            name: 'Dr. Angela Yu',
+            role: 'Senior Developer',
             bio: "Former Google engineer, creator of the world's most popular coding bootcamp.",
-            rating: "4.8",
-            reviews: "85k reviews",
+            rating: '4.8',
+            reviews: '85k reviews',
           },
           {
-            name: "Sarah Chen",
-            role: "Design Director",
-            bio: "Former Airbnb design lead. Shipped products used by millions worldwide.",
-            rating: "4.9",
-            reviews: "18k reviews",
+            name: 'Sarah Chen',
+            role: 'Design Director',
+            bio: 'Former Airbnb design lead. Shipped products used by millions worldwide.',
+            rating: '4.9',
+            reviews: '18k reviews',
           },
           {
-            name: "Chris Haroun",
-            role: "Business Strategist",
-            bio: "Award-winning MBA professor, venture capitalist, and bestselling author.",
-            rating: "4.7",
-            reviews: "32k reviews",
+            name: 'Chris Haroun',
+            role: 'Business Strategist',
+            bio: 'Award-winning MBA professor, venture capitalist, and bestselling author.',
+            rating: '4.7',
+            reviews: '32k reviews',
           },
         ]
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "2.1M+", label: "Active Students" },
-          { value: "850+", label: "Expert Courses" },
-          { value: "4.8/5", label: "Average Rating" },
-          { value: "94%", label: "Completion Rate" },
+          { value: '2.1M+', label: 'Active Students' },
+          { value: '850+', label: 'Expert Courses' },
+          { value: '4.8/5', label: 'Average Rating' },
+          { value: '94%', label: 'Completion Rate' },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What our students say"
+      props.testimonials?.heading ?? 'What our students say'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Join thousands of successful learners who have transformed their careers."
+      'Join thousands of successful learners who have transformed their careers.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "The Web Development Bootcamp completely changed my career. I went from zero coding experience to landing a $95k frontend developer job in just 6 months.",
-            name: "Michael Torres",
-            role: "Frontend Developer at Shopify",
+              'The Web Development Bootcamp completely changed my career. I went from zero coding experience to landing a $95k frontend developer job in just 6 months.',
+            name: 'Michael Torres',
+            role: 'Frontend Developer at Shopify',
           },
           {
             quote:
               "The UX Design course gave me the portfolio I needed to get hired. Sarah's teaching style is incredible—clear, practical, and immediately applicable to real projects.",
-            name: "Emma Richardson",
-            role: "UX Designer at Figma",
+            name: 'Emma Richardson',
+            role: 'UX Designer at Figma',
           },
           {
             quote:
-              "As a working mom, the self-paced format was perfect. I studied evenings and weekends, got my data science certificate, and doubled my salary within a year.",
-            name: "Jennifer Kim",
-            role: "Data Scientist at Netflix",
+              'As a working mom, the self-paced format was perfect. I studied evenings and weekends, got my data science certificate, and doubled my salary within a year.',
+            name: 'Jennifer Kim',
+            role: 'Data Scientist at Netflix',
           },
         ]
 
     const pricingHeading =
-      props.pricing?.heading ?? "Simple, transparent pricing"
+      props.pricing?.heading ?? 'Simple, transparent pricing'
     const pricingDesc =
       props.pricing?.description ??
-      "Choose the plan that works for you. All plans include a 30-day money-back guarantee."
+      'Choose the plan that works for you. All plans include a 30-day money-back guarantee.'
     const pricingTiers = props.pricing?.tiers?.length
       ? props.pricing.tiers
       : [
           {
-            name: "Starter",
-            tagline: "Perfect for trying out a single course",
-            price: "$19",
-            period: "/mo",
-            cta: "Get Started",
+            name: 'Starter',
+            tagline: 'Perfect for trying out a single course',
+            price: '$19',
+            period: '/mo',
+            cta: 'Get Started',
             features: [
-              { label: "Access to 50+ courses", included: true },
-              { label: "Basic community access", included: true },
-              { label: "Mobile app access", included: true },
-              { label: "Certificates", included: false },
-              { label: "Career coaching", included: false },
+              { label: 'Access to 50+ courses', included: true },
+              { label: 'Basic community access', included: true },
+              { label: 'Mobile app access', included: true },
+              { label: 'Certificates', included: false },
+              { label: 'Career coaching', included: false },
             ],
           },
           {
-            name: "Professional",
-            tagline: "Best for serious learners",
-            price: "$49",
-            period: "/mo",
-            cta: "Get Started",
+            name: 'Professional',
+            tagline: 'Best for serious learners',
+            price: '$49',
+            period: '/mo',
+            cta: 'Get Started',
             featured: true,
             features: [
-              { label: "Access to all 850+ courses", included: true },
-              { label: "Premium community", included: true },
-              { label: "Verified certificates", included: true },
-              { label: "Downloadable resources", included: true },
-              { label: "1:1 Career coaching", included: false },
+              { label: 'Access to all 850+ courses', included: true },
+              { label: 'Premium community', included: true },
+              { label: 'Verified certificates', included: true },
+              { label: 'Downloadable resources', included: true },
+              { label: '1:1 Career coaching', included: false },
             ],
           },
           {
-            name: "Enterprise",
-            tagline: "For teams and organizations",
-            price: "$199",
-            period: "/mo",
-            cta: "Contact Sales",
+            name: 'Enterprise',
+            tagline: 'For teams and organizations',
+            price: '$199',
+            period: '/mo',
+            cta: 'Contact Sales',
             features: [
-              { label: "Everything in Pro", included: true },
-              { label: "10 team licenses", included: true },
-              { label: "Admin dashboard", included: true },
-              { label: "1:1 Career coaching", included: true },
-              { label: "Custom learning paths", included: true },
+              { label: 'Everything in Pro', included: true },
+              { label: '10 team licenses', included: true },
+              { label: 'Admin dashboard', included: true },
+              { label: '1:1 Career coaching', included: true },
+              { label: 'Custom learning paths', included: true },
             ],
           },
         ]
 
-    const faqHeading =
-      props.faq?.heading ?? "Frequently asked questions"
+    const faqHeading = props.faq?.heading ?? 'Frequently asked questions'
     const faqDesc =
       props.faq?.description ?? `Everything you need to know about ${brand}.`
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "How long do I have access to a course?",
+            q: 'How long do I have access to a course?',
             a: "With any paid plan, you get lifetime access to all courses you've enrolled in. Even if you cancel your subscription, you keep access to courses you completed while subscribed. Starter plan gives you 30-day access to individual course purchases.",
           },
           {
-            q: "Are the certificates recognized by employers?",
-            a: "Yes! Our certificates are recognized by over 5,000 companies including Google, Amazon, Microsoft, and Meta. Each certificate includes a unique verification URL that employers can use to confirm your achievement. Many of our graduates have successfully used these certificates to land jobs and promotions.",
+            q: 'Are the certificates recognized by employers?',
+            a: 'Yes! Our certificates are recognized by over 5,000 companies including Google, Amazon, Microsoft, and Meta. Each certificate includes a unique verification URL that employers can use to confirm your achievement. Many of our graduates have successfully used these certificates to land jobs and promotions.',
           },
           {
-            q: "Can I switch between plans?",
+            q: 'Can I switch between plans?',
             a: "Absolutely. You can upgrade or downgrade your plan at any time. When upgrading, you'll be charged the prorated difference for the remainder of your billing cycle. When downgrading, the new rate takes effect at your next billing date.",
           },
           {
@@ -641,66 +639,65 @@ export const OnlineCourseKimiPage = defineCapsule({
             a: "We offer a 30-day money-back guarantee on all plans and individual course purchases. If you're not completely satisfied, contact our support team within 30 days for a full refund—no questions asked. Your satisfaction is our top priority.",
           },
           {
-            q: "Do you offer team or corporate training?",
-            a: "Yes! Our Enterprise plan is designed for teams. We offer custom learning paths, progress tracking, admin dashboards, and dedicated support. We also provide bulk discounts for organizations with 50+ employees. Contact our sales team for a personalized demo.",
+            q: 'Do you offer team or corporate training?',
+            a: 'Yes! Our Enterprise plan is designed for teams. We offer custom learning paths, progress tracking, admin dashboards, and dedicated support. We also provide bulk discounts for organizations with 50+ employees. Contact our sales team for a personalized demo.',
           },
         ]
 
-    const ctaHeading =
-      props.cta?.heading ?? "Start your learning journey today"
+    const ctaHeading = props.cta?.heading ?? 'Start your learning journey today'
     const ctaDesc =
       props.cta?.description ??
-      "Join 2 million+ learners and gain the skills you need to advance your career. Get unlimited access with our 30-day money-back guarantee."
-    const ctaPlaceholder = props.cta?.placeholder ?? "Enter your email"
-    const ctaSubmit = props.cta?.submit ?? "Get Started Free"
-    const ctaNote = props.cta?.note ?? "No credit card required. Cancel anytime."
+      'Join 2 million+ learners and gain the skills you need to advance your career. Get unlimited access with our 30-day money-back guarantee.'
+    const ctaPlaceholder = props.cta?.placeholder ?? 'Enter your email'
+    const ctaSubmit = props.cta?.submit ?? 'Get Started Free'
+    const ctaNote =
+      props.cta?.note ?? 'No credit card required. Cancel anytime.'
 
     const footerAbout =
       props.footer?.about ??
-      "Empowering learners worldwide with practical, career-focused education from industry experts."
+      'Empowering learners worldwide with practical, career-focused education from industry experts.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            heading: "Courses",
+            heading: 'Courses',
             links: [
-              "Web Development",
-              "Data Science",
-              "UX/UI Design",
-              "Digital Marketing",
-              "Business",
+              'Web Development',
+              'Data Science',
+              'UX/UI Design',
+              'Digital Marketing',
+              'Business',
             ],
           },
           {
-            heading: "Company",
-            links: ["About Us", "Careers", "Blog", "Press", "Partners"],
+            heading: 'Company',
+            links: ['About Us', 'Careers', 'Blog', 'Press', 'Partners'],
           },
           {
-            heading: "Support",
+            heading: 'Support',
             links: [
-              "Help Center",
-              "Contact Us",
-              "System Status",
-              "Privacy Policy",
-              "Terms of Service",
+              'Help Center',
+              'Contact Us',
+              'System Status',
+              'Privacy Policy',
+              'Terms of Service',
             ],
           },
           {
-            heading: "Get the App",
-            links: ["iOS App", "Android App"],
+            heading: 'Get the App',
+            links: ['iOS App', 'Android App'],
           },
         ]
-    const footerCopyright =
-      props.footer?.copyright ?? "All rights reserved."
+    const footerCopyright = props.footer?.copyright ?? 'All rights reserved.'
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy", "Terms", "Sitemap"]
+      : ['Privacy', 'Terms', 'Sitemap']
 
     // Decorative brand logo tile (fixed brand asset; book/open-pages glyph).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -819,12 +816,12 @@ export const OnlineCourseKimiPage = defineCapsule({
 
     // Tinted feature-icon tiles rotate through semantic tokens (no raw palette).
     const featureIconStyles = [
-      "bg-primary/10 text-primary",
-      "bg-secondary text-secondary-foreground",
-      "bg-accent text-accent-foreground",
-      "bg-chart-4/15 text-chart-4",
-      "bg-chart-1/15 text-chart-1",
-      "bg-chart-2/15 text-chart-2",
+      'bg-primary/10 text-primary',
+      'bg-secondary text-secondary-foreground',
+      'bg-accent text-accent-foreground',
+      'bg-chart-4/15 text-chart-4',
+      'bg-chart-1/15 text-chart-1',
+      'bg-chart-2/15 text-chart-2',
     ]
     const featureIcons: ReactNode[] = [
       // play / video
@@ -922,7 +919,7 @@ export const OnlineCourseKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -1150,7 +1147,9 @@ export const OnlineCourseKimiPage = defineCapsule({
                                 </div>
                                 <button
                                   type="button"
-                                  onClick={() => void unenrollFromCourse(item.courseId)}
+                                  onClick={() =>
+                                    void unenrollFromCourse(item.courseId)
+                                  }
                                   className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                                 >
                                   Unenroll
@@ -1386,10 +1385,10 @@ export const OnlineCourseKimiPage = defineCapsule({
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex -space-x-2">
                       {[
-                        "professional headshot of a smiling woman with brown hair",
-                        "professional headshot of a man in his 30s with short dark hair",
-                        "professional headshot of a woman with blonde hair smiling",
-                        "professional headshot of a young man with beard and glasses",
+                        'professional headshot of a smiling woman with brown hair',
+                        'professional headshot of a man in his 30s with short dark hair',
+                        'professional headshot of a woman with blonde hair smiling',
+                        'professional headshot of a young man with beard and glasses',
                       ].map((alt) => (
                         <Image
                           key={alt}
@@ -1497,7 +1496,7 @@ export const OnlineCourseKimiPage = defineCapsule({
                   >
                     <div
                       className={cn(
-                        "mb-4 grid size-12 place-items-center rounded-lg",
+                        'mb-4 grid size-12 place-items-center rounded-lg',
                         featureIconStyles[i % featureIconStyles.length],
                       )}
                     >
@@ -1721,7 +1720,9 @@ export const OnlineCourseKimiPage = defineCapsule({
                         <p className="font-semibold text-card-foreground">
                           {t.name}
                         </p>
-                        <p className="text-sm text-muted-foreground">{t.role}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {t.role}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1746,10 +1747,10 @@ export const OnlineCourseKimiPage = defineCapsule({
                     <div
                       key={tier.name}
                       className={cn(
-                        "relative rounded-2xl p-8",
+                        'relative rounded-2xl p-8',
                         featured
-                          ? "border-2 border-primary bg-primary text-primary-foreground"
-                          : "border border-border bg-card text-card-foreground",
+                          ? 'border-2 border-primary bg-primary text-primary-foreground'
+                          : 'border border-border bg-card text-card-foreground',
                       )}
                     >
                       {featured ? (
@@ -1762,10 +1763,10 @@ export const OnlineCourseKimiPage = defineCapsule({
                       </h3>
                       <p
                         className={cn(
-                          "mb-6 text-sm",
+                          'mb-6 text-sm',
                           featured
-                            ? "text-primary-foreground/70"
-                            : "text-muted-foreground",
+                            ? 'text-primary-foreground/70'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {tier.tagline}
@@ -1774,10 +1775,10 @@ export const OnlineCourseKimiPage = defineCapsule({
                         {tier.price}
                         <span
                           className={cn(
-                            "text-lg font-normal",
+                            'text-lg font-normal',
                             featured
-                              ? "text-primary-foreground/70"
-                              : "text-muted-foreground",
+                              ? 'text-primary-foreground/70'
+                              : 'text-muted-foreground',
                           )}
                         >
                           {tier.period}
@@ -1788,32 +1789,32 @@ export const OnlineCourseKimiPage = defineCapsule({
                           <li
                             key={f.label}
                             className={cn(
-                              "flex items-center gap-3 text-sm",
+                              'flex items-center gap-3 text-sm',
                               f.included
                                 ? featured
-                                  ? "text-primary-foreground"
-                                  : "text-foreground"
+                                  ? 'text-primary-foreground'
+                                  : 'text-foreground'
                                 : featured
-                                  ? "text-primary-foreground/50"
-                                  : "text-muted-foreground/70",
+                                  ? 'text-primary-foreground/50'
+                                  : 'text-muted-foreground/70',
                             )}
                           >
                             {f.included ? (
                               <Check
                                 className={cn(
-                                  "size-5 shrink-0",
+                                  'size-5 shrink-0',
                                   featured
-                                    ? "text-primary-foreground"
-                                    : "text-primary",
+                                    ? 'text-primary-foreground'
+                                    : 'text-primary',
                                 )}
                               />
                             ) : (
                               <Cross
                                 className={cn(
-                                  "size-5 shrink-0",
+                                  'size-5 shrink-0',
                                   featured
-                                    ? "text-primary-foreground/40"
-                                    : "text-muted-foreground/50",
+                                    ? 'text-primary-foreground/40'
+                                    : 'text-muted-foreground/50',
                                 )}
                               />
                             )}
@@ -1825,10 +1826,10 @@ export const OnlineCourseKimiPage = defineCapsule({
                         type="button"
                         onClick={() => go(`${tier.name} ${tier.cta}`)}
                         className={cn(
-                          "w-full rounded-lg py-3 font-semibold transition-colors",
+                          'w-full rounded-lg py-3 font-semibold transition-colors',
                           featured
-                            ? "bg-background text-foreground hover:bg-muted"
-                            : "border border-border text-foreground hover:bg-muted",
+                            ? 'bg-background text-foreground hover:bg-muted'
+                            : 'border border-border text-foreground hover:bg-muted',
                         )}
                       >
                         {tier.cta}
@@ -1937,7 +1938,7 @@ export const OnlineCourseKimiPage = defineCapsule({
                   {footerAbout}
                 </p>
                 <div className="flex gap-4">
-                  {(["Twitter", "Instagram", "LinkedIn"] as const).map(
+                  {(['Twitter', 'Instagram', 'LinkedIn'] as const).map(
                     (social) => (
                       <button
                         key={social}

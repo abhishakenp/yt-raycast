@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -24,9 +24,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const PricingKimiPage2 = defineCapsule({
-  name: "PricingKimiPage2",
+  name: 'PricingKimiPage2',
   description:
-    "Pricing second style sibling to PricingKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Pricing second style sibling to PricingKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const PricingKimiPage2 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -105,94 +107,101 @@ export const PricingKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [plansOpen, setPlansOpen] = useState(false)
     const [mobileOpen, setMobileOpen] = useState(false)
-    const brand = props.brand ?? "NebulaVault Pricing Cloud Storage That Scales With You"
-    const nav = props.nav?.length ? props.nav : ["NebulaVault", "Features", "Pricing", "FAQ", "Docs", "Log in"]
+    const brand =
+      props.brand ?? 'NebulaVault Pricing Cloud Storage That Scales With You'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['NebulaVault', 'Features', 'Pricing', 'FAQ', 'Docs', 'Log in']
     const hero = {
-      eyebrow: "Pricing / Variant 2",
-      title: "Cloud storage without limits.",
-      description: "NebulaVault Pricing Cloud Storage That Scales With You NebulaVault Features Pricing FAQ Docs Log in Start Free Trial New: AI-powered deduplication is live Cloud storage without...",
-      primaryCta: "NebulaVault",
-      secondaryCta: "Features",
-      imageAlt: "Rows of modern server racks with blue LED lighting in a data center",
+      eyebrow: 'Pricing / Variant 2',
+      title: 'Cloud storage without limits.',
+      description:
+        'NebulaVault Pricing Cloud Storage That Scales With You NebulaVault Features Pricing FAQ Docs Log in Start Free Trial New: AI-powered deduplication is live Cloud storage without...',
+      primaryCta: 'NebulaVault',
+      secondaryCta: 'Features',
+      imageAlt:
+        'Rows of modern server racks with blue LED lighting in a data center',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Features",
-    "body": "NebulaVault Pricing Cloud Storage That Scales With You NebulaVault Features Pricing FAQ Docs Log in Start Free Trial New: AI-powered deduplication is live Cloud storage without...",
-    "items": [
-      "Testimonials",
-      "Ready to speed up your team?",
-      "Blazing Fast Sync"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "How it works",
-    "body": "Pricing page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Zero-Knowledge Security",
-      "Real-Time Collaboration",
-      "Create your workspace"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Product Gallery",
-    "body": "Pricing page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Install the agent",
-      "Ship without worry",
-      "Team Dashboard"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Testimonials",
-    "body": "Pricing page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Version History",
-      "Secure Sharing",
-      "Developer-First API"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "How it works",
-    "alt": "Rows of modern server racks with blue LED lighting in a data center",
-    "caption": "Pricing generated page detail"
-  },
-  {
-    "title": "Product Gallery",
-    "alt": "AcmeCorp company logo",
-    "caption": "Pricing generated page detail"
-  },
-  {
-    "title": "Pricing",
-    "alt": "StreamLine company logo",
-    "caption": "Pricing generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'Features',
+            body: 'NebulaVault Pricing Cloud Storage That Scales With You NebulaVault Features Pricing FAQ Docs Log in Start Free Trial New: AI-powered deduplication is live Cloud storage without...',
+            items: [
+              'Testimonials',
+              'Ready to speed up your team?',
+              'Blazing Fast Sync',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'How it works',
+            body: "Pricing page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Zero-Knowledge Security',
+              'Real-Time Collaboration',
+              'Create your workspace',
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Product Gallery',
+            body: "Pricing page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Install the agent',
+              'Ship without worry',
+              'Team Dashboard',
+            ],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Testimonials',
+            body: "Pricing page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['Version History', 'Secure Sharing', 'Developer-First API'],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'How it works',
+            alt: 'Rows of modern server racks with blue LED lighting in a data center',
+            caption: 'Pricing generated page detail',
+          },
+          {
+            title: 'Product Gallery',
+            alt: 'AcmeCorp company logo',
+            caption: 'Pricing generated page detail',
+          },
+          {
+            title: 'Pricing',
+            alt: 'StreamLine company logo',
+            caption: 'Pricing generated page detail',
+          },
+        ]
 
     const staticPlans = [
       {
@@ -245,7 +254,8 @@ export const PricingKimiPage2 = defineCapsule({
       lakebed.signOut()
     }
 
-    const displayPlans = storedPlans && storedPlans.length > 0 ? storedPlans : staticPlans
+    const displayPlans =
+      storedPlans && storedPlans.length > 0 ? storedPlans : staticPlans
     const selectedCount = selectedPlanNames?.size ?? 0
 
     const ChevronDown = () => (
@@ -279,10 +289,19 @@ export const PricingKimiPage2 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -322,7 +341,10 @@ export const PricingKimiPage2 = defineCapsule({
                     ) : null}
                   </button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
                   <SheetHeader className="border-b border-border p-6">
                     <SheetTitle className="text-xl">Selected Plans</SheetTitle>
                     <SheetDescription>
@@ -343,9 +365,15 @@ export const PricingKimiPage2 = defineCapsule({
                             >
                               <div className="flex items-start justify-between gap-3">
                                 <div className="flex-1">
-                                  <h3 className="font-semibold text-card-foreground">{plan.name}</h3>
-                                  <p className="text-sm font-bold text-primary">{plan.price}</p>
-                                  <p className="mt-2 text-sm text-muted-foreground">{plan.features}</p>
+                                  <h3 className="font-semibold text-card-foreground">
+                                    {plan.name}
+                                  </h3>
+                                  <p className="text-sm font-bold text-primary">
+                                    {plan.price}
+                                  </p>
+                                  <p className="mt-2 text-sm text-muted-foreground">
+                                    {plan.features}
+                                  </p>
                                 </div>
                                 <button
                                   type="button"
@@ -364,7 +392,8 @@ export const PricingKimiPage2 = defineCapsule({
                           No plans selected
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Select plans from the Features section to compare them side by side.
+                          Select plans from the Features section to compare them
+                          side by side.
                         </p>
                       </div>
                     )}
@@ -622,16 +651,28 @@ export const PricingKimiPage2 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -639,7 +680,9 @@ export const PricingKimiPage2 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 text-center">
               <p className="text-sm font-medium text-primary">Pricing Plans</p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight">Choose your plan</h2>
+              <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                Choose your plan
+              </h2>
             </div>
             <div className="grid gap-6 md:grid-cols-3">
               {displayPlans.map((plan) => {
@@ -658,9 +701,15 @@ export const PricingKimiPage2 = defineCapsule({
                         {plan.popular}
                       </span>
                     ) : null}
-                    <h3 className="text-xl font-semibold text-card-foreground">{plan.name}</h3>
-                    <p className="mt-2 text-3xl font-bold text-primary">{plan.price}</p>
-                    <p className="mt-4 text-sm leading-6 text-muted-foreground">{plan.features}</p>
+                    <h3 className="text-xl font-semibold text-card-foreground">
+                      {plan.name}
+                    </h3>
+                    <p className="mt-2 text-3xl font-bold text-primary">
+                      {plan.price}
+                    </p>
+                    <p className="mt-4 text-sm leading-6 text-muted-foreground">
+                      {plan.features}
+                    </p>
                     <Button
                       type="button"
                       className={cn(
@@ -693,10 +742,19 @@ export const PricingKimiPage2 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -720,8 +778,12 @@ export const PricingKimiPage2 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -733,11 +795,26 @@ export const PricingKimiPage2 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -748,9 +825,15 @@ export const PricingKimiPage2 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -766,10 +849,17 @@ export const PricingKimiPage2 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

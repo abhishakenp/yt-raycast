@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * AutoDealershipKimiPage — a complete, self-contained AUTO DEALERSHIP landing page.
@@ -43,9 +43,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * make it render the full page with no props at all.
  */
 export const AutoDealershipKimiPage = defineCapsule({
-  name: "AutoDealershipKimiPage",
+  name: 'AutoDealershipKimiPage',
   description:
-    "Complete AUTO DEALERSHIP / used-car landing page with a clean, premium, light editorial aesthetic for a certified pre-owned vehicle showroom. Includes a sticky navbar (brand, phone number, Book Test Drive CTA), a split hero (eyebrow, large headline, dual CTAs, inline KPI strip for inventory count / starting APR / Google rating, and a showroom hero photo), a trusted-brands logo strip (BMW, Mercedes, Audi, Lexus, Tesla, Toyota), a 3-up FEATURED INVENTORY grid of vehicle cards (car photo, Certified/Electric/Hybrid badge, year-make-model, mileage / transmission / drivetrain spec line, feature chips like Leather/Navigation/Autopilot, price and View Details link), a Why-Buy-From-Us features band with icon tiles (150-point inspection, 7-day money-back, 90-day warranty, no hidden fees) and a founder quote card, a 3-step financing section (Apply Online, Compare Offers, Drive Away) with an APR / max-months / down-payment stats block and Get Pre-Approved CTA, a dark stats band (years in business, vehicles sold, rating, repeat customers), a 3-up star-rated customer testimonials grid, an accordion FAQ, a dark Ready-to-Take-the-Wheel CTA with a real test-drive request form (name, phone, email, vehicle select), and a multi-column footer with inventory/services/contact links and social icons. Use as the ROOT/home page for car dealerships, used-car lots, certified pre-owned vehicle sellers, auto sales, dealership groups, EV/hybrid lots, or any automotive retail site that needs inventory browsing, financing, test-drive booking, trade-ins and trust/warranty messaging. Supply content only — brand, nav, hero, logos, inventory, features, financing, stats, testimonials, faq, cta, footer; the block owns all layout and styling.",
+    'Complete AUTO DEALERSHIP / used-car landing page with a clean, premium, light editorial aesthetic for a certified pre-owned vehicle showroom. Includes a sticky navbar (brand, phone number, Book Test Drive CTA), a split hero (eyebrow, large headline, dual CTAs, inline KPI strip for inventory count / starting APR / Google rating, and a showroom hero photo), a trusted-brands logo strip (BMW, Mercedes, Audi, Lexus, Tesla, Toyota), a 3-up FEATURED INVENTORY grid of vehicle cards (car photo, Certified/Electric/Hybrid badge, year-make-model, mileage / transmission / drivetrain spec line, feature chips like Leather/Navigation/Autopilot, price and View Details link), a Why-Buy-From-Us features band with icon tiles (150-point inspection, 7-day money-back, 90-day warranty, no hidden fees) and a founder quote card, a 3-step financing section (Apply Online, Compare Offers, Drive Away) with an APR / max-months / down-payment stats block and Get Pre-Approved CTA, a dark stats band (years in business, vehicles sold, rating, repeat customers), a 3-up star-rated customer testimonials grid, an accordion FAQ, a dark Ready-to-Take-the-Wheel CTA with a real test-drive request form (name, phone, email, vehicle select), and a multi-column footer with inventory/services/contact links and social icons. Use as the ROOT/home page for car dealerships, used-car lots, certified pre-owned vehicle sellers, auto sales, dealership groups, EV/hybrid lots, or any automotive retail site that needs inventory browsing, financing, test-drive booking, trade-ins and trust/warranty messaging. Supply content only — brand, nav, hero, logos, inventory, features, financing, stats, testimonials, faq, cta, footer; the block owns all layout and styling.',
   props: z.object({
     /** Dealership brand name shown in navbar, hero eyebrow and footer. */
     brand: z.string().optional(),
@@ -69,7 +69,10 @@ export const AutoDealershipKimiPage = defineCapsule({
       .optional(),
     /** Trusted-brands logo strip. */
     logos: z
-      .object({ heading: z.string().optional(), brands: z.array(z.string()).optional() })
+      .object({
+        heading: z.string().optional(),
+        brands: z.array(z.string()).optional(),
+      })
       .optional(),
     /** Featured inventory grid. */
     inventory: z
@@ -148,9 +151,7 @@ export const AutoDealershipKimiPage = defineCapsule({
       .object({
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       })
       .optional(),
     /** Dark test-drive CTA + request form. */
@@ -206,11 +207,12 @@ export const AutoDealershipKimiPage = defineCapsule({
       vehicles: ({ db }) => db.vehicles.orderBy('createdAt').all(),
       savedVehicleNames: ({ db }) =>
         new Set(db.savedVehicles.all().map((saved) => saved.vehicleName)),
-      testDriveRequests: ({ db }) => db.testDriveRequests.orderBy('createdAt').all(),
     },
     mutations: {
       saveVehicle: ({ db }, vehicleName: string) => {
-        const existing = db.savedVehicles.where('vehicleName', vehicleName).all()[0]
+        const existing = db.savedVehicles
+          .where('vehicleName', vehicleName)
+          .all()[0]
         if (existing) {
           db.savedVehicles.delete(existing.id)
           return false
@@ -219,12 +221,20 @@ export const AutoDealershipKimiPage = defineCapsule({
         return true
       },
       removeSavedVehicle: ({ db }, vehicleName: string) => {
-        for (const item of db.savedVehicles.where('vehicleName', vehicleName).all()) {
+        for (const item of db.savedVehicles
+          .where('vehicleName', vehicleName)
+          .all()) {
           db.savedVehicles.delete(item.id)
         }
         return db.savedVehicles.all()
       },
-      submitTestDriveRequest: ({ db }, name: string, phone: string, email: string, vehicle: string) => {
+      submitTestDriveRequest: (
+        { db },
+        name: string,
+        phone: string,
+        email: string,
+        vehicle: string,
+      ) => {
         db.testDriveRequests.insert({ name, phone, email, vehicle })
         return db.testDriveRequests.all()
       },
@@ -233,100 +243,103 @@ export const AutoDealershipKimiPage = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [savedOpen, setSavedOpen] = useState(false)
-    const brand = props.brand ?? "Meridian Motors"
+    const brand = props.brand ?? 'Meridian Motors'
     const nav = props.nav?.length
       ? props.nav
-      : ["Inventory", "Financing", "About", "Reviews", "FAQ"]
+      : ['Inventory', 'Financing', 'About', 'Reviews', 'FAQ']
 
-    const heroEyebrow = props.hero?.eyebrow ?? "Premium Pre-Owned Vehicles"
-    const heroHeading = props.hero?.heading ?? "Find Your Perfect Drive"
+    const heroEyebrow = props.hero?.eyebrow ?? 'Premium Pre-Owned Vehicles'
+    const heroHeading = props.hero?.heading ?? 'Find Your Perfect Drive'
     const heroSub =
       props.hero?.subheading ??
-      "Over 200 certified pre-owned vehicles. Competitive financing from 3.9% APR. 7-day money-back guarantee on every purchase."
-    const heroPrimary = props.hero?.primaryCta ?? "Browse Inventory"
-    const heroSecondary = props.hero?.secondaryCta ?? "Schedule Test Drive"
-    const heroPhone = props.hero?.phone ?? "(555) 0127-456"
-    const heroNavCta = props.hero?.navCta ?? "Book Test Drive"
+      'Over 200 certified pre-owned vehicles. Competitive financing from 3.9% APR. 7-day money-back guarantee on every purchase.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Browse Inventory'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Schedule Test Drive'
+    const heroPhone = props.hero?.phone ?? '(555) 0127-456'
+    const heroNavCta = props.hero?.navCta ?? 'Book Test Drive'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Premium white sedan parked in modern showroom with floor-to-ceiling windows"
+      'Premium white sedan parked in modern showroom with floor-to-ceiling windows'
     const heroStats = props.hero?.stats?.length
       ? props.hero.stats
       : [
-          { value: "200+", label: "Vehicles in Stock" },
-          { value: "3.9%", label: "Starting APR" },
-          { value: "4.9", label: "Google Rating" },
+          { value: '200+', label: 'Vehicles in Stock' },
+          { value: '3.9%', label: 'Starting APR' },
+          { value: '4.9', label: 'Google Rating' },
         ]
 
-    const logosHeading = props.logos?.heading ?? "Trusted Brands We Carry"
+    const logosHeading = props.logos?.heading ?? 'Trusted Brands We Carry'
     const logoBrands = props.logos?.brands?.length
       ? props.logos.brands
-      : ["BMW", "Mercedes", "Audi", "Lexus", "Tesla", "Toyota"]
+      : ['BMW', 'Mercedes', 'Audi', 'Lexus', 'Tesla', 'Toyota']
 
-    const inventoryHeading = props.inventory?.heading ?? "Featured Inventory"
+    const inventoryHeading = props.inventory?.heading ?? 'Featured Inventory'
     const inventoryDesc =
       props.inventory?.description ??
-      "Browse our hand-picked selection of certified pre-owned vehicles. Every car passes a 150-point inspection."
-    const inventoryViewAll = props.inventory?.viewAll ?? "View All 200+ Vehicles"
+      'Browse our hand-picked selection of certified pre-owned vehicles. Every car passes a 150-point inspection.'
+    const inventoryViewAll =
+      props.inventory?.viewAll ?? 'View All 200+ Vehicles'
     const inventoryItems = props.inventory?.items?.length
       ? props.inventory.items
       : [
           {
-            name: "2022 BMW 330i",
-            specs: "28,450 miles · Automatic · RWD",
-            price: "$38,995",
-            badge: "Certified",
-            features: ["Leather", "Navigation", "Sunroof"],
-            imageAlt: "Black BMW 3 Series sedan front three-quarter view",
+            name: '2022 BMW 330i',
+            specs: '28,450 miles · Automatic · RWD',
+            price: '$38,995',
+            badge: 'Certified',
+            features: ['Leather', 'Navigation', 'Sunroof'],
+            imageAlt: 'Black BMW 3 Series sedan front three-quarter view',
           },
           {
-            name: "2021 Mercedes C300",
-            specs: "35,200 miles · Automatic · AWD",
-            price: "$41,500",
-            badge: "Certified",
-            features: ["Premium Audio", "Heated Seats", "Blind Spot"],
-            imageAlt: "White Mercedes-Benz C-Class luxury sedan in showroom lighting",
+            name: '2021 Mercedes C300',
+            specs: '35,200 miles · Automatic · AWD',
+            price: '$41,500',
+            badge: 'Certified',
+            features: ['Premium Audio', 'Heated Seats', 'Blind Spot'],
+            imageAlt:
+              'White Mercedes-Benz C-Class luxury sedan in showroom lighting',
           },
           {
-            name: "2023 Tesla Model 3",
-            specs: "12,800 miles · Auto · Long Range",
-            price: "$42,995",
-            badge: "Electric",
+            name: '2023 Tesla Model 3',
+            specs: '12,800 miles · Auto · Long Range',
+            price: '$42,995',
+            badge: 'Electric',
             electric: true,
-            features: ["Autopilot", "Glass Roof", "358 mi Range"],
-            imageAlt: "Tesla Model 3 electric vehicle in pearl white exterior finish",
+            features: ['Autopilot', 'Glass Roof', '358 mi Range'],
+            imageAlt:
+              'Tesla Model 3 electric vehicle in pearl white exterior finish',
           },
           {
-            name: "2022 Lexus RX 350",
-            specs: "41,000 miles · Automatic · AWD",
-            price: "$45,750",
-            badge: "Certified",
-            features: ["Mark Levinson", "Panoramic Roof", "Safety+"],
-            imageAlt: "Lexus RX SUV in silver metallic paint on paved driveway",
+            name: '2022 Lexus RX 350',
+            specs: '41,000 miles · Automatic · AWD',
+            price: '$45,750',
+            badge: 'Certified',
+            features: ['Mark Levinson', 'Panoramic Roof', 'Safety+'],
+            imageAlt: 'Lexus RX SUV in silver metallic paint on paved driveway',
           },
           {
-            name: "2021 Audi A4 Premium",
-            specs: "32,600 miles · Automatic · AWD",
-            price: "$36,995",
-            badge: "Certified",
-            features: ["Virtual Cockpit", "LED Lights", "Quattro"],
-            imageAlt: "Audi A4 sedan in dark blue exterior color profile view",
+            name: '2021 Audi A4 Premium',
+            specs: '32,600 miles · Automatic · AWD',
+            price: '$36,995',
+            badge: 'Certified',
+            features: ['Virtual Cockpit', 'LED Lights', 'Quattro'],
+            imageAlt: 'Audi A4 sedan in dark blue exterior color profile view',
           },
           {
-            name: "2023 Toyota RAV4 Hybrid",
-            specs: "18,900 miles · CVT · AWD",
-            price: "$34,250",
-            badge: "Hybrid",
+            name: '2023 Toyota RAV4 Hybrid',
+            specs: '18,900 miles · CVT · AWD',
+            price: '$34,250',
+            badge: 'Hybrid',
             electric: true,
-            features: ["40 MPG", "CarPlay", "Adaptive Cruise"],
-            imageAlt: "Toyota RAV4 hybrid compact SUV in white with black roof rails",
+            features: ['40 MPG', 'CarPlay', 'Adaptive Cruise'],
+            imageAlt:
+              'Toyota RAV4 hybrid compact SUV in white with black roof rails',
           },
         ]
 
     // Lakebed hooks
     const storedVehicles = lakebed.useQuery('vehicles')
     const savedVehicleNames = lakebed.useQuery('savedVehicleNames')
-    const testDriveRequests = lakebed.useQuery('testDriveRequests')
     const auth = lakebed.useAuth()
     const saveVehicle = lakebed.useMutation('saveVehicle')
     const removeSavedVehicle = lakebed.useMutation('removeSavedVehicle')
@@ -359,17 +372,6 @@ export const AutoDealershipKimiPage = defineCapsule({
       lakebed.signOut()
     }
 
-    // Normalize inventory items for Lakebed compatibility
-    const normalizedInventoryItems = inventoryItems.map((item) => ({
-      name: item.name,
-      specs: item.specs,
-      price: item.price,
-      badge: item.badge,
-      electric: item.electric ? 'true' : 'false',
-      features: item.features.join(', '),
-      imageAlt: item.imageAlt,
-    }))
-
     const displayVehicles =
       storedVehicles && storedVehicles.length > 0
         ? storedVehicles.map((v) => ({
@@ -394,85 +396,85 @@ export const AutoDealershipKimiPage = defineCapsule({
       ? props.features.items
       : [
           {
-            title: "150-Point Inspection",
+            title: '150-Point Inspection',
             description:
-              "Every vehicle undergoes rigorous mechanical and cosmetic inspection before sale.",
+              'Every vehicle undergoes rigorous mechanical and cosmetic inspection before sale.',
           },
           {
-            title: "7-Day Money Back",
+            title: '7-Day Money Back',
             description:
-              "Not satisfied? Return your vehicle within 7 days for a full refund, no questions asked.",
+              'Not satisfied? Return your vehicle within 7 days for a full refund, no questions asked.',
           },
           {
-            title: "90-Day Warranty",
+            title: '90-Day Warranty',
             description:
-              "Comprehensive coverage on all certified vehicles. Extended plans available.",
+              'Comprehensive coverage on all certified vehicles. Extended plans available.',
           },
           {
-            title: "No Hidden Fees",
+            title: 'No Hidden Fees',
             description:
-              "Transparent pricing. The price you see is the price you pay plus tax and title.",
+              'Transparent pricing. The price you see is the price you pay plus tax and title.',
           },
         ]
     const featuresImageAlt =
       props.features?.imageAlt ??
-      "Modern glass and steel car dealership showroom exterior at sunset"
+      'Modern glass and steel car dealership showroom exterior at sunset'
     const featuresQuote =
       props.features?.quote ??
-      "We built this dealership on the principle that buying a car should be enjoyable, not stressful. Every decision we make puts our customers first."
-    const featuresQuoteName = props.features?.quoteName ?? "David Chen"
+      'We built this dealership on the principle that buying a car should be enjoyable, not stressful. Every decision we make puts our customers first.'
+    const featuresQuoteName = props.features?.quoteName ?? 'David Chen'
     const featuresQuoteRole =
-      props.features?.quoteRole ?? "General Manager & Founder"
+      props.features?.quoteRole ?? 'General Manager & Founder'
     const featuresQuoteAvatarAlt =
       props.features?.quoteAvatarAlt ??
-      "Professional headshot of David Chen, General Manager"
+      'Professional headshot of David Chen, General Manager'
 
     const financingHeading =
-      props.financing?.heading ?? "Flexible Financing Options"
+      props.financing?.heading ?? 'Flexible Financing Options'
     const financingDesc =
       props.financing?.description ??
-      "Get pre-approved in minutes with competitive rates from our network of 20+ lenders. We work with all credit situations to find the right payment plan for you."
+      'Get pre-approved in minutes with competitive rates from our network of 20+ lenders. We work with all credit situations to find the right payment plan for you.'
     const financingImageAlt =
       props.financing?.imageAlt ??
-      "Professional business handshake over desk with documents and calculator"
-    const financingCta = props.financing?.cta ?? "Get Pre-Approved Now"
+      'Professional business handshake over desk with documents and calculator'
+    const financingCta = props.financing?.cta ?? 'Get Pre-Approved Now'
     const financingSteps = props.financing?.steps?.length
       ? props.financing.steps
       : [
           {
-            title: "Apply Online",
+            title: 'Apply Online',
             description:
-              "Complete our secure 3-minute application. No impact to your credit score.",
+              'Complete our secure 3-minute application. No impact to your credit score.',
           },
           {
-            title: "Compare Offers",
+            title: 'Compare Offers',
             description:
-              "Review personalized rates from multiple lenders side by side.",
+              'Review personalized rates from multiple lenders side by side.',
           },
           {
-            title: "Drive Away",
-            description: "Sign electronically and take delivery the same day.",
+            title: 'Drive Away',
+            description: 'Sign electronically and take delivery the same day.',
           },
         ]
     const financingStats = props.financing?.stats?.length
       ? props.financing.stats
       : [
-          { value: "3.9%", label: "Starting APR" },
-          { value: "84", label: "Max Months" },
-          { value: "$0", label: "Down Options" },
+          { value: '3.9%', label: 'Starting APR' },
+          { value: '84', label: 'Max Months' },
+          { value: '$0', label: 'Down Options' },
         ]
 
     const statItems = props.stats?.length
       ? props.stats
       : [
-          { value: "15+", label: "Years in Business" },
-          { value: "8,500+", label: "Vehicles Sold" },
-          { value: "4.9", label: "Google Rating" },
-          { value: "78%", label: "Repeat Customers" },
+          { value: '15+', label: 'Years in Business' },
+          { value: '8,500+', label: 'Vehicles Sold' },
+          { value: '4.9', label: 'Google Rating' },
+          { value: '78%', label: 'Repeat Customers' },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Our Customers Say"
+      props.testimonials?.heading ?? 'What Our Customers Say'
     const testimonialsDesc =
       props.testimonials?.description ??
       "Don't just take our word for it. Here's what Austin drivers have to say about their experience."
@@ -482,27 +484,29 @@ export const AutoDealershipKimiPage = defineCapsule({
           {
             quote:
               "Best car buying experience I've ever had. No pressure, transparent pricing, and the 7-day return policy gave me peace of mind. Loving my certified BMW 3 Series!",
-            name: "Jennifer Walsh",
-            meta: "Austin, TX · 2023 BMW 330i",
-            avatarAlt: "Professional headshot of Jennifer Walsh, satisfied customer",
+            name: 'Jennifer Walsh',
+            meta: 'Austin, TX · 2023 BMW 330i',
+            avatarAlt:
+              'Professional headshot of Jennifer Walsh, satisfied customer',
           },
           {
             quote:
-              "Got pre-approved online and drove away in my Tesla the same day. The financing team found me a rate better than my credit union offered. Highly recommend!",
-            name: "Marcus Thompson",
-            meta: "Round Rock, TX · 2022 Tesla Model 3",
-            avatarAlt: "Professional headshot of Marcus Thompson, Tesla buyer",
+              'Got pre-approved online and drove away in my Tesla the same day. The financing team found me a rate better than my credit union offered. Highly recommend!',
+            name: 'Marcus Thompson',
+            meta: 'Round Rock, TX · 2022 Tesla Model 3',
+            avatarAlt: 'Professional headshot of Marcus Thompson, Tesla buyer',
           },
           {
             quote:
               "This is my third car from Meridian. The 150-point inspection really means something—I haven't had a single issue with any vehicle I've bought here. Trustworthy team.",
-            name: "Sarah Mitchell",
-            meta: "Cedar Park, TX · 2021 Lexus RX",
-            avatarAlt: "Professional headshot of Sarah Mitchell, repeat customer",
+            name: 'Sarah Mitchell',
+            meta: 'Cedar Park, TX · 2021 Lexus RX',
+            avatarAlt:
+              'Professional headshot of Sarah Mitchell, repeat customer',
           },
         ]
 
-    const faqHeading = props.faq?.heading ?? "Frequently Asked Questions"
+    const faqHeading = props.faq?.heading ?? 'Frequently Asked Questions'
     const faqDesc =
       props.faq?.description ??
       `Everything you need to know about buying from ${brand}.`
@@ -510,89 +514,89 @@ export const AutoDealershipKimiPage = defineCapsule({
       ? props.faq.items
       : [
           {
-            q: "What does the 150-point inspection cover?",
+            q: 'What does the 150-point inspection cover?',
             a: "Our inspection covers all major mechanical systems (engine, transmission, brakes, suspension), electrical components, safety features, and cosmetic condition. We check for frame damage, flood history, and verify clean title status. You'll receive a full inspection report before purchase.",
           },
           {
-            q: "How does the 7-day money-back guarantee work?",
+            q: 'How does the 7-day money-back guarantee work?',
             a: "If you're not completely satisfied with your purchase, bring the vehicle back within 7 days (up to 500 miles) for a full refund. No restocking fees, no questions asked. The vehicle must be in the same condition as when purchased.",
           },
           {
-            q: "Can I get financing with less-than-perfect credit?",
+            q: 'Can I get financing with less-than-perfect credit?',
             a: "Absolutely. We work with 20+ lenders including specialty finance companies for all credit situations. Whether you have excellent credit, are rebuilding, or have a bankruptcy in your history, we'll find options. Our online pre-qualification uses a soft credit check that won't affect your score.",
           },
           {
-            q: "Do you accept trade-ins?",
-            a: "Yes, we accept all makes and models in any condition. Get an instant online estimate, or bring your vehicle for a free in-person appraisal. We often beat CarMax offers and can apply your trade value directly to your new purchase or cut you a check the same day.",
+            q: 'Do you accept trade-ins?',
+            a: 'Yes, we accept all makes and models in any condition. Get an instant online estimate, or bring your vehicle for a free in-person appraisal. We often beat CarMax offers and can apply your trade value directly to your new purchase or cut you a check the same day.',
           },
           {
-            q: "Is the online pre-approval a hard credit inquiry?",
-            a: "No. Our online pre-qualification uses a soft inquiry that will not appear on your credit report or affect your credit score. A hard inquiry only occurs once you select a specific lender and move forward with finalizing your purchase.",
+            q: 'Is the online pre-approval a hard credit inquiry?',
+            a: 'No. Our online pre-qualification uses a soft inquiry that will not appear on your credit report or affect your credit score. A hard inquiry only occurs once you select a specific lender and move forward with finalizing your purchase.',
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to Take the Wheel?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to Take the Wheel?'
     const ctaDesc =
       props.cta?.description ??
-      "Schedule your test drive today. Browse our inventory online, get pre-approved in minutes, and visit our showroom for a no-pressure experience. Your next vehicle is waiting."
-    const ctaPrimary = props.cta?.primaryCta ?? "Browse Inventory"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Get Pre-Approved"
+      'Schedule your test drive today. Browse our inventory online, get pre-approved in minutes, and visit our showroom for a no-pressure experience. Your next vehicle is waiting.'
+    const ctaPrimary = props.cta?.primaryCta ?? 'Browse Inventory'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'Get Pre-Approved'
     const ctaBadges = props.cta?.badges?.length
       ? props.cta.badges
-      : ["No hidden fees", "7-day returns", "150-point inspected"]
-    const ctaFormTitle = props.cta?.formTitle ?? "Quick Test Drive Request"
-    const ctaSubmit = props.cta?.submit ?? "Request Test Drive"
+      : ['No hidden fees', '7-day returns', '150-point inspected']
+    const ctaFormTitle = props.cta?.formTitle ?? 'Quick Test Drive Request'
+    const ctaSubmit = props.cta?.submit ?? 'Request Test Drive'
     const ctaVehicleOptions = props.cta?.vehicleOptions?.length
       ? props.cta.vehicleOptions
       : [
           "Select a vehicle you're interested in",
-          "2022 BMW 330i - $38,995",
-          "2021 Mercedes C300 - $41,500",
-          "2023 Tesla Model 3 - $42,995",
-          "2022 Lexus RX 350 - $45,750",
-          "2021 Audi A4 - $36,995",
-          "2023 Toyota RAV4 Hybrid - $34,250",
-          "Other / Not sure yet",
+          '2022 BMW 330i - $38,995',
+          '2021 Mercedes C300 - $41,500',
+          '2023 Tesla Model 3 - $42,995',
+          '2022 Lexus RX 350 - $45,750',
+          '2021 Audi A4 - $36,995',
+          '2023 Toyota RAV4 Hybrid - $34,250',
+          'Other / Not sure yet',
         ]
 
     const footerBlurb =
       props.footer?.blurb ??
-      "Premium pre-owned vehicles in Austin, Texas. 15 years of trusted service."
+      'Premium pre-owned vehicles in Austin, Texas. 15 years of trusted service.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Inventory",
-            links: ["All Vehicles", "Sedans", "SUVs", "Trucks", "Electric"],
+            title: 'Inventory',
+            links: ['All Vehicles', 'Sedans', 'SUVs', 'Trucks', 'Electric'],
           },
           {
-            title: "Services",
+            title: 'Services',
             links: [
-              "Financing",
-              "Trade-In",
-              "Test Drive",
-              "Vehicle History",
-              "Service Center",
+              'Financing',
+              'Trade-In',
+              'Test Drive',
+              'Vehicle History',
+              'Service Center',
             ],
           },
         ]
     const footerContact = props.footer?.contact?.length
       ? props.footer.contact
       : [
-          "4200 N Lamar Blvd",
-          "Austin, TX 78756",
-          "(512) 555-0127",
-          "sales@meridianmotors.com",
-          "Mon-Sat: 9am-8pm · Sun: 11am-6pm",
+          '4200 N Lamar Blvd',
+          'Austin, TX 78756',
+          '(512) 555-0127',
+          'sales@meridianmotors.com',
+          'Mon-Sat: 9am-8pm · Sun: 11am-6pm',
         ]
     const footerCopyright =
       props.footer?.copyright ?? `© 2024 ${brand}. All rights reserved.`
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Sitemap"]
+      : ['Privacy Policy', 'Terms of Service', 'Sitemap']
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Facebook", "Instagram", "Google Reviews"]
+      : ['Facebook', 'Instagram', 'Google Reviews']
 
     // Decorative feature icons (token-colored, currentColor strokes).
     const CheckBadge = () => (
@@ -729,7 +733,12 @@ export const AutoDealershipKimiPage = defineCapsule({
       </svg>
     )
     const CheckCircle = () => (
-      <svg className="size-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+      <svg
+        className="size-4"
+        fill="currentColor"
+        viewBox="0 0 20 20"
+        aria-hidden="true"
+      >
         <path
           fillRule="evenodd"
           d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -739,32 +748,47 @@ export const AutoDealershipKimiPage = defineCapsule({
     )
 
     const socialIcon = (name: string) => {
-      if (name === "Instagram")
+      if (name === 'Instagram')
         return (
-          <svg className="size-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <svg
+            className="size-5"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
           </svg>
         )
-      if (name === "Google Reviews")
+      if (name === 'Google Reviews')
         return (
-          <svg className="size-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <svg
+            className="size-5"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm3.445 17.827c-3.684 1.684-6.845-1.36-6.845-4.276 0-2.912 3.161-5.96 6.845-4.28 1.544.707 2.696 2.065 3.186 3.68h-3.186c-.496-1.23-1.44-2.083-2.691-2.66-2.243-1.028-4.744.78-4.744 3.26 0 2.476 2.501 4.288 4.744 3.26 1.252-.577 2.195-1.43 2.691-2.66h3.186c-.49 1.615-1.642 2.973-3.186 3.68z" />
           </svg>
         )
       return (
-        <svg className="size-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <svg
+          className="size-5"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
           <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
         </svg>
       )
     }
 
     const inputCls =
-      "w-full rounded-md border border-input bg-background/10 px-4 py-3 text-foreground placeholder-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
+      'w-full rounded-md border border-input bg-background/10 px-4 py-3 text-foreground placeholder-muted-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring'
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -922,7 +946,9 @@ export const AutoDealershipKimiPage = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Saved Vehicles</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Saved Vehicles
+                      </SheetTitle>
                       <SheetDescription>
                         {savedCount > 0
                           ? `${savedCount} vehicle${savedCount === 1 ? '' : 's'} saved for this session.`
@@ -971,7 +997,9 @@ export const AutoDealershipKimiPage = defineCapsule({
                                     </button>
                                     <button
                                       type="button"
-                                      onClick={() => void removeSavedVehicle(v.name)}
+                                      onClick={() =>
+                                        void removeSavedVehicle(v.name)
+                                      }
                                       className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                                     >
                                       Remove
@@ -987,7 +1015,8 @@ export const AutoDealershipKimiPage = defineCapsule({
                             No saved vehicles
                           </p>
                           <p className="mt-2 text-sm text-muted-foreground">
-                            Click the heart icon on any vehicle to save it for later.
+                            Click the heart icon on any vehicle to save it for
+                            later.
                           </p>
                         </div>
                       )}
@@ -1056,7 +1085,9 @@ export const AutoDealershipKimiPage = defineCapsule({
                         {i > 0 && <div className="h-10 w-px bg-border" />}
                         <div>
                           <p className="text-2xl font-semibold">{s.value}</p>
-                          <p className="text-sm text-muted-foreground">{s.label}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {s.label}
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -1123,10 +1154,10 @@ export const AutoDealershipKimiPage = defineCapsule({
                         />
                         <span
                           className={cn(
-                            "absolute left-4 top-4 rounded px-2 py-1 text-xs font-medium",
+                            'absolute left-4 top-4 rounded px-2 py-1 text-xs font-medium',
                             v.electric
-                              ? "bg-chart-2 text-primary-foreground"
-                              : "bg-primary text-primary-foreground",
+                              ? 'bg-chart-2 text-primary-foreground'
+                              : 'bg-primary text-primary-foreground',
                           )}
                         >
                           {v.badge}
@@ -1153,7 +1184,9 @@ export const AutoDealershipKimiPage = defineCapsule({
                       <div className="space-y-4 p-6">
                         <div>
                           <h3 className="text-lg font-semibold">{v.name}</h3>
-                          <p className="text-sm text-muted-foreground">{v.specs}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {v.specs}
+                          </p>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {v.features.map((f) => (
@@ -1322,8 +1355,12 @@ export const AutoDealershipKimiPage = defineCapsule({
               <div className="grid grid-cols-2 gap-8 text-center lg:grid-cols-4 lg:gap-12">
                 {statItems.map((s) => (
                   <div key={s.label}>
-                    <p className="text-4xl font-semibold lg:text-5xl">{s.value}</p>
-                    <p className="mt-2 text-sm text-primary-foreground/70">{s.label}</p>
+                    <p className="text-4xl font-semibold lg:text-5xl">
+                      {s.value}
+                    </p>
+                    <p className="mt-2 text-sm text-primary-foreground/70">
+                      {s.label}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -1337,7 +1374,9 @@ export const AutoDealershipKimiPage = defineCapsule({
                 <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
                   {testimonialsHeading}
                 </h2>
-                <p className="text-lg text-muted-foreground">{testimonialsDesc}</p>
+                <p className="text-lg text-muted-foreground">
+                  {testimonialsDesc}
+                </p>
               </div>
 
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
@@ -1363,7 +1402,9 @@ export const AutoDealershipKimiPage = defineCapsule({
                       />
                       <div>
                         <p className="font-semibold">{t.name}</p>
-                        <p className="text-sm text-muted-foreground">{t.meta}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {t.meta}
+                        </p>
                       </div>
                     </div>
                   </blockquote>
@@ -1444,10 +1485,26 @@ export const AutoDealershipKimiPage = defineCapsule({
                     onSubmit={(e) => {
                       e.preventDefault()
                       const form = e.currentTarget
-                      const name = (form.elements.namedItem('dealer-name') as HTMLInputElement).value
-                      const phone = (form.elements.namedItem('dealer-phone') as HTMLInputElement).value
-                      const email = (form.elements.namedItem('dealer-email') as HTMLInputElement).value
-                      const vehicle = (form.elements.namedItem('dealer-vehicle') as HTMLSelectElement).value
+                      const name = (
+                        form.elements.namedItem(
+                          'dealer-name',
+                        ) as HTMLInputElement
+                      ).value
+                      const phone = (
+                        form.elements.namedItem(
+                          'dealer-phone',
+                        ) as HTMLInputElement
+                      ).value
+                      const email = (
+                        form.elements.namedItem(
+                          'dealer-email',
+                        ) as HTMLInputElement
+                      ).value
+                      const vehicle = (
+                        form.elements.namedItem(
+                          'dealer-vehicle',
+                        ) as HTMLSelectElement
+                      ).value
 
                       if (name && phone && email && vehicle) {
                         void submitTestDriveRequest(name, phone, email, vehicle)
@@ -1500,10 +1557,13 @@ export const AutoDealershipKimiPage = defineCapsule({
                       <select
                         id="dealer-vehicle"
                         required
-                        className={cn(inputCls, "appearance-none")}
+                        className={cn(inputCls, 'appearance-none')}
                       >
                         {ctaVehicleOptions.map((opt) => (
-                          <option key={opt} className="bg-background text-foreground">
+                          <option
+                            key={opt}
+                            className="bg-background text-foreground"
+                          >
                             {opt}
                           </option>
                         ))}
@@ -1575,7 +1635,7 @@ export const AutoDealershipKimiPage = defineCapsule({
                 </p>
                 <ul className="space-y-3 text-sm">
                   {footerContact.map((line, i) => (
-                    <li key={line} className={i >= 2 ? "pt-2" : undefined}>
+                    <li key={line} className={i >= 2 ? 'pt-2' : undefined}>
                       {i === 2 || i === 3 ? (
                         <button
                           type="button"

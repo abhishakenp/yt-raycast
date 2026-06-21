@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * FitnessKimiPage — a complete, self-contained gym / fitness-studio LANDING page.
@@ -46,9 +46,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * with no props at all.
  */
 export const FitnessKimiPage = defineCapsule({
-  name: "FitnessKimiPage",
+  name: 'FitnessKimiPage',
   description:
-    "Complete gym / fitness-studio / boutique-health-club LANDING page with a warm, editorial, light aesthetic for a premium fitness brand. Includes a split hero (headline, member proof points, showcase photo with floating member-quote card, dual CTAs), a trusted-by logo strip, a 6-up class/program grid (strength training, power yoga, indoor cycle, HIIT, pilates, boxing) each with photo, duration and intensity meta, a scrollable weekly class-schedule table with a color-coded legend, an expert-trainers grid with headshots and credentials, an 8-up facility photo gallery, a 3-tier membership pricing block with a highlighted popular plan and feature check-lists, a dark stats band (members / classes / trainers / square feet), a 3-up member testimonials grid with 5-star ratings and avatars, an FAQ accordion, a dark email-capture CTA with phone, email and location details, and a multi-column footer with class, company and social links. Use as the ROOT/home page for gyms, fitness studios, CrossFit boxes, yoga or pilates studios, boxing gyms, spin/cycle studios, personal-training businesses, wellness or health clubs, or class-booking sites when a clean, community-focused, conversion-oriented page with classes, schedule, trainers, pricing and social proof is wanted. Supply content only — brand, nav, hero, classes, schedule, trainers, gallery, pricing, stats, testimonials, faq, cta, footer; the block owns all layout and styling.",
+    'Complete gym / fitness-studio / boutique-health-club LANDING page with a warm, editorial, light aesthetic for a premium fitness brand. Includes a split hero (headline, member proof points, showcase photo with floating member-quote card, dual CTAs), a trusted-by logo strip, a 6-up class/program grid (strength training, power yoga, indoor cycle, HIIT, pilates, boxing) each with photo, duration and intensity meta, a scrollable weekly class-schedule table with a color-coded legend, an expert-trainers grid with headshots and credentials, an 8-up facility photo gallery, a 3-tier membership pricing block with a highlighted popular plan and feature check-lists, a dark stats band (members / classes / trainers / square feet), a 3-up member testimonials grid with 5-star ratings and avatars, an FAQ accordion, a dark email-capture CTA with phone, email and location details, and a multi-column footer with class, company and social links. Use as the ROOT/home page for gyms, fitness studios, CrossFit boxes, yoga or pilates studios, boxing gyms, spin/cycle studios, personal-training businesses, wellness or health clubs, or class-booking sites when a clean, community-focused, conversion-oriented page with classes, schedule, trainers, pricing and social proof is wanted. Supply content only — brand, nav, hero, classes, schedule, trainers, gallery, pricing, stats, testimonials, faq, cta, footer; the block owns all layout and styling.',
   props: z.object({
     /** Brand / studio name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -190,9 +190,7 @@ export const FitnessKimiPage = defineCapsule({
       .object({
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       })
       .optional(),
     /** Dark email-capture CTA. */
@@ -213,9 +211,7 @@ export const FitnessKimiPage = defineCapsule({
       .object({
         tagline: z.string().optional(),
         columns: z
-          .array(
-            z.object({ heading: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ heading: z.string(), links: z.array(z.string()) }))
           .optional(),
         copyright: z.string().optional(),
         legal: z.array(z.string()).optional(),
@@ -267,188 +263,179 @@ export const FitnessKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [bookingsOpen, setBookingsOpen] = useState(false)
-    const brand = props.brand ?? "Base Fitness Studio"
-    const brandShort = brand.split(/\s+/)[0]?.toUpperCase() ?? "BASE"
+    const brand = props.brand ?? 'Base Fitness Studio'
+    const brandShort = brand.split(/\s+/)[0]?.toUpperCase() ?? 'BASE'
     const nav = props.nav?.length
       ? props.nav
-      : ["Classes", "Trainers", "Schedule", "Membership", "Start Trial"]
+      : ['Classes', 'Trainers', 'Schedule', 'Membership', 'Start Trial']
 
-    const heroLead = props.hero?.headingLead ?? "Strength through"
-    const heroHighlight = props.hero?.headingHighlight ?? "movement"
+    const heroLead = props.hero?.headingLead ?? 'Strength through'
+    const heroHighlight = props.hero?.headingHighlight ?? 'movement'
     const heroSub =
       props.hero?.subheading ??
-      "Base Fitness Studio offers expert-led classes, personalized training, and a supportive community. Build strength, find balance, and move better every day."
-    const heroPrimary = props.hero?.primaryCta ?? "Explore Classes"
-    const heroSecondary = props.hero?.secondaryCta ?? "View Memberships"
+      'Base Fitness Studio offers expert-led classes, personalized training, and a supportive community. Build strength, find balance, and move better every day.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Explore Classes'
+    const heroSecondary = props.hero?.secondaryCta ?? 'View Memberships'
     const heroProof = props.hero?.proof?.length
       ? props.hero.proof
-      : ["3,200+ members", "4.9 rating"]
+      : ['3,200+ members', '4.9 rating']
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "athletic woman performing barbell back squat in modern gym with natural lighting"
+      'athletic woman performing barbell back squat in modern gym with natural lighting'
     const heroQuote = props.hero?.quote ?? "Best fitness decision I've made"
     const heroQuoteAuthor =
-      props.hero?.quoteAuthor ?? "Sarah Chen, member since 2022"
+      props.hero?.quoteAuthor ?? 'Sarah Chen, member since 2022'
 
-    const logosLabel = props.logos?.label ?? "Trusted by teams at"
+    const logosLabel = props.logos?.label ?? 'Trusted by teams at'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
-      : ["Nike", "Equinox", "Lululemon", "WHOOP", "Rogue", "Concept2"]
+      : ['Nike', 'Equinox', 'Lululemon', 'WHOOP', 'Rogue', 'Concept2']
 
-    const classesHeading = props.classes?.heading ?? "Classes for every goal"
+    const classesHeading = props.classes?.heading ?? 'Classes for every goal'
     const classesDesc =
       props.classes?.description ??
-      "From high-intensity interval training to restorative yoga, find the perfect class to match your fitness journey."
+      'From high-intensity interval training to restorative yoga, find the perfect class to match your fitness journey.'
     const classItems = props.classes?.items?.length
       ? props.classes.items
       : [
           {
-            title: "Strength Training",
+            title: 'Strength Training',
             description:
-              "Build lean muscle with barbell and dumbbell workouts. Suitable for all levels with progressive programming.",
+              'Build lean muscle with barbell and dumbbell workouts. Suitable for all levels with progressive programming.',
             imageAlt:
-              "person lifting heavy barbell during strength training session",
-            duration: "60 min",
-            intensity: "High intensity",
+              'person lifting heavy barbell during strength training session',
+            duration: '60 min',
+            intensity: 'High intensity',
           },
           {
-            title: "Power Yoga",
+            title: 'Power Yoga',
             description:
-              "Dynamic vinyasa flow combining strength, flexibility, and breathwork. Heated to 85°F for deeper movement.",
-            imageAlt:
-              "woman in warrior yoga pose on mat in peaceful studio",
-            duration: "75 min",
-            intensity: "Moderate",
+              'Dynamic vinyasa flow combining strength, flexibility, and breathwork. Heated to 85°F for deeper movement.',
+            imageAlt: 'woman in warrior yoga pose on mat in peaceful studio',
+            duration: '75 min',
+            intensity: 'Moderate',
           },
           {
-            title: "Cycle",
+            title: 'Cycle',
             description:
-              "Rhythm-based indoor cycling with choreographed movements. Burn 500+ calories while riding to the beat.",
+              'Rhythm-based indoor cycling with choreographed movements. Burn 500+ calories while riding to the beat.',
             imageAlt:
-              "group cycling class with people on stationary bikes in dark studio with colored lights",
-            duration: "45 min",
-            intensity: "High intensity",
+              'group cycling class with people on stationary bikes in dark studio with colored lights',
+            duration: '45 min',
+            intensity: 'High intensity',
           },
           {
-            title: "HIIT",
+            title: 'HIIT',
             description:
-              "High-intensity interval training with short bursts of explosive movement followed by active recovery periods.",
-            imageAlt: "person doing burpees during HIIT workout in gym",
-            duration: "45 min",
-            intensity: "High intensity",
+              'High-intensity interval training with short bursts of explosive movement followed by active recovery periods.',
+            imageAlt: 'person doing burpees during HIIT workout in gym',
+            duration: '45 min',
+            intensity: 'High intensity',
           },
           {
-            title: "Pilates",
+            title: 'Pilates',
             description:
-              "Core-focused movements on reformers and mats. Improve posture, flexibility, and deep muscle stability.",
+              'Core-focused movements on reformers and mats. Improve posture, flexibility, and deep muscle stability.',
             imageAlt:
-              "woman practicing pilates on reformer machine in bright studio",
-            duration: "50 min",
-            intensity: "Low intensity",
+              'woman practicing pilates on reformer machine in bright studio',
+            duration: '50 min',
+            intensity: 'Low intensity',
           },
           {
-            title: "Boxing",
+            title: 'Boxing',
             description:
-              "Learn proper boxing technique, footwork, and combinations. Full-body conditioning with bag and partner work.",
+              'Learn proper boxing technique, footwork, and combinations. Full-body conditioning with bag and partner work.',
             imageAlt:
-              "two people sparring during boxing training session with gloves and focus mitts",
-            duration: "60 min",
-            intensity: "High intensity",
+              'two people sparring during boxing training session with gloves and focus mitts',
+            duration: '60 min',
+            intensity: 'High intensity',
           },
         ]
 
-    const scheduleHeading = props.schedule?.heading ?? "Weekly Schedule"
+    const scheduleHeading = props.schedule?.heading ?? 'Weekly Schedule'
     const scheduleDesc =
       props.schedule?.description ??
-      "Book classes up to 7 days in advance through our app. Walk-ins welcome when space permits."
+      'Book classes up to 7 days in advance through our app. Walk-ins welcome when space permits.'
     const scheduleDays = props.schedule?.days?.length
       ? props.schedule.days
       : [
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-          "Sunday",
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday',
         ]
     const rawScheduleRows = props.schedule?.rows?.length
       ? props.schedule.rows
       : [
           {
-            time: "6:00 AM",
-            slots: ["HIIT", "Cycle", "Strength", "HIIT", "Cycle", "—", "—"],
+            time: '6:00 AM',
+            slots: ['HIIT', 'Cycle', 'Strength', 'HIIT', 'Cycle', '—', '—'],
           },
           {
-            time: "7:30 AM",
+            time: '7:30 AM',
             slots: [
-              "Yoga Flow",
-              "Strength",
-              "Power Yoga",
-              "Strength",
-              "Yoga Flow",
-              "Strength",
-              "Yoga Flow",
+              'Yoga Flow',
+              'Strength',
+              'Power Yoga',
+              'Strength',
+              'Yoga Flow',
+              'Strength',
+              'Yoga Flow',
             ],
           },
           {
-            time: "9:00 AM",
+            time: '9:00 AM',
             slots: [
-              "Pilates",
-              "Boxing",
-              "Pilates",
-              "Boxing",
-              "Pilates",
-              "HIIT",
-              "Cycle",
+              'Pilates',
+              'Boxing',
+              'Pilates',
+              'Boxing',
+              'Pilates',
+              'HIIT',
+              'Cycle',
             ],
           },
           {
-            time: "12:00 PM",
+            time: '12:00 PM',
             slots: [
-              "Lunch HIIT",
-              "Yoga",
-              "Lunch HIIT",
-              "Yoga",
-              "Lunch HIIT",
-              "Open Gym",
-              "Open Gym",
+              'Lunch HIIT',
+              'Yoga',
+              'Lunch HIIT',
+              'Yoga',
+              'Lunch HIIT',
+              'Open Gym',
+              'Open Gym',
             ],
           },
           {
-            time: "5:30 PM",
+            time: '5:30 PM',
+            slots: ['Strength', 'Cycle', 'HIIT', 'Cycle', 'Strength', '—', '—'],
+          },
+          {
+            time: '6:45 PM',
             slots: [
-              "Strength",
-              "Cycle",
-              "HIIT",
-              "Cycle",
-              "Strength",
-              "—",
-              "—",
+              'Boxing',
+              'Power Yoga',
+              'Boxing',
+              'Power Yoga',
+              '—',
+              '—',
+              '—',
             ],
           },
           {
-            time: "6:45 PM",
+            time: '8:00 PM',
             slots: [
-              "Boxing",
-              "Power Yoga",
-              "Boxing",
-              "Power Yoga",
-              "—",
-              "—",
-              "—",
-            ],
-          },
-          {
-            time: "8:00 PM",
-            slots: [
-              "Restorative Yoga",
-              "Open Gym",
-              "Restorative Yoga",
-              "Open Gym",
-              "—",
-              "—",
-              "—",
+              'Restorative Yoga',
+              'Open Gym',
+              'Restorative Yoga',
+              'Open Gym',
+              '—',
+              '—',
+              '—',
             ],
           },
         ]
@@ -457,128 +444,128 @@ export const FitnessKimiPage = defineCapsule({
 
       return {
         time: row.time || `Class ${rowIndex + 1}`,
-        slots: scheduleDays.map((_, slotIndex) => rawSlots[slotIndex] ?? "—"),
+        slots: scheduleDays.map((_, slotIndex) => rawSlots[slotIndex] ?? '—'),
       }
     })
     const scheduleLegend = props.schedule?.legend?.length
       ? props.schedule.legend
-      : ["HIIT", "Strength", "Cycle", "Yoga", "Pilates", "Boxing"]
+      : ['HIIT', 'Strength', 'Cycle', 'Yoga', 'Pilates', 'Boxing']
     const legendDots = [
-      "bg-foreground",
-      "bg-foreground/70",
-      "bg-foreground/55",
-      "bg-muted-foreground",
-      "bg-muted-foreground/60",
-      "bg-foreground/85",
+      'bg-foreground',
+      'bg-foreground/70',
+      'bg-foreground/55',
+      'bg-muted-foreground',
+      'bg-muted-foreground/60',
+      'bg-foreground/85',
     ]
 
-    const trainersHeading = props.trainers?.heading ?? "Expert trainers"
+    const trainersHeading = props.trainers?.heading ?? 'Expert trainers'
     const trainersDesc =
       props.trainers?.description ??
-      "Our coaches bring years of experience, certifications, and a genuine passion for helping you reach your goals."
+      'Our coaches bring years of experience, certifications, and a genuine passion for helping you reach your goals.'
     const trainerItems = props.trainers?.items?.length
       ? props.trainers.items
       : [
           {
-            name: "Marcus Williams",
-            role: "Head Coach — Strength",
-            bio: "CSCS, CrossFit L2. 12 years experience. Former collegiate strength coach.",
+            name: 'Marcus Williams',
+            role: 'Head Coach — Strength',
+            bio: 'CSCS, CrossFit L2. 12 years experience. Former collegiate strength coach.',
             imageAlt:
-              "professional headshot of Marcus Williams a muscular Black male fitness trainer with short hair wearing black athletic shirt",
+              'professional headshot of Marcus Williams a muscular Black male fitness trainer with short hair wearing black athletic shirt',
           },
           {
-            name: "Elena Park",
-            role: "Yoga Director",
-            bio: "E-RYT 500, YACEP. 8 years teaching. Specializes in power vinyasa.",
+            name: 'Elena Park',
+            role: 'Yoga Director',
+            bio: 'E-RYT 500, YACEP. 8 years teaching. Specializes in power vinyasa.',
             imageAlt:
-              "professional headshot of Elena Park a Korean American female yoga instructor with long dark hair in peaceful smile",
+              'professional headshot of Elena Park a Korean American female yoga instructor with long dark hair in peaceful smile',
           },
           {
-            name: "James Chen",
-            role: "Boxing Coach",
-            bio: "Golden Gloves champion. NASM-CPT. Focus on technique and conditioning.",
+            name: 'James Chen',
+            role: 'Boxing Coach',
+            bio: 'Golden Gloves champion. NASM-CPT. Focus on technique and conditioning.',
             imageAlt:
-              "professional headshot of James Chen an athletic Asian male boxing trainer with buzz cut and confident expression",
+              'professional headshot of James Chen an athletic Asian male boxing trainer with buzz cut and confident expression',
           },
           {
-            name: "Sofia Martinez",
-            role: "Pilates Lead",
-            bio: "Balanced Body certified. Former dancer. 6 years pilates instruction.",
+            name: 'Sofia Martinez',
+            role: 'Pilates Lead',
+            bio: 'Balanced Body certified. Former dancer. 6 years pilates instruction.',
             imageAlt:
-              "professional headshot of Sofia Martinez a fit Latina female pilates instructor with warm smile and athletic build",
+              'professional headshot of Sofia Martinez a fit Latina female pilates instructor with warm smile and athletic build',
           },
         ]
 
-    const galleryHeading = props.gallery?.heading ?? "Our space"
+    const galleryHeading = props.gallery?.heading ?? 'Our space'
     const galleryDesc =
       props.gallery?.description ??
-      "12,000 sq ft of premium training space with state-of-the-art equipment and thoughtful design."
+      '12,000 sq ft of premium training space with state-of-the-art equipment and thoughtful design.'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
-          "spacious gym floor with rows of squat racks and barbells with natural light from large windows",
-          "pilates studio with reformer machines arranged in rows under pendant lighting",
-          "modern gym interior with dumbbell racks and functional training equipment",
-          "indoor cycling studio with stationary bikes in dimly lit room with accent lighting",
-          "clean locker room with wooden benches and modern lockers",
-          "boxing area with punching bags and heavy bags hanging in corner space",
-          "yoga studio with wooden floors large mirrors and peaceful natural lighting",
-          "recovery area with foam rollers stretching mats and mobility equipment",
+          'spacious gym floor with rows of squat racks and barbells with natural light from large windows',
+          'pilates studio with reformer machines arranged in rows under pendant lighting',
+          'modern gym interior with dumbbell racks and functional training equipment',
+          'indoor cycling studio with stationary bikes in dimly lit room with accent lighting',
+          'clean locker room with wooden benches and modern lockers',
+          'boxing area with punching bags and heavy bags hanging in corner space',
+          'yoga studio with wooden floors large mirrors and peaceful natural lighting',
+          'recovery area with foam rollers stretching mats and mobility equipment',
         ]
 
-    const pricingHeading = props.pricing?.heading ?? "Membership tiers"
+    const pricingHeading = props.pricing?.heading ?? 'Membership tiers'
     const pricingDesc =
       props.pricing?.description ??
-      "Flexible options to fit your lifestyle. All plans include full facility access and app booking."
+      'Flexible options to fit your lifestyle. All plans include full facility access and app booking.'
     const pricingFootnote =
       props.pricing?.footnote ??
-      "All memberships include a 7-day free trial. No initiation fees. Cancel anytime."
+      'All memberships include a 7-day free trial. No initiation fees. Cancel anytime.'
     const pricingTiers = props.pricing?.tiers?.length
       ? props.pricing.tiers
       : [
           {
-            name: "Base Access",
-            tagline: "Perfect for self-guided workouts",
-            price: "$79",
-            period: "/month",
-            cta: "Choose Base",
+            name: 'Base Access',
+            tagline: 'Perfect for self-guided workouts',
+            price: '$79',
+            period: '/month',
+            cta: 'Choose Base',
             popular: false,
             features: [
-              { label: "Full gym floor access", included: true },
-              { label: "Locker rooms & amenities", included: true },
-              { label: "App access for booking", included: true },
-              { label: "Group classes", included: false },
-              { label: "Personal training", included: false },
+              { label: 'Full gym floor access', included: true },
+              { label: 'Locker rooms & amenities', included: true },
+              { label: 'App access for booking', included: true },
+              { label: 'Group classes', included: false },
+              { label: 'Personal training', included: false },
             ],
           },
           {
-            name: "Unlimited",
-            tagline: "All classes, all the time",
-            price: "$149",
-            period: "/month",
-            cta: "Choose Unlimited",
+            name: 'Unlimited',
+            tagline: 'All classes, all the time',
+            price: '$149',
+            period: '/month',
+            cta: 'Choose Unlimited',
             popular: true,
             features: [
-              { label: "Everything in Base Access", included: true },
-              { label: "Unlimited group classes", included: true },
-              { label: "Priority booking (7 days)", included: true },
-              { label: "Guest passes (2/month)", included: true },
-              { label: "Personal training", included: false },
+              { label: 'Everything in Base Access', included: true },
+              { label: 'Unlimited group classes', included: true },
+              { label: 'Priority booking (7 days)', included: true },
+              { label: 'Guest passes (2/month)', included: true },
+              { label: 'Personal training', included: false },
             ],
           },
           {
-            name: "Elite",
-            tagline: "Personalized training + classes",
-            price: "$299",
-            period: "/month",
-            cta: "Choose Elite",
+            name: 'Elite',
+            tagline: 'Personalized training + classes',
+            price: '$299',
+            period: '/month',
+            cta: 'Choose Elite',
             popular: false,
             features: [
-              { label: "Everything in Unlimited", included: true },
-              { label: "4 personal training sessions", included: true },
-              { label: "Quarterly fitness assessment", included: true },
-              { label: "Nutrition consultation", included: true },
-              { label: "Guest passes (4/month)", included: true },
+              { label: 'Everything in Unlimited', included: true },
+              { label: '4 personal training sessions', included: true },
+              { label: 'Quarterly fitness assessment', included: true },
+              { label: 'Nutrition consultation', included: true },
+              { label: 'Guest passes (4/month)', included: true },
             ],
           },
         ]
@@ -586,124 +573,122 @@ export const FitnessKimiPage = defineCapsule({
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "3,200+", label: "Active members" },
-          { value: "45+", label: "Weekly classes" },
-          { value: "12", label: "Expert trainers" },
-          { value: "12k", label: "Square feet" },
+          { value: '3,200+', label: 'Active members' },
+          { value: '45+', label: 'Weekly classes' },
+          { value: '12', label: 'Expert trainers' },
+          { value: '12k', label: 'Square feet' },
         ]
 
-    const testimonialsHeading =
-      props.testimonials?.heading ?? "Member stories"
+    const testimonialsHeading = props.testimonials?.heading ?? 'Member stories'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Real results from real members who made Base their fitness home."
+      'Real results from real members who made Base their fitness home.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "The trainers here actually care. Marcus helped me deadlift 300lbs after two years of back pain. The community keeps me accountable—I actually look forward to 6am classes now.",
-            name: "Jennifer Walsh",
-            meta: "Member since 2021",
+              'The trainers here actually care. Marcus helped me deadlift 300lbs after two years of back pain. The community keeps me accountable—I actually look forward to 6am classes now.',
+            name: 'Jennifer Walsh',
+            meta: 'Member since 2021',
             avatarAlt:
-              "headshot of Jennifer Walsh a smiling woman with blonde hair member testimonial",
+              'headshot of Jennifer Walsh a smiling woman with blonde hair member testimonial',
           },
           {
             quote:
               "I've tried every boutique studio in the city. Base is the only one that combines serious equipment, expert instruction, and zero attitude. Elena's yoga classes transformed my practice.",
-            name: "David Park",
-            meta: "Member since 2023",
+            name: 'David Park',
+            meta: 'Member since 2023',
             avatarAlt:
-              "headshot of David Park a man with glasses and short dark hair member testimonial",
+              'headshot of David Park a man with glasses and short dark hair member testimonial',
           },
           {
             quote:
-              "Lost 40 pounds in 8 months working with James on boxing and strength. The 5:30am crew is my second family now. Worth every penny of the Elite membership.",
-            name: "Michelle Torres",
-            meta: "Member since 2022",
+              'Lost 40 pounds in 8 months working with James on boxing and strength. The 5:30am crew is my second family now. Worth every penny of the Elite membership.',
+            name: 'Michelle Torres',
+            meta: 'Member since 2022',
             avatarAlt:
-              "headshot of Michelle Torres a smiling woman with curly brown hair member testimonial",
+              'headshot of Michelle Torres a smiling woman with curly brown hair member testimonial',
           },
         ]
 
-    const faqHeading = props.faq?.heading ?? "Common questions"
+    const faqHeading = props.faq?.heading ?? 'Common questions'
     const faqDesc =
-      props.faq?.description ?? "Everything you need to know before joining."
+      props.faq?.description ?? 'Everything you need to know before joining.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
             q: "What's included in the free trial?",
-            a: "Your 7-day trial includes full access to all gym equipment, unlimited group classes, and locker room facilities. No credit card required to start—only if you decide to continue.",
+            a: 'Your 7-day trial includes full access to all gym equipment, unlimited group classes, and locker room facilities. No credit card required to start—only if you decide to continue.',
           },
           {
-            q: "Can I freeze my membership?",
-            a: "Yes. All memberships can be frozen for up to 3 months per year for travel, injury, or other life events. Frozen memberships maintain your rate and booking privileges resume immediately upon return.",
+            q: 'Can I freeze my membership?',
+            a: 'Yes. All memberships can be frozen for up to 3 months per year for travel, injury, or other life events. Frozen memberships maintain your rate and booking privileges resume immediately upon return.',
           },
           {
-            q: "Do you offer corporate or student discounts?",
-            a: "Yes. We partner with 50+ local companies for corporate rates (15% off). Students with valid ID receive 20% off any membership tier. Military, healthcare workers, and teachers receive 25% off.",
+            q: 'Do you offer corporate or student discounts?',
+            a: 'Yes. We partner with 50+ local companies for corporate rates (15% off). Students with valid ID receive 20% off any membership tier. Military, healthcare workers, and teachers receive 25% off.',
           },
           {
-            q: "What are your hours?",
+            q: 'What are your hours?',
             a: "Monday–Friday: 5:30 AM – 10:00 PM. Saturday–Sunday: 7:00 AM – 8:00 PM. The facility closes only for Thanksgiving, Christmas Day, and New Year's Day. First class starts at 6:00 AM weekdays.",
           },
           {
-            q: "Do I need to book classes in advance?",
-            a: "We recommend booking through our app 12-24 hours ahead, especially for evening and weekend classes which fill quickly. Unlimited and Elite members get priority booking 7 days in advance vs 3 days for Base members.",
+            q: 'Do I need to book classes in advance?',
+            a: 'We recommend booking through our app 12-24 hours ahead, especially for evening and weekend classes which fill quickly. Unlimited and Elite members get priority booking 7 days in advance vs 3 days for Base members.',
           },
           {
             q: "What's your cancellation policy?",
-            a: "Monthly memberships can be cancelled anytime with 7 days notice before your next billing date. Annual memberships cancelled early incur a $99 early termination fee. We do not offer refunds for partial months.",
+            a: 'Monthly memberships can be cancelled anytime with 7 days notice before your next billing date. Annual memberships cancelled early incur a $99 early termination fee. We do not offer refunds for partial months.',
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Start your 7-day free trial"
+    const ctaHeading = props.cta?.heading ?? 'Start your 7-day free trial'
     const ctaDesc =
       props.cta?.description ??
-      "Experience everything Base has to offer—no commitment, no credit card required. Join 3,200+ members building strength together."
-    const ctaPlaceholder = props.cta?.placeholder ?? "Enter your email"
-    const ctaSubmit = props.cta?.submit ?? "Get Started"
-    const ctaPhone = props.cta?.phone ?? "(415) 555-1234"
-    const ctaEmail = props.cta?.email ?? "hello@basefitness.com"
+      'Experience everything Base has to offer—no commitment, no credit card required. Join 3,200+ members building strength together.'
+    const ctaPlaceholder = props.cta?.placeholder ?? 'Enter your email'
+    const ctaSubmit = props.cta?.submit ?? 'Get Started'
+    const ctaPhone = props.cta?.phone ?? '(415) 555-1234'
+    const ctaEmail = props.cta?.email ?? 'hello@basefitness.com'
     const ctaLocation =
-      props.cta?.location ?? "1240 Mission St, San Francisco, CA 94103"
+      props.cta?.location ?? '1240 Mission St, San Francisco, CA 94103'
     const ctaHours =
-      props.cta?.hours ?? "Mon–Fri: 5:30am–10pm, Sat–Sun: 7am–8pm"
+      props.cta?.hours ?? 'Mon–Fri: 5:30am–10pm, Sat–Sun: 7am–8pm'
 
     const footerTagline =
       props.footer?.tagline ??
-      "Strength through movement. A fitness community built on progress, not perfection."
+      'Strength through movement. A fitness community built on progress, not perfection.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            heading: "Classes",
+            heading: 'Classes',
             links: [
-              "Strength Training",
-              "Power Yoga",
-              "Cycle",
-              "HIIT",
-              "Pilates",
-              "Boxing",
+              'Strength Training',
+              'Power Yoga',
+              'Cycle',
+              'HIIT',
+              'Pilates',
+              'Boxing',
             ],
           },
           {
-            heading: "Company",
-            links: ["About Us", "Careers", "Press", "Partners", "Contact"],
+            heading: 'Company',
+            links: ['About Us', 'Careers', 'Press', 'Partners', 'Contact'],
           },
           {
-            heading: "Connect",
-            links: ["Instagram", "Facebook", "YouTube", "Spotify Playlists"],
+            heading: 'Connect',
+            links: ['Instagram', 'Facebook', 'YouTube', 'Spotify Playlists'],
           },
         ]
-    const footerCopyright =
-      props.footer?.copyright ?? "All rights reserved."
+    const footerCopyright = props.footer?.copyright ?? 'All rights reserved.'
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Settings"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
 
-    const navPrimary = nav[nav.length - 1] ?? "Start Trial"
+    const navPrimary = nav[nav.length - 1] ?? 'Start Trial'
 
     const bookings = lakebed.useQuery('bookings')
     const favoriteClassTitles = lakebed.useQuery('favoriteClassTitles')
@@ -817,21 +802,6 @@ export const FitnessKimiPage = defineCapsule({
       </svg>
     )
 
-    const ChevronIcon = () => (
-      <svg
-        className="size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M19 9l-7 7-7-7" />
-      </svg>
-    )
-
     const HeartIcon = ({ active = false }: { active?: boolean }) => (
       <svg
         className={cn(
@@ -884,7 +854,7 @@ export const FitnessKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -987,9 +957,7 @@ export const FitnessKimiPage = defineCapsule({
                                   type="button"
                                   variant="outline"
                                   size="sm"
-                                  onClick={() =>
-                                    void cancelBooking(booking.id)
-                                  }
+                                  onClick={() => void cancelBooking(booking.id)}
                                 >
                                   Cancel
                                 </Button>
@@ -1010,7 +978,11 @@ export const FitnessKimiPage = defineCapsule({
                     </div>
                     <SheetFooter className="border-t border-border p-6">
                       <SheetClose asChild>
-                        <Button type="button" variant="secondary" className="w-full">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full"
+                        >
                           Close
                         </Button>
                       </SheetClose>
@@ -1225,7 +1197,7 @@ export const FitnessKimiPage = defineCapsule({
             <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
               <div className="space-y-8">
                 <h1 className="text-4xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
-                  {heroLead}{" "}
+                  {heroLead}{' '}
                   <span className="text-muted-foreground">{heroHighlight}</span>
                 </h1>
                 <p className="max-w-lg text-lg leading-relaxed text-muted-foreground md:text-xl">
@@ -1321,8 +1293,7 @@ export const FitnessKimiPage = defineCapsule({
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {classItems.map((item) => {
-                const isFavorite =
-                  favoriteClassTitles?.has(item.title) ?? false
+                const isFavorite = favoriteClassTitles?.has(item.title) ?? false
 
                 return (
                   <article
@@ -1416,13 +1387,13 @@ export const FitnessKimiPage = defineCapsule({
                         <td
                           key={`${row.time}-${i}`}
                           className={cn(
-                            "px-4 py-4",
-                            slot === "—"
-                              ? "text-muted-foreground/60"
-                              : "text-muted-foreground",
+                            'px-4 py-4',
+                            slot === '—'
+                              ? 'text-muted-foreground/60'
+                              : 'text-muted-foreground',
                           )}
                         >
-                          {slot !== "—" ? (
+                          {slot !== '—' ? (
                             <div className="flex items-center justify-between gap-2">
                               <span>{slot}</span>
                               <Button
@@ -1430,7 +1401,11 @@ export const FitnessKimiPage = defineCapsule({
                                 size="sm"
                                 variant="outline"
                                 onClick={() => {
-                                  void bookClass(slot, scheduleDays[i], row.time)
+                                  void bookClass(
+                                    slot,
+                                    scheduleDays[i],
+                                    row.time,
+                                  )
                                   setBookingsOpen(true)
                                 }}
                               >
@@ -1453,10 +1428,10 @@ export const FitnessKimiPage = defineCapsule({
                 <span key={label} className="flex items-center gap-2">
                   <span
                     className={cn(
-                      "size-3 rounded-full",
+                      'size-3 rounded-full',
                       legendDots[i % legendDots.length],
                     )}
-                  />{" "}
+                  />{' '}
                   {label}
                 </span>
               ))}
@@ -1487,7 +1462,9 @@ export const FitnessKimiPage = defineCapsule({
                   <h3 className="text-lg font-semibold text-foreground">
                     {trainer.name}
                   </h3>
-                  <p className="text-sm text-muted-foreground">{trainer.role}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {trainer.role}
+                  </p>
                   <p className="mt-2 text-sm text-muted-foreground">
                     {trainer.bio}
                   </p>
@@ -1537,10 +1514,10 @@ export const FitnessKimiPage = defineCapsule({
                 <article
                   key={tier.name}
                   className={cn(
-                    "relative rounded-lg p-8",
+                    'relative rounded-lg p-8',
                     tier.popular
-                      ? "bg-primary text-primary-foreground"
-                      : "border border-border bg-card",
+                      ? 'bg-primary text-primary-foreground'
+                      : 'border border-border bg-card',
                   )}
                 >
                   {tier.popular ? (
@@ -1550,18 +1527,20 @@ export const FitnessKimiPage = defineCapsule({
                   ) : null}
                   <h3
                     className={cn(
-                      "mb-2 text-lg font-semibold",
-                      tier.popular ? "text-primary-foreground" : "text-card-foreground",
+                      'mb-2 text-lg font-semibold',
+                      tier.popular
+                        ? 'text-primary-foreground'
+                        : 'text-card-foreground',
                     )}
                   >
                     {tier.name}
                   </h3>
                   <p
                     className={cn(
-                      "mb-6 text-sm",
+                      'mb-6 text-sm',
                       tier.popular
-                        ? "text-primary-foreground/70"
-                        : "text-muted-foreground",
+                        ? 'text-primary-foreground/70'
+                        : 'text-muted-foreground',
                     )}
                   >
                     {tier.tagline}
@@ -1569,8 +1548,10 @@ export const FitnessKimiPage = defineCapsule({
                   <div className="mb-6">
                     <span
                       className={cn(
-                        "text-4xl font-semibold",
-                        tier.popular ? "text-primary-foreground" : "text-card-foreground",
+                        'text-4xl font-semibold',
+                        tier.popular
+                          ? 'text-primary-foreground'
+                          : 'text-card-foreground',
                       )}
                     >
                       {tier.price}
@@ -1578,8 +1559,8 @@ export const FitnessKimiPage = defineCapsule({
                     <span
                       className={cn(
                         tier.popular
-                          ? "text-primary-foreground/70"
-                          : "text-muted-foreground",
+                          ? 'text-primary-foreground/70'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {tier.period}
@@ -1587,10 +1568,10 @@ export const FitnessKimiPage = defineCapsule({
                   </div>
                   <ul
                     className={cn(
-                      "mb-8 space-y-3 text-sm",
+                      'mb-8 space-y-3 text-sm',
                       tier.popular
-                        ? "text-primary-foreground/90"
-                        : "text-muted-foreground",
+                        ? 'text-primary-foreground/90'
+                        : 'text-muted-foreground',
                     )}
                   >
                     {tier.features.map((feature) => (
@@ -1601,17 +1582,19 @@ export const FitnessKimiPage = defineCapsule({
                         {feature.included ? (
                           <CheckIcon
                             className={cn(
-                              "size-4",
-                              tier.popular ? "text-primary-foreground" : "text-primary",
+                              'size-4',
+                              tier.popular
+                                ? 'text-primary-foreground'
+                                : 'text-primary',
                             )}
                           />
                         ) : (
                           <CrossIcon
                             className={cn(
-                              "size-4",
+                              'size-4',
                               tier.popular
-                                ? "text-primary-foreground/50"
-                                : "text-muted-foreground/50",
+                                ? 'text-primary-foreground/50'
+                                : 'text-muted-foreground/50',
                             )}
                           />
                         )}
@@ -1619,8 +1602,8 @@ export const FitnessKimiPage = defineCapsule({
                           className={cn(
                             !feature.included &&
                               (tier.popular
-                                ? "text-primary-foreground/60"
-                                : "text-muted-foreground/70"),
+                                ? 'text-primary-foreground/60'
+                                : 'text-muted-foreground/70'),
                           )}
                         >
                           {feature.label}
@@ -1635,10 +1618,10 @@ export const FitnessKimiPage = defineCapsule({
                       setBookingsOpen(true)
                     }}
                     className={cn(
-                      "w-full rounded-sm py-3 text-sm font-medium transition-colors",
+                      'w-full rounded-sm py-3 text-sm font-medium transition-colors',
                       tier.popular
-                        ? "bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-                        : "border border-input text-foreground hover:border-border",
+                        ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90'
+                        : 'border border-input text-foreground hover:border-border',
                     )}
                   >
                     {tier.cta}
@@ -1700,7 +1683,9 @@ export const FitnessKimiPage = defineCapsule({
                       className="size-10 rounded-full object-cover"
                     />
                     <div>
-                      <div className="font-medium text-foreground">{t.name}</div>
+                      <div className="font-medium text-foreground">
+                        {t.name}
+                      </div>
                       <div className="text-xs text-muted-foreground">
                         {t.meta}
                       </div>
@@ -1777,15 +1762,15 @@ export const FitnessKimiPage = defineCapsule({
             </form>
 
             <p className="text-sm text-primary-foreground/60">
-              Questions? Call us at{" "}
+              Questions? Call us at{' '}
               <button
                 type="button"
                 onClick={() => go(ctaPhone)}
                 className="text-primary-foreground/80 transition-colors hover:text-primary-foreground"
               >
                 {ctaPhone}
-              </button>{" "}
-              or email{" "}
+              </button>{' '}
+              or email{' '}
               <button
                 type="button"
                 onClick={() => go(ctaEmail)}

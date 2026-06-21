@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * FilmDirectorKimiPage2 — VARIANT 2 (a sibling/alternative to FilmDirectorKimiPage).
@@ -49,9 +49,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * with zero props.
  */
 export const FilmDirectorKimiPage2 = defineCapsule({
-  name: "FilmDirectorKimiPage2",
+  name: 'FilmDirectorKimiPage2',
   description:
-    "VARIANT 2 / alternative-style film-director / cinematographer / director-of-photography / videographer PORTFOLIO landing page — a BOLD, DARK, cinematic, full-bleed counterpart to FilmDirectorKimiPage (which is light/editorial). Runs on a near-black canvas with a hot red brand accent, oversized condensed display headlines (CRAFTING VISUAL STORIES), and a dramatic full-screen photographic hero with overlay gradient and a 3-up KPI strip (Projects, Awards, Years). Includes a fixed translucent navbar with a Start a Project CTA, View Reel + Get in Touch hero CTAs, a trusted-by brand-logo strip (Nike, Apple Music, HBO, Spotify, Adidas, Netflix), a filterable Featured Reels work grid of 4:5 project cards with play-button hover overlays and category tags (Music Video, Commercial, Documentary, Short Film), a 4-up Services grid with accent icon tiles (Directing, Cinematography, Post-Production, Creative Concept), a split About Me band with a tall portrait and a floating years-experience badge plus location/email chips, a 4-up Recognition & Awards row (Cannes Lions, Clio, Sundance, AICP), a 3-up Client Words testimonial grid with 5-star ratings and avatars, a two-column Start a Project contact section (email/phone/studio details + Instagram/Vimeo/YouTube/LinkedIn social icons beside a full brief form with name/email/project-type/budget/message), and a slim footer. Use as the ROOT/home page for filmmakers, directors, cinematographers, DPs, videographers, music-video/commercial/documentary creatives, or motion/film portfolios when a dark, edgy, high-impact cinematic treatment with red brand punch is wanted (choose the lighter FilmDirectorKimiPage for an airy editorial look). Supply content only — brand, nav, hero, logos, work, services, about, awards, testimonials, contact, footer; the block owns all layout and styling.",
+    'VARIANT 2 / alternative-style film-director / cinematographer / director-of-photography / videographer PORTFOLIO landing page — a BOLD, DARK, cinematic, full-bleed counterpart to FilmDirectorKimiPage (which is light/editorial). Runs on a near-black canvas with a hot red brand accent, oversized condensed display headlines (CRAFTING VISUAL STORIES), and a dramatic full-screen photographic hero with overlay gradient and a 3-up KPI strip (Projects, Awards, Years). Includes a fixed translucent navbar with a Start a Project CTA, View Reel + Get in Touch hero CTAs, a trusted-by brand-logo strip (Nike, Apple Music, HBO, Spotify, Adidas, Netflix), a filterable Featured Reels work grid of 4:5 project cards with play-button hover overlays and category tags (Music Video, Commercial, Documentary, Short Film), a 4-up Services grid with accent icon tiles (Directing, Cinematography, Post-Production, Creative Concept), a split About Me band with a tall portrait and a floating years-experience badge plus location/email chips, a 4-up Recognition & Awards row (Cannes Lions, Clio, Sundance, AICP), a 3-up Client Words testimonial grid with 5-star ratings and avatars, a two-column Start a Project contact section (email/phone/studio details + Instagram/Vimeo/YouTube/LinkedIn social icons beside a full brief form with name/email/project-type/budget/message), and a slim footer. Use as the ROOT/home page for filmmakers, directors, cinematographers, DPs, videographers, music-video/commercial/documentary creatives, or motion/film portfolios when a dark, edgy, high-impact cinematic treatment with red brand punch is wanted (choose the lighter FilmDirectorKimiPage for an airy editorial look). Supply content only — brand, nav, hero, logos, work, services, about, awards, testimonials, contact, footer; the block owns all layout and styling.',
   props: z.object({
     /** Director / studio name shown in the navbar + footer. */
     brand: z.string().optional(),
@@ -205,18 +205,38 @@ export const FilmDirectorKimiPage2 = defineCapsule({
       inquiries: ({ db }) => db.inquiries.orderBy('createdAt').all(),
     },
     mutations: {
-      toggleFavorite: ({ db }, projectTitle: string, projectTag: string, projectRole: string, projectImageAlt: string) => {
-        const existingFavorite = db.favorites.where('projectTitle', projectTitle).all()[0]
+      toggleFavorite: (
+        { db },
+        projectTitle: string,
+        projectTag: string,
+        projectRole: string,
+        projectImageAlt: string,
+      ) => {
+        const existingFavorite = db.favorites
+          .where('projectTitle', projectTitle)
+          .all()[0]
 
         if (existingFavorite) {
           db.favorites.delete(existingFavorite.id)
           return false
         }
 
-        db.favorites.insert({ projectTitle, projectTag, projectRole, projectImageAlt })
+        db.favorites.insert({
+          projectTitle,
+          projectTag,
+          projectRole,
+          projectImageAlt,
+        })
         return true
       },
-      submitInquiry: ({ db }, name: string, email: string, projectType: string, budget: string, message: string) => {
+      submitInquiry: (
+        { db },
+        name: string,
+        email: string,
+        projectType: string,
+        budget: string,
+        message: string,
+      ) => {
         db.inquiries.insert({ name, email, projectType, budget, message })
         return db.inquiries.all()
       },
@@ -233,91 +253,90 @@ export const FilmDirectorKimiPage2 = defineCapsule({
     const [mobileOpen, setMobileOpen] = useState(false)
     const [favoritesOpen, setFavoritesOpen] = useState(false)
     const [inquiriesOpen, setInquiriesOpen] = useState(false)
-    const brand = props.brand ?? "Jonah Marks"
+    const brand = props.brand ?? 'Jonah Marks'
     const nav = props.nav?.length
       ? props.nav
-      : ["Work", "Services", "About", "Contact", "Start a Project"]
+      : ['Work', 'Services', 'About', 'Contact', 'Start a Project']
 
-    const heroEyebrow = props.hero?.eyebrow ?? "Film Director & Cinematographer"
-    const heroStart = props.hero?.headingStart ?? "CRAFTING"
-    const heroHighlight = props.hero?.headingHighlight ?? "VISUAL"
-    const heroEnd = props.hero?.headingEnd ?? "STORIES"
+    const heroEyebrow = props.hero?.eyebrow ?? 'Film Director & Cinematographer'
+    const heroStart = props.hero?.headingStart ?? 'CRAFTING'
+    const heroHighlight = props.hero?.headingHighlight ?? 'VISUAL'
+    const heroEnd = props.hero?.headingEnd ?? 'STORIES'
     const heroSub =
       props.hero?.subheading ??
-      "Award-winning director based in Los Angeles. Creating bold films, commercials, and music videos for brands like Nike, Apple Music, and HBO."
-    const heroPrimary = props.hero?.primaryCta ?? "View Reel"
-    const heroSecondary = props.hero?.secondaryCta ?? "Get in Touch"
+      'Award-winning director based in Los Angeles. Creating bold films, commercials, and music videos for brands like Nike, Apple Music, and HBO.'
+    const heroPrimary = props.hero?.primaryCta ?? 'View Reel'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Get in Touch'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "professional film set with camera operator and lighting equipment in dramatic low light"
+      'professional film set with camera operator and lighting equipment in dramatic low light'
     const heroStats = props.hero?.stats?.length
       ? props.hero.stats
       : [
-          { value: "150+", label: "Projects" },
-          { value: "12", label: "Awards" },
-          { value: "8", label: "Years" },
+          { value: '150+', label: 'Projects' },
+          { value: '12', label: 'Awards' },
+          { value: '8', label: 'Years' },
         ]
 
-    const logosLabel = props.logos?.label ?? "Trusted by leading brands"
+    const logosLabel = props.logos?.label ?? 'Trusted by leading brands'
     const logoBrands = props.logos?.brands?.length
       ? props.logos.brands
-      : ["NIKE", "APPLE MUSIC", "HBO", "SPOTIFY", "ADIDAS", "NETFLIX"]
+      : ['NIKE', 'APPLE MUSIC', 'HBO', 'SPOTIFY', 'ADIDAS', 'NETFLIX']
 
-    const workEyebrow = props.work?.eyebrow ?? "Selected Work"
-    const workHeading = props.work?.heading ?? "FEATURED REELS"
+    const workEyebrow = props.work?.eyebrow ?? 'Selected Work'
+    const workHeading = props.work?.heading ?? 'FEATURED REELS'
     const workFilters = props.work?.filters?.length
       ? props.work.filters
-      : ["All", "Commercial", "Music Videos", "Documentary"]
-    const workLoadMore = props.work?.loadMore ?? "View All Projects"
+      : ['All', 'Commercial', 'Music Videos', 'Documentary']
+    const workLoadMore = props.work?.loadMore ?? 'View All Projects'
     const workItems = props.work?.items?.length
       ? props.work.items
       : [
           {
-            tag: "Music Video",
-            title: "NEON DREAMS",
-            role: "Zara Larsson — 2024",
+            tag: 'Music Video',
+            title: 'NEON DREAMS',
+            role: 'Zara Larsson — 2024',
             imageAlt:
-              "silhouette of woman dancing against dramatic red studio lighting",
+              'silhouette of woman dancing against dramatic red studio lighting',
           },
           {
-            tag: "Commercial",
-            title: "JUST DO IT: RISE",
-            role: "Nike Global — 2024",
+            tag: 'Commercial',
+            title: 'JUST DO IT: RISE',
+            role: 'Nike Global — 2024',
             imageAlt:
-              "professional film director silhouette operating camera on dramatic red lit set",
+              'professional film director silhouette operating camera on dramatic red lit set',
           },
           {
-            tag: "Documentary",
-            title: "THE LAST ASCENT",
-            role: "HBO Documentary Films — 2023",
+            tag: 'Documentary',
+            title: 'THE LAST ASCENT',
+            role: 'HBO Documentary Films — 2023',
             imageAlt:
-              "lone hiker on mountain ridge at golden hour with dramatic clouds",
+              'lone hiker on mountain ridge at golden hour with dramatic clouds',
           },
           {
-            tag: "Music Video",
-            title: "MIDNIGHT CITY",
-            role: "The Weeknd — 2023",
+            tag: 'Music Video',
+            title: 'MIDNIGHT CITY',
+            role: 'The Weeknd — 2023',
             imageAlt:
-              "concert crowd with hands raised and neon purple stage lighting",
+              'concert crowd with hands raised and neon purple stage lighting',
           },
           {
-            tag: "Short Film",
-            title: "REEL TO REAL",
-            role: "Sundance Official Selection — 2023",
-            imageAlt:
-              "vintage film projector beam of light in dark room",
+            tag: 'Short Film',
+            title: 'REEL TO REAL',
+            role: 'Sundance Official Selection — 2023',
+            imageAlt: 'vintage film projector beam of light in dark room',
           },
           {
-            tag: "Commercial",
-            title: "IMPOSSIBLE IS NOTHING",
-            role: "Adidas — 2023",
+            tag: 'Commercial',
+            title: 'IMPOSSIBLE IS NOTHING',
+            role: 'Adidas — 2023',
             imageAlt:
-              "athlete sprinting on running track with motion blur at sunset",
+              'athlete sprinting on running track with motion blur at sunset',
           },
         ]
 
-    const servicesEyebrow = props.services?.eyebrow ?? "What I Do"
-    const servicesHeading = props.services?.heading ?? "SERVICES"
+    const servicesEyebrow = props.services?.eyebrow ?? 'What I Do'
+    const servicesHeading = props.services?.heading ?? 'SERVICES'
     const servicesDesc =
       props.services?.description ??
       "Full-service production from concept to final cut. Every project gets the same obsessive attention to detail, whether it's a 15-second spot or a feature documentary."
@@ -325,28 +344,28 @@ export const FilmDirectorKimiPage2 = defineCapsule({
       ? props.services.items
       : [
           {
-            title: "DIRECTING",
+            title: 'DIRECTING',
             description:
-              "Creative vision, shot planning, talent direction, and on-set leadership to bring your story to life.",
+              'Creative vision, shot planning, talent direction, and on-set leadership to bring your story to life.',
           },
           {
-            title: "CINEMATOGRAPHY",
+            title: 'CINEMATOGRAPHY',
             description:
-              "Camera operation, lighting design, and shot composition that creates stunning visual narratives.",
+              'Camera operation, lighting design, and shot composition that creates stunning visual narratives.',
           },
           {
-            title: "POST-PRODUCTION",
+            title: 'POST-PRODUCTION',
             description:
-              "Editing, color grading, sound design, and VFX to polish your project to perfection.",
+              'Editing, color grading, sound design, and VFX to polish your project to perfection.',
           },
           {
-            title: "CREATIVE CONCEPT",
+            title: 'CREATIVE CONCEPT',
             description:
-              "Script development, storyboarding, and visual treatment design from the ground up.",
+              'Script development, storyboarding, and visual treatment design from the ground up.',
           },
         ]
 
-    const aboutEyebrow = props.about?.eyebrow ?? "About Me"
+    const aboutEyebrow = props.about?.eyebrow ?? 'About Me'
     const aboutHeading = props.about?.heading ?? brand.toUpperCase()
     const aboutParagraphs = props.about?.paragraphs?.length
       ? props.about.paragraphs
@@ -355,93 +374,93 @@ export const FilmDirectorKimiPage2 = defineCapsule({
           "After cutting my teeth as a camera operator on music videos for Drake and Cardi B, I transitioned to directing in 2019. Since then, I've had the privilege of working with brands like Nike, Apple, HBO, and Adidas, earning 12 industry awards including a Cannes Lions Bronze and two Clio Awards.",
           "When I'm not on set, I'm teaching workshops at AFI Conservatory and hunting for the next story that needs telling.",
         ]
-    const aboutBadgeValue = props.about?.badgeValue ?? "8+"
-    const aboutBadgeLabel = props.about?.badgeLabel ?? "Years Experience"
+    const aboutBadgeValue = props.about?.badgeValue ?? '8+'
+    const aboutBadgeLabel = props.about?.badgeLabel ?? 'Years Experience'
     const aboutImageAlt =
       props.about?.imageAlt ??
-      "professional headshot of a film director with confident expression in a black turtleneck"
-    const aboutLocation = props.about?.location ?? "Los Angeles, CA"
-    const aboutLocationNote = props.about?.locationNote ?? "Available Worldwide"
-    const aboutEmail = props.about?.email ?? "hello@jonahmarks.com"
-    const aboutEmailNote = props.about?.emailNote ?? "Response within 24h"
+      'professional headshot of a film director with confident expression in a black turtleneck'
+    const aboutLocation = props.about?.location ?? 'Los Angeles, CA'
+    const aboutLocationNote = props.about?.locationNote ?? 'Available Worldwide'
+    const aboutEmail = props.about?.email ?? 'hello@jonahmarks.com'
+    const aboutEmailNote = props.about?.emailNote ?? 'Response within 24h'
 
-    const awardsHeading = props.awards?.heading ?? "RECOGNITION & AWARDS"
+    const awardsHeading = props.awards?.heading ?? 'RECOGNITION & AWARDS'
     const awardItems = props.awards?.items?.length
       ? props.awards.items
       : [
-          { year: "2024", name: "Cannes Lions", detail: "Bronze — Film Craft" },
-          { year: "2023", name: "Clio Awards", detail: "Gold — Music Video" },
-          { year: "2023", name: "Sundance", detail: "Official Selection" },
-          { year: "2022", name: "AICP Awards", detail: "Winner — Direction" },
+          { year: '2024', name: 'Cannes Lions', detail: 'Bronze — Film Craft' },
+          { year: '2023', name: 'Clio Awards', detail: 'Gold — Music Video' },
+          { year: '2023', name: 'Sundance', detail: 'Official Selection' },
+          { year: '2022', name: 'AICP Awards', detail: 'Winner — Direction' },
         ]
 
-    const testimonialsEyebrow = props.testimonials?.eyebrow ?? "Testimonials"
-    const testimonialsHeading = props.testimonials?.heading ?? "CLIENT WORDS"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'Testimonials'
+    const testimonialsHeading = props.testimonials?.heading ?? 'CLIENT WORDS'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "Jonah brought a vision to our Nike campaign that exceeded every expectation. His ability to capture authentic movement while maintaining cinematic beauty is unmatched.",
-            name: "Sarah Chen",
-            role: "Global Brand Director, Nike",
+              'Jonah brought a vision to our Nike campaign that exceeded every expectation. His ability to capture authentic movement while maintaining cinematic beauty is unmatched.',
+            name: 'Sarah Chen',
+            role: 'Global Brand Director, Nike',
             avatarAlt:
-              "professional headshot of a female brand director with short dark hair",
+              'professional headshot of a female brand director with short dark hair',
           },
           {
             quote:
               "Working with Jonah on 'Midnight City' was a dream. He understood the aesthetic immediately and elevated it beyond what I imagined. A true collaborator and visionary.",
-            name: "Abel Tesfaye",
-            role: "The Weeknd",
+            name: 'Abel Tesfaye',
+            role: 'The Weeknd',
             avatarAlt:
-              "professional headshot of a male recording artist in moody studio light",
+              'professional headshot of a male recording artist in moody studio light',
           },
           {
             quote:
               "Jonah's documentary work on 'The Last Ascent' was breathtaking. He captured the essence of our expedition with a sensitivity that only masters possess.",
-            name: "Michael Torres",
-            role: "Executive Producer, HBO",
+            name: 'Michael Torres',
+            role: 'Executive Producer, HBO',
             avatarAlt:
-              "professional headshot of a male documentary executive producer with glasses",
+              'professional headshot of a male documentary executive producer with glasses',
           },
         ]
 
     const contactEyebrow = props.contact?.eyebrow ?? "Let's Work Together"
-    const contactHeading = props.contact?.heading ?? "START A PROJECT"
+    const contactHeading = props.contact?.heading ?? 'START A PROJECT'
     const contactDesc =
       props.contact?.description ??
       "Have a story that needs telling? I'm always looking for bold projects and passionate collaborators. Drop me a line and let's create something unforgettable."
-    const contactEmail = props.contact?.email ?? "hello@jonahmarks.com"
-    const contactPhone = props.contact?.phone ?? "+1 (310) 555-1234"
+    const contactEmail = props.contact?.email ?? 'hello@jonahmarks.com'
+    const contactPhone = props.contact?.phone ?? '+1 (310) 555-1234'
     const contactStudio =
-      props.contact?.studio ?? "3421 Cahuenga Blvd W, Los Angeles, CA 90068"
+      props.contact?.studio ?? '3421 Cahuenga Blvd W, Los Angeles, CA 90068'
     const contactSocial = props.contact?.social?.length
       ? props.contact.social
-      : ["Instagram", "Vimeo", "YouTube", "LinkedIn"]
+      : ['Instagram', 'Vimeo', 'YouTube', 'LinkedIn']
     const projectTypes = props.contact?.projectTypes?.length
       ? props.contact.projectTypes
       : [
-          "Commercial",
-          "Music Video",
-          "Documentary",
-          "Short Film",
-          "Branded Content",
-          "Other",
+          'Commercial',
+          'Music Video',
+          'Documentary',
+          'Short Film',
+          'Branded Content',
+          'Other',
         ]
     const budgets = props.contact?.budgets?.length
       ? props.contact.budgets
       : [
-          "$25,000 - $50,000",
-          "$50,000 - $100,000",
-          "$100,000 - $250,000",
-          "$250,000+",
+          '$25,000 - $50,000',
+          '$50,000 - $100,000',
+          '$100,000 - $250,000',
+          '$250,000+',
         ]
-    const submitLabel = props.contact?.submitLabel ?? "Send Message"
+    const submitLabel = props.contact?.submitLabel ?? 'Send Message'
 
     const footerLinks = props.footer?.links?.length
       ? props.footer.links
-      : ["Work", "Services", "About", "Contact"]
-    const footerNote = props.footer?.note ?? "All rights reserved."
+      : ['Work', 'Services', 'About', 'Contact']
+    const footerNote = props.footer?.note ?? 'All rights reserved.'
 
     // Lakebed hooks
     const favorites = lakebed.useQuery('favorites')
@@ -476,7 +495,9 @@ export const FilmDirectorKimiPage2 = defineCapsule({
       lakebed.signOut()
     }
 
-    const favoriteProjectTitles = new Set(favorites?.map((f) => f.projectTitle) ?? [])
+    const favoriteProjectTitles = new Set(
+      favorites?.map((f) => f.projectTitle) ?? [],
+    )
 
     const PlayIcon = ({ className }: { className?: string }) => (
       <svg
@@ -673,7 +694,7 @@ export const FilmDirectorKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -731,7 +752,9 @@ export const FilmDirectorKimiPage2 = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Saved Projects</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Saved Projects
+                      </SheetTitle>
                       <SheetDescription>
                         {favorites && favorites.length > 0
                           ? `${favorites.length} project${favorites.length === 1 ? '' : 's'} saved to your favorites.`
@@ -774,7 +797,8 @@ export const FilmDirectorKimiPage2 = defineCapsule({
                             No saved projects
                           </p>
                           <p className="mt-2 text-sm text-muted-foreground">
-                            Click the heart icon on any project to save it to your favorites.
+                            Click the heart icon on any project to save it to
+                            your favorites.
                           </p>
                         </div>
                       )}
@@ -1020,8 +1044,8 @@ export const FilmDirectorKimiPage2 = defineCapsule({
                   id="hero-heading"
                   className="mb-6 text-6xl font-bold leading-none tracking-wide sm:text-7xl lg:text-8xl"
                 >
-                  {heroStart}{" "}
-                  <span className="text-primary">{heroHighlight}</span>{" "}
+                  {heroStart}{' '}
+                  <span className="text-primary">{heroHighlight}</span>{' '}
                   {heroEnd}
                 </h1>
                 <p className="mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl lg:text-2xl">
@@ -1046,7 +1070,10 @@ export const FilmDirectorKimiPage2 = defineCapsule({
                 </div>
                 <div className="mt-16 flex items-center gap-8 lg:mt-24 lg:gap-12">
                   {heroStats.map((s, i) => (
-                    <div key={s.label} className="flex items-center gap-8 lg:gap-12">
+                    <div
+                      key={s.label}
+                      className="flex items-center gap-8 lg:gap-12"
+                    >
                       {i > 0 && <div className="h-12 w-px bg-border" />}
                       <div>
                         <p className="text-4xl font-bold lg:text-5xl">
@@ -1110,10 +1137,10 @@ export const FilmDirectorKimiPage2 = defineCapsule({
                       type="button"
                       onClick={() => go(f)}
                       className={cn(
-                        "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                        'rounded-full px-4 py-2 text-sm font-medium transition-colors',
                         i === 0
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
                       )}
                     >
                       {f}
@@ -1164,7 +1191,12 @@ export const FilmDirectorKimiPage2 = defineCapsule({
                       <button
                         type="button"
                         onClick={() => {
-                          void toggleFavorite(proj.title, proj.tag, proj.role, proj.imageAlt)
+                          void toggleFavorite(
+                            proj.title,
+                            proj.tag,
+                            proj.role,
+                            proj.imageAlt,
+                          )
                         }}
                         aria-pressed={isFavorite}
                         aria-label={
@@ -1493,9 +1525,7 @@ export const FilmDirectorKimiPage2 = defineCapsule({
                           viewBox="0 0 24 24"
                           aria-hidden="true"
                         >
-                          {socialIcons[s] ?? (
-                            <circle cx="12" cy="12" r="10" />
-                          )}
+                          {socialIcons[s] ?? <circle cx="12" cy="12" r="10" />}
                         </svg>
                       </button>
                     ))}
@@ -1510,11 +1540,19 @@ export const FilmDirectorKimiPage2 = defineCapsule({
                         const formData = new FormData(e.currentTarget)
                         const name = formData.get('name') as string
                         const email = formData.get('email') as string
-                        const projectType = formData.get('project-type') as string
+                        const projectType = formData.get(
+                          'project-type',
+                        ) as string
                         const budget = formData.get('budget') as string
                         const message = formData.get('message') as string
 
-                        void submitInquiry(name, email, projectType, budget, message)
+                        void submitInquiry(
+                          name,
+                          email,
+                          projectType,
+                          budget,
+                          message,
+                        )
                         setInquiriesOpen(true)
                         e.currentTarget.reset()
                       }}
@@ -1623,7 +1661,9 @@ export const FilmDirectorKimiPage2 = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Project Inquiries</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Project Inquiries
+                      </SheetTitle>
                       <SheetDescription>
                         {inquiries && inquiries.length > 0
                           ? `${inquiries.length} inquiry${inquiries.length === 1 ? '' : 's'} submitted.`
@@ -1671,7 +1711,8 @@ export const FilmDirectorKimiPage2 = defineCapsule({
                             No inquiries yet
                           </p>
                           <p className="mt-2 text-sm text-muted-foreground">
-                            Submit the contact form to track your project inquiries.
+                            Submit the contact form to track your project
+                            inquiries.
                           </p>
                         </div>
                       )}

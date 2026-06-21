@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -48,7 +48,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
  * supply ONLY content data; rich defaults make it render great with no props.
  */
 export const FitnessKimiPage2 = defineCapsule({
-  name: "FitnessKimiPage2",
+  name: 'FitnessKimiPage2',
   description:
     "Complete gym / fitness-studio / 24-7-training-facility LANDING page with a bold, dark-and-light contrast aesthetic and dramatic full-bleed hero. Second style sibling to FitnessKimiPage. Features a fixed dark navbar with brand dot, a large uppercase headline hero with background image and dual CTAs, a trusted-by logo strip, a 3-up facility feature card grid (group classes, elite equipment, certified coaches) with inline schedule highlights, a 4-column weekly class schedule grid, a 3-step onboarding timeline with circular numbered markers and a connecting line, a masonry 5-image facility gallery in a dark band, a 3-tier membership pricing block with a bordered 'Most Popular' Pro tier, a bright primary stats band (members / coaches / classes / sqft), a 4-up expert coaches grid with 4:5 portraits and credentials, a 3-up testimonial grid with quote icons and avatars, a native details/summary FAQ accordion, a dark image-overlay CTA with dual buttons, and a multi-column dark footer with social icons, contact info and legal links. Use as the ROOT/home page for CrossFit boxes, powerlifting gyms, 24/7 facilities, hardcore boot-camp studios, strength-conditioning gyms, or any fitness brand wanting an intense, high-contrast look with gallery, schedule, pricing and testimonials. Supply content only — brand, nav, hero, logos, features, schedule, steps, gallery, pricing, stats, trainers, testimonials, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -139,7 +139,9 @@ export const FitnessKimiPage2 = defineCapsule({
               period: z.string(),
               cta: z.string(),
               popular: z.boolean().optional(),
-              features: z.array(z.object({ label: z.string(), included: z.boolean() })),
+              features: z.array(
+                z.object({ label: z.string(), included: z.boolean() }),
+              ),
             }),
           )
           .optional(),
@@ -147,7 +149,9 @@ export const FitnessKimiPage2 = defineCapsule({
       .optional(),
     stats: z
       .object({
-        items: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+        items: z
+          .array(z.object({ value: z.string(), label: z.string() }))
+          .optional(),
       })
       .optional(),
     trainers: z
@@ -235,10 +239,17 @@ export const FitnessKimiPage2 = defineCapsule({
     },
     queries: {
       classBookings: ({ db }) => db.classBookings.orderBy('createdAt').all(),
-      membershipLeads: ({ db }) => db.membershipLeads.orderBy('createdAt').all(),
+      membershipLeads: ({ db }) =>
+        db.membershipLeads.orderBy('createdAt').all(),
     },
     mutations: {
-      bookClass: ({ db }, className: string, day: string, time: string, trainer: string) => {
+      bookClass: (
+        { db },
+        className: string,
+        day: string,
+        time: string,
+        trainer: string,
+      ) => {
         db.classBookings.insert({ className, day, time, trainer })
         return db.classBookings.all()
       },
@@ -246,7 +257,13 @@ export const FitnessKimiPage2 = defineCapsule({
         db.classBookings.delete(id)
         return db.classBookings.all()
       },
-      submitMembershipLead: ({ db }, name: string, email: string, phone: string, membershipTier: string) => {
+      submitMembershipLead: (
+        { db },
+        name: string,
+        email: string,
+        phone: string,
+        membershipTier: string,
+      ) => {
         db.membershipLeads.insert({ name, email, phone, membershipTier })
         return db.membershipLeads.all()
       },
@@ -256,11 +273,9 @@ export const FitnessKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [bookingOpen, setBookingOpen] = useState(false)
-    const [selectedClass, setSelectedClass] = useState<{ name: string; day: string; time: string; trainer: string } | null>(null)
-    const brand = props.brand ?? "Iron Pulse"
+    const brand = props.brand ?? 'Iron Pulse'
 
     const classBookings = lakebed.useQuery('classBookings')
-    const membershipLeads = lakebed.useQuery('membershipLeads')
     const bookClass = lakebed.useMutation('bookClass')
     const removeClassBooking = lakebed.useMutation('removeClassBooking')
     const submitMembershipLead = lakebed.useMutation('submitMembershipLead')
@@ -268,9 +283,20 @@ export const FitnessKimiPage2 = defineCapsule({
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
-    const authDisplayName = auth.displayName || auth.user?.displayName || authEmail || 'Account'
-    const authInitials = authDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part: string) => part[0]?.toUpperCase()).join('') || 'ME'
-    const authLabel = auth.isLoading ? 'Checking...' : isSignedIn ? authDisplayName : 'Sign in'
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part: string) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
 
     const handleSignIn = () => {
       if (auth.isLoading) return
@@ -284,211 +310,215 @@ export const FitnessKimiPage2 = defineCapsule({
     const bookingCount = safeClassBookings.length
     const nav = props.nav?.length
       ? props.nav
-      : ["Classes", "Trainers", "Membership", "FAQ", "Join Now"]
+      : ['Classes', 'Trainers', 'Membership', 'FAQ', 'Join Now']
 
-    const navPrimary = nav[nav.length - 1] ?? "Join Now"
+    const navPrimary = nav[nav.length - 1] ?? 'Join Now'
 
     const hero = {
-      badge: props.hero?.badge ?? "Now open 24/7 in Downtown Austin",
-      headingLead: props.hero?.headingLead ?? "Forge Your",
-      headingHighlight: props.hero?.headingHighlight ?? "Legacy",
+      badge: props.hero?.badge ?? 'Now open 24/7 in Downtown Austin',
+      headingLead: props.hero?.headingLead ?? 'Forge Your',
+      headingHighlight: props.hero?.headingHighlight ?? 'Legacy',
       subheading:
         props.hero?.subheading ??
-        "World-class coaching, elite equipment, and high-energy group classes designed to push your limits. No contracts. No excuses.",
-      primaryCta: props.hero?.primaryCta ?? "Start Your Free Week",
-      secondaryCta: props.hero?.secondaryCta ?? "View Class Schedule",
+        'World-class coaching, elite equipment, and high-energy group classes designed to push your limits. No contracts. No excuses.',
+      primaryCta: props.hero?.primaryCta ?? 'Start Your Free Week',
+      secondaryCta: props.hero?.secondaryCta ?? 'View Class Schedule',
       imageAlt:
         props.hero?.imageAlt ??
-        "wide angle photograph of a modern gym interior with weight training equipment and dramatic overhead lighting",
+        'wide angle photograph of a modern gym interior with weight training equipment and dramatic overhead lighting',
     }
 
     const logos = {
-      label: props.logos?.label ?? "Trusted by athletes and teams",
+      label: props.logos?.label ?? 'Trusted by athletes and teams',
       items: props.logos?.items?.length
         ? props.logos.items
-        : ["ROGUE FITNESS", "LULULEMON", "WHOOP", "NIKE", "GYM SHARK"],
+        : ['ROGUE FITNESS', 'LULULEMON', 'WHOOP', 'NIKE', 'GYM SHARK'],
     }
 
     const features = {
-      headingOverline: props.features?.headingOverline ?? "Facilities & Classes",
-      heading: props.features?.heading ?? "Everything You Need\nTo Dominate",
+      headingOverline:
+        props.features?.headingOverline ?? 'Facilities & Classes',
+      heading: props.features?.heading ?? 'Everything You Need\nTo Dominate',
       description:
         props.features?.description ??
-        "From 5am Olympic lifting to 8pm power yoga, our schedule is stacked with expert-led sessions. Recovery, mobility, and open gym hours are always included.",
+        'From 5am Olympic lifting to 8pm power yoga, our schedule is stacked with expert-led sessions. Recovery, mobility, and open gym hours are always included.',
       cards: props.features?.cards?.length
         ? props.features.cards
         : [
             {
-              title: "Group Classes",
+              title: 'Group Classes',
               description:
-                "Over 40 weekly sessions: HIIT, Boxing, Spin, Yoga, and Barre. Real-time heart rate monitoring on every bike and rower.",
+                'Over 40 weekly sessions: HIIT, Boxing, Spin, Yoga, and Barre. Real-time heart rate monitoring on every bike and rower.',
               iconPath:
-                "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z",
-              items: ["Mon\u2013Fri: 5:00am \u2013 9:00pm", "Sat\u2013Sun: 7:00am \u2013 5:00pm"],
+                'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
+              items: [
+                'Mon\u2013Fri: 5:00am \u2013 9:00pm',
+                'Sat\u2013Sun: 7:00am \u2013 5:00pm',
+              ],
             },
             {
-              title: "Elite Equipment",
+              title: 'Elite Equipment',
               description:
-                "12,000 sq ft of Rogue racks, Eleiko plates, Technogym cardio, and a dedicated functional turf. Equipment maintained daily.",
+                '12,000 sq ft of Rogue racks, Eleiko plates, Technogym cardio, and a dedicated functional turf. Equipment maintained daily.',
               iconPath:
-                "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10",
-              items: ["Olympic Lifting Platforms", "Assault Bikes & SkiErgs"],
+                'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
+              items: ['Olympic Lifting Platforms', 'Assault Bikes & SkiErgs'],
             },
             {
-              title: "Certified Coaches",
+              title: 'Certified Coaches',
               description:
-                "Every trainer holds a NASM or NSCA certification with 5+ years experience. Get form checks, custom macros, and 1-on-1 programming.",
-              iconPath: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
-              items: ["Personal Training Available", "Nutrition Consultations"],
+                'Every trainer holds a NASM or NSCA certification with 5+ years experience. Get form checks, custom macros, and 1-on-1 programming.',
+              iconPath: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+              items: ['Personal Training Available', 'Nutrition Consultations'],
             },
           ],
     }
 
     const schedule = {
-      heading: props.schedule?.heading ?? "Weekly Class Schedule",
+      heading: props.schedule?.heading ?? 'Weekly Class Schedule',
       columns: props.schedule?.columns?.length
         ? props.schedule.columns
         : [
             {
-              title: "Monday \u2014 Wednesday",
+              title: 'Monday \u2014 Wednesday',
               rows: [
-                { name: "5:00am Power Hour", tag: "HIIT" },
-                { name: "7:00am Rise & Grind", tag: "Strength" },
-                { name: "12:00pm Lunch Burn", tag: "Cardio" },
-                { name: "5:30pm Fight Club", tag: "Boxing" },
-                { name: "7:00pm Deep Stretch", tag: "Yoga" },
+                { name: '5:00am Power Hour', tag: 'HIIT' },
+                { name: '7:00am Rise & Grind', tag: 'Strength' },
+                { name: '12:00pm Lunch Burn', tag: 'Cardio' },
+                { name: '5:30pm Fight Club', tag: 'Boxing' },
+                { name: '7:00pm Deep Stretch', tag: 'Yoga' },
               ],
             },
             {
-              title: "Thursday \u2014 Friday",
+              title: 'Thursday \u2014 Friday',
               rows: [
-                { name: "5:00am Metcon", tag: "HIIT" },
-                { name: "7:00am Olympic Lifting", tag: "Strength" },
-                { name: "12:00pm Shred 45", tag: "Cardio" },
-                { name: "5:30pm Kickboxing", tag: "Strike" },
-                { name: "7:00pm Flow State", tag: "Yoga" },
+                { name: '5:00am Metcon', tag: 'HIIT' },
+                { name: '7:00am Olympic Lifting', tag: 'Strength' },
+                { name: '12:00pm Shred 45', tag: 'Cardio' },
+                { name: '5:30pm Kickboxing', tag: 'Strike' },
+                { name: '7:00pm Flow State', tag: 'Yoga' },
               ],
             },
             {
-              title: "Saturday",
+              title: 'Saturday',
               rows: [
-                { name: "8:00am Team WOD", tag: "Cross" },
-                { name: "9:30am Spin City", tag: "Cycle" },
-                { name: "11:00am Mobility", tag: "Recovery" },
-                { name: "2:00pm Open Gym", tag: "Open" },
+                { name: '8:00am Team WOD', tag: 'Cross' },
+                { name: '9:30am Spin City', tag: 'Cycle' },
+                { name: '11:00am Mobility', tag: 'Recovery' },
+                { name: '2:00pm Open Gym', tag: 'Open' },
               ],
             },
             {
-              title: "Sunday",
+              title: 'Sunday',
               rows: [
-                { name: "9:00am Long Run Club", tag: "Endure" },
-                { name: "10:30am Gentle Yoga", tag: "Flow" },
-                { name: "12:00pm Open Gym", tag: "Open" },
-                { name: "4:00pm Meditation", tag: "Recover" },
+                { name: '9:00am Long Run Club', tag: 'Endure' },
+                { name: '10:30am Gentle Yoga', tag: 'Flow' },
+                { name: '12:00pm Open Gym', tag: 'Open' },
+                { name: '4:00pm Meditation', tag: 'Recover' },
               ],
             },
           ],
     }
 
     const steps = {
-      headingOverline: props.steps?.headingOverline ?? "Get Started",
-      heading: props.steps?.heading ?? "Your Transformation In 3 Steps",
+      headingOverline: props.steps?.headingOverline ?? 'Get Started',
+      heading: props.steps?.heading ?? 'Your Transformation In 3 Steps',
       items: props.steps?.items?.length
         ? props.steps.items
         : [
             {
-              number: "1",
-              title: "Pick Your Plan",
+              number: '1',
+              title: 'Pick Your Plan',
               description:
-                "Choose from Basic, Pro, or Elite membership. No startup fees, no long-term contracts. Cancel anytime.",
+                'Choose from Basic, Pro, or Elite membership. No startup fees, no long-term contracts. Cancel anytime.',
               active: false,
             },
             {
-              number: "2",
-              title: "Get Onboarded",
+              number: '2',
+              title: 'Get Onboarded',
               description:
-                "Book your complimentary fitness assessment. We scan body composition and build a custom 30-day roadmap.",
+                'Book your complimentary fitness assessment. We scan body composition and build a custom 30-day roadmap.',
               active: false,
             },
             {
-              number: "3",
-              title: "Train Hard",
+              number: '3',
+              title: 'Train Hard',
               description:
-                "Unlock full access to classes, open gym, and recovery. Track progress in our member app and crush goals.",
+                'Unlock full access to classes, open gym, and recovery. Track progress in our member app and crush goals.',
               active: true,
             },
           ],
     }
 
     const gallery = {
-      headingOverline: props.gallery?.headingOverline ?? "The Space",
-      heading: props.gallery?.heading ?? "Inside The Box",
+      headingOverline: props.gallery?.headingOverline ?? 'The Space',
+      heading: props.gallery?.heading ?? 'Inside The Box',
       description:
         props.gallery?.description ??
-        "A premium environment designed for focus, intensity, and recovery. See what awaits.",
+        'A premium environment designed for focus, intensity, and recovery. See what awaits.',
       items: props.gallery?.items?.length
         ? props.gallery.items
         : [
-            "wide angle view of a modern gym floor with rows of dumbbells and cable machines under industrial lighting",
-            "close-up of a row of black treadmills and elliptical machines in a clean cardio zone",
-            "athletes performing battle ropes and kettlebell exercises during a high intensity group workout",
-            "heavy squat rack with barbell loaded with olympic weight plates in a strength training area",
-            "calm yoga studio with natural light wood floors and people stretching on mats",
+            'wide angle view of a modern gym floor with rows of dumbbells and cable machines under industrial lighting',
+            'close-up of a row of black treadmills and elliptical machines in a clean cardio zone',
+            'athletes performing battle ropes and kettlebell exercises during a high intensity group workout',
+            'heavy squat rack with barbell loaded with olympic weight plates in a strength training area',
+            'calm yoga studio with natural light wood floors and people stretching on mats',
           ],
     }
 
     const pricing = {
-      headingOverline: props.pricing?.headingOverline ?? "Memberships",
-      heading: props.pricing?.heading ?? "Invest In Yourself",
+      headingOverline: props.pricing?.headingOverline ?? 'Memberships',
+      heading: props.pricing?.heading ?? 'Invest In Yourself',
       description:
         props.pricing?.description ??
-        "Flexible plans that scale with your ambition. All memberships include towel service and locker access.",
+        'Flexible plans that scale with your ambition. All memberships include towel service and locker access.',
       tiers: props.pricing?.tiers?.length
         ? props.pricing.tiers
         : [
             {
-              name: "Basic",
-              tagline: "For the self-motivated lifter.",
-              price: "$49",
-              period: "/mo",
-              cta: "Choose Basic",
+              name: 'Basic',
+              tagline: 'For the self-motivated lifter.',
+              price: '$49',
+              period: '/mo',
+              cta: 'Choose Basic',
               popular: false,
               features: [
-                { label: "Unlimited Open Gym Access", included: true },
-                { label: "Locker & Shower Access", included: true },
-                { label: "Member App Tracking", included: true },
-                { label: "Group Classes", included: false },
-                { label: "Guest Passes", included: false },
+                { label: 'Unlimited Open Gym Access', included: true },
+                { label: 'Locker & Shower Access', included: true },
+                { label: 'Member App Tracking', included: true },
+                { label: 'Group Classes', included: false },
+                { label: 'Guest Passes', included: false },
               ],
             },
             {
-              name: "Pro",
-              tagline: "The complete training package.",
-              price: "$89",
-              period: "/mo",
-              cta: "Choose Pro",
+              name: 'Pro',
+              tagline: 'The complete training package.',
+              price: '$89',
+              period: '/mo',
+              cta: 'Choose Pro',
               popular: true,
               features: [
-                { label: "Everything in Basic", included: true },
-                { label: "Unlimited Group Classes", included: true },
-                { label: "4 Guest Passes / Month", included: true },
-                { label: "Sauna & Recovery Suite", included: true },
-                { label: "1 Monthly InBody Scan", included: true },
+                { label: 'Everything in Basic', included: true },
+                { label: 'Unlimited Group Classes', included: true },
+                { label: '4 Guest Passes / Month', included: true },
+                { label: 'Sauna & Recovery Suite', included: true },
+                { label: '1 Monthly InBody Scan', included: true },
               ],
             },
             {
-              name: "Elite",
-              tagline: "For competitive athletes.",
-              price: "$149",
-              period: "/mo",
-              cta: "Choose Elite",
+              name: 'Elite',
+              tagline: 'For competitive athletes.',
+              price: '$149',
+              period: '/mo',
+              cta: 'Choose Elite',
               popular: false,
               features: [
-                { label: "Everything in Pro", included: true },
-                { label: "2x Personal Training / Month", included: true },
-                { label: "Unlimited Guest Passes", included: true },
-                { label: "Custom Programming & Macros", included: true },
-                { label: "Priority Class Booking", included: true },
+                { label: 'Everything in Pro', included: true },
+                { label: '2x Personal Training / Month', included: true },
+                { label: 'Unlimited Guest Passes', included: true },
+                { label: 'Custom Programming & Macros', included: true },
+                { label: 'Priority Class Booking', included: true },
               ],
             },
           ],
@@ -498,126 +528,128 @@ export const FitnessKimiPage2 = defineCapsule({
       items: props.stats?.items?.length
         ? props.stats.items
         : [
-            { value: "850+", label: "Active Members" },
-            { value: "14", label: "Expert Coaches" },
-            { value: "42", label: "Weekly Classes" },
-            { value: "12k", label: "Sq Ft Facility" },
+            { value: '850+', label: 'Active Members' },
+            { value: '14', label: 'Expert Coaches' },
+            { value: '42', label: 'Weekly Classes' },
+            { value: '12k', label: 'Sq Ft Facility' },
           ],
     }
 
     const trainers = {
-      headingOverline: props.trainers?.headingOverline ?? "The Team",
-      heading: props.trainers?.heading ?? "Meet Your Coaches",
+      headingOverline: props.trainers?.headingOverline ?? 'The Team',
+      heading: props.trainers?.heading ?? 'Meet Your Coaches',
       description:
         props.trainers?.description ??
-        "Real athletes with real credentials. They have competed at national levels and coached thousands of personal victories.",
+        'Real athletes with real credentials. They have competed at national levels and coached thousands of personal victories.',
       items: props.trainers?.items?.length
         ? props.trainers.items
         : [
             {
-              name: "Marcus Reid",
-              role: "Head of Strength",
-              bio: "CSCS certified. Former NCAA powerlifter. Specializes in compound barbell programming and injury prevention.",
+              name: 'Marcus Reid',
+              role: 'Head of Strength',
+              bio: 'CSCS certified. Former NCAA powerlifter. Specializes in compound barbell programming and injury prevention.',
               imageAlt:
-                "professional headshot of a smiling bearded male strength coach wearing a black gym shirt",
+                'professional headshot of a smiling bearded male strength coach wearing a black gym shirt',
             },
             {
-              name: "Elena Rossi",
-              role: "Yoga & Mobility",
-              bio: "500hr RYT, former gymnast. Teaches vinyasa flow and corrective movement for desk-bound professionals.",
+              name: 'Elena Rossi',
+              role: 'Yoga & Mobility',
+              bio: '500hr RYT, former gymnast. Teaches vinyasa flow and corrective movement for desk-bound professionals.',
               imageAlt:
-                "professional headshot of a smiling woman with curly hair wearing yoga attire in a bright studio",
+                'professional headshot of a smiling woman with curly hair wearing yoga attire in a bright studio',
             },
             {
-              name: "David Kim",
-              role: "HIIT & Conditioning",
-              bio: "Ex-army ranger. NASM performance specialist. Known for high-energy classes that push mental and physical limits.",
+              name: 'David Kim',
+              role: 'HIIT & Conditioning',
+              bio: 'Ex-army ranger. NASM performance specialist. Known for high-energy classes that push mental and physical limits.',
               imageAlt:
-                "professional headshot of a confident man with short dark hair wearing athletic wear against a gym wall",
+                'professional headshot of a confident man with short dark hair wearing athletic wear against a gym wall',
             },
             {
-              name: "Sarah Jenkins",
-              role: "Nutrition Lead",
-              bio: "Registered Dietitian and sports nutritionist. Designs macro plans that actually work with busy schedules.",
+              name: 'Sarah Jenkins',
+              role: 'Nutrition Lead',
+              bio: 'Registered Dietitian and sports nutritionist. Designs macro plans that actually work with busy schedules.',
               imageAlt:
-                "professional headshot of a confident woman with a ponytail wearing a black tank top in a fitness studio",
+                'professional headshot of a confident woman with a ponytail wearing a black tank top in a fitness studio',
             },
           ],
     }
 
     const testimonials = {
-      headingOverline: props.testimonials?.headingOverline ?? "Testimonials",
-      heading: props.testimonials?.heading ?? "Results That Speak",
+      headingOverline: props.testimonials?.headingOverline ?? 'Testimonials',
+      heading: props.testimonials?.heading ?? 'Results That Speak',
       items: props.testimonials?.items?.length
         ? props.testimonials.items
         : [
             {
               quote:
-                "I dropped 18 pounds in 12 weeks without crash dieting. The trainers here actually correct your form instead of just shouting motivational quotes.",
-              name: "Amanda Cole",
-              meta: "Member since 2022",
+                'I dropped 18 pounds in 12 weeks without crash dieting. The trainers here actually correct your form instead of just shouting motivational quotes.',
+              name: 'Amanda Cole',
+              meta: 'Member since 2022',
               avatarAlt:
-                "professional headshot of a smiling woman with glasses and auburn hair wearing a casual t-shirt",
+                'professional headshot of a smiling woman with glasses and auburn hair wearing a casual t-shirt',
             },
             {
               quote:
-                "The Olympic platforms are always open and the equipment is pristine. I finally hit a 405lb deadlift PR here. The vibe is serious but welcoming.",
-              name: "Jake Morales",
-              meta: "Member since 2023",
+                'The Olympic platforms are always open and the equipment is pristine. I finally hit a 405lb deadlift PR here. The vibe is serious but welcoming.',
+              name: 'Jake Morales',
+              meta: 'Member since 2023',
               avatarAlt:
-                "professional headshot of a young man with curly hair and a confident smile wearing a dark crew neck shirt",
+                'professional headshot of a young man with curly hair and a confident smile wearing a dark crew neck shirt',
             },
             {
               quote:
-                "I was terrified to start, but the beginner HIIT class scaled everything perfectly. I went from zero to 3 classes a week. My mental health has never been better.",
-              name: "Priya Patel",
-              meta: "Member since 2024",
+                'I was terrified to start, but the beginner HIIT class scaled everything perfectly. I went from zero to 3 classes a week. My mental health has never been better.',
+              name: 'Priya Patel',
+              meta: 'Member since 2024',
               avatarAlt:
-                "professional headshot of a young woman with long dark hair and bright eyes smiling warmly at the camera",
+                'professional headshot of a young woman with long dark hair and bright eyes smiling warmly at the camera',
             },
           ],
     }
 
     const faq = {
-      headingOverline: props.faq?.headingOverline ?? "FAQ",
-      heading: props.faq?.heading ?? "Common Questions",
+      headingOverline: props.faq?.headingOverline ?? 'FAQ',
+      heading: props.faq?.heading ?? 'Common Questions',
       items: props.faq?.items?.length
         ? props.faq.items
         : [
             {
-              q: "Do you offer day passes or trials?",
-              a: "Yes. We offer a free 7-day trial with full access to open gym and one group class. Day passes are $25 and can be purchased at the front desk or through our app.",
+              q: 'Do you offer day passes or trials?',
+              a: 'Yes. We offer a free 7-day trial with full access to open gym and one group class. Day passes are $25 and can be purchased at the front desk or through our app.',
             },
             {
-              q: "What are your peak hours?",
-              a: "Peak hours are typically Monday through Friday from 5pm to 8pm. We recommend training before 3pm or after 8pm for guaranteed rack access. Saturdays between 9am and 12pm are also busy.",
+              q: 'What are your peak hours?',
+              a: 'Peak hours are typically Monday through Friday from 5pm to 8pm. We recommend training before 3pm or after 8pm for guaranteed rack access. Saturdays between 9am and 12pm are also busy.',
             },
             {
-              q: "Is there parking available?",
-              a: "We have a dedicated lot with 40 free parking spots and access to a covered bike rack. Street parking is also free after 6pm along 5th Avenue.",
+              q: 'Is there parking available?',
+              a: 'We have a dedicated lot with 40 free parking spots and access to a covered bike rack. Street parking is also free after 6pm along 5th Avenue.',
             },
             {
-              q: "Can I freeze my membership?",
-              a: "Absolutely. Pro and Elite members can freeze their membership for up to 3 months per year for $5 per month. Basic members can cancel and rejoin anytime without penalty.",
+              q: 'Can I freeze my membership?',
+              a: 'Absolutely. Pro and Elite members can freeze their membership for up to 3 months per year for $5 per month. Basic members can cancel and rejoin anytime without penalty.',
             },
             {
-              q: "Do you have locker rooms and showers?",
-              a: "Yes. We offer spacious gender-specific locker rooms with showers, private changing areas, complimentary body wash and shampoo, and daily towel service.",
+              q: 'Do you have locker rooms and showers?',
+              a: 'Yes. We offer spacious gender-specific locker rooms with showers, private changing areas, complimentary body wash and shampoo, and daily towel service.',
             },
           ],
     }
 
     const cta = {
-      heading: props.cta?.heading ?? "Stop Waiting.\nStart Training.",
+      heading: props.cta?.heading ?? 'Stop Waiting.\nStart Training.',
       description:
         props.cta?.description ??
-        "Join 850+ members who have already committed to their stronger selves. Your first week is on us.",
-      primaryCta: props.cta?.primaryCta ?? "Claim Free Week",
-      secondaryLabel: props.cta?.secondaryLabel ?? "Call (512) 555-0192",
+        'Join 850+ members who have already committed to their stronger selves. Your first week is on us.',
+      primaryCta: props.cta?.primaryCta ?? 'Claim Free Week',
+      secondaryLabel: props.cta?.secondaryLabel ?? 'Call (512) 555-0192',
       imageAlt:
         props.cta?.imageAlt ??
-        "gritty close-up photograph of heavy hex dumbbells lined up on a gym storage rack",
-      finePrint: props.cta?.finePrint ?? "No credit card required for trial. Cancel anytime.",
+        'gritty close-up photograph of heavy hex dumbbells lined up on a gym storage rack',
+      finePrint:
+        props.cta?.finePrint ??
+        'No credit card required for trial. Cancel anytime.',
     }
 
     const footer = {
@@ -628,24 +660,28 @@ export const FitnessKimiPage2 = defineCapsule({
         ? props.footer.columns
         : [
             {
-              heading: "Gym",
-              links: ["Classes", "Trainers", "Membership", "Careers"],
+              heading: 'Gym',
+              links: ['Classes', 'Trainers', 'Membership', 'Careers'],
             },
             {
-              heading: "Contact",
+              heading: 'Contact',
               links: [],
             },
           ],
       contact: props.footer?.contact?.length
         ? props.footer.contact
         : [
-            "101 Iron Way, Austin, TX",
-            "(512) 555-0192",
-            "hello@ironpulse.fit",
-            "Open 24/7",
+            '101 Iron Way, Austin, TX',
+            '(512) 555-0192',
+            'hello@ironpulse.fit',
+            'Open 24/7',
           ],
-      copyright: props.footer?.copyright ?? "\u00a9 2026 Iron Pulse Fitness. All rights reserved.",
-      legal: props.footer?.legal?.length ? props.footer.legal : ["Privacy", "Terms"],
+      copyright:
+        props.footer?.copyright ??
+        '\u00a9 2026 Iron Pulse Fitness. All rights reserved.',
+      legal: props.footer?.legal?.length
+        ? props.footer.legal
+        : ['Privacy', 'Terms'],
     }
 
     const CheckIcon = ({ className }: { className?: string }) => (
@@ -711,19 +747,38 @@ export const FitnessKimiPage2 = defineCapsule({
     )
 
     const InstagramIcon = () => (
-      <svg className="size-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <svg
+        className="size-5"
+        fill="currentColor"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
         <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
       </svg>
     )
 
     const YouTubeIcon = () => (
-      <svg className="size-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <svg
+        className="size-5"
+        fill="currentColor"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
         <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
       </svg>
     )
 
     const CalendarIcon = () => (
-      <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+      <svg
+        className="size-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
         <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
         <line x1="16" y1="2" x2="16" y2="6" />
         <line x1="8" y1="2" x2="8" y2="6" />
@@ -732,13 +787,31 @@ export const FitnessKimiPage2 = defineCapsule({
     )
 
     const ChevronDown = () => (
-      <svg className="size-5 text-muted-foreground group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+      <svg
+        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
         <polyline points="6 9 12 15 18 9" />
       </svg>
     )
 
     const ArrowRight = () => (
-      <svg className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+      <svg
+        className="size-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
         <line x1="5" y1="12" x2="19" y2="12" />
         <polyline points="12 5 19 12 12 19" />
       </svg>
@@ -747,7 +820,7 @@ export const FitnessKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -762,10 +835,16 @@ export const FitnessKimiPage2 = defineCapsule({
               <span className="text-2xl font-black tracking-tighter uppercase text-background">
                 {brand}
               </span>
-              <span className="inline-flex size-2 rounded-full bg-primary" aria-hidden="true" />
+              <span
+                className="inline-flex size-2 rounded-full bg-primary"
+                aria-hidden="true"
+              />
             </button>
 
-            <nav className="hidden items-center gap-8 text-sm font-semibold text-muted-foreground md:flex" aria-label="Desktop navigation">
+            <nav
+              className="hidden items-center gap-8 text-sm font-semibold text-muted-foreground md:flex"
+              aria-label="Desktop navigation"
+            >
               {nav.slice(0, -1).map((label) => (
                 <button
                   key={label}
@@ -794,7 +873,10 @@ export const FitnessKimiPage2 = defineCapsule({
                     ) : null}
                   </button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
                   <SheetHeader className="border-b border-border p-6">
                     <SheetTitle className="text-xl">Class Bookings</SheetTitle>
                     <SheetDescription>
@@ -806,25 +888,41 @@ export const FitnessKimiPage2 = defineCapsule({
                   <div className="flex-1 overflow-y-auto px-6 py-5">
                     {safeClassBookings.length ? (
                       <div className="space-y-4">
-                        {safeClassBookings.map((booking: { id: string; className: string; day: string; time: string; trainer: string }) => (
-                          <div
-                            key={booking.id}
-                            className="grid grid-cols-[1fr_auto] gap-4 border-b border-border pb-4 last:border-0"
-                          >
-                            <div>
-                              <p className="text-sm font-bold text-foreground">{booking.className}</p>
-                              <p className="text-sm text-muted-foreground">{booking.day} at {booking.time}</p>
-                              <p className="text-xs text-muted-foreground">with {booking.trainer}</p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => void removeClassBooking(booking.id)}
-                              className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                        {safeClassBookings.map(
+                          (booking: {
+                            id: string
+                            className: string
+                            day: string
+                            time: string
+                            trainer: string
+                          }) => (
+                            <div
+                              key={booking.id}
+                              className="grid grid-cols-[1fr_auto] gap-4 border-b border-border pb-4 last:border-0"
                             >
-                              Cancel
-                            </button>
-                          </div>
-                        ))}
+                              <div>
+                                <p className="text-sm font-bold text-foreground">
+                                  {booking.className}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {booking.day} at {booking.time}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  with {booking.trainer}
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  void removeClassBooking(booking.id)
+                                }
+                                className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ),
+                        )}
                       </div>
                     ) : (
                       <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
@@ -839,7 +937,11 @@ export const FitnessKimiPage2 = defineCapsule({
                   </div>
                   <SheetFooter className="border-t border-border p-6">
                     <SheetClose asChild>
-                      <Button type="button" variant="secondary" className="w-full rounded-full">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full rounded-full"
+                      >
                         Close
                       </Button>
                     </SheetClose>
@@ -855,9 +957,16 @@ export const FitnessKimiPage2 = defineCapsule({
                       aria-label="Open account menu"
                       className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
                     >
-                      <Avatar size="sm" className="ring-2 ring-background" aria-hidden="true">
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
                         {authPicture ? (
-                          <AvatarImage src={authPicture} alt={authDisplayName} />
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
                         ) : null}
                         <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
                           {authInitials}
@@ -878,7 +987,10 @@ export const FitnessKimiPage2 = defineCapsule({
                       <div className="flex items-center gap-3">
                         <Avatar size="lg" className="ring-2 ring-background">
                           {authPicture ? (
-                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
                           ) : null}
                           <AvatarFallback className="bg-foreground text-sm font-bold text-background">
                             {authInitials}
@@ -962,7 +1074,12 @@ export const FitnessKimiPage2 = defineCapsule({
                 viewBox="0 0 24 24"
                 aria-hidden="true"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             </button>
             {mobileOpen && (
@@ -989,7 +1106,10 @@ export const FitnessKimiPage2 = defineCapsule({
                       <div className="flex items-center gap-3">
                         <Avatar size="lg">
                           {authPicture ? (
-                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
                           ) : null}
                           <AvatarFallback className="bg-foreground text-sm font-bold text-background">
                             {authInitials}
@@ -1052,7 +1172,10 @@ export const FitnessKimiPage2 = defineCapsule({
             <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
               <div className="max-w-3xl">
                 <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-border bg-card/50 px-3 py-1 text-xs font-semibold text-muted-foreground">
-                  <span className="inline-flex size-2 rounded-full bg-primary" aria-hidden="true" />
+                  <span
+                    className="inline-flex size-2 rounded-full bg-primary"
+                    aria-hidden="true"
+                  />
                   {hero.badge}
                 </div>
                 <h1 className="mb-8 text-5xl font-black tracking-tight uppercase leading-[0.9] text-background md:text-7xl lg:text-8xl">
@@ -1150,7 +1273,10 @@ export const FitnessKimiPage2 = defineCapsule({
                     <ul className="space-y-2 text-sm font-semibold text-muted-foreground">
                       {card.items.map((item) => (
                         <li key={item} className="flex items-center gap-2">
-                          <span className="inline-flex size-1.5 rounded-full bg-primary" aria-hidden="true" />
+                          <span
+                            className="inline-flex size-1.5 rounded-full bg-primary"
+                            aria-hidden="true"
+                          />
                           {item}
                         </li>
                       ))}
@@ -1176,12 +1302,19 @@ export const FitnessKimiPage2 = defineCapsule({
                             className="flex items-center justify-between gap-2"
                           >
                             <span className="flex-1">{row.name}</span>
-                            <span className="font-semibold text-primary">{row.tag}</span>
+                            <span className="font-semibold text-primary">
+                              {row.tag}
+                            </span>
                             <button
                               type="button"
                               onClick={() => {
                                 const trainer = 'Staff'
-                                void bookClass(row.name, col.title, row.name.split(' ')[0], trainer)
+                                void bookClass(
+                                  row.name,
+                                  col.title,
+                                  row.name.split(' ')[0],
+                                  trainer,
+                                )
                                 setBookingOpen(true)
                               }}
                               className="shrink-0 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground transition-colors hover:bg-primary/90"
@@ -1210,15 +1343,18 @@ export const FitnessKimiPage2 = defineCapsule({
                 </p>
               </div>
               <div className="relative grid gap-12 md:grid-cols-3">
-                <div className="absolute top-12 left-[16%] right-[16%] hidden h-0.5 bg-border md:block" aria-hidden="true" />
+                <div
+                  className="absolute top-12 left-[16%] right-[16%] hidden h-0.5 bg-border md:block"
+                  aria-hidden="true"
+                />
                 {steps.items.map((step) => (
                   <div key={step.number} className="relative text-center">
                     <div
                       className={cn(
-                        "relative z-10 mx-auto mb-6 flex size-24 items-center justify-center rounded-full border-4 border-background text-3xl font-black shadow-xl",
+                        'relative z-10 mx-auto mb-6 flex size-24 items-center justify-center rounded-full border-4 border-background text-3xl font-black shadow-xl',
                         step.active
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-foreground text-background",
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-foreground text-background',
                       )}
                     >
                       {step.number}
@@ -1257,8 +1393,8 @@ export const FitnessKimiPage2 = defineCapsule({
                   <div
                     key={alt}
                     className={cn(
-                      i === 0 && "col-span-2 md:col-span-2",
-                      i === 4 && "col-span-2 md:col-span-1",
+                      i === 0 && 'col-span-2 md:col-span-2',
+                      i === 4 && 'col-span-2 md:col-span-1',
                     )}
                   >
                     <Image
@@ -1294,10 +1430,10 @@ export const FitnessKimiPage2 = defineCapsule({
                   <article
                     key={tier.name}
                     className={cn(
-                      "relative rounded-3xl p-8 md:p-10",
+                      'relative rounded-3xl p-8 md:p-10',
                       tier.popular
-                        ? "border-2 border-primary bg-foreground shadow-2xl"
-                        : "border border-border bg-background",
+                        ? 'border-2 border-primary bg-foreground shadow-2xl'
+                        : 'border border-border bg-background',
                     )}
                   >
                     {tier.popular && (
@@ -1307,16 +1443,18 @@ export const FitnessKimiPage2 = defineCapsule({
                     )}
                     <h3
                       className={cn(
-                        "mb-2 text-2xl font-black uppercase",
-                        tier.popular ? "text-background" : "text-foreground",
+                        'mb-2 text-2xl font-black uppercase',
+                        tier.popular ? 'text-background' : 'text-foreground',
                       )}
                     >
                       {tier.name}
                     </h3>
                     <p
                       className={cn(
-                        "mb-8 font-medium",
-                        tier.popular ? "text-muted-foreground" : "text-muted-foreground",
+                        'mb-8 font-medium',
+                        tier.popular
+                          ? 'text-muted-foreground'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {tier.tagline}
@@ -1324,16 +1462,18 @@ export const FitnessKimiPage2 = defineCapsule({
                     <div className="mb-8 flex items-baseline gap-1">
                       <span
                         className={cn(
-                          "text-5xl font-black",
-                          tier.popular ? "text-background" : "text-foreground",
+                          'text-5xl font-black',
+                          tier.popular ? 'text-background' : 'text-foreground',
                         )}
                       >
                         {tier.price}
                       </span>
                       <span
                         className={cn(
-                          "font-semibold",
-                          tier.popular ? "text-muted-foreground" : "text-muted-foreground",
+                          'font-semibold',
+                          tier.popular
+                            ? 'text-muted-foreground'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {tier.period}
@@ -1343,43 +1483,47 @@ export const FitnessKimiPage2 = defineCapsule({
                       type="button"
                       onClick={() => go(tier.cta)}
                       className={cn(
-                        "mb-8 block w-full rounded-full px-6 py-3.5 text-center text-sm font-bold transition-colors",
+                        'mb-8 block w-full rounded-full px-6 py-3.5 text-center text-sm font-bold transition-colors',
                         tier.popular
-                          ? "bg-primary text-primary-foreground shadow-lg hover:bg-primary/90"
-                          : "border-2 border-border bg-background text-foreground hover:bg-muted",
+                          ? 'bg-primary text-primary-foreground shadow-lg hover:bg-primary/90'
+                          : 'border-2 border-border bg-background text-foreground hover:bg-muted',
                       )}
                     >
                       {tier.cta}
                     </button>
                     <ul
                       className={cn(
-                        "space-y-4 text-sm font-semibold",
-                        tier.popular ? "text-muted-foreground" : "text-muted-foreground",
+                        'space-y-4 text-sm font-semibold',
+                        tier.popular
+                          ? 'text-muted-foreground'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {tier.features.map((feature) => (
-                        <li key={feature.label} className="flex items-start gap-3">
+                        <li
+                          key={feature.label}
+                          className="flex items-start gap-3"
+                        >
                           {feature.included ? (
                             <CheckIcon
                               className={cn(
-                                "mt-0.5 size-5 shrink-0",
-                                tier.popular ? "text-primary" : "text-primary",
+                                'mt-0.5 size-5 shrink-0',
+                                tier.popular ? 'text-primary' : 'text-primary',
                               )}
                             />
                           ) : (
                             <CrossIcon
                               className={cn(
-                                "mt-0.5 size-5 shrink-0",
+                                'mt-0.5 size-5 shrink-0',
                                 tier.popular
-                                  ? "text-muted-foreground/50"
-                                  : "text-muted-foreground/50",
+                                  ? 'text-muted-foreground/50'
+                                  : 'text-muted-foreground/50',
                               )}
                             />
                           )}
                           <span
                             className={cn(
-                              !feature.included &&
-                                "text-muted-foreground/50",
+                              !feature.included && 'text-muted-foreground/50',
                             )}
                           >
                             {feature.label}
@@ -1484,7 +1628,9 @@ export const FitnessKimiPage2 = defineCapsule({
                       />
                       <div>
                         <p className="font-bold text-foreground">{t.name}</p>
-                        <p className="text-sm text-muted-foreground">{t.meta}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {t.meta}
+                        </p>
                       </div>
                     </div>
                   </article>
@@ -1550,9 +1696,18 @@ export const FitnessKimiPage2 = defineCapsule({
                   onSubmit={(e) => {
                     e.preventDefault()
                     const form = e.currentTarget
-                    const email = (form.elements.namedItem('email') as HTMLInputElement).value
-                    const phone = (form.elements.namedItem('phone') as HTMLInputElement).value
-                    void submitMembershipLead(authDisplayName, email, phone, 'Pro')
+                    const email = (
+                      form.elements.namedItem('email') as HTMLInputElement
+                    ).value
+                    const phone = (
+                      form.elements.namedItem('phone') as HTMLInputElement
+                    ).value
+                    void submitMembershipLead(
+                      authDisplayName,
+                      email,
+                      phone,
+                      'Pro',
+                    )
                     form.reset()
                   }}
                 >
@@ -1597,7 +1752,9 @@ export const FitnessKimiPage2 = defineCapsule({
                   </button>
                 </div>
               )}
-              <p className="mt-6 text-xs text-muted-foreground">{cta.finePrint}</p>
+              <p className="mt-6 text-xs text-muted-foreground">
+                {cta.finePrint}
+              </p>
             </div>
           </section>
         </main>
@@ -1615,7 +1772,10 @@ export const FitnessKimiPage2 = defineCapsule({
                   <span className="text-2xl font-black tracking-tighter uppercase text-background">
                     {brand}
                   </span>
-                  <span className="inline-flex size-2 rounded-full bg-primary" aria-hidden="true" />
+                  <span
+                    className="inline-flex size-2 rounded-full bg-primary"
+                    aria-hidden="true"
+                  />
                 </button>
                 <p className="mb-6 max-w-sm leading-relaxed text-muted-foreground">
                   {footer.tagline}
@@ -1623,7 +1783,7 @@ export const FitnessKimiPage2 = defineCapsule({
                 <div className="flex gap-4">
                   <button
                     type="button"
-                    onClick={() => go("Instagram")}
+                    onClick={() => go('Instagram')}
                     aria-label="Instagram"
                     className="flex size-10 items-center justify-center rounded-full bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-background"
                   >
@@ -1631,7 +1791,7 @@ export const FitnessKimiPage2 = defineCapsule({
                   </button>
                   <button
                     type="button"
-                    onClick={() => go("YouTube")}
+                    onClick={() => go('YouTube')}
                     aria-label="YouTube"
                     className="flex size-10 items-center justify-center rounded-full bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-background"
                   >
@@ -1657,17 +1817,17 @@ export const FitnessKimiPage2 = defineCapsule({
                         </button>
                       </li>
                     ))}
-                    {col.heading === "Contact" &&
-                      footer.contact.map((line) => (
-                        <li key={line}>{line}</li>
-                      ))}
+                    {col.heading === 'Contact' &&
+                      footer.contact.map((line) => <li key={line}>{line}</li>)}
                   </ul>
                 </div>
               ))}
             </div>
 
             <div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
-              <p className="text-sm text-muted-foreground">{footer.copyright}</p>
+              <p className="text-sm text-muted-foreground">
+                {footer.copyright}
+              </p>
               <div className="flex gap-6 text-sm font-semibold text-muted-foreground">
                 {footer.legal.map((item) => (
                   <button

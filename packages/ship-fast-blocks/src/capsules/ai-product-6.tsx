@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * AiProductKimiPage6 — a faithful, token-compliant OpenUI-lang port of the
@@ -44,9 +44,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * tokens so it themes cleanly.
  */
 export const AiProductKimiPage6 = defineCapsule({
-  name: "AiProductKimiPage6",
+  name: 'AiProductKimiPage6',
   description:
-    "Enterprise AI SaaS landing page (ai-product variant 6 / style sibling to AiProductKimiPage) with a clean, corporate-trust aesthetic: sticky blurred navbar, live collaboration pill, split hero with a detailed chat/editor mockup, social-proof logo strip, 6-up feature grid with hand-picked icons, dark stats band, 6-card role-based solutions gallery, 3-step numbered timeline with gradient connector, 4-up product screenshot gallery with gradient overlays, 6-card star-rated testimonial wall with headshots, 3-tier pricing table with a dark featured Professional plan, native details/summary FAQ accordion, dark CTA with gradient glow orbs, and a rich multi-column dark footer with social icons. Use when building a polished, conversion-focused marketing site for AI writing assistants, enterprise productivity tools, or B2B SaaS where trust, features, pricing and social proof are all essential.",
+    'Enterprise AI SaaS landing page (ai-product variant 6 / style sibling to AiProductKimiPage) with a clean, corporate-trust aesthetic: sticky blurred navbar, live collaboration pill, split hero with a detailed chat/editor mockup, social-proof logo strip, 6-up feature grid with hand-picked icons, dark stats band, 6-card role-based solutions gallery, 3-step numbered timeline with gradient connector, 4-up product screenshot gallery with gradient overlays, 6-card star-rated testimonial wall with headshots, 3-tier pricing table with a dark featured Professional plan, native details/summary FAQ accordion, dark CTA with gradient glow orbs, and a rich multi-column dark footer with social icons. Use when building a polished, conversion-focused marketing site for AI writing assistants, enterprise productivity tools, or B2B SaaS where trust, features, pricing and social proof are all essential.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -86,7 +86,9 @@ export const AiProductKimiPage6 = defineCapsule({
       .optional(),
     stats: z
       .object({
-        items: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+        items: z
+          .array(z.object({ value: z.string(), label: z.string() }))
+          .optional(),
       })
       .optional(),
     solutions: z
@@ -111,7 +113,9 @@ export const AiProductKimiPage6 = defineCapsule({
         badge: z.string().optional(),
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z.array(z.object({ title: z.string(), description: z.string() })).optional(),
+        items: z
+          .array(z.object({ title: z.string(), description: z.string() }))
+          .optional(),
       })
       .optional(),
     gallery: z
@@ -174,7 +178,9 @@ export const AiProductKimiPage6 = defineCapsule({
         badge: z.string().optional(),
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z.array(z.object({ question: z.string(), answer: z.string() })).optional(),
+        items: z
+          .array(z.object({ question: z.string(), answer: z.string() }))
+          .optional(),
       })
       .optional(),
     cta: z
@@ -210,7 +216,12 @@ export const AiProductKimiPage6 = defineCapsule({
       trialRequests: ({ db }) => db.trialRequests.orderBy('createdAt').all(),
     },
     mutations: {
-      submitTrialRequest: ({ db }, email: string, company: string, plan: string) => {
+      submitTrialRequest: (
+        { db },
+        email: string,
+        company: string,
+        plan: string,
+      ) => {
         db.trialRequests.insert({ email, company, plan })
         return db.trialRequests.all()
       },
@@ -223,9 +234,9 @@ export const AiProductKimiPage6 = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [trialDrawerOpen, setTrialDrawerOpen] = useState(false)
-    const [emailInput, setEmailInput] = useState("")
-    const [companyInput, setCompanyInput] = useState("")
-    const [selectedPlan, setSelectedPlan] = useState("Professional")
+    const [emailInput, setEmailInput] = useState('')
+    const [companyInput, setCompanyInput] = useState('')
+    const [selectedPlan, setSelectedPlan] = useState('Professional')
 
     const trialRequests = lakebed.useQuery('trialRequests')
     const submitTrialRequest = lakebed.useMutation('submitTrialRequest')
@@ -261,364 +272,377 @@ export const AiProductKimiPage6 = defineCapsule({
     const handleSubmitTrial = () => {
       if (!emailInput || !companyInput) return
       void submitTrialRequest(emailInput, companyInput, selectedPlan)
-      setEmailInput("")
-      setCompanyInput("")
+      setEmailInput('')
+      setCompanyInput('')
       setTrialDrawerOpen(false)
     }
 
-    const brand = props.brand ?? "WriteMind AI"
+    const brand = props.brand ?? 'WriteMind AI'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "Solutions", "Pricing", "Customers", "Resources"]
+      : ['Features', 'Solutions', 'Pricing', 'Customers', 'Resources']
 
-    const heroBadge = props.hero?.badge ?? "Now with real-time collaboration"
-    const headingTop = props.hero?.headingTop ?? "Write faster."
-    const headingBottom = props.hero?.headingBottom ?? "Think clearer."
+    const heroBadge = props.hero?.badge ?? 'Now with real-time collaboration'
+    const headingTop = props.hero?.headingTop ?? 'Write faster.'
+    const headingBottom = props.hero?.headingBottom ?? 'Think clearer.'
     const heroSub =
       props.hero?.subheading ??
-      "The AI writing platform that transforms how enterprise teams create proposals, reports, emails, and documentation. Trusted by 2,400+ companies including Microsoft, Deloitte, and Salesforce."
-    const heroPrimary = props.hero?.primaryCta ?? "Start 14-day free trial"
-    const heroSecondary = props.hero?.secondaryCta ?? "Watch Demo (3 min)"
+      'The AI writing platform that transforms how enterprise teams create proposals, reports, emails, and documentation. Trusted by 2,400+ companies including Microsoft, Deloitte, and Salesforce.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Start 14-day free trial'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Watch Demo (3 min)'
     const heroTrust = props.hero?.trust?.length
       ? props.hero.trust
-      : ["No credit card required", "SOC 2 Type II certified"]
-    const previewTitle = props.hero?.previewTitle ?? "WriteMind Editor"
+      : ['No credit card required', 'SOC 2 Type II certified']
+    const previewTitle = props.hero?.previewTitle ?? 'WriteMind Editor'
     const previewIntro =
       props.hero?.previewIntro ??
       "Draft a quarterly business review for Acme Corp's marketing division. Focus on Q3 performance, campaign ROI, and Q4 projections."
     const previewBody =
       props.hero?.previewBody ??
-      "Q3 2024 Business Review — Marketing Division. Executive Summary: Marketing delivered 127% of pipeline target with $4.2M attributed revenue..."
+      'Q3 2024 Business Review — Marketing Division. Executive Summary: Marketing delivered 127% of pipeline target with $4.2M attributed revenue...'
     const previewActions = props.hero?.previewActions?.length
       ? props.hero.previewActions
-      : ["Expand", "Add Charts", "Insert"]
+      : ['Expand', 'Add Charts', 'Insert']
     const floatingCards = props.hero?.floatingCards?.length
       ? props.hero.floatingCards
       : [
           {
-            label: "Grammar: 98/100",
-            sub: "Professional tone detected",
+            label: 'Grammar: 98/100',
+            sub: 'Professional tone detected',
           },
           {
-            label: "Saved 4.5 hours",
-            sub: "vs. manual drafting",
+            label: 'Saved 4.5 hours',
+            sub: 'vs. manual drafting',
           },
         ]
 
-    const logosLabel = props.logos?.label ?? "Trusted by 2,400+ enterprise teams"
+    const logosLabel =
+      props.logos?.label ?? 'Trusted by 2,400+ enterprise teams'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
-      : ["Notion", "Stripe", "Figma", "Jira", "HubSpot", "Slack"]
+      : ['Notion', 'Stripe', 'Figma', 'Jira', 'HubSpot', 'Slack']
 
-    const featuresBadge = props.features?.badge ?? "Features"
+    const featuresBadge = props.features?.badge ?? 'Features'
     const featuresHeading =
-      props.features?.heading ?? "Everything your team needs to write better, faster"
+      props.features?.heading ??
+      'Everything your team needs to write better, faster'
     const featuresDesc =
       props.features?.description ??
-      "From first draft to final approval, WriteMind streamlines every step of enterprise content creation with AI that understands your brand voice."
+      'From first draft to final approval, WriteMind streamlines every step of enterprise content creation with AI that understands your brand voice.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Smart Document Generation",
+            title: 'Smart Document Generation',
             description:
-              "Generate proposals, SOPs, reports, and emails from briefs, outlines, or voice memos. Maintains consistent formatting and brand voice across all outputs.",
+              'Generate proposals, SOPs, reports, and emails from briefs, outlines, or voice memos. Maintains consistent formatting and brand voice across all outputs.',
           },
           {
-            title: "Brand Voice Training",
+            title: 'Brand Voice Training',
             description:
               "Train AI on your company's content library. WriteMind learns your terminology, tone guidelines, and style preferences for on-brand every time.",
           },
           {
-            title: "Enterprise Compliance",
+            title: 'Enterprise Compliance',
             description:
-              "SOC 2 Type II certified with GDPR compliance. Data never trains public models. On-premise deployment options for regulated industries.",
+              'SOC 2 Type II certified with GDPR compliance. Data never trains public models. On-premise deployment options for regulated industries.',
           },
           {
-            title: "Workflow Automation",
+            title: 'Workflow Automation',
             description:
-              "Build custom workflows with approvals, reviews, and publishing steps. Integrates with SharePoint, Google Workspace, and 50+ enterprise tools.",
+              'Build custom workflows with approvals, reviews, and publishing steps. Integrates with SharePoint, Google Workspace, and 50+ enterprise tools.',
           },
           {
-            title: "Quality Scoring & Analytics",
+            title: 'Quality Scoring & Analytics',
             description:
-              "Real-time readability scores, tone analysis, and plagiarism detection. Dashboard insights on team productivity and content performance metrics.",
+              'Real-time readability scores, tone analysis, and plagiarism detection. Dashboard insights on team productivity and content performance metrics.',
           },
           {
-            title: "Role-Based Access Control",
+            title: 'Role-Based Access Control',
             description:
-              "Granular permissions by department, project, or content type. SSO with Okta, Azure AD, and Google Workspace. Audit logs for all activity.",
+              'Granular permissions by department, project, or content type. SSO with Okta, Azure AD, and Google Workspace. Audit logs for all activity.',
           },
         ]
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "2,400+", label: "Enterprise customers" },
-          { value: "47M", label: "Documents created" },
-          { value: "8.5x", label: "Average productivity gain" },
-          { value: "99.97%", label: "Uptime SLA" },
+          { value: '2,400+', label: 'Enterprise customers' },
+          { value: '47M', label: 'Documents created' },
+          { value: '8.5x', label: 'Average productivity gain' },
+          { value: '99.97%', label: 'Uptime SLA' },
         ]
 
-    const solutionsBadge = props.solutions?.badge ?? "Solutions"
-    const solutionsHeading = props.solutions?.heading ?? "Built for every team"
+    const solutionsBadge = props.solutions?.badge ?? 'Solutions'
+    const solutionsHeading = props.solutions?.heading ?? 'Built for every team'
     const solutionsDesc =
       props.solutions?.description ??
-      "Specialized AI workflows tailored to the unique writing needs of different departments and industries."
+      'Specialized AI workflows tailored to the unique writing needs of different departments and industries.'
     const solutionItems = props.solutions?.items?.length
       ? props.solutions.items
       : [
           {
-            title: "Marketing & Communications",
+            title: 'Marketing & Communications',
             description:
-              "Campaign briefs, press releases, social content, and email sequences that maintain brand consistency across channels.",
-            imageAlt: "business professionals collaborating in modern conference room",
-            cta: "Learn more",
+              'Campaign briefs, press releases, social content, and email sequences that maintain brand consistency across channels.',
+            imageAlt:
+              'business professionals collaborating in modern conference room',
+            cta: 'Learn more',
           },
           {
-            title: "Executive Leadership",
+            title: 'Executive Leadership',
             description:
-              "Board presentations, shareholder letters, all-hands communications, and strategic vision documents.",
-            imageAlt: "business executive in formal attire",
-            cta: "Learn more",
+              'Board presentations, shareholder letters, all-hands communications, and strategic vision documents.',
+            imageAlt: 'business executive in formal attire',
+            cta: 'Learn more',
           },
           {
-            title: "Human Resources",
+            title: 'Human Resources',
             description:
-              "Job descriptions, policy documentation, performance reviews, and internal communications at scale.",
-            imageAlt: "hr professional conducting interview",
-            cta: "Learn more",
+              'Job descriptions, policy documentation, performance reviews, and internal communications at scale.',
+            imageAlt: 'hr professional conducting interview',
+            cta: 'Learn more',
           },
           {
-            title: "Product & Engineering",
+            title: 'Product & Engineering',
             description:
-              "Technical specifications, API documentation, release notes, and product requirement documents.",
-            imageAlt: "software development team working together",
-            cta: "Learn more",
+              'Technical specifications, API documentation, release notes, and product requirement documents.',
+            imageAlt: 'software development team working together',
+            cta: 'Learn more',
           },
           {
-            title: "Legal & Compliance",
+            title: 'Legal & Compliance',
             description:
-              "Contract drafts, compliance documentation, risk assessments with built-in regulatory templates.",
-            imageAlt: "legal professional reviewing documents",
-            cta: "Learn more",
+              'Contract drafts, compliance documentation, risk assessments with built-in regulatory templates.',
+            imageAlt: 'legal professional reviewing documents',
+            cta: 'Learn more',
           },
           {
-            title: "Sales & Business Development",
+            title: 'Sales & Business Development',
             description:
-              "Proposals, RFP responses, outreach sequences, and sales enablement materials.",
-            imageAlt: "sales team meeting with client presentation",
-            cta: "Learn more",
+              'Proposals, RFP responses, outreach sequences, and sales enablement materials.',
+            imageAlt: 'sales team meeting with client presentation',
+            cta: 'Learn more',
           },
         ]
 
-    const stepsBadge = props.steps?.badge ?? "How it works"
+    const stepsBadge = props.steps?.badge ?? 'How it works'
     const stepsHeading =
-      props.steps?.heading ?? "From idea to polished document in minutes"
+      props.steps?.heading ?? 'From idea to polished document in minutes'
     const stepsDesc =
       props.steps?.description ??
-      "Three simple steps to transform your writing workflow with enterprise-grade AI assistance."
+      'Three simple steps to transform your writing workflow with enterprise-grade AI assistance.'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Describe your needs",
+            title: 'Describe your needs',
             description:
-              "Enter a brief description, upload existing documents, or use voice input. Specify document type, target audience, and desired tone.",
+              'Enter a brief description, upload existing documents, or use voice input. Specify document type, target audience, and desired tone.',
           },
           {
-            title: "AI generates draft",
+            title: 'AI generates draft',
             description:
-              "WriteMind creates a complete first draft in seconds, applying your brand guidelines, preferred terminology, and formatting standards automatically.",
+              'WriteMind creates a complete first draft in seconds, applying your brand guidelines, preferred terminology, and formatting standards automatically.',
           },
           {
-            title: "Refine and publish",
+            title: 'Refine and publish',
             description:
-              "Collaborate with your team, apply AI suggestions, run compliance checks, and publish directly to your document management system.",
+              'Collaborate with your team, apply AI suggestions, run compliance checks, and publish directly to your document management system.',
           },
         ]
 
-    const galleryBadge = props.gallery?.badge ?? "Product"
+    const galleryBadge = props.gallery?.badge ?? 'Product'
     const galleryHeading =
-      props.gallery?.heading ?? "Powerful tools, intuitive interface"
+      props.gallery?.heading ?? 'Powerful tools, intuitive interface'
     const galleryDesc =
       props.gallery?.description ??
-      "A complete writing environment designed for professional teams who demand both capability and simplicity."
+      'A complete writing environment designed for professional teams who demand both capability and simplicity.'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
           {
-            title: "Smart Editor",
-            description: "Real-time suggestions, inline comments, and collaborative editing",
-            imageAlt: "modern laptop displaying writing application on desk",
+            title: 'Smart Editor',
+            description:
+              'Real-time suggestions, inline comments, and collaborative editing',
+            imageAlt: 'modern laptop displaying writing application on desk',
           },
           {
-            title: "Analytics Dashboard",
-            description: "Track team productivity and content performance metrics",
-            imageAlt: "data dashboard with charts and analytics",
+            title: 'Analytics Dashboard',
+            description:
+              'Track team productivity and content performance metrics',
+            imageAlt: 'data dashboard with charts and analytics',
           },
           {
-            title: "Review Workflows",
-            description: "Custom approval chains and version control",
-            imageAlt: "team reviewing documents with tablets",
+            title: 'Review Workflows',
+            description: 'Custom approval chains and version control',
+            imageAlt: 'team reviewing documents with tablets',
           },
           {
-            title: "Enterprise Security",
-            description: "SOC 2 certified with on-premise deployment options",
-            imageAlt: "server room with racks of equipment",
+            title: 'Enterprise Security',
+            description: 'SOC 2 certified with on-premise deployment options',
+            imageAlt: 'server room with racks of equipment',
           },
         ]
 
-    const testimonialsBadge = props.testimonials?.badge ?? "Testimonials"
+    const testimonialsBadge = props.testimonials?.badge ?? 'Testimonials'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Trusted by industry leaders"
+      props.testimonials?.heading ?? 'Trusted by industry leaders'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "See how enterprise teams are transforming their content operations with WriteMind AI."
+      'See how enterprise teams are transforming their content operations with WriteMind AI.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "WriteMind has reduced our proposal turnaround time from 3 days to 4 hours. The ROI was evident within the first month. Our sales team now focuses on strategy instead of formatting.",
-            name: "James Mitchell",
-            role: "VP Sales, Salesforce",
-            avatarAlt: "professional headshot of a smiling executive in navy suit",
+              'WriteMind has reduced our proposal turnaround time from 3 days to 4 hours. The ROI was evident within the first month. Our sales team now focuses on strategy instead of formatting.',
+            name: 'James Mitchell',
+            role: 'VP Sales, Salesforce',
+            avatarAlt:
+              'professional headshot of a smiling executive in navy suit',
           },
           {
             quote:
               "As a compliance-heavy industry, we needed an AI solution that takes security seriously. WriteMind's on-premise option and SOC 2 certification made it an easy choice.",
-            name: "Sarah Chen",
-            role: "General Counsel, Morgan Stanley",
-            avatarAlt: "professional headshot of a woman executive with dark hair",
+            name: 'Sarah Chen',
+            role: 'General Counsel, Morgan Stanley',
+            avatarAlt:
+              'professional headshot of a woman executive with dark hair',
           },
           {
             quote:
-              "Our marketing team scaled content production 340% in Q3 without adding headcount. The brand voice training feature ensures everything sounds authentically like us.",
-            name: "Michael Torres",
-            role: "CMO, HubSpot",
-            avatarAlt: "professional headshot of a man with glasses and beard in business casual",
+              'Our marketing team scaled content production 340% in Q3 without adding headcount. The brand voice training feature ensures everything sounds authentically like us.',
+            name: 'Michael Torres',
+            role: 'CMO, HubSpot',
+            avatarAlt:
+              'professional headshot of a man with glasses and beard in business casual',
           },
           {
             quote:
               "The quality scoring caught a compliance issue in a client report that would have cost us the account. It's like having a senior editor and legal reviewer on every document.",
-            name: "Jennifer Walsh",
-            role: "Managing Director, Deloitte",
-            avatarAlt: "professional headshot of a woman with blonde hair in business attire",
+            name: 'Jennifer Walsh',
+            role: 'Managing Director, Deloitte',
+            avatarAlt:
+              'professional headshot of a woman with blonde hair in business attire',
           },
           {
             quote:
-              "We deployed WriteMind to 4,200 employees in 3 weeks. The SSO integration and training resources made enterprise rollout seamless. Adoption hit 78% in month one.",
-            name: "David Kim",
-            role: "CIO, Microsoft",
-            avatarAlt: "professional headshot of a middle-aged man in suit and tie",
+              'We deployed WriteMind to 4,200 employees in 3 weeks. The SSO integration and training resources made enterprise rollout seamless. Adoption hit 78% in month one.',
+            name: 'David Kim',
+            role: 'CIO, Microsoft',
+            avatarAlt:
+              'professional headshot of a middle-aged man in suit and tie',
           },
           {
             quote:
-              "Technical documentation used to take our team weeks. With WriteMind, we ship docs alongside releases. The API integration for auto-generating changelogs is brilliant.",
-            name: "Robert Chang",
-            role: "VP Engineering, Stripe",
-            avatarAlt: "professional headshot of a man with short hair in tech company setting",
+              'Technical documentation used to take our team weeks. With WriteMind, we ship docs alongside releases. The API integration for auto-generating changelogs is brilliant.',
+            name: 'Robert Chang',
+            role: 'VP Engineering, Stripe',
+            avatarAlt:
+              'professional headshot of a man with short hair in tech company setting',
           },
         ]
 
-    const pricingBadge = props.pricing?.badge ?? "Pricing"
-    const pricingHeading = props.pricing?.heading ?? "Simple, transparent pricing"
+    const pricingBadge = props.pricing?.badge ?? 'Pricing'
+    const pricingHeading =
+      props.pricing?.heading ?? 'Simple, transparent pricing'
     const pricingDesc =
       props.pricing?.description ??
-      "Choose the plan that fits your team. All plans include a 14-day free trial with no credit card required."
+      'Choose the plan that fits your team. All plans include a 14-day free trial with no credit card required.'
     const pricingNote =
       props.pricing?.note ??
-      "All prices in USD. Billed annually. Monthly billing available at +20%."
+      'All prices in USD. Billed annually. Monthly billing available at +20%.'
     const pricingPlans = props.pricing?.plans?.length
       ? props.pricing.plans
       : [
           {
-            name: "Starter",
-            tagline: "For small teams getting started",
-            price: "$29",
-            period: "/user/month",
-            cta: "Start free trial",
+            name: 'Starter',
+            tagline: 'For small teams getting started',
+            price: '$29',
+            period: '/user/month',
+            cta: 'Start free trial',
             featured: false,
             included: [
-              "5,000 words per user/month",
-              "10 document templates",
-              "Basic grammar & style checks",
-              "Email support",
+              '5,000 words per user/month',
+              '10 document templates',
+              'Basic grammar & style checks',
+              'Email support',
             ],
-            excluded: ["Brand voice training", "SSO integration"],
+            excluded: ['Brand voice training', 'SSO integration'],
           },
           {
-            name: "Professional",
-            tagline: "For growing teams",
-            price: "$79",
-            period: "/user/month",
-            cta: "Start free trial",
+            name: 'Professional',
+            tagline: 'For growing teams',
+            price: '$79',
+            period: '/user/month',
+            cta: 'Start free trial',
             featured: true,
             included: [
-              "Unlimited words",
-              "100+ document templates",
-              "Advanced grammar & tone analysis",
-              "Brand voice training (1 voice)",
-              "Priority support",
+              'Unlimited words',
+              '100+ document templates',
+              'Advanced grammar & tone analysis',
+              'Brand voice training (1 voice)',
+              'Priority support',
             ],
-            excluded: ["SSO integration"],
+            excluded: ['SSO integration'],
           },
           {
-            name: "Enterprise",
-            tagline: "For large organizations",
-            price: "Custom",
-            period: "",
-            cta: "Contact Sales",
+            name: 'Enterprise',
+            tagline: 'For large organizations',
+            price: 'Custom',
+            period: '',
+            cta: 'Contact Sales',
             featured: false,
             included: [
-              "Everything in Professional",
-              "Unlimited brand voices",
-              "SSO & SCIM provisioning",
-              "On-premise deployment option",
-              "Custom AI model training",
-              "Dedicated account manager",
+              'Everything in Professional',
+              'Unlimited brand voices',
+              'SSO & SCIM provisioning',
+              'On-premise deployment option',
+              'Custom AI model training',
+              'Dedicated account manager',
             ],
             excluded: [],
           },
         ]
 
-    const faqBadge = props.faq?.badge ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Frequently asked questions"
+    const faqBadge = props.faq?.badge ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Frequently asked questions'
     const faqDesc =
-      props.faq?.description ?? "Everything you need to know about WriteMind AI."
+      props.faq?.description ??
+      'Everything you need to know about WriteMind AI.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "Is my data used to train AI models?",
+            question: 'Is my data used to train AI models?',
             answer:
-              "Absolutely not. Your data is never used to train our models or any third-party AI systems. We maintain strict data isolation with enterprise-grade encryption at rest and in transit. For Enterprise customers, we offer on-premise deployment options for complete data sovereignty.",
+              'Absolutely not. Your data is never used to train our models or any third-party AI systems. We maintain strict data isolation with enterprise-grade encryption at rest and in transit. For Enterprise customers, we offer on-premise deployment options for complete data sovereignty.',
           },
           {
-            question: "What integrations do you support?",
+            question: 'What integrations do you support?',
             answer:
-              "WriteMind integrates with 50+ enterprise tools including Microsoft 365, Google Workspace, Salesforce, HubSpot, Slack, Notion, SharePoint, and major CRM platforms. Our Enterprise plan includes custom API access and webhooks for building tailored integrations.",
+              'WriteMind integrates with 50+ enterprise tools including Microsoft 365, Google Workspace, Salesforce, HubSpot, Slack, Notion, SharePoint, and major CRM platforms. Our Enterprise plan includes custom API access and webhooks for building tailored integrations.',
           },
           {
-            question: "How does brand voice training work?",
+            question: 'How does brand voice training work?',
             answer:
-              "Upload your existing content library—style guides, past documents, approved messaging—and WriteMind analyzes patterns to learn your terminology, tone preferences, formatting standards, and industry-specific language. The AI then applies these patterns to all new content generation.",
+              'Upload your existing content library—style guides, past documents, approved messaging—and WriteMind analyzes patterns to learn your terminology, tone preferences, formatting standards, and industry-specific language. The AI then applies these patterns to all new content generation.',
           },
           {
-            question: "What security certifications do you have?",
+            question: 'What security certifications do you have?',
             answer:
-              "WriteMind is SOC 2 Type II certified, GDPR compliant, and HIPAA ready. We undergo annual third-party security audits and maintain 99.97% uptime with redundant infrastructure across multiple geographic regions.",
+              'WriteMind is SOC 2 Type II certified, GDPR compliant, and HIPAA ready. We undergo annual third-party security audits and maintain 99.97% uptime with redundant infrastructure across multiple geographic regions.',
           },
           {
-            question: "Can I cancel or change plans anytime?",
+            question: 'Can I cancel or change plans anytime?',
             answer:
-              "Yes, you can upgrade, downgrade, or cancel your subscription at any time. Annual plans receive prorated refunds if canceled. We offer a 14-day free trial on all plans so you can evaluate WriteMind before committing.",
+              'Yes, you can upgrade, downgrade, or cancel your subscription at any time. Annual plans receive prorated refunds if canceled. We offer a 14-day free trial on all plans so you can evaluate WriteMind before committing.',
           },
           {
-            question: "Do you offer onboarding and training?",
+            question: 'Do you offer onboarding and training?',
             answer:
-              "Professional plans include self-service onboarding resources and video tutorials. Enterprise customers receive dedicated implementation support, live training sessions, custom template development, and a dedicated success manager to ensure maximum team adoption.",
+              'Professional plans include self-service onboarding resources and video tutorials. Enterprise customers receive dedicated implementation support, live training sessions, custom template development, and a dedicated success manager to ensure maximum team adoption.',
           },
         ]
 
@@ -626,37 +650,50 @@ export const AiProductKimiPage6 = defineCapsule({
       props.cta?.heading ?? "Ready to transform your team's writing?"
     const ctaDesc =
       props.cta?.description ??
-      "Join 2,400+ enterprise teams already using WriteMind to create better content, faster. Start your 14-day free trial today."
-    const ctaPrimary = props.cta?.primaryCta ?? "Start free trial"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Watch demo"
+      'Join 2,400+ enterprise teams already using WriteMind to create better content, faster. Start your 14-day free trial today.'
+    const ctaPrimary = props.cta?.primaryCta ?? 'Start free trial'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'Watch demo'
     const ctaBadges = props.cta?.badges?.length
       ? props.cta.badges
-      : ["No credit card required", "14-day free trial", "Cancel anytime"]
+      : ['No credit card required', '14-day free trial', 'Cancel anytime']
 
     const footerTagline =
       props.footer?.tagline ??
-      "The enterprise AI writing platform that helps teams create better content, faster. Trusted by Fortune 500 companies worldwide."
+      'The enterprise AI writing platform that helps teams create better content, faster. Trusted by Fortune 500 companies worldwide.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Product",
-            links: ["Features", "Pricing", "Integrations", "Changelog", "Documentation"],
+            title: 'Product',
+            links: [
+              'Features',
+              'Pricing',
+              'Integrations',
+              'Changelog',
+              'Documentation',
+            ],
           },
           {
-            title: "Company",
-            links: ["About", "Blog", "Careers", "Press", "Partners"],
+            title: 'Company',
+            links: ['About', 'Blog', 'Careers', 'Press', 'Partners'],
           },
           {
-            title: "Resources",
-            links: ["Help Center", "Community", "Webinars", "Templates", "API Reference"],
+            title: 'Resources',
+            links: [
+              'Help Center',
+              'Community',
+              'Webinars',
+              'Templates',
+              'API Reference',
+            ],
           },
         ]
     const footerCopyright =
-      props.footer?.copyright ?? `\u00A9 ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
+      props.footer?.copyright ??
+      `\u00A9 ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Security", "Cookies"]
+      : ['Privacy Policy', 'Terms of Service', 'Security', 'Cookies']
 
     // Logo mark — geometric layers icon (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
@@ -910,15 +947,36 @@ export const AiProductKimiPage6 = defineCapsule({
 
     const socialIcons: ReactNode[] = [
       // Twitter
-      <svg key="tw" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <svg
+        key="tw"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        aria-hidden="true"
+      >
         <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
       </svg>,
       // LinkedIn
-      <svg key="li" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <svg
+        key="li"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        aria-hidden="true"
+      >
         <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
       </svg>,
       // GitHub
-      <svg key="gh" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <svg
+        key="gh"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        aria-hidden="true"
+      >
         <path
           fillRule="evenodd"
           d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.393-3.369-1.393-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
@@ -930,7 +988,7 @@ export const AiProductKimiPage6 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -1078,7 +1136,9 @@ export const AiProductKimiPage6 = defineCapsule({
                   className="w-full gap-0 p-0 sm:max-w-md"
                 >
                   <SheetHeader className="border-b border-border p-6">
-                    <SheetTitle className="text-xl">Start your free trial</SheetTitle>
+                    <SheetTitle className="text-xl">
+                      Start your free trial
+                    </SheetTitle>
                     <SheetDescription>
                       {trialRequests && trialRequests.length > 0
                         ? `${trialRequests.length} trial request${trialRequests.length === 1 ? '' : 's'} submitted.`
@@ -1209,7 +1269,10 @@ export const AiProductKimiPage6 = defineCapsule({
 
         <main>
           {/* Hero */}
-          <section className="relative overflow-hidden bg-gradient-to-br from-muted via-background to-primary/5" aria-label="Hero">
+          <section
+            className="relative overflow-hidden bg-gradient-to-br from-muted via-background to-primary/5"
+            aria-label="Hero"
+          >
             <div className="mx-auto max-w-7xl px-4 pb-24 pt-20 sm:px-6 lg:px-8 lg:pb-40 lg:pt-32">
               <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
                 <div>
@@ -1282,7 +1345,9 @@ export const AiProductKimiPage6 = defineCapsule({
                           WM
                         </div>
                         <div className="flex-1 rounded-lg border border-primary/20 bg-primary/10 px-4 py-3 text-sm text-muted-foreground">
-                          <p className="mb-2 font-semibold text-foreground">{previewBody}</p>
+                          <p className="mb-2 font-semibold text-foreground">
+                            {previewBody}
+                          </p>
                           <div className="mt-3 flex flex-wrap gap-2">
                             {previewActions.map((action, i) => (
                               <button
@@ -1290,10 +1355,10 @@ export const AiProductKimiPage6 = defineCapsule({
                                 type="button"
                                 onClick={() => go(action)}
                                 className={cn(
-                                  "rounded px-3 py-1 text-xs font-medium transition-colors",
+                                  'rounded px-3 py-1 text-xs font-medium transition-colors',
                                   i === 2
-                                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                                    : "border border-input bg-card text-muted-foreground hover:text-foreground hover:bg-muted",
+                                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                                    : 'border border-input bg-card text-muted-foreground hover:text-foreground hover:bg-muted',
                                 )}
                               >
                                 {action}
@@ -1321,8 +1386,12 @@ export const AiProductKimiPage6 = defineCapsule({
                         <Check className="size-6 text-chart-2" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-foreground">{floatingCards[0].label}</p>
-                        <p className="text-xs text-muted-foreground">{floatingCards[0].sub}</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          {floatingCards[0].label}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {floatingCards[0].sub}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1341,8 +1410,12 @@ export const AiProductKimiPage6 = defineCapsule({
                         </svg>
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-foreground">{floatingCards[1].label}</p>
-                        <p className="text-xs text-muted-foreground">{floatingCards[1].sub}</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          {floatingCards[1].label}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {floatingCards[1].sub}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1353,7 +1426,10 @@ export const AiProductKimiPage6 = defineCapsule({
           </section>
 
           {/* Logos */}
-          <section className="border-b border-border bg-background py-12" aria-label="Trusted by">
+          <section
+            className="border-b border-border bg-background py-12"
+            aria-label="Trusted by"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <p className="mb-8 text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 {logosLabel}
@@ -1456,7 +1532,7 @@ export const AiProductKimiPage6 = defineCapsule({
                       </p>
                       <button
                         type="button"
-                        onClick={() => go(item.cta ?? "Learn more")}
+                        onClick={() => go(item.cta ?? 'Learn more')}
                         className="text-sm font-medium text-primary transition-colors hover:underline"
                       >
                         Learn more →
@@ -1552,7 +1628,10 @@ export const AiProductKimiPage6 = defineCapsule({
           </section>
 
           {/* Testimonials */}
-          <section className="bg-muted py-24" aria-label="Customer testimonials">
+          <section
+            className="bg-muted py-24"
+            aria-label="Customer testimonials"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="mx-auto mb-16 max-w-3xl text-center">
                 <span className="mb-4 inline-block rounded-full bg-primary/20 px-3 py-1 text-sm font-semibold text-primary">
@@ -1561,7 +1640,9 @@ export const AiProductKimiPage6 = defineCapsule({
                 <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
                   {testimonialsHeading}
                 </h2>
-                <p className="text-lg text-muted-foreground">{testimonialsDesc}</p>
+                <p className="text-lg text-muted-foreground">
+                  {testimonialsDesc}
+                </p>
               </div>
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {testimonialItems.map((t) => (
@@ -1589,7 +1670,9 @@ export const AiProductKimiPage6 = defineCapsule({
                         <p className="font-semibold text-foreground">
                           {t.name}
                         </p>
-                        <p className="text-sm text-muted-foreground">{t.role}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {t.role}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1615,10 +1698,10 @@ export const AiProductKimiPage6 = defineCapsule({
                   <div
                     key={plan.name}
                     className={cn(
-                      "relative rounded-2xl p-8",
+                      'relative rounded-2xl p-8',
                       plan.featured
-                        ? "border border-background/20 bg-foreground text-background"
-                        : "border border-border bg-card text-foreground",
+                        ? 'border border-background/20 bg-foreground text-background'
+                        : 'border border-border bg-card text-foreground',
                     )}
                   >
                     {plan.featured && (
@@ -1631,18 +1714,18 @@ export const AiProductKimiPage6 = defineCapsule({
                     <div className="mb-6">
                       <h3
                         className={cn(
-                          "mb-2 text-xl font-semibold",
-                          plan.featured ? "text-background" : "text-foreground",
+                          'mb-2 text-xl font-semibold',
+                          plan.featured ? 'text-background' : 'text-foreground',
                         )}
                       >
                         {plan.name}
                       </h3>
                       <p
                         className={cn(
-                          "mb-6 text-sm",
+                          'mb-6 text-sm',
                           plan.featured
-                            ? "text-background/60"
-                            : "text-muted-foreground",
+                            ? 'text-background/60'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {plan.tagline}
@@ -1650,8 +1733,10 @@ export const AiProductKimiPage6 = defineCapsule({
                       <div className="flex items-baseline gap-1">
                         <span
                           className={cn(
-                            "text-4xl font-bold",
-                            plan.featured ? "text-background" : "text-foreground",
+                            'text-4xl font-bold',
+                            plan.featured
+                              ? 'text-background'
+                              : 'text-foreground',
                           )}
                         >
                           {plan.price}
@@ -1660,8 +1745,8 @@ export const AiProductKimiPage6 = defineCapsule({
                           <span
                             className={cn(
                               plan.featured
-                                ? "text-background/60"
-                                : "text-muted-foreground",
+                                ? 'text-background/60'
+                                : 'text-muted-foreground',
                             )}
                           >
                             {plan.period}
@@ -1671,18 +1756,21 @@ export const AiProductKimiPage6 = defineCapsule({
                     </div>
                     <ul className="mb-8 space-y-3">
                       {plan.included.map((feat) => (
-                        <li key={feat} className="flex items-center gap-3 text-sm">
+                        <li
+                          key={feat}
+                          className="flex items-center gap-3 text-sm"
+                        >
                           <Check
                             className={cn(
-                              "size-5 shrink-0",
-                              plan.featured ? "text-primary" : "text-chart-2",
+                              'size-5 shrink-0',
+                              plan.featured ? 'text-primary' : 'text-chart-2',
                             )}
                           />
                           <span
                             className={cn(
                               plan.featured
-                                ? "text-background/80"
-                                : "text-foreground",
+                                ? 'text-background/80'
+                                : 'text-foreground',
                             )}
                           >
                             {feat}
@@ -1696,17 +1784,17 @@ export const AiProductKimiPage6 = defineCapsule({
                         >
                           <Cross
                             className={cn(
-                              "size-5 shrink-0",
+                              'size-5 shrink-0',
                               plan.featured
-                                ? "text-background/40"
-                                : "text-muted-foreground/40",
+                                ? 'text-background/40'
+                                : 'text-muted-foreground/40',
                             )}
                           />
                           <span
                             className={cn(
                               plan.featured
-                                ? "text-background/50"
-                                : "text-muted-foreground",
+                                ? 'text-background/50'
+                                : 'text-muted-foreground',
                             )}
                           >
                             {feat}
@@ -1721,10 +1809,10 @@ export const AiProductKimiPage6 = defineCapsule({
                         setTrialDrawerOpen(true)
                       }}
                       className={cn(
-                        "block w-full rounded-lg px-6 py-3 text-center font-semibold transition-colors",
+                        'block w-full rounded-lg px-6 py-3 text-center font-semibold transition-colors',
                         plan.featured
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                          : "bg-primary/10 text-primary hover:bg-primary/20",
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'bg-primary/10 text-primary hover:bg-primary/20',
                       )}
                     >
                       {plan.cta}
@@ -1793,10 +1881,7 @@ export const AiProductKimiPage6 = defineCapsule({
               aria-hidden="true"
               className="absolute inset-0 bg-gradient-to-br from-primary/20 to-background/20"
             />
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 opacity-20"
-            >
+            <div aria-hidden="true" className="absolute inset-0 opacity-20">
               <div className="absolute top-0 left-1/4 size-96 rounded-full bg-primary/30 blur-3xl" />
               <div className="absolute bottom-0 right-1/4 size-96 rounded-full bg-secondary/30 blur-3xl" />
             </div>
@@ -1838,7 +1923,10 @@ export const AiProductKimiPage6 = defineCapsule({
         </main>
 
         {/* Footer */}
-        <footer className="bg-foreground py-16 text-background/60" aria-label="Footer">
+        <footer
+          className="bg-foreground py-16 text-background/60"
+          aria-label="Footer"
+        >
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-5">
               <div className="md:col-span-2 lg:col-span-2">
@@ -1854,7 +1942,7 @@ export const AiProductKimiPage6 = defineCapsule({
                   {footerTagline}
                 </p>
                 <div className="flex gap-4">
-                  {["Twitter", "LinkedIn", "GitHub"].map((social, i) => (
+                  {['Twitter', 'LinkedIn', 'GitHub'].map((social, i) => (
                     <button
                       key={social}
                       type="button"

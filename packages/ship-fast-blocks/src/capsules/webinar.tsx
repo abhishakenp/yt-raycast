@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * WebinarKimiPage — a complete, self-contained virtual-event / webinar
@@ -48,7 +48,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * defaults make it render the full page with no props at all.
  */
 export const WebinarKimiPage = defineCapsule({
-  name: "WebinarKimiPage",
+  name: 'WebinarKimiPage',
   description:
     "Complete virtual-event / WEBINAR REGISTRATION landing page with a clean, editorial, conversion-focused aesthetic. Includes a sticky navbar with a 'Register Free' CTA, a split hero (live-event status pill, big tracking-tight headline, event date + time row, inline work-email capture form, hero image with a floating 'registered attendees' social-proof card), a trusted-by company logo strip, a 4-up 'what you'll learn' topics grid with icon tiles, a timeline-style event agenda with Keynote/Workshop/Break colored tags and speaker bylines, a 4-up featured-speakers gallery with circular/square headshots and bios, a dark stats band (attendees, speakers, hours, companies), a 3-column testimonial wall with 5-star ratings and reviewer headshots, a 3-tier registration pricing table with a highlighted 'Most Popular' plan and check/cross feature lists, an accordion FAQ, a dark closing CTA with a second email-capture form, and a 4-column footer with event/resource/contact links and social icons. Use as the ROOT/home page for webinars, virtual summits, online conferences, masterclasses, workshops, live streams, training events, or any registration/RSVP/sign-up landing page where date, speakers, agenda, ticket tiers and social proof drive sign-ups. Supply content only — brand, nav, hero, logos, topics, agenda, speakers, stats, testimonials, pricing, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -104,7 +104,7 @@ export const WebinarKimiPage = defineCapsule({
           .array(
             z.object({
               time: z.string(),
-              kind: z.enum(["keynote", "workshop", "break"]),
+              kind: z.enum(['keynote', 'workshop', 'break']),
               title: z.string(),
               description: z.string(),
             }),
@@ -183,9 +183,7 @@ export const WebinarKimiPage = defineCapsule({
       .object({
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       })
       .optional(),
     /** Closing CTA + email form. */
@@ -204,9 +202,7 @@ export const WebinarKimiPage = defineCapsule({
         note: z.string().optional(),
         copyright: z.string().optional(),
         columns: z
-          .array(
-            z.object({ title: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ title: z.string(), links: z.array(z.string()) }))
           .optional(),
       })
       .optional(),
@@ -231,8 +227,10 @@ export const WebinarKimiPage = defineCapsule({
     },
     queries: {
       registrations: ({ db }) => db.registrations.orderBy('createdAt').all(),
-      bookmarkedSessions: ({ db }) => db.bookmarkedSessions.orderBy('createdAt').all(),
-      bookmarkedSpeakers: ({ db }) => db.bookmarkedSpeakers.orderBy('createdAt').all(),
+      bookmarkedSessions: ({ db }) =>
+        db.bookmarkedSessions.orderBy('createdAt').all(),
+      bookmarkedSpeakers: ({ db }) =>
+        db.bookmarkedSpeakers.orderBy('createdAt').all(),
     },
     mutations: {
       addRegistration: ({ db }, email: string, tier: string, price: string) => {
@@ -243,8 +241,15 @@ export const WebinarKimiPage = defineCapsule({
         db.registrations.delete(id)
         return db.registrations.all()
       },
-      toggleSessionBookmark: ({ db }, sessionTitle: string, sessionTime: string, sessionKind: string) => {
-        const existing = db.bookmarkedSessions.where('sessionTitle', sessionTitle).all()[0]
+      toggleSessionBookmark: (
+        { db },
+        sessionTitle: string,
+        sessionTime: string,
+        sessionKind: string,
+      ) => {
+        const existing = db.bookmarkedSessions
+          .where('sessionTitle', sessionTitle)
+          .all()[0]
         if (existing) {
           db.bookmarkedSessions.delete(existing.id)
           return false
@@ -252,8 +257,14 @@ export const WebinarKimiPage = defineCapsule({
         db.bookmarkedSessions.insert({ sessionTitle, sessionTime, sessionKind })
         return true
       },
-      toggleSpeakerBookmark: ({ db }, speakerName: string, speakerRole: string) => {
-        const existing = db.bookmarkedSpeakers.where('speakerName', speakerName).all()[0]
+      toggleSpeakerBookmark: (
+        { db },
+        speakerName: string,
+        speakerRole: string,
+      ) => {
+        const existing = db.bookmarkedSpeakers
+          .where('speakerName', speakerName)
+          .all()[0]
         if (existing) {
           db.bookmarkedSpeakers.delete(existing.id)
           return false
@@ -266,10 +277,10 @@ export const WebinarKimiPage = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [registrationOpen, setRegistrationOpen] = useState(false)
-    const brand = props.brand ?? "Product Analytics Live"
+    const brand = props.brand ?? 'Product Analytics Live'
     const nav = props.nav?.length
       ? props.nav
-      : ["Agenda", "Speakers", "Topics", "FAQ"]
+      : ['Agenda', 'Speakers', 'Topics', 'FAQ']
 
     // Lakebed queries and mutations
     const registrations = lakebed.useQuery('registrations')
@@ -310,174 +321,178 @@ export const WebinarKimiPage = defineCapsule({
 
     const safeRegistrations = registrations ?? []
     const registrationCount = safeRegistrations.length
-    const bookmarkedSessionTitles = new Set(bookmarkedSessions?.map(s => s.sessionTitle) ?? [])
-    const bookmarkedSpeakerNames = new Set(bookmarkedSpeakers?.map(s => s.speakerName) ?? [])
+    const bookmarkedSessionTitles = new Set(
+      bookmarkedSessions?.map((s) => s.sessionTitle) ?? [],
+    )
+    const bookmarkedSpeakerNames = new Set(
+      bookmarkedSpeakers?.map((s) => s.speakerName) ?? [],
+    )
 
-    const heroBadge = props.hero?.badge ?? "Live Virtual Event"
+    const heroBadge = props.hero?.badge ?? 'Live Virtual Event'
     const heroBefore =
-      props.hero?.headingBefore ?? "Mastering Product Analytics in"
-    const heroHighlight = props.hero?.highlight ?? "2026"
+      props.hero?.headingBefore ?? 'Mastering Product Analytics in'
+    const heroHighlight = props.hero?.highlight ?? '2026'
     const heroSub =
       props.hero?.subheading ??
-      "Join 2,500+ product leaders and data professionals for a deep dive into modern analytics frameworks, real-world case studies from Netflix and Spotify, and actionable strategies to drive product growth."
-    const heroDate = props.hero?.date ?? "Tuesday, June 16, 2026"
-    const heroTime = props.hero?.time ?? "11:00 AM — 3:00 PM EST"
+      'Join 2,500+ product leaders and data professionals for a deep dive into modern analytics frameworks, real-world case studies from Netflix and Spotify, and actionable strategies to drive product growth.'
+    const heroDate = props.hero?.date ?? 'Tuesday, June 16, 2026'
+    const heroTime = props.hero?.time ?? '11:00 AM — 3:00 PM EST'
     const heroEmailPlaceholder =
-      props.hero?.emailPlaceholder ?? "Enter your work email"
-    const heroCta = props.hero?.cta ?? "Register Free"
+      props.hero?.emailPlaceholder ?? 'Enter your work email'
+    const heroCta = props.hero?.cta ?? 'Register Free'
     const heroFineprint =
       props.hero?.fineprint ??
-      "Registration closes June 14 • Recording sent to all registrants"
+      'Registration closes June 14 • Recording sent to all registrants'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Modern office workspace with large data analytics dashboard displayed on multiple monitors showing charts and graphs"
-    const attendeeCount = props.hero?.attendeeCount ?? "2,487 registered"
-    const attendeeLabel = props.hero?.attendeeLabel ?? "Join the community"
+      'Modern office workspace with large data analytics dashboard displayed on multiple monitors showing charts and graphs'
+    const attendeeCount = props.hero?.attendeeCount ?? '2,487 registered'
+    const attendeeLabel = props.hero?.attendeeLabel ?? 'Join the community'
     const attendeeAvatars = props.hero?.attendeeAvatars?.length
       ? props.hero.attendeeAvatars
       : [
-          "Professional headshot of a female product manager with short brown hair",
-          "Professional headshot of a male data analyst with glasses",
-          "Professional headshot of a female engineer with blonde hair",
+          'Professional headshot of a female product manager with short brown hair',
+          'Professional headshot of a male data analyst with glasses',
+          'Professional headshot of a female engineer with blonde hair',
         ]
 
     const logosHeading =
-      props.logos?.heading ?? "Trusted by product teams at leading companies"
+      props.logos?.heading ?? 'Trusted by product teams at leading companies'
     const logoNames = props.logos?.names?.length
       ? props.logos.names
-      : ["Netflix", "Spotify", "Notion", "Figma", "Linear", "Stripe"]
+      : ['Netflix', 'Spotify', 'Notion', 'Figma', 'Linear', 'Stripe']
 
     const topicsHeading = props.topics?.heading ?? "What you'll learn"
     const topicsDesc =
       props.topics?.description ??
-      "Four focused sessions covering the complete product analytics lifecycle — from data collection to actionable insights."
+      'Four focused sessions covering the complete product analytics lifecycle — from data collection to actionable insights.'
     const topicItems = props.topics?.items?.length
       ? props.topics.items
       : [
           {
-            title: "Funnel Optimization",
+            title: 'Funnel Optimization',
             description:
-              "Identify drop-off points and optimize user flows using event tracking and cohort analysis techniques used by top SaaS companies.",
+              'Identify drop-off points and optimize user flows using event tracking and cohort analysis techniques used by top SaaS companies.',
           },
           {
-            title: "User Segmentation",
+            title: 'User Segmentation',
             description:
-              "Build granular user segments based on behavior, engagement patterns, and lifecycle stages to personalize experiences at scale.",
+              'Build granular user segments based on behavior, engagement patterns, and lifecycle stages to personalize experiences at scale.',
           },
           {
-            title: "Predictive Metrics",
+            title: 'Predictive Metrics',
             description:
-              "Move beyond vanity metrics. Learn how to implement leading indicators that predict churn and forecast revenue accurately.",
+              'Move beyond vanity metrics. Learn how to implement leading indicators that predict churn and forecast revenue accurately.',
           },
           {
-            title: "Data Architecture",
+            title: 'Data Architecture',
             description:
-              "Set up scalable analytics infrastructure with event taxonomy best practices, data governance, and warehouse integration strategies.",
+              'Set up scalable analytics infrastructure with event taxonomy best practices, data governance, and warehouse integration strategies.',
           },
         ]
 
-    const agendaHeading = props.agenda?.heading ?? "Event Agenda"
+    const agendaHeading = props.agenda?.heading ?? 'Event Agenda'
     const agendaDesc =
       props.agenda?.description ??
-      "Four hours of focused content with breaks for networking and Q&A sessions."
+      'Four hours of focused content with breaks for networking and Q&A sessions.'
     const agendaLegend = props.agenda?.legend?.length
       ? props.agenda.legend
-      : ["Keynote", "Workshop", "Break"]
+      : ['Keynote', 'Workshop', 'Break']
     const agendaItems = props.agenda?.items?.length
       ? props.agenda.items
       : [
           {
-            time: "11:00 AM",
-            kind: "keynote" as const,
-            title: "The State of Product Analytics 2026",
+            time: '11:00 AM',
+            kind: 'keynote' as const,
+            title: 'The State of Product Analytics 2026',
             description:
               "Sarah Chen, VP of Product at Amplitude — An overview of emerging trends, AI-powered insights, and what's next for data-driven product teams.",
           },
           {
-            time: "11:45 AM",
-            kind: "workshop" as const,
-            title: "Building Your First Funnel Analysis",
+            time: '11:45 AM',
+            kind: 'workshop' as const,
+            title: 'Building Your First Funnel Analysis',
             description:
-              "Marcus Johnson, Lead Analyst at Netflix — Live workshop: From raw event data to actionable funnel insights in 30 minutes.",
+              'Marcus Johnson, Lead Analyst at Netflix — Live workshop: From raw event data to actionable funnel insights in 30 minutes.',
           },
           {
-            time: "12:30 PM",
-            kind: "break" as const,
-            title: "Networking & Virtual Meetups",
+            time: '12:30 PM',
+            kind: 'break' as const,
+            title: 'Networking & Virtual Meetups',
             description:
-              "Connect with fellow attendees in topic-specific breakout rooms.",
+              'Connect with fellow attendees in topic-specific breakout rooms.',
           },
           {
-            time: "1:00 PM",
-            kind: "keynote" as const,
-            title: "Predictive Analytics for Retention",
+            time: '1:00 PM',
+            kind: 'keynote' as const,
+            title: 'Predictive Analytics for Retention',
             description:
-              "Elena Rodriguez, Head of Data Science at Spotify — Using machine learning models to identify at-risk users before they churn.",
+              'Elena Rodriguez, Head of Data Science at Spotify — Using machine learning models to identify at-risk users before they churn.',
           },
           {
-            time: "1:45 PM",
-            kind: "workshop" as const,
-            title: "Implementing Event Taxonomy at Scale",
+            time: '1:45 PM',
+            kind: 'workshop' as const,
+            title: 'Implementing Event Taxonomy at Scale',
             description:
-              "David Park, Director of Engineering at Segment — Best practices for consistent, maintainable event naming and tracking plans.",
+              'David Park, Director of Engineering at Segment — Best practices for consistent, maintainable event naming and tracking plans.',
           },
           {
-            time: "2:30 PM",
-            kind: "keynote" as const,
-            title: "Panel: The Future of Product Data",
+            time: '2:30 PM',
+            kind: 'keynote' as const,
+            title: 'Panel: The Future of Product Data',
             description:
-              "All speakers plus special guest Lisa Thompson, CPO at Notion — Open discussion on AI, privacy, and the next decade of analytics.",
+              'All speakers plus special guest Lisa Thompson, CPO at Notion — Open discussion on AI, privacy, and the next decade of analytics.',
           },
         ]
 
-    const speakersHeading = props.speakers?.heading ?? "Featured Speakers"
+    const speakersHeading = props.speakers?.heading ?? 'Featured Speakers'
     const speakersDesc =
       props.speakers?.description ??
-      "Industry leaders sharing real-world experiences from building analytics at scale."
+      'Industry leaders sharing real-world experiences from building analytics at scale.'
     const speakerItems = props.speakers?.items?.length
       ? props.speakers.items
       : [
           {
-            name: "Sarah Chen",
-            role: "VP of Product, Amplitude",
-            bio: "Formerly led analytics at Meta for 8 years. Author of “Data-Driven Product Decisions.”",
+            name: 'Sarah Chen',
+            role: 'VP of Product, Amplitude',
+            bio: 'Formerly led analytics at Meta for 8 years. Author of “Data-Driven Product Decisions.”',
             imageAlt:
-              "Professional headshot of Sarah Chen, an Asian female executive in her 40s wearing a navy blazer",
+              'Professional headshot of Sarah Chen, an Asian female executive in her 40s wearing a navy blazer',
           },
           {
-            name: "Marcus Johnson",
-            role: "Lead Analyst, Netflix",
-            bio: "Specializes in engagement metrics and predictive viewing models for 260M+ subscribers.",
+            name: 'Marcus Johnson',
+            role: 'Lead Analyst, Netflix',
+            bio: 'Specializes in engagement metrics and predictive viewing models for 260M+ subscribers.',
             imageAlt:
-              "Professional headshot of Marcus Johnson, an African American man in his 30s with a warm smile and glasses",
+              'Professional headshot of Marcus Johnson, an African American man in his 30s with a warm smile and glasses',
           },
           {
-            name: "Elena Rodriguez",
-            role: "Head of Data Science, Spotify",
+            name: 'Elena Rodriguez',
+            role: 'Head of Data Science, Spotify',
             bio: "PhD in Machine Learning from MIT. Built Spotify's retention prediction engine.",
             imageAlt:
-              "Professional headshot of Elena Rodriguez, a Latina woman with curly dark hair and confident expression",
+              'Professional headshot of Elena Rodriguez, a Latina woman with curly dark hair and confident expression',
           },
           {
-            name: "David Park",
-            role: "Director of Engineering, Segment",
-            bio: "Expert in data infrastructure. Previously scaled analytics at Shopify through IPO.",
+            name: 'David Park',
+            role: 'Director of Engineering, Segment',
+            bio: 'Expert in data infrastructure. Previously scaled analytics at Shopify through IPO.',
             imageAlt:
-              "Professional headshot of David Park, an Asian male executive in a light grey suit with a professional demeanor",
+              'Professional headshot of David Park, an Asian male executive in a light grey suit with a professional demeanor',
           },
         ]
 
     const statItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "2,500+", label: "Registered Attendees" },
-          { value: "4", label: "Expert Speakers" },
-          { value: "4", label: "Hours of Content" },
-          { value: "150+", label: "Companies Represented" },
+          { value: '2,500+', label: 'Registered Attendees' },
+          { value: '4', label: 'Expert Speakers' },
+          { value: '4', label: 'Hours of Content' },
+          { value: '150+', label: 'Companies Represented' },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What past attendees say"
+      props.testimonials?.heading ?? 'What past attendees say'
     const testimonialsDesc =
       props.testimonials?.description ??
       "Join thousands of product professionals who've transformed their analytics approach."
@@ -486,157 +501,156 @@ export const WebinarKimiPage = defineCapsule({
       : [
           {
             quote:
-              "The Netflix case study on funnel optimization alone was worth the 4 hours. Implemented their framework the next week and saw a 23% improvement in activation rates.",
-            name: "James Wilson",
-            role: "Product Lead, Intercom",
+              'The Netflix case study on funnel optimization alone was worth the 4 hours. Implemented their framework the next week and saw a 23% improvement in activation rates.',
+            name: 'James Wilson',
+            role: 'Product Lead, Intercom',
             avatarAlt:
-              "Professional headshot of James Wilson, a male product manager in his 30s with short brown hair",
+              'Professional headshot of James Wilson, a male product manager in his 30s with short brown hair',
           },
           {
             quote:
-              "Finally, a webinar that goes beyond theory. The workshop on event taxonomy saved us months of technical debt. Our data team uses the framework as our bible now.",
-            name: "Priya Sharma",
-            role: "Head of Data, Notion",
+              'Finally, a webinar that goes beyond theory. The workshop on event taxonomy saved us months of technical debt. Our data team uses the framework as our bible now.',
+            name: 'Priya Sharma',
+            role: 'Head of Data, Notion',
             avatarAlt:
-              "Professional headshot of Priya Sharma, a South Asian woman with long dark hair and professional attire",
+              'Professional headshot of Priya Sharma, a South Asian woman with long dark hair and professional attire',
           },
           {
             quote:
-              "The networking breakout rooms connected me with a data scientist who became a mentor. The content was excellent, but the community aspect made it invaluable.",
-            name: "Michael Torres",
-            role: "Director of Product, HubSpot",
+              'The networking breakout rooms connected me with a data scientist who became a mentor. The content was excellent, but the community aspect made it invaluable.',
+            name: 'Michael Torres',
+            role: 'Director of Product, HubSpot',
             avatarAlt:
-              "Professional headshot of Michael Torres, a Hispanic man with a beard in his 40s",
+              'Professional headshot of Michael Torres, a Hispanic man with a beard in his 40s',
           },
         ]
 
-    const pricingHeading = props.pricing?.heading ?? "Registration Options"
+    const pricingHeading = props.pricing?.heading ?? 'Registration Options'
     const pricingDesc =
       props.pricing?.description ??
-      "Choose the experience that fits your learning goals. All tiers include lifetime access to recordings."
+      'Choose the experience that fits your learning goals. All tiers include lifetime access to recordings.'
     const pricingFootnote =
       props.pricing?.footnote ??
-      "Need more than 20 seats? Contact us for enterprise pricing with custom onboarding."
+      'Need more than 20 seats? Contact us for enterprise pricing with custom onboarding.'
     const pricingTiers = props.pricing?.tiers?.length
       ? props.pricing.tiers
       : [
           {
-            name: "Free Access",
-            audience: "For individual learners",
-            price: "$0",
-            cta: "Register Free",
+            name: 'Free Access',
+            audience: 'For individual learners',
+            price: '$0',
+            cta: 'Register Free',
             features: [
-              { label: "Live stream access", included: true },
-              { label: "Recording access (30 days)", included: true },
-              { label: "Q&A participation", included: true },
-              { label: "Workshop materials", included: false },
-              { label: "Certificate", included: false },
+              { label: 'Live stream access', included: true },
+              { label: 'Recording access (30 days)', included: true },
+              { label: 'Q&A participation', included: true },
+              { label: 'Workshop materials', included: false },
+              { label: 'Certificate', included: false },
             ],
           },
           {
-            name: "Professional",
-            audience: "For serious practitioners",
-            price: "$79",
-            unit: "/person",
+            name: 'Professional',
+            audience: 'For serious practitioners',
+            price: '$79',
+            unit: '/person',
             featured: true,
-            badge: "Most Popular",
-            cta: "Get Professional",
+            badge: 'Most Popular',
+            cta: 'Get Professional',
             features: [
-              { label: "Everything in Free", included: true },
-              { label: "Lifetime recording access", included: true },
-              { label: "Downloadable workshop kits", included: true },
-              { label: "Slack community access", included: true },
-              { label: "CPE/PDU certificate", included: true },
+              { label: 'Everything in Free', included: true },
+              { label: 'Lifetime recording access', included: true },
+              { label: 'Downloadable workshop kits', included: true },
+              { label: 'Slack community access', included: true },
+              { label: 'CPE/PDU certificate', included: true },
             ],
           },
           {
-            name: "Team",
-            audience: "For entire product teams",
-            price: "$299",
-            unit: "/5 seats",
-            cta: "Contact Sales",
+            name: 'Team',
+            audience: 'For entire product teams',
+            price: '$299',
+            unit: '/5 seats',
+            cta: 'Contact Sales',
             features: [
-              { label: "5 Professional seats", included: true },
-              { label: "Team breakout rooms", included: true },
-              { label: "Private Q&A session", included: true },
-              { label: "Custom analytics audit", included: true },
-              { label: "Bulk certificates", included: true },
+              { label: '5 Professional seats', included: true },
+              { label: 'Team breakout rooms', included: true },
+              { label: 'Private Q&A session', included: true },
+              { label: 'Custom analytics audit', included: true },
+              { label: 'Bulk certificates', included: true },
             ],
           },
         ]
 
-    const faqHeading = props.faq?.heading ?? "Frequently Asked Questions"
+    const faqHeading = props.faq?.heading ?? 'Frequently Asked Questions'
     const faqDesc =
-      props.faq?.description ?? "Everything you need to know about the event."
+      props.faq?.description ?? 'Everything you need to know about the event.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
             q: "Will recordings be available if I can't attend live?",
-            a: "Absolutely. All registrants receive access to the full recording within 24 hours of the event. Free tier gets 30-day access; Professional and Team tiers get lifetime access to rewatch anytime.",
+            a: 'Absolutely. All registrants receive access to the full recording within 24 hours of the event. Free tier gets 30-day access; Professional and Team tiers get lifetime access to rewatch anytime.',
           },
           {
-            q: "What technical setup do I need?",
-            a: "Just a stable internet connection and modern web browser. We use Zoom Webinar — no software download required. For the best experience, we recommend joining on a desktop or laptop. Mobile is fully supported.",
+            q: 'What technical setup do I need?',
+            a: 'Just a stable internet connection and modern web browser. We use Zoom Webinar — no software download required. For the best experience, we recommend joining on a desktop or laptop. Mobile is fully supported.',
           },
           {
-            q: "Can my entire team watch with one registration?",
-            a: "Individual registrations are for single viewers. For team viewing, choose our Team tier (5 seats for $299) or contact us for larger group licenses with volume discounts starting at 10 seats.",
+            q: 'Can my entire team watch with one registration?',
+            a: 'Individual registrations are for single viewers. For team viewing, choose our Team tier (5 seats for $299) or contact us for larger group licenses with volume discounts starting at 10 seats.',
           },
           {
-            q: "Will I receive a certificate of attendance?",
-            a: "Professional and Team tier attendees receive a verifiable digital certificate for 4 Continuing Professional Education (CPE) credits, recognized by major product management and data science certification bodies.",
+            q: 'Will I receive a certificate of attendance?',
+            a: 'Professional and Team tier attendees receive a verifiable digital certificate for 4 Continuing Professional Education (CPE) credits, recognized by major product management and data science certification bodies.',
           },
           {
-            q: "Is there a refund policy?",
+            q: 'Is there a refund policy?',
             a: "Yes. Full refunds are available until June 9, 2026. Between June 10-15, you may transfer your registration to a colleague at no cost. No refunds for no-shows, but you'll still receive the recording.",
           },
           {
-            q: "Will the workshop require coding knowledge?",
-            a: "The workshops are designed for all skill levels. Some sessions include optional SQL and Python examples, but the core concepts are accessible to non-technical product managers. All code samples are provided for reference.",
+            q: 'Will the workshop require coding knowledge?',
+            a: 'The workshops are designed for all skill levels. Some sessions include optional SQL and Python examples, but the core concepts are accessible to non-technical product managers. All code samples are provided for reference.',
           },
         ]
 
     const ctaHeading =
-      props.cta?.heading ?? "Ready to level up your product analytics?"
+      props.cta?.heading ?? 'Ready to level up your product analytics?'
     const ctaDesc =
       props.cta?.description ??
       "Join 2,500+ product leaders on June 16. Registration closes in 16 days. Don't miss the insights that will transform your 2026 strategy."
     const ctaEmailPlaceholder =
-      props.cta?.emailPlaceholder ?? "Enter your work email"
-    const ctaButton = props.cta?.button ?? "Register Free"
+      props.cta?.emailPlaceholder ?? 'Enter your work email'
+    const ctaButton = props.cta?.button ?? 'Register Free'
     const ctaFineprint =
       props.cta?.fineprint ??
-      "Or upgrade to Professional for $79 — Lifetime access + CPE certificate"
+      'Or upgrade to Professional for $79 — Lifetime access + CPE certificate'
 
     const footerNote =
       props.footer?.note ??
-      "The premier virtual event for product analytics professionals. Hosted quarterly since 2022."
-    const footerCopyright =
-      props.footer?.copyright ?? "All rights reserved."
+      'The premier virtual event for product analytics professionals. Hosted quarterly since 2022.'
+    const footerCopyright = props.footer?.copyright ?? 'All rights reserved.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Event",
-            links: ["Agenda", "Speakers", "Topics", "FAQ"],
+            title: 'Event',
+            links: ['Agenda', 'Speakers', 'Topics', 'FAQ'],
           },
           {
-            title: "Resources",
+            title: 'Resources',
             links: [
-              "Past Recordings",
-              "Speaker Decks",
-              "Analytics Templates",
-              "Community Slack",
+              'Past Recordings',
+              'Speaker Decks',
+              'Analytics Templates',
+              'Community Slack',
             ],
           },
           {
-            title: "Contact",
+            title: 'Contact',
             links: [
-              "events@productanalytics.live",
-              "Sponsorship",
-              "Press Kit",
-              "Code of Conduct",
+              'events@productanalytics.live',
+              'Sponsorship',
+              'Press Kit',
+              'Code of Conduct',
             ],
           },
         ]
@@ -645,7 +659,7 @@ export const WebinarKimiPage = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -654,7 +668,7 @@ export const WebinarKimiPage = defineCapsule({
           .split(/\s+/)
           .slice(0, 2)
           .map((w) => w.charAt(0))
-          .join("")
+          .join('')
           .toUpperCase()}
       </span>
     )
@@ -706,8 +720,11 @@ export const WebinarKimiPage = defineCapsule({
 
     const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
       <svg
-        className={cn("size-5", active ? "text-primary" : "text-muted-foreground")}
-        fill={active ? "currentColor" : "none"}
+        className={cn(
+          'size-5',
+          active ? 'text-primary' : 'text-muted-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -796,23 +813,23 @@ export const WebinarKimiPage = defineCapsule({
 
     // Agenda tag styling per kind, mapped from neutral-900/400/200 to tokens.
     const kindTag: Record<string, string> = {
-      keynote: "bg-primary text-primary-foreground",
-      workshop: "bg-secondary text-secondary-foreground",
-      break: "bg-muted text-muted-foreground",
+      keynote: 'bg-primary text-primary-foreground',
+      workshop: 'bg-secondary text-secondary-foreground',
+      break: 'bg-muted text-muted-foreground',
     }
     const kindDot: Record<string, string> = {
-      keynote: "bg-primary",
-      workshop: "bg-secondary",
-      break: "bg-muted-foreground/40",
+      keynote: 'bg-primary',
+      workshop: 'bg-secondary',
+      break: 'bg-muted-foreground/40',
     }
 
     const inputCls =
-      "flex-1 rounded-lg border border-input bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
+      'flex-1 rounded-lg border border-input bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring'
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -941,7 +958,10 @@ export const WebinarKimiPage = defineCapsule({
                     <span>{authLabel}</span>
                   </button>
                 )}
-                <Sheet open={registrationOpen} onOpenChange={setRegistrationOpen}>
+                <Sheet
+                  open={registrationOpen}
+                  onOpenChange={setRegistrationOpen}
+                >
                   <SheetTrigger asChild>
                     <button
                       type="button"
@@ -971,7 +991,9 @@ export const WebinarKimiPage = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">My Registrations</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        My Registrations
+                      </SheetTitle>
                       <SheetDescription>
                         {registrationCount > 0
                           ? `${registrationCount} registration${registrationCount === 1 ? '' : 's'} for this event.`
@@ -1016,7 +1038,9 @@ export const WebinarKimiPage = defineCapsule({
                                 <div className="mt-4 flex items-center justify-between">
                                   <button
                                     type="button"
-                                    onClick={() => void removeRegistration(reg.id)}
+                                    onClick={() =>
+                                      void removeRegistration(reg.id)
+                                    }
                                     className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                                   >
                                     Cancel
@@ -1075,7 +1099,7 @@ export const WebinarKimiPage = defineCapsule({
                     </span>
                   </div>
                   <h1 className="text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-                    {heroBefore}{" "}
+                    {heroBefore}{' '}
                     <span className="text-muted-foreground">
                       {heroHighlight}
                     </span>
@@ -1244,14 +1268,11 @@ export const WebinarKimiPage = defineCapsule({
                   </h2>
                   <p className="mb-6 text-muted-foreground">{agendaDesc}</p>
                   <div className="flex items-center gap-4 text-sm">
-                    {(["keynote", "workshop", "break"] as const).map(
+                    {(['keynote', 'workshop', 'break'] as const).map(
                       (kind, i) => (
                         <div key={kind} className="flex items-center gap-2">
                           <span
-                            className={cn(
-                              "size-3 rounded-full",
-                              kindDot[kind],
-                            )}
+                            className={cn('size-3 rounded-full', kindDot[kind])}
                           />
                           <span className="text-muted-foreground">
                             {agendaLegend[i] ?? kind}
@@ -1268,8 +1289,8 @@ export const WebinarKimiPage = defineCapsule({
                       <div
                         key={slot.time + slot.title}
                         className={cn(
-                          "flex gap-4 rounded-xl border border-border p-4",
-                          slot.kind === "break" ? "bg-muted" : "bg-card",
+                          'flex gap-4 rounded-xl border border-border p-4',
+                          slot.kind === 'break' ? 'bg-muted' : 'bg-card',
                         )}
                       >
                         <div className="w-20 text-sm font-medium text-muted-foreground">
@@ -1279,14 +1300,14 @@ export const WebinarKimiPage = defineCapsule({
                           <div className="mb-1 flex items-center gap-2">
                             <span
                               className={cn(
-                                "rounded-full px-2 py-0.5 text-xs",
+                                'rounded-full px-2 py-0.5 text-xs',
                                 kindTag[slot.kind],
                               )}
                             >
                               {agendaLegend[
-                                slot.kind === "keynote"
+                                slot.kind === 'keynote'
                                   ? 0
-                                  : slot.kind === "workshop"
+                                  : slot.kind === 'workshop'
                                     ? 1
                                     : 2
                               ] ?? slot.kind}
@@ -1301,7 +1322,13 @@ export const WebinarKimiPage = defineCapsule({
                         </div>
                         <button
                           type="button"
-                          onClick={() => void toggleSessionBookmark(slot.title, slot.time, slot.kind)}
+                          onClick={() =>
+                            void toggleSessionBookmark(
+                              slot.title,
+                              slot.time,
+                              slot.kind,
+                            )
+                          }
                           aria-pressed={isBookmarked}
                           aria-label={
                             isBookmarked
@@ -1309,10 +1336,10 @@ export const WebinarKimiPage = defineCapsule({
                               : `Add ${slot.title} to bookmarks`
                           }
                           className={cn(
-                            "grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105",
+                            'grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
                             isBookmarked
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-background/90 text-muted-foreground hover:bg-background",
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-background/90 text-muted-foreground hover:bg-background',
                           )}
                         >
                           <BookmarkIcon active={isBookmarked} />
@@ -1355,7 +1382,9 @@ export const WebinarKimiPage = defineCapsule({
                       </p>
                       <button
                         type="button"
-                        onClick={() => void toggleSpeakerBookmark(sp.name, sp.role)}
+                        onClick={() =>
+                          void toggleSpeakerBookmark(sp.name, sp.role)
+                        }
                         aria-pressed={isBookmarked}
                         aria-label={
                           isBookmarked
@@ -1363,10 +1392,10 @@ export const WebinarKimiPage = defineCapsule({
                             : `Add ${sp.name} to bookmarks`
                         }
                         className={cn(
-                          "mt-4 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105",
+                          'mt-4 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
                           isBookmarked
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-background/90 text-muted-foreground hover:bg-background",
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-background/90 text-muted-foreground hover:bg-background',
                         )}
                       >
                         <BookmarkIcon active={isBookmarked} />
@@ -1454,10 +1483,10 @@ export const WebinarKimiPage = defineCapsule({
                   <div
                     key={tier.name}
                     className={cn(
-                      "relative rounded-2xl border p-6",
+                      'relative rounded-2xl border p-6',
                       tier.featured
-                        ? "border-2 border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-card",
+                        ? 'border-2 border-primary bg-primary text-primary-foreground'
+                        : 'border-border bg-card',
                     )}
                   >
                     {tier.badge && (
@@ -1471,10 +1500,10 @@ export const WebinarKimiPage = defineCapsule({
                       <h3 className="text-lg font-semibold">{tier.name}</h3>
                       <p
                         className={cn(
-                          "text-sm",
+                          'text-sm',
                           tier.featured
-                            ? "text-primary-foreground/70"
-                            : "text-muted-foreground",
+                            ? 'text-primary-foreground/70'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {tier.audience}
@@ -1488,8 +1517,8 @@ export const WebinarKimiPage = defineCapsule({
                         <span
                           className={cn(
                             tier.featured
-                              ? "text-primary-foreground/70"
-                              : "text-muted-foreground",
+                              ? 'text-primary-foreground/70'
+                              : 'text-muted-foreground',
                           )}
                         >
                           {tier.unit}
@@ -1501,20 +1530,20 @@ export const WebinarKimiPage = defineCapsule({
                         <li
                           key={f.label}
                           className={cn(
-                            "flex items-center gap-2",
+                            'flex items-center gap-2',
                             !f.included &&
                               (tier.featured
-                                ? "text-primary-foreground/50"
-                                : "text-muted-foreground"),
+                                ? 'text-primary-foreground/50'
+                                : 'text-muted-foreground'),
                           )}
                         >
                           {f.included ? (
                             <CheckIcon
                               className={cn(
-                                "size-5",
+                                'size-5',
                                 tier.featured
-                                  ? "text-primary-foreground"
-                                  : "text-foreground",
+                                  ? 'text-primary-foreground'
+                                  : 'text-foreground',
                               )}
                             />
                           ) : (
@@ -1527,14 +1556,18 @@ export const WebinarKimiPage = defineCapsule({
                     <button
                       type="button"
                       onClick={() => {
-                        void addRegistration(authEmail || 'guest@example.com', tier.name, tier.price)
+                        void addRegistration(
+                          authEmail || 'guest@example.com',
+                          tier.name,
+                          tier.price,
+                        )
                         setRegistrationOpen(true)
                       }}
                       className={cn(
-                        "w-full rounded-lg py-3 font-medium transition-colors",
+                        'w-full rounded-lg py-3 font-medium transition-colors',
                         tier.featured
-                          ? "bg-background text-foreground hover:bg-background/90"
-                          : "border border-input hover:border-foreground",
+                          ? 'bg-background text-foreground hover:bg-background/90'
+                          : 'border border-input hover:border-foreground',
                       )}
                     >
                       {tier.cta}
@@ -1673,7 +1706,7 @@ export const WebinarKimiPage = defineCapsule({
                 © {new Date().getFullYear()} {brand}. {footerCopyright}
               </p>
               <div className="flex items-center gap-6">
-                {(["Twitter", "LinkedIn", "GitHub"] as const).map((social) => (
+                {(['Twitter', 'LinkedIn', 'GitHub'] as const).map((social) => (
                   <button
                     key={social}
                     type="button"
@@ -1681,7 +1714,7 @@ export const WebinarKimiPage = defineCapsule({
                     onClick={() => go(social)}
                     className="text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    {social === "Twitter" && (
+                    {social === 'Twitter' && (
                       <svg
                         className="size-5"
                         fill="currentColor"
@@ -1691,7 +1724,7 @@ export const WebinarKimiPage = defineCapsule({
                         <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
                       </svg>
                     )}
-                    {social === "LinkedIn" && (
+                    {social === 'LinkedIn' && (
                       <svg
                         className="size-5"
                         fill="currentColor"
@@ -1701,7 +1734,7 @@ export const WebinarKimiPage = defineCapsule({
                         <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                       </svg>
                     )}
-                    {social === "GitHub" && (
+                    {social === 'GitHub' && (
                       <svg
                         className="size-5"
                         fill="currentColor"

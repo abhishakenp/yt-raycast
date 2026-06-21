@@ -1,19 +1,17 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from '#/components/ui/sheet.tsx'
 import { Button } from '#/components/ui/button.tsx'
 import {
@@ -55,7 +53,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
  * make it render great with no props at all.
  */
 export const PortfolioDevKimiPage2 = defineCapsule({
-  name: "PortfolioDevKimiPage2",
+  name: 'PortfolioDevKimiPage2',
   description:
     "Complete personal PORTFOLIO landing page for a full-stack developer / freelance software engineer with a BOLD, DARK, high-contrast aesthetic: fuchsia/violet brand accent, gradient glows and blurred orbs, extra-black display headings, rounded-full pill buttons and a fixed blurred navbar. This is the SECOND, visually DISTINCT alternative / style sibling to PortfolioDevKimiPage (which is the calm, light, minimal editorial monochrome version) — pick this one when a punchy, vibrant, dark-mode freelancer vibe is wanted. Includes a two-column hero (Available-for-freelance-work pill with pulsing dot, gradient-highlighted headline, intro paragraph, View-My-Work + GitHub CTAs, inline Years/Projects/Stars mini-stats, and a portrait photo with a floating Currently-Building status card), a grayscale 'trusted by teams at' company-logo strip, a 3-up technical-expertise card grid (Frontend/Backend/Cloud/Performance/Testing/Leadership icon tiles with tech chips), a 2-up selected-projects grid (image cards with colored React/Node/AWS tech tags, launch year and a traction metric and View-Project links), a split open-source section (repo list with star-count badges, language dots and MIT-License labels, a Top Contributor highlight card, and a developer-workspace image), a stats card band (years/projects/stars/satisfaction), a 6-up star-rated testimonials grid with headshot avatars and roles, an FAQ accordion (native details/summary on timeline, team fit, tech stack, communication, rates, support), a gradient contact CTA card with email + Schedule-a-Call buttons and GitHub/Twitter/LinkedIn/Dev.to social links, and a 4-column footer with brand, quick links and contact details. Use as the ROOT/home page for a freelance developer, full-stack engineer, indie hacker, technical consultant or open-source maintainer personal site / dev portfolio when a bold, credible, content-rich dark showcase of projects, skills, open-source work and client testimonials is wanted. Supply content only — brand, nav, hero, logos, expertise, projects, openSource, stats, testimonials, faq, contact, footer; the block owns all layout and styling.",
   props: z.object({
@@ -264,11 +262,14 @@ export const PortfolioDevKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [contactOpen, setContactOpen] = useState(false)
-    const [inquiryForm, setInquiryForm] = useState({ name: '', email: '', message: '' })
+    const [inquiryForm, setInquiryForm] = useState({
+      name: '',
+      email: '',
+      message: '',
+    })
 
     const storedProjects = lakebed.useQuery('projects')
     const favoriteProjectTitles = lakebed.useQuery('favoriteProjectTitles')
-    const inquiries = lakebed.useQuery('inquiries')
     const toggleFavorite = lakebed.useMutation('toggleFavorite')
     const submitInquiry = lakebed.useMutation('submitInquiry')
     const auth = lakebed.useAuth()
@@ -298,131 +299,131 @@ export const PortfolioDevKimiPage2 = defineCapsule({
       lakebed.signOut()
     }
 
-    const brand = props.brand ?? "alex"
-    const brandSuffix = props.brandSuffix ?? ".dev"
+    const brand = props.brand ?? 'alex'
+    const brandSuffix = props.brandSuffix ?? '.dev'
     const nav = props.nav?.length
       ? props.nav
-      : ["Projects", "Skills", "Open Source", "Testimonials", "Let's Talk"]
+      : ['Projects', 'Skills', 'Open Source', 'Testimonials', "Let's Talk"]
 
-    const heroBadge = props.hero?.badge ?? "Available for freelance work"
-    const heroLead = props.hero?.headingLead ?? "Building"
-    const heroHighlight = props.hero?.headingHighlight ?? "digital"
-    const heroTrail = props.hero?.headingTrail ?? "experiences that matter"
+    const heroBadge = props.hero?.badge ?? 'Available for freelance work'
+    const heroLead = props.hero?.headingLead ?? 'Building'
+    const heroHighlight = props.hero?.headingHighlight ?? 'digital'
+    const heroTrail = props.hero?.headingTrail ?? 'experiences that matter'
     const heroSub =
       props.hero?.subheading ??
       "I'm Alex Chen, a full-stack developer with 8+ years crafting scalable web applications. I specialize in React, Node.js, and cloud infrastructure — turning complex problems into elegant solutions."
-    const heroPrimary = props.hero?.primaryCta ?? "View My Work"
-    const heroSecondary = props.hero?.secondaryCta ?? "GitHub"
+    const heroPrimary = props.hero?.primaryCta ?? 'View My Work'
+    const heroSecondary = props.hero?.secondaryCta ?? 'GitHub'
     const portraitAlt =
       props.hero?.portraitAlt ??
-      "professional headshot of Alex Chen, a software developer with a confident smile wearing a casual button-up shirt"
-    const statusLabel = props.hero?.statusLabel ?? "Currently Building"
-    const statusValue = props.hero?.statusValue ?? "React Query Toolkit v3"
+      'professional headshot of Alex Chen, a software developer with a confident smile wearing a casual button-up shirt'
+    const statusLabel = props.hero?.statusLabel ?? 'Currently Building'
+    const statusValue = props.hero?.statusValue ?? 'React Query Toolkit v3'
     const heroStats = props.hero?.stats?.length
       ? props.hero.stats
       : [
-          { value: "8+", label: "Years Exp" },
-          { value: "50+", label: "Projects" },
-          { value: "12K", label: "GitHub Stars" },
+          { value: '8+', label: 'Years Exp' },
+          { value: '50+', label: 'Projects' },
+          { value: '12K', label: 'GitHub Stars' },
         ]
 
-    const logosLabel = props.logos?.label ?? "Trusted by teams at"
+    const logosLabel = props.logos?.label ?? 'Trusted by teams at'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
-      : ["Stripe", "Vercel", "GitHub", "Linear", "Notion", "Figma"]
+      : ['Stripe', 'Vercel', 'GitHub', 'Linear', 'Notion', 'Figma']
 
-    const expertiseHeading = props.expertise?.heading ?? "Technical Expertise"
+    const expertiseHeading = props.expertise?.heading ?? 'Technical Expertise'
     const expertiseDesc =
       props.expertise?.description ??
-      "A deep toolkit built over 8 years of shipping production applications across startups and enterprises."
+      'A deep toolkit built over 8 years of shipping production applications across startups and enterprises.'
     const expertiseItems = props.expertise?.items?.length
       ? props.expertise.items
       : [
           {
-            title: "Frontend Architecture",
+            title: 'Frontend Architecture',
             description:
-              "React, TypeScript, Next.js, Tailwind CSS. Building performant, accessible interfaces with thoughtful UX.",
-            tags: ["React", "TypeScript", "Next.js"],
+              'React, TypeScript, Next.js, Tailwind CSS. Building performant, accessible interfaces with thoughtful UX.',
+            tags: ['React', 'TypeScript', 'Next.js'],
           },
           {
-            title: "Backend Systems",
+            title: 'Backend Systems',
             description:
-              "Node.js, PostgreSQL, Redis, GraphQL. Designing APIs and data layers that scale with your business.",
-            tags: ["Node.js", "PostgreSQL", "GraphQL"],
+              'Node.js, PostgreSQL, Redis, GraphQL. Designing APIs and data layers that scale with your business.',
+            tags: ['Node.js', 'PostgreSQL', 'GraphQL'],
           },
           {
-            title: "Cloud & DevOps",
+            title: 'Cloud & DevOps',
             description:
-              "AWS, Docker, Kubernetes, Terraform. Infrastructure as code with automated CI/CD pipelines.",
-            tags: ["AWS", "Docker", "Terraform"],
+              'AWS, Docker, Kubernetes, Terraform. Infrastructure as code with automated CI/CD pipelines.',
+            tags: ['AWS', 'Docker', 'Terraform'],
           },
           {
-            title: "Performance",
+            title: 'Performance',
             description:
-              "Core Web Vitals optimization, lazy loading, code splitting. Making fast applications faster.",
-            tags: ["Lighthouse", "Web Vitals", "CDN"],
+              'Core Web Vitals optimization, lazy loading, code splitting. Making fast applications faster.',
+            tags: ['Lighthouse', 'Web Vitals', 'CDN'],
           },
           {
-            title: "Testing & Quality",
+            title: 'Testing & Quality',
             description:
-              "Jest, Cypress, Playwright, TDD. Comprehensive test coverage for confidence in every deploy.",
-            tags: ["Jest", "Cypress", "TDD"],
+              'Jest, Cypress, Playwright, TDD. Comprehensive test coverage for confidence in every deploy.',
+            tags: ['Jest', 'Cypress', 'TDD'],
           },
           {
-            title: "Technical Leadership",
+            title: 'Technical Leadership',
             description:
-              "Code reviews, architecture decisions, mentoring. Building teams that ship quality software.",
-            tags: ["Mentoring", "Architecture", "Agile"],
+              'Code reviews, architecture decisions, mentoring. Building teams that ship quality software.',
+            tags: ['Mentoring', 'Architecture', 'Agile'],
           },
         ]
 
-    const projectsHeading = props.projects?.heading ?? "Selected Projects"
+    const projectsHeading = props.projects?.heading ?? 'Selected Projects'
     const projectsDesc =
       props.projects?.description ??
       "A showcase of production applications I've built — from real-time collaboration tools to e-commerce platforms processing millions in transactions."
-    const projectsCta = props.projects?.cta ?? "View all on GitHub"
+    const projectsCta = props.projects?.cta ?? 'View all on GitHub'
     const projectItems = props.projects?.items?.length
       ? props.projects.items
       : [
           {
-            title: "Analytics Dashboard Pro",
+            title: 'Analytics Dashboard Pro',
             description:
-              "Real-time business intelligence platform serving 50K+ daily active users. Features custom drag-and-drop report builder, sub-second query performance via ClickHouse, and role-based access control.",
+              'Real-time business intelligence platform serving 50K+ daily active users. Features custom drag-and-drop report builder, sub-second query performance via ClickHouse, and role-based access control.',
             imageAlt:
-              "dashboard interface showing analytics charts with colorful data visualizations and metric cards",
-            tags: ["React", "Node.js", "AWS"],
-            launched: "Launched 2023",
-            metric: "2.4M page views/mo",
+              'dashboard interface showing analytics charts with colorful data visualizations and metric cards',
+            tags: ['React', 'Node.js', 'AWS'],
+            launched: 'Launched 2023',
+            metric: '2.4M page views/mo',
           },
           {
-            title: "ShopStream E-commerce",
+            title: 'ShopStream E-commerce',
             description:
-              "Headless e-commerce platform with real-time inventory sync. Processed $12M+ in transactions. Features AI-powered recommendations, abandoned cart recovery, and multi-currency support.",
+              'Headless e-commerce platform with real-time inventory sync. Processed $12M+ in transactions. Features AI-powered recommendations, abandoned cart recovery, and multi-currency support.',
             imageAlt:
-              "e-commerce checkout interface showing shopping cart with product cards and payment form",
-            tags: ["Next.js", "Stripe", "PostgreSQL"],
-            launched: "Launched 2022",
-            metric: "$12M+ revenue",
+              'e-commerce checkout interface showing shopping cart with product cards and payment form',
+            tags: ['Next.js', 'Stripe', 'PostgreSQL'],
+            launched: 'Launched 2022',
+            metric: '$12M+ revenue',
           },
           {
-            title: "CollabSpace Real-time",
+            title: 'CollabSpace Real-time',
             description:
-              "Video conferencing + collaborative whiteboard for remote teams. Supports 100+ concurrent users per room with sub-100ms latency. End-to-end encryption for enterprise clients.",
+              'Video conferencing + collaborative whiteboard for remote teams. Supports 100+ concurrent users per room with sub-100ms latency. End-to-end encryption for enterprise clients.',
             imageAlt:
-              "team collaboration interface with video call grid and shared document editing workspace",
-            tags: ["WebRTC", "Socket.io", "Redis"],
-            launched: "Launched 2023",
-            metric: "50K+ teams",
+              'team collaboration interface with video call grid and shared document editing workspace',
+            tags: ['WebRTC', 'Socket.io', 'Redis'],
+            launched: 'Launched 2023',
+            metric: '50K+ teams',
           },
           {
-            title: "FinTrack Mobile Banking",
+            title: 'FinTrack Mobile Banking',
             description:
-              "Cross-platform mobile app for personal finance management. Bank-grade security with Plaid integration. Features expense categorization, budget goals, and investment tracking across 12K+ active users.",
+              'Cross-platform mobile app for personal finance management. Bank-grade security with Plaid integration. Features expense categorization, budget goals, and investment tracking across 12K+ active users.',
             imageAlt:
-              "mobile banking app interface showing account balance and transaction history on smartphone",
-            tags: ["React Native", "Node.js", "Plaid API"],
-            launched: "Launched 2021",
-            metric: "4.8 App Store rating",
+              'mobile banking app interface showing account balance and transaction history on smartphone',
+            tags: ['React Native', 'Node.js', 'Plaid API'],
+            launched: 'Launched 2021',
+            metric: '4.8 App Store rating',
           },
         ]
     const normalizedProjectItems = projectItems.map((project) => ({
@@ -438,43 +439,44 @@ export const PortfolioDevKimiPage2 = defineCapsule({
         ? storedProjects
         : normalizedProjectItems
 
-    const osHeading = props.openSource?.heading ?? "Open Source Contributions"
+    const osHeading = props.openSource?.heading ?? 'Open Source Contributions'
     const osDesc =
       props.openSource?.description ??
-      "I believe in giving back to the community. My projects and contributions help thousands of developers build better applications every day."
+      'I believe in giving back to the community. My projects and contributions help thousands of developers build better applications every day.'
     const osImageAlt =
       props.openSource?.imageAlt ??
-      "developer workspace with multiple monitors showing code editor with open source project and terminal"
-    const osHighlightTitle = props.openSource?.highlightTitle ?? "Top Contributor"
+      'developer workspace with multiple monitors showing code editor with open source project and terminal'
+    const osHighlightTitle =
+      props.openSource?.highlightTitle ?? 'Top Contributor'
     const osHighlightText =
       props.openSource?.highlightText ??
-      "Recognized contributor to React, Next.js, and TanStack Query"
+      'Recognized contributor to React, Next.js, and TanStack Query'
     const osItems = props.openSource?.items?.length
       ? props.openSource.items
       : [
           {
-            name: "react-query-toolkit",
-            stars: "8.2K stars",
+            name: 'react-query-toolkit',
+            stars: '8.2K stars',
             description:
-              "Simplified data fetching hooks built on top of TanStack Query with automatic caching and background refetching.",
-            language: "TypeScript",
-            license: "MIT License",
+              'Simplified data fetching hooks built on top of TanStack Query with automatic caching and background refetching.',
+            language: 'TypeScript',
+            license: 'MIT License',
           },
           {
-            name: "node-caching-layer",
-            stars: "2.1K stars",
+            name: 'node-caching-layer',
+            stars: '2.1K stars',
             description:
-              "Lightweight caching middleware for Express.js with Redis and in-memory fallbacks for high-performance APIs.",
-            language: "JavaScript",
-            license: "MIT License",
+              'Lightweight caching middleware for Express.js with Redis and in-memory fallbacks for high-performance APIs.',
+            language: 'JavaScript',
+            license: 'MIT License',
           },
           {
-            name: "tailwind-animation-utils",
-            stars: "1.5K stars",
+            name: 'tailwind-animation-utils',
+            stars: '1.5K stars',
             description:
-              "Collection of pre-built animation utilities and keyframes for Tailwind CSS with accessibility considerations.",
-            language: "CSS",
-            license: "MIT License",
+              'Collection of pre-built animation utilities and keyframes for Tailwind CSS with accessibility considerations.',
+            language: 'CSS',
+            license: 'MIT License',
           },
         ]
 
@@ -482,29 +484,29 @@ export const PortfolioDevKimiPage2 = defineCapsule({
       ? props.stats.items
       : [
           {
-            value: "8+",
-            label: "Years Experience",
-            note: "Full-stack development",
+            value: '8+',
+            label: 'Years Experience',
+            note: 'Full-stack development',
           },
           {
-            value: "50+",
-            label: "Projects Shipped",
-            note: "Production applications",
+            value: '50+',
+            label: 'Projects Shipped',
+            note: 'Production applications',
           },
           {
-            value: "12K",
-            label: "GitHub Stars",
-            note: "Across my repositories",
+            value: '12K',
+            label: 'GitHub Stars',
+            note: 'Across my repositories',
           },
           {
-            value: "99%",
-            label: "Client Satisfaction",
-            note: "Based on 30+ reviews",
+            value: '99%',
+            label: 'Client Satisfaction',
+            note: 'Based on 30+ reviews',
           },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Clients Say"
+      props.testimonials?.heading ?? 'What Clients Say'
     const testimonialsDesc =
       props.testimonials?.description ??
       "Don't just take my word for it. Here's what founders, CTOs, and product leaders have to say about working together."
@@ -514,57 +516,57 @@ export const PortfolioDevKimiPage2 = defineCapsule({
           {
             quote:
               "Alex transformed our legacy Rails app into a modern React architecture. The performance improvements were immediate — page load times dropped from 4s to under 800ms. Beyond technical skills, Alex's communication made the project a breeze.",
-            name: "Sarah Mitchell",
-            role: "CEO, DataStream Analytics",
+            name: 'Sarah Mitchell',
+            role: 'CEO, DataStream Analytics',
             avatarAlt:
-              "professional headshot of Sarah Mitchell, a startup CEO with short brown hair and a confident expression",
+              'professional headshot of Sarah Mitchell, a startup CEO with short brown hair and a confident expression',
           },
           {
             quote:
               "We hired Alex to architect our real-time collaboration features. The WebRTC implementation was rock-solid from day one, handling 100+ concurrent users per room. Alex's attention to edge cases saved us months of bug fixing.",
-            name: "Marcus Johnson",
-            role: "CTO, CollabSpace",
+            name: 'Marcus Johnson',
+            role: 'CTO, CollabSpace',
             avatarAlt:
-              "professional headshot of Marcus Johnson, a CTO with dark skin and a friendly smile wearing glasses",
+              'professional headshot of Marcus Johnson, a CTO with dark skin and a friendly smile wearing glasses',
           },
           {
             quote:
-              "Alex joined our team as a tech lead and immediately improved our engineering culture. The testing standards and code review practices Alex introduced are still in place three years later. A true professional who elevates everyone around them.",
-            name: "Elena Rodriguez",
-            role: "VP Product, TechVentures",
+              'Alex joined our team as a tech lead and immediately improved our engineering culture. The testing standards and code review practices Alex introduced are still in place three years later. A true professional who elevates everyone around them.',
+            name: 'Elena Rodriguez',
+            role: 'VP Product, TechVentures',
             avatarAlt:
-              "professional headshot of Elena Rodriguez, a product director with long dark hair and warm smile",
+              'professional headshot of Elena Rodriguez, a product director with long dark hair and warm smile',
           },
           {
             quote:
-              "Working with Alex on our e-commerce platform was a game-changer. The headless architecture with Next.js and Stripe integration handled Black Friday traffic without a hiccup. $2M in sales in 24 hours — zero downtime.",
-            name: "David Park",
-            role: "Founder, ShopStream",
+              'Working with Alex on our e-commerce platform was a game-changer. The headless architecture with Next.js and Stripe integration handled Black Friday traffic without a hiccup. $2M in sales in 24 hours — zero downtime.',
+            name: 'David Park',
+            role: 'Founder, ShopStream',
             avatarAlt:
-              "professional headshot of David Park, a startup founder with Asian features and business casual attire",
+              'professional headshot of David Park, a startup founder with Asian features and business casual attire',
           },
           {
             quote:
               "Alex built our mobile banking app from concept to App Store launch in just 4 months. The code quality is exceptional — we've had zero critical bugs in production. Alex's expertise in React Native and security best practices was invaluable.",
-            name: "James Wilson",
-            role: "CEO, FinTrack",
+            name: 'James Wilson',
+            role: 'CEO, FinTrack',
             avatarAlt:
-              "professional headshot of James Wilson, a fintech executive in a navy suit with silver hair",
+              'professional headshot of James Wilson, a fintech executive in a navy suit with silver hair',
           },
           {
             quote:
               "Alex's open-source contributions saved our team weeks of development time. We adopted react-query-toolkit and it streamlined our entire data layer. The documentation and TypeScript support are world-class.",
-            name: "Amanda Foster",
-            role: "Senior Engineer, Stripe",
+            name: 'Amanda Foster',
+            role: 'Senior Engineer, Stripe',
             avatarAlt:
-              "professional headshot of Amanda Foster, a senior engineer with curly red hair and a friendly smile",
+              'professional headshot of Amanda Foster, a senior engineer with curly red hair and a friendly smile',
           },
         ]
 
-    const faqHeading = props.faq?.heading ?? "Common Questions"
+    const faqHeading = props.faq?.heading ?? 'Common Questions'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know about working together."
+      'Everything you need to know about working together.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
@@ -574,29 +576,29 @@ export const PortfolioDevKimiPage2 = defineCapsule({
               "Most projects range from 4-12 weeks depending on scope. A typical MVP takes 6-8 weeks, including discovery, design collaboration, development, and testing. I'll provide a detailed timeline during our initial consultation based on your specific requirements.",
           },
           {
-            question: "Do you work with existing teams or only solo?",
+            question: 'Do you work with existing teams or only solo?',
             answer:
               "Both! I've successfully embedded with existing engineering teams at companies like Stripe and Notion, and I've led projects as the sole developer for early-stage startups. I adapt my workflow to fit your team's needs — whether that's daily standups or async updates.",
           },
           {
-            question: "What technologies do you specialize in?",
+            question: 'What technologies do you specialize in?',
             answer:
               "My core stack is React, TypeScript, Node.js, and PostgreSQL. For infrastructure, I work extensively with AWS, Docker, and Kubernetes. I'm also experienced with Next.js, GraphQL, Redis, and various real-time technologies like WebRTC and Socket.io.",
           },
           {
-            question: "How do you handle project communication?",
+            question: 'How do you handle project communication?',
             answer:
               "Clear communication is crucial. I provide weekly progress reports with live demos, maintain detailed documentation in Notion or your preferred tool, and I'm available on Slack for quick questions. For larger projects, we can schedule regular video check-ins.",
           },
           {
-            question: "What are your rates and payment terms?",
+            question: 'What are your rates and payment terms?',
             answer:
               "I offer both project-based fixed pricing and hourly consulting rates. Fixed projects typically require a 50% deposit to begin, with the balance due on delivery. For ongoing work, I invoice bi-weekly. I'm happy to discuss retainer arrangements for long-term partnerships.",
           },
           {
-            question: "Do you provide ongoing support after launch?",
+            question: 'Do you provide ongoing support after launch?',
             answer:
-              "Absolutely. All projects include a 30-day bug-fixing period post-launch. After that, I offer monthly maintenance retainers that include monitoring, security updates, performance optimization, and priority feature development.",
+              'Absolutely. All projects include a 30-day bug-fixing period post-launch. After that, I offer monthly maintenance retainers that include monitoring, security updates, performance optimization, and priority feature development.',
           },
         ]
 
@@ -605,75 +607,75 @@ export const PortfolioDevKimiPage2 = defineCapsule({
     const contactDesc =
       props.contact?.description ??
       "Have a project in mind? I'm currently accepting new clients for Q3 2026. Let's discuss how we can bring your vision to life."
-    const contactPrimary = props.contact?.primaryCta ?? "alex@alexchen.dev"
-    const contactSecondary = props.contact?.secondaryCta ?? "Schedule a Call"
+    const contactPrimary = props.contact?.primaryCta ?? 'alex@alexchen.dev'
+    const contactSecondary = props.contact?.secondaryCta ?? 'Schedule a Call'
     const contactSocials = props.contact?.socials?.length
       ? props.contact.socials
-      : ["GitHub", "Twitter", "LinkedIn", "Dev.to"]
+      : ['GitHub', 'Twitter', 'LinkedIn', 'Dev.to']
 
     const footerAbout =
       props.footer?.about ??
-      "Full-stack developer building scalable applications with React, Node.js, and cloud infrastructure. Based in San Francisco, working worldwide."
-    const footerLinksTitle = props.footer?.linksTitle ?? "Quick Links"
+      'Full-stack developer building scalable applications with React, Node.js, and cloud infrastructure. Based in San Francisco, working worldwide.'
+    const footerLinksTitle = props.footer?.linksTitle ?? 'Quick Links'
     const footerLinks = props.footer?.links?.length
       ? props.footer.links
-      : ["Projects", "Skills", "Open Source", "Testimonials"]
-    const footerContactTitle = props.footer?.contactTitle ?? "Contact"
-    const footerEmail = props.footer?.email ?? "alex@alexchen.dev"
-    const footerLocation = props.footer?.location ?? "San Francisco, CA"
-    const footerTimezone = props.footer?.timezone ?? "UTC-7 (PST)"
-    const footerNote = props.footer?.note ?? "All rights reserved."
+      : ['Projects', 'Skills', 'Open Source', 'Testimonials']
+    const footerContactTitle = props.footer?.contactTitle ?? 'Contact'
+    const footerEmail = props.footer?.email ?? 'alex@alexchen.dev'
+    const footerLocation = props.footer?.location ?? 'San Francisco, CA'
+    const footerTimezone = props.footer?.timezone ?? 'UTC-7 (PST)'
+    const footerNote = props.footer?.note ?? 'All rights reserved.'
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service"]
-    const footerSocials = ["GitHub", "Twitter", "LinkedIn"]
+      : ['Privacy Policy', 'Terms of Service']
+    const footerSocials = ['GitHub', 'Twitter', 'LinkedIn']
 
     // Rotating token palette for decorative icon tiles / tech tags / dots.
     // Static class strings so Tailwind JIT emits them (no dynamic interpolation).
     const toneTile = [
-      "bg-chart-1/10 text-chart-1",
-      "bg-chart-2/10 text-chart-2",
-      "bg-chart-3/10 text-chart-3",
-      "bg-chart-4/10 text-chart-4",
-      "bg-chart-5/10 text-chart-5",
-      "bg-primary/10 text-primary",
+      'bg-chart-1/10 text-chart-1',
+      'bg-chart-2/10 text-chart-2',
+      'bg-chart-3/10 text-chart-3',
+      'bg-chart-4/10 text-chart-4',
+      'bg-chart-5/10 text-chart-5',
+      'bg-primary/10 text-primary',
     ]
     const toneText = [
-      "text-chart-1",
-      "text-chart-2",
-      "text-chart-3",
-      "text-chart-4",
-      "text-chart-5",
-      "text-primary",
+      'text-chart-1',
+      'text-chart-2',
+      'text-chart-3',
+      'text-chart-4',
+      'text-chart-5',
+      'text-primary',
     ]
     const toneDot = [
-      "bg-chart-1",
-      "bg-chart-2",
-      "bg-chart-3",
-      "bg-chart-4",
-      "bg-chart-5",
-      "bg-primary",
+      'bg-chart-1',
+      'bg-chart-2',
+      'bg-chart-3',
+      'bg-chart-4',
+      'bg-chart-5',
+      'bg-primary',
     ]
     const toneCount = toneTile.length
 
     const expertiseIcons = [
       // Frontend
-      "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
+      'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
       // Backend
-      "M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01",
+      'M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01',
       // Cloud
-      "M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z",
+      'M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z',
       // Performance
-      "M13 10V3L4 14h7v7l9-11h-7z",
+      'M13 10V3L4 14h7v7l9-11h-7z',
       // Testing
-      "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
+      'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
       // Leadership
-      "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z",
+      'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
     ]
 
     const ChevronDown = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5", className)}
+        className={cn('size-5', className)}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -688,7 +690,7 @@ export const PortfolioDevKimiPage2 = defineCapsule({
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-4", className)}
+        className={cn('size-4', className)}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -722,7 +724,7 @@ export const PortfolioDevKimiPage2 = defineCapsule({
 
     const ClockIcon = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-4", className)}
+        className={cn('size-4', className)}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -737,7 +739,7 @@ export const PortfolioDevKimiPage2 = defineCapsule({
 
     const SparkIcon = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-4", className)}
+        className={cn('size-4', className)}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -752,7 +754,7 @@ export const PortfolioDevKimiPage2 = defineCapsule({
 
     const StarSolid = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5", className)}
+        className={cn('size-5', className)}
         viewBox="0 0 20 20"
         fill="currentColor"
         aria-hidden="true"
@@ -763,7 +765,7 @@ export const PortfolioDevKimiPage2 = defineCapsule({
 
     const MailIcon = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5", className)}
+        className={cn('size-5', className)}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -778,7 +780,7 @@ export const PortfolioDevKimiPage2 = defineCapsule({
 
     const CalendarIcon = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5", className)}
+        className={cn('size-5', className)}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -793,7 +795,7 @@ export const PortfolioDevKimiPage2 = defineCapsule({
 
     const PinIcon = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-4", className)}
+        className={cn('size-4', className)}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -809,7 +811,7 @@ export const PortfolioDevKimiPage2 = defineCapsule({
 
     const CheckIcon = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-6", className)}
+        className={cn('size-6', className)}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -824,7 +826,7 @@ export const PortfolioDevKimiPage2 = defineCapsule({
 
     const TrophyIcon = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5", className)}
+        className={cn('size-5', className)}
         viewBox="0 0 24 24"
         fill="currentColor"
         aria-hidden="true"
@@ -835,7 +837,7 @@ export const PortfolioDevKimiPage2 = defineCapsule({
 
     const GithubIcon = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-6", className)}
+        className={cn('size-6', className)}
         viewBox="0 0 24 24"
         fill="currentColor"
         aria-hidden="true"
@@ -846,7 +848,7 @@ export const PortfolioDevKimiPage2 = defineCapsule({
 
     const TwitterIcon = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-6", className)}
+        className={cn('size-6', className)}
         viewBox="0 0 24 24"
         fill="currentColor"
         aria-hidden="true"
@@ -857,7 +859,7 @@ export const PortfolioDevKimiPage2 = defineCapsule({
 
     const LinkedinIcon = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-6", className)}
+        className={cn('size-6', className)}
         viewBox="0 0 24 24"
         fill="currentColor"
         aria-hidden="true"
@@ -868,7 +870,7 @@ export const PortfolioDevKimiPage2 = defineCapsule({
 
     const DevtoIcon = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-6", className)}
+        className={cn('size-6', className)}
         viewBox="0 0 24 24"
         fill="currentColor"
         aria-hidden="true"
@@ -879,15 +881,18 @@ export const PortfolioDevKimiPage2 = defineCapsule({
 
     const socialIcon = (name: string, className?: string) => {
       const key = name.toLowerCase()
-      if (key.includes("twitter") || key === "x")
+      if (key.includes('twitter') || key === 'x')
         return <TwitterIcon className={className} />
-      if (key.includes("linkedin")) return <LinkedinIcon className={className} />
-      if (key.includes("dev")) return <DevtoIcon className={className} />
+      if (key.includes('linkedin'))
+        return <LinkedinIcon className={className} />
+      if (key.includes('dev')) return <DevtoIcon className={className} />
       return <GithubIcon className={className} />
     }
 
     const Wordmark = ({ className }: { className?: string }) => (
-      <span className={cn("font-black tracking-tight text-foreground", className)}>
+      <span
+        className={cn('font-black tracking-tight text-foreground', className)}
+      >
         {brand}
         <span className="text-primary">{brandSuffix}</span>
       </span>
@@ -896,7 +901,7 @@ export const PortfolioDevKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -1138,10 +1143,10 @@ export const PortfolioDevKimiPage2 = defineCapsule({
                     {heroBadge}
                   </div>
                   <h1 className="mb-6 text-5xl font-black leading-[0.9] tracking-tight sm:text-6xl lg:text-7xl xl:text-8xl">
-                    {heroLead}{" "}
+                    {heroLead}{' '}
                     <span className="bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">
                       {heroHighlight}
-                    </span>{" "}
+                    </span>{' '}
                     {heroTrail}
                   </h1>
                   <p className="mb-8 max-w-xl text-lg leading-relaxed text-muted-foreground lg:text-xl">
@@ -1218,8 +1223,8 @@ export const PortfolioDevKimiPage2 = defineCapsule({
                   <span
                     key={logo}
                     className={cn(
-                      "mx-auto text-center text-lg font-black tracking-tight text-foreground grayscale transition-all hover:grayscale-0",
-                      i >= 4 && "hidden lg:block",
+                      'mx-auto text-center text-lg font-black tracking-tight text-foreground grayscale transition-all hover:grayscale-0',
+                      i >= 4 && 'hidden lg:block',
                     )}
                   >
                     {logo}
@@ -1241,46 +1246,46 @@ export const PortfolioDevKimiPage2 = defineCapsule({
 
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {expertiseItems.map((item, i) => (
+                  <div
+                    key={item.title}
+                    className="group rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-1 hover:border-primary/50 lg:p-8"
+                  >
                     <div
-                      key={item.title}
-                      className="group rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-1 hover:border-primary/50 lg:p-8"
+                      className={cn(
+                        'mb-6 flex size-14 items-center justify-center rounded-xl transition-transform group-hover:scale-110',
+                        toneTile[i % toneCount],
+                      )}
                     >
-                      <div
-                        className={cn(
-                          "mb-6 flex size-14 items-center justify-center rounded-xl transition-transform group-hover:scale-110",
-                          toneTile[i % toneCount],
-                        )}
+                      <svg
+                        className="size-7"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
                       >
-                        <svg
-                          className="size-7"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d={expertiseIcons[i % expertiseIcons.length]} />
-                        </svg>
-                      </div>
-                      <h3 className="mb-3 text-xl font-bold text-card-foreground">
-                        {item.title}
-                      </h3>
-                      <p className="mb-4 text-muted-foreground">
-                        {item.description}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {item.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
+                        <path d={expertiseIcons[i % expertiseIcons.length]} />
+                      </svg>
                     </div>
+                    <h3 className="mb-3 text-xl font-bold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    <p className="mb-4 text-muted-foreground">
+                      {item.description}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {item.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -1294,7 +1299,9 @@ export const PortfolioDevKimiPage2 = defineCapsule({
                   <h2 className="mb-4 text-4xl font-black tracking-tight lg:text-5xl">
                     {projectsHeading}
                   </h2>
-                  <p className="text-lg text-muted-foreground">{projectsDesc}</p>
+                  <p className="text-lg text-muted-foreground">
+                    {projectsDesc}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -1310,7 +1317,10 @@ export const PortfolioDevKimiPage2 = defineCapsule({
                 {displayProjects.map((proj) => {
                   const isFavorite =
                     favoriteProjectTitles?.has(proj.title) ?? false
-                  const projTags = typeof proj.tags === 'string' ? proj.tags.split(',') : proj.tags
+                  const projTags =
+                    typeof proj.tags === 'string'
+                      ? proj.tags.split(',')
+                      : proj.tags
 
                   return (
                     <article
@@ -1347,15 +1357,15 @@ export const PortfolioDevKimiPage2 = defineCapsule({
                       <div className="p-6 lg:p-8">
                         <div className="mb-4 flex flex-wrap gap-2">
                           {projTags.map((tag, ti) => (
-                              <span
-                                key={tag}
-                                className={cn(
-                                  "rounded-full px-3 py-1 text-xs font-medium",
-                                  toneTile[ti % toneCount],
-                                )}
-                              >
-                                {tag}
-                              </span>
+                            <span
+                              key={tag}
+                              className={cn(
+                                'rounded-full px-3 py-1 text-xs font-medium',
+                                toneTile[ti % toneCount],
+                              )}
+                            >
+                              {tag}
+                            </span>
                           ))}
                         </div>
                         <h3 className="mb-3 text-2xl font-bold text-card-foreground transition-colors group-hover:text-primary">
@@ -1394,41 +1404,43 @@ export const PortfolioDevKimiPage2 = defineCapsule({
 
                   <div className="space-y-6">
                     {osItems.map((repo, i) => (
-                        <button
-                          key={repo.name}
-                          type="button"
-                          onClick={() => go(repo.name)}
-                          className="flex w-full items-start gap-4 rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-primary/30"
-                        >
-                          <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-muted">
-                            <GithubIcon className={cn("size-6", toneText[i % toneCount])} />
+                      <button
+                        key={repo.name}
+                        type="button"
+                        onClick={() => go(repo.name)}
+                        className="flex w-full items-start gap-4 rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-primary/30"
+                      >
+                        <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-muted">
+                          <GithubIcon
+                            className={cn('size-6', toneText[i % toneCount])}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <div className="mb-1 flex items-center gap-3">
+                            <h3 className="text-lg font-bold text-card-foreground">
+                              {repo.name}
+                            </h3>
+                            <span className="rounded bg-chart-4/10 px-2 py-0.5 text-xs font-medium text-chart-4">
+                              {repo.stars}
+                            </span>
                           </div>
-                          <div className="flex-1">
-                            <div className="mb-1 flex items-center gap-3">
-                              <h3 className="text-lg font-bold text-card-foreground">
-                                {repo.name}
-                              </h3>
-                              <span className="rounded bg-chart-4/10 px-2 py-0.5 text-xs font-medium text-chart-4">
-                                {repo.stars}
-                              </span>
-                            </div>
-                            <p className="mb-2 text-sm text-muted-foreground">
-                              {repo.description}
-                            </p>
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <span
-                                  className={cn(
-                                    "size-2 rounded-full",
-                                    toneDot[i % toneCount],
-                                  )}
-                                />
-                                {repo.language}
-                              </span>
-                              <span>{repo.license}</span>
-                            </div>
+                          <p className="mb-2 text-sm text-muted-foreground">
+                            {repo.description}
+                          </p>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <span
+                                className={cn(
+                                  'size-2 rounded-full',
+                                  toneDot[i % toneCount],
+                                )}
+                              />
+                              {repo.language}
+                            </span>
+                            <span>{repo.license}</span>
                           </div>
-                        </button>
+                        </div>
+                      </button>
                     ))}
                   </div>
 
@@ -1478,7 +1490,9 @@ export const PortfolioDevKimiPage2 = defineCapsule({
                     <div className="mb-1 text-lg font-semibold text-card-foreground">
                       {s.label}
                     </div>
-                    <div className="text-sm text-muted-foreground">{s.note}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {s.note}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1502,8 +1516,8 @@ export const PortfolioDevKimiPage2 = defineCapsule({
                   <div
                     key={t.name}
                     className={cn(
-                      "rounded-2xl border border-border bg-card p-6 lg:p-8",
-                      i >= 5 && "hidden lg:block",
+                      'rounded-2xl border border-border bg-card p-6 lg:p-8',
+                      i >= 5 && 'hidden lg:block',
                     )}
                   >
                     <div className="mb-4 flex gap-1 text-chart-4">
@@ -1643,7 +1657,7 @@ export const PortfolioDevKimiPage2 = defineCapsule({
                       onClick={() => go(social)}
                       className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground transition-all hover:bg-accent hover:text-foreground"
                     >
-                      {socialIcon(social, "size-5")}
+                      {socialIcon(social, 'size-5')}
                     </button>
                   ))}
                 </div>
@@ -1731,13 +1745,20 @@ export const PortfolioDevKimiPage2 = defineCapsule({
                 className="space-y-4"
                 onSubmit={(e) => {
                   e.preventDefault()
-                  void submitInquiry(inquiryForm.name, inquiryForm.email, inquiryForm.message)
+                  void submitInquiry(
+                    inquiryForm.name,
+                    inquiryForm.email,
+                    inquiryForm.message,
+                  )
                   setInquiryForm({ name: '', email: '', message: '' })
                   setContactOpen(false)
                 }}
               >
                 <div>
-                  <label htmlFor="name" className="mb-2 block text-sm font-medium text-foreground">
+                  <label
+                    htmlFor="name"
+                    className="mb-2 block text-sm font-medium text-foreground"
+                  >
                     Name
                   </label>
                   <input
@@ -1745,13 +1766,18 @@ export const PortfolioDevKimiPage2 = defineCapsule({
                     type="text"
                     required
                     value={inquiryForm.name}
-                    onChange={(e) => setInquiryForm({ ...inquiryForm, name: e.target.value })}
+                    onChange={(e) =>
+                      setInquiryForm({ ...inquiryForm, name: e.target.value })
+                    }
                     className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     placeholder="Your name"
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
+                  <label
+                    htmlFor="email"
+                    className="mb-2 block text-sm font-medium text-foreground"
+                  >
                     Email
                   </label>
                   <input
@@ -1759,13 +1785,18 @@ export const PortfolioDevKimiPage2 = defineCapsule({
                     type="email"
                     required
                     value={inquiryForm.email}
-                    onChange={(e) => setInquiryForm({ ...inquiryForm, email: e.target.value })}
+                    onChange={(e) =>
+                      setInquiryForm({ ...inquiryForm, email: e.target.value })
+                    }
                     className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     placeholder="your@email.com"
                   />
                 </div>
                 <div>
-                  <label htmlFor="message" className="mb-2 block text-sm font-medium text-foreground">
+                  <label
+                    htmlFor="message"
+                    className="mb-2 block text-sm font-medium text-foreground"
+                  >
                     Message
                   </label>
                   <textarea
@@ -1773,7 +1804,12 @@ export const PortfolioDevKimiPage2 = defineCapsule({
                     required
                     rows={6}
                     value={inquiryForm.message}
-                    onChange={(e) => setInquiryForm({ ...inquiryForm, message: e.target.value })}
+                    onChange={(e) =>
+                      setInquiryForm({
+                        ...inquiryForm,
+                        message: e.target.value,
+                      })
+                    }
                     className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
                     placeholder="Tell me about your project..."
                   />
@@ -1793,11 +1829,19 @@ export const PortfolioDevKimiPage2 = defineCapsule({
                 type="button"
                 className="rounded-full"
                 onClick={() => {
-                  void submitInquiry(inquiryForm.name, inquiryForm.email, inquiryForm.message)
+                  void submitInquiry(
+                    inquiryForm.name,
+                    inquiryForm.email,
+                    inquiryForm.message,
+                  )
                   setInquiryForm({ name: '', email: '', message: '' })
                   setContactOpen(false)
                 }}
-                disabled={!inquiryForm.name || !inquiryForm.email || !inquiryForm.message}
+                disabled={
+                  !inquiryForm.name ||
+                  !inquiryForm.email ||
+                  !inquiryForm.message
+                }
               >
                 Send Message
               </Button>

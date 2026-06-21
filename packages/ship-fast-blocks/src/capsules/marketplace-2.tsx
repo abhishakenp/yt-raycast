@@ -186,8 +186,6 @@ export const MarketplaceKimiPage2 = defineCapsule({
     const brand = props.brand ?? 'VENDO'
     const {
       nav,
-      searchPlaceholder,
-      cartCount,
       sellCta,
       heroBadge,
       heroLead,
@@ -198,7 +196,6 @@ export const MarketplaceKimiPage2 = defineCapsule({
       heroSecondary,
       heroAvatars,
       heroProof,
-      heroProducts,
       pressCaption,
       pressLogos,
       catEyebrow,
@@ -854,7 +851,8 @@ export const MarketplaceKimiPage2 = defineCapsule({
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-4 pt-8">
                       {[0, 2].map((idx) => {
-                        const heroProduct = displayProducts[idx % displayProducts.length]
+                        const heroProduct =
+                          displayProducts[idx % displayProducts.length]
                         return (
                           <div
                             key={idx}
@@ -888,7 +886,8 @@ export const MarketplaceKimiPage2 = defineCapsule({
                     </div>
                     <div className="space-y-4">
                       {[1, 3].map((idx) => {
-                        const heroProduct = displayProducts[idx % displayProducts.length]
+                        const heroProduct =
+                          displayProducts[idx % displayProducts.length]
                         return (
                           <div
                             key={idx}

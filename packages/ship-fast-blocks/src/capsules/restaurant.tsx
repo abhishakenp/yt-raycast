@@ -1,10 +1,9 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ElementType } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   CalendarCheck,
-  ChevronDown,
   Clock,
   Flame,
   Leaf,
@@ -14,10 +13,10 @@ import {
   Soup,
   Utensils,
   Wheat,
-} from "lucide-react"
-import { cn } from "#/lib/utils.ts"
-import { Image } from "#/lib/img.tsx"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+} from 'lucide-react'
+import { cn } from '#/lib/utils.ts'
+import { Image } from '#/lib/img.tsx'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 import {
   Sheet,
   SheetClose,
@@ -27,30 +26,30 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 // About "Our Story" feature chips, keyed by intent; falls back to a soup bowl.
 const FEATURE_ICONS = [Flame, Wheat, Leaf]
 
 // Rotating token tints for the decorative story icon chips (no raw palette).
 const FEATURE_CHIPS = [
-  "bg-primary/10 text-primary",
-  "bg-chart-4/10 text-chart-4",
-  "bg-chart-2/10 text-chart-2",
+  'bg-primary/10 text-primary',
+  'bg-chart-4/10 text-chart-4',
+  'bg-chart-2/10 text-chart-2',
 ]
 
 // Tag style per Kimi's menu__tag--{veg,spicy,chef} classes (warm palette).
 const TAG_STYLES: Record<string, string> = {
-  veg: "bg-chart-2/10 text-chart-2",
-  spicy: "bg-primary/10 text-primary",
-  chef: "bg-chart-4/10 text-chart-4",
+  veg: 'bg-chart-2/10 text-chart-2',
+  spicy: 'bg-primary/10 text-primary',
+  chef: 'bg-chart-4/10 text-chart-4',
 }
 
 const FacebookIcon = ({ className }: { className?: string }) => (
@@ -75,6 +74,16 @@ const InstagramIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
+const FOOTER_SOCIALS: Array<{
+  Icon: ElementType<{ className?: string }>
+  label: string
+}> = [
+  { Icon: InstagramIcon, label: 'Instagram' },
+  { Icon: FacebookIcon, label: 'Facebook' },
+  { Icon: MapPin, label: 'Yelp' },
+  { Icon: Clock, label: 'TikTok' },
+]
+
 /**
  * RestaurantKimiPage — a warm, cream-toned, image-led ramen restaurant HOME page,
  * ported faithfully from the Kimi "Kaze Ramen" design (Authentic Japanese Noodles
@@ -96,7 +105,7 @@ const InstagramIcon = ({ className }: { className?: string }) => (
  * styling; callers supply ONLY content and rich defaults keep it whole.
  */
 export const RestaurantKimiPage = defineCapsule({
-  name: "RestaurantKimiPage",
+  name: 'RestaurantKimiPage',
   description:
     "Warm, cream-toned, image-forward ramen / izakaya / noodle-bar / Japanese-restaurant HOME page (ported from a Kimi 'Kaze Ramen' design). A blurred sticky cream navbar with a bowl-icon serif logo and a 'Reserve a Table' CTA, a full-bleed cinematic hero with a warm dark gradient scrim over a steaming-ramen photo + dual CTAs and a scroll cue, an about/story split with stacked overlapping photos and three crimson icon-chip features, a TABBED menu (Ramen / Starters / Donburi / Drinks) where each dish is a photo + name + price + flavor tag, a masonry-style captioned gallery on a dark band, an hours-and-location split (hours list + address/phone/email contact card + map panel), a reservations CTA band with call / book actions, and a four-column footer with social icons. Use as the ROOT page for warm, inviting, upscale food brands — ramen shops, izakayas, noodle bars, sushi counters, bistros, cafes, or any 'cozy premium restaurant site' request — where appetizing imagery, menu prices, hours, and reservations matter. Supply content only — brand, nav, hero, about, menu sections with items+prices, gallery, hours/location, reservation; the block owns all layout, gradients, depth, and styling.",
   props: z.object({
@@ -107,16 +116,22 @@ export const RestaurantKimiPage = defineCapsule({
     /** Full-bleed hero. */
     hero: z
       .object({
-        eyebrow: z.string().optional().describe("small uppercased kicker above the headline"),
+        eyebrow: z
+          .string()
+          .optional()
+          .describe('small uppercased kicker above the headline'),
         heading: z.string().optional(),
         highlight: z
           .string()
           .optional()
-          .describe("trailing word in the heading rendered in the gold accent"),
+          .describe('trailing word in the heading rendered in the gold accent'),
         subheading: z.string().optional(),
         primaryCta: z.string().optional(),
         secondaryCta: z.string().optional(),
-        alt: z.string().optional().describe("short description of the hero ramen photo"),
+        alt: z
+          .string()
+          .optional()
+          .describe('short description of the hero ramen photo'),
       })
       .optional(),
     /** About / story split band. */
@@ -124,14 +139,20 @@ export const RestaurantKimiPage = defineCapsule({
       .object({
         eyebrow: z.string().optional(),
         heading: z.string().optional(),
-        body: z.string().optional().describe("the story paragraph"),
+        body: z.string().optional().describe('the story paragraph'),
         cta: z.string().optional(),
-        alt: z.string().optional().describe("short description of the main about photo"),
-        altSecondary: z.string().optional().describe("short description of the inset about photo"),
+        alt: z
+          .string()
+          .optional()
+          .describe('short description of the main about photo'),
+        altSecondary: z
+          .string()
+          .optional()
+          .describe('short description of the inset about photo'),
         features: z
           .array(z.object({ title: z.string(), description: z.string() }))
           .optional()
-          .describe("up to three icon-chip story features"),
+          .describe('up to three icon-chip story features'),
       })
       .optional(),
     /** Tabbed menu: heading + categories, each with items (name + price + desc + optional tag). */
@@ -153,12 +174,14 @@ export const RestaurantKimiPage = defineCapsule({
                     .object({
                       label: z.string(),
                       kind: z
-                        .enum(["veg", "spicy", "chef"])
+                        .enum(['veg', 'spicy', 'chef'])
                         .optional()
-                        .describe("color intent for the tag"),
+                        .describe('color intent for the tag'),
                     })
                     .optional(),
-                  alt: z.string().describe("short description of the dish photo"),
+                  alt: z
+                    .string()
+                    .describe('short description of the dish photo'),
                 }),
               ),
             }),
@@ -177,11 +200,13 @@ export const RestaurantKimiPage = defineCapsule({
             z.object({
               title: z.string(),
               caption: z.string(),
-              alt: z.string().describe("short description of the gallery photo"),
+              alt: z
+                .string()
+                .describe('short description of the gallery photo'),
               span: z
-                .enum(["wide", "tall", "default"])
+                .enum(['wide', 'tall', 'default'])
                 .optional()
-                .describe("grid emphasis for the tile"),
+                .describe('grid emphasis for the tile'),
             }),
           )
           .optional(),
@@ -206,7 +231,10 @@ export const RestaurantKimiPage = defineCapsule({
         address: z.string().optional(),
         phone: z.string().optional(),
         email: z.string().optional(),
-        alt: z.string().optional().describe("short description of the location/map photo"),
+        alt: z
+          .string()
+          .optional()
+          .describe('short description of the location/map photo'),
       })
       .optional(),
     /** Reservation CTA band. */
@@ -257,7 +285,13 @@ export const RestaurantKimiPage = defineCapsule({
         new Set(db.favorites.all().map((favorite) => favorite.dishName)),
     },
     mutations: {
-      addReservation: ({ db }, name: string, date: string, time: string, partySize: number) => {
+      addReservation: (
+        { db },
+        name: string,
+        date: string,
+        time: string,
+        partySize: number,
+      ) => {
         db.reservations.insert({ name, date, time, partySize })
         return db.reservations.all()
       },
@@ -284,211 +318,199 @@ export const RestaurantKimiPage = defineCapsule({
     const go = useNavigate()
     const [reservationOpen, setReservationOpen] = useState(false)
     const [mobileOpen, setMobileOpen] = useState(false)
-    const brand = props.brand ?? "Kaze Ramen"
+    const brand = props.brand ?? 'Kaze Ramen'
 
     const navLinks = props.nav?.length
       ? props.nav
-      : ["Our Story", "Menu", "Gallery", "Hours & Location"]
-    const reserveLabel = "Reserve a Table"
+      : ['Our Story', 'Menu', 'Gallery', 'Hours & Location']
+    const reserveLabel = 'Reserve a Table'
 
     const heroEyebrow = props.hero?.eyebrow ?? "Portland's Pearl District"
-    const heroHeading = props.hero?.heading ?? "Noodles Crafted with"
-    const heroHighlight = props.hero?.highlight ?? "Soul"
+    const heroHeading = props.hero?.heading ?? 'Noodles Crafted with'
+    const heroHighlight = props.hero?.highlight ?? 'Soul'
     const heroSub =
       props.hero?.subheading ??
       "Hand-pulled noodles, 18-hour tonkotsu broths, and seasonally inspired toppings. Experience ramen the way it's meant to be — rich, complex, and unforgettable."
-    const heroPrimary = props.hero?.primaryCta ?? "View Our Menu"
-    const heroSecondary = props.hero?.secondaryCta ?? "Book a Table"
+    const heroPrimary = props.hero?.primaryCta ?? 'View Our Menu'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Book a Table'
 
-    const aboutEyebrow = props.about?.eyebrow ?? "Our Story"
+    const aboutEyebrow = props.about?.eyebrow ?? 'Our Story'
     const aboutHeading =
-      props.about?.heading ?? "Eighteen Hours of Patience in Every Bowl"
+      props.about?.heading ?? 'Eighteen Hours of Patience in Every Bowl'
     const aboutBody =
       props.about?.body ??
       "Kaze Ramen opened in 2019 when Chef Yuki Tanaka brought her grandfather's Fukuoka recipes to Portland. What started as a 12-seat counter has grown into a gathering place for anyone who believes great food takes time. We simmer pork bones overnight, hand-pull our noodles each morning, and source our produce from farms within 50 miles."
-    const aboutCta = props.about?.cta ?? "Explore the Menu"
+    const aboutCta = props.about?.cta ?? 'Explore the Menu'
     const aboutFeatures = props.about?.features?.length
       ? props.about.features
       : [
-        {
-          title: "18-Hour Tonkotsu",
-          description:
-            "Pork bones simmered low and slow for a broth that's impossibly creamy.",
-        },
-        {
-          title: "Hand-Pulled Noodles",
-          description:
-            "Made fresh every morning with Canadian wheat and precise hydration.",
-        },
-        {
-          title: "Local & Seasonal",
-          description:
-            "Produce from Sauvie Island farms, eggs from Pasturebird Ranch.",
-        },
-      ]
+          {
+            title: '18-Hour Tonkotsu',
+            description:
+              "Pork bones simmered low and slow for a broth that's impossibly creamy.",
+          },
+          {
+            title: 'Hand-Pulled Noodles',
+            description:
+              'Made fresh every morning with Canadian wheat and precise hydration.',
+          },
+          {
+            title: 'Local & Seasonal',
+            description:
+              'Produce from Sauvie Island farms, eggs from Pasturebird Ranch.',
+          },
+        ]
 
-    const menuEyebrow = props.menu?.eyebrow ?? "The Menu"
-    const menuHeading = props.menu?.heading ?? "Bowls Built on Tradition"
+    const menuEyebrow = props.menu?.eyebrow ?? 'The Menu'
+    const menuHeading = props.menu?.heading ?? 'Bowls Built on Tradition'
     const menuSub =
       props.menu?.subheading ??
-      "Every bowl starts with broth simmered overnight and noodles pulled by hand. Toppings change with the seasons, but the craft never wavers."
+      'Every bowl starts with broth simmered overnight and noodles pulled by hand. Toppings change with the seasons, but the craft never wavers.'
     const menuCategories = props.menu?.categories?.length
       ? props.menu.categories
       : [
-        {
-          label: "Ramen",
-          items: [
-            {
-              dish: "Tonkotsu Original",
-              description:
-                "18-hour pork bone broth, hand-pulled noodles, chashu, soft egg, wood ear mushrooms, scallions, and mayu.",
-              price: "$16",
-              tag: { label: "Chef's Pick", kind: "chef" as const },
-              alt: "Tonkotsu Original ramen bowl",
-            },
-            {
-              dish: "Spicy Miso",
-              description:
-                "Double-blended red and white miso, chili oil, ground pork, corn, bean sprouts, and a slow-poached egg.",
-              price: "$17",
-              tag: { label: "Spicy", kind: "spicy" as const },
-              alt: "Spicy Miso ramen bowl",
-            },
-            {
-              dish: "Shoyu Chintan",
-              description:
-                "Clear chicken and dashi broth, soy tare, thin noodles, nori, menma, narutomaki, and spinach.",
-              price: "$15",
-              alt: "Shoyu Chintan ramen bowl",
-            },
-            {
-              dish: "Vegan Shiitake",
-              description:
-                "Kombu and dried shiitake broth, tofu chashu, king oyster mushrooms, bok choy, and truffle oil.",
-              price: "$16",
-              tag: { label: "Vegan", kind: "veg" as const },
-              alt: "Vegan Shiitake ramen bowl",
-            },
-          ],
-        },
-        {
-          label: "Starters",
-          items: [
-            {
-              dish: "Pork Gyoza",
-              description:
-                "Pan-fried dumplings with ginger, garlic chives, and our house rayu dipping sauce. Six pieces.",
-              price: "$9",
-              alt: "Crispy gyoza dumplings",
-            },
-            {
-              dish: "Karaage Chicken",
-              description:
-                "Soy-marinated thigh, double-fried for crunch, served with Kewpie mayo and lemon wedge.",
-              price: "$11",
-              tag: { label: "Popular", kind: "chef" as const },
-              alt: "Karaage fried chicken",
-            },
-            {
-              dish: "Edamame",
-              description:
-                "Warm soybeans tossed with sea salt and yuzu zest. Simple, snackable, perfect with beer.",
-              price: "$6",
-              tag: { label: "Vegan", kind: "veg" as const },
-              alt: "Edamame with sea salt",
-            },
-            {
-              dish: "Takoyaki",
-              description:
-                "Crispy wheat balls with diced octopus, topped with okonomiyaki sauce, mayo, and bonito flakes.",
-              price: "$10",
-              alt: "Takoyaki octopus balls",
-            },
-          ],
-        },
-        {
-          label: "Donburi",
-          items: [
-            {
-              dish: "Katsudon",
-              description:
-                "Panko-breaded pork cutlet, sweet onion, and egg simmered over seasoned sushi rice.",
-              price: "$18",
-              alt: "Katsudon pork cutlet rice bowl",
-            },
-            {
-              dish: "Salmon Teriyaki",
-              description:
-                "Grilled King salmon fillet, house teriyaki glaze, pickled ginger, and steamed broccoli over rice.",
-              price: "$19",
-              alt: "Salmon Teriyaki rice bowl",
-            },
-            {
-              dish: "Unagi Don",
-              description:
-                "Grilled freshwater eel glazed with kabayaki sauce, served over seasoned rice with sansho pepper.",
-              price: "$22",
-              tag: { label: "Premium", kind: "chef" as const },
-              alt: "Unagi Don grilled eel rice bowl",
-            },
-            {
-              dish: "Tempura Don",
-              description:
-                "Assorted seasonal vegetables in light tempura batter, served over rice with tentsuyu dipping broth.",
-              price: "$16",
-              tag: { label: "Vegetarian", kind: "veg" as const },
-              alt: "Vegetable Tempura rice bowl",
-            },
-          ],
-        },
-        {
-          label: "Drinks",
-          items: [
-            {
-              dish: "Japanese Craft Beer",
-              description:
-                "Rotating selection from Hitachino Nest, Yoho Brewing, and Baird Beer. Ask your server for today's pour.",
-              price: "$8",
-              alt: "Japanese craft beer selection",
-            },
-            {
-              dish: "House Hot Sake",
-              description:
-                "Ozeki Junmai, served warm in a traditional tokkuri carafe with ochoko cup. Clean, smooth, rice-forward.",
-              price: "$12",
-              alt: "Hot sake carafe and cup",
-            },
-            {
-              dish: "Ceremonial Matcha",
-              description:
-                "Uji matcha whisked to order. Available hot or iced, with optional oat milk.",
-              price: "$7",
-              tag: { label: "Caffeine", kind: "veg" as const },
-              alt: "Matcha latte in ceramic cup",
-            },
-            {
-              dish: "Yuzu Sparkling Soda",
-              description:
-                "House-made yuzu syrup, sparkling water, fresh mint. Tart, bright, and incredibly refreshing.",
-              price: "$5",
-              alt: "Yuzu soda in glass",
-            },
-          ],
-        },
-      ]
+          {
+            label: 'Ramen',
+            items: [
+              {
+                dish: 'Tonkotsu Original',
+                description:
+                  '18-hour pork bone broth, hand-pulled noodles, chashu, soft egg, wood ear mushrooms, scallions, and mayu.',
+                price: '$16',
+                tag: { label: "Chef's Pick", kind: 'chef' as const },
+                alt: 'Tonkotsu Original ramen bowl',
+              },
+              {
+                dish: 'Spicy Miso',
+                description:
+                  'Double-blended red and white miso, chili oil, ground pork, corn, bean sprouts, and a slow-poached egg.',
+                price: '$17',
+                tag: { label: 'Spicy', kind: 'spicy' as const },
+                alt: 'Spicy Miso ramen bowl',
+              },
+              {
+                dish: 'Shoyu Chintan',
+                description:
+                  'Clear chicken and dashi broth, soy tare, thin noodles, nori, menma, narutomaki, and spinach.',
+                price: '$15',
+                alt: 'Shoyu Chintan ramen bowl',
+              },
+              {
+                dish: 'Vegan Shiitake',
+                description:
+                  'Kombu and dried shiitake broth, tofu chashu, king oyster mushrooms, bok choy, and truffle oil.',
+                price: '$16',
+                tag: { label: 'Vegan', kind: 'veg' as const },
+                alt: 'Vegan Shiitake ramen bowl',
+              },
+            ],
+          },
+          {
+            label: 'Starters',
+            items: [
+              {
+                dish: 'Pork Gyoza',
+                description:
+                  'Pan-fried dumplings with ginger, garlic chives, and our house rayu dipping sauce. Six pieces.',
+                price: '$9',
+                alt: 'Crispy gyoza dumplings',
+              },
+              {
+                dish: 'Karaage Chicken',
+                description:
+                  'Soy-marinated thigh, double-fried for crunch, served with Kewpie mayo and lemon wedge.',
+                price: '$11',
+                tag: { label: 'Popular', kind: 'chef' as const },
+                alt: 'Karaage fried chicken',
+              },
+              {
+                dish: 'Edamame',
+                description:
+                  'Warm soybeans tossed with sea salt and yuzu zest. Simple, snackable, perfect with beer.',
+                price: '$6',
+                tag: { label: 'Vegan', kind: 'veg' as const },
+                alt: 'Edamame with sea salt',
+              },
+              {
+                dish: 'Takoyaki',
+                description:
+                  'Crispy wheat balls with diced octopus, topped with okonomiyaki sauce, mayo, and bonito flakes.',
+                price: '$10',
+                alt: 'Takoyaki octopus balls',
+              },
+            ],
+          },
+          {
+            label: 'Donburi',
+            items: [
+              {
+                dish: 'Katsudon',
+                description:
+                  'Panko-breaded pork cutlet, sweet onion, and egg simmered over seasoned sushi rice.',
+                price: '$18',
+                alt: 'Katsudon pork cutlet rice bowl',
+              },
+              {
+                dish: 'Salmon Teriyaki',
+                description:
+                  'Grilled King salmon fillet, house teriyaki glaze, pickled ginger, and steamed broccoli over rice.',
+                price: '$19',
+                alt: 'Salmon Teriyaki rice bowl',
+              },
+              {
+                dish: 'Unagi Don',
+                description:
+                  'Grilled freshwater eel glazed with kabayaki sauce, served over seasoned rice with sansho pepper.',
+                price: '$22',
+                tag: { label: 'Premium', kind: 'chef' as const },
+                alt: 'Unagi Don grilled eel rice bowl',
+              },
+              {
+                dish: 'Tempura Don',
+                description:
+                  'Assorted seasonal vegetables in light tempura batter, served over rice with tentsuyu dipping broth.',
+                price: '$16',
+                tag: { label: 'Vegetarian', kind: 'veg' as const },
+                alt: 'Vegetable Tempura rice bowl',
+              },
+            ],
+          },
+          {
+            label: 'Drinks',
+            items: [
+              {
+                dish: 'Japanese Craft Beer',
+                description:
+                  "Rotating selection from Hitachino Nest, Yoho Brewing, and Baird Beer. Ask your server for today's pour.",
+                price: '$8',
+                alt: 'Japanese craft beer selection',
+              },
+              {
+                dish: 'House Hot Sake',
+                description:
+                  'Ozeki Junmai, served warm in a traditional tokkuri carafe with ochoko cup. Clean, smooth, rice-forward.',
+                price: '$12',
+                alt: 'Hot sake carafe and cup',
+              },
+              {
+                dish: 'Ceremonial Matcha',
+                description:
+                  'Uji matcha whisked to order. Available hot or iced, with optional oat milk.',
+                price: '$7',
+                tag: { label: 'Caffeine', kind: 'veg' as const },
+                alt: 'Matcha latte in ceramic cup',
+              },
+              {
+                dish: 'Yuzu Sparkling Soda',
+                description:
+                  'House-made yuzu syrup, sparkling water, fresh mint. Tart, bright, and incredibly refreshing.',
+                price: '$5',
+                alt: 'Yuzu soda in glass',
+              },
+            ],
+          },
+        ]
 
-    const normalizedMenuItems = menuCategories.flatMap((cat) =>
-      cat.items.map((item) => ({
-        alt: item.alt,
-        description: item.description,
-        dish: item.dish,
-        price: item.price,
-        tagKind: item.tag?.kind ?? '',
-        tagLabel: item.tag?.label ?? '',
-      })),
-    )
-
-    const storedMenuItems = lakebed.useQuery('menuItems')
     const reservations = lakebed.useQuery('reservations')
     const favoriteDishNames = lakebed.useQuery('favoriteDishNames')
     const auth = lakebed.useAuth()
@@ -522,11 +544,6 @@ export const RestaurantKimiPage = defineCapsule({
     const handleSignOut = () => {
       lakebed.signOut()
     }
-
-    const displayMenuItems =
-      storedMenuItems && storedMenuItems.length > 0
-        ? storedMenuItems
-        : normalizedMenuItems
 
     const safeReservations = reservations ?? []
     const reservationCount = safeReservations.length
@@ -580,82 +597,84 @@ export const RestaurantKimiPage = defineCapsule({
       </svg>
     )
 
-    const galleryEyebrow = props.gallery?.eyebrow ?? "Gallery"
-    const galleryHeading = props.gallery?.heading ?? "A Look Inside"
+    const galleryEyebrow = props.gallery?.eyebrow ?? 'Gallery'
+    const galleryHeading = props.gallery?.heading ?? 'A Look Inside'
     const gallerySub =
       props.gallery?.subheading ??
-      "The open kitchen, the steam rising from the pots, the first slurp of a perfect bowl — this is Kaze."
+      'The open kitchen, the steam rising from the pots, the first slurp of a perfect bowl — this is Kaze.'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
-        {
-          title: "The Counter",
-          caption: "12 seats, open kitchen, front-row view",
-          alt: "Warm interior of Kaze Ramen with wooden counter and pendant lights",
-          span: "wide" as const,
-        },
-        {
-          title: "Chashu Prep",
-          caption: "Braised pork belly, sliced to order",
-          alt: "Chef carefully plating chashu pork slices",
-          span: "tall" as const,
-        },
-        {
-          title: "The Pass",
-          caption: "Every bowl gets a final check",
-          alt: "Steaming bowl of ramen being prepared at the kitchen pass",
-          span: "default" as const,
-        },
-        {
-          title: "Communal Tables",
-          caption: "Ramen is better together",
-          alt: "Diners enjoying ramen at communal tables",
-          span: "wide" as const,
-        },
-        {
-          title: "Noodle Pull",
-          caption: "5 AM, every single day",
-          alt: "Close up of handmade noodles being portioned",
-          span: "default" as const,
-        },
-      ]
+          {
+            title: 'The Counter',
+            caption: '12 seats, open kitchen, front-row view',
+            alt: 'Warm interior of Kaze Ramen with wooden counter and pendant lights',
+            span: 'wide' as const,
+          },
+          {
+            title: 'Chashu Prep',
+            caption: 'Braised pork belly, sliced to order',
+            alt: 'Chef carefully plating chashu pork slices',
+            span: 'tall' as const,
+          },
+          {
+            title: 'The Pass',
+            caption: 'Every bowl gets a final check',
+            alt: 'Steaming bowl of ramen being prepared at the kitchen pass',
+            span: 'default' as const,
+          },
+          {
+            title: 'Communal Tables',
+            caption: 'Ramen is better together',
+            alt: 'Diners enjoying ramen at communal tables',
+            span: 'wide' as const,
+          },
+          {
+            title: 'Noodle Pull',
+            caption: '5 AM, every single day',
+            alt: 'Close up of handmade noodles being portioned',
+            span: 'default' as const,
+          },
+        ]
 
-    const visitEyebrow = props.visit?.eyebrow ?? "Hours & Location"
-    const visitHeading = props.visit?.heading ?? "Come Find Us in the Pearl"
+    const visitEyebrow = props.visit?.eyebrow ?? 'Hours & Location'
+    const visitHeading = props.visit?.heading ?? 'Come Find Us in the Pearl'
     const visitBody =
       props.visit?.body ??
       "We're tucked into a converted warehouse on NW 23rd, a short walk from Powell's Books. Street parking is available on NW Irving and Johnson."
     const visitHours = props.visit?.hours?.length
       ? props.visit.hours
       : [
-        { days: "Monday — Thursday", time: "11:00 AM — 10:00 PM" },
-        { days: "Friday — Saturday", time: "11:00 AM — 11:00 PM", highlight: true },
-        { days: "Sunday", time: "12:00 PM — 9:00 PM" },
-        { days: "Happy Hour", time: "Tue–Fri, 4:00 PM — 6:00 PM" },
-      ]
-    const visitContactTitle = props.visit?.contactTitle ?? "Get in Touch"
+          { days: 'Monday — Thursday', time: '11:00 AM — 10:00 PM' },
+          {
+            days: 'Friday — Saturday',
+            time: '11:00 AM — 11:00 PM',
+            highlight: true,
+          },
+          { days: 'Sunday', time: '12:00 PM — 9:00 PM' },
+          { days: 'Happy Hour', time: 'Tue–Fri, 4:00 PM — 6:00 PM' },
+        ]
+    const visitContactTitle = props.visit?.contactTitle ?? 'Get in Touch'
     const visitAddress =
-      props.visit?.address ?? "1422 NW 23rd Avenue, Portland, OR 97210"
-    const visitPhone = props.visit?.phone ?? "(503) 555-0192"
-    const visitEmail = props.visit?.email ?? "hello@kazeramen.com"
+      props.visit?.address ?? '1422 NW 23rd Avenue, Portland, OR 97210'
+    const visitPhone = props.visit?.phone ?? '(503) 555-0192'
+    const visitEmail = props.visit?.email ?? 'hello@kazeramen.com'
 
-    const resEyebrow = props.reservation?.eyebrow ?? "Reservations"
+    const resEyebrow = props.reservation?.eyebrow ?? 'Reservations'
     const resHeading =
-      props.reservation?.heading ?? "Secure Your Seat at the Counter"
+      props.reservation?.heading ?? 'Secure Your Seat at the Counter'
     const resBody =
       props.reservation?.body ??
-      "We take reservations for parties of up to 6. Walk-ins are always welcome for the bar and communal tables. For larger groups or private events, please call us directly."
-    const resPrimary = props.reservation?.primaryCta ?? "Call to Reserve"
-    const resSecondary = props.reservation?.secondaryCta ?? "Book Online"
+      'We take reservations for parties of up to 6. Walk-ins are always welcome for the bar and communal tables. For larger groups or private events, please call us directly.'
     const resPhoneNote =
-      props.reservation?.phoneNote ?? "Or call us directly at"
-    const resPhone = props.reservation?.phone ?? "(503) 555-0192"
+      props.reservation?.phoneNote ?? 'Or call us directly at'
+    const resPhone = props.reservation?.phone ?? '(503) 555-0192'
 
     const footerDesc =
       props.footer?.description ??
       "Handcrafted ramen in Portland's Pearl District. Open daily with 18-hour broths, house-made noodles, and locally sourced ingredients."
     const footerTagline =
-      props.footer?.tagline ?? "Crafted with care in Portland, Oregon."
+      props.footer?.tagline ?? 'Crafted with care in Portland, Oregon.'
     const year = new Date().getFullYear()
 
     const [activeTab, setActiveTab] = useState(0)
@@ -666,7 +685,7 @@ export const RestaurantKimiPage = defineCapsule({
       <div
         className={cn(
           // Kimi base: warm cream surface, charcoal text — via theme tokens for dark-mode safety.
-          "flex min-h-svh flex-col bg-background text-foreground antialiased",
+          'flex min-h-svh flex-col bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -836,7 +855,8 @@ export const RestaurantKimiPage = defineCapsule({
                               <div className="flex items-start justify-between gap-3">
                                 <div>
                                   <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                    {res.partySize} guest{res.partySize === 1 ? '' : 's'}
+                                    {res.partySize} guest
+                                    {res.partySize === 1 ? '' : 's'}
                                   </p>
                                   <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
                                     {res.name}
@@ -1007,7 +1027,7 @@ export const RestaurantKimiPage = defineCapsule({
               <Image
                 alt={
                   props.hero?.alt ??
-                  "Steaming bowl of tonkotsu ramen with chashu pork, soft-boiled egg, and fresh scallions"
+                  'Steaming bowl of tonkotsu ramen with chashu pork, soft-boiled egg, and fresh scallions'
                 }
                 w={1920}
                 h={1200}
@@ -1023,7 +1043,8 @@ export const RestaurantKimiPage = defineCapsule({
                   {heroEyebrow}
                 </p>
                 <h1 className="font-serif text-5xl font-bold leading-[1.1] tracking-tight text-balance md:text-7xl">
-                  {heroHeading} <span className="text-primary">{heroHighlight}</span>
+                  {heroHeading}{' '}
+                  <span className="text-primary">{heroHighlight}</span>
                 </h1>
                 <p className="mt-5 max-w-[480px] text-lg leading-relaxed text-background/85">
                   {heroSub}
@@ -1054,7 +1075,7 @@ export const RestaurantKimiPage = defineCapsule({
               className="absolute bottom-8 left-1/2 flex -translate-x-1/2 animate-bounce flex-col items-center gap-2 text-xs font-medium tracking-wider text-background/50 uppercase"
             >
               <span>Scroll</span>
-              <ChevronDownIcon className="size-4" />
+              <ChevronDownIcon />
             </button>
           </section>
 
@@ -1066,7 +1087,7 @@ export const RestaurantKimiPage = defineCapsule({
                   <Image
                     alt={
                       props.about?.alt ??
-                      "Chef pulling fresh ramen noodles by hand in the kitchen"
+                      'Chef pulling fresh ramen noodles by hand in the kitchen'
                     }
                     w={800}
                     h={1000}
@@ -1078,7 +1099,7 @@ export const RestaurantKimiPage = defineCapsule({
                   <Image
                     alt={
                       props.about?.altSecondary ??
-                      "Close-up of rich, creamy tonkotsu broth being ladled"
+                      'Close-up of rich, creamy tonkotsu broth being ladled'
                     }
                     w={600}
                     h={400}
@@ -1095,17 +1116,22 @@ export const RestaurantKimiPage = defineCapsule({
                 <h2 className="font-serif text-3xl font-bold leading-tight tracking-tight text-balance md:text-4xl">
                   {aboutHeading}
                 </h2>
-                <p className="mt-5 leading-relaxed text-muted-foreground">{aboutBody}</p>
+                <p className="mt-5 leading-relaxed text-muted-foreground">
+                  {aboutBody}
+                </p>
 
                 <div className="mt-8 flex flex-col gap-5">
                   {aboutFeatures.map((feat, i) => {
                     const Icon = FEATURE_ICONS[i] ?? Soup
                     const chip = FEATURE_CHIPS[i % FEATURE_CHIPS.length]
                     return (
-                      <div key={feat.title} className="flex items-start gap-3.5">
+                      <div
+                        key={feat.title}
+                        className="flex items-start gap-3.5"
+                      >
                         <span
                           className={cn(
-                            "inline-flex size-10 flex-shrink-0 items-center justify-center rounded-md",
+                            'inline-flex size-10 flex-shrink-0 items-center justify-center rounded-md',
                             chip,
                           )}
                         >
@@ -1143,7 +1169,9 @@ export const RestaurantKimiPage = defineCapsule({
                 <h2 className="font-serif text-3xl font-bold leading-tight tracking-tight text-balance md:text-4xl">
                   {menuHeading}
                 </h2>
-                <p className="mt-4 leading-relaxed text-muted-foreground">{menuSub}</p>
+                <p className="mt-4 leading-relaxed text-muted-foreground">
+                  {menuSub}
+                </p>
               </div>
 
               <div
@@ -1159,10 +1187,10 @@ export const RestaurantKimiPage = defineCapsule({
                     aria-selected={i === activeTab}
                     onClick={() => setActiveTab(i)}
                     className={cn(
-                      "rounded-md border px-6 py-2.5 text-sm font-semibold transition-all",
+                      'rounded-md border px-6 py-2.5 text-sm font-semibold transition-all',
                       i === activeTab
-                        ? "border-primary/20 bg-primary/10 text-primary"
-                        : "border-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                        ? 'border-primary/20 bg-primary/10 text-primary'
+                        : 'border-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                     )}
                   >
                     {cat.label}
@@ -1207,7 +1235,9 @@ export const RestaurantKimiPage = defineCapsule({
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="mb-1.5 flex items-baseline justify-between gap-3">
-                          <h3 className="font-serif text-lg font-semibold">{item.dish}</h3>
+                          <h3 className="font-serif text-lg font-semibold">
+                            {item.dish}
+                          </h3>
                           <span className="flex-shrink-0 text-base font-bold text-primary">
                             {item.price}
                           </span>
@@ -1218,8 +1248,8 @@ export const RestaurantKimiPage = defineCapsule({
                         {item.tag ? (
                           <span
                             className={cn(
-                              "inline-block rounded px-2 py-0.5 text-[0.7rem] font-semibold tracking-wide uppercase",
-                              TAG_STYLES[item.tag.kind ?? "chef"],
+                              'inline-block rounded px-2 py-0.5 text-[0.7rem] font-semibold tracking-wide uppercase',
+                              TAG_STYLES[item.tag.kind ?? 'chef'],
                             )}
                           >
                             {item.tag.label}
@@ -1243,7 +1273,9 @@ export const RestaurantKimiPage = defineCapsule({
                 <h2 className="font-serif text-3xl font-bold leading-tight tracking-tight text-balance md:text-4xl">
                   {galleryHeading}
                 </h2>
-                <p className="mt-4 leading-relaxed text-background/60">{gallerySub}</p>
+                <p className="mt-4 leading-relaxed text-background/60">
+                  {gallerySub}
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:grid-rows-2">
@@ -1251,9 +1283,9 @@ export const RestaurantKimiPage = defineCapsule({
                   <figure
                     key={item.title}
                     className={cn(
-                      "group relative aspect-4/3 overflow-hidden rounded-xl md:aspect-auto",
-                      item.span === "wide" && "md:col-span-2",
-                      item.span === "tall" && "md:row-span-2",
+                      'group relative aspect-4/3 overflow-hidden rounded-xl md:aspect-auto',
+                      item.span === 'wide' && 'md:col-span-2',
+                      item.span === 'tall' && 'md:row-span-2',
                     )}
                   >
                     <Image
@@ -1265,8 +1297,12 @@ export const RestaurantKimiPage = defineCapsule({
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                     <figcaption className="absolute inset-x-0 bottom-0 translate-y-2 p-5 opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100">
-                      <p className="font-serif text-lg font-semibold">{item.title}</p>
-                      <p className="text-sm text-background/75">{item.caption}</p>
+                      <p className="font-serif text-lg font-semibold">
+                        {item.title}
+                      </p>
+                      <p className="text-sm text-background/75">
+                        {item.caption}
+                      </p>
                     </figcaption>
                   </figure>
                 ))}
@@ -1284,7 +1320,9 @@ export const RestaurantKimiPage = defineCapsule({
                 <h2 className="font-serif text-3xl font-bold leading-tight tracking-tight text-balance md:text-4xl">
                   {visitHeading}
                 </h2>
-                <p className="mt-5 leading-relaxed text-muted-foreground">{visitBody}</p>
+                <p className="mt-5 leading-relaxed text-muted-foreground">
+                  {visitBody}
+                </p>
 
                 <ul className="mt-8 flex flex-col">
                   {visitHours.map((row) => (
@@ -1296,8 +1334,8 @@ export const RestaurantKimiPage = defineCapsule({
                       <span
                         className={cn(
                           row.highlight
-                            ? "font-semibold text-primary"
-                            : "text-muted-foreground",
+                            ? 'font-semibold text-primary'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {row.time}
@@ -1375,7 +1413,10 @@ export const RestaurantKimiPage = defineCapsule({
                     const name = formData.get('name') as string
                     const date = formData.get('date') as string
                     const time = formData.get('time') as string
-                    const partySize = Number.parseInt(formData.get('partySize') as string, 10)
+                    const partySize = Number.parseInt(
+                      formData.get('partySize') as string,
+                      10,
+                    )
 
                     if (name && date && time && partySize > 0) {
                       void addReservation(name, date, time, partySize)
@@ -1429,7 +1470,7 @@ export const RestaurantKimiPage = defineCapsule({
                 </form>
 
                 <p className="mt-6 text-sm text-background/50">
-                  {resPhoneNote}{" "}
+                  {resPhoneNote}{' '}
                   <button
                     type="button"
                     onClick={() => go(reserveLabel)}
@@ -1463,12 +1504,7 @@ export const RestaurantKimiPage = defineCapsule({
                 </button>
                 <p className="mb-5 text-sm leading-relaxed">{footerDesc}</p>
                 <div className="flex gap-2.5">
-                  {[
-                    { Icon: InstagramIcon, label: "Instagram" },
-                    { Icon: FacebookIcon, label: "Facebook" },
-                    { Icon: MapPin, label: "Yelp" },
-                    { Icon: Clock, label: "TikTok" },
-                  ].map(({ Icon, label }) => (
+                  {FOOTER_SOCIALS.map(({ Icon, label }) => (
                     <button
                       key={label}
                       type="button"
@@ -1506,19 +1542,22 @@ export const RestaurantKimiPage = defineCapsule({
                   Visit
                 </p>
                 <ul className="flex flex-col gap-2.5">
-                  {["Reservations", "Gift Cards", "Private Events", "Careers"].map(
-                    (label) => (
-                      <li key={label}>
-                        <button
-                          type="button"
-                          onClick={() => go(label)}
-                          className="text-sm transition-colors hover:text-background"
-                        >
-                          {label}
-                        </button>
-                      </li>
-                    ),
-                  )}
+                  {[
+                    'Reservations',
+                    'Gift Cards',
+                    'Private Events',
+                    'Careers',
+                  ].map((label) => (
+                    <li key={label}>
+                      <button
+                        type="button"
+                        onClick={() => go(label)}
+                        className="text-sm transition-colors hover:text-background"
+                      >
+                        {label}
+                      </button>
+                    </li>
+                  ))}
                 </ul>
               </div>
 

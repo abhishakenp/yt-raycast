@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,19 +14,19 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const MusicFestivalKimiPage3 = defineCapsule({
-  name: "MusicFestivalKimiPage3",
+  name: 'MusicFestivalKimiPage3',
   description:
-    "Music Festival third style sibling to MusicFestivalKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Music Festival third style sibling to MusicFestivalKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const MusicFestivalKimiPage3 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -94,9 +96,7 @@ export const MusicFestivalKimiPage3 = defineCapsule({
         const artist = db.artists.where('name', artistName).all()[0]
         if (!artist) return db.tickets.all()
 
-        const existingTicket = db.tickets
-          .where('artistId', artist.id)
-          .all()[0]
+        const existingTicket = db.tickets.where('artistId', artist.id).all()[0]
 
         if (existingTicket) {
           db.tickets.update(existingTicket.id, {
@@ -157,91 +157,77 @@ export const MusicFestivalKimiPage3 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [ticketsOpen, setTicketsOpen] = useState(false)
-    const brand = props.brand ?? "RESONANCE 2025 Music Festival"
-    const nav = props.nav?.length ? props.nav : ["RESONANCE", "Lineup", "Gallery", "Tickets", "FAQ", "Get Tickets"]
+    const brand = props.brand ?? 'RESONANCE 2025 Music Festival'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['RESONANCE', 'Lineup', 'Gallery', 'Tickets', 'FAQ', 'Get Tickets']
     const hero = {
-      eyebrow: "Music Festival / Variant 3",
-      title: "Three nights. No sleep.",
-      description: "RESONANCE 2025 Music Festival | Aug 14-16, San Bernardino RESONANCE Lineup Gallery Tickets FAQ Get Tickets August 14-16, 2025 &middot; San Bernardino, CA Three nights. No sleep....",
-      primaryCta: "RESONANCE",
-      secondaryCta: "Lineup",
-      imageAlt: "Electronic music DJ performing on a festival stage with dramatic purple stage lighting and confetti",
+      eyebrow: 'Music Festival / Variant 3',
+      title: 'Three nights. No sleep.',
+      description:
+        'RESONANCE 2025 Music Festival | Aug 14-16, San Bernardino RESONANCE Lineup Gallery Tickets FAQ Get Tickets August 14-16, 2025 &middot; San Bernardino, CA Three nights. No sleep....',
+      primaryCta: 'RESONANCE',
+      secondaryCta: 'Lineup',
+      imageAlt:
+        'Electronic music DJ performing on a festival stage with dramatic purple stage lighting and confetti',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "The Lineup",
-    "body": "RESONANCE 2025 Music Festival | Aug 14-16, San Bernardino RESONANCE Lineup Gallery Tickets FAQ Get Tickets August 14-16, 2025 &middot; San Bernardino, CA Three nights. No sleep....",
-    "items": [
-      "Voices from the Crowd",
-      "Frequently Asked Questions",
-      "Ready for the weekend of your year?"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "How It Works",
-    "body": "Music Festival page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Headliners",
-      "Also Performing",
-      "Buy Your Pass"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Last Year in Photos",
-    "body": "Music Festival page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Activate Your Wristband",
-      "Show Up & Dance",
-      "General Admission"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Voices from the Crowd",
-    "body": "Music Festival page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": []
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "How It Works",
-    "alt": "Electronic music DJ performing on a festival stage with dramatic purple stage lighting and confetti",
-    "caption": "Music Festival generated page detail"
-  },
-  {
-    "title": "Last Year in Photos",
-    "alt": "Singer performing live at a concert with colorful neon spotlights and a large crowd visible below",
-    "caption": "Music Festival generated page detail"
-  },
-  {
-    "title": "Tickets",
-    "alt": "Hip-hop artist on stage holding a microphone with deep blue and magenta backlighting",
-    "caption": "Music Festival generated page detail"
-  }
-]
-
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'The Lineup',
+            body: 'RESONANCE 2025 Music Festival | Aug 14-16, San Bernardino RESONANCE Lineup Gallery Tickets FAQ Get Tickets August 14-16, 2025 &middot; San Bernardino, CA Three nights. No sleep....',
+            items: [
+              'Voices from the Crowd',
+              'Frequently Asked Questions',
+              'Ready for the weekend of your year?',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'How It Works',
+            body: "Music Festival page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['Headliners', 'Also Performing', 'Buy Your Pass'],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Last Year in Photos',
+            body: "Music Festival page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Activate Your Wristband',
+              'Show Up & Dance',
+              'General Admission',
+            ],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Voices from the Crowd',
+            body: "Music Festival page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [],
+          },
+        ]
     // Lakebed hooks
     const storedArtists = lakebed.useQuery('artists')
     const ticketLines = lakebed.useQuery('ticketLines')
@@ -302,10 +288,14 @@ export const MusicFestivalKimiPage3 = defineCapsule({
       },
     ]
 
+    const normalizedDefaultArtists = defaultArtists.map((artist) => ({
+      ...artist,
+      image: (artist as { image?: string }).image ?? '',
+    }))
     const displayArtists =
       storedArtists && storedArtists.length > 0
         ? storedArtists
-        : defaultArtists
+        : normalizedDefaultArtists
 
     const safeTicketLines = ticketLines ?? []
     const ticketCount = safeTicketLines.reduce(
@@ -365,10 +355,19 @@ export const MusicFestivalKimiPage3 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -610,7 +609,8 @@ export const MusicFestivalKimiPage3 = defineCapsule({
                           No tickets in cart
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Add artists from the lineup to start building your festival experience.
+                          Add artists from the lineup to start building your
+                          festival experience.
                         </p>
                       </div>
                     )}
@@ -790,16 +790,28 @@ export const MusicFestivalKimiPage3 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -807,10 +819,19 @@ export const MusicFestivalKimiPage3 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -834,8 +855,12 @@ export const MusicFestivalKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Artist Lineup</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Featured Artists</h2>
+                <p className="text-sm font-medium text-primary">
+                  Artist Lineup
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Featured Artists
+                </h2>
               </div>
               <button
                 type="button"
@@ -851,7 +876,10 @@ export const MusicFestivalKimiPage3 = defineCapsule({
                   favoriteArtistNames?.has(artist.name) ?? false
 
                 return (
-                  <article key={artist.name} className="group overflow-hidden rounded-lg border border-border bg-card">
+                  <article
+                    key={artist.name}
+                    className="group overflow-hidden rounded-lg border border-border bg-card"
+                  >
                     <div className="relative aspect-[4/3] overflow-hidden bg-secondary">
                       <Image
                         alt={artist.alt}
@@ -889,7 +917,9 @@ export const MusicFestivalKimiPage3 = defineCapsule({
                           {artist.day}
                         </span>
                       </div>
-                      <h3 className="text-lg font-semibold text-card-foreground">{artist.name}</h3>
+                      <h3 className="text-lg font-semibold text-card-foreground">
+                        {artist.name}
+                      </h3>
                       <Button
                         type="button"
                         size="sm"
@@ -912,9 +942,15 @@ export const MusicFestivalKimiPage3 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -930,10 +966,17 @@ export const MusicFestivalKimiPage3 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

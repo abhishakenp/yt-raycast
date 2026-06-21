@@ -1,27 +1,26 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * MobileAppKimiPage4 — a complete, self-contained mobile-app LANDING / marketing page.
@@ -51,7 +50,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * and footer, phone-mockup gallery frames, and staggered step layouts.
  */
 export const MobileAppKimiPage4 = defineCapsule({
-  name: "MobileAppKimiPage4",
+  name: 'MobileAppKimiPage4',
   description:
     "Complete mobile-app / SaaS-app marketing LANDING page with an editorial, warm-minimalist light aesthetic: serif headline hierarchy, generous whitespace, earthy depth, phone mockup imagery in dark bezels, and floating UI chips. Includes a split hero (rounded pill badge, serif headline, App Store + Google Play download buttons with nested labels, star-rating social proof, phone mockup with floating streak-notification card), a 'featured in' press-logo strip, a 6-up feature grid with icon tiles, a numbered 3-step 'how it works' walkthrough with oversized watermark numbers and step images, a staggered gallery of four phone-mockup frames, a 3-tier pricing table (Free / Pro / Family) with a highlighted most-popular plan and feature checklists, an inverted big-number stats band, a 6-up testimonials grid with star ratings and avatar headshots, an expandable FAQ accordion, a final app-download CTA with trust badges, and a dark multi-column footer (Product / Company / Support) with social icons. This is the fourth style sibling to MobileAppKimiPage. Use as the ROOT/home page for a consumer mobile app, habit tracker, fitness/wellness/meditation app, productivity or to-do app, iOS/Android app launch, or any App-Store-distributed product site when an editorial, warm, conversion-focused page with serif headings, download CTAs, app screenshots and social proof is wanted. Supply content only — brand, nav, hero, features, steps, gallery, stats, testimonials, pricing, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -191,9 +190,7 @@ export const MobileAppKimiPage4 = defineCapsule({
       .object({
         tagline: z.string().optional(),
         columns: z
-          .array(
-            z.object({ title: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ title: z.string(), links: z.array(z.string()) }))
           .optional(),
         note: z.string().optional(),
         madeIn: z.string().optional(),
@@ -276,33 +273,32 @@ export const MobileAppKimiPage4 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [habitsOpen, setHabitsOpen] = useState(false)
-    const [newHabitName, setNewHabitName] = useState("")
-    const [newHabitDescription, setNewHabitDescription] = useState("")
-    const brand = props.brand ?? "Habitude"
+    const [newHabitName, setNewHabitName] = useState('')
+    const [newHabitDescription, setNewHabitDescription] = useState('')
+    const brand = props.brand ?? 'Habitude'
 
-    const habits = lakebed.useQuery("habits")
-    const habitStats = lakebed.useQuery("habitStats")
-    const addHabit = lakebed.useMutation("addHabit")
-    const completeHabit = lakebed.useMutation("completeHabit")
-    const deleteHabit = lakebed.useMutation("deleteHabit")
+    const habits = lakebed.useQuery('habits')
+    const addHabit = lakebed.useMutation('addHabit')
+    const completeHabit = lakebed.useMutation('completeHabit')
+    const deleteHabit = lakebed.useMutation('deleteHabit')
     const auth = lakebed.useAuth()
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
     const authDisplayName =
-      auth.displayName || auth.user?.displayName || authEmail || "Account"
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
     const authInitials =
       authDisplayName
         .split(/\s+/)
         .filter(Boolean)
         .slice(0, 2)
         .map((part) => part[0]?.toUpperCase())
-        .join("") || "ME"
+        .join('') || 'ME'
     const authLabel = auth.isLoading
-      ? "Checking..."
+      ? 'Checking...'
       : isSignedIn
         ? authDisplayName
-        : "Sign in"
+        : 'Sign in'
 
     const handleSignIn = () => {
       if (auth.isLoading) return
@@ -316,8 +312,8 @@ export const MobileAppKimiPage4 = defineCapsule({
     const handleAddHabit = () => {
       if (!newHabitName.trim()) return
       void addHabit(newHabitName, newHabitDescription)
-      setNewHabitName("")
-      setNewHabitDescription("")
+      setNewHabitName('')
+      setNewHabitDescription('')
     }
 
     const displayHabits = habits && habits.length > 0 ? habits : []
@@ -331,125 +327,118 @@ export const MobileAppKimiPage4 = defineCapsule({
     )
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "How It Works", "Pricing", "Reviews", "FAQ"]
+      : ['Features', 'How It Works', 'Pricing', 'Reviews', 'FAQ']
 
-    const heroBadge =
-      props.hero?.badge ?? "Over 2 million habits formed"
+    const heroBadge = props.hero?.badge ?? 'Over 2 million habits formed'
     const heroHeading =
-      props.hero?.heading ?? "Build better habits, one day at a time"
+      props.hero?.heading ?? 'Build better habits, one day at a time'
     const heroSub =
       props.hero?.subheading ??
-      "Habitude helps you track, build, and maintain lasting habits with beautiful simplicity. Join millions transforming their daily routines."
-    const heroPrimaryCta = props.hero?.primaryCta ?? "App Store"
-    const heroSecondaryCta = props.hero?.secondaryCta ?? "Google Play"
-    const appleSubLabel =
-      props.hero?.appleSubLabel ?? "Download on the"
-    const appleLabel = props.hero?.appleLabel ?? "App Store"
-    const playSubLabel = props.hero?.playSubLabel ?? "GET IT ON"
-    const playLabel = props.hero?.playLabel ?? "Google Play"
-    const appStoreRating = props.hero?.appStoreRating ?? "4.9"
-    const playStoreRating = props.hero?.playStoreRating ?? "4.8"
+      'Habitude helps you track, build, and maintain lasting habits with beautiful simplicity. Join millions transforming their daily routines.'
+    const heroPrimaryCta = props.hero?.primaryCta ?? 'App Store'
+    const heroSecondaryCta = props.hero?.secondaryCta ?? 'Google Play'
+    const appleSubLabel = props.hero?.appleSubLabel ?? 'Download on the'
+    const appleLabel = props.hero?.appleLabel ?? 'App Store'
+    const playSubLabel = props.hero?.playSubLabel ?? 'GET IT ON'
+    const playLabel = props.hero?.playLabel ?? 'Google Play'
+    const appStoreRating = props.hero?.appStoreRating ?? '4.9'
+    const playStoreRating = props.hero?.playStoreRating ?? '4.8'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Habitude mobile app interface showing daily habit tracking dashboard with streak counters and progress rings"
-    const chipTitle = props.hero?.chipTitle ?? "7-day streak!"
-    const chipSubtitle = props.hero?.chipSubtitle ?? "Keep it up, Sarah"
+      'Habitude mobile app interface showing daily habit tracking dashboard with streak counters and progress rings'
+    const chipTitle = props.hero?.chipTitle ?? '7-day streak!'
+    const chipSubtitle = props.hero?.chipSubtitle ?? 'Keep it up, Sarah'
 
-    const logosLabel = props.logos?.label ?? "Featured in"
+    const logosLabel = props.logos?.label ?? 'Featured in'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
-      : ["TechCrunch", "Wired", "Fast Company", "Forbes", "The Verge"]
+      : ['TechCrunch', 'Wired', 'Fast Company', 'Forbes', 'The Verge']
 
-    const featuresPreheading =
-      props.features?.preheading ?? "Features"
+    const featuresPreheading = props.features?.preheading ?? 'Features'
     const featuresHeading =
-      props.features?.heading ??
-      "Everything you need to build lasting habits"
+      props.features?.heading ?? 'Everything you need to build lasting habits'
     const featuresDesc =
       props.features?.description ??
-      "Simple yet powerful tools designed to help you stay consistent and motivated on your journey to self-improvement."
+      'Simple yet powerful tools designed to help you stay consistent and motivated on your journey to self-improvement.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Smart Reminders",
+            title: 'Smart Reminders',
             description:
-              "Get intelligent nudges at the right time based on your schedule and past behavior. Never forget a habit again.",
+              'Get intelligent nudges at the right time based on your schedule and past behavior. Never forget a habit again.',
           },
           {
-            title: "Visual Progress",
+            title: 'Visual Progress',
             description:
-              "Beautiful charts and streak counters that make tracking your progress addictive. Watch your consistency grow.",
+              'Beautiful charts and streak counters that make tracking your progress addictive. Watch your consistency grow.',
           },
           {
-            title: "Flexible Scheduling",
+            title: 'Flexible Scheduling',
             description:
-              "Set habits for specific days, times, or intervals. Morning meditation on weekdays? Evening walks on weekends? Done.",
+              'Set habits for specific days, times, or intervals. Morning meditation on weekdays? Evening walks on weekends? Done.',
           },
           {
-            title: "Accountability Groups",
+            title: 'Accountability Groups',
             description:
-              "Build habits together with friends and family. Share progress, send encouragement, and stay motivated as a team.",
+              'Build habits together with friends and family. Share progress, send encouragement, and stay motivated as a team.',
           },
           {
-            title: "Mindful Journaling",
+            title: 'Mindful Journaling',
             description:
-              "Add notes and reflections to each habit completion. Track not just what you did, but how you felt doing it.",
+              'Add notes and reflections to each habit completion. Track not just what you did, but how you felt doing it.',
           },
           {
-            title: "Widget Support",
+            title: 'Widget Support',
             description:
-              "Track habits directly from your home screen. Mark habits complete without even opening the app.",
+              'Track habits directly from your home screen. Mark habits complete without even opening the app.',
           },
         ]
 
-    const stepsPreheading = props.steps?.preheading ?? "How It Works"
+    const stepsPreheading = props.steps?.preheading ?? 'How It Works'
     const stepsHeading =
-      props.steps?.heading ??
-      "Start building habits in three simple steps"
+      props.steps?.heading ?? 'Start building habits in three simple steps'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Create Your Habits",
+            title: 'Create Your Habits',
             description:
-              "Choose from our library of 200+ pre-made habits or create your own custom routines. Set reminders, frequency, and goals.",
+              'Choose from our library of 200+ pre-made habits or create your own custom routines. Set reminders, frequency, and goals.',
             imageAlt:
-              "Person holding smartphone creating a new habit in a habit tracking app",
+              'Person holding smartphone creating a new habit in a habit tracking app',
           },
           {
-            title: "Track Daily Progress",
+            title: 'Track Daily Progress',
             description:
-              "Check off habits as you complete them. See your streak grow and earn achievement badges for consistency milestones.",
+              'Check off habits as you complete them. See your streak grow and earn achievement badges for consistency milestones.',
             imageAlt:
-              "Runner checking fitness progress on smartwatch during outdoor workout",
+              'Runner checking fitness progress on smartwatch during outdoor workout',
           },
           {
-            title: "Reflect & Improve",
+            title: 'Reflect & Improve',
             description:
-              "Review detailed insights and weekly reports. Adjust your approach and celebrate your wins with personalized summaries.",
+              'Review detailed insights and weekly reports. Adjust your approach and celebrate your wins with personalized summaries.',
             imageAlt:
-              "Analytics dashboard showing colorful charts and graphs tracking progress",
+              'Analytics dashboard showing colorful charts and graphs tracking progress',
           },
         ]
 
-    const galleryPreheading =
-      props.gallery?.preheading ?? "Gallery"
+    const galleryPreheading = props.gallery?.preheading ?? 'Gallery'
     const galleryHeading =
-      props.gallery?.heading ?? "Designed for focus and clarity"
+      props.gallery?.heading ?? 'Designed for focus and clarity'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
-          "Habitude app home screen showing daily habit checklist with completion checkmarks",
-          "Habitude weekly progress analytics showing bar charts and completion percentages",
-          "Habitude habit streak celebration screen showing confetti animation and milestone badge",
-          "Habitude app settings screen with reminder time picker and notification preferences",
+          'Habitude app home screen showing daily habit checklist with completion checkmarks',
+          'Habitude weekly progress analytics showing bar charts and completion percentages',
+          'Habitude habit streak celebration screen showing confetti animation and milestone badge',
+          'Habitude app settings screen with reminder time picker and notification preferences',
         ]
 
-    const pricingPreheading =
-      props.pricing?.preheading ?? "Pricing"
+    const pricingPreheading = props.pricing?.preheading ?? 'Pricing'
     const pricingHeading =
-      props.pricing?.heading ?? "Simple, transparent pricing"
+      props.pricing?.heading ?? 'Simple, transparent pricing'
     const pricingDesc =
       props.pricing?.description ??
       "Start free and upgrade when you're ready. No hidden fees, cancel anytime."
@@ -457,48 +446,48 @@ export const MobileAppKimiPage4 = defineCapsule({
       ? props.pricing.tiers
       : [
           {
-            name: "Free",
-            tagline: "Perfect for getting started",
-            price: "$0",
-            period: "/month",
-            cta: "Get Started Free",
+            name: 'Free',
+            tagline: 'Perfect for getting started',
+            price: '$0',
+            period: '/month',
+            cta: 'Get Started Free',
             featured: false,
             features: [
-              { label: "Up to 5 habits", included: true },
-              { label: "Basic reminders", included: true },
-              { label: "7-day streak view", included: true },
-              { label: "Widgets", included: false },
-              { label: "Data export", included: false },
+              { label: 'Up to 5 habits', included: true },
+              { label: 'Basic reminders', included: true },
+              { label: '7-day streak view', included: true },
+              { label: 'Widgets', included: false },
+              { label: 'Data export', included: false },
             ],
           },
           {
-            name: "Pro",
-            tagline: "For serious habit builders",
-            price: "$4.99",
-            period: "/month",
-            cta: "Start 14-Day Free Trial",
+            name: 'Pro',
+            tagline: 'For serious habit builders',
+            price: '$4.99',
+            period: '/month',
+            cta: 'Start 14-Day Free Trial',
             featured: true,
             features: [
-              { label: "Unlimited habits", included: true },
-              { label: "Smart reminders", included: true },
-              { label: "Full history & insights", included: true },
-              { label: "Home screen widgets", included: true },
-              { label: "Data export (CSV, PDF)", included: true },
+              { label: 'Unlimited habits', included: true },
+              { label: 'Smart reminders', included: true },
+              { label: 'Full history & insights', included: true },
+              { label: 'Home screen widgets', included: true },
+              { label: 'Data export (CSV, PDF)', included: true },
             ],
           },
           {
-            name: "Family",
-            tagline: "Share with up to 5 people",
-            price: "$9.99",
-            period: "/month",
-            cta: "Choose Family Plan",
+            name: 'Family',
+            tagline: 'Share with up to 5 people',
+            price: '$9.99',
+            period: '/month',
+            cta: 'Choose Family Plan',
             featured: false,
             features: [
-              { label: "Everything in Pro", included: true },
-              { label: "5 family members", included: true },
-              { label: "Shared group habits", included: true },
-              { label: "Family progress reports", included: true },
-              { label: "Priority support", included: true },
+              { label: 'Everything in Pro', included: true },
+              { label: '5 family members', included: true },
+              { label: 'Shared group habits', included: true },
+              { label: 'Family progress reports', included: true },
+              { label: 'Priority support', included: true },
             ],
           },
         ]
@@ -507,158 +496,155 @@ export const MobileAppKimiPage4 = defineCapsule({
       ? props.stats.items
       : displayHabits.length > 0
         ? [
-            { value: String(displayHabits.length), label: "Active habits" },
-            { value: String(totalCompletions), label: "Total completions" },
-            { value: String(totalStreak), label: "Current streak days" },
-            { value: "4.9", label: "Average App Store rating" },
+            { value: String(displayHabits.length), label: 'Active habits' },
+            { value: String(totalCompletions), label: 'Total completions' },
+            { value: String(totalStreak), label: 'Current streak days' },
+            { value: '4.9', label: 'Average App Store rating' },
           ]
         : [
-            { value: "2M+", label: "Active users worldwide" },
-            { value: "18M", label: "Habits completed monthly" },
-            { value: "847K", label: "30+ day streaks achieved" },
-            { value: "4.9", label: "Average App Store rating" },
+            { value: '2M+', label: 'Active users worldwide' },
+            { value: '18M', label: 'Habits completed monthly' },
+            { value: '847K', label: '30+ day streaks achieved' },
+            { value: '4.9', label: 'Average App Store rating' },
           ]
 
     const testimonialsPreheading =
-      props.testimonials?.preheading ?? "Testimonials"
+      props.testimonials?.preheading ?? 'Testimonials'
     const testimonialsHeading =
-      props.testimonials?.heading ??
-      "Loved by habit builders everywhere"
+      props.testimonials?.heading ?? 'Loved by habit builders everywhere'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
               "Habitude completely changed how I approach my morning routine. I'm now at 94 days of meditation and have never felt more centered. The streak feature is surprisingly motivating!",
-            name: "Sarah Chen",
-            role: "Marketing Director, Austin",
+            name: 'Sarah Chen',
+            role: 'Marketing Director, Austin',
             avatarAlt:
-              "Professional headshot of Sarah Chen, a smiling marketing director with shoulder-length dark hair",
+              'Professional headshot of Sarah Chen, a smiling marketing director with shoulder-length dark hair',
           },
           {
             quote:
               "As a software engineer, I've tried every habit app out there. Habitude is the only one that stuck. The minimalist design keeps me focused without overwhelming features.",
-            name: "Marcus Johnson",
-            role: "Software Engineer, Seattle",
+            name: 'Marcus Johnson',
+            role: 'Software Engineer, Seattle',
             avatarAlt:
-              "Professional headshot of Marcus Johnson, a software engineer with glasses and a friendly smile",
+              'Professional headshot of Marcus Johnson, a software engineer with glasses and a friendly smile',
           },
           {
             quote:
               "I use the Family plan with my three teenagers. We've built evening routines together and it's reduced our daily stress significantly. The group accountability is brilliant.",
-            name: "Dr. Elena Rodriguez",
-            role: "Clinical Psychologist, Miami",
+            name: 'Dr. Elena Rodriguez',
+            role: 'Clinical Psychologist, Miami',
             avatarAlt:
-              "Professional headshot of Dr. Elena Rodriguez, a psychologist with warm brown eyes and a confident expression",
+              'Professional headshot of Dr. Elena Rodriguez, a psychologist with warm brown eyes and a confident expression',
           },
           {
             quote:
-              "The data export feature is a game changer. I pull my habit data into my annual review and can literally see my personal growth. Worth every penny of the Pro subscription.",
-            name: "James Nakamura",
-            role: "Product Manager, San Francisco",
+              'The data export feature is a game changer. I pull my habit data into my annual review and can literally see my personal growth. Worth every penny of the Pro subscription.',
+            name: 'James Nakamura',
+            role: 'Product Manager, San Francisco',
             avatarAlt:
-              "Professional headshot of James Nakamura, a product manager with a neat beard and professional attire",
+              'Professional headshot of James Nakamura, a product manager with a neat beard and professional attire',
           },
           {
             quote:
-              "Training for a marathon requires consistency. Habitude keeps me accountable for my daily runs, foam rolling, and hydration goals. Hit my PR last month!",
-            name: "Aisha Patel",
-            role: "Marathon Runner, Chicago",
+              'Training for a marathon requires consistency. Habitude keeps me accountable for my daily runs, foam rolling, and hydration goals. Hit my PR last month!',
+            name: 'Aisha Patel',
+            role: 'Marathon Runner, Chicago',
             avatarAlt:
-              "Professional headshot of Aisha Patel, an athletic training coach with a bright smile and ponytail",
+              'Professional headshot of Aisha Patel, an athletic training coach with a bright smile and ponytail',
           },
           {
             quote:
-              "Started journaling daily two years ago thanks to Habitude. The journaling feature lets me tag entries with mood and weather—looking back at patterns has been incredibly insightful.",
-            name: "Thomas Berg",
-            role: "Author, Copenhagen",
+              'Started journaling daily two years ago thanks to Habitude. The journaling feature lets me tag entries with mood and weather—looking back at patterns has been incredibly insightful.',
+            name: 'Thomas Berg',
+            role: 'Author, Copenhagen',
             avatarAlt:
-              "Professional headshot of Thomas Berg, an author with silver hair and a thoughtful expression",
+              'Professional headshot of Thomas Berg, an author with silver hair and a thoughtful expression',
           },
         ]
 
-    const faqPreheading = props.faq?.preheading ?? "FAQ"
-    const faqHeading =
-      props.faq?.heading ?? "Questions? We've got answers."
+    const faqPreheading = props.faq?.preheading ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? "Questions? We've got answers."
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "Can I use Habitude for free forever?",
+            question: 'Can I use Habitude for free forever?',
             answer:
-              "Absolutely! Our free tier lets you track up to 5 habits with basic reminders and a 7-day streak view. Many users find this sufficient for building their core routines. Upgrade anytime when you need more.",
+              'Absolutely! Our free tier lets you track up to 5 habits with basic reminders and a 7-day streak view. Many users find this sufficient for building their core routines. Upgrade anytime when you need more.',
           },
           {
-            question: "How does the 14-day free trial work?",
+            question: 'How does the 14-day free trial work?',
             answer:
               "Start your Pro trial instantly—no credit card required. You'll get full access to unlimited habits, widgets, and data export. At the end of 14 days, choose to upgrade or continue with the free plan. Your data stays intact either way.",
           },
           {
-            question: "Can I share habits with my partner or family?",
+            question: 'Can I share habits with my partner or family?',
             answer:
-              "Yes! Our Family plan supports up to 5 members with shared group habits. Create a \"Family Walk\" habit and see when everyone completes it. Perfect for building routines together with your household.",
+              'Yes! Our Family plan supports up to 5 members with shared group habits. Create a "Family Walk" habit and see when everyone completes it. Perfect for building routines together with your household.',
           },
           {
-            question: "What happens to my data if I cancel?",
+            question: 'What happens to my data if I cancel?',
             answer:
               "Your data is yours forever. If you cancel Pro, you'll keep all historical data but return to free tier limits (5 active habits). We never delete your past completions—you can export everything before downgrading.",
           },
           {
-            question: "Is my data private and secure?",
+            question: 'Is my data private and secure?',
             answer:
-              "Completely. We use industry-standard encryption, never sell your data, and store everything securely in the cloud with automatic backups. Your habit data syncs across devices but stays encrypted in transit and at rest.",
+              'Completely. We use industry-standard encryption, never sell your data, and store everything securely in the cloud with automatic backups. Your habit data syncs across devices but stays encrypted in transit and at rest.',
           },
           {
-            question: "Do you offer student or non-profit discounts?",
+            question: 'Do you offer student or non-profit discounts?',
             answer:
               "Yes! Students with a valid .edu email get 50% off Pro. Verified non-profits receive our Family plan at the Pro price. Contact our support team with proof of status and we'll apply the discount immediately.",
           },
         ]
 
-    const ctaHeading =
-      props.cta?.heading ?? "Ready to build better habits?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to build better habits?'
     const ctaDesc =
       props.cta?.description ??
-      "Join 2 million people who have already transformed their daily routines. Start your journey today."
+      'Join 2 million people who have already transformed their daily routines. Start your journey today.'
     const ctaNote =
       props.cta?.note ??
-      "Free to download. Pro trial available. No credit card required."
+      'Free to download. Pro trial available. No credit card required.'
 
     const footerTagline =
       props.footer?.tagline ??
-      "Build better habits, one day at a time. The simplest, most beautiful habit tracker for iOS and Android."
+      'Build better habits, one day at a time. The simplest, most beautiful habit tracker for iOS and Android.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Product",
-            links: ["Features", "Pricing", "Download", "Changelog"],
+            title: 'Product',
+            links: ['Features', 'Pricing', 'Download', 'Changelog'],
           },
           {
-            title: "Company",
-            links: ["About", "Blog", "Careers", "Press Kit"],
+            title: 'Company',
+            links: ['About', 'Blog', 'Careers', 'Press Kit'],
           },
           {
-            title: "Support",
+            title: 'Support',
             links: [
-              "Help Center",
-              "Contact Us",
-              "Privacy Policy",
-              "Terms of Service",
+              'Help Center',
+              'Contact Us',
+              'Privacy Policy',
+              'Terms of Service',
             ],
           },
         ]
     const footerNote =
       props.footer?.note ?? `© 2026 ${brand}, Inc. All rights reserved.`
     const footerMadeIn =
-      props.footer?.madeIn ?? "Made with care in San Francisco, CA"
+      props.footer?.madeIn ?? 'Made with care in San Francisco, CA'
 
     // Brand logo mark (decorative check-in-circle, brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 32 32"
         fill="none"
-        className={cn("text-foreground", className)}
+        className={cn('text-foreground', className)}
         aria-hidden="true"
       >
         <circle cx="16" cy="16" r="14" stroke="currentColor" strokeWidth="2" />
@@ -724,21 +710,6 @@ export const MobileAppKimiPage4 = defineCapsule({
       </svg>
     )
 
-    const ChevronDownIcon = ({ className }: { className?: string }) => (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={className}
-        aria-hidden="true"
-      >
-        <path d="M19 9l-7 7-7-7" />
-      </svg>
-    )
-
     const ChevronDown = () => (
       <svg
         className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
@@ -783,27 +754,87 @@ export const MobileAppKimiPage4 = defineCapsule({
 
     const featureIcons = [
       // clipboard-check
-      <svg key="clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-7" aria-hidden="true">
+      <svg
+        key="clipboard"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-7"
+        aria-hidden="true"
+      >
         <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
       </svg>,
       // chart-line
-      <svg key="chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-7" aria-hidden="true">
+      <svg
+        key="chart"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-7"
+        aria-hidden="true"
+      >
         <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
       </svg>,
       // clock
-      <svg key="clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-7" aria-hidden="true">
+      <svg
+        key="clock"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-7"
+        aria-hidden="true"
+      >
         <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>,
       // users
-      <svg key="users" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-7" aria-hidden="true">
+      <svg
+        key="users"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-7"
+        aria-hidden="true"
+      >
         <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
       </svg>,
       // heart
-      <svg key="heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-7" aria-hidden="true">
+      <svg
+        key="heart"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-7"
+        aria-hidden="true"
+      >
         <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
       </svg>,
       // smartphone
-      <svg key="phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-7" aria-hidden="true">
+      <svg
+        key="phone"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-7"
+        aria-hidden="true"
+      >
         <path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
       </svg>,
     ]
@@ -811,7 +842,7 @@ export const MobileAppKimiPage4 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -936,7 +967,8 @@ export const MobileAppKimiPage4 = defineCapsule({
                             No habits yet
                           </p>
                           <p className="mt-2 text-sm text-muted-foreground">
-                            Add your first habit to start tracking your progress.
+                            Add your first habit to start tracking your
+                            progress.
                           </p>
                         </div>
                       )}
@@ -1043,7 +1075,7 @@ export const MobileAppKimiPage4 = defineCapsule({
                               {authDisplayName}
                             </p>
                             <p className="truncate text-xs text-muted-foreground">
-                              {authEmail ?? "Signed in to this session"}
+                              {authEmail ?? 'Signed in to this session'}
                             </p>
                           </div>
                         </div>
@@ -1051,7 +1083,7 @@ export const MobileAppKimiPage4 = defineCapsule({
                       <div className="p-2">
                         <button
                           type="button"
-                          onClick={() => go("Account")}
+                          onClick={() => go('Account')}
                           className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           Account
@@ -1059,7 +1091,7 @@ export const MobileAppKimiPage4 = defineCapsule({
                         </button>
                         <button
                           type="button"
-                          onClick={() => go("Settings")}
+                          onClick={() => go('Settings')}
                           className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           Settings
@@ -1093,7 +1125,7 @@ export const MobileAppKimiPage4 = defineCapsule({
                 )}
                 <button
                   type="button"
-                  onClick={() => go("Get the App")}
+                  onClick={() => go('Get the App')}
                   className="hidden items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex"
                 >
                   Get the App
@@ -1106,7 +1138,16 @@ export const MobileAppKimiPage4 = defineCapsule({
                   onClick={() => setMobileOpen((v: boolean) => !v)}
                   className="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="size-6"
+                    aria-hidden="true"
+                  >
                     <path d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
                 </button>
@@ -1150,7 +1191,7 @@ export const MobileAppKimiPage4 = defineCapsule({
                             {authDisplayName}
                           </p>
                           <p className="truncate text-xs text-muted-foreground">
-                            {authEmail ?? "Signed in"}
+                            {authEmail ?? 'Signed in'}
                           </p>
                         </div>
                       </div>
@@ -1189,7 +1230,10 @@ export const MobileAppKimiPage4 = defineCapsule({
 
         <main>
           {/* Hero */}
-          <section className="pb-20 pt-32 lg:pb-32 lg:pt-40" aria-labelledby="hero-heading">
+          <section
+            className="pb-20 pt-32 lg:pb-32 lg:pt-40"
+            aria-labelledby="hero-heading"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
                 <div className="text-center lg:text-left">
@@ -1213,8 +1257,12 @@ export const MobileAppKimiPage4 = defineCapsule({
                     >
                       <AppleIcon />
                       <div className="text-left">
-                        <div className="text-xs opacity-80">{appleSubLabel}</div>
-                        <div className="text-lg font-semibold">{appleLabel}</div>
+                        <div className="text-xs opacity-80">
+                          {appleSubLabel}
+                        </div>
+                        <div className="text-lg font-semibold">
+                          {appleLabel}
+                        </div>
                       </div>
                     </button>
                     <button
@@ -1232,12 +1280,16 @@ export const MobileAppKimiPage4 = defineCapsule({
                   <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground lg:justify-start">
                     <div className="flex items-center gap-2">
                       <Star />
-                      <span className="font-semibold text-foreground">{appStoreRating}</span>
+                      <span className="font-semibold text-foreground">
+                        {appStoreRating}
+                      </span>
                       <span>App Store</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Star />
-                      <span className="font-semibold text-foreground">{playStoreRating}</span>
+                      <span className="font-semibold text-foreground">
+                        {playStoreRating}
+                      </span>
                       <span>Play Store</span>
                     </div>
                   </div>
@@ -1265,8 +1317,12 @@ export const MobileAppKimiPage4 = defineCapsule({
                             <CheckIcon className="size-6 text-primary" />
                           </div>
                           <div>
-                            <p className="font-semibold text-card-foreground">{chipTitle}</p>
-                            <p className="text-sm text-muted-foreground">{chipSubtitle}</p>
+                            <p className="font-semibold text-card-foreground">
+                              {chipTitle}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {chipSubtitle}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -1278,7 +1334,10 @@ export const MobileAppKimiPage4 = defineCapsule({
           </section>
 
           {/* Featured-in logos */}
-          <section className="border-y border-border py-16" aria-label="Featured in">
+          <section
+            className="border-y border-border py-16"
+            aria-label="Featured in"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <p className="mb-10 text-center text-sm font-medium uppercase tracking-wider text-muted-foreground">
                 {logosLabel}
@@ -1290,33 +1349,63 @@ export const MobileAppKimiPage4 = defineCapsule({
                     className="flex items-center gap-2 font-serif text-xl font-semibold text-muted-foreground"
                   >
                     {/* Decorative shape per logo */}
-                    {logo === "TechCrunch" && (
-                      <svg viewBox="0 0 24 24" fill="currentColor" className="size-8" aria-hidden="true">
+                    {logo === 'TechCrunch' && (
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="size-8"
+                        aria-hidden="true"
+                      >
                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                       </svg>
                     )}
-                    {logo === "Wired" && (
-                      <svg viewBox="0 0 24 24" fill="currentColor" className="size-8" aria-hidden="true">
+                    {logo === 'Wired' && (
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="size-8"
+                        aria-hidden="true"
+                      >
                         <rect x="3" y="3" width="18" height="18" rx="2" />
                       </svg>
                     )}
-                    {logo === "Fast Company" && (
-                      <svg viewBox="0 0 24 24" fill="currentColor" className="size-8" aria-hidden="true">
+                    {logo === 'Fast Company' && (
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="size-8"
+                        aria-hidden="true"
+                      >
                         <circle cx="12" cy="12" r="10" />
                       </svg>
                     )}
-                    {logo === "Forbes" && (
-                      <svg viewBox="0 0 24 24" fill="currentColor" className="size-8" aria-hidden="true">
+                    {logo === 'Forbes' && (
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="size-8"
+                        aria-hidden="true"
+                      >
                         <polygon points="12 2 22 22 2 22" />
                       </svg>
                     )}
-                    {logo === "The Verge" && (
-                      <svg viewBox="0 0 24 24" fill="currentColor" className="size-8" aria-hidden="true">
+                    {logo === 'The Verge' && (
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="size-8"
+                        aria-hidden="true"
+                      >
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
                       </svg>
                     )}
                     {!logoItems.slice(0, 5).includes(logo) && (
-                      <svg viewBox="0 0 24 24" fill="currentColor" className="size-8" aria-hidden="true">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="size-8"
+                        aria-hidden="true"
+                      >
                         <circle cx="12" cy="12" r="10" />
                       </svg>
                     )}
@@ -1328,7 +1417,10 @@ export const MobileAppKimiPage4 = defineCapsule({
           </section>
 
           {/* Features */}
-          <section className="py-24 lg:py-32" aria-labelledby="features-heading">
+          <section
+            className="py-24 lg:py-32"
+            aria-labelledby="features-heading"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="mx-auto mb-20 max-w-3xl text-center">
                 <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
@@ -1340,9 +1432,7 @@ export const MobileAppKimiPage4 = defineCapsule({
                 >
                   {featuresHeading}
                 </h2>
-                <p className="text-lg text-muted-foreground">
-                  {featuresDesc}
-                </p>
+                <p className="text-lg text-muted-foreground">{featuresDesc}</p>
               </div>
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {featureItems.map((item, i) => (
@@ -1366,7 +1456,10 @@ export const MobileAppKimiPage4 = defineCapsule({
           </section>
 
           {/* How it works */}
-          <section className="bg-card py-24 lg:py-32" aria-labelledby="steps-heading">
+          <section
+            className="bg-card py-24 lg:py-32"
+            aria-labelledby="steps-heading"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="mx-auto mb-20 max-w-3xl text-center">
                 <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
@@ -1384,13 +1477,13 @@ export const MobileAppKimiPage4 = defineCapsule({
                   <div
                     key={step.title}
                     className={cn(
-                      "relative",
-                      i === 1 && "lg:mt-12",
-                      i === 2 && "lg:mt-24",
+                      'relative',
+                      i === 1 && 'lg:mt-12',
+                      i === 2 && 'lg:mt-24',
                     )}
                   >
                     <div className="absolute -left-2 -top-6 font-serif text-8xl font-bold text-muted-foreground/10">
-                      {String(i + 1).padStart(2, "0")}
+                      {String(i + 1).padStart(2, '0')}
                     </div>
                     <div className="relative">
                       <div className="mb-6 aspect-[4/3] overflow-hidden rounded-2xl bg-muted">
@@ -1416,7 +1509,10 @@ export const MobileAppKimiPage4 = defineCapsule({
           </section>
 
           {/* Gallery */}
-          <section className="overflow-hidden py-24 lg:py-32" aria-label="App screenshots">
+          <section
+            className="overflow-hidden py-24 lg:py-32"
+            aria-label="App screenshots"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="mx-auto mb-16 max-w-3xl text-center">
                 <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
@@ -1431,8 +1527,8 @@ export const MobileAppKimiPage4 = defineCapsule({
                   <div
                     key={alt}
                     className={cn(
-                      "rounded-[2.5rem] bg-foreground p-2 shadow-xl",
-                      (i === 1 || i === 3) && "lg:mt-8",
+                      'rounded-[2.5rem] bg-foreground p-2 shadow-xl',
+                      (i === 1 || i === 3) && 'lg:mt-8',
                     )}
                   >
                     <div className="overflow-hidden rounded-[2rem] bg-background aspect-[9/19]">
@@ -1451,7 +1547,10 @@ export const MobileAppKimiPage4 = defineCapsule({
           </section>
 
           {/* Pricing */}
-          <section className="bg-card py-24 lg:py-32" aria-labelledby="pricing-heading">
+          <section
+            className="bg-card py-24 lg:py-32"
+            aria-labelledby="pricing-heading"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="mx-auto mb-20 max-w-3xl text-center">
                 <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
@@ -1463,19 +1562,17 @@ export const MobileAppKimiPage4 = defineCapsule({
                 >
                   {pricingHeading}
                 </h2>
-                <p className="text-lg text-muted-foreground">
-                  {pricingDesc}
-                </p>
+                <p className="text-lg text-muted-foreground">{pricingDesc}</p>
               </div>
               <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-3">
                 {pricingTiers.map((tier) => (
                   <div
                     key={tier.name}
                     className={cn(
-                      "relative rounded-2xl p-8",
+                      'relative rounded-2xl p-8',
                       tier.featured
-                        ? "bg-primary text-primary-foreground lg:-mt-4 lg:mb-4"
-                        : "border border-border bg-background",
+                        ? 'bg-primary text-primary-foreground lg:-mt-4 lg:mb-4'
+                        : 'border border-border bg-background',
                     )}
                   >
                     {tier.featured && (
@@ -1490,10 +1587,10 @@ export const MobileAppKimiPage4 = defineCapsule({
                     </h3>
                     <p
                       className={cn(
-                        "mb-6 text-sm",
+                        'mb-6 text-sm',
                         tier.featured
-                          ? "text-primary-foreground/70"
-                          : "text-muted-foreground",
+                          ? 'text-primary-foreground/70'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {tier.tagline}
@@ -1505,8 +1602,8 @@ export const MobileAppKimiPage4 = defineCapsule({
                       <span
                         className={cn(
                           tier.featured
-                            ? "text-primary-foreground/70"
-                            : "text-muted-foreground",
+                            ? 'text-primary-foreground/70'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {tier.period}
@@ -1518,10 +1615,10 @@ export const MobileAppKimiPage4 = defineCapsule({
                           {f.included ? (
                             <CheckIcon
                               className={cn(
-                                "size-5",
+                                'size-5',
                                 tier.featured
-                                  ? "text-primary-foreground"
-                                  : "text-primary",
+                                  ? 'text-primary-foreground'
+                                  : 'text-primary',
                               )}
                             />
                           ) : (
@@ -1531,9 +1628,9 @@ export const MobileAppKimiPage4 = defineCapsule({
                             className={cn(
                               f.included
                                 ? tier.featured
-                                  ? "text-primary-foreground"
-                                  : "text-foreground"
-                                : "text-muted-foreground/60",
+                                  ? 'text-primary-foreground'
+                                  : 'text-foreground'
+                                : 'text-muted-foreground/60',
                             )}
                           >
                             {f.label}
@@ -1545,10 +1642,10 @@ export const MobileAppKimiPage4 = defineCapsule({
                       type="button"
                       onClick={() => go(tier.cta)}
                       className={cn(
-                        "w-full rounded-full py-3 px-6 text-sm font-medium transition-colors",
+                        'w-full rounded-full py-3 px-6 text-sm font-medium transition-colors',
                         tier.featured
-                          ? "bg-background text-foreground hover:bg-muted"
-                          : "border-2 border-input text-foreground hover:border-border hover:text-foreground",
+                          ? 'bg-background text-foreground hover:bg-muted'
+                          : 'border-2 border-input text-foreground hover:border-border hover:text-foreground',
                       )}
                     >
                       {tier.cta}
@@ -1560,7 +1657,10 @@ export const MobileAppKimiPage4 = defineCapsule({
           </section>
 
           {/* Stats (inverted band) */}
-          <section className="bg-foreground py-20 text-background lg:py-32" aria-label="Statistics">
+          <section
+            className="bg-foreground py-20 text-background lg:py-32"
+            aria-label="Statistics"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="grid grid-cols-2 gap-8 lg:grid-cols-4 lg:gap-12">
                 {statsItems.map((s) => (
@@ -1576,7 +1676,10 @@ export const MobileAppKimiPage4 = defineCapsule({
           </section>
 
           {/* Testimonials */}
-          <section className="py-24 lg:py-32" aria-labelledby="testimonials-heading">
+          <section
+            className="py-24 lg:py-32"
+            aria-labelledby="testimonials-heading"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="mx-auto mb-20 max-w-3xl text-center">
                 <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
@@ -1626,7 +1729,10 @@ export const MobileAppKimiPage4 = defineCapsule({
           </section>
 
           {/* FAQ */}
-          <section className="bg-card py-24 lg:py-32" aria-labelledby="faq-heading">
+          <section
+            className="bg-card py-24 lg:py-32"
+            aria-labelledby="faq-heading"
+          >
             <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
               <div className="mb-16 text-center">
                 <span className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
@@ -1702,7 +1808,10 @@ export const MobileAppKimiPage4 = defineCapsule({
         </main>
 
         {/* Footer */}
-        <footer className="bg-foreground py-16 text-background" aria-label="Footer">
+        <footer
+          className="bg-foreground py-16 text-background"
+          aria-label="Footer"
+        >
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-5">
               <div className="lg:col-span-2">
@@ -1720,7 +1829,7 @@ export const MobileAppKimiPage4 = defineCapsule({
                   {footerTagline}
                 </p>
                 <div className="flex gap-4">
-                  {(["Twitter", "Instagram", "LinkedIn"] as const).map(
+                  {(['Twitter', 'Instagram', 'LinkedIn'] as const).map(
                     (social) => (
                       <button
                         key={social}
@@ -1729,20 +1838,42 @@ export const MobileAppKimiPage4 = defineCapsule({
                         onClick={() => go(social)}
                         className="grid size-10 place-items-center rounded-full bg-background/10 text-background transition-colors hover:bg-background/20"
                       >
-                        {social === "Twitter" && (
-                          <svg viewBox="0 0 24 24" fill="currentColor" className="size-5" aria-hidden="true">
+                        {social === 'Twitter' && (
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            className="size-5"
+                            aria-hidden="true"
+                          >
                             <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z" />
                           </svg>
                         )}
-                        {social === "Instagram" && (
-                          <svg viewBox="0 0 24 24" fill="currentColor" className="size-5" aria-hidden="true">
-                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                        {social === 'Instagram' && (
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            className="size-5"
+                            aria-hidden="true"
+                          >
+                            <rect
+                              x="2"
+                              y="2"
+                              width="20"
+                              height="20"
+                              rx="5"
+                              ry="5"
+                            />
                             <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" />
                             <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
                           </svg>
                         )}
-                        {social === "LinkedIn" && (
-                          <svg viewBox="0 0 24 24" fill="currentColor" className="size-5" aria-hidden="true">
+                        {social === 'LinkedIn' && (
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            className="size-5"
+                            aria-hidden="true"
+                          >
                             <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z" />
                             <rect x="2" y="9" width="4" height="12" />
                             <circle cx="4" cy="4" r="2" />

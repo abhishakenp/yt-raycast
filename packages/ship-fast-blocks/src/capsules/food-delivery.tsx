@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,7 +12,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "#/components/ui/command.tsx"
+} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetClose,
@@ -22,14 +22,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * FoodDeliveryKimiPage — a complete, self-contained food-delivery marketplace
@@ -55,7 +55,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * defaults make it render great with no props at all.
  */
 export const FoodDeliveryKimiPage = defineCapsule({
-  name: "FoodDeliveryKimiPage",
+  name: 'FoodDeliveryKimiPage',
   description:
     "Complete food-delivery / restaurant-marketplace LANDING page with a clean, bright, consumer aesthetic: neutral canvas, rounded-full pills, soft-bordered cards, and inverted dark bands for punch. Includes a split hero (big headline, delivery-address search input with a Find Food button, serving-cities note, food photo with a floating 'Order Confirmed / arriving in N min' tracking card), a trusted-by restaurant-logo strip, a 3-up features grid (real-time GPS tracking, curated/vetted selection, saved favorites with icons), a popular-restaurants gallery of cuisine cards (food photo, cuisine chip, rating badge, delivery time + delivery fee), a numbered 1-2-3 'how it works' band, an inverted KPI stats strip (customers, partners, cities, avg delivery time), a 3-up star-rated testimonials grid with avatars, an inverted app-download CTA with App Store and Google Play buttons, and a multi-column footer with company/resources/legal links plus social icons. Use as the ROOT/home page for food-delivery apps, restaurant aggregators, online ordering platforms, ghost-kitchen/meal-delivery startups, grocery or takeout services when a friendly, conversion-focused page with restaurant discovery and social proof is wanted. Supply content only — brand, nav, hero, logos, features, restaurants, steps, stats, testimonials, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -167,9 +167,7 @@ export const FoodDeliveryKimiPage = defineCapsule({
         description: z.string().optional(),
         note: z.string().optional(),
         columns: z
-          .array(
-            z.object({ heading: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ heading: z.string(), links: z.array(z.string()) }))
           .optional(),
       })
       .optional(),
@@ -195,7 +193,7 @@ export const FoodDeliveryKimiPage = defineCapsule({
       }),
     },
     queries: {
-      restaurants: ({ db }) => db.restaurants.orderBy("createdAt").all(),
+      restaurants: ({ db }) => db.restaurants.orderBy('createdAt').all(),
       orderLines: ({ db }) =>
         db.orderItems.all().flatMap((item) => {
           const restaurant = db.restaurants.get(item.restaurantId)
@@ -206,11 +204,11 @@ export const FoodDeliveryKimiPage = defineCapsule({
     },
     mutations: {
       addToOrder: ({ db }, restaurantName: string) => {
-        const restaurant = db.restaurants.where("name", restaurantName).all()[0]
+        const restaurant = db.restaurants.where('name', restaurantName).all()[0]
         if (!restaurant) return db.orderItems.all()
 
         const existingItem = db.orderItems
-          .where("restaurantId", restaurant.id)
+          .where('restaurantId', restaurant.id)
           .all()[0]
 
         if (existingItem) {
@@ -229,7 +227,9 @@ export const FoodDeliveryKimiPage = defineCapsule({
       updateOrderQuantity: ({ db }, restaurantId: string, quantity: number) => {
         const nextQuantity = Math.max(0, Math.floor(quantity))
 
-        for (const item of db.orderItems.where("restaurantId", restaurantId).all()) {
+        for (const item of db.orderItems
+          .where('restaurantId', restaurantId)
+          .all()) {
           if (nextQuantity) {
             db.orderItems.update(item.id, { quantity: nextQuantity })
           } else {
@@ -240,7 +240,9 @@ export const FoodDeliveryKimiPage = defineCapsule({
         return db.orderItems.all()
       },
       removeFromOrder: ({ db }, restaurantId: string) => {
-        for (const item of db.orderItems.where("restaurantId", restaurantId).all()) {
+        for (const item of db.orderItems
+          .where('restaurantId', restaurantId)
+          .all()) {
           db.orderItems.delete(item.id)
         }
 
@@ -255,7 +257,7 @@ export const FoodDeliveryKimiPage = defineCapsule({
       },
       toggleFavorite: ({ db }, restaurantName: string) => {
         const existingFavorite = db.favorites
-          .where("restaurantName", restaurantName)
+          .where('restaurantName', restaurantName)
           .all()[0]
 
         if (existingFavorite) {
@@ -273,155 +275,153 @@ export const FoodDeliveryKimiPage = defineCapsule({
     const [mobileOpen, setMobileOpen] = useState(false)
     const [searchOpen, setSearchOpen] = useState(false)
     const [orderOpen, setOrderOpen] = useState(false)
-    const brand = props.brand ?? "nosh"
+    const brand = props.brand ?? 'nosh'
     const nav = props.nav?.length
       ? props.nav
-      : ["Restaurants", "How it Works", "About"]
+      : ['Restaurants', 'How it Works', 'About']
 
-    const headingTop = props.hero?.headingTop ?? "Your favorite food,"
-    const headingBottom = props.hero?.headingBottom ?? "delivered in minutes"
+    const headingTop = props.hero?.headingTop ?? 'Your favorite food,'
+    const headingBottom = props.hero?.headingBottom ?? 'delivered in minutes'
     const heroSub =
       props.hero?.subheading ??
-      "From local favorites to national chains, Nosh brings the best restaurants in your city straight to your door. Track your order in real-time, every time."
+      'From local favorites to national chains, Nosh brings the best restaurants in your city straight to your door. Track your order in real-time, every time.'
     const addressPlaceholder =
-      props.hero?.addressPlaceholder ?? "Enter your delivery address"
-    const searchCta = props.hero?.searchCta ?? "Find Food"
+      props.hero?.addressPlaceholder ?? 'Enter your delivery address'
+    const searchCta = props.hero?.searchCta ?? 'Find Food'
     const serving =
       props.hero?.serving ??
-      "Serving San Francisco, Los Angeles, New York & 40+ cities nationwide"
+      'Serving San Francisco, Los Angeles, New York & 40+ cities nationwide'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Overhead view of colorful gourmet dishes arranged on marble table with fresh vegetables and herbs"
-    const badgeTitle = props.hero?.badgeTitle ?? "Order Confirmed"
-    const badgeSubtitle = props.hero?.badgeSubtitle ?? "Arriving in 24 min"
-    const signIn = props.hero?.signIn ?? "Sign In"
-    const getStarted = props.hero?.getStarted ?? "Get Started"
+      'Overhead view of colorful gourmet dishes arranged on marble table with fresh vegetables and herbs'
+    const badgeTitle = props.hero?.badgeTitle ?? 'Order Confirmed'
+    const badgeSubtitle = props.hero?.badgeSubtitle ?? 'Arriving in 24 min'
 
     const logosHeading =
-      props.logos?.heading ?? "Trusted by leading restaurants nationwide"
+      props.logos?.heading ?? 'Trusted by leading restaurants nationwide'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
       : [
-          "Partner restaurant logo - rustic burger joint",
-          "Partner restaurant logo - artisan pizza place",
-          "Partner restaurant logo - upscale dining",
-          "Partner restaurant logo - sweet bakery",
-          "Partner restaurant logo - fresh sushi bar",
-          "Partner restaurant logo - breakfast cafe",
+          'Partner restaurant logo - rustic burger joint',
+          'Partner restaurant logo - artisan pizza place',
+          'Partner restaurant logo - upscale dining',
+          'Partner restaurant logo - sweet bakery',
+          'Partner restaurant logo - fresh sushi bar',
+          'Partner restaurant logo - breakfast cafe',
         ]
 
-    const featuresHeading = props.features?.heading ?? "Everything you need"
+    const featuresHeading = props.features?.heading ?? 'Everything you need'
     const featuresDesc =
       props.features?.description ??
-      "We have thought through every detail to make your food delivery experience effortless."
+      'We have thought through every detail to make your food delivery experience effortless.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Real-Time Tracking",
+            title: 'Real-Time Tracking',
             description:
-              "Know exactly where your order is with live GPS tracking from restaurant to your doorstep. Get updates at every step.",
+              'Know exactly where your order is with live GPS tracking from restaurant to your doorstep. Get updates at every step.',
           },
           {
-            title: "Curated Selection",
+            title: 'Curated Selection',
             description:
-              "Every restaurant is vetted for quality. We partner only with kitchens that meet our high standards for food and service.",
+              'Every restaurant is vetted for quality. We partner only with kitchens that meet our high standards for food and service.',
           },
           {
-            title: "Saved Favorites",
+            title: 'Saved Favorites',
             description:
-              "Reorder your go-to meals in seconds. Your favorite dishes and restaurants are always just one tap away.",
+              'Reorder your go-to meals in seconds. Your favorite dishes and restaurants are always just one tap away.',
           },
         ]
 
     const restaurantsHeading =
-      props.restaurants?.heading ?? "Popular restaurants"
+      props.restaurants?.heading ?? 'Popular restaurants'
     const restaurantsDesc =
-      props.restaurants?.description ?? "Top-rated spots in your neighborhood"
+      props.restaurants?.description ?? 'Top-rated spots in your neighborhood'
     const restaurantsViewAll =
-      props.restaurants?.viewAll ?? "View all 240+ restaurants"
+      props.restaurants?.viewAll ?? 'View all 240+ restaurants'
     const restaurantItems = props.restaurants?.items?.length
       ? props.restaurants.items
       : [
           {
             name: "Mario's Pizzeria",
-            cuisine: "Italian",
-            category: "Pizza, Pasta, Italian",
-            rating: "4.8",
-            time: "25-35 min",
-            delivery: "$2.49 delivery",
+            cuisine: 'Italian',
+            category: 'Pizza, Pasta, Italian',
+            rating: '4.8',
+            time: '25-35 min',
+            delivery: '$2.49 delivery',
             imageAlt:
-              "Wood-fired Neapolitan pizza with melted mozzarella and fresh basil on rustic wooden table",
+              'Wood-fired Neapolitan pizza with melted mozzarella and fresh basil on rustic wooden table',
           },
           {
-            name: "Sakura Sushi Bar",
-            cuisine: "Japanese",
-            category: "Sushi, Ramen, Japanese",
-            rating: "4.9",
-            time: "30-45 min",
-            delivery: "$3.99 delivery",
+            name: 'Sakura Sushi Bar',
+            cuisine: 'Japanese',
+            category: 'Sushi, Ramen, Japanese',
+            rating: '4.9',
+            time: '30-45 min',
+            delivery: '$3.99 delivery',
             imageAlt:
-              "Fresh salmon sushi rolls and sashimi platter on black slate serving board",
+              'Fresh salmon sushi rolls and sashimi platter on black slate serving board',
           },
           {
-            name: "The Burger Joint",
-            cuisine: "American",
-            category: "Burgers, Fries, Shakes",
-            rating: "4.7",
-            time: "20-30 min",
-            delivery: "Free delivery",
+            name: 'The Burger Joint',
+            cuisine: 'American',
+            category: 'Burgers, Fries, Shakes',
+            rating: '4.7',
+            time: '20-30 min',
+            delivery: 'Free delivery',
             imageAlt:
-              "Juicy gourmet beef burger with melted cheese and caramelized onions on brioche bun",
+              'Juicy gourmet beef burger with melted cheese and caramelized onions on brioche bun',
           },
           {
-            name: "Thai Orchid",
-            cuisine: "Thai",
-            category: "Thai, Noodles, Curry",
-            rating: "4.6",
-            time: "35-50 min",
-            delivery: "$2.99 delivery",
+            name: 'Thai Orchid',
+            cuisine: 'Thai',
+            category: 'Thai, Noodles, Curry',
+            rating: '4.6',
+            time: '35-50 min',
+            delivery: '$2.99 delivery',
             imageAlt:
-              "Steaming bowl of authentic Thai pad thai with shrimp and crushed peanuts",
+              'Steaming bowl of authentic Thai pad thai with shrimp and crushed peanuts',
           },
           {
-            name: "Olive Garden",
-            cuisine: "Mediterranean",
-            category: "Mediterranean, Greek",
-            rating: "4.8",
-            time: "25-40 min",
-            delivery: "$2.49 delivery",
+            name: 'Olive Garden',
+            cuisine: 'Mediterranean',
+            category: 'Mediterranean, Greek',
+            rating: '4.8',
+            time: '25-40 min',
+            delivery: '$2.49 delivery',
             imageAlt:
-              "Colorful Mediterranean mezze platter with hummus falafel and pita bread",
+              'Colorful Mediterranean mezze platter with hummus falafel and pita bread',
           },
           {
-            name: "Wing King",
-            cuisine: "Wings",
-            category: "Chicken Wings, BBQ",
-            rating: "4.5",
-            time: "20-35 min",
-            delivery: "$1.99 delivery",
+            name: 'Wing King',
+            cuisine: 'Wings',
+            category: 'Chicken Wings, BBQ',
+            rating: '4.5',
+            time: '20-35 min',
+            delivery: '$1.99 delivery',
             imageAlt:
-              "Crispy golden fried chicken wings with buffalo sauce and celery sticks",
+              'Crispy golden fried chicken wings with buffalo sauce and celery sticks',
           },
           {
-            name: "Curry House",
-            cuisine: "Indian",
-            category: "Indian, Curry, Tandoori",
-            rating: "4.7",
-            time: "40-55 min",
-            delivery: "$3.49 delivery",
+            name: 'Curry House',
+            cuisine: 'Indian',
+            category: 'Indian, Curry, Tandoori',
+            rating: '4.7',
+            time: '40-55 min',
+            delivery: '$3.49 delivery',
             imageAlt:
-              "Rich creamy Indian butter chicken curry with naan bread and rice",
+              'Rich creamy Indian butter chicken curry with naan bread and rice',
           },
           {
-            name: "Sweet Treats Bakery",
-            cuisine: "Desserts",
-            category: "Cakes, Pastries, Coffee",
-            rating: "4.9",
-            time: "15-25 min",
-            delivery: "$2.99 delivery",
+            name: 'Sweet Treats Bakery',
+            cuisine: 'Desserts',
+            category: 'Cakes, Pastries, Coffee',
+            rating: '4.9',
+            time: '15-25 min',
+            delivery: '$2.99 delivery',
             imageAlt:
-              "Decadent chocolate cake with berries and powdered sugar dusting",
+              'Decadent chocolate cake with berries and powdered sugar dusting',
           },
         ]
     const normalizedRestaurantItems = restaurantItems.map((restaurant) => ({
@@ -433,32 +433,32 @@ export const FoodDeliveryKimiPage = defineCapsule({
       rating: restaurant.rating,
       time: restaurant.time,
     }))
-    const storedRestaurants = lakebed.useQuery("restaurants")
-    const orderLines = lakebed.useQuery("orderLines")
-    const favoriteRestaurantNames = lakebed.useQuery("favoriteRestaurantNames")
+    const storedRestaurants = lakebed.useQuery('restaurants')
+    const orderLines = lakebed.useQuery('orderLines')
+    const favoriteRestaurantNames = lakebed.useQuery('favoriteRestaurantNames')
     const auth = lakebed.useAuth()
-    const addToOrder = lakebed.useMutation("addToOrder")
-    const updateOrderQuantity = lakebed.useMutation("updateOrderQuantity")
-    const removeFromOrder = lakebed.useMutation("removeFromOrder")
-    const clearOrder = lakebed.useMutation("clearOrder")
-    const toggleFavorite = lakebed.useMutation("toggleFavorite")
+    const addToOrder = lakebed.useMutation('addToOrder')
+    const updateOrderQuantity = lakebed.useMutation('updateOrderQuantity')
+    const removeFromOrder = lakebed.useMutation('removeFromOrder')
+    const clearOrder = lakebed.useMutation('clearOrder')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
     const authDisplayName =
-      auth.displayName || auth.user?.displayName || authEmail || "Account"
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
     const authInitials =
       authDisplayName
         .split(/\s+/)
         .filter(Boolean)
         .slice(0, 2)
         .map((part) => part[0]?.toUpperCase())
-        .join("") || "ME"
+        .join('') || 'ME'
     const authLabel = auth.isLoading
-      ? "Checking..."
+      ? 'Checking...'
       : isSignedIn
         ? authDisplayName
-        : "Sign in"
+        : 'Sign in'
     const handleSignIn = () => {
       if (auth.isLoading) return
 
@@ -477,98 +477,98 @@ export const FoodDeliveryKimiPage = defineCapsule({
       0,
     )
 
-    const stepsHeading = props.steps?.heading ?? "How it works"
+    const stepsHeading = props.steps?.heading ?? 'How it works'
     const stepsDesc =
       props.steps?.description ??
-      "Getting your favorite food delivered is as easy as 1-2-3."
+      'Getting your favorite food delivered is as easy as 1-2-3.'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Choose your restaurant",
+            title: 'Choose your restaurant',
             description:
-              "Browse hundreds of local restaurants filtered by cuisine, price, and delivery time to find your perfect match.",
+              'Browse hundreds of local restaurants filtered by cuisine, price, and delivery time to find your perfect match.',
           },
           {
-            title: "Build your order",
+            title: 'Build your order',
             description:
-              "Select your dishes, customize toppings and sides, add special instructions, and review your cart.",
+              'Select your dishes, customize toppings and sides, add special instructions, and review your cart.',
           },
           {
-            title: "Track and enjoy",
+            title: 'Track and enjoy',
             description:
-              "Watch your order from kitchen prep to doorstep delivery in real-time on our live map.",
+              'Watch your order from kitchen prep to doorstep delivery in real-time on our live map.',
           },
         ]
 
     const statItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "2M+", label: "Happy customers" },
-          { value: "500+", label: "Restaurant partners" },
-          { value: "45", label: "Cities served" },
-          { value: "15min", label: "Avg. delivery time" },
+          { value: '2M+', label: 'Happy customers' },
+          { value: '500+', label: 'Restaurant partners' },
+          { value: '45', label: 'Cities served' },
+          { value: '15min', label: 'Avg. delivery time' },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What people are saying"
+      props.testimonials?.heading ?? 'What people are saying'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Real reviews from real customers across the country."
+      'Real reviews from real customers across the country.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "Nosh has completely changed how I order food. The tracking feature is incredible, and I have never had a late delivery. The app is so easy to use!",
-            name: "Sarah Mitchell",
-            location: "San Francisco, CA",
+              'Nosh has completely changed how I order food. The tracking feature is incredible, and I have never had a late delivery. The app is so easy to use!',
+            name: 'Sarah Mitchell',
+            location: 'San Francisco, CA',
             avatarAlt:
-              "Professional headshot of a smiling young woman with shoulder-length brown hair",
+              'Professional headshot of a smiling young woman with shoulder-length brown hair',
           },
           {
             quote:
-              "As a restaurant owner, partnering with Nosh increased our delivery orders by 40%. Their driver network is reliable and the commission rates are fair.",
-            name: "Marcus Chen",
-            location: "Owner, Sakura Sushi",
+              'As a restaurant owner, partnering with Nosh increased our delivery orders by 40%. Their driver network is reliable and the commission rates are fair.',
+            name: 'Marcus Chen',
+            location: 'Owner, Sakura Sushi',
             avatarAlt:
-              "Professional headshot of a smiling man in his 40s with short dark hair and glasses",
+              'Professional headshot of a smiling man in his 40s with short dark hair and glasses',
           },
           {
             quote:
-              "I use Nosh 3-4 times a week. The saved favorites feature makes reordering my usual lunch from work incredibly fast. Highly recommended!",
-            name: "David Rodriguez",
-            location: "Austin, TX",
+              'I use Nosh 3-4 times a week. The saved favorites feature makes reordering my usual lunch from work incredibly fast. Highly recommended!',
+            name: 'David Rodriguez',
+            location: 'Austin, TX',
             avatarAlt:
-              "Professional headshot of a smiling middle-aged man with beard and casual attire",
+              'Professional headshot of a smiling middle-aged man with beard and casual attire',
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to order?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to order?'
     const ctaDesc =
       props.cta?.description ??
-      "Download the app and get your first delivery fee waived. Join over 2 million happy customers today."
-    const ctaAppStore = props.cta?.appStore ?? "App Store"
-    const ctaGooglePlay = props.cta?.googlePlay ?? "Google Play"
+      'Download the app and get your first delivery fee waived. Join over 2 million happy customers today.'
+    const ctaAppStore = props.cta?.appStore ?? 'App Store'
+    const ctaGooglePlay = props.cta?.googlePlay ?? 'Google Play'
 
     const footerDesc =
       props.footer?.description ??
-      "Your favorite food, delivered fast. Connecting you with the best local restaurants since 2020."
-    const footerNote = props.footer?.note ?? "All rights reserved."
+      'Your favorite food, delivered fast. Connecting you with the best local restaurants since 2020.'
+    const footerNote = props.footer?.note ?? 'All rights reserved.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            heading: "Company",
-            links: ["About Us", "Careers", "Press", "Contact"],
+            heading: 'Company',
+            links: ['About Us', 'Careers', 'Press', 'Contact'],
           },
           {
-            heading: "Resources",
-            links: ["Partner with Us", "Driver Jobs", "Help Center", "Blog"],
+            heading: 'Resources',
+            links: ['Partner with Us', 'Driver Jobs', 'Help Center', 'Blog'],
           },
           {
-            heading: "Legal",
-            links: ["Privacy Policy", "Terms of Service", "Cookie Policy"],
+            heading: 'Legal',
+            links: ['Privacy Policy', 'Terms of Service', 'Cookie Policy'],
           },
         ]
 
@@ -602,10 +602,10 @@ export const FoodDeliveryKimiPage = defineCapsule({
     const HeartIcon = ({ active = false }: { active?: boolean }) => (
       <svg
         className={cn(
-          "size-5",
-          active ? "text-primary-foreground" : "text-foreground",
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
         )}
-        fill={active ? "currentColor" : "none"}
+        fill={active ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -690,7 +690,7 @@ export const FoodDeliveryKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -792,7 +792,7 @@ export const FoodDeliveryKimiPage = defineCapsule({
                               {authDisplayName}
                             </p>
                             <p className="truncate text-xs text-muted-foreground">
-                              {authEmail ?? "Signed in to this session"}
+                              {authEmail ?? 'Signed in to this session'}
                             </p>
                           </div>
                         </div>
@@ -800,7 +800,7 @@ export const FoodDeliveryKimiPage = defineCapsule({
                       <div className="p-2">
                         <button
                           type="button"
-                          onClick={() => go("Account")}
+                          onClick={() => go('Account')}
                           className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           Account
@@ -808,7 +808,7 @@ export const FoodDeliveryKimiPage = defineCapsule({
                         </button>
                         <button
                           type="button"
-                          onClick={() => go("Orders")}
+                          onClick={() => go('Orders')}
                           className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           Orders
@@ -875,8 +875,8 @@ export const FoodDeliveryKimiPage = defineCapsule({
                       <SheetTitle className="text-xl">Your order</SheetTitle>
                       <SheetDescription>
                         {orderItemCount > 0
-                          ? `${orderItemCount} restaurant${orderItemCount === 1 ? "" : "s"} in your order.`
-                          : "Your order is empty."}
+                          ? `${orderItemCount} restaurant${orderItemCount === 1 ? '' : 's'} in your order.`
+                          : 'Your order is empty.'}
                       </SheetDescription>
                     </SheetHeader>
                     <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -978,7 +978,7 @@ export const FoodDeliveryKimiPage = defineCapsule({
                         type="button"
                         disabled={!safeOrderLines.length}
                         className="w-full rounded-full"
-                        onClick={() => go("Checkout")}
+                        onClick={() => go('Checkout')}
                       >
                         Checkout
                       </Button>
@@ -1067,7 +1067,7 @@ export const FoodDeliveryKimiPage = defineCapsule({
                             {authDisplayName}
                           </p>
                           <p className="truncate text-xs text-muted-foreground">
-                            {authEmail ?? "Signed in"}
+                            {authEmail ?? 'Signed in'}
                           </p>
                         </div>
                       </div>
@@ -1201,7 +1201,9 @@ export const FoodDeliveryKimiPage = defineCapsule({
                       {searchCta}
                     </button>
                   </form>
-                  <p className="mt-4 text-sm text-muted-foreground">{serving}</p>
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    {serving}
+                  </p>
                 </div>
                 <div className="relative">
                   <Image
@@ -1345,17 +1347,19 @@ export const FoodDeliveryKimiPage = defineCapsule({
                               : `Add ${r.name} to favorites`
                           }
                           className={cn(
-                            "absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100",
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
                             isFavorite
-                              ? "bg-primary text-primary-foreground opacity-100"
-                              : "bg-background/90 text-foreground opacity-0 hover:bg-background",
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
                           )}
                         >
                           <HeartIcon active={isFavorite} />
                         </button>
                       </div>
                       <div className="p-5 rounded-xl border border-border bg-background transition-shadow hover:shadow-lg">
-                        <h3 className="font-semibold text-foreground">{r.name}</h3>
+                        <h3 className="font-semibold text-foreground">
+                          {r.name}
+                        </h3>
                         <p className="mt-1 text-sm text-muted-foreground">
                           {r.category}
                         </p>
@@ -1393,7 +1397,9 @@ export const FoodDeliveryKimiPage = defineCapsule({
                 <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
                   {stepsHeading}
                 </h2>
-                <p className="mt-4 text-lg text-muted-foreground">{stepsDesc}</p>
+                <p className="mt-4 text-lg text-muted-foreground">
+                  {stepsDesc}
+                </p>
               </div>
               <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
                 {stepItems.map((step, i) => (
@@ -1570,7 +1576,7 @@ export const FoodDeliveryKimiPage = defineCapsule({
                 <button
                   type="button"
                   aria-label="Twitter"
-                  onClick={() => go("Twitter")}
+                  onClick={() => go('Twitter')}
                   className="text-muted-foreground transition-colors hover:text-foreground"
                 >
                   <svg
@@ -1585,7 +1591,7 @@ export const FoodDeliveryKimiPage = defineCapsule({
                 <button
                   type="button"
                   aria-label="Instagram"
-                  onClick={() => go("Instagram")}
+                  onClick={() => go('Instagram')}
                   className="text-muted-foreground transition-colors hover:text-foreground"
                 >
                   <svg

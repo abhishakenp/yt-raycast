@@ -4,16 +4,14 @@ import { defineCapsule } from './openui.ts'
 import { Image } from '#/lib/img.tsx'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from '#/components/ui/sheet.tsx'
 import { Button } from '#/components/ui/button.tsx'
 import {
@@ -161,7 +159,13 @@ export const MarketingKimiPage = defineCapsule({
         }
         return db.subscribers.all()
       },
-      submitInquiry: ({ db }, name: string, email: string, company: string, message: string) => {
+      submitInquiry: (
+        { db },
+        name: string,
+        email: string,
+        company: string,
+        message: string,
+      ) => {
         db.inquiries.insert({ name, email, company, message })
         return db.inquiries.all()
       },
@@ -179,8 +183,6 @@ export const MarketingKimiPage = defineCapsule({
     })
     const brand = props.brand ?? 'Flowstate'
 
-    const subscribers = lakebed.useQuery('subscribers')
-    const inquiries = lakebed.useQuery('inquiries')
     const subscribe = lakebed.useMutation('subscribe')
     const submitInquiry = lakebed.useMutation('submitInquiry')
     const auth = lakebed.useAuth()
@@ -1099,7 +1101,11 @@ export const MarketingKimiPage = defineCapsule({
                 className="mt-8 flex flex-wrap items-center justify-center gap-2"
                 onSubmit={(e) => {
                   e.preventDefault()
-                  const email = (e.currentTarget.elements.namedItem('email') as HTMLInputElement).value
+                  const email = (
+                    e.currentTarget.elements.namedItem(
+                      'email',
+                    ) as HTMLInputElement
+                  ).value
                   if (email) {
                     void subscribe(email)
                     e.currentTarget.reset()
@@ -1159,7 +1165,8 @@ export const MarketingKimiPage = defineCapsule({
             <SheetHeader className="border-b border-border p-6">
               <SheetTitle className="text-xl">Contact Sales</SheetTitle>
               <SheetDescription>
-                Tell us about your needs and we'll get back to you within 24 hours.
+                Tell us about your needs and we'll get back to you within 24
+                hours.
               </SheetDescription>
             </SheetHeader>
             <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -1175,13 +1182,21 @@ export const MarketingKimiPage = defineCapsule({
                   const message = formData.get('message') as string
                   if (name && email && message) {
                     void submitInquiry(name, email, company, message)
-                    setContactForm({ name: '', email: '', company: '', message: '' })
+                    setContactForm({
+                      name: '',
+                      email: '',
+                      company: '',
+                      message: '',
+                    })
                     setContactOpen(false)
                   }
                 }}
               >
                 <div className="space-y-2">
-                  <label htmlFor="contact-name" className="text-sm font-medium text-foreground">
+                  <label
+                    htmlFor="contact-name"
+                    className="text-sm font-medium text-foreground"
+                  >
                     Name *
                   </label>
                   <input
@@ -1190,13 +1205,18 @@ export const MarketingKimiPage = defineCapsule({
                     type="text"
                     required
                     value={contactForm.name}
-                    onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                    onChange={(e) =>
+                      setContactForm({ ...contactForm, name: e.target.value })
+                    }
                     className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring"
                     placeholder="Your name"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="contact-email" className="text-sm font-medium text-foreground">
+                  <label
+                    htmlFor="contact-email"
+                    className="text-sm font-medium text-foreground"
+                  >
                     Work Email *
                   </label>
                   <input
@@ -1205,13 +1225,18 @@ export const MarketingKimiPage = defineCapsule({
                     type="email"
                     required
                     value={contactForm.email}
-                    onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                    onChange={(e) =>
+                      setContactForm({ ...contactForm, email: e.target.value })
+                    }
                     className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring"
                     placeholder="you@company.com"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="contact-company" className="text-sm font-medium text-foreground">
+                  <label
+                    htmlFor="contact-company"
+                    className="text-sm font-medium text-foreground"
+                  >
                     Company
                   </label>
                   <input
@@ -1219,13 +1244,21 @@ export const MarketingKimiPage = defineCapsule({
                     name="company"
                     type="text"
                     value={contactForm.company}
-                    onChange={(e) => setContactForm({ ...contactForm, company: e.target.value })}
+                    onChange={(e) =>
+                      setContactForm({
+                        ...contactForm,
+                        company: e.target.value,
+                      })
+                    }
                     className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring"
                     placeholder="Company name"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="contact-message" className="text-sm font-medium text-foreground">
+                  <label
+                    htmlFor="contact-message"
+                    className="text-sm font-medium text-foreground"
+                  >
                     Message *
                   </label>
                   <textarea
@@ -1234,7 +1267,12 @@ export const MarketingKimiPage = defineCapsule({
                     required
                     rows={4}
                     value={contactForm.message}
-                    onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                    onChange={(e) =>
+                      setContactForm({
+                        ...contactForm,
+                        message: e.target.value,
+                      })
+                    }
                     className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring resize-none"
                     placeholder="Tell us about your needs..."
                   />

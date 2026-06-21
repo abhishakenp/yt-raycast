@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,8 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 
 /**
  * AccountingFirmKimiPage — a complete, self-contained CPA / accounting-firm
@@ -47,9 +41,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * Callers supply ONLY content; rich defaults make it render great with no props.
  */
 export const AccountingFirmKimiPage = defineCapsule({
-  name: "AccountingFirmKimiPage",
+  name: 'AccountingFirmKimiPage',
   description:
-    "Complete, professional accounting-firm / CPA / chartered-accountant marketing page with a calm, trustworthy financial-services aesthetic: warm neutral canvas, deep-neutral brand accent, editorial spacing and serious type hierarchy. Includes a sticky navbar with a Schedule-Consultation CTA, a split hero (Est.-year eyebrow, headline, dual CTAs, CPA/BBB/experience trust badges, photo with a floating tax-savings stat card), a trusted-by client logo strip, a 6-up services grid (tax planning & preparation, business advisory, audit & assurance, bookkeeping & payroll, estate planning, retirement planning) with icon tiles and feature checklists, a split about band with founder bio and a firm-stats KPI grid, a 3-step how-we-work process with an inline booking CTA, a 4-up leadership team grid with headshots, a 3-tier transparent pricing table with a highlighted Most-Popular plan, a dark stats band, a 3-up star-rated client testimonials grid, a 6-item FAQ accordion, a dark CTA band with phone and office hours, and a contact section pairing office/email/phone details with a real inquiry form, plus a multi-column footer. Use as the ROOT/home page for accounting firms, CPA practices, tax-preparation services, bookkeeping & payroll providers, audit/assurance firms, financial advisory, estate & retirement planning, or wealth-management practices when a credible, conversion-focused services site with pricing, team and FAQ is wanted. Supply content only; the block owns all layout and styling.",
+    'Complete, professional accounting-firm / CPA / chartered-accountant marketing page with a calm, trustworthy financial-services aesthetic: warm neutral canvas, deep-neutral brand accent, editorial spacing and serious type hierarchy. Includes a sticky navbar with a Schedule-Consultation CTA, a split hero (Est.-year eyebrow, headline, dual CTAs, CPA/BBB/experience trust badges, photo with a floating tax-savings stat card), a trusted-by client logo strip, a 6-up services grid (tax planning & preparation, business advisory, audit & assurance, bookkeeping & payroll, estate planning, retirement planning) with icon tiles and feature checklists, a split about band with founder bio and a firm-stats KPI grid, a 3-step how-we-work process with an inline booking CTA, a 4-up leadership team grid with headshots, a 3-tier transparent pricing table with a highlighted Most-Popular plan, a dark stats band, a 3-up star-rated client testimonials grid, a 6-item FAQ accordion, a dark CTA band with phone and office hours, and a contact section pairing office/email/phone details with a real inquiry form, plus a multi-column footer. Use as the ROOT/home page for accounting firms, CPA practices, tax-preparation services, bookkeeping & payroll providers, audit/assurance firms, financial advisory, estate & retirement planning, or wealth-management practices when a credible, conversion-focused services site with pricing, team and FAQ is wanted. Supply content only; the block owns all layout and styling.',
   props: z.object({
     /** Firm / brand name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -267,48 +261,22 @@ export const AccountingFirmKimiPage = defineCapsule({
       }),
     },
     queries: {
-      appointments: ({ db }) =>
-        db.appointments.orderBy('createdAt').all(),
-      favoriteServiceNames: ({ db }) =>
-        new Set(db.serviceFavorites.all().map((fav) => fav.serviceName)),
-      contactSubmissions: ({ db }) =>
-        db.contactSubmissions.orderBy('createdAt').all(),
+      appointments: ({ db }) => db.appointments.orderBy('createdAt').all(),
     },
     mutations: {
-      bookAppointment: ({ db }, data: {
-        firstName: string
-        lastName: string
-        email: string
-        phone: string
-        service: string
-        message: string
-      }) => {
+      bookAppointment: (
+        { db },
+        data: {
+          firstName: string
+          lastName: string
+          email: string
+          phone: string
+          service: string
+          message: string
+        },
+      ) => {
         db.appointments.insert(data)
         return db.appointments.all()
-      },
-      toggleServiceFavorite: ({ db }, serviceName: string) => {
-        const existing = db.serviceFavorites
-          .where('serviceName', serviceName)
-          .all()[0]
-
-        if (existing) {
-          db.serviceFavorites.delete(existing.id)
-          return false
-        }
-
-        db.serviceFavorites.insert({ serviceName })
-        return true
-      },
-      submitContactForm: ({ db }, data: {
-        firstName: string
-        lastName: string
-        email: string
-        phone: string
-        service: string
-        message: string
-      }) => {
-        db.contactSubmissions.insert(data)
-        return db.contactSubmissions.all()
       },
       removeAppointment: ({ db }, id: string) => {
         for (const item of db.appointments.where('id', id).all()) {
@@ -322,366 +290,339 @@ export const AccountingFirmKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [bookingOpen, setBookingOpen] = useState(false)
-    const brand = props.brand ?? "Northridge"
+    const brand = props.brand ?? 'Northridge'
 
     // Lakebed hooks
     const appointments = lakebed.useQuery('appointments')
-    const favoriteServiceNames = lakebed.useQuery('favoriteServiceNames')
-    const contactSubmissions = lakebed.useQuery('contactSubmissions')
-    const auth = lakebed.useAuth()
     const bookAppointment = lakebed.useMutation('bookAppointment')
-    const toggleServiceFavorite = lakebed.useMutation('toggleServiceFavorite')
-    const submitContactForm = lakebed.useMutation('submitContactForm')
     const removeAppointment = lakebed.useMutation('removeAppointment')
-
-    const isSignedIn = auth.isAuthenticated && !auth.isGuest
-    const authEmail = auth.email || auth.user?.email
-    const authPicture = auth.picture || auth.user?.picture
-    const authDisplayName =
-      auth.displayName || auth.user?.displayName || authEmail || 'Account'
-    const authInitials =
-      authDisplayName
-        .split(/\s+/)
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((part) => part[0]?.toUpperCase())
-        .join('') || 'ME'
-    const authLabel = auth.isLoading
-      ? 'Checking...'
-      : isSignedIn
-        ? authDisplayName
-        : 'Sign in'
-
-    const handleSignIn = () => {
-      if (auth.isLoading) return
-      void lakebed.signInWithGoogle()
-    }
-
-    const handleSignOut = () => {
-      lakebed.signOut()
-    }
 
     const safeAppointments = appointments ?? []
     const appointmentCount = safeAppointments.length
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "About", "Team", "Pricing", "FAQ"]
-    const navCta = props.navCta ?? "Schedule Consultation"
+      : ['Services', 'About', 'Team', 'Pricing', 'FAQ']
+    const navCta = props.navCta ?? 'Schedule Consultation'
 
     const heroEyebrow =
-      props.hero?.eyebrow ?? "Est. 1987 • Chartered Professional Accountants"
-    const heroHeadingTop = props.hero?.headingTop ?? "Clarity in every number."
+      props.hero?.eyebrow ?? 'Est. 1987 • Chartered Professional Accountants'
+    const heroHeadingTop = props.hero?.headingTop ?? 'Clarity in every number.'
     const heroHeadingBottom =
-      props.hero?.headingBottom ?? "Confidence in every decision."
+      props.hero?.headingBottom ?? 'Confidence in every decision.'
     const heroSub =
       props.hero?.subheading ??
-      "Northridge Financial Partners provides comprehensive accounting, tax, and advisory services for growing businesses and individuals. Trusted by 800+ clients across the Pacific Northwest."
-    const heroPrimary = props.hero?.primaryCta ?? "Book Free Consultation"
-    const heroSecondary = props.hero?.secondaryCta ?? "Explore Services"
+      'Northridge Financial Partners provides comprehensive accounting, tax, and advisory services for growing businesses and individuals. Trusted by 800+ clients across the Pacific Northwest.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Book Free Consultation'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Explore Services'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "professional accountant reviewing financial documents with laptop and calculator in modern office"
-    const heroStatValue = props.hero?.statValue ?? "$47M+"
+      'professional accountant reviewing financial documents with laptop and calculator in modern office'
+    const heroStatValue = props.hero?.statValue ?? '$47M+'
     const heroStatLabel =
-      props.hero?.statLabel ?? "Tax savings secured for clients in 2024"
+      props.hero?.statLabel ?? 'Tax savings secured for clients in 2024'
     const heroBadges = props.hero?.badges?.length
       ? props.hero.badges
-      : ["CPA Certified", "A+ BBB Rating", "37 Years Experience"]
+      : ['CPA Certified', 'A+ BBB Rating', '37 Years Experience']
 
-    const logosHeading = props.logos?.heading ?? "Trusted by leading businesses"
+    const logosHeading = props.logos?.heading ?? 'Trusted by leading businesses'
     const logoNames = props.logos?.names?.length
       ? props.logos.names
       : [
-          "Cascade Tech",
-          "Evergreen Co.",
-          "Summit Holdings",
-          "Pacific Realty",
-          "Harbor Logistics",
-          "Vista Medical",
+          'Cascade Tech',
+          'Evergreen Co.',
+          'Summit Holdings',
+          'Pacific Realty',
+          'Harbor Logistics',
+          'Vista Medical',
         ]
 
     const servicesHeading =
-      props.services?.heading ?? "Comprehensive financial services"
+      props.services?.heading ?? 'Comprehensive financial services'
     const servicesDesc =
       props.services?.description ??
-      "From daily bookkeeping to complex tax strategy, we handle every aspect of your financial life with precision and care."
+      'From daily bookkeeping to complex tax strategy, we handle every aspect of your financial life with precision and care.'
     const serviceItems = props.services?.items?.length
       ? props.services.items
       : [
           {
-            title: "Tax Planning & Preparation",
+            title: 'Tax Planning & Preparation',
             description:
-              "Strategic tax planning for individuals and businesses. We maximize deductions, minimize liabilities, and ensure full compliance with federal, state, and local regulations.",
+              'Strategic tax planning for individuals and businesses. We maximize deductions, minimize liabilities, and ensure full compliance with federal, state, and local regulations.',
             points: [
-              "Individual & business returns",
-              "IRS audit representation",
-              "Estate & trust tax planning",
+              'Individual & business returns',
+              'IRS audit representation',
+              'Estate & trust tax planning',
             ],
           },
           {
-            title: "Business Advisory",
+            title: 'Business Advisory',
             description:
-              "Growth-focused guidance for businesses at every stage. From startup formation to succession planning, we help you make informed financial decisions.",
+              'Growth-focused guidance for businesses at every stage. From startup formation to succession planning, we help you make informed financial decisions.',
             points: [
-              "Cash flow management",
-              "Business valuations",
-              "M&A advisory services",
+              'Cash flow management',
+              'Business valuations',
+              'M&A advisory services',
             ],
           },
           {
-            title: "Audit & Assurance",
+            title: 'Audit & Assurance',
             description:
-              "Independent audit services that build stakeholder confidence. We deliver thorough, objective assessments with clear, actionable findings.",
+              'Independent audit services that build stakeholder confidence. We deliver thorough, objective assessments with clear, actionable findings.',
             points: [
-              "Financial statement audits",
-              "Internal control reviews",
-              "Compliance audits",
+              'Financial statement audits',
+              'Internal control reviews',
+              'Compliance audits',
             ],
           },
           {
-            title: "Bookkeeping & Payroll",
+            title: 'Bookkeeping & Payroll',
             description:
-              "Accurate, timely financial records that keep your business running smoothly. We handle the details so you can focus on growth.",
+              'Accurate, timely financial records that keep your business running smoothly. We handle the details so you can focus on growth.',
             points: [
-              "Monthly bookkeeping",
-              "Full-service payroll",
-              "Accounts payable/receivable",
+              'Monthly bookkeeping',
+              'Full-service payroll',
+              'Accounts payable/receivable',
             ],
           },
           {
-            title: "Estate Planning",
+            title: 'Estate Planning',
             description:
-              "Protect your legacy with comprehensive estate planning. We coordinate with attorneys to ensure your wealth transfers efficiently and tax-effectively.",
+              'Protect your legacy with comprehensive estate planning. We coordinate with attorneys to ensure your wealth transfers efficiently and tax-effectively.',
             points: [
-              "Trust administration",
-              "Wealth transfer strategies",
-              "Charitable giving plans",
+              'Trust administration',
+              'Wealth transfer strategies',
+              'Charitable giving plans',
             ],
           },
           {
-            title: "Retirement Planning",
+            title: 'Retirement Planning',
             description:
-              "Build a secure future with personalized retirement strategies. We help you navigate 401(k)s, IRAs, pensions, and Social Security optimization.",
+              'Build a secure future with personalized retirement strategies. We help you navigate 401(k)s, IRAs, pensions, and Social Security optimization.',
             points: [
-              "401(k) & IRA optimization",
-              "Social Security timing",
-              "Distribution strategies",
+              '401(k) & IRA optimization',
+              'Social Security timing',
+              'Distribution strategies',
             ],
           },
         ]
 
-    const aboutEyebrow = props.about?.eyebrow ?? "About Northridge"
+    const aboutEyebrow = props.about?.eyebrow ?? 'About Northridge'
     const aboutHeading =
-      props.about?.heading ?? "Three decades of financial excellence"
+      props.about?.heading ?? 'Three decades of financial excellence'
     const aboutParagraphs = props.about?.paragraphs?.length
       ? props.about.paragraphs
       : [
-          "Founded in 1987 by Robert Northridge, our firm has grown from a one-person practice to a team of 24 dedicated professionals serving clients throughout Oregon and Washington.",
-          "We believe in building lasting relationships. Our average client tenure exceeds 11 years—a testament to the trust we earn through consistent results and personal attention. Every engagement is led by a partner, ensuring senior-level expertise on every matter.",
+          'Founded in 1987 by Robert Northridge, our firm has grown from a one-person practice to a team of 24 dedicated professionals serving clients throughout Oregon and Washington.',
+          'We believe in building lasting relationships. Our average client tenure exceeds 11 years—a testament to the trust we earn through consistent results and personal attention. Every engagement is led by a partner, ensuring senior-level expertise on every matter.',
         ]
     const aboutImageAlt =
       props.about?.imageAlt ??
-      "modern glass office building exterior with blue sky reflection"
+      'modern glass office building exterior with blue sky reflection'
     const aboutStats = props.about?.stats?.length
       ? props.about.stats
       : [
-          { value: "37", label: "Years in practice" },
-          { value: "24", label: "Team members" },
-          { value: "800+", label: "Active clients" },
-          { value: "11.2", label: "Average client years" },
+          { value: '37', label: 'Years in practice' },
+          { value: '24', label: 'Team members' },
+          { value: '800+', label: 'Active clients' },
+          { value: '11.2', label: 'Average client years' },
         ]
-    const aboutFounderName = props.about?.founderName ?? "Robert Northridge, CPA"
+    const aboutFounderName =
+      props.about?.founderName ?? 'Robert Northridge, CPA'
     const aboutFounderRole =
-      props.about?.founderRole ?? "Founder & Managing Partner"
+      props.about?.founderRole ?? 'Founder & Managing Partner'
     const aboutFounderAvatarAlt =
       props.about?.founderAvatarAlt ??
-      "professional headshot of Robert Northridge founder in navy suit with warm smile"
+      'professional headshot of Robert Northridge founder in navy suit with warm smile'
 
-    const processHeading = props.process?.heading ?? "How we work with you"
+    const processHeading = props.process?.heading ?? 'How we work with you'
     const processDesc =
       props.process?.description ??
-      "A proven process designed to understand your needs and deliver measurable results from day one."
+      'A proven process designed to understand your needs and deliver measurable results from day one.'
     const processSteps = props.process?.steps?.length
       ? props.process.steps
       : [
           {
-            title: "Discovery & Assessment",
+            title: 'Discovery & Assessment',
             description:
-              "We begin with a complimentary consultation to understand your financial situation, goals, and challenges. This includes a comprehensive review of your current books, tax returns, and financial statements.",
+              'We begin with a complimentary consultation to understand your financial situation, goals, and challenges. This includes a comprehensive review of your current books, tax returns, and financial statements.',
           },
           {
-            title: "Strategy & Planning",
+            title: 'Strategy & Planning',
             description:
-              "Our team develops a customized financial strategy tailored to your specific objectives. We present clear recommendations with projected outcomes, timelines, and transparent fee structures.",
+              'Our team develops a customized financial strategy tailored to your specific objectives. We present clear recommendations with projected outcomes, timelines, and transparent fee structures.',
           },
           {
-            title: "Execution & Support",
+            title: 'Execution & Support',
             description:
-              "We implement your plan with precision, providing ongoing support, regular check-ins, and proactive adjustments as your situation evolves. Your dedicated account manager ensures nothing falls through the cracks.",
+              'We implement your plan with precision, providing ongoing support, regular check-ins, and proactive adjustments as your situation evolves. Your dedicated account manager ensures nothing falls through the cracks.',
           },
         ]
-    const processCtaHeading = props.process?.ctaHeading ?? "Ready to get started?"
+    const processCtaHeading =
+      props.process?.ctaHeading ?? 'Ready to get started?'
     const processCtaDesc =
       props.process?.ctaDescription ??
-      "Schedule your complimentary consultation—no obligation, no pressure."
-    const processCtaButton = props.process?.ctaButton ?? "Book Your Consultation"
+      'Schedule your complimentary consultation—no obligation, no pressure.'
+    const processCtaButton =
+      props.process?.ctaButton ?? 'Book Your Consultation'
 
-    const teamHeading = props.team?.heading ?? "Meet our leadership"
+    const teamHeading = props.team?.heading ?? 'Meet our leadership'
     const teamDesc =
       props.team?.description ??
-      "Experienced professionals committed to your financial success."
+      'Experienced professionals committed to your financial success.'
     const teamMembers = props.team?.members?.length
       ? props.team.members
       : [
           {
-            name: "Robert Northridge",
-            role: "Founder & Managing Partner, CPA",
-            bio: "37 years of experience. Specializes in complex business advisory and estate planning.",
+            name: 'Robert Northridge',
+            role: 'Founder & Managing Partner, CPA',
+            bio: '37 years of experience. Specializes in complex business advisory and estate planning.',
             avatarAlt:
-              "professional headshot of Robert Northridge senior partner in charcoal suit with confident expression",
+              'professional headshot of Robert Northridge senior partner in charcoal suit with confident expression',
           },
           {
-            name: "Sarah Chen",
-            role: "Tax Partner, CPA, MST",
-            bio: "18 years in taxation. Expert in multi-state tax planning and IRS dispute resolution.",
+            name: 'Sarah Chen',
+            role: 'Tax Partner, CPA, MST',
+            bio: '18 years in taxation. Expert in multi-state tax planning and IRS dispute resolution.',
             avatarAlt:
-              "professional headshot of Sarah Chen tax partner with warm smile and professional blazer",
+              'professional headshot of Sarah Chen tax partner with warm smile and professional blazer',
           },
           {
-            name: "Michael Torres",
-            role: "Audit Partner, CPA",
-            bio: "15 years in assurance services. Leads our nonprofit and healthcare audit practice.",
+            name: 'Michael Torres',
+            role: 'Audit Partner, CPA',
+            bio: '15 years in assurance services. Leads our nonprofit and healthcare audit practice.',
             avatarAlt:
-              "professional headshot of Michael Torres audit partner with dark hair and navy suit",
+              'professional headshot of Michael Torres audit partner with dark hair and navy suit',
           },
           {
-            name: "Jennifer Walsh",
-            role: "Advisory Partner, CPA, CFP",
-            bio: "12 years in financial planning. Focuses on retirement strategies and wealth management.",
+            name: 'Jennifer Walsh',
+            role: 'Advisory Partner, CPA, CFP',
+            bio: '12 years in financial planning. Focuses on retirement strategies and wealth management.',
             avatarAlt:
-              "professional headshot of Jennifer Walsh advisory partner with blonde hair and elegant professional attire",
+              'professional headshot of Jennifer Walsh advisory partner with blonde hair and elegant professional attire',
           },
         ]
     const teamFootnote =
       props.team?.footnote ??
-      "Our full team includes 20 additional professionals including senior accountants, bookkeepers, and support staff."
-    const teamFootnoteCta = props.team?.footnoteCta ?? "Get to know our full team"
+      'Our full team includes 20 additional professionals including senior accountants, bookkeepers, and support staff.'
+    const teamFootnoteCta =
+      props.team?.footnoteCta ?? 'Get to know our full team'
 
-    const pricingHeading = props.pricing?.heading ?? "Transparent pricing"
+    const pricingHeading = props.pricing?.heading ?? 'Transparent pricing'
     const pricingDesc =
       props.pricing?.description ??
-      "Clear, upfront pricing with no hidden fees. Choose the service level that fits your needs."
+      'Clear, upfront pricing with no hidden fees. Choose the service level that fits your needs.'
     const pricingTiers = props.pricing?.tiers?.length
       ? props.pricing.tiers
       : [
           {
-            name: "Individual Tax",
-            tagline: "For personal tax returns",
-            price: "$450",
-            period: "/return",
+            name: 'Individual Tax',
+            tagline: 'For personal tax returns',
+            price: '$450',
+            period: '/return',
             features: [
-              "Federal & state returns",
-              "Standard deductions & credits",
-              "E-filing included",
-              "Year-round support",
+              'Federal & state returns',
+              'Standard deductions & credits',
+              'E-filing included',
+              'Year-round support',
             ],
-            cta: "Get Started",
+            cta: 'Get Started',
           },
           {
-            name: "Business Essential",
-            tagline: "For small businesses",
-            price: "$750",
-            period: "/month",
+            name: 'Business Essential',
+            tagline: 'For small businesses',
+            price: '$750',
+            period: '/month',
             features: [
-              "Monthly bookkeeping",
-              "Quarterly tax filings",
-              "Annual business return",
-              "Payroll for up to 10 employees",
-              "Monthly financial reports",
+              'Monthly bookkeeping',
+              'Quarterly tax filings',
+              'Annual business return',
+              'Payroll for up to 10 employees',
+              'Monthly financial reports',
             ],
-            cta: "Get Started",
+            cta: 'Get Started',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Advisory Plus",
-            tagline: "Comprehensive support",
-            price: "$2,500",
-            period: "/month",
+            name: 'Advisory Plus',
+            tagline: 'Comprehensive support',
+            price: '$2,500',
+            period: '/month',
             features: [
-              "Everything in Business Essential",
-              "Unlimited employees",
-              "Quarterly strategy sessions",
-              "Dedicated account manager",
-              "Priority scheduling",
+              'Everything in Business Essential',
+              'Unlimited employees',
+              'Quarterly strategy sessions',
+              'Dedicated account manager',
+              'Priority scheduling',
             ],
-            cta: "Contact Us",
+            cta: 'Contact Us',
           },
         ]
     const pricingNote =
       props.pricing?.note ??
-      "Audit services, estate planning, and specialized consulting priced per engagement."
-    const pricingNoteCta = props.pricing?.noteCta ?? "Contact us for a custom quote."
+      'Audit services, estate planning, and specialized consulting priced per engagement.'
+    const pricingNoteCta =
+      props.pricing?.noteCta ?? 'Contact us for a custom quote.'
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "$47M", label: "Tax savings secured (2024)" },
-          { value: "98.7%", label: "Client retention rate" },
-          { value: "2,400+", label: "Returns filed annually" },
-          { value: "4.9/5", label: "Average client rating" },
+          { value: '$47M', label: 'Tax savings secured (2024)' },
+          { value: '98.7%', label: 'Client retention rate' },
+          { value: '2,400+', label: 'Returns filed annually' },
+          { value: '4.9/5', label: 'Average client rating' },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What our clients say"
+      props.testimonials?.heading ?? 'What our clients say'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Trusted partnerships built on results and relationships."
+      'Trusted partnerships built on results and relationships.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "Northridge has handled our taxes for 14 years. Last year they identified deductions we had been missing that saved us over $12,000. Their attention to detail is unmatched.",
-            name: "David Park",
-            role: "CEO, Cascade Tech Solutions",
+              'Northridge has handled our taxes for 14 years. Last year they identified deductions we had been missing that saved us over $12,000. Their attention to detail is unmatched.',
+            name: 'David Park',
+            role: 'CEO, Cascade Tech Solutions',
             avatarAlt:
-              "professional headshot of David Park business owner in suit jacket",
+              'professional headshot of David Park business owner in suit jacket',
           },
           {
             quote:
-              "When the IRS selected us for an audit, Northridge handled everything. Their preparation was so thorough that the audit concluded with no changes to our return. Absolute peace of mind.",
-            name: "Maria Gonzalez",
-            role: "Owner, Evergreen Construction",
+              'When the IRS selected us for an audit, Northridge handled everything. Their preparation was so thorough that the audit concluded with no changes to our return. Absolute peace of mind.',
+            name: 'Maria Gonzalez',
+            role: 'Owner, Evergreen Construction',
             avatarAlt:
-              "professional headshot of Maria Gonzalez business owner with confident smile",
+              'professional headshot of Maria Gonzalez business owner with confident smile',
           },
           {
             quote:
-              "Their retirement planning guidance helped us retire two years earlier than projected. Jennifer Walsh explained complex strategies in terms we could understand and act on.",
-            name: "Thomas & Linda Sullivan",
-            role: "Retirement Planning Clients",
+              'Their retirement planning guidance helped us retire two years earlier than projected. Jennifer Walsh explained complex strategies in terms we could understand and act on.',
+            name: 'Thomas & Linda Sullivan',
+            role: 'Retirement Planning Clients',
             avatarAlt:
-              "professional headshot of Thomas Sullivan retired professional with silver hair",
+              'professional headshot of Thomas Sullivan retired professional with silver hair',
           },
         ]
 
-    const faqHeading = props.faq?.heading ?? "Frequently asked questions"
+    const faqHeading = props.faq?.heading ?? 'Frequently asked questions'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know about working with Northridge."
+      'Everything you need to know about working with Northridge.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "What documents do I need for my tax appointment?",
+            question: 'What documents do I need for my tax appointment?',
             answer:
               "For individuals, bring your W-2s, 1099s, last year's tax return, social security numbers for all dependents, and documentation for deductions (mortgage interest, property taxes, charitable donations, medical expenses). For businesses, include profit/loss statements, balance sheets, and business expense records. We'll send a complete checklist when you schedule.",
           },
           {
-            question: "How quickly can you complete my tax return?",
+            question: 'How quickly can you complete my tax return?',
             answer:
-              "Standard individual returns are completed within 5-7 business days of receiving all documents. Business returns typically require 10-14 business days. During peak season (March-April), timelines may extend slightly. Expedited service is available for an additional fee if you need your return within 48 hours.",
+              'Standard individual returns are completed within 5-7 business days of receiving all documents. Business returns typically require 10-14 business days. During peak season (March-April), timelines may extend slightly. Expedited service is available for an additional fee if you need your return within 48 hours.',
           },
           {
             question: "What happens if I'm audited?",
@@ -689,33 +630,33 @@ export const AccountingFirmKimiPage = defineCapsule({
               "If you're audited, we handle everything. Our audit protection service includes representation before the IRS or state tax authorities, preparation of all required documentation, and direct communication with auditors on your behalf. We stand behind our work—if we prepared your return, audit defense is included at no extra charge.",
           },
           {
-            question: "Do you work with clients remotely?",
+            question: 'Do you work with clients remotely?',
             answer:
-              "Yes. While we have offices in Portland and Seattle, we serve clients throughout the Pacific Northwest and beyond using secure document sharing, video conferencing, and encrypted communication tools. Remote clients receive the same level of service and attention as those who visit our offices.",
+              'Yes. While we have offices in Portland and Seattle, we serve clients throughout the Pacific Northwest and beyond using secure document sharing, video conferencing, and encrypted communication tools. Remote clients receive the same level of service and attention as those who visit our offices.',
           },
           {
-            question: "What are your payment terms?",
+            question: 'What are your payment terms?',
             answer:
-              "For one-time services like tax preparation, payment is due when you pick up your return or before e-filing. For ongoing services like monthly bookkeeping, we invoice on the 1st of each month with net-15 terms. We accept checks, ACH transfers, and all major credit cards. Retainer arrangements are available for businesses with complex ongoing needs.",
+              'For one-time services like tax preparation, payment is due when you pick up your return or before e-filing. For ongoing services like monthly bookkeeping, we invoice on the 1st of each month with net-15 terms. We accept checks, ACH transfers, and all major credit cards. Retainer arrangements are available for businesses with complex ongoing needs.',
           },
           {
-            question: "How do I get started?",
+            question: 'How do I get started?',
             answer:
               "Schedule a free 30-minute consultation through our website or by calling (503) 555-0147. We'll discuss your needs, explain our services, and provide a clear fee estimate. There's no obligation—our goal is to determine if we're the right fit for your financial needs.",
           },
         ]
 
     const ctaHeading =
-      props.cta?.heading ?? "Ready to take control of your finances?"
+      props.cta?.heading ?? 'Ready to take control of your finances?'
     const ctaDesc =
       props.cta?.description ??
       "Schedule a complimentary consultation with one of our CPAs. We'll assess your situation and provide clear recommendations—no obligation, no pressure."
-    const ctaPrimary = props.cta?.primaryButton ?? "Schedule Free Consultation"
-    const ctaPhone = props.cta?.phone ?? "(503) 555-0147"
+    const ctaPrimary = props.cta?.primaryButton ?? 'Schedule Free Consultation'
+    const ctaPhone = props.cta?.phone ?? '(503) 555-0147'
     const ctaHours =
-      props.cta?.hours ?? "Office hours: Monday–Friday, 8:30 AM – 5:00 PM PST"
+      props.cta?.hours ?? 'Office hours: Monday–Friday, 8:30 AM – 5:00 PM PST'
 
-    const contactEyebrow = props.contact?.eyebrow ?? "Contact Us"
+    const contactEyebrow = props.contact?.eyebrow ?? 'Contact Us'
     const contactHeading =
       props.contact?.heading ?? "Let's discuss your financial goals"
     const contactDesc =
@@ -725,70 +666,70 @@ export const AccountingFirmKimiPage = defineCapsule({
       ? props.contact.offices
       : [
           {
-            label: "Portland Office",
-            address: "1240 SW Yamhill Street, Suite 300, Portland, OR 97205",
+            label: 'Portland Office',
+            address: '1240 SW Yamhill Street, Suite 300, Portland, OR 97205',
           },
           {
-            label: "Seattle Office",
-            address: "1918 8th Avenue, Suite 400, Seattle, WA 98101",
+            label: 'Seattle Office',
+            address: '1918 8th Avenue, Suite 400, Seattle, WA 98101',
           },
         ]
-    const contactEmail = props.contact?.email ?? "info@northridgefp.com"
-    const contactPhone = props.contact?.phone ?? "(503) 555-0147"
+    const contactEmail = props.contact?.email ?? 'info@northridgefp.com'
+    const contactPhone = props.contact?.phone ?? '(503) 555-0147'
     const contactServices = props.contact?.services?.length
       ? props.contact.services
       : [
-          "Individual Tax Preparation",
-          "Business Tax Services",
-          "Bookkeeping & Payroll",
-          "Business Advisory",
-          "Audit & Assurance",
-          "Estate Planning",
-          "Retirement Planning",
-          "Other",
+          'Individual Tax Preparation',
+          'Business Tax Services',
+          'Bookkeeping & Payroll',
+          'Business Advisory',
+          'Audit & Assurance',
+          'Estate Planning',
+          'Retirement Planning',
+          'Other',
         ]
-    const contactSubmit = props.contact?.submit ?? "Send Message"
+    const contactSubmit = props.contact?.submit ?? 'Send Message'
     const contactDisclaimer =
       props.contact?.disclaimer ??
       "By submitting this form, you agree to our privacy policy. We'll never share your information with third parties."
 
     const footerTagline =
       props.footer?.tagline ??
-      "Chartered Professional Accountants providing comprehensive financial services to individuals and businesses since 1987."
-    const footerServicesHeading = props.footer?.servicesHeading ?? "Services"
+      'Chartered Professional Accountants providing comprehensive financial services to individuals and businesses since 1987.'
+    const footerServicesHeading = props.footer?.servicesHeading ?? 'Services'
     const footerServicesLinks = props.footer?.servicesLinks?.length
       ? props.footer.servicesLinks
       : [
-          "Tax Planning & Preparation",
-          "Business Advisory",
-          "Audit & Assurance",
-          "Bookkeeping & Payroll",
-          "Estate Planning",
-          "Retirement Planning",
+          'Tax Planning & Preparation',
+          'Business Advisory',
+          'Audit & Assurance',
+          'Bookkeeping & Payroll',
+          'Estate Planning',
+          'Retirement Planning',
         ]
-    const footerCompanyHeading = props.footer?.companyHeading ?? "Company"
+    const footerCompanyHeading = props.footer?.companyHeading ?? 'Company'
     const footerCompanyLinks = props.footer?.companyLinks?.length
       ? props.footer.companyLinks
       : [
-          "About Us",
-          "Our Team",
-          "Pricing",
-          "Careers",
-          "News & Insights",
-          "Contact",
+          'About Us',
+          'Our Team',
+          'Pricing',
+          'Careers',
+          'News & Insights',
+          'Contact',
         ]
-    const footerContactHeading = props.footer?.contactHeading ?? "Contact"
+    const footerContactHeading = props.footer?.contactHeading ?? 'Contact'
     const footerContactLines = props.footer?.contactLines?.length
       ? props.footer.contactLines
       : [
-          "Portland: (503) 555-0147",
-          "Seattle: (206) 555-0189",
-          "info@northridgefp.com",
+          'Portland: (503) 555-0147',
+          'Seattle: (206) 555-0189',
+          'info@northridgefp.com',
         ]
-    const footerHours = props.footer?.hours ?? "Mon–Fri: 8:30 AM – 5:00 PM PST"
+    const footerHours = props.footer?.hours ?? 'Mon–Fri: 8:30 AM – 5:00 PM PST'
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Settings"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
     const footerCopyright =
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} Northridge Financial Partners. All rights reserved.`
@@ -797,7 +738,7 @@ export const AccountingFirmKimiPage = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-md bg-primary font-bold text-primary-foreground",
+          'grid place-items-center rounded-md bg-primary font-bold text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -844,39 +785,6 @@ export const AccountingFirmKimiPage = defineCapsule({
         aria-hidden="true"
       >
         <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
-      </svg>
-    )
-
-    const ChevronDown = () => (
-      <svg
-        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <polyline points="6 9 12 15 18 9" />
-      </svg>
-    )
-
-    const HeartIcon = ({ active = false }: { active?: boolean }) => (
-      <svg
-        className={cn(
-          'size-5',
-          active ? 'text-primary-foreground' : 'text-foreground',
-        )}
-        fill={active ? 'currentColor' : 'none'}
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
       </svg>
     )
 
@@ -1003,12 +911,12 @@ export const AccountingFirmKimiPage = defineCapsule({
     ]
 
     const inputCls =
-      "w-full rounded-md border border-input bg-background px-4 py-2.5 text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring"
+      'w-full rounded-md border border-input bg-background px-4 py-2.5 text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring'
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -1148,7 +1056,9 @@ export const AccountingFirmKimiPage = defineCapsule({
                     <p className="text-3xl font-bold text-foreground">
                       {heroStatValue}
                     </p>
-                    <p className="text-sm text-muted-foreground">{heroStatLabel}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {heroStatLabel}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -1200,7 +1110,9 @@ export const AccountingFirmKimiPage = defineCapsule({
                     <h3 className="mb-2 text-xl font-semibold text-foreground">
                       {item.title}
                     </h3>
-                    <p className="mb-4 text-muted-foreground">{item.description}</p>
+                    <p className="mb-4 text-muted-foreground">
+                      {item.description}
+                    </p>
                     <ul className="space-y-2 text-sm text-muted-foreground">
                       {item.points.map((point) => (
                         <li key={point} className="flex items-center gap-2">
@@ -1239,8 +1151,8 @@ export const AccountingFirmKimiPage = defineCapsule({
                     <p
                       key={p}
                       className={cn(
-                        "leading-relaxed text-muted-foreground",
-                        i === 0 ? "mb-6 text-lg" : "mb-8",
+                        'leading-relaxed text-muted-foreground',
+                        i === 0 ? 'mb-6 text-lg' : 'mb-8',
                       )}
                     >
                       {p}
@@ -1253,7 +1165,9 @@ export const AccountingFirmKimiPage = defineCapsule({
                         <p className="text-3xl font-bold text-foreground">
                           {s.value}
                         </p>
-                        <p className="text-sm text-muted-foreground">{s.label}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {s.label}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -1361,7 +1275,9 @@ export const AccountingFirmKimiPage = defineCapsule({
                       <p className="mb-3 text-sm text-muted-foreground">
                         {member.role}
                       </p>
-                      <p className="text-sm text-muted-foreground">{member.bio}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {member.bio}
+                      </p>
                     </div>
                   </article>
                 ))}
@@ -1396,10 +1312,10 @@ export const AccountingFirmKimiPage = defineCapsule({
                   <div
                     key={tier.name}
                     className={cn(
-                      "relative rounded-lg border p-8",
+                      'relative rounded-lg border p-8',
                       tier.featured
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-muted",
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border bg-muted',
                     )}
                   >
                     {tier.badge && (
@@ -1411,18 +1327,20 @@ export const AccountingFirmKimiPage = defineCapsule({
                     )}
                     <h3
                       className={cn(
-                        "mb-2 text-lg font-semibold",
-                        tier.featured ? "text-primary-foreground" : "text-foreground",
+                        'mb-2 text-lg font-semibold',
+                        tier.featured
+                          ? 'text-primary-foreground'
+                          : 'text-foreground',
                       )}
                     >
                       {tier.name}
                     </h3>
                     <p
                       className={cn(
-                        "mb-6 text-sm",
+                        'mb-6 text-sm',
                         tier.featured
-                          ? "text-primary-foreground/70"
-                          : "text-muted-foreground",
+                          ? 'text-primary-foreground/70'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {tier.tagline}
@@ -1430,10 +1348,10 @@ export const AccountingFirmKimiPage = defineCapsule({
                     <div className="mb-6">
                       <span
                         className={cn(
-                          "text-4xl font-bold",
+                          'text-4xl font-bold',
                           tier.featured
-                            ? "text-primary-foreground"
-                            : "text-foreground",
+                            ? 'text-primary-foreground'
+                            : 'text-foreground',
                         )}
                       >
                         {tier.price}
@@ -1441,8 +1359,8 @@ export const AccountingFirmKimiPage = defineCapsule({
                       <span
                         className={cn(
                           tier.featured
-                            ? "text-primary-foreground/70"
-                            : "text-muted-foreground",
+                            ? 'text-primary-foreground/70'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {tier.period}
@@ -1450,20 +1368,20 @@ export const AccountingFirmKimiPage = defineCapsule({
                     </div>
                     <ul
                       className={cn(
-                        "mb-8 space-y-3 text-sm",
+                        'mb-8 space-y-3 text-sm',
                         tier.featured
-                          ? "text-primary-foreground/80"
-                          : "text-muted-foreground",
+                          ? 'text-primary-foreground/80'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {tier.features.map((feature) => (
                         <li key={feature} className="flex items-start gap-2">
                           <Check
                             className={cn(
-                              "mt-0.5 size-5 shrink-0",
+                              'mt-0.5 size-5 shrink-0',
                               tier.featured
-                                ? "text-primary-foreground"
-                                : "text-primary",
+                                ? 'text-primary-foreground'
+                                : 'text-primary',
                             )}
                           />
                           {feature}
@@ -1474,10 +1392,10 @@ export const AccountingFirmKimiPage = defineCapsule({
                       type="button"
                       onClick={() => go(tier.cta)}
                       className={cn(
-                        "block w-full rounded-md px-5 py-2.5 text-center font-medium transition-colors",
+                        'block w-full rounded-md px-5 py-2.5 text-center font-medium transition-colors',
                         tier.featured
-                          ? "bg-card text-foreground hover:bg-card/90"
-                          : "border border-input bg-card text-foreground hover:bg-muted",
+                          ? 'bg-card text-foreground hover:bg-card/90'
+                          : 'border border-input bg-card text-foreground hover:bg-muted',
                       )}
                     >
                       {tier.cta}
@@ -1488,7 +1406,7 @@ export const AccountingFirmKimiPage = defineCapsule({
 
               <div className="mt-12 text-center">
                 <p className="text-sm text-muted-foreground">
-                  {pricingNote}{" "}
+                  {pricingNote}{' '}
                   <button
                     type="button"
                     onClick={() => go(pricingNoteCta)}
@@ -1551,8 +1469,12 @@ export const AccountingFirmKimiPage = defineCapsule({
                         className="size-12 rounded-full object-cover"
                       />
                       <div>
-                        <p className="font-semibold text-foreground">{t.name}</p>
-                        <p className="text-sm text-muted-foreground">{t.role}</p>
+                        <p className="font-semibold text-foreground">
+                          {t.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {t.role}
+                        </p>
                       </div>
                     </div>
                   </article>
@@ -1631,7 +1553,9 @@ export const AccountingFirmKimiPage = defineCapsule({
                   {ctaPhone}
                 </button>
               </div>
-              <p className="mt-6 text-sm text-primary-foreground/70">{ctaHours}</p>
+              <p className="mt-6 text-sm text-primary-foreground/70">
+                {ctaHours}
+              </p>
             </div>
           </section>
 
@@ -1652,7 +1576,10 @@ export const AccountingFirmKimiPage = defineCapsule({
 
                   <div className="space-y-6">
                     {contactOffices.map((office) => (
-                      <div key={office.label} className="flex items-start gap-4">
+                      <div
+                        key={office.label}
+                        className="flex items-start gap-4"
+                      >
                         <div className="grid size-12 shrink-0 place-items-center rounded-lg bg-muted">
                           <PinIcon className="size-5 text-foreground/70" />
                         </div>
@@ -1660,7 +1587,9 @@ export const AccountingFirmKimiPage = defineCapsule({
                           <h3 className="font-semibold text-foreground">
                             {office.label}
                           </h3>
-                          <p className="text-muted-foreground">{office.address}</p>
+                          <p className="text-muted-foreground">
+                            {office.address}
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -1772,7 +1701,7 @@ export const AccountingFirmKimiPage = defineCapsule({
                       </label>
                       <select
                         id="acct-service"
-                        className={cn(inputCls, "appearance-none")}
+                        className={cn(inputCls, 'appearance-none')}
                       >
                         <option value="">Select a service...</option>
                         {contactServices.map((service) => (
@@ -1794,7 +1723,7 @@ export const AccountingFirmKimiPage = defineCapsule({
                         id="acct-message"
                         rows={4}
                         required
-                        className={cn(inputCls, "resize-none")}
+                        className={cn(inputCls, 'resize-none')}
                       />
                     </div>
 
@@ -1832,17 +1761,19 @@ export const AccountingFirmKimiPage = defineCapsule({
                 </button>
                 <p className="mb-4 text-sm leading-relaxed">{footerTagline}</p>
                 <div className="flex items-center gap-4">
-                  {(["LinkedIn", "Twitter", "Facebook"] as const).map((social) => (
-                    <button
-                      key={social}
-                      type="button"
-                      aria-label={social}
-                      onClick={() => go(social)}
-                      className="text-sm font-medium text-background/70 transition-colors hover:text-background"
-                    >
-                      {social}
-                    </button>
-                  ))}
+                  {(['LinkedIn', 'Twitter', 'Facebook'] as const).map(
+                    (social) => (
+                      <button
+                        key={social}
+                        type="button"
+                        aria-label={social}
+                        onClick={() => go(social)}
+                        className="text-sm font-medium text-background/70 transition-colors hover:text-background"
+                      >
+                        {social}
+                      </button>
+                    ),
+                  )}
                 </div>
               </div>
 
@@ -1939,7 +1870,8 @@ export const AccountingFirmKimiPage = defineCapsule({
                 Schedule a consultation
               </SheetTitle>
               <SheetDescription>
-                Book time with {brand} and manage the appointments stored in this session.
+                Book time with {brand} and manage the appointments stored in
+                this session.
               </SheetDescription>
             </SheetHeader>
             <div className="flex-1 space-y-6 overflow-y-auto p-6">
@@ -1948,12 +1880,12 @@ export const AccountingFirmKimiPage = defineCapsule({
                 onSubmit={(e) => {
                   e.preventDefault()
                   const form = new FormData(e.currentTarget)
-                  const firstName = String(form.get("firstName") ?? "").trim()
-                  const lastName = String(form.get("lastName") ?? "").trim()
-                  const email = String(form.get("email") ?? "").trim()
-                  const phone = String(form.get("phone") ?? "").trim()
-                  const service = String(form.get("service") ?? "").trim()
-                  const message = String(form.get("message") ?? "").trim()
+                  const firstName = String(form.get('firstName') ?? '').trim()
+                  const lastName = String(form.get('lastName') ?? '').trim()
+                  const email = String(form.get('email') ?? '').trim()
+                  const phone = String(form.get('phone') ?? '').trim()
+                  const service = String(form.get('service') ?? '').trim()
+                  const message = String(form.get('message') ?? '').trim()
                   if (!firstName || !lastName || !email || !service) return
                   void bookAppointment({
                     firstName,
@@ -1996,8 +1928,8 @@ export const AccountingFirmKimiPage = defineCapsule({
                 <select
                   name="service"
                   required
-                  defaultValue={contactServices[0] ?? ""}
-                  className={cn(inputCls, "appearance-none")}
+                  defaultValue={contactServices[0] ?? ''}
+                  className={cn(inputCls, 'appearance-none')}
                 >
                   {contactServices.map((service) => (
                     <option key={service} value={service}>
@@ -2009,7 +1941,7 @@ export const AccountingFirmKimiPage = defineCapsule({
                   name="message"
                   rows={3}
                   placeholder="What should we prepare for?"
-                  className={cn(inputCls, "resize-none")}
+                  className={cn(inputCls, 'resize-none')}
                 />
                 <Button type="submit" className="w-full">
                   Book consultation

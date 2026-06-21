@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,19 +14,19 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const NutritionKimiPage3 = defineCapsule({
-  name: "NutritionKimiPage3",
+  name: 'NutritionKimiPage3',
   description:
-    "Nutrition third style sibling to NutritionKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Nutrition third style sibling to NutritionKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const NutritionKimiPage3 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -82,7 +84,13 @@ export const NutritionKimiPage3 = defineCapsule({
       leads: ({ db }) => db.leads.orderBy('createdAt').all(),
     },
     mutations: {
-      bookConsultation: ({ db }, name: string, email: string, phone: string, goal: string) => {
+      bookConsultation: (
+        { db },
+        name: string,
+        email: string,
+        phone: string,
+        goal: string,
+      ) => {
         db.consultations.insert({ name, email, phone, goal, status: 'pending' })
         return db.consultations.all()
       },
@@ -99,24 +107,33 @@ export const NutritionKimiPage3 = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [drawerOpen, setDrawerOpen] = useState(false)
-    const [formData, setFormData] = useState({ name: '', email: '', phone: '', goal: '' })
+    const [formData, setFormData] = useState({
+      name: '',
+      email: '',
+      phone: '',
+      goal: '',
+    })
     const consultations = lakebed.useQuery('consultations')
-    const leads = lakebed.useQuery('leads')
     const bookConsultation = lakebed.useMutation('bookConsultation')
     const cancelConsultation = lakebed.useMutation('cancelConsultation')
-    const submitLead = lakebed.useMutation('submitLead')
     const auth = lakebed.useAuth()
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
-    const authDisplayName = auth.displayName || auth.user?.displayName || authEmail || 'Account'
-    const authInitials = authDisplayName
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join('') || 'ME'
-    const authLabel = auth.isLoading ? 'Checking...' : isSignedIn ? authDisplayName : 'Sign in'
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
     const handleSignIn = () => {
       if (auth.isLoading) return
       void lakebed.signInWithGoogle()
@@ -124,94 +141,111 @@ export const NutritionKimiPage3 = defineCapsule({
     const handleSignOut = () => {
       lakebed.signOut()
     }
-    const brand = props.brand ?? "MacroMethod Precision Nutrition Coaching"
-    const nav = props.nav?.length ? props.nav : ["How It Works", "Pricing", "Results", "FAQ", "MacroMethod", "Start Your Plan"]
+    const brand = props.brand ?? 'MacroMethod Precision Nutrition Coaching'
+    const nav = props.nav?.length
+      ? props.nav
+      : [
+          'How It Works',
+          'Pricing',
+          'Results',
+          'FAQ',
+          'MacroMethod',
+          'Start Your Plan',
+        ]
     const hero = {
-      eyebrow: "Nutrition / Variant 3",
-      title: "Eat smarter. Transform faster.",
-      description: "MacroMethod Precision Nutrition Coaching MacroMethod How It Works Pricing Results FAQ Start Your Plan 2,400+ clients transformed in 2024 Eat smarter. Transform faster. MacroMeth...",
-      primaryCta: "MacroMethod",
-      secondaryCta: "How It Works",
-      imageAlt: "Overhead flat-lay of a colorful balanced healthy meal prep with grilled salmon, quinoa, roasted vegetables, and fresh herbs on a dark slate surface",
+      eyebrow: 'Nutrition / Variant 3',
+      title: 'Eat smarter. Transform faster.',
+      description:
+        'MacroMethod Precision Nutrition Coaching MacroMethod How It Works Pricing Results FAQ Start Your Plan 2,400+ clients transformed in 2024 Eat smarter. Transform faster. MacroMeth...',
+      primaryCta: 'MacroMethod',
+      secondaryCta: 'How It Works',
+      imageAlt:
+        'Overhead flat-lay of a colorful balanced healthy meal prep with grilled salmon, quinoa, roasted vegetables, and fresh herbs on a dark slate surface',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Built for real life, not meal-prep Sundays",
-    "body": "MacroMethod Precision Nutrition Coaching MacroMethod How It Works Pricing Results FAQ Start Your Plan 2,400+ clients transformed in 2024 Eat smarter. Transform faster. MacroMeth...",
-    "items": [
-      "Simple, transparent pricing",
-      "What members say",
-      "Frequently asked questions"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "How MacroMethod works",
-    "body": "Nutrition page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Start your transformation this week",
-      "Custom Meal Plans",
-      "1:1 Coach Check-Ins"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Real client transformations",
-    "body": "Nutrition page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Smart Grocery Lists",
-      "Progress Tracking",
-      "Restaurant + Travel Guides"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Simple, transparent pricing",
-    "body": "Nutrition page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Habit Stacking Library",
-      "Intake Assessment",
-      "Coach Match + Plan Build"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "How MacroMethod works",
-    "alt": "Overhead flat-lay of a colorful balanced healthy meal prep with grilled salmon, quinoa, roasted vegetables, and fresh herbs on a dark slate surface",
-    "caption": "Nutrition generated page detail"
-  },
-  {
-    "title": "Real client transformations",
-    "alt": "Professional headshot of a smiling female nutrition coach wearing a white blouse in a bright modern office",
-    "caption": "Nutrition generated page detail"
-  },
-  {
-    "title": "Simple, transparent pricing",
-    "alt": "Close-up of a person filling out a digital health questionnaire on a tablet device in a modern home kitchen",
-    "caption": "Nutrition generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'Built for real life, not meal-prep Sundays',
+            body: 'MacroMethod Precision Nutrition Coaching MacroMethod How It Works Pricing Results FAQ Start Your Plan 2,400+ clients transformed in 2024 Eat smarter. Transform faster. MacroMeth...',
+            items: [
+              'Simple, transparent pricing',
+              'What members say',
+              'Frequently asked questions',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'How MacroMethod works',
+            body: "Nutrition page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Start your transformation this week',
+              'Custom Meal Plans',
+              '1:1 Coach Check-Ins',
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Real client transformations',
+            body: "Nutrition page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Smart Grocery Lists',
+              'Progress Tracking',
+              'Restaurant + Travel Guides',
+            ],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Simple, transparent pricing',
+            body: "Nutrition page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Habit Stacking Library',
+              'Intake Assessment',
+              'Coach Match + Plan Build',
+            ],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'How MacroMethod works',
+            alt: 'Overhead flat-lay of a colorful balanced healthy meal prep with grilled salmon, quinoa, roasted vegetables, and fresh herbs on a dark slate surface',
+            caption: 'Nutrition generated page detail',
+          },
+          {
+            title: 'Real client transformations',
+            alt: 'Professional headshot of a smiling female nutrition coach wearing a white blouse in a bright modern office',
+            caption: 'Nutrition generated page detail',
+          },
+          {
+            title: 'Simple, transparent pricing',
+            alt: 'Close-up of a person filling out a digital health questionnaire on a tablet device in a modern home kitchen',
+            caption: 'Nutrition generated page detail',
+          },
+        ]
 
     const ChevronDown = () => (
       <svg
@@ -247,20 +281,36 @@ export const NutritionKimiPage3 = defineCapsule({
     const handleBookConsultation = (e: React.FormEvent) => {
       e.preventDefault()
       if (formData.name && formData.email && formData.phone && formData.goal) {
-        void bookConsultation(formData.name, formData.email, formData.phone, formData.goal)
+        void bookConsultation(
+          formData.name,
+          formData.email,
+          formData.phone,
+          formData.goal,
+        )
         setFormData({ name: '', email: '', phone: '', goal: '' })
         setDrawerOpen(false)
       }
     }
 
     const safeConsultations = consultations ?? []
-    const pendingConsultations = safeConsultations.filter(c => c.status === 'pending')
+    const pendingConsultations = safeConsultations.filter(
+      (c) => c.status === 'pending',
+    )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -284,9 +334,16 @@ export const NutritionKimiPage3 = defineCapsule({
                       aria-label="Open account menu"
                       className="hidden h-10 max-w-48 items-center gap-2 rounded-full border border-border bg-background/90 px-2 py-1 text-foreground shadow-sm transition hover:border-foreground/20 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:inline-flex"
                     >
-                      <Avatar size="sm" className="ring-2 ring-background" aria-hidden="true">
+                      <Avatar
+                        size="sm"
+                        className="ring-2 ring-background"
+                        aria-hidden="true"
+                      >
                         {authPicture ? (
-                          <AvatarImage src={authPicture} alt={authDisplayName} />
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
                         ) : null}
                         <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
                           {authInitials}
@@ -307,7 +364,10 @@ export const NutritionKimiPage3 = defineCapsule({
                       <div className="flex items-center gap-3">
                         <Avatar size="lg" className="ring-2 ring-background">
                           {authPicture ? (
-                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
                           ) : null}
                           <AvatarFallback className="bg-foreground text-sm font-bold text-background">
                             {authInitials}
@@ -376,17 +436,25 @@ export const NutritionKimiPage3 = defineCapsule({
                     {hero.primaryCta}
                   </button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
                   <SheetHeader className="border-b border-border p-6">
-                    <SheetTitle className="text-xl">Book a Consultation</SheetTitle>
+                    <SheetTitle className="text-xl">
+                      Book a Consultation
+                    </SheetTitle>
                     <SheetDescription>
-                      Schedule your free nutrition coaching session with MacroMethod.
+                      Schedule your free nutrition coaching session with
+                      MacroMethod.
                     </SheetDescription>
                   </SheetHeader>
                   <div className="flex-1 overflow-y-auto px-6 py-5">
                     {pendingConsultations.length > 0 ? (
                       <div className="space-y-4 mb-6">
-                        <p className="text-sm font-medium text-foreground">Your Pending Consultations</p>
+                        <p className="text-sm font-medium text-foreground">
+                          Your Pending Consultations
+                        </p>
                         {pendingConsultations.map((consultation) => (
                           <div
                             key={consultation.id}
@@ -394,13 +462,21 @@ export const NutritionKimiPage3 = defineCapsule({
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div>
-                                <p className="font-semibold text-foreground">{consultation.name}</p>
-                                <p className="text-sm text-muted-foreground">{consultation.email}</p>
-                                <p className="text-sm text-muted-foreground mt-1">Goal: {consultation.goal}</p>
+                                <p className="font-semibold text-foreground">
+                                  {consultation.name}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {consultation.email}
+                                </p>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  Goal: {consultation.goal}
+                                </p>
                               </div>
                               <button
                                 type="button"
-                                onClick={() => void cancelConsultation(consultation.id)}
+                                onClick={() =>
+                                  void cancelConsultation(consultation.id)
+                                }
                                 className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-destructive hover:underline"
                               >
                                 Cancel
@@ -410,9 +486,16 @@ export const NutritionKimiPage3 = defineCapsule({
                         ))}
                       </div>
                     ) : null}
-                    <form id="consultation-form" onSubmit={handleBookConsultation} className="space-y-4">
+                    <form
+                      id="consultation-form"
+                      onSubmit={handleBookConsultation}
+                      className="space-y-4"
+                    >
                       <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
+                        <label
+                          htmlFor="name"
+                          className="block text-sm font-medium text-foreground mb-2"
+                        >
                           Full Name
                         </label>
                         <input
@@ -420,13 +503,18 @@ export const NutritionKimiPage3 = defineCapsule({
                           type="text"
                           required
                           value={formData.name}
-                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, name: e.target.value })
+                          }
                           className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                           placeholder="Your name"
                         />
                       </div>
                       <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+                        <label
+                          htmlFor="email"
+                          className="block text-sm font-medium text-foreground mb-2"
+                        >
                           Email Address
                         </label>
                         <input
@@ -434,13 +522,18 @@ export const NutritionKimiPage3 = defineCapsule({
                           type="email"
                           required
                           value={formData.email}
-                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, email: e.target.value })
+                          }
                           className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                           placeholder="you@example.com"
                         />
                       </div>
                       <div>
-                        <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
+                        <label
+                          htmlFor="phone"
+                          className="block text-sm font-medium text-foreground mb-2"
+                        >
                           Phone Number
                         </label>
                         <input
@@ -448,27 +541,36 @@ export const NutritionKimiPage3 = defineCapsule({
                           type="tel"
                           required
                           value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, phone: e.target.value })
+                          }
                           className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                           placeholder="+1 (555) 000-0000"
                         />
                       </div>
                       <div>
-                        <label htmlFor="goal" className="block text-sm font-medium text-foreground mb-2">
+                        <label
+                          htmlFor="goal"
+                          className="block text-sm font-medium text-foreground mb-2"
+                        >
                           Primary Goal
                         </label>
                         <select
                           id="goal"
                           required
                           value={formData.goal}
-                          onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, goal: e.target.value })
+                          }
                           className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                         >
                           <option value="">Select a goal</option>
                           <option value="weight-loss">Weight Loss</option>
                           <option value="muscle-gain">Muscle Gain</option>
                           <option value="energy">Improve Energy</option>
-                          <option value="performance">Athletic Performance</option>
+                          <option value="performance">
+                            Athletic Performance
+                          </option>
                           <option value="general">General Wellness</option>
                         </select>
                       </div>
@@ -478,13 +580,22 @@ export const NutritionKimiPage3 = defineCapsule({
                     <Button
                       type="submit"
                       form="consultation-form"
-                      disabled={!formData.name || !formData.email || !formData.phone || !formData.goal}
+                      disabled={
+                        !formData.name ||
+                        !formData.email ||
+                        !formData.phone ||
+                        !formData.goal
+                      }
                       className="w-full rounded-full"
                     >
                       Book Consultation
                     </Button>
                     <SheetClose asChild>
-                      <Button type="button" variant="secondary" className="w-full rounded-full">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="w-full rounded-full"
+                      >
                         Cancel
                       </Button>
                     </SheetClose>
@@ -527,16 +638,28 @@ export const NutritionKimiPage3 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -544,10 +667,19 @@ export const NutritionKimiPage3 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -571,8 +703,12 @@ export const NutritionKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -584,11 +720,26 @@ export const NutritionKimiPage3 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -599,9 +750,15 @@ export const NutritionKimiPage3 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -617,10 +774,17 @@ export const NutritionKimiPage3 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

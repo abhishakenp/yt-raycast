@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,18 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * NutritionKimiPage2 — a complete, self-contained nutrition-coaching LANDING page.
@@ -53,7 +49,7 @@ import {
  * content data; rich defaults make it render great with no props at all.
  */
 export const NutritionKimiPage2 = defineCapsule({
-  name: "NutritionKimiPage2",
+  name: 'NutritionKimiPage2',
   description:
     "Complete high-energy fitness-nutrition coaching LANDING page (variant 2 / second style sibling to NutritionKimiPage) with a bold, results-driven aesthetic: bright lime brand accent on a clean white canvas, heavy black headlines, and two inverted dark sections. Includes a skewed split hero (live 'transformations completed' badge, huge headline, dual CTAs, stacked trust avatars, floating daily-macro-tracking and calories-burned stat cards over a meal-prep photo), a press/featured-in logo strip, a lime stats band (transformations, success rate, pounds lost, app rating), a 6-up programs grid (custom meal plans, 1-on-1 coaching, smart tracking, flexible fasting, mindful eating, global recipes) with icon tiles, a DARK numbered 4-step 'how it works' rail (assessment, match with coach, get your plan, track & transform), a 6-card before/after transformation gallery with weight-change badges and client mini-profiles, a 3-tier pricing table (Starter / Premium most-popular dark card / Elite) with checklists, a coaches grid with a featured pull-quote testimonial and supporting photo, a 6-item FAQ accordion, a lime final sign-up CTA band, and a dark multi-column footer with social links. Use as the ROOT/home page for nutrition coaches, dietitians, weight-loss or muscle-gain programs, macro/meal-plan subscriptions, fitness-nutrition apps, or transformation challenges when a punchy, conversion-focused page with strong social proof, before/after proof, and pricing is wanted — pick this over NutritionKimiPage when the brand is energetic/athletic rather than calm/organic. Supply content only — brand, nav, hero, logos, stats, programs, steps, transformations, pricing, coaches, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -190,9 +186,7 @@ export const NutritionKimiPage2 = defineCapsule({
         eyebrow: z.string().optional(),
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       })
       .optional(),
     /** Final CTA band. */
@@ -231,11 +225,13 @@ export const NutritionKimiPage2 = defineCapsule({
     },
     queries: {
       savedPrograms: ({ db }) => db.savedPrograms.orderBy('createdAt').all(),
-      isSubscribed: ({ db }, email: string) =>
-        db.newsletterSubscribers.where('email', email).all().length > 0,
     },
     mutations: {
-      saveProgram: ({ db }, programTitle: string, programDescription: string) => {
+      saveProgram: (
+        { db },
+        programTitle: string,
+        programDescription: string,
+      ) => {
         const existing = db.savedPrograms
           .where('programTitle', programTitle)
           .all()[0]
@@ -247,7 +243,9 @@ export const NutritionKimiPage2 = defineCapsule({
         return true
       },
       removeSavedProgram: ({ db }, programTitle: string) => {
-        for (const item of db.savedPrograms.where('programTitle', programTitle).all()) {
+        for (const item of db.savedPrograms
+          .where('programTitle', programTitle)
+          .all()) {
           db.savedPrograms.delete(item.id)
         }
         return db.savedPrograms.all()
@@ -264,10 +262,10 @@ export const NutritionKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [savedProgramsOpen, setSavedProgramsOpen] = useState(false)
-    const brand = props.brand ?? "NutriFuel"
+    const brand = props.brand ?? 'NutriFuel'
     const nav = props.nav?.length
       ? props.nav
-      : ["Programs", "Transformations", "Pricing", "Coaches", "FAQ"]
+      : ['Programs', 'Transformations', 'Pricing', 'Coaches', 'FAQ']
 
     const savedPrograms = lakebed.useQuery('savedPrograms')
     const saveProgram = lakebed.useMutation('saveProgram')
@@ -300,89 +298,89 @@ export const NutritionKimiPage2 = defineCapsule({
     }
 
     const heroBadge =
-      props.hero?.badge ?? "Over 15,000 Transformations Completed"
-    const heroHeading = props.hero?.heading ?? "Fuel Your"
-    const heroAccent = props.hero?.headingAccent ?? "Transformation"
+      props.hero?.badge ?? 'Over 15,000 Transformations Completed'
+    const heroHeading = props.hero?.heading ?? 'Fuel Your'
+    const heroAccent = props.hero?.headingAccent ?? 'Transformation'
     const heroSub =
       props.hero?.subheading ??
-      "Personalized nutrition coaching from certified dietitians. Custom meal plans, macro tracking, and 1-on-1 support to help you lose weight, build muscle, and feel your best."
-    const heroPrimary = props.hero?.primaryCta ?? "Get Your Custom Plan"
-    const heroSecondary = props.hero?.secondaryCta ?? "See Success Stories"
+      'Personalized nutrition coaching from certified dietitians. Custom meal plans, macro tracking, and 1-on-1 support to help you lose weight, build muscle, and feel your best.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Get Your Custom Plan'
+    const heroSecondary = props.hero?.secondaryCta ?? 'See Success Stories'
     const heroTrust =
-      props.hero?.trustNote ?? "Joined this week by 423 new members"
+      props.hero?.trustNote ?? 'Joined this week by 423 new members'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "colorful healthy meal prep bowls with fresh vegetables grilled chicken quinoa and avocado"
-    const heroStatTitle = props.hero?.statTitle ?? "Daily Macro Tracking"
+      'colorful healthy meal prep bowls with fresh vegetables grilled chicken quinoa and avocado'
+    const heroStatTitle = props.hero?.statTitle ?? 'Daily Macro Tracking'
     const heroStatSub =
-      props.hero?.statSubtitle ?? "Automatically calculated for your goals"
-    const heroFloatValue = props.hero?.floatValue ?? "847"
-    const heroFloatLabel = props.hero?.floatLabel ?? "Cal burned today"
+      props.hero?.statSubtitle ?? 'Automatically calculated for your goals'
+    const heroFloatValue = props.hero?.floatValue ?? '847'
+    const heroFloatLabel = props.hero?.floatLabel ?? 'Cal burned today'
 
-    const logosHeading = props.logos?.heading ?? "Featured In & Trusted By"
+    const logosHeading = props.logos?.heading ?? 'Featured In & Trusted By'
     const logoNames = props.logos?.names?.length
       ? props.logos.names
       : [
-          "Healthline",
+          'Healthline',
           "Men's Health",
           "Women's Fitness",
-          "Shape Magazine",
-          "Prevention",
+          'Shape Magazine',
+          'Prevention',
         ]
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "15,000+", label: "Transformations" },
-          { value: "98%", label: "Success Rate" },
-          { value: "127K", label: "Pounds Lost" },
-          { value: "4.9/5", label: "App Rating" },
+          { value: '15,000+', label: 'Transformations' },
+          { value: '98%', label: 'Success Rate' },
+          { value: '127K', label: 'Pounds Lost' },
+          { value: '4.9/5', label: 'App Rating' },
         ]
 
-    const programsEyebrow = props.programs?.eyebrow ?? "Our Programs"
+    const programsEyebrow = props.programs?.eyebrow ?? 'Our Programs'
     const programsHeading =
-      props.programs?.heading ?? "Everything You Need to Succeed"
+      props.programs?.heading ?? 'Everything You Need to Succeed'
     const programsDesc =
       props.programs?.description ??
-      "From personalized meal plans to expert coaching, we provide all the tools for your transformation journey."
+      'From personalized meal plans to expert coaching, we provide all the tools for your transformation journey.'
     const programItems = props.programs?.items?.length
       ? props.programs.items
       : [
           {
-            title: "Custom Meal Plans",
+            title: 'Custom Meal Plans',
             description:
-              "Weekly meal plans tailored to your macros, dietary restrictions, and taste preferences. Includes shopping lists and prep guides.",
+              'Weekly meal plans tailored to your macros, dietary restrictions, and taste preferences. Includes shopping lists and prep guides.',
           },
           {
-            title: "1-on-1 Coaching",
+            title: '1-on-1 Coaching',
             description:
-              "Weekly video check-ins with certified nutritionists. Get personalized guidance, motivation, and accountability throughout your journey.",
+              'Weekly video check-ins with certified nutritionists. Get personalized guidance, motivation, and accountability throughout your journey.',
           },
           {
-            title: "Smart Tracking",
+            title: 'Smart Tracking',
             description:
-              "AI-powered food logging with photo recognition. Track calories, macros, and micronutrients effortlessly. Syncs with Apple Health & Google Fit.",
+              'AI-powered food logging with photo recognition. Track calories, macros, and micronutrients effortlessly. Syncs with Apple Health & Google Fit.',
           },
           {
-            title: "Flexible Fasting",
+            title: 'Flexible Fasting',
             description:
-              "Intermittent fasting protocols designed by experts. From 16:8 to 5:2, find the schedule that fits your lifestyle and goals.",
+              'Intermittent fasting protocols designed by experts. From 16:8 to 5:2, find the schedule that fits your lifestyle and goals.',
           },
           {
-            title: "Mindful Eating",
+            title: 'Mindful Eating',
             description:
-              "Develop a healthy relationship with food through guided meditation, stress management techniques, and behavioral psychology tools.",
+              'Develop a healthy relationship with food through guided meditation, stress management techniques, and behavioral psychology tools.',
           },
           {
-            title: "Global Recipes",
+            title: 'Global Recipes',
             description:
-              "Access 2,500+ healthy recipes from cuisines worldwide. Filter by calories, macros, prep time, and dietary preferences.",
+              'Access 2,500+ healthy recipes from cuisines worldwide. Filter by calories, macros, prep time, and dietary preferences.',
           },
         ]
 
-    const stepsEyebrow = props.steps?.eyebrow ?? "How It Works"
+    const stepsEyebrow = props.steps?.eyebrow ?? 'How It Works'
     const stepsHeading =
-      props.steps?.heading ?? "Your Journey in 4 Simple Steps"
+      props.steps?.heading ?? 'Your Journey in 4 Simple Steps'
     const stepsDesc =
       props.steps?.description ??
       "We've streamlined the process to get you results faster than ever."
@@ -390,317 +388,316 @@ export const NutritionKimiPage2 = defineCapsule({
       ? props.steps.items
       : [
           {
-            title: "Assessment",
+            title: 'Assessment',
             description:
-              "Complete our comprehensive 5-minute quiz about your goals, lifestyle, food preferences, and medical history.",
+              'Complete our comprehensive 5-minute quiz about your goals, lifestyle, food preferences, and medical history.',
           },
           {
-            title: "Match With Coach",
+            title: 'Match With Coach',
             description:
-              "Get paired with a certified nutritionist specializing in your specific goals—weight loss, muscle gain, or sports performance.",
+              'Get paired with a certified nutritionist specializing in your specific goals—weight loss, muscle gain, or sports performance.',
           },
           {
-            title: "Get Your Plan",
+            title: 'Get Your Plan',
             description:
-              "Receive your personalized meal plan, macro targets, and grocery list within 24 hours of your onboarding call.",
+              'Receive your personalized meal plan, macro targets, and grocery list within 24 hours of your onboarding call.',
           },
           {
-            title: "Track & Transform",
+            title: 'Track & Transform',
             description:
-              "Log meals, check in weekly with your coach, adjust as needed, and watch your body transform week by week.",
+              'Log meals, check in weekly with your coach, adjust as needed, and watch your body transform week by week.',
           },
         ]
 
-    const transEyebrow = props.transformations?.eyebrow ?? "Success Stories"
+    const transEyebrow = props.transformations?.eyebrow ?? 'Success Stories'
     const transHeading =
-      props.transformations?.heading ?? "Real Transformations"
+      props.transformations?.heading ?? 'Real Transformations'
     const transDesc =
       props.transformations?.description ??
-      "Meet members who completely changed their lives with NutriFuel coaching."
-    const transCta =
-      props.transformations?.cta ?? "View All 15,000+ Stories"
+      'Meet members who completely changed their lives with NutriFuel coaching.'
+    const transCta = props.transformations?.cta ?? 'View All 15,000+ Stories'
     const transItems = props.transformations?.items?.length
       ? props.transformations.items
       : [
           {
             imageAlt:
-              "before and after fitness transformation showing weight loss results in gym setting",
-            badge: "-47 lbs",
+              'before and after fitness transformation showing weight loss results in gym setting',
+            badge: '-47 lbs',
             avatarAlt:
-              "professional headshot of Marcus Chen a smiling man in his thirties with short black hair",
-            name: "Marcus Chen",
-            role: "Software Engineer, 34",
+              'professional headshot of Marcus Chen a smiling man in his thirties with short black hair',
+            name: 'Marcus Chen',
+            role: 'Software Engineer, 34',
             quote:
-              "After years of failed diets, NutriFuel helped me lose 47 pounds in 6 months. The personalized approach and accountability changed everything.",
-            duration: "6 months",
-            plan: "Elite Plan",
+              'After years of failed diets, NutriFuel helped me lose 47 pounds in 6 months. The personalized approach and accountability changed everything.',
+            duration: '6 months',
+            plan: 'Elite Plan',
           },
           {
             imageAlt:
-              "woman doing yoga pose in bright studio showing flexibility and strength transformation",
-            badge: "-32 lbs",
+              'woman doing yoga pose in bright studio showing flexibility and strength transformation',
+            badge: '-32 lbs',
             avatarAlt:
-              "professional headshot of Sarah Mitchell a smiling woman with red curly hair",
-            name: "Sarah Mitchell",
-            role: "Marketing Director, 29",
+              'professional headshot of Sarah Mitchell a smiling woman with red curly hair',
+            name: 'Sarah Mitchell',
+            role: 'Marketing Director, 29',
             quote:
               "I went from pre-diabetic to healthiest I've ever been. My coach Sarah was there every step of the way. Down 32 lbs and kept it off for a year!",
-            duration: "8 months",
-            plan: "Premium Plan",
+            duration: '8 months',
+            plan: 'Premium Plan',
           },
           {
             imageAlt:
-              "man lifting weights in modern gym showing muscle gain transformation",
-            badge: "+18 lbs",
+              'man lifting weights in modern gym showing muscle gain transformation',
+            badge: '+18 lbs',
             avatarAlt:
-              "professional headshot of David Okonkwo a muscular man with short dark hair and beard",
-            name: "David Okonkwo",
-            role: "Teacher, 41",
+              'professional headshot of David Okonkwo a muscular man with short dark hair and beard',
+            name: 'David Okonkwo',
+            role: 'Teacher, 41',
             quote:
-              "Finally broke through my plateau and gained 18 lbs of lean muscle. The macro tracking and meal timing strategies were game-changers for me.",
-            duration: "4 months",
-            plan: "Elite Plan",
+              'Finally broke through my plateau and gained 18 lbs of lean muscle. The macro tracking and meal timing strategies were game-changers for me.',
+            duration: '4 months',
+            plan: 'Elite Plan',
           },
           {
             imageAlt:
-              "woman running outdoors on trail showing cardio fitness improvement",
-            badge: "-54 lbs",
+              'woman running outdoors on trail showing cardio fitness improvement',
+            badge: '-54 lbs',
             avatarAlt:
-              "professional headshot of Jennifer Walsh a smiling woman with blonde hair and glasses",
-            name: "Jennifer Walsh",
-            role: "Nurse, 38",
+              'professional headshot of Jennifer Walsh a smiling woman with blonde hair and glasses',
+            name: 'Jennifer Walsh',
+            role: 'Nurse, 38',
             quote:
-              "As a nurse working night shifts, I thought healthy eating was impossible. NutriFuel created a plan that fit my crazy schedule. Lost 54 lbs!",
-            duration: "10 months",
-            plan: "Premium Plan",
+              'As a nurse working night shifts, I thought healthy eating was impossible. NutriFuel created a plan that fit my crazy schedule. Lost 54 lbs!',
+            duration: '10 months',
+            plan: 'Premium Plan',
           },
           {
             imageAlt:
-              "healthy meal prep containers showing portion control and nutrition focus",
-            badge: "-28 lbs",
+              'healthy meal prep containers showing portion control and nutrition focus',
+            badge: '-28 lbs',
             avatarAlt:
-              "professional headshot of Robert Kim an Asian man in his forties with a friendly smile",
-            name: "Robert Kim",
-            role: "Business Owner, 45",
+              'professional headshot of Robert Kim an Asian man in his forties with a friendly smile',
+            name: 'Robert Kim',
+            role: 'Business Owner, 45',
             quote:
-              "At 45, I thought my metabolism was done. Wrong! Lost 28 lbs and feel better than I did in my 20s. The intermittent fasting protocol was perfect for me.",
-            duration: "5 months",
-            plan: "Elite Plan",
+              'At 45, I thought my metabolism was done. Wrong! Lost 28 lbs and feel better than I did in my 20s. The intermittent fasting protocol was perfect for me.',
+            duration: '5 months',
+            plan: 'Elite Plan',
           },
           {
             imageAlt:
-              "woman in athletic wear doing stretching exercise showing flexibility progress",
-            badge: "-41 lbs",
+              'woman in athletic wear doing stretching exercise showing flexibility progress',
+            badge: '-41 lbs',
             avatarAlt:
-              "professional headshot of Aisha Patel a South Asian woman with long dark hair",
-            name: "Aisha Patel",
-            role: "Lawyer, 31",
+              'professional headshot of Aisha Patel a South Asian woman with long dark hair',
+            name: 'Aisha Patel',
+            role: 'Lawyer, 31',
             quote:
-              "NutriFuel understood my vegetarian needs and created amazing protein-rich meal plans. Down 41 lbs and finally comfortable in my own skin.",
-            duration: "7 months",
-            plan: "Premium Plan",
+              'NutriFuel understood my vegetarian needs and created amazing protein-rich meal plans. Down 41 lbs and finally comfortable in my own skin.',
+            duration: '7 months',
+            plan: 'Premium Plan',
           },
         ]
 
-    const pricingEyebrow = props.pricing?.eyebrow ?? "Pricing"
-    const pricingHeading = props.pricing?.heading ?? "Choose Your Plan"
+    const pricingEyebrow = props.pricing?.eyebrow ?? 'Pricing'
+    const pricingHeading = props.pricing?.heading ?? 'Choose Your Plan'
     const pricingDesc =
       props.pricing?.description ??
-      "All plans include a 14-day money-back guarantee. Cancel anytime."
+      'All plans include a 14-day money-back guarantee. Cancel anytime.'
     const pricingNote =
-      props.pricing?.note ?? "Save 20% with annual billing. All prices in USD."
-    const popularLabel = props.pricing?.popularLabel ?? "Most Popular"
-    const priceSuffix = props.pricing?.priceSuffix ?? "/month"
+      props.pricing?.note ?? 'Save 20% with annual billing. All prices in USD.'
+    const popularLabel = props.pricing?.popularLabel ?? 'Most Popular'
+    const priceSuffix = props.pricing?.priceSuffix ?? '/month'
     const pricingTiers = props.pricing?.tiers?.length
       ? props.pricing.tiers
       : [
           {
-            name: "Starter",
-            tagline: "Perfect for self-starters",
-            price: "$49",
-            cta: "Get Started",
+            name: 'Starter',
+            tagline: 'Perfect for self-starters',
+            price: '$49',
+            cta: 'Get Started',
             featured: false,
             features: [
-              "AI-generated meal plans",
-              "Macro & calorie tracking",
-              "2,500+ recipes access",
-              "Community support group",
-              "Progress tracking dashboard",
+              'AI-generated meal plans',
+              'Macro & calorie tracking',
+              '2,500+ recipes access',
+              'Community support group',
+              'Progress tracking dashboard',
             ],
           },
           {
-            name: "Premium",
-            tagline: "Best for lasting results",
-            price: "$99",
-            cta: "Start 14-Day Free Trial",
+            name: 'Premium',
+            tagline: 'Best for lasting results',
+            price: '$99',
+            cta: 'Start 14-Day Free Trial',
             featured: true,
             features: [
-              "Everything in Starter, plus:",
-              "Bi-weekly 1-on-1 coaching",
-              "Personalized meal adjustments",
-              "Grocery delivery integration",
-              "Priority email support",
-              "Body composition analysis",
+              'Everything in Starter, plus:',
+              'Bi-weekly 1-on-1 coaching',
+              'Personalized meal adjustments',
+              'Grocery delivery integration',
+              'Priority email support',
+              'Body composition analysis',
             ],
           },
           {
-            name: "Elite",
-            tagline: "Maximum accountability",
-            price: "$199",
-            cta: "Get Started",
+            name: 'Elite',
+            tagline: 'Maximum accountability',
+            price: '$199',
+            cta: 'Get Started',
             featured: false,
             features: [
-              "Everything in Premium, plus:",
-              "Weekly 1-on-1 coaching calls",
-              "24/7 text access to coach",
-              "Custom workout guidance",
-              "Quarterly blood work review",
-              "Private client events access",
+              'Everything in Premium, plus:',
+              'Weekly 1-on-1 coaching calls',
+              '24/7 text access to coach',
+              'Custom workout guidance',
+              'Quarterly blood work review',
+              'Private client events access',
             ],
           },
         ]
 
-    const coachesEyebrow = props.coaches?.eyebrow ?? "Meet Your Coaches"
+    const coachesEyebrow = props.coaches?.eyebrow ?? 'Meet Your Coaches'
     const coachesHeading =
-      props.coaches?.heading ?? "Expert Guidance Every Step"
+      props.coaches?.heading ?? 'Expert Guidance Every Step'
     const coachesDesc =
       props.coaches?.description ??
-      "Our certified nutritionists average 8+ years of experience and have helped thousands achieve their goals."
+      'Our certified nutritionists average 8+ years of experience and have helped thousands achieve their goals.'
     const coachItems = props.coaches?.items?.length
       ? props.coaches.items
       : [
           {
-            name: "Dr. Emily Rodriguez",
-            credential: "PhD Nutrition Science",
-            bio: "Specializes in metabolic health and sustainable weight management. 12 years experience.",
+            name: 'Dr. Emily Rodriguez',
+            credential: 'PhD Nutrition Science',
+            bio: 'Specializes in metabolic health and sustainable weight management. 12 years experience.',
             avatarAlt:
-              "professional headshot of Dr. Emily Rodriguez a nutritionist with dark hair in a white coat",
+              'professional headshot of Dr. Emily Rodriguez a nutritionist with dark hair in a white coat',
           },
           {
-            name: "Marcus Thompson",
-            credential: "RD, CSSD",
-            bio: "Sports nutrition specialist. Former Olympic team dietitian. Expert in performance fueling.",
+            name: 'Marcus Thompson',
+            credential: 'RD, CSSD',
+            bio: 'Sports nutrition specialist. Former Olympic team dietitian. Expert in performance fueling.',
             avatarAlt:
-              "professional headshot of Marcus Thompson a Black male nutritionist in scrubs",
+              'professional headshot of Marcus Thompson a Black male nutritionist in scrubs',
           },
           {
-            name: "Dr. Sarah Chen",
-            credential: "MD, Board Certified",
-            bio: "Integrative medicine approach. Focus on gut health, autoimmune, and hormonal balance.",
+            name: 'Dr. Sarah Chen',
+            credential: 'MD, Board Certified',
+            bio: 'Integrative medicine approach. Focus on gut health, autoimmune, and hormonal balance.',
             avatarAlt:
-              "professional headshot of Dr. Sarah Chen an Asian female nutritionist with warm smile",
+              'professional headshot of Dr. Sarah Chen an Asian female nutritionist with warm smile',
           },
           {
-            name: "Dr. James Wilson",
-            credential: "PhD Behavioral Nutrition",
-            bio: "Psychologist specializing in emotional eating, habit formation, and mindset transformation.",
+            name: 'Dr. James Wilson',
+            credential: 'PhD Behavioral Nutrition',
+            bio: 'Psychologist specializing in emotional eating, habit formation, and mindset transformation.',
             avatarAlt:
-              "professional headshot of Dr. James Wilson a male nutritionist with beard and glasses",
+              'professional headshot of Dr. James Wilson a male nutritionist with beard and glasses',
           },
         ]
     const coachesQuote =
       props.coaches?.quote ??
       "Working with Dr. Rodriguez completely changed my relationship with food. She didn't just give me a meal plan—she taught me how to listen to my body. Down 63 lbs and I've never felt more confident."
-    const coachesQuoteName = props.coaches?.quoteName ?? "Amanda Foster"
+    const coachesQuoteName = props.coaches?.quoteName ?? 'Amanda Foster'
     const coachesQuoteResult =
-      props.coaches?.quoteResult ?? "Lost 63 lbs in 9 months with Premium Plan"
+      props.coaches?.quoteResult ?? 'Lost 63 lbs in 9 months with Premium Plan'
     const coachesQuoteAvatarAlt =
       props.coaches?.quoteAvatarAlt ??
-      "professional headshot of Amanda Foster a smiling woman with dark hair and green eyes"
+      'professional headshot of Amanda Foster a smiling woman with dark hair and green eyes'
     const coachesQuoteImageAlt =
       props.coaches?.quoteImageAlt ??
-      "happy woman holding a bowl of fresh healthy salad with colorful vegetables"
+      'happy woman holding a bowl of fresh healthy salad with colorful vegetables'
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Common Questions"
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Common Questions'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know about getting started."
+      'Everything you need to know about getting started.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "How soon will I see results?",
+            q: 'How soon will I see results?',
             a: "Most members notice increased energy and reduced bloating within the first week. Visible weight loss typically begins in weeks 2-3, with an average of 2-3 lbs per week for the first month. Everyone's journey is different, but our data shows 94% of Premium members achieve their goal weight within their planned timeframe.",
           },
           {
-            q: "Can I follow the plan with dietary restrictions?",
+            q: 'Can I follow the plan with dietary restrictions?',
             a: "Absolutely! Our nutritionists are experienced with vegetarian, vegan, keto, paleo, gluten-free, dairy-free, halal, kosher, and allergen-specific diets. During your onboarding, you'll detail all restrictions and preferences, and every meal plan is tailored specifically to you. We have over 2,500 recipes that cover virtually every dietary need.",
           },
           {
             q: "What if I don't like the meal suggestions?",
-            a: "No problem! You can swap any meal with alternatives that match your macros. Premium and Elite members work directly with their coach to adjust the plan based on taste preferences. Our AI learns what you like and gets smarter with every feedback. Plus, you can favorite recipes and exclude ingredients you dislike permanently.",
+            a: 'No problem! You can swap any meal with alternatives that match your macros. Premium and Elite members work directly with their coach to adjust the plan based on taste preferences. Our AI learns what you like and gets smarter with every feedback. Plus, you can favorite recipes and exclude ingredients you dislike permanently.',
           },
           {
-            q: "How does the 14-day money-back guarantee work?",
+            q: 'How does the 14-day money-back guarantee work?',
             a: "If you're not completely satisfied within your first 14 days, email our support team for a full refund—no questions asked, no hoops to jump through. We're confident you'll love the program, but we never want anyone to feel stuck. Refunds are processed within 3-5 business days.",
           },
           {
-            q: "Do I need to exercise to see results?",
+            q: 'Do I need to exercise to see results?',
             a: "Exercise accelerates results but isn't required. Our meal plans create a caloric deficit (or surplus for muscle gain) through nutrition alone. That said, we encourage light activity like walking—Elite members receive custom workout guidance. Many members start with just nutrition, then add exercise once they feel the energy boost from better eating.",
           },
           {
-            q: "Can I pause or cancel my subscription?",
+            q: 'Can I pause or cancel my subscription?',
             a: "Yes! You can cancel anytime from your account dashboard—no phone calls required. If you're going on vacation or need a break, you can pause your subscription for up to 3 months and resume right where you left off. Your progress, favorite recipes, and coach relationship will all be waiting for you.",
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Start Your Transformation Today"
+    const ctaHeading = props.cta?.heading ?? 'Start Your Transformation Today'
     const ctaDesc =
       props.cta?.description ??
-      "Join 15,000+ members who have already changed their lives. Your first 14 days are completely risk-free."
-    const ctaPrimary = props.cta?.primaryCta ?? "Get Your Custom Plan"
-    const ctaSecondary = props.cta?.secondaryCta ?? "See More Results"
+      'Join 15,000+ members who have already changed their lives. Your first 14 days are completely risk-free.'
+    const ctaPrimary = props.cta?.primaryCta ?? 'Get Your Custom Plan'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'See More Results'
     const ctaNote =
-      props.cta?.note ?? "No credit card required for free assessment"
+      props.cta?.note ?? 'No credit card required for free assessment'
 
     const footerTagline =
       props.footer?.tagline ??
-      "Personalized nutrition coaching that actually works. Join thousands transforming their lives through science-backed meal plans and expert guidance."
+      'Personalized nutrition coaching that actually works. Join thousands transforming their lives through science-backed meal plans and expert guidance.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Programs",
+            title: 'Programs',
             links: [
-              "Weight Loss",
-              "Muscle Building",
-              "Keto Diet",
-              "Intermittent Fasting",
-              "Vegetarian Plans",
-              "Sports Nutrition",
+              'Weight Loss',
+              'Muscle Building',
+              'Keto Diet',
+              'Intermittent Fasting',
+              'Vegetarian Plans',
+              'Sports Nutrition',
             ],
           },
           {
-            title: "Company",
+            title: 'Company',
             links: [
-              "About Us",
-              "Our Coaches",
-              "Success Stories",
-              "Careers",
-              "Press",
-              "Contact",
+              'About Us',
+              'Our Coaches',
+              'Success Stories',
+              'Careers',
+              'Press',
+              'Contact',
             ],
           },
           {
-            title: "Support",
+            title: 'Support',
             links: [
-              "Help Center",
-              "App Download",
-              "Privacy Policy",
-              "Terms of Service",
-              "Cookie Policy",
-              "Contact Support",
+              'Help Center',
+              'App Download',
+              'Privacy Policy',
+              'Terms of Service',
+              'Cookie Policy',
+              'Contact Support',
             ],
           },
         ]
     const footerCopyright =
-      props.footer?.copyright ?? "NutriFuel Health Inc. All rights reserved."
+      props.footer?.copyright ?? 'NutriFuel Health Inc. All rights reserved.'
     const footerMadeIn =
-      props.footer?.madeIn ?? "Made with care in San Francisco, CA"
+      props.footer?.madeIn ?? 'Made with care in San Francisco, CA'
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Twitter", "Instagram", "YouTube"]
+      : ['Twitter', 'Instagram', 'YouTube']
 
     // Brand plus-mark (decorative inline svg).
     const PlusMark = ({ className }: { className?: string }) => (
@@ -805,44 +802,131 @@ export const NutritionKimiPage2 = defineCapsule({
 
     const programIcons: ReactNode[] = [
       // clipboard / meal plan
-      <svg key="p0" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      <svg
+        key="p0"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+        />
       </svg>,
       // people / coaching
-      <svg key="p1" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      <svg
+        key="p1"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+        />
       </svg>,
       // chart / tracking
-      <svg key="p2" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      <svg
+        key="p2"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+        />
       </svg>,
       // clock / fasting
-      <svg key="p3" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <svg
+        key="p3"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
       </svg>,
       // heart / mindful
-      <svg key="p4" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+      <svg
+        key="p4"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+        />
       </svg>,
       // globe / recipes
-      <svg key="p5" className="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <svg
+        key="p5"
+        className="size-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
       </svg>,
     ]
 
     const socialIcons: Record<string, ReactNode> = {
       Twitter: (
-        <svg className="size-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <svg
+          className="size-5"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
           <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z" />
         </svg>
       ),
       Instagram: (
-        <svg className="size-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <svg
+          className="size-5"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
           <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
         </svg>
       ),
       YouTube: (
-        <svg className="size-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <svg
+          className="size-5"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
           <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
         </svg>
       ),
@@ -851,7 +935,7 @@ export const NutritionKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-muted font-sans text-foreground antialiased",
+          'min-h-svh bg-muted font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -984,7 +1068,10 @@ export const NutritionKimiPage2 = defineCapsule({
                     <span>{authLabel}</span>
                   </button>
                 )}
-                <Sheet open={savedProgramsOpen} onOpenChange={setSavedProgramsOpen}>
+                <Sheet
+                  open={savedProgramsOpen}
+                  onOpenChange={setSavedProgramsOpen}
+                >
                   <SheetTrigger asChild>
                     <button
                       type="button"
@@ -1014,7 +1101,9 @@ export const NutritionKimiPage2 = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Saved Programs</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Saved Programs
+                      </SheetTitle>
                       <SheetDescription>
                         {savedPrograms && savedPrograms.length > 0
                           ? `${savedPrograms.length} program${savedPrograms.length === 1 ? '' : 's'} saved.`
@@ -1225,10 +1314,10 @@ export const NutritionKimiPage2 = defineCapsule({
                   <div className="mt-8 flex items-center justify-center gap-4 text-sm text-muted-foreground lg:justify-start">
                     <div className="flex -space-x-2">
                       {[
-                        "professional headshot of a smiling woman with brown hair",
-                        "professional headshot of a smiling man in his thirties",
-                        "professional headshot of a woman with blonde hair",
-                        "professional headshot of a middle-aged man with glasses",
+                        'professional headshot of a smiling woman with brown hair',
+                        'professional headshot of a smiling man in his thirties',
+                        'professional headshot of a woman with blonde hair',
+                        'professional headshot of a middle-aged man with glasses',
                       ].map((alt) => (
                         <Image
                           key={alt}
@@ -1271,8 +1360,19 @@ export const NutritionKimiPage2 = defineCapsule({
                   <div className="absolute -right-4 -top-4 hidden rounded-2xl bg-card p-4 shadow-xl sm:block">
                     <div className="flex items-center gap-3">
                       <span className="flex size-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
-                        <svg className="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                        <svg
+                          className="size-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"
+                          />
                         </svg>
                       </span>
                       <div>
@@ -1509,10 +1609,10 @@ export const NutritionKimiPage2 = defineCapsule({
                   <div
                     key={tier.name}
                     className={cn(
-                      "relative rounded-3xl p-8",
+                      'relative rounded-3xl p-8',
                       tier.featured
-                        ? "bg-foreground text-background shadow-2xl lg:-translate-y-4"
-                        : "border border-border bg-card shadow-lg",
+                        ? 'bg-foreground text-background shadow-2xl lg:-translate-y-4'
+                        : 'border border-border bg-card shadow-lg',
                     )}
                   >
                     {tier.featured && (
@@ -1525,18 +1625,20 @@ export const NutritionKimiPage2 = defineCapsule({
                     <div className="mb-6">
                       <h3
                         className={cn(
-                          "mb-2 text-xl font-bold",
-                          tier.featured ? "text-background" : "text-card-foreground",
+                          'mb-2 text-xl font-bold',
+                          tier.featured
+                            ? 'text-background'
+                            : 'text-card-foreground',
                         )}
                       >
                         {tier.name}
                       </h3>
                       <p
                         className={cn(
-                          "text-sm",
+                          'text-sm',
                           tier.featured
-                            ? "text-background/60"
-                            : "text-muted-foreground",
+                            ? 'text-background/60'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {tier.tagline}
@@ -1545,8 +1647,10 @@ export const NutritionKimiPage2 = defineCapsule({
                     <div className="mb-6">
                       <span
                         className={cn(
-                          "text-4xl font-black",
-                          tier.featured ? "text-background" : "text-card-foreground",
+                          'text-4xl font-black',
+                          tier.featured
+                            ? 'text-background'
+                            : 'text-card-foreground',
                         )}
                       >
                         {tier.price}
@@ -1554,8 +1658,8 @@ export const NutritionKimiPage2 = defineCapsule({
                       <span
                         className={cn(
                           tier.featured
-                            ? "text-background/60"
-                            : "text-muted-foreground",
+                            ? 'text-background/60'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {priceSuffix}
@@ -1566,15 +1670,15 @@ export const NutritionKimiPage2 = defineCapsule({
                         <li key={f} className="flex items-start gap-3">
                           <Check
                             className={cn(
-                              "mt-0.5 size-5 shrink-0",
-                              "text-primary",
+                              'mt-0.5 size-5 shrink-0',
+                              'text-primary',
                             )}
                           />
                           <span
                             className={cn(
                               tier.featured
-                                ? "text-background/80"
-                                : "text-muted-foreground",
+                                ? 'text-background/80'
+                                : 'text-muted-foreground',
                             )}
                           >
                             {f}
@@ -1586,10 +1690,10 @@ export const NutritionKimiPage2 = defineCapsule({
                       type="button"
                       onClick={() => go(`${tier.cta} — ${tier.name}`)}
                       className={cn(
-                        "block w-full rounded-full px-6 py-3.5 text-center font-semibold transition-colors",
+                        'block w-full rounded-full px-6 py-3.5 text-center font-semibold transition-colors',
                         tier.featured
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                          : "bg-muted text-foreground hover:bg-accent",
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'bg-muted text-foreground hover:bg-accent',
                       )}
                     >
                       {tier.cta}
@@ -1639,7 +1743,12 @@ export const NutritionKimiPage2 = defineCapsule({
               <div className="mt-16 rounded-3xl bg-muted p-8 lg:p-12">
                 <div className="grid items-center gap-8 lg:grid-cols-2">
                   <div>
-                    <svg className="mb-4 size-10 text-primary" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg
+                      className="mb-4 size-10 text-primary"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
                       <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
                     </svg>
                     <blockquote className="mb-6 text-xl font-medium leading-relaxed text-foreground lg:text-2xl">
@@ -1766,7 +1875,9 @@ export const NutritionKimiPage2 = defineCapsule({
                     Subscribe
                   </button>
                 </form>
-                <p className="mt-4 text-sm text-primary-foreground/80">{ctaNote}</p>
+                <p className="mt-4 text-sm text-primary-foreground/80">
+                  {ctaNote}
+                </p>
               </div>
             </div>
           </section>
@@ -1810,7 +1921,9 @@ export const NutritionKimiPage2 = defineCapsule({
               </div>
               {footerColumns.map((col) => (
                 <div key={col.title}>
-                  <h4 className="mb-4 font-bold text-background">{col.title}</h4>
+                  <h4 className="mb-4 font-bold text-background">
+                    {col.title}
+                  </h4>
                   <ul className="space-y-3 text-sm text-background/60">
                     {col.links.map((link) => (
                       <li key={link}>

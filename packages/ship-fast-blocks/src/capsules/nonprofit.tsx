@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * NonprofitKimiPage — a complete, self-contained NONPROFIT / charity / NGO
@@ -48,9 +48,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * supply ONLY content data; rich defaults make it render great with no props.
  */
 export const NonprofitKimiPage = defineCapsule({
-  name: "NonprofitKimiPage",
+  name: 'NonprofitKimiPage',
   description:
-    "Complete NONPROFIT / charity / NGO / foundation fundraising LANDING page with a warm, calm, trustworthy editorial aesthetic: light neutral canvas, earthy brand color, generous whitespace and soft rounded cards. Includes a 2-column hero (established eyebrow, headline with highlighted phrase, Donate/Explore CTAs, 501(c)(3) trust badges, photo with floating quote card), a trusted-by partner logo strip, a 3-up mission/values grid with icons, a dark IMPACT band with oversized KPI stats (children educated, countries served, schools built, funds raised) plus project highlight cards, a 6-up programs grid with photos and colored category tags, a masonry moments gallery, a 3-up testimonials grid with star ratings and beneficiary avatars, a dark DONATE call-to-action with tiered giving amounts ($25/$100/$250) and secure/tax-deductible trust signals, an accordion FAQ, and a rich 4-column footer with programs, get-involved, contact and social links. Use as the ROOT/home page for nonprofits, charities, NGOs, foundations, humanitarian or community organizations, donation/fundraising campaigns, social-impact causes, religious or educational missions when a compassionate, donor-focused page with strong impact stats and social proof is wanted. Supply content only — brand, nav, hero, mission, impact, programs, gallery, testimonials, donate, faq, footer; the block owns all layout and styling.",
+    'Complete NONPROFIT / charity / NGO / foundation fundraising LANDING page with a warm, calm, trustworthy editorial aesthetic: light neutral canvas, earthy brand color, generous whitespace and soft rounded cards. Includes a 2-column hero (established eyebrow, headline with highlighted phrase, Donate/Explore CTAs, 501(c)(3) trust badges, photo with floating quote card), a trusted-by partner logo strip, a 3-up mission/values grid with icons, a dark IMPACT band with oversized KPI stats (children educated, countries served, schools built, funds raised) plus project highlight cards, a 6-up programs grid with photos and colored category tags, a masonry moments gallery, a 3-up testimonials grid with star ratings and beneficiary avatars, a dark DONATE call-to-action with tiered giving amounts ($25/$100/$250) and secure/tax-deductible trust signals, an accordion FAQ, and a rich 4-column footer with programs, get-involved, contact and social links. Use as the ROOT/home page for nonprofits, charities, NGOs, foundations, humanitarian or community organizations, donation/fundraising campaigns, social-impact causes, religious or educational missions when a compassionate, donor-focused page with strong impact stats and social proof is wanted. Supply content only — brand, nav, hero, mission, impact, programs, gallery, testimonials, donate, faq, footer; the block owns all layout and styling.',
   props: z.object({
     /** Organization / brand name shown in navbar and footer. */
     brand: z.string().optional(),
@@ -188,9 +188,7 @@ export const NonprofitKimiPage = defineCapsule({
       .object({
         about: z.string().optional(),
         columns: z
-          .array(
-            z.object({ title: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ title: z.string(), links: z.array(z.string()) }))
           .optional(),
         address: z.string().optional(),
         email: z.string().optional(),
@@ -221,12 +219,21 @@ export const NonprofitKimiPage = defineCapsule({
     },
     queries: {
       donations: ({ db }) => db.donations.orderBy('createdAt').all(),
-      volunteerSignups: ({ db }) => db.volunteerSignups.orderBy('createdAt').all(),
+      volunteerSignups: ({ db }) =>
+        db.volunteerSignups.orderBy('createdAt').all(),
       favoriteProgramNames: ({ db }) =>
-        new Set(db.favoritePrograms.all().map((favorite) => favorite.programName)),
+        new Set(
+          db.favoritePrograms.all().map((favorite) => favorite.programName),
+        ),
     },
     mutations: {
-      addDonation: ({ db }, amount: string, program: string, donorName: string, donorEmail: string) => {
+      addDonation: (
+        { db },
+        amount: string,
+        program: string,
+        donorName: string,
+        donorEmail: string,
+      ) => {
         db.donations.insert({ amount, program, donorName, donorEmail })
         return db.donations.all()
       },
@@ -240,7 +247,12 @@ export const NonprofitKimiPage = defineCapsule({
         }
         return []
       },
-      addVolunteerSignup: ({ db }, name: string, email: string, interest: string) => {
+      addVolunteerSignup: (
+        { db },
+        name: string,
+        email: string,
+        interest: string,
+      ) => {
         db.volunteerSignups.insert({ name, email, interest })
         return db.volunteerSignups.all()
       },
@@ -264,11 +276,10 @@ export const NonprofitKimiPage = defineCapsule({
     const [mobileOpen, setMobileOpen] = useState(false)
     const [donationDrawerOpen, setDonationDrawerOpen] = useState(false)
     const [volunteerDrawerOpen, setVolunteerDrawerOpen] = useState(false)
-    const brand = props.brand ?? "Roots of Hope"
+    const brand = props.brand ?? 'Roots of Hope'
 
     // Lakebed queries and mutations
     const donations = lakebed.useQuery('donations')
-    const volunteerSignups = lakebed.useQuery('volunteerSignups')
     const favoriteProgramNames = lakebed.useQuery('favoriteProgramNames')
     const auth = lakebed.useAuth()
     const addDonation = lakebed.useMutation('addDonation')
@@ -326,313 +337,315 @@ export const NonprofitKimiPage = defineCapsule({
     )
     const nav = props.nav?.length
       ? props.nav
-      : ["Mission", "Impact", "Programs", "Stories", "Donate Now"]
+      : ['Mission', 'Impact', 'Programs', 'Stories', 'Donate Now']
 
-    const heroEyebrow = props.hero?.eyebrow ?? "Established 2008 • Global Impact"
+    const heroEyebrow =
+      props.hero?.eyebrow ?? 'Established 2008 • Global Impact'
     const headingBefore =
-      props.hero?.headingBefore ?? "Planting seeds of change for"
-    const heroHighlight = props.hero?.highlight ?? "brighter tomorrows"
+      props.hero?.headingBefore ?? 'Planting seeds of change for'
+    const heroHighlight = props.hero?.highlight ?? 'brighter tomorrows'
     const heroSub =
       props.hero?.subheading ??
       "Roots of Hope empowers underserved communities through education, sustainable development, and compassionate support. Together, we've touched over 50,000 lives across 12 countries."
-    const heroPrimary = props.hero?.primaryCta ?? "Make a Donation"
-    const heroSecondary = props.hero?.secondaryCta ?? "Explore Our Programs"
+    const heroPrimary = props.hero?.primaryCta ?? 'Make a Donation'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Explore Our Programs'
     const heroBadges = props.hero?.badges?.length
       ? props.hero.badges
-      : ["501(c)(3) Certified", "4-Star Charity Navigator"]
+      : ['501(c)(3) Certified', '4-Star Charity Navigator']
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Group of children in a classroom smiling and raising their hands enthusiastically"
+      'Group of children in a classroom smiling and raising their hands enthusiastically'
     const heroQuote =
-      props.hero?.quote ?? "Every child deserves the chance to learn and dream."
+      props.hero?.quote ?? 'Every child deserves the chance to learn and dream.'
     const heroQuoteAuthor =
-      props.hero?.quoteAuthor ?? "— Maria Santos, Program Director"
+      props.hero?.quoteAuthor ?? '— Maria Santos, Program Director'
 
     const partnersLabel =
-      props.partners?.label ?? "Trusted by leading organizations"
+      props.partners?.label ?? 'Trusted by leading organizations'
     const partnerLogos = props.partners?.logos?.length
       ? props.partners.logos
       : [
-          "GlobalGiving",
-          "UNESCO",
-          "Save the Children",
-          "World Vision",
-          "CARE Intl",
-          "Oxfam",
+          'GlobalGiving',
+          'UNESCO',
+          'Save the Children',
+          'World Vision',
+          'CARE Intl',
+          'Oxfam',
         ]
 
-    const missionHeading = props.mission?.heading ?? "Our Mission"
+    const missionHeading = props.mission?.heading ?? 'Our Mission'
     const missionDesc =
       props.mission?.description ??
-      "We believe in the transformative power of education and community. Our mission is to break the cycle of poverty by providing children and families with the tools, resources, and support they need to build sustainable, thriving futures."
+      'We believe in the transformative power of education and community. Our mission is to break the cycle of poverty by providing children and families with the tools, resources, and support they need to build sustainable, thriving futures.'
     const missionItems = props.mission?.items?.length
       ? props.mission.items
       : [
           {
-            title: "Education First",
+            title: 'Education First',
             description:
-              "Quality education is the foundation of lasting change. We build schools, train teachers, and provide scholarships to ensure every child has access to learning.",
+              'Quality education is the foundation of lasting change. We build schools, train teachers, and provide scholarships to ensure every child has access to learning.',
           },
           {
-            title: "Community Driven",
+            title: 'Community Driven',
             description:
-              "Lasting impact comes from within. We partner with local leaders and communities to develop solutions that respect culture and build sustainable futures.",
+              'Lasting impact comes from within. We partner with local leaders and communities to develop solutions that respect culture and build sustainable futures.',
           },
           {
-            title: "Compassion in Action",
+            title: 'Compassion in Action',
             description:
-              "Beyond resources, we offer dignity and respect. Our programs address immediate needs while nurturing hope, confidence, and self-reliance.",
+              'Beyond resources, we offer dignity and respect. Our programs address immediate needs while nurturing hope, confidence, and self-reliance.',
           },
         ]
 
-    const impactHeading = props.impact?.heading ?? "Our Impact"
+    const impactHeading = props.impact?.heading ?? 'Our Impact'
     const impactDesc =
       props.impact?.description ??
       "Every number represents a life changed, a dream realized, a future rewritten. Here's what we've accomplished together since 2008."
     const impactStats = props.impact?.stats?.length
       ? props.impact.stats
       : [
-          { value: "52,847", label: "Children Educated" },
-          { value: "12", label: "Countries Served" },
-          { value: "847", label: "Schools Built" },
-          { value: "$12.4M", label: "Funds Raised" },
+          { value: '52,847', label: 'Children Educated' },
+          { value: '12', label: 'Countries Served' },
+          { value: '847', label: 'Schools Built' },
+          { value: '$12.4M', label: 'Funds Raised' },
         ]
     const impactHighlights = props.impact?.highlights?.length
       ? props.impact.highlights
       : [
           {
-            title: "Kenya Education Initiative",
-            detail: "Built 127 schools • 15,400 students enrolled",
+            title: 'Kenya Education Initiative',
+            detail: 'Built 127 schools • 15,400 students enrolled',
             imageAlt:
-              "Young girl in a blue school uniform reading a book in a classroom in Kenya",
+              'Young girl in a blue school uniform reading a book in a classroom in Kenya',
           },
           {
-            title: "Guatemala Farming Co-op",
-            detail: "340 families supported • 89% income increase",
+            title: 'Guatemala Farming Co-op',
+            detail: '340 families supported • 89% income increase',
             imageAlt:
-              "Women farmers working together in a sustainable agriculture cooperative in Guatemala",
+              'Women farmers working together in a sustainable agriculture cooperative in Guatemala',
           },
           {
-            title: "Bangladesh Health Program",
-            detail: "24 clinics opened • 89,000 patients served",
+            title: 'Bangladesh Health Program',
+            detail: '24 clinics opened • 89,000 patients served',
             imageAlt:
-              "Healthcare worker providing medical care to children in a rural clinic in Bangladesh",
+              'Healthcare worker providing medical care to children in a rural clinic in Bangladesh',
           },
         ]
 
-    const programsHeading = props.programs?.heading ?? "Our Programs"
+    const programsHeading = props.programs?.heading ?? 'Our Programs'
     const programsDesc =
       props.programs?.description ??
-      "From early childhood education to adult vocational training, our comprehensive programs address the full spectrum of community needs."
-    const programsLearnMore = props.programs?.learnMore ?? "Learn more"
+      'From early childhood education to adult vocational training, our comprehensive programs address the full spectrum of community needs.'
+    const programsLearnMore = props.programs?.learnMore ?? 'Learn more'
     const programItems = props.programs?.items?.length
       ? props.programs.items
       : [
           {
-            title: "Schools & Scholarships",
+            title: 'Schools & Scholarships',
             description:
-              "Building classrooms, training teachers, and providing scholarships to ensure quality education reaches even the most remote communities.",
-            tag: "Education",
-            since: "Since 2008",
+              'Building classrooms, training teachers, and providing scholarships to ensure quality education reaches even the most remote communities.',
+            tag: 'Education',
+            since: 'Since 2008',
             imageAlt:
-              "Young students in a bright classroom working together on an assignment with a teacher",
+              'Young students in a bright classroom working together on an assignment with a teacher',
           },
           {
-            title: "Maternal & Child Health",
+            title: 'Maternal & Child Health',
             description:
-              "Providing prenatal care, childhood vaccinations, and nutrition programs to give every child the healthy start they deserve.",
-            tag: "Healthcare",
-            since: "Since 2012",
+              'Providing prenatal care, childhood vaccinations, and nutrition programs to give every child the healthy start they deserve.',
+            tag: 'Healthcare',
+            since: 'Since 2012',
             imageAlt:
-              "Woman holding a newborn baby during a maternal health checkup at a community clinic",
+              'Woman holding a newborn baby during a maternal health checkup at a community clinic',
           },
           {
-            title: "Sustainable Farming",
+            title: 'Sustainable Farming',
             description:
-              "Teaching climate-smart agriculture and providing microloans to help families build food security and sustainable income.",
-            tag: "Livelihood",
-            since: "Since 2015",
+              'Teaching climate-smart agriculture and providing microloans to help families build food security and sustainable income.',
+            tag: 'Livelihood',
+            since: 'Since 2015',
             imageAlt:
-              "Farmers in a field learning sustainable agriculture techniques with agricultural equipment",
+              'Farmers in a field learning sustainable agriculture techniques with agricultural equipment',
           },
           {
-            title: "Youth Vocational Training",
+            title: 'Youth Vocational Training',
             description:
-              "Equipping young adults with practical skills in carpentry, mechanics, coding, and trades for self-sufficient futures.",
-            tag: "Skills",
-            since: "Since 2016",
+              'Equipping young adults with practical skills in carpentry, mechanics, coding, and trades for self-sufficient futures.',
+            tag: 'Skills',
+            since: 'Since 2016',
             imageAlt:
-              "Young adults in a vocational training workshop learning carpentry and woodworking skills",
+              'Young adults in a vocational training workshop learning carpentry and woodworking skills',
           },
           {
-            title: "Clean Water Access",
+            title: 'Clean Water Access',
             description:
-              "Installing wells, water pumps, and filtration systems to provide communities with safe, reliable drinking water.",
-            tag: "Infrastructure",
-            since: "Since 2010",
+              'Installing wells, water pumps, and filtration systems to provide communities with safe, reliable drinking water.',
+            tag: 'Infrastructure',
+            since: 'Since 2010',
             imageAlt:
-              "Community members gathering clean water from a newly installed water well pump in a rural village",
+              'Community members gathering clean water from a newly installed water well pump in a rural village',
           },
           {
             title: "Women's Enterprise",
             description:
-              "Supporting women entrepreneurs with microloans, business training, and market access to drive economic empowerment.",
-            tag: "Empowerment",
-            since: "Since 2018",
+              'Supporting women entrepreneurs with microloans, business training, and market access to drive economic empowerment.',
+            tag: 'Empowerment',
+            since: 'Since 2018',
             imageAlt:
-              "Women entrepreneurs in a business development meeting discussing financial planning",
+              'Women entrepreneurs in a business development meeting discussing financial planning',
           },
         ]
 
-    const galleryHeading = props.gallery?.heading ?? "Moments of Impact"
+    const galleryHeading = props.gallery?.heading ?? 'Moments of Impact'
     const galleryDesc =
       props.gallery?.description ??
-      "A glimpse into the lives touched and communities transformed through our collective efforts."
+      'A glimpse into the lives touched and communities transformed through our collective efforts.'
     const galleryImages = props.gallery?.images?.length
       ? props.gallery.images
       : [
-          "Children in a newly built classroom smiling and raising their hands excited to learn",
-          "Volunteer teacher reading with young students under a tree in an outdoor classroom",
-          "Community members celebrating the inauguration of a new water well in their village",
-          "Women in a cooperative working together on a craft project creating handmade goods",
-          "Medical volunteers providing health screenings to children at a rural outreach clinic",
+          'Children in a newly built classroom smiling and raising their hands excited to learn',
+          'Volunteer teacher reading with young students under a tree in an outdoor classroom',
+          'Community members celebrating the inauguration of a new water well in their village',
+          'Women in a cooperative working together on a craft project creating handmade goods',
+          'Medical volunteers providing health screenings to children at a rural outreach clinic',
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Voices of Change"
+      props.testimonials?.heading ?? 'Voices of Change'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Hear from the students, families, and communities whose lives have been transformed."
+      'Hear from the students, families, and communities whose lives have been transformed.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
               "Thanks to the scholarship from Roots of Hope, I'm now the first person in my family to attend university. I'm studying to become a teacher so I can give back to my community.",
-            name: "Grace Mbeki",
-            role: "University Scholar, Kenya",
+            name: 'Grace Mbeki',
+            role: 'University Scholar, Kenya',
             avatarAlt:
-              "Professional headshot of Grace Mbeki, a young African woman university student smiling confidently",
+              'Professional headshot of Grace Mbeki, a young African woman university student smiling confidently',
           },
           {
             quote:
               "The women's cooperative changed everything for us. I learned business skills, received a microloan, and now I support my three children with my handicraft business.",
-            name: "Rosa Martinez",
-            role: "Cooperative Member, Guatemala",
+            name: 'Rosa Martinez',
+            role: 'Cooperative Member, Guatemala',
             avatarAlt:
-              "Professional headshot of Rosa Martinez, a Latina artisan entrepreneur in traditional woven clothing",
+              'Professional headshot of Rosa Martinez, a Latina artisan entrepreneur in traditional woven clothing',
           },
           {
             quote:
-              "Before the clinic, my children were always sick. Now we have vaccines, checkups, and medicine nearby. My youngest just started primary school—healthy and strong.",
-            name: "Fatima Begum",
-            role: "Mother of Four, Bangladesh",
+              'Before the clinic, my children were always sick. Now we have vaccines, checkups, and medicine nearby. My youngest just started primary school—healthy and strong.',
+            name: 'Fatima Begum',
+            role: 'Mother of Four, Bangladesh',
             avatarAlt:
-              "Professional headshot of Fatima Begum, a Bangladeshi mother wearing traditional dress",
+              'Professional headshot of Fatima Begum, a Bangladeshi mother wearing traditional dress',
           },
         ]
 
-    const donateHeading = props.donate?.heading ?? "Be Part of the Change"
+    const donateHeading = props.donate?.heading ?? 'Be Part of the Change'
     const donateDesc =
       props.donate?.description ??
-      "Every donation plants a seed of hope. Your contribution directly funds education, healthcare, and sustainable development for communities in need."
+      'Every donation plants a seed of hope. Your contribution directly funds education, healthcare, and sustainable development for communities in need.'
     const donateTiers = props.donate?.tiers?.length
       ? props.donate.tiers
       : [
           {
-            amount: "$25",
-            detail: "Provides school supplies for one child for a month",
+            amount: '$25',
+            detail: 'Provides school supplies for one child for a month',
           },
           {
-            amount: "$100",
-            detail: "Funds a month of vocational training for one student",
+            amount: '$100',
+            detail: 'Funds a month of vocational training for one student',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            amount: "$250",
-            detail: "Builds a clean water point for a village",
+            amount: '$250',
+            detail: 'Builds a clean water point for a village',
           },
         ]
-    const donatePrimary = props.donate?.primaryCta ?? "Donate Now"
-    const donateSecondary = props.donate?.secondaryCta ?? "Choose Custom Amount"
+    const donatePrimary = props.donate?.primaryCta ?? 'Donate Now'
+    const donateSecondary = props.donate?.secondaryCta ?? 'Choose Custom Amount'
     const donateTrust = props.donate?.trust?.length
       ? props.donate.trust
-      : ["Secure Payment", "Tax Deductible", "92% Goes to Programs"]
+      : ['Secure Payment', 'Tax Deductible', '92% Goes to Programs']
 
-    const faqHeading = props.faq?.heading ?? "Frequently Asked Questions"
-    const faqDesc = props.faq?.description ?? "Have questions? We have answers."
+    const faqHeading = props.faq?.heading ?? 'Frequently Asked Questions'
+    const faqDesc = props.faq?.description ?? 'Have questions? We have answers.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "How is my donation used?",
+            question: 'How is my donation used?',
             answer:
-              "92% of every dollar donated goes directly to our programs—building schools, providing healthcare, and supporting sustainable livelihoods. The remaining 8% covers essential administrative costs and ensures we can continue our mission effectively.",
+              '92% of every dollar donated goes directly to our programs—building schools, providing healthcare, and supporting sustainable livelihoods. The remaining 8% covers essential administrative costs and ensures we can continue our mission effectively.',
           },
           {
-            question: "Is my donation tax-deductible?",
+            question: 'Is my donation tax-deductible?',
             answer:
               "Yes. Roots of Hope is a registered 501(c)(3) nonprofit organization (EIN: 45-1234567). All donations are tax-deductible to the fullest extent allowed by law. You'll receive a receipt for your records.",
           },
           {
-            question: "Can I sponsor a specific child or project?",
+            question: 'Can I sponsor a specific child or project?',
             answer:
-              "Absolutely. We offer child sponsorship at $40/month and project sponsorships starting at $500. Sponsors receive quarterly updates, letters from beneficiaries, and annual impact reports. Contact us to learn more.",
+              'Absolutely. We offer child sponsorship at $40/month and project sponsorships starting at $500. Sponsors receive quarterly updates, letters from beneficiaries, and annual impact reports. Contact us to learn more.',
           },
           {
-            question: "How can I volunteer?",
+            question: 'How can I volunteer?',
             answer:
-              "We welcome volunteers both locally and abroad. Local opportunities include event coordination, fundraising, and administrative support. International volunteers can join our 2-4 week service trips to project sites. Apply through our website.",
+              'We welcome volunteers both locally and abroad. Local opportunities include event coordination, fundraising, and administrative support. International volunteers can join our 2-4 week service trips to project sites. Apply through our website.',
           },
           {
-            question: "What countries do you work in?",
+            question: 'What countries do you work in?',
             answer:
-              "We currently operate in 12 countries: Kenya, Uganda, Tanzania, Bangladesh, India, Nepal, Guatemala, Honduras, Peru, Philippines, Vietnam, and Cambodia. Each program is tailored to the specific needs and context of the local community.",
+              'We currently operate in 12 countries: Kenya, Uganda, Tanzania, Bangladesh, India, Nepal, Guatemala, Honduras, Peru, Philippines, Vietnam, and Cambodia. Each program is tailored to the specific needs and context of the local community.',
           },
         ]
 
     const footerAbout =
       props.footer?.about ??
-      "Empowering communities through education, healthcare, and sustainable development since 2008."
+      'Empowering communities through education, healthcare, and sustainable development since 2008.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Programs",
+            title: 'Programs',
             links: [
-              "Education & Schools",
-              "Maternal Health",
-              "Sustainable Farming",
-              "Vocational Training",
-              "Clean Water",
+              'Education & Schools',
+              'Maternal Health',
+              'Sustainable Farming',
+              'Vocational Training',
+              'Clean Water',
               "Women's Enterprise",
             ],
           },
           {
-            title: "Get Involved",
+            title: 'Get Involved',
             links: [
-              "Make a Donation",
-              "Sponsor a Child",
-              "Volunteer With Us",
-              "Corporate Partnerships",
-              "Legacy Giving",
-              "Fundraise for Us",
+              'Make a Donation',
+              'Sponsor a Child',
+              'Volunteer With Us',
+              'Corporate Partnerships',
+              'Legacy Giving',
+              'Fundraise for Us',
             ],
           },
         ]
     const footerAddress =
-      props.footer?.address ?? "475 Riverside Drive, Suite 1270, New York, NY 10115"
-    const footerEmail = props.footer?.email ?? "info@rootsofhope.org"
-    const footerPhone = props.footer?.phone ?? "(212) 555-1234"
+      props.footer?.address ??
+      '475 Riverside Drive, Suite 1270, New York, NY 10115'
+    const footerEmail = props.footer?.email ?? 'info@rootsofhope.org'
+    const footerPhone = props.footer?.phone ?? '(212) 555-1234'
     const footerCopyright =
-      props.footer?.copyright ?? "All rights reserved. EIN: 45-1234567"
+      props.footer?.copyright ?? 'All rights reserved. EIN: 45-1234567'
     const legalLinks = props.footer?.legalLinks?.length
       ? props.footer.legalLinks
-      : ["Privacy Policy", "Terms of Service", "Annual Report"]
+      : ['Privacy Policy', 'Terms of Service', 'Annual Report']
     const socials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Facebook", "Twitter", "Instagram", "LinkedIn"]
+      : ['Facebook', 'Twitter', 'Instagram', 'LinkedIn']
 
     const donateLabel = nav[nav.length - 1]
 
@@ -776,18 +789,18 @@ export const NonprofitKimiPage = defineCapsule({
 
     // Program tag colors rotate across tokens (never raw palette).
     const tagTones = [
-      "bg-primary/10 text-primary",
-      "bg-secondary text-secondary-foreground",
-      "bg-accent text-accent-foreground",
-      "bg-muted text-muted-foreground",
-      "bg-primary/10 text-primary",
-      "bg-secondary text-secondary-foreground",
+      'bg-primary/10 text-primary',
+      'bg-secondary text-secondary-foreground',
+      'bg-accent text-accent-foreground',
+      'bg-muted text-muted-foreground',
+      'bg-primary/10 text-primary',
+      'bg-secondary text-secondary-foreground',
     ]
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -855,7 +868,10 @@ export const NonprofitKimiPage = defineCapsule({
                 </button>
 
                 {/* Donation drawer trigger */}
-                <Sheet open={donationDrawerOpen} onOpenChange={setDonationDrawerOpen}>
+                <Sheet
+                  open={donationDrawerOpen}
+                  onOpenChange={setDonationDrawerOpen}
+                >
                   <SheetTrigger asChild>
                     <button
                       type="button"
@@ -886,7 +902,9 @@ export const NonprofitKimiPage = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Your Donations</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Your Donations
+                      </SheetTitle>
                       <SheetDescription>
                         {donationCount > 0
                           ? `${donationCount} donation${donationCount === 1 ? '' : 's'} totaling ${formatCurrency(donationTotal)}.`
@@ -928,7 +946,8 @@ export const NonprofitKimiPage = defineCapsule({
                             No donations yet
                           </p>
                           <p className="mt-2 text-sm text-muted-foreground">
-                            Your contributions make a real impact. Start by choosing a donation amount below.
+                            Your contributions make a real impact. Start by
+                            choosing a donation amount below.
                           </p>
                         </div>
                       )}
@@ -1185,7 +1204,7 @@ export const NonprofitKimiPage = defineCapsule({
                     {heroEyebrow}
                   </p>
                   <h1 className="mb-6 text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                    {headingBefore}{" "}
+                    {headingBefore}{' '}
                     <span className="text-primary">{heroHighlight}</span>
                   </h1>
                   <p className="mb-8 max-w-xl text-lg leading-relaxed text-muted-foreground">
@@ -1353,7 +1372,8 @@ export const NonprofitKimiPage = defineCapsule({
 
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {programItems.map((prog, i) => {
-                  const isFavorite = favoriteProgramNames?.has(prog.title) ?? false
+                  const isFavorite =
+                    favoriteProgramNames?.has(prog.title) ?? false
 
                   return (
                     <article
@@ -1391,7 +1411,7 @@ export const NonprofitKimiPage = defineCapsule({
                         <div className="mb-3 flex items-center gap-2">
                           <span
                             className={cn(
-                              "rounded-full px-2.5 py-1 text-xs font-medium",
+                              'rounded-full px-2.5 py-1 text-xs font-medium',
                               tagTones[i % tagTones.length],
                             )}
                           >
@@ -1453,8 +1473,8 @@ export const NonprofitKimiPage = defineCapsule({
                   <div
                     key={alt}
                     className={cn(
-                      "overflow-hidden rounded-xl",
-                      i === 0 && "col-span-2 row-span-2",
+                      'overflow-hidden rounded-xl',
+                      i === 0 && 'col-span-2 row-span-2',
                     )}
                   >
                     <Image
@@ -1463,8 +1483,8 @@ export const NonprofitKimiPage = defineCapsule({
                       h={i === 0 ? 800 : 400}
                       loading="lazy"
                       className={cn(
-                        "size-full object-cover transition-transform duration-700 hover:scale-105",
-                        i !== 0 && "aspect-square",
+                        'size-full object-cover transition-transform duration-700 hover:scale-105',
+                        i !== 0 && 'aspect-square',
                       )}
                     />
                   </div>
@@ -1508,8 +1528,12 @@ export const NonprofitKimiPage = defineCapsule({
                         className="size-12 rounded-full object-cover"
                       />
                       <div>
-                        <p className="font-semibold text-foreground">{t.name}</p>
-                        <p className="text-sm text-muted-foreground">{t.role}</p>
+                        <p className="font-semibold text-foreground">
+                          {t.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {t.role}
+                        </p>
                       </div>
                     </footer>
                   </blockquote>
@@ -1535,16 +1559,23 @@ export const NonprofitKimiPage = defineCapsule({
                       key={tier.amount}
                       type="button"
                       onClick={() => {
-                        const donorName = isSignedIn ? authDisplayName : 'Anonymous'
+                        const donorName = isSignedIn
+                          ? authDisplayName
+                          : 'Anonymous'
                         const donorEmail = isSignedIn ? (authEmail ?? '') : ''
-                        void addDonation(tier.amount, 'General Support', donorName, donorEmail)
+                        void addDonation(
+                          tier.amount,
+                          'General Support',
+                          donorName,
+                          donorEmail,
+                        )
                         setDonationDrawerOpen(true)
                       }}
                       className={cn(
-                        "group relative rounded-xl px-6 py-5 text-left transition-colors",
+                        'group relative rounded-xl px-6 py-5 text-left transition-colors',
                         tier.featured
-                          ? "border-2 border-background bg-background/20"
-                          : "border border-background/20 bg-background/10 hover:border-background/40",
+                          ? 'border-2 border-background bg-background/20'
+                          : 'border border-background/20 bg-background/10 hover:border-background/40',
                       )}
                     >
                       {tier.badge ? (
@@ -1792,14 +1823,12 @@ export const NonprofitKimiPage = defineCapsule({
 
         {/* Volunteer Drawer */}
         <Sheet open={volunteerDrawerOpen} onOpenChange={setVolunteerDrawerOpen}>
-          <SheetContent
-            side="right"
-            className="w-full gap-0 p-0 sm:max-w-md"
-          >
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
             <SheetHeader className="border-b border-border p-6">
               <SheetTitle className="text-xl">Volunteer With Us</SheetTitle>
               <SheetDescription>
-                Join our community of volunteers making a difference around the world.
+                Join our community of volunteers making a difference around the
+                world.
               </SheetDescription>
             </SheetHeader>
             <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -1808,9 +1837,15 @@ export const NonprofitKimiPage = defineCapsule({
                 onSubmit={(e) => {
                   e.preventDefault()
                   const form = e.currentTarget
-                  const name = (form.elements.namedItem('name') as HTMLInputElement).value
-                  const email = (form.elements.namedItem('email') as HTMLInputElement).value
-                  const interest = (form.elements.namedItem('interest') as HTMLInputElement).value
+                  const name = (
+                    form.elements.namedItem('name') as HTMLInputElement
+                  ).value
+                  const email = (
+                    form.elements.namedItem('email') as HTMLInputElement
+                  ).value
+                  const interest = (
+                    form.elements.namedItem('interest') as HTMLInputElement
+                  ).value
                   if (name && email && interest) {
                     void addVolunteerSignup(name, email, interest)
                     setVolunteerDrawerOpen(false)
@@ -1818,7 +1853,10 @@ export const NonprofitKimiPage = defineCapsule({
                 }}
               >
                 <div>
-                  <label htmlFor="name" className="mb-2 block text-sm font-medium text-foreground">
+                  <label
+                    htmlFor="name"
+                    className="mb-2 block text-sm font-medium text-foreground"
+                  >
                     Full Name
                   </label>
                   <input
@@ -1831,7 +1869,10 @@ export const NonprofitKimiPage = defineCapsule({
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
+                  <label
+                    htmlFor="email"
+                    className="mb-2 block text-sm font-medium text-foreground"
+                  >
                     Email Address
                   </label>
                   <input
@@ -1844,7 +1885,10 @@ export const NonprofitKimiPage = defineCapsule({
                   />
                 </div>
                 <div>
-                  <label htmlFor="interest" className="mb-2 block text-sm font-medium text-foreground">
+                  <label
+                    htmlFor="interest"
+                    className="mb-2 block text-sm font-medium text-foreground"
+                  >
                     Area of Interest
                   </label>
                   <select
@@ -1856,8 +1900,12 @@ export const NonprofitKimiPage = defineCapsule({
                     <option value="">Select an area</option>
                     <option value="Education">Education & Teaching</option>
                     <option value="Healthcare">Healthcare Support</option>
-                    <option value="Construction">Construction & Infrastructure</option>
-                    <option value="Administration">Administrative Support</option>
+                    <option value="Construction">
+                      Construction & Infrastructure
+                    </option>
+                    <option value="Administration">
+                      Administrative Support
+                    </option>
                     <option value="Fundraising">Fundraising & Events</option>
                     <option value="Other">Other</option>
                   </select>

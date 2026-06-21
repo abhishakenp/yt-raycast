@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * YogaStudioKimiPage2 — a complete, self-contained yoga / wellness STUDIO landing page with full-stack booking functionality.
@@ -57,7 +57,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * it render great with no props at all. Colors use semantic theme tokens only.
  */
 export const YogaStudioKimiPage2 = defineCapsule({
-  name: "YogaStudioKimiPage2",
+  name: 'YogaStudioKimiPage2',
   description:
     "Complete yoga / meditation / wellness STUDIO landing page in a BOLD, vibrant, conversion-focused style with full-stack booking functionality — the energetic ALTERNATIVE / second style sibling to the calm editorial YogaStudioKimiPage. Heavy extrabold display headlines, teal/green token accents, soft token gradients and blurred radial blobs. Includes a two-column hero (status pill, huge split headline, dual CTAs, overlapping member-avatar social-proof stack with star rating, tall rounded photo card with floating happy-members and weekly-classes stat badges), a 6-up icon-tile class grid with gradient cards and duration + intensity meta (Vinyasa Flow, Hatha Basics, Restorative, Power Yoga, Yin, Guided Meditation) with favorite toggles, a tabbed weekly schedule with day pills and 6-column class rows showing time / class + teacher / intensity badge / duration + studio / book button, a 3-tier membership pricing grid (Drop-In, 5-Class Pack, highlighted Most-Popular Unlimited Monthly) plus a dark annual-membership banner and a student/senior discount note, a masonry 3-column studio-space gallery, a 4-up teacher grid with portrait cards and credentials, a 4-stat metrics band (members / weekly classes / teachers / rating), a 3-up star-rated testimonial trio with member avatars, a 5-item plus/minus FAQ accordion, a gradient CTA band with free-trial and phone CTAs, and a 4-column dark footer with quick links, address, studio hours and social icons. FULL-STACK: Lakebed-powered class booking system with persisted bookings, favorite classes with heart toggle, Google authentication for member accounts, and a 'My Bookings' drawer showing scheduled classes with cancel functionality. Use as the ROOT/home page for yoga studios, hot/heated yoga, pilates or barre studios, meditation centers, wellness spas, fitness boutiques or mindfulness brands when a punchy, membership-and-free-trial-focused page is wanted rather than the serene first variant. Supply content only — brand, nav, hero, classes, schedule, pricing, gallery, teachers, stats, testimonials, faq, cta, footer; the block owns all layout and styling via semantic theme tokens.",
   props: z.object({
@@ -290,7 +290,7 @@ export const YogaStudioKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [bookingsOpen, setBookingsOpen] = useState(false)
-    const brand = props.brand ?? "Serenity Flow"
+    const brand = props.brand ?? 'Serenity Flow'
 
     const storedClasses = lakebed.useQuery('classes')
     const bookings = lakebed.useQuery('bookings')
@@ -328,85 +328,92 @@ export const YogaStudioKimiPage2 = defineCapsule({
     }
     const nav = props.nav?.length
       ? props.nav
-      : ["Classes", "Schedule", "Pricing", "About", "Contact", "Start Free Trial"]
+      : [
+          'Classes',
+          'Schedule',
+          'Pricing',
+          'About',
+          'Contact',
+          'Start Free Trial',
+        ]
 
-    const heroBadge = props.hero?.badge ?? "Now Open in Pearl District"
-    const headingLead = props.hero?.headingLead ?? "Find Your "
-    const headingHighlight = props.hero?.headingHighlight ?? "Inner Peace"
-    const headingTrail = props.hero?.headingTrail ?? " Through Movement"
+    const heroBadge = props.hero?.badge ?? 'Now Open in Pearl District'
+    const headingLead = props.hero?.headingLead ?? 'Find Your '
+    const headingHighlight = props.hero?.headingHighlight ?? 'Inner Peace'
+    const headingTrail = props.hero?.headingTrail ?? ' Through Movement'
     const heroSub =
       props.hero?.subheading ??
       "Portland's most welcoming yoga studio. Expert instructors, heated practice rooms, and a community that supports your journey from first downward dog to advanced flows."
-    const heroPrimary = props.hero?.primaryCta ?? "View Class Schedule"
-    const heroSecondary = props.hero?.secondaryCta ?? "See Membership Options"
+    const heroPrimary = props.hero?.primaryCta ?? 'View Class Schedule'
+    const heroSecondary = props.hero?.secondaryCta ?? 'See Membership Options'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "woman practicing yoga tree pose in a bright modern studio with natural light"
+      'woman practicing yoga tree pose in a bright modern studio with natural light'
     const heroAvatars = props.hero?.avatarAlts?.length
       ? props.hero.avatarAlts
       : [
-          "professional headshot of a smiling woman with blonde hair",
-          "professional headshot of a middle-aged man with glasses and a warm smile",
-          "professional headshot of a young woman with curly hair and a friendly expression",
-          "professional headshot of a bearded man with a genuine smile",
+          'professional headshot of a smiling woman with blonde hair',
+          'professional headshot of a middle-aged man with glasses and a warm smile',
+          'professional headshot of a young woman with curly hair and a friendly expression',
+          'professional headshot of a bearded man with a genuine smile',
         ]
-    const ratingValue = props.hero?.ratingValue ?? "4.9/5"
-    const ratingLabel = props.hero?.ratingLabel ?? "from 300+ reviews"
-    const memberStat = props.hero?.memberStat ?? "2,400+"
-    const memberLabel = props.hero?.memberLabel ?? "Happy Members"
-    const classStat = props.hero?.classStat ?? "50+"
-    const classLabel = props.hero?.classLabel ?? "Weekly Classes"
+    const ratingValue = props.hero?.ratingValue ?? '4.9/5'
+    const ratingLabel = props.hero?.ratingLabel ?? 'from 300+ reviews'
+    const memberStat = props.hero?.memberStat ?? '2,400+'
+    const memberLabel = props.hero?.memberLabel ?? 'Happy Members'
+    const classStat = props.hero?.classStat ?? '50+'
+    const classLabel = props.hero?.classLabel ?? 'Weekly Classes'
 
-    const classesEyebrow = props.classes?.eyebrow ?? "Our Classes"
+    const classesEyebrow = props.classes?.eyebrow ?? 'Our Classes'
     const classesHeading =
-      props.classes?.heading ?? "Yoga for Every Body, Every Level"
+      props.classes?.heading ?? 'Yoga for Every Body, Every Level'
     const classesDesc =
       props.classes?.description ??
-      "From gentle restorative sessions to powerful vinyasa flows, find the practice that speaks to your soul."
+      'From gentle restorative sessions to powerful vinyasa flows, find the practice that speaks to your soul.'
     const staticClassItems = props.classes?.items?.length
       ? props.classes.items
       : [
           {
-            title: "Vinyasa Flow",
+            title: 'Vinyasa Flow',
             description:
-              "Dynamic, breath-synchronized movement that builds strength and flexibility. Temperature: 85°F. All levels welcome.",
-            duration: "60-75 min",
-            intensity: "Moderate-High",
+              'Dynamic, breath-synchronized movement that builds strength and flexibility. Temperature: 85°F. All levels welcome.',
+            duration: '60-75 min',
+            intensity: 'Moderate-High',
           },
           {
-            title: "Hatha Basics",
+            title: 'Hatha Basics',
             description:
-              "Foundational poses with longer holds for alignment and breath awareness. Perfect for beginners and alignment-focused practitioners.",
-            duration: "60 min",
-            intensity: "Gentle",
+              'Foundational poses with longer holds for alignment and breath awareness. Perfect for beginners and alignment-focused practitioners.',
+            duration: '60 min',
+            intensity: 'Gentle',
           },
           {
-            title: "Restorative Yoga",
+            title: 'Restorative Yoga',
             description:
-              "Deep relaxation using props for supported poses. Release tension and activate your parasympathetic nervous system.",
-            duration: "75 min",
-            intensity: "Very Gentle",
+              'Deep relaxation using props for supported poses. Release tension and activate your parasympathetic nervous system.',
+            duration: '75 min',
+            intensity: 'Very Gentle',
           },
           {
-            title: "Power Yoga",
+            title: 'Power Yoga',
             description:
-              "Athletic, strength-building flow with advanced poses and inversions. Temperature: 90°F. Previous yoga experience recommended.",
-            duration: "75 min",
-            intensity: "High Intensity",
+              'Athletic, strength-building flow with advanced poses and inversions. Temperature: 90°F. Previous yoga experience recommended.',
+            duration: '75 min',
+            intensity: 'High Intensity',
           },
           {
-            title: "Yin Yoga",
+            title: 'Yin Yoga',
             description:
-              "Slow-paced practice with 3-5 minute holds targeting deep connective tissues. Complement your active practices.",
-            duration: "60 min",
-            intensity: "Gentle",
+              'Slow-paced practice with 3-5 minute holds targeting deep connective tissues. Complement your active practices.',
+            duration: '60 min',
+            intensity: 'Gentle',
           },
           {
-            title: "Guided Meditation",
+            title: 'Guided Meditation',
             description:
-              "Breathwork, mindfulness, and visualization techniques. Cushions and blankets provided. No yoga mat needed.",
-            duration: "30-45 min",
-            intensity: "All Levels",
+              'Breathwork, mindfulness, and visualization techniques. Cushions and blankets provided. No yoga mat needed.',
+            duration: '30-45 min',
+            intensity: 'All Levels',
           },
         ]
 
@@ -417,292 +424,290 @@ export const YogaStudioKimiPage2 = defineCapsule({
     const safeBookings = bookings ?? []
     const bookingCount = safeBookings.length
 
-    const scheduleEyebrow = props.schedule?.eyebrow ?? "Weekly Schedule"
+    const scheduleEyebrow = props.schedule?.eyebrow ?? 'Weekly Schedule'
     const scheduleHeading =
-      props.schedule?.heading ?? "Find Your Perfect Class Time"
+      props.schedule?.heading ?? 'Find Your Perfect Class Time'
     const scheduleDesc =
       props.schedule?.description ??
-      "50+ classes every week, from early morning sunrise flows to evening wind-down sessions."
+      '50+ classes every week, from early morning sunrise flows to evening wind-down sessions.'
     const scheduleDays = props.schedule?.days?.length
       ? props.schedule.days
       : [
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-          "Sunday",
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday',
         ]
     const scheduleFooterCta =
-      props.schedule?.footerCta ?? "Book your first class free"
+      props.schedule?.footerCta ?? 'Book your first class free'
     const scheduleRows = props.schedule?.rows?.length
       ? props.schedule.rows
       : [
           {
-            time: "6:00 AM",
-            title: "Sunrise Vinyasa",
-            teacher: "with Marcus Chen",
-            intensity: "Moderate",
-            meta: "60 min • Studio A",
+            time: '6:00 AM',
+            title: 'Sunrise Vinyasa',
+            teacher: 'with Marcus Chen',
+            intensity: 'Moderate',
+            meta: '60 min • Studio A',
           },
           {
-            time: "9:00 AM",
-            title: "Hatha Basics",
-            teacher: "with Sarah Mitchell",
-            intensity: "Gentle",
-            meta: "60 min • Studio B",
+            time: '9:00 AM',
+            title: 'Hatha Basics',
+            teacher: 'with Sarah Mitchell',
+            intensity: 'Gentle',
+            meta: '60 min • Studio B',
           },
           {
-            time: "12:00 PM",
-            title: "Midday Flow",
-            teacher: "with David Park",
-            intensity: "Moderate",
-            meta: "45 min • Studio A",
+            time: '12:00 PM',
+            title: 'Midday Flow',
+            teacher: 'with David Park',
+            intensity: 'Moderate',
+            meta: '45 min • Studio A',
           },
           {
-            time: "5:30 PM",
-            title: "Power Yoga",
-            teacher: "with Marcus Chen",
-            intensity: "Intense",
-            meta: "75 min • Studio A",
+            time: '5:30 PM',
+            title: 'Power Yoga',
+            teacher: 'with Marcus Chen',
+            intensity: 'Intense',
+            meta: '75 min • Studio A',
           },
           {
-            time: "7:00 PM",
-            title: "Yin & Meditation",
-            teacher: "with Priya Sharma",
-            intensity: "Restorative",
-            meta: "75 min • Studio B",
+            time: '7:00 PM',
+            title: 'Yin & Meditation',
+            teacher: 'with Priya Sharma',
+            intensity: 'Restorative',
+            meta: '75 min • Studio B',
           },
           {
-            time: "8:30 PM",
-            title: "Guided Sleep Meditation",
-            teacher: "with Priya Sharma",
-            intensity: "All Levels",
-            meta: "30 min • Meditation Room",
+            time: '8:30 PM',
+            title: 'Guided Sleep Meditation',
+            teacher: 'with Priya Sharma',
+            intensity: 'All Levels',
+            meta: '30 min • Meditation Room',
           },
         ]
 
-    const pricingEyebrow = props.pricing?.eyebrow ?? "Membership"
-    const pricingHeading =
-      props.pricing?.heading ?? "Invest in Your Practice"
+    const pricingEyebrow = props.pricing?.eyebrow ?? 'Membership'
+    const pricingHeading = props.pricing?.heading ?? 'Invest in Your Practice'
     const pricingDesc =
       props.pricing?.description ??
-      "Flexible options for every commitment level. All memberships include mat and towel service."
+      'Flexible options for every commitment level. All memberships include mat and towel service.'
     const pricingPlans = props.pricing?.plans?.length
       ? props.pricing.plans
       : [
           {
-            name: "Drop-In",
-            blurb: "Perfect for visitors or occasional practice",
-            price: "$22",
-            period: "/class",
+            name: 'Drop-In',
+            blurb: 'Perfect for visitors or occasional practice',
+            price: '$22',
+            period: '/class',
             features: [
-              "Single class access",
-              "Mat & towel included",
-              "Valid for 30 days from purchase",
+              'Single class access',
+              'Mat & towel included',
+              'Valid for 30 days from purchase',
             ],
-            cta: "Purchase Drop-In",
+            cta: 'Purchase Drop-In',
           },
           {
-            name: "5-Class Pack",
-            blurb: "Save when you commit to 5 classes",
-            price: "$95",
-            period: " ($19/class)",
+            name: '5-Class Pack',
+            blurb: 'Save when you commit to 5 classes',
+            price: '$95',
+            period: ' ($19/class)',
             features: [
-              "5 class credits",
-              "Shareable with friends",
-              "Valid for 6 months",
+              '5 class credits',
+              'Shareable with friends',
+              'Valid for 6 months',
             ],
-            cta: "Buy 5-Class Pack",
+            cta: 'Buy 5-Class Pack',
           },
           {
-            name: "Unlimited Monthly",
-            blurb: "Unlimited access to all classes",
-            price: "$149",
-            period: "/month",
+            name: 'Unlimited Monthly',
+            blurb: 'Unlimited access to all classes',
+            price: '$149',
+            period: '/month',
             features: [
-              "Unlimited classes",
-              "10% off workshops",
-              "1 guest pass/month",
-              "Mat & towel service",
-              "Free workshop entry",
+              'Unlimited classes',
+              '10% off workshops',
+              '1 guest pass/month',
+              'Mat & towel service',
+              'Free workshop entry',
             ],
-            cta: "Start 7-Day Free Trial",
+            cta: 'Start 7-Day Free Trial',
             popular: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
         ]
-    const annualTitle = props.pricing?.annualTitle ?? "Annual Membership"
+    const annualTitle = props.pricing?.annualTitle ?? 'Annual Membership'
     const annualBlurb =
-      props.pricing?.annualBlurb ?? "Commit to your practice and save 25%"
-    const annualPrice = props.pricing?.annualPrice ?? "$1,188"
-    const annualPeriod = props.pricing?.annualPeriod ?? "/year"
-    const annualSave = props.pricing?.annualSave ?? "($99/month)"
-    const annualCta = props.pricing?.annualCta ?? "Get Annual Pass"
+      props.pricing?.annualBlurb ?? 'Commit to your practice and save 25%'
+    const annualPrice = props.pricing?.annualPrice ?? '$1,188'
+    const annualPeriod = props.pricing?.annualPeriod ?? '/year'
+    const annualSave = props.pricing?.annualSave ?? '($99/month)'
+    const annualCta = props.pricing?.annualCta ?? 'Get Annual Pass'
     const pricingNote =
       props.pricing?.note ??
-      "Student & Senior Discounts: 20% off with valid ID. Inquire at front desk or call (503) 555-0192."
+      'Student & Senior Discounts: 20% off with valid ID. Inquire at front desk or call (503) 555-0192.'
 
-    const galleryEyebrow = props.gallery?.eyebrow ?? "Our Space"
-    const galleryHeading =
-      props.gallery?.heading ?? "A Sanctuary in the City"
+    const galleryEyebrow = props.gallery?.eyebrow ?? 'Our Space'
+    const galleryHeading = props.gallery?.heading ?? 'A Sanctuary in the City'
     const galleryDesc =
       props.gallery?.description ??
-      "3,500 square feet of intentional design. Heated floors, filtered air, natural light, and everything you need for your practice."
+      '3,500 square feet of intentional design. Heated floors, filtered air, natural light, and everything you need for your practice.'
     const galleryImages = props.gallery?.images?.length
       ? props.gallery.images
       : [
-          "spacious yoga studio interior with wooden floors and large windows letting in natural light",
-          "yoga practitioners in warrior pose during a group class session",
-          "serene meditation room with cushions arranged in a circle and soft natural lighting",
-          "modern yoga studio with plants and minimalist design featuring wooden accents",
-          "yoga instructor demonstrating a pose with students following in a bright studio",
-          "woman in peaceful meditation pose with eyes closed in a tranquil studio setting",
+          'spacious yoga studio interior with wooden floors and large windows letting in natural light',
+          'yoga practitioners in warrior pose during a group class session',
+          'serene meditation room with cushions arranged in a circle and soft natural lighting',
+          'modern yoga studio with plants and minimalist design featuring wooden accents',
+          'yoga instructor demonstrating a pose with students following in a bright studio',
+          'woman in peaceful meditation pose with eyes closed in a tranquil studio setting',
         ]
 
-    const teachersEyebrow = props.teachers?.eyebrow ?? "Our Teachers"
-    const teachersHeading = props.teachers?.heading ?? "Learn from the Best"
+    const teachersEyebrow = props.teachers?.eyebrow ?? 'Our Teachers'
+    const teachersHeading = props.teachers?.heading ?? 'Learn from the Best'
     const teachersDesc =
       props.teachers?.description ??
-      "Our instructors bring decades of combined experience and a passion for helping you grow."
+      'Our instructors bring decades of combined experience and a passion for helping you grow.'
     const teacherItems = props.teachers?.items?.length
       ? props.teachers.items
       : [
           {
-            name: "Sarah Mitchell",
-            role: "Lead Vinyasa Teacher",
-            credential: "E-RYT 500, 12 years experience",
+            name: 'Sarah Mitchell',
+            role: 'Lead Vinyasa Teacher',
+            credential: 'E-RYT 500, 12 years experience',
             imageAlt:
-              "professional headshot of Sarah Mitchell a yoga instructor with warm smile and dark hair",
+              'professional headshot of Sarah Mitchell a yoga instructor with warm smile and dark hair',
           },
           {
-            name: "Marcus Chen",
-            role: "Power Yoga & Strength",
-            credential: "E-RYT 200, Former athlete",
+            name: 'Marcus Chen',
+            role: 'Power Yoga & Strength',
+            credential: 'E-RYT 200, Former athlete',
             imageAlt:
-              "professional headshot of Marcus Chen a yoga teacher with short black hair and calm presence",
+              'professional headshot of Marcus Chen a yoga teacher with short black hair and calm presence',
           },
           {
-            name: "Priya Sharma",
-            role: "Yin & Meditation Guide",
-            credential: "Certified Mindfulness Teacher",
+            name: 'Priya Sharma',
+            role: 'Yin & Meditation Guide',
+            credential: 'Certified Mindfulness Teacher',
             imageAlt:
-              "professional headshot of Priya Sharma a meditation teacher with serene expression and long dark hair",
+              'professional headshot of Priya Sharma a meditation teacher with serene expression and long dark hair',
           },
           {
-            name: "David Park",
-            role: "Hatha & Restorative",
-            credential: "RYT 500, Anatomy specialist",
+            name: 'David Park',
+            role: 'Hatha & Restorative',
+            credential: 'RYT 500, Anatomy specialist',
             imageAlt:
-              "professional headshot of David Park a yoga instructor with glasses and friendly smile",
+              'professional headshot of David Park a yoga instructor with glasses and friendly smile',
           },
         ]
 
     const statItems = props.stats?.length
       ? props.stats
       : [
-          { value: "2,400+", label: "Active Members" },
-          { value: "50+", label: "Weekly Classes" },
-          { value: "8", label: "Expert Teachers" },
-          { value: "4.9", label: "Average Rating" },
+          { value: '2,400+', label: 'Active Members' },
+          { value: '50+', label: 'Weekly Classes' },
+          { value: '8', label: 'Expert Teachers' },
+          { value: '4.9', label: 'Average Rating' },
         ]
 
-    const testimonialsEyebrow = props.testimonials?.eyebrow ?? "Testimonials"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'Testimonials'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Our Community Says"
+      props.testimonials?.heading ?? 'What Our Community Says'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
               "Serenity Flow changed my life. After years of back pain, Sarah's Hatha classes gave me relief I never thought possible. The community here is so welcoming.",
-            name: "Jennifer Walsh",
-            meta: "Member since 2021",
+            name: 'Jennifer Walsh',
+            meta: 'Member since 2021',
             avatarAlt:
-              "professional headshot of Jennifer Walsh a satisfied yoga studio member with short brown hair",
+              'professional headshot of Jennifer Walsh a satisfied yoga studio member with short brown hair',
           },
           {
             quote:
               "I was intimidated to try yoga as a complete beginner, but the instructors here make everyone feel comfortable. Marcus's Power Yoga challenges me every week!",
-            name: "Robert Kim",
-            meta: "Member since 2022",
+            name: 'Robert Kim',
+            meta: 'Member since 2022',
             avatarAlt:
-              "professional headshot of Robert Kim a yoga practitioner with dark hair and confident smile",
+              'professional headshot of Robert Kim a yoga practitioner with dark hair and confident smile',
           },
           {
             quote:
               "The evening Yin and Meditation classes are my sanctuary after stressful workdays. Priya's guided meditations have helped me develop a home practice too.",
-            name: "Amanda Foster",
-            meta: "Member since 2020",
+            name: 'Amanda Foster',
+            meta: 'Member since 2020',
             avatarAlt:
-              "professional headshot of Amanda Foster a wellness enthusiast with blonde hair and warm smile",
+              'professional headshot of Amanda Foster a wellness enthusiast with blonde hair and warm smile',
           },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Common Questions"
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Common Questions'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "Do I need to bring my own yoga mat?",
-            a: "Nope! We provide high-quality Manduka mats and fresh towels for every class. If you prefer to bring your own mat, we have mat storage available in the lobby.",
+            q: 'Do I need to bring my own yoga mat?',
+            a: 'Nope! We provide high-quality Manduka mats and fresh towels for every class. If you prefer to bring your own mat, we have mat storage available in the lobby.',
           },
           {
-            q: "What should I wear to class?",
-            a: "Wear comfortable, breathable clothing that allows you to move freely. For heated classes, moisture-wicking fabrics are recommended. We practice barefoot, so no special footwear needed.",
+            q: 'What should I wear to class?',
+            a: 'Wear comfortable, breathable clothing that allows you to move freely. For heated classes, moisture-wicking fabrics are recommended. We practice barefoot, so no special footwear needed.',
           },
           {
             q: "I'm a complete beginner. Which class should I start with?",
-            a: "We recommend starting with Hatha Basics or Gentle Hatha. These classes focus on foundational poses, proper alignment, and breath work. Our instructors always offer modifications to make poses accessible for all levels.",
+            a: 'We recommend starting with Hatha Basics or Gentle Hatha. These classes focus on foundational poses, proper alignment, and breath work. Our instructors always offer modifications to make poses accessible for all levels.',
           },
           {
-            q: "How do I book a class?",
-            a: "Book online through our website or mobile app up to 14 days in advance. Walk-ins are welcome if space permits. We recommend arriving 15 minutes early for your first visit to complete a brief intake form.",
+            q: 'How do I book a class?',
+            a: 'Book online through our website or mobile app up to 14 days in advance. Walk-ins are welcome if space permits. We recommend arriving 15 minutes early for your first visit to complete a brief intake form.',
           },
           {
-            q: "What is your cancellation policy?",
-            a: "Cancellations must be made at least 4 hours before class start time to avoid being charged. Late cancellations and no-shows will be charged a $15 fee or deduct one class from your pack.",
+            q: 'What is your cancellation policy?',
+            a: 'Cancellations must be made at least 4 hours before class start time to avoid being charged. Late cancellations and no-shows will be charged a $15 fee or deduct one class from your pack.',
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Start Your Journey Today"
+    const ctaHeading = props.cta?.heading ?? 'Start Your Journey Today'
     const ctaDesc =
       props.cta?.description ??
-      "Try any class free for 7 days. No commitment, no credit card required. Just show up and breathe."
-    const ctaPrimary = props.cta?.primaryCta ?? "Claim Your Free Week"
-    const ctaPhone = props.cta?.phone ?? "(503) 555-0192"
+      'Try any class free for 7 days. No commitment, no credit card required. Just show up and breathe.'
+    const ctaPrimary = props.cta?.primaryCta ?? 'Claim Your Free Week'
+    const ctaPhone = props.cta?.phone ?? '(503) 555-0192'
 
     const footerAbout =
       props.footer?.about ??
       "Portland's premier yoga and meditation studio in the Pearl District."
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Instagram", "Facebook", "YouTube"]
-    const footerLinksTitle = props.footer?.linksTitle ?? "Quick Links"
+      : ['Instagram', 'Facebook', 'YouTube']
+    const footerLinksTitle = props.footer?.linksTitle ?? 'Quick Links'
     const footerLinks = props.footer?.links?.length
       ? props.footer.links
-      : ["Classes", "Schedule", "Pricing", "About Us", "Gift Cards"]
-    const footerVisitTitle = props.footer?.visitTitle ?? "Visit Us"
+      : ['Classes', 'Schedule', 'Pricing', 'About Us', 'Gift Cards']
+    const footerVisitTitle = props.footer?.visitTitle ?? 'Visit Us'
     const footerAddress =
-      props.footer?.address ?? "1425 NW Lovejoy St, Portland, OR 97209"
-    const footerPhone = props.footer?.phone ?? "(503) 555-0192"
-    const footerEmail = props.footer?.email ?? "hello@serenityflow.com"
-    const footerHoursTitle = props.footer?.hoursTitle ?? "Studio Hours"
+      props.footer?.address ?? '1425 NW Lovejoy St, Portland, OR 97209'
+    const footerPhone = props.footer?.phone ?? '(503) 555-0192'
+    const footerEmail = props.footer?.email ?? 'hello@serenityflow.com'
+    const footerHoursTitle = props.footer?.hoursTitle ?? 'Studio Hours'
     const footerHours = props.footer?.hours?.length
       ? props.footer.hours
       : [
-          { day: "Mon - Fri", time: "6:00 AM - 9:00 PM" },
-          { day: "Saturday", time: "7:00 AM - 8:00 PM" },
-          { day: "Sunday", time: "8:00 AM - 7:00 PM" },
+          { day: 'Mon - Fri', time: '6:00 AM - 9:00 PM' },
+          { day: 'Saturday', time: '7:00 AM - 8:00 PM' },
+          { day: 'Sunday', time: '8:00 AM - 7:00 PM' },
         ]
     const footerNote =
       props.footer?.note ??
       `© ${new Date().getFullYear()} ${brand} Studio. All rights reserved.`
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Accessibility"]
+      : ['Privacy Policy', 'Terms of Service', 'Accessibility']
 
     const FlowerMark = ({ className }: { className?: string }) => (
       <svg
@@ -724,7 +729,7 @@ export const YogaStudioKimiPage2 = defineCapsule({
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-4", className)}
+        className={cn('size-4', className)}
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -741,7 +746,7 @@ export const YogaStudioKimiPage2 = defineCapsule({
 
     const StarIcon = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-4", className)}
+        className={cn('size-4', className)}
         fill="currentColor"
         viewBox="0 0 20 20"
         aria-hidden="true"
@@ -750,10 +755,16 @@ export const YogaStudioKimiPage2 = defineCapsule({
       </svg>
     )
 
-    const HeartIcon = ({ className, active = false }: { className?: string; active?: boolean }) => (
+    const HeartIcon = ({
+      className,
+      active = false,
+    }: {
+      className?: string
+      active?: boolean
+    }) => (
       <svg
-        className={cn("size-7", className)}
-        fill={active ? "currentColor" : "none"}
+        className={cn('size-7', className)}
+        fill={active ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="1.6"
         strokeLinecap="round"
@@ -761,9 +772,7 @@ export const YogaStudioKimiPage2 = defineCapsule({
         viewBox="0 0 24 24"
         aria-hidden="true"
       >
-        <path
-          d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-        />
+        <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
       </svg>
     )
 
@@ -803,7 +812,7 @@ export const YogaStudioKimiPage2 = defineCapsule({
 
     const CheckIcon = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5 flex-shrink-0", className)}
+        className={cn('size-5 flex-shrink-0', className)}
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -820,7 +829,7 @@ export const YogaStudioKimiPage2 = defineCapsule({
 
     const PhoneIcon = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5", className)}
+        className={cn('size-5', className)}
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -837,7 +846,7 @@ export const YogaStudioKimiPage2 = defineCapsule({
 
     const PlusIcon = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5", className)}
+        className={cn('size-5', className)}
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -887,7 +896,7 @@ export const YogaStudioKimiPage2 = defineCapsule({
 
     const SocialIcon = ({ name }: { name: string }) => {
       const n = name.toLowerCase()
-      if (n === "facebook")
+      if (n === 'facebook')
         return (
           <svg
             className="size-5"
@@ -898,7 +907,7 @@ export const YogaStudioKimiPage2 = defineCapsule({
             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
           </svg>
         )
-      if (n === "youtube")
+      if (n === 'youtube')
         return (
           <svg
             className="size-5"
@@ -922,18 +931,18 @@ export const YogaStudioKimiPage2 = defineCapsule({
     }
 
     const classGradients = [
-      "from-primary/10",
-      "from-secondary/30",
-      "from-accent/20",
-      "from-chart-1/15",
-      "from-chart-4/15",
-      "from-chart-5/15",
+      'from-primary/10',
+      'from-secondary/30',
+      'from-accent/20',
+      'from-chart-1/15',
+      'from-chart-4/15',
+      'from-chart-5/15',
     ]
 
     return (
       <div
         className={cn(
-          "min-h-svh overflow-x-hidden bg-background font-sans text-foreground antialiased",
+          'min-h-svh overflow-x-hidden bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -1116,9 +1125,7 @@ export const YogaStudioKimiPage2 = defineCapsule({
                                   type="button"
                                   variant="outline"
                                   size="sm"
-                                  onClick={() =>
-                                    void cancelBooking(booking.id)
-                                  }
+                                  onClick={() => void cancelBooking(booking.id)}
                                   className="h-8 rounded-full"
                                 >
                                   Cancel
@@ -1326,7 +1333,7 @@ export const YogaStudioKimiPage2 = defineCapsule({
                       <p className="mt-1 text-sm text-muted-foreground">
                         <strong className="text-foreground">
                           {ratingValue}
-                        </strong>{" "}
+                        </strong>{' '}
                         {ratingLabel}
                       </p>
                     </div>
@@ -1390,7 +1397,7 @@ export const YogaStudioKimiPage2 = defineCapsule({
                       type="button"
                       onClick={() => go(item.title)}
                       className={cn(
-                        "group relative rounded-3xl border border-border bg-gradient-to-br to-card p-8 text-left transition-all hover:border-primary/30 hover:shadow-xl",
+                        'group relative rounded-3xl border border-border bg-gradient-to-br to-card p-8 text-left transition-all hover:border-primary/30 hover:shadow-xl',
                         classGradients[i % classGradients.length],
                       )}
                     >
@@ -1408,10 +1415,7 @@ export const YogaStudioKimiPage2 = defineCapsule({
                         }
                         className="absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-background/90 text-muted-foreground shadow-sm transition-all hover:scale-105 group-hover:opacity-100"
                       >
-                        <HeartIcon
-                          className="size-5"
-                          active={isFavorite}
-                        />
+                        <HeartIcon className="size-5" active={isFavorite} />
                       </button>
                       <span className="mb-6 flex size-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground transition-transform group-hover:scale-110">
                         <FlowerMark className="size-8" />
@@ -1462,10 +1466,10 @@ export const YogaStudioKimiPage2 = defineCapsule({
                     aria-selected={i === 0}
                     onClick={() => go(day)}
                     className={cn(
-                      "rounded-full px-6 py-3 text-sm font-semibold transition-colors",
+                      'rounded-full px-6 py-3 text-sm font-semibold transition-colors',
                       i === 0
-                        ? "bg-primary text-primary-foreground"
-                        : "border border-border bg-card text-muted-foreground hover:border-primary/40",
+                        ? 'bg-primary text-primary-foreground'
+                        : 'border border-border bg-card text-muted-foreground hover:border-primary/40',
                     )}
                   >
                     {day}
@@ -1548,10 +1552,10 @@ export const YogaStudioKimiPage2 = defineCapsule({
                   <div
                     key={plan.name}
                     className={cn(
-                      "relative rounded-3xl p-8 transition-all",
+                      'relative rounded-3xl p-8 transition-all',
                       plan.popular
-                        ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-2xl"
-                        : "border border-border bg-card hover:border-primary/30 hover:shadow-xl",
+                        ? 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-2xl'
+                        : 'border border-border bg-card hover:border-primary/30 hover:shadow-xl',
                     )}
                   >
                     {plan.badge ? (
@@ -1561,23 +1565,23 @@ export const YogaStudioKimiPage2 = defineCapsule({
                         </span>
                       </div>
                     ) : null}
-                    <div className={cn("mb-6", plan.popular && "pt-2")}>
+                    <div className={cn('mb-6', plan.popular && 'pt-2')}>
                       <h3
                         className={cn(
-                          "mb-2 text-xl font-bold",
+                          'mb-2 text-xl font-bold',
                           plan.popular
-                            ? "text-primary-foreground"
-                            : "text-card-foreground",
+                            ? 'text-primary-foreground'
+                            : 'text-card-foreground',
                         )}
                       >
                         {plan.name}
                       </h3>
                       <p
                         className={cn(
-                          "text-sm",
+                          'text-sm',
                           plan.popular
-                            ? "text-primary-foreground/80"
-                            : "text-muted-foreground",
+                            ? 'text-primary-foreground/80'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {plan.blurb}
@@ -1586,10 +1590,10 @@ export const YogaStudioKimiPage2 = defineCapsule({
                     <div className="mb-6">
                       <span
                         className={cn(
-                          "text-5xl font-extrabold",
+                          'text-5xl font-extrabold',
                           plan.popular
-                            ? "text-primary-foreground"
-                            : "text-card-foreground",
+                            ? 'text-primary-foreground'
+                            : 'text-card-foreground',
                         )}
                       >
                         {plan.price}
@@ -1597,8 +1601,8 @@ export const YogaStudioKimiPage2 = defineCapsule({
                       <span
                         className={
                           plan.popular
-                            ? "text-primary-foreground/80"
-                            : "text-muted-foreground"
+                            ? 'text-primary-foreground/80'
+                            : 'text-muted-foreground'
                         }
                       >
                         {plan.period}
@@ -1609,17 +1613,17 @@ export const YogaStudioKimiPage2 = defineCapsule({
                         <li key={feature} className="flex items-start gap-3">
                           <CheckIcon
                             className={cn(
-                              "mt-0.5",
+                              'mt-0.5',
                               plan.popular
-                                ? "text-primary-foreground"
-                                : "text-primary",
+                                ? 'text-primary-foreground'
+                                : 'text-primary',
                             )}
                           />
                           <span
                             className={
                               plan.popular
-                                ? "text-primary-foreground/90"
-                                : "text-muted-foreground"
+                                ? 'text-primary-foreground/90'
+                                : 'text-muted-foreground'
                             }
                           >
                             {feature}
@@ -1631,10 +1635,10 @@ export const YogaStudioKimiPage2 = defineCapsule({
                       type="button"
                       onClick={() => go(plan.cta)}
                       className={cn(
-                        "w-full rounded-full px-6 py-4 font-bold transition-colors",
+                        'w-full rounded-full px-6 py-4 font-bold transition-colors',
                         plan.popular
-                          ? "bg-background text-primary shadow-lg hover:bg-background/90"
-                          : "border-2 border-border text-foreground hover:border-primary hover:text-primary",
+                          ? 'bg-background text-primary shadow-lg hover:bg-background/90'
+                          : 'border-2 border-border text-foreground hover:border-primary hover:text-primary',
                       )}
                     >
                       {plan.cta}

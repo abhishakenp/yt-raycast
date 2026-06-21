@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * MarketingAgencyKimiPage2 — a complete, self-contained performance / growth
@@ -56,7 +56,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * content data; rich defaults make it render great with no props at all.
  */
 export const MarketingAgencyKimiPage2 = defineCapsule({
-  name: "MarketingAgencyKimiPage2",
+  name: 'MarketingAgencyKimiPage2',
   description:
     "Complete performance / growth marketing-agency LANDING page with a bold, energetic, conversion-focused aesthetic: a hot brand-accent hue, an animated infinite client-logo marquee, rounded accent 'pill' eyebrow chips, and several high-contrast dark accent bands. This is the SECOND visually DISTINCT style sibling / alternative to MarketingAgencyKimiPage (which is the calmer, editorial, neutral variant) — pick this one when a punchier, results-bragging, agency-energy look is wanted. Includes a split hero (pulsing 'trusted by' status badge, headline with an underline-stroke highlight word, dual CTAs, trust checkmarks, a floating ROI/ROAS stat card and a floating expert-avatar-stack badge over a team photo), an animated 'trusted by industry leaders' logo marquee strip, an accent KPI/stats band (revenue, brands, leads, ROAS), a 6-up bordered services grid with rotating icon tiles and capability check bullets (paid advertising, SEO & content, CRO & analytics, email marketing, creative production, strategy & consulting), a connector-line 4-step process timeline, a high-contrast DARK case-study gallery with colored category chips and dual result metrics plus campaign dates, a 3-tier pricing table with a raised DARK 'Most Popular' plan and performance-fee notes, a 6-card star-rated testimonial grid with client avatars, an FAQ accordion with circular toggle buttons, an accent closing call-to-action band with an inline email-capture free-audit form and reassurance points, and a rich DARK 5-column footer with brand blurb, social icons, link columns, and contact address/email/phone. FULL-STACK: Lakebed-powered saved case studies drawer (bookmark icon on case cards), lead capture form with persisted submissions, and Google authentication with account menu. Use as the ROOT/home page for marketing agencies, growth agencies, performance-marketing / paid-ads / media-buying shops, SEO and CRO consultancies, demand-gen and lead-gen firms, or B2B SaaS and e-commerce growth partners when a credible, metric-heavy, social-proof-rich page with case studies, pricing, and a free-audit offer is wanted. Supply content only — brand, nav, hero, logos, stats, services, process, cases, pricing, testimonials, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -198,9 +198,7 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
         eyebrow: z.string().optional(),
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       })
       .optional(),
     /** Accent closing call-to-action band with email-capture form. */
@@ -247,8 +245,17 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
         new Set(db.savedCases.all().map((saved) => saved.caseName)),
     },
     mutations: {
-      submitLead: ({ db }, email: string, company?: string, interest?: string) => {
-        db.leads.insert({ email, company: company ?? '', interest: interest ?? '' })
+      submitLead: (
+        { db },
+        email: string,
+        company?: string,
+        interest?: string,
+      ) => {
+        db.leads.insert({
+          email,
+          company: company ?? '',
+          interest: interest ?? '',
+        })
         return db.leads.all()
       },
       toggleSavedCase: ({ db }, caseName: string) => {
@@ -268,7 +275,7 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [savedDrawerOpen, setSavedDrawerOpen] = useState(false)
-    const brand = props.brand ?? "GrowthLab"
+    const brand = props.brand ?? 'GrowthLab'
 
     // Lakebed queries and mutations
     const savedCaseNames = lakebed.useQuery('savedCaseNames')
@@ -303,296 +310,312 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
     }
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Case Studies", "Pricing", "Results", "FAQ", "Get Free Audit"]
+      : [
+          'Services',
+          'Case Studies',
+          'Pricing',
+          'Results',
+          'FAQ',
+          'Get Free Audit',
+        ]
 
-    const heroBadge = props.hero?.badge ?? "Trusted by 250+ Brands Worldwide"
-    const heroBefore = props.hero?.headingBefore ?? "We Turn Your"
-    const heroHighlight = props.hero?.highlight ?? "Marketing"
-    const heroAfter = props.hero?.headingAfter ?? "Into Revenue"
+    const heroBadge = props.hero?.badge ?? 'Trusted by 250+ Brands Worldwide'
+    const heroBefore = props.hero?.headingBefore ?? 'We Turn Your'
+    const heroHighlight = props.hero?.highlight ?? 'Marketing'
+    const heroAfter = props.hero?.headingAfter ?? 'Into Revenue'
     const heroSub =
       props.hero?.subheading ??
-      "Data-driven strategies that have generated $47M+ in client revenue. From SEO to paid ads, we deliver measurable growth for ambitious brands."
-    const heroPrimary = props.hero?.primaryCta ?? "Start Your Growth Audit"
-    const heroSecondary = props.hero?.secondaryCta ?? "View Case Studies"
+      'Data-driven strategies that have generated $47M+ in client revenue. From SEO to paid ads, we deliver measurable growth for ambitious brands.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Start Your Growth Audit'
+    const heroSecondary = props.hero?.secondaryCta ?? 'View Case Studies'
     const heroTrust = props.hero?.trust?.length
       ? props.hero.trust
-      : ["No Contracts Required", "Results in 90 Days", "Dedicated Growth Team"]
+      : ['No Contracts Required', 'Results in 90 Days', 'Dedicated Growth Team']
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Diverse marketing team collaborating around laptops in modern bright office space with large windows"
-    const heroStatValue = props.hero?.statValue ?? "+312%"
-    const heroStatLabel = props.hero?.statLabel ?? "Average ROAS"
-    const heroExpertsLabel = props.hero?.expertsLabel ?? "50+ Experts"
+      'Diverse marketing team collaborating around laptops in modern bright office space with large windows'
+    const heroStatValue = props.hero?.statValue ?? '+312%'
+    const heroStatLabel = props.hero?.statLabel ?? 'Average ROAS'
+    const heroExpertsLabel = props.hero?.expertsLabel ?? '50+ Experts'
     const heroExpertAvatars = props.hero?.expertAvatars?.length
       ? props.hero.expertAvatars
       : [
-          "Professional headshot of smiling female marketing director with short brown hair",
-          "Professional headshot of male growth strategist with beard and glasses",
-          "Professional headshot of female data analyst with blonde hair and warm smile",
+          'Professional headshot of smiling female marketing director with short brown hair',
+          'Professional headshot of male growth strategist with beard and glasses',
+          'Professional headshot of female data analyst with blonde hair and warm smile',
         ]
 
-    const logosHeading = props.logos?.heading ?? "Trusted by Industry Leaders"
+    const logosHeading = props.logos?.heading ?? 'Trusted by Industry Leaders'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
-      : ["Stripe", "Notion", "Vercel", "Linear", "Figma", "Slack", "Shopify", "Webflow"]
+      : [
+          'Stripe',
+          'Notion',
+          'Vercel',
+          'Linear',
+          'Figma',
+          'Slack',
+          'Shopify',
+          'Webflow',
+        ]
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "$47M+", label: "Revenue Generated" },
-          { value: "250+", label: "Brands Grown" },
-          { value: "8.5M+", label: "Leads Delivered" },
-          { value: "312%", label: "Average ROAS" },
+          { value: '$47M+', label: 'Revenue Generated' },
+          { value: '250+', label: 'Brands Grown' },
+          { value: '8.5M+', label: 'Leads Delivered' },
+          { value: '312%', label: 'Average ROAS' },
         ]
 
-    const servicesEyebrow = props.services?.eyebrow ?? "Our Services"
+    const servicesEyebrow = props.services?.eyebrow ?? 'Our Services'
     const servicesHeading =
-      props.services?.heading ?? "Growth-First Marketing Services"
+      props.services?.heading ?? 'Growth-First Marketing Services'
     const servicesDesc =
       props.services?.description ??
-      "Full-funnel strategies tailored to your business goals. From awareness to conversion, we handle every touchpoint."
+      'Full-funnel strategies tailored to your business goals. From awareness to conversion, we handle every touchpoint.'
     const serviceItems = props.services?.items?.length
       ? props.services.items
       : [
           {
-            title: "Paid Advertising",
+            title: 'Paid Advertising',
             description:
-              "Meta, Google, TikTok, and LinkedIn campaigns that deliver 5-10x ROAS. Full-funnel creative and media buying.",
+              'Meta, Google, TikTok, and LinkedIn campaigns that deliver 5-10x ROAS. Full-funnel creative and media buying.',
             points: [
-              "Meta & Google Ads Management",
-              "TikTok & LinkedIn Advertising",
-              "Programmatic Display",
+              'Meta & Google Ads Management',
+              'TikTok & LinkedIn Advertising',
+              'Programmatic Display',
             ],
           },
           {
-            title: "SEO & Content",
+            title: 'SEO & Content',
             description:
-              "Organic strategies that drive qualified traffic. Technical SEO, content marketing, and link building.",
+              'Organic strategies that drive qualified traffic. Technical SEO, content marketing, and link building.',
             points: [
-              "Technical SEO Audits",
-              "Content Strategy & Creation",
-              "Link Building Campaigns",
+              'Technical SEO Audits',
+              'Content Strategy & Creation',
+              'Link Building Campaigns',
             ],
           },
           {
-            title: "CRO & Analytics",
+            title: 'CRO & Analytics',
             description:
-              "Data-driven optimization that increases conversion rates. A/B testing, user research, and funnel analysis.",
+              'Data-driven optimization that increases conversion rates. A/B testing, user research, and funnel analysis.',
             points: [
-              "Landing Page Optimization",
-              "A/B & Multivariate Testing",
-              "Advanced Analytics Setup",
+              'Landing Page Optimization',
+              'A/B & Multivariate Testing',
+              'Advanced Analytics Setup',
             ],
           },
           {
-            title: "Email Marketing",
+            title: 'Email Marketing',
             description:
-              "Automated email sequences that nurture and convert. Average 35%+ open rates and $42 ROI per $1 spent.",
+              'Automated email sequences that nurture and convert. Average 35%+ open rates and $42 ROI per $1 spent.',
             points: [
-              "Klaviyo & HubSpot Expertise",
-              "Automated Flows & Campaigns",
-              "List Growth & Segmentation",
+              'Klaviyo & HubSpot Expertise',
+              'Automated Flows & Campaigns',
+              'List Growth & Segmentation',
             ],
           },
           {
-            title: "Creative Production",
+            title: 'Creative Production',
             description:
-              "Scroll-stopping creative that converts. UGC, video ads, and brand assets optimized for performance.",
+              'Scroll-stopping creative that converts. UGC, video ads, and brand assets optimized for performance.',
             points: [
-              "UGC Content Creation",
-              "Video & Motion Ads",
-              "Static & Dynamic Creative",
+              'UGC Content Creation',
+              'Video & Motion Ads',
+              'Static & Dynamic Creative',
             ],
           },
           {
-            title: "Strategy & Consulting",
+            title: 'Strategy & Consulting',
             description:
-              "Comprehensive marketing strategy built for scale. Market research, competitive analysis, and growth roadmaps.",
+              'Comprehensive marketing strategy built for scale. Market research, competitive analysis, and growth roadmaps.',
             points: [
-              "Go-to-Market Strategy",
-              "Competitive Intelligence",
-              "Growth Roadmapping",
+              'Go-to-Market Strategy',
+              'Competitive Intelligence',
+              'Growth Roadmapping',
             ],
           },
         ]
 
-    const processEyebrow = props.process?.eyebrow ?? "Our Process"
-    const processHeading = props.process?.heading ?? "How We Drive Growth"
+    const processEyebrow = props.process?.eyebrow ?? 'Our Process'
+    const processHeading = props.process?.heading ?? 'How We Drive Growth'
     const processDesc =
       props.process?.description ??
-      "A proven 4-phase methodology that delivers consistent, measurable results for every client."
+      'A proven 4-phase methodology that delivers consistent, measurable results for every client.'
     const processSteps = props.process?.steps?.length
       ? props.process.steps
       : [
           {
-            title: "Discovery & Audit",
+            title: 'Discovery & Audit',
             description:
-              "Deep dive into your business, market position, and current performance. We analyze competitors and identify growth opportunities.",
+              'Deep dive into your business, market position, and current performance. We analyze competitors and identify growth opportunities.',
           },
           {
-            title: "Strategy & Planning",
+            title: 'Strategy & Planning',
             description:
-              "Custom growth roadmap with clear milestones. Channel selection, budget allocation, and creative direction aligned to your KPIs.",
+              'Custom growth roadmap with clear milestones. Channel selection, budget allocation, and creative direction aligned to your KPIs.',
           },
           {
-            title: "Execution & Optimize",
+            title: 'Execution & Optimize',
             description:
-              "Launch campaigns with rigorous testing. Continuous A/B testing, bid optimization, and creative iteration for peak performance.",
+              'Launch campaigns with rigorous testing. Continuous A/B testing, bid optimization, and creative iteration for peak performance.',
           },
           {
-            title: "Scale & Report",
+            title: 'Scale & Report',
             description:
-              "Double down on winning strategies. Weekly performance reports, monthly strategy reviews, and proactive recommendations.",
+              'Double down on winning strategies. Weekly performance reports, monthly strategy reviews, and proactive recommendations.',
           },
         ]
 
-    const casesEyebrow = props.cases?.eyebrow ?? "Case Studies"
-    const casesHeading = props.cases?.heading ?? "Results That Speak"
+    const casesEyebrow = props.cases?.eyebrow ?? 'Case Studies'
+    const casesHeading = props.cases?.heading ?? 'Results That Speak'
     const casesDesc =
       props.cases?.description ??
       "Real campaigns, real brands, real revenue growth. Here's how we've transformed businesses."
-    const casesCta = props.cases?.cta ?? "Get Your Custom Strategy"
+    const casesCta = props.cases?.cta ?? 'Get Your Custom Strategy'
     const caseItems = props.cases?.items?.length
       ? props.cases.items
       : [
           {
-            name: "CloudSync",
-            tag: "B2B SaaS",
+            name: 'CloudSync',
+            tag: 'B2B SaaS',
             summary:
-              "Workflow automation platform that needed to scale beyond product-led growth.",
-            metricA: "+412%",
-            labelA: "Demo Requests",
-            metricB: "$2.4M",
-            labelB: "Pipeline Added",
-            when: "Campaign ran: Jan - June 2024",
+              'Workflow automation platform that needed to scale beyond product-led growth.',
+            metricA: '+412%',
+            labelA: 'Demo Requests',
+            metricB: '$2.4M',
+            labelB: 'Pipeline Added',
+            when: 'Campaign ran: Jan - June 2024',
           },
           {
-            name: "Meridian Threads",
-            tag: "E-commerce",
+            name: 'Meridian Threads',
+            tag: 'E-commerce',
             summary:
-              "Sustainable fashion brand seeking to triple their online revenue within 12 months.",
-            metricA: "+287%",
-            labelA: "Revenue Growth",
-            metricB: "6.2x",
-            labelB: "Facebook ROAS",
-            when: "Campaign ran: March - Dec 2024",
+              'Sustainable fashion brand seeking to triple their online revenue within 12 months.',
+            metricA: '+287%',
+            labelA: 'Revenue Growth',
+            metricB: '6.2x',
+            labelB: 'Facebook ROAS',
+            when: 'Campaign ran: March - Dec 2024',
           },
           {
-            name: "VaultPay",
-            tag: "Fintech",
+            name: 'VaultPay',
+            tag: 'Fintech',
             summary:
-              "Digital wallet app competing in crowded market needed user acquisition at viable CAC.",
-            metricA: "+156K",
-            labelA: "App Installs",
-            metricB: "$18",
-            labelB: "Cost Per Install",
-            when: "Campaign ran: June - Nov 2024",
+              'Digital wallet app competing in crowded market needed user acquisition at viable CAC.',
+            metricA: '+156K',
+            labelA: 'App Installs',
+            metricB: '$18',
+            labelB: 'Cost Per Install',
+            when: 'Campaign ran: June - Nov 2024',
           },
           {
-            name: "MedConnect",
-            tag: "Healthcare",
+            name: 'MedConnect',
+            tag: 'Healthcare',
             summary:
-              "Telehealth platform expanding into mental health services with patient acquisition focus.",
-            metricA: "+523%",
-            labelA: "New Patients",
-            metricB: "42%",
-            labelB: "Lower CAC",
-            when: "Campaign ran: Feb - Aug 2024",
+              'Telehealth platform expanding into mental health services with patient acquisition focus.',
+            metricA: '+523%',
+            labelA: 'New Patients',
+            metricB: '42%',
+            labelB: 'Lower CAC',
+            when: 'Campaign ran: Feb - Aug 2024',
           },
           {
-            name: "Apex Properties",
-            tag: "Real Estate",
+            name: 'Apex Properties',
+            tag: 'Real Estate',
             summary:
-              "Luxury real estate developer needed qualified buyer leads for new condo development.",
-            metricA: "892",
-            labelA: "Qualified Leads",
-            metricB: "$47",
-            labelB: "Cost Per Lead",
-            when: "Campaign ran: Sept 2024 - Jan 2025",
+              'Luxury real estate developer needed qualified buyer leads for new condo development.',
+            metricA: '892',
+            labelA: 'Qualified Leads',
+            metricB: '$47',
+            labelB: 'Cost Per Lead',
+            when: 'Campaign ran: Sept 2024 - Jan 2025',
           },
           {
-            name: "LearnFlow",
-            tag: "EdTech",
+            name: 'LearnFlow',
+            tag: 'EdTech',
             summary:
-              "Online course platform scaling from 10K to 100K students through paid acquisition.",
-            metricA: "+198%",
-            labelA: "Enrollments",
-            metricB: "$3.8M",
-            labelB: "Revenue Added",
-            when: "Campaign ran: Jan - Dec 2024",
+              'Online course platform scaling from 10K to 100K students through paid acquisition.',
+            metricA: '+198%',
+            labelA: 'Enrollments',
+            metricB: '$3.8M',
+            labelB: 'Revenue Added',
+            when: 'Campaign ran: Jan - Dec 2024',
           },
         ]
 
-    const pricingEyebrow = props.pricing?.eyebrow ?? "Pricing"
+    const pricingEyebrow = props.pricing?.eyebrow ?? 'Pricing'
     const pricingHeading =
-      props.pricing?.heading ?? "Transparent Pricing, Real Results"
+      props.pricing?.heading ?? 'Transparent Pricing, Real Results'
     const pricingDesc =
       props.pricing?.description ??
-      "No hidden fees, no surprises. Choose the plan that fits your growth stage."
+      'No hidden fees, no surprises. Choose the plan that fits your growth stage.'
     const pricingNote =
       props.pricing?.note ??
-      "All plans include setup, pixel implementation, and conversion tracking."
+      'All plans include setup, pixel implementation, and conversion tracking.'
     const pricingNoteLink =
       props.pricing?.noteLink ?? "See what's included in detail"
     const pricingPlans = props.pricing?.plans?.length
       ? props.pricing.plans
       : [
           {
-            name: "Growth Starter",
-            audience: "Perfect for early-stage startups",
-            price: "$2,500",
-            period: "/month",
-            fee: "+ 8-12% of ad spend (performance fee)",
-            cta: "Get Started",
+            name: 'Growth Starter',
+            audience: 'Perfect for early-stage startups',
+            price: '$2,500',
+            period: '/month',
+            fee: '+ 8-12% of ad spend (performance fee)',
+            cta: 'Get Started',
             featured: false,
             features: [
-              "Up to 2 Ad Platforms",
-              "$5K-$25K Monthly Ad Budget",
-              "4 Creative Assets/Month",
-              "Weekly Performance Reports",
-              "Dedicated Account Manager",
+              'Up to 2 Ad Platforms',
+              '$5K-$25K Monthly Ad Budget',
+              '4 Creative Assets/Month',
+              'Weekly Performance Reports',
+              'Dedicated Account Manager',
             ],
           },
           {
-            name: "Growth Scale",
-            audience: "For businesses ready to scale",
-            price: "$5,000",
-            period: "/month",
-            fee: "+ 6-10% of ad spend (performance fee)",
-            cta: "Schedule a Call",
+            name: 'Growth Scale',
+            audience: 'For businesses ready to scale',
+            price: '$5,000',
+            period: '/month',
+            fee: '+ 6-10% of ad spend (performance fee)',
+            cta: 'Schedule a Call',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
             features: [
-              "Up to 4 Ad Platforms",
-              "$25K-$100K Monthly Ad Budget",
-              "12 Creative Assets/Month",
-              "Landing Page Design",
-              "CRO & A/B Testing",
-              "Real-Time Dashboard Access",
-              "Bi-Weekly Strategy Calls",
+              'Up to 4 Ad Platforms',
+              '$25K-$100K Monthly Ad Budget',
+              '12 Creative Assets/Month',
+              'Landing Page Design',
+              'CRO & A/B Testing',
+              'Real-Time Dashboard Access',
+              'Bi-Weekly Strategy Calls',
             ],
           },
           {
-            name: "Growth Enterprise",
-            audience: "Full-funnel marketing partner",
-            price: "Custom",
-            fee: "Tailored to your business goals",
-            cta: "Contact Sales",
+            name: 'Growth Enterprise',
+            audience: 'Full-funnel marketing partner',
+            price: 'Custom',
+            fee: 'Tailored to your business goals',
+            cta: 'Contact Sales',
             featured: false,
             features: [
-              "Unlimited Ad Platforms",
-              "$100K+ Monthly Ad Budget",
-              "Unlimited Creative Production",
-              "Full CRO & Analytics Suite",
-              "Dedicated Growth Team",
-              "CMO-Level Strategic Support",
+              'Unlimited Ad Platforms',
+              '$100K+ Monthly Ad Budget',
+              'Unlimited Creative Production',
+              'Full CRO & Analytics Suite',
+              'Dedicated Growth Team',
+              'CMO-Level Strategic Support',
             ],
           },
         ]
 
-    const testimonialsEyebrow = props.testimonials?.eyebrow ?? "Testimonials"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'Testimonials'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Our Clients Say"
+      props.testimonials?.heading ?? 'What Our Clients Say'
     const testimonialsDesc =
       props.testimonials?.description ??
       "Don't just take our word for it. Here's what founders and marketing leaders say about working with us."
@@ -601,122 +624,129 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
       : [
           {
             quote:
-              "GrowthLab completely transformed our customer acquisition. We went from burning cash on underperforming ads to a 6.8x ROAS in just 3 months. Their team truly understands performance marketing.",
-            name: "Marcus Chen",
-            role: "CEO, CloudSync",
+              'GrowthLab completely transformed our customer acquisition. We went from burning cash on underperforming ads to a 6.8x ROAS in just 3 months. Their team truly understands performance marketing.',
+            name: 'Marcus Chen',
+            role: 'CEO, CloudSync',
           },
           {
             quote:
-              "Finally, an agency that delivers on their promises. Our e-commerce revenue tripled within 6 months, and our CPA dropped by 40%. Their strategic approach to creative testing is unmatched.",
-            name: "Sarah Williams",
-            role: "Founder, Meridian Threads",
+              'Finally, an agency that delivers on their promises. Our e-commerce revenue tripled within 6 months, and our CPA dropped by 40%. Their strategic approach to creative testing is unmatched.',
+            name: 'Sarah Williams',
+            role: 'Founder, Meridian Threads',
           },
           {
             quote:
-              "Working with GrowthLab feels like having an in-house team. They deeply understand our product and market, and their data-driven approach helped us acquire 150K+ users at a CAC 30% below target.",
-            name: "David Park",
-            role: "CTO, VaultPay",
+              'Working with GrowthLab feels like having an in-house team. They deeply understand our product and market, and their data-driven approach helped us acquire 150K+ users at a CAC 30% below target.',
+            name: 'David Park',
+            role: 'CTO, VaultPay',
           },
           {
             quote:
-              "In the competitive telehealth space, GrowthLab helped us stand out. Their patient acquisition strategy drove a 523% increase in new patient sign-ups while maintaining HIPAA-compliant tracking.",
-            name: "Dr. Emily Rodriguez",
-            role: "CMO, MedConnect",
+              'In the competitive telehealth space, GrowthLab helped us stand out. Their patient acquisition strategy drove a 523% increase in new patient sign-ups while maintaining HIPAA-compliant tracking.',
+            name: 'Dr. Emily Rodriguez',
+            role: 'CMO, MedConnect',
           },
           {
             quote:
-              "High-value real estate leads at $47 each? I was skeptical until GrowthLab delivered. We sold 85% of our units within 6 months thanks to their laser-focused targeting and stunning creative.",
-            name: "James Morrison",
-            role: "Director, Apex Properties",
+              'High-value real estate leads at $47 each? I was skeptical until GrowthLab delivered. We sold 85% of our units within 6 months thanks to their laser-focused targeting and stunning creative.',
+            name: 'James Morrison',
+            role: 'Director, Apex Properties',
           },
           {
             quote:
               "From 10K to 100K students in one year. GrowthLab's full-funnel approach to our online courses—ads, email, SEO—created a growth engine that keeps delivering month after month.",
-            name: "Jennifer Liu",
-            role: "Founder, LearnFlow",
+            name: 'Jennifer Liu',
+            role: 'Founder, LearnFlow',
           },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Common Questions"
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Common Questions'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know about working with GrowthLab."
+      'Everything you need to know about working with GrowthLab.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "How long does it take to see results?",
+            q: 'How long does it take to see results?',
             a: "Most clients see initial performance improvements within 2-4 weeks as we optimize existing campaigns and launch new creative. Significant, sustained results typically emerge within 90 days, after we've completed our initial testing phase and identified your winning strategies. Our process is designed for quick wins followed by long-term scaling.",
           },
           {
-            q: "Do you require long-term contracts?",
-            a: "No. We believe in earning your business every month. Our Growth Starter and Growth Scale plans operate on a month-to-month basis with a 30-day notice period. Enterprise plans may include longer commitments based on project scope, but we always include performance guarantees. Our 94% client retention rate speaks to our confidence in delivering value.",
+            q: 'Do you require long-term contracts?',
+            a: 'No. We believe in earning your business every month. Our Growth Starter and Growth Scale plans operate on a month-to-month basis with a 30-day notice period. Enterprise plans may include longer commitments based on project scope, but we always include performance guarantees. Our 94% client retention rate speaks to our confidence in delivering value.',
           },
           {
             q: "What's included in the setup process?",
-            a: "Our comprehensive setup includes: full analytics audit and implementation (GA4, conversion tracking, attribution modeling), pixel setup across all platforms, audience research and segmentation, competitive analysis, initial creative asset development, landing page review and recommendations, and campaign structure buildout. Setup typically takes 1-2 weeks depending on complexity.",
+            a: 'Our comprehensive setup includes: full analytics audit and implementation (GA4, conversion tracking, attribution modeling), pixel setup across all platforms, audience research and segmentation, competitive analysis, initial creative asset development, landing page review and recommendations, and campaign structure buildout. Setup typically takes 1-2 weeks depending on complexity.',
           },
           {
-            q: "How do you handle creative production?",
-            a: "We have an in-house creative team plus a network of vetted UGC creators and video producers. Every creative brief is informed by performance data—we analyze what resonates with your audience and iterate accordingly. Scale and Enterprise plans include ongoing creative production; Starter plans can add creative services a la carte or use your existing assets.",
+            q: 'How do you handle creative production?',
+            a: 'We have an in-house creative team plus a network of vetted UGC creators and video producers. Every creative brief is informed by performance data—we analyze what resonates with your audience and iterate accordingly. Scale and Enterprise plans include ongoing creative production; Starter plans can add creative services a la carte or use your existing assets.',
           },
           {
-            q: "What industries do you specialize in?",
-            a: "We have deep expertise in B2B SaaS, e-commerce (fashion, beauty, CPG), fintech and financial services, healthcare and telemedicine, real estate, and education/EdTech. Our data-driven methodology applies across industries, but our sector-specific experience means faster time-to-results and proven playbooks for your vertical.",
+            q: 'What industries do you specialize in?',
+            a: 'We have deep expertise in B2B SaaS, e-commerce (fashion, beauty, CPG), fintech and financial services, healthcare and telemedicine, real estate, and education/EdTech. Our data-driven methodology applies across industries, but our sector-specific experience means faster time-to-results and proven playbooks for your vertical.',
           },
           {
-            q: "How do you report on performance?",
-            a: "All clients receive weekly performance reports via email and real-time dashboard access powered by Google Data Studio. Scale and Enterprise plans include bi-weekly strategy calls and monthly business reviews. We focus on the metrics that matter: ROAS, CPA, LTV, and revenue attribution—not vanity metrics like impressions or clicks.",
+            q: 'How do you report on performance?',
+            a: 'All clients receive weekly performance reports via email and real-time dashboard access powered by Google Data Studio. Scale and Enterprise plans include bi-weekly strategy calls and monthly business reviews. We focus on the metrics that matter: ROAS, CPA, LTV, and revenue attribution—not vanity metrics like impressions or clicks.',
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to Scale Your Growth?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to Scale Your Growth?'
     const ctaDesc =
       props.cta?.description ??
       "Get a free growth audit worth $2,500. We'll analyze your current marketing performance and identify the biggest opportunities for revenue growth."
-    const ctaPlaceholder = props.cta?.placeholder ?? "Enter your work email"
-    const ctaButton = props.cta?.button ?? "Get My Audit"
+    const ctaPlaceholder = props.cta?.placeholder ?? 'Enter your work email'
+    const ctaButton = props.cta?.button ?? 'Get My Audit'
     const ctaReassurances = props.cta?.reassurances?.length
       ? props.cta.reassurances
       : [
-          "Free, no-obligation audit",
-          "Delivered within 5 business days",
-          "Includes custom strategy roadmap",
+          'Free, no-obligation audit',
+          'Delivered within 5 business days',
+          'Includes custom strategy roadmap',
         ]
 
     const footerAbout =
       props.footer?.about ??
-      "Performance marketing for ambitious brands. $47M+ in revenue generated for 250+ clients worldwide."
+      'Performance marketing for ambitious brands. $47M+ in revenue generated for 250+ clients worldwide.'
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["LinkedIn", "Twitter", "Instagram"]
+      : ['LinkedIn', 'Twitter', 'Instagram']
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Services",
+            title: 'Services',
             links: [
-              "Paid Advertising",
-              "SEO & Content",
-              "CRO & Analytics",
-              "Email Marketing",
-              "Creative Production",
+              'Paid Advertising',
+              'SEO & Content',
+              'CRO & Analytics',
+              'Email Marketing',
+              'Creative Production',
             ],
           },
           {
-            title: "Company",
-            links: ["Case Studies", "Pricing", "Testimonials", "About Us", "Careers"],
+            title: 'Company',
+            links: [
+              'Case Studies',
+              'Pricing',
+              'Testimonials',
+              'About Us',
+              'Careers',
+            ],
           },
         ]
     const footerAddress =
-      props.footer?.address ?? "580 Market St, Suite 400, San Francisco, CA 94104"
-    const footerEmail = props.footer?.email ?? "hello@growthlab.com"
-    const footerPhone = props.footer?.phone ?? "(415) 555-0147"
-    const footerCopyright = props.footer?.copyright ?? "All rights reserved."
+      props.footer?.address ??
+      '580 Market St, Suite 400, San Francisco, CA 94104'
+    const footerEmail = props.footer?.email ?? 'hello@growthlab.com'
+    const footerPhone = props.footer?.phone ?? '(415) 555-0147'
+    const footerCopyright = props.footer?.copyright ?? 'All rights reserved.'
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Settings"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
 
     const navCta = nav[nav.length - 1]
 
@@ -914,21 +944,21 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
     ]
 
     const iconTones = [
-      "bg-chart-1/15 text-chart-1",
-      "bg-chart-2/15 text-chart-2",
-      "bg-chart-3/15 text-chart-3",
-      "bg-chart-4/15 text-chart-4",
-      "bg-chart-5/15 text-chart-5",
-      "bg-primary/15 text-primary",
+      'bg-chart-1/15 text-chart-1',
+      'bg-chart-2/15 text-chart-2',
+      'bg-chart-3/15 text-chart-3',
+      'bg-chart-4/15 text-chart-4',
+      'bg-chart-5/15 text-chart-5',
+      'bg-primary/15 text-primary',
     ]
 
     const tagTones = [
-      "bg-chart-1 text-primary-foreground",
-      "bg-chart-2 text-primary-foreground",
-      "bg-chart-3 text-primary-foreground",
-      "bg-chart-4 text-primary-foreground",
-      "bg-chart-5 text-primary-foreground",
-      "bg-primary text-primary-foreground",
+      'bg-chart-1 text-primary-foreground',
+      'bg-chart-2 text-primary-foreground',
+      'bg-chart-3 text-primary-foreground',
+      'bg-chart-4 text-primary-foreground',
+      'bg-chart-5 text-primary-foreground',
+      'bg-primary text-primary-foreground',
     ]
 
     const socialIcons: Record<string, ReactNode> = {
@@ -962,7 +992,7 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -980,7 +1010,9 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
                 <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">
                   <LogoMark className="size-5" />
                 </span>
-                <span className="text-xl font-bold text-foreground">{brand}</span>
+                <span className="text-xl font-bold text-foreground">
+                  {brand}
+                </span>
               </button>
               <div className="hidden items-center gap-8 lg:flex">
                 {nav.slice(0, -1).map((label) => (
@@ -1033,7 +1065,9 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Saved Case Studies</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Saved Case Studies
+                      </SheetTitle>
                       <SheetDescription>
                         {savedCasesCount > 0
                           ? `${savedCasesCount} case stud${savedCasesCount === 1 ? 'y' : 'ies'} saved.`
@@ -1091,7 +1125,8 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
                             No saved case studies
                           </p>
                           <p className="mt-2 text-sm text-muted-foreground">
-                            Click the bookmark icon on any case study to save it for later.
+                            Click the bookmark icon on any case study to save it
+                            for later.
                           </p>
                         </div>
                       )}
@@ -1360,7 +1395,7 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
                           strokeLinecap="round"
                         />
                       </svg>
-                    </span>{" "}
+                    </span>{' '}
                     {heroAfter}
                   </h1>
                   <p className="mx-auto mb-8 max-w-xl text-lg text-muted-foreground lg:mx-0 lg:text-xl">
@@ -1459,8 +1494,8 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
               </p>
               <div className="relative overflow-hidden">
                 <div className="ma2-marquee flex">
-                  {marqueeSet("a")}
-                  {marqueeSet("b")}
+                  {marqueeSet('a')}
+                  {marqueeSet('b')}
                 </div>
               </div>
             </div>
@@ -1504,7 +1539,7 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
                   >
                     <div
                       className={cn(
-                        "mb-6 grid size-14 place-items-center rounded-xl transition-transform group-hover:scale-110",
+                        'mb-6 grid size-14 place-items-center rounded-xl transition-transform group-hover:scale-110',
                         iconTones[i % iconTones.length],
                       )}
                     >
@@ -1597,7 +1632,7 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
                         />
                         <span
                           className={cn(
-                            "absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-semibold",
+                            'absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-semibold',
                             tagTones[i % tagTones.length],
                           )}
                         >
@@ -1635,13 +1670,17 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
                             <p className="text-2xl font-bold text-primary">
                               {c.metricA}
                             </p>
-                            <p className="text-xs text-background/50">{c.labelA}</p>
+                            <p className="text-xs text-background/50">
+                              {c.labelA}
+                            </p>
                           </div>
                           <div>
                             <p className="text-2xl font-bold text-primary">
                               {c.metricB}
                             </p>
-                            <p className="text-xs text-background/50">{c.labelB}</p>
+                            <p className="text-xs text-background/50">
+                              {c.labelB}
+                            </p>
                           </div>
                         </div>
                         <p className="text-xs text-background/40">{c.when}</p>
@@ -1680,10 +1719,10 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
                   <div
                     key={plan.name}
                     className={cn(
-                      "relative rounded-2xl p-8",
+                      'relative rounded-2xl p-8',
                       plan.featured
-                        ? "bg-foreground text-background ring-2 ring-primary lg:-mt-4 lg:mb-4 lg:py-12"
-                        : "border border-border bg-card text-card-foreground transition-colors hover:border-primary",
+                        ? 'bg-foreground text-background ring-2 ring-primary lg:-mt-4 lg:mb-4 lg:py-12'
+                        : 'border border-border bg-card text-card-foreground transition-colors hover:border-primary',
                     )}
                   >
                     {plan.badge && (
@@ -1697,23 +1736,25 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
                       <h3 className="mb-2 text-xl font-bold">{plan.name}</h3>
                       <p
                         className={cn(
-                          "text-sm",
+                          'text-sm',
                           plan.featured
-                            ? "text-background/60"
-                            : "text-muted-foreground",
+                            ? 'text-background/60'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {plan.audience}
                       </p>
                     </div>
                     <div className="mb-6">
-                      <span className="text-4xl font-extrabold">{plan.price}</span>
+                      <span className="text-4xl font-extrabold">
+                        {plan.price}
+                      </span>
                       {plan.period && (
                         <span
                           className={cn(
                             plan.featured
-                              ? "text-background/60"
-                              : "text-muted-foreground",
+                              ? 'text-background/60'
+                              : 'text-muted-foreground',
                           )}
                         >
                           {plan.period}
@@ -1723,10 +1764,10 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
                     {plan.fee && (
                       <p
                         className={cn(
-                          "mb-6 text-sm",
+                          'mb-6 text-sm',
                           plan.featured
-                            ? "text-background/60"
-                            : "text-muted-foreground",
+                            ? 'text-background/60'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {plan.fee}
@@ -1737,16 +1778,14 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
                         <li
                           key={f}
                           className={cn(
-                            "flex items-start gap-3 text-sm",
+                            'flex items-start gap-3 text-sm',
                             plan.featured
-                              ? "text-background/80"
-                              : "text-muted-foreground",
+                              ? 'text-background/80'
+                              : 'text-muted-foreground',
                           )}
                         >
                           <CheckMark
-                            className={cn(
-                              "size-5 shrink-0 text-primary",
-                            )}
+                            className={cn('size-5 shrink-0 text-primary')}
                           />
                           {f}
                         </li>
@@ -1756,10 +1795,10 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
                       type="button"
                       onClick={() => go(plan.cta)}
                       className={cn(
-                        "block w-full rounded-full px-6 py-3 text-center font-semibold transition-colors",
+                        'block w-full rounded-full px-6 py-3 text-center font-semibold transition-colors',
                         plan.featured
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                          : "border-2 border-foreground text-foreground hover:bg-foreground hover:text-background",
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'border-2 border-foreground text-foreground hover:bg-foreground hover:text-background',
                       )}
                     >
                       {plan.cta}
@@ -1768,7 +1807,7 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
                 ))}
               </div>
               <p className="mt-8 text-center text-sm text-muted-foreground">
-                {pricingNote}{" "}
+                {pricingNote}{' '}
                 <button
                   type="button"
                   onClick={() => go(pricingNoteLink)}
@@ -1819,7 +1858,9 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
                         <p className="font-semibold text-card-foreground">
                           {t.name}
                         </p>
-                        <p className="text-sm text-muted-foreground">{t.role}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {t.role}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -2053,7 +2094,7 @@ export const MarketingAgencyKimiPage2 = defineCapsule({
             </div>
             <div className="flex flex-col items-center justify-between gap-4 border-t border-background/10 pt-8 sm:flex-row">
               <p className="text-sm text-background/50">
-                &copy; {new Date().getFullYear()} {brand} Marketing.{" "}
+                &copy; {new Date().getFullYear()} {brand} Marketing.{' '}
                 {footerCopyright}
               </p>
               <div className="flex items-center gap-6 text-sm">

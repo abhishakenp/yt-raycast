@@ -1,10 +1,10 @@
-import React, { useState, useRef } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, useRef } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * PropertyListingKimiPage — a complete, self-contained LUXURY REAL-ESTATE
@@ -46,7 +46,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * page beautifully with no props at all.
  */
 export const PropertyListingKimiPage = defineCapsule({
-  name: "PropertyListingKimiPage",
+  name: 'PropertyListingKimiPage',
   description:
     "Complete LUXURY REAL-ESTATE single-property listing / property-listing page with a warm, editorial, architectural-magazine aesthetic: neutral stone canvas, elegant serif display headlines, generous whitespace and gallery-grade imagery. Includes a split hero (property name, location, headline price, key stats row of sqft/beds/baths, descriptive copy, dual CTAs, and a large property photo), a 6-up property-features/rooms grid with image-zoom hover cards (great room, chef's kitchen, primary suite, infinity pool, theater, guest house), an asymmetric masonry photo gallery, a dark stats band (year built, acres, garage, panoramic views), a 3-up resident/client testimonial grid with star ratings and headshots, a split 'Schedule Your Tour' section with agent contact details plus a real booking form (name, email, phone, preferred date and time selects, notes), an FAQ accordion (HOA/taxes, furnishings, smart-home, permits), and a rich multi-column footer with agent contact, quick links and legal links. Use as the ROOT/home page for a single high-end home, mansion, villa, penthouse, estate or architectural property listing, a realtor's featured-property page, or any premium real-estate detail/tour-booking page. Supply content only — brand, nav, hero, features, gallery, stats, testimonials, tour, faq, footer; the block owns all layout and styling.",
   props: z.object({
@@ -184,15 +184,18 @@ export const PropertyListingKimiPage = defineCapsule({
         new Set(db.favorites.all().map((favorite) => favorite.propertyName)),
     },
     mutations: {
-      bookTour: ({ db }, booking: {
-        firstName: string
-        lastName: string
-        email: string
-        phone: string
-        preferredDate: string
-        preferredTime: string
-        notes: string
-      }) => {
+      bookTour: (
+        { db },
+        booking: {
+          firstName: string
+          lastName: string
+          email: string
+          phone: string
+          preferredDate: string
+          preferredTime: string
+          notes: string
+        },
+      ) => {
         db.tourBookings.insert(booking)
         return db.tourBookings.all()
       },
@@ -226,248 +229,248 @@ export const PropertyListingKimiPage = defineCapsule({
     const dateRef = useRef<HTMLInputElement>(null)
     const timeRef = useRef<HTMLSelectElement>(null)
     const notesRef = useRef<HTMLTextAreaElement>(null)
-    const brand = props.brand ?? "The Glass House"
+    const brand = props.brand ?? 'The Glass House'
     const nav = props.nav?.length
       ? props.nav
-      : ["Gallery", "Features", "Location", "Book Tour"]
+      : ['Gallery', 'Features', 'Location', 'Book Tour']
 
-    const heroEyebrow = props.hero?.eyebrow ?? "Luxury Listing"
-    const heroTitle = props.hero?.title ?? "The Glass House"
-    const heroLocation = props.hero?.location ?? "Bel Air, Los Angeles, CA"
-    const heroPrice = props.hero?.price ?? "$12,950,000"
+    const heroEyebrow = props.hero?.eyebrow ?? 'Luxury Listing'
+    const heroTitle = props.hero?.title ?? 'The Glass House'
+    const heroLocation = props.hero?.location ?? 'Bel Air, Los Angeles, CA'
+    const heroPrice = props.hero?.price ?? '$12,950,000'
     const heroStats = props.hero?.stats?.length
       ? props.hero.stats
       : [
-          { value: "6,500", label: "Sq Ft Living" },
-          { value: "5", label: "Bedrooms" },
-          { value: "6", label: "Bathrooms" },
+          { value: '6,500', label: 'Sq Ft Living' },
+          { value: '5', label: 'Bedrooms' },
+          { value: '6', label: 'Bathrooms' },
         ]
     const heroDescription =
       props.hero?.description ??
-      "An architectural masterpiece suspended above the city. Floor-to-ceiling glass walls frame panoramic views from downtown Los Angeles to the Pacific Ocean. Designed by award-winning architect Marcus Chen in 2021, this smart home seamlessly integrates indoor and outdoor living across three levels of refined sophistication."
-    const heroPrimary = props.hero?.primaryCta ?? "Schedule Private Tour"
-    const heroSecondary = props.hero?.secondaryCta ?? "View Gallery"
+      'An architectural masterpiece suspended above the city. Floor-to-ceiling glass walls frame panoramic views from downtown Los Angeles to the Pacific Ocean. Designed by award-winning architect Marcus Chen in 2021, this smart home seamlessly integrates indoor and outdoor living across three levels of refined sophistication.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Schedule Private Tour'
+    const heroSecondary = props.hero?.secondaryCta ?? 'View Gallery'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Modern glass house exterior at twilight with warm interior lighting visible through floor-to-ceiling windows and infinity pool reflecting sunset sky"
+      'Modern glass house exterior at twilight with warm interior lighting visible through floor-to-ceiling windows and infinity pool reflecting sunset sky'
 
-    const featuresEyebrow = props.features?.eyebrow ?? "Property Features"
-    const featuresHeading = props.features?.heading ?? "Every Detail Considered"
+    const featuresEyebrow = props.features?.eyebrow ?? 'Property Features'
+    const featuresHeading = props.features?.heading ?? 'Every Detail Considered'
     const featuresDescription =
       props.features?.description ??
-      "Meticulously designed spaces that balance raw architectural power with refined residential comfort."
+      'Meticulously designed spaces that balance raw architectural power with refined residential comfort.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Great Room",
+            title: 'Great Room',
             description:
-              "Double-height ceilings soar 24 feet with disappearing glass walls that open to a 2,000 sq ft terrace. Italian travertine floors with radiant heating.",
+              'Double-height ceilings soar 24 feet with disappearing glass walls that open to a 2,000 sq ft terrace. Italian travertine floors with radiant heating.',
             imageAlt:
-              "Luxury open plan living room with double height ceiling and floor to ceiling glass windows overlooking city skyline",
+              'Luxury open plan living room with double height ceiling and floor to ceiling glass windows overlooking city skyline',
           },
           {
             title: "Chef's Kitchen",
             description:
-              "Gaggenau appliance suite, 14-foot marble waterfall island, walk-in pantry, and integrated wine storage for 200 bottles.",
+              'Gaggenau appliance suite, 14-foot marble waterfall island, walk-in pantry, and integrated wine storage for 200 bottles.',
             imageAlt:
-              "Professional chef kitchen with marble waterfall island and premium appliances",
+              'Professional chef kitchen with marble waterfall island and premium appliances',
           },
           {
-            title: "Primary Suite",
+            title: 'Primary Suite',
             description:
-              "1,200 sq ft private sanctuary with dual bathrooms, two walk-in closets, and a private terrace with outdoor shower.",
+              '1,200 sq ft private sanctuary with dual bathrooms, two walk-in closets, and a private terrace with outdoor shower.',
             imageAlt:
-              "Primary bedroom suite with king bed and panoramic floor to ceiling windows with city views",
+              'Primary bedroom suite with king bed and panoramic floor to ceiling windows with city views',
           },
           {
-            title: "Infinity Pool",
+            title: 'Infinity Pool',
             description:
-              "45-foot vanishing edge pool with Baja shelf, integrated spa, and automated pool cover. Heated year-round.",
+              '45-foot vanishing edge pool with Baja shelf, integrated spa, and automated pool cover. Heated year-round.',
             imageAlt:
-              "Infinity edge swimming pool with glass walls overlooking city lights at night",
+              'Infinity edge swimming pool with glass walls overlooking city lights at night',
           },
           {
-            title: "Private Theater",
+            title: 'Private Theater',
             description:
-              "12-seat Dolby Atmos cinema with 4K projection, acoustic wall treatments, and programmable lighting scenes.",
+              '12-seat Dolby Atmos cinema with 4K projection, acoustic wall treatments, and programmable lighting scenes.',
             imageAlt:
-              "Private home theater with luxury recliner seating and large projection screen",
+              'Private home theater with luxury recliner seating and large projection screen',
           },
           {
-            title: "Guest House",
+            title: 'Guest House',
             description:
-              "800 sq ft detached residence with full kitchen, bedroom, bath, and private entrance—perfect for staff or visitors.",
+              '800 sq ft detached residence with full kitchen, bedroom, bath, and private entrance—perfect for staff or visitors.',
             imageAlt:
-              "Modern guest house exterior with floor to ceiling windows and private entrance",
+              'Modern guest house exterior with floor to ceiling windows and private entrance',
           },
         ]
 
-    const galleryEyebrow = props.gallery?.eyebrow ?? "Visual Tour"
-    const galleryHeading = props.gallery?.heading ?? "Gallery"
+    const galleryEyebrow = props.gallery?.eyebrow ?? 'Visual Tour'
+    const galleryHeading = props.gallery?.heading ?? 'Gallery'
     const galleryDescription =
       props.gallery?.description ??
-      "Every angle of this architectural statement, from dawn light through the glass walls to city lights reflected in the infinity pool."
+      'Every angle of this architectural statement, from dawn light through the glass walls to city lights reflected in the infinity pool.'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
           {
             imageAlt:
-              "Aerial view of modern glass house with geometric architecture and pool terrace",
+              'Aerial view of modern glass house with geometric architecture and pool terrace',
           },
           {
             imageAlt:
-              "Minimalist dining room with designer furniture and city view through glass wall",
+              'Minimalist dining room with designer furniture and city view through glass wall',
           },
           {
             imageAlt:
-              "Modern home office with built in shelving and panoramic window views",
+              'Modern home office with built in shelving and panoramic window views',
           },
           {
             imageAlt:
-              "Spa style bathroom with freestanding soaking tub and floor to ceiling windows",
+              'Spa style bathroom with freestanding soaking tub and floor to ceiling windows',
           },
           {
             imageAlt:
-              "Outdoor terrace lounge area with designer furniture and city skyline backdrop",
+              'Outdoor terrace lounge area with designer furniture and city skyline backdrop',
           },
           {
             imageAlt:
-              "Entry foyer with dramatic staircase and natural stone accent wall",
+              'Entry foyer with dramatic staircase and natural stone accent wall',
           },
           {
             imageAlt:
-              "Walk in closet with custom cabinetry and integrated lighting",
+              'Walk in closet with custom cabinetry and integrated lighting',
           },
         ]
 
     const statItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "2021", label: "Year Built" },
-          { value: "0.82", label: "Acres" },
-          { value: "3", label: "Car Garage" },
-          { value: "360°", label: "Views" },
+          { value: '2021', label: 'Year Built' },
+          { value: '0.82', label: 'Acres' },
+          { value: '3', label: 'Car Garage' },
+          { value: '360°', label: 'Views' },
         ]
 
-    const testimonialsEyebrow = props.testimonials?.eyebrow ?? "Client Words"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'Client Words'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Visitors Say"
+      props.testimonials?.heading ?? 'What Visitors Say'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
               "The moment you walk through the entry, the view stops you in your tracks. It's not just a house—it's an experience. Every dinner party we've hosted here becomes a story people tell for years.",
-            name: "Sarah Chen-Whitmore",
-            role: "Current Resident",
+            name: 'Sarah Chen-Whitmore',
+            role: 'Current Resident',
             avatarAlt:
-              "Professional headshot of a smiling woman with blonde hair",
+              'Professional headshot of a smiling woman with blonde hair',
           },
           {
             quote:
               "As an architect myself, I appreciate when vision meets execution. The cantilevered master suite, the precision of the glass joints, the way light moves through the space all day—it's masterwork.",
-            name: "David Park, AIA",
-            role: "Visiting Architect",
+            name: 'David Park, AIA',
+            role: 'Visiting Architect',
             avatarAlt:
-              "Professional headshot of a middle aged man with glasses",
+              'Professional headshot of a middle aged man with glasses',
           },
           {
             quote:
-              "We toured twelve properties before finding this. The smart home integration is seamless—the lighting scenes, climate, security all respond intuitively. And that view at sunset? Unmatched.",
-            name: "Michael Torres",
-            role: "Recent Buyer",
+              'We toured twelve properties before finding this. The smart home integration is seamless—the lighting scenes, climate, security all respond intuitively. And that view at sunset? Unmatched.',
+            name: 'Michael Torres',
+            role: 'Recent Buyer',
             avatarAlt:
-              "Professional headshot of a smiling woman with dark hair",
+              'Professional headshot of a smiling woman with dark hair',
           },
         ]
 
-    const tourEyebrow = props.tour?.eyebrow ?? "Private Viewing"
-    const tourHeading = props.tour?.heading ?? "Schedule Your Tour"
+    const tourEyebrow = props.tour?.eyebrow ?? 'Private Viewing'
+    const tourHeading = props.tour?.heading ?? 'Schedule Your Tour'
     const tourDescription =
       props.tour?.description ??
-      "Experience The Glass House in person. Tours are available by appointment only and hosted by the listing agent. Morning and evening appointments offer different perspectives on the architecture and views."
+      'Experience The Glass House in person. Tours are available by appointment only and hosted by the listing agent. Morning and evening appointments offer different perspectives on the architecture and views.'
     const tourInfo = props.tour?.info?.length
       ? props.tour.info
       : [
           {
-            title: "Tour Duration",
+            title: 'Tour Duration',
             detail:
-              "Approximately 60-90 minutes to fully experience all three levels and outdoor spaces",
+              'Approximately 60-90 minutes to fully experience all three levels and outdoor spaces',
           },
           {
-            title: "Location",
+            title: 'Location',
             detail:
-              "Bel Air, Los Angeles, CA 90077. Exact address provided upon confirmation",
+              'Bel Air, Los Angeles, CA 90077. Exact address provided upon confirmation',
           },
           {
-            title: "Contact",
+            title: 'Contact',
             detail:
-              "Elena Martinez, Compass Beverly Hills · elena.martinez@compass.com · (310) 555-0187",
+              'Elena Martinez, Compass Beverly Hills · elena.martinez@compass.com · (310) 555-0187',
           },
         ]
-    const tourSubmit = props.tour?.submit ?? "Request Private Tour"
+    const tourSubmit = props.tour?.submit ?? 'Request Private Tour'
     const timeOptions = props.tour?.timeOptions?.length
       ? props.tour.timeOptions
       : [
-          "9:00 AM - Morning Light",
-          "12:00 PM - Midday",
-          "3:00 PM - Afternoon",
-          "6:00 PM - Sunset Views",
+          '9:00 AM - Morning Light',
+          '12:00 PM - Midday',
+          '3:00 PM - Afternoon',
+          '6:00 PM - Sunset Views',
         ]
     const tourDisclaimer =
       props.tour?.disclaimer ??
-      "By submitting, you agree to our privacy policy. We respect your information and will never share it with third parties."
+      'By submitting, you agree to our privacy policy. We respect your information and will never share it with third parties.'
 
-    const faqEyebrow = props.faq?.eyebrow ?? "Common Questions"
-    const faqHeading = props.faq?.heading ?? "Frequently Asked"
+    const faqEyebrow = props.faq?.eyebrow ?? 'Common Questions'
+    const faqHeading = props.faq?.heading ?? 'Frequently Asked'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "What is the HOA and property tax situation?",
+            question: 'What is the HOA and property tax situation?',
             answer:
-              "Annual property taxes are approximately $155,000 based on current assessments. There is no HOA for this property, providing full autonomy over architectural and landscaping decisions.",
+              'Annual property taxes are approximately $155,000 based on current assessments. There is no HOA for this property, providing full autonomy over architectural and landscaping decisions.',
           },
           {
-            question: "Is the home furnished? Can furnishings be included?",
+            question: 'Is the home furnished? Can furnishings be included?',
             answer:
-              "The home is currently professionally staged. All furniture is available for separate purchase. A detailed inventory of Minotti, Poliform, and custom pieces is available upon request.",
+              'The home is currently professionally staged. All furniture is available for separate purchase. A detailed inventory of Minotti, Poliform, and custom pieces is available upon request.',
           },
           {
-            question: "What smart home systems are installed?",
+            question: 'What smart home systems are installed?',
             answer:
-              "Full Crestron home automation controls lighting, climate, shades, security, and audio/video. Lutron Ketra lighting system with circadian programming. All systems are remotely accessible and transferrable to new owners.",
+              'Full Crestron home automation controls lighting, climate, shades, security, and audio/video. Lutron Ketra lighting system with circadian programming. All systems are remotely accessible and transferrable to new owners.',
           },
           {
-            question: "Are there any pending permits or construction?",
+            question: 'Are there any pending permits or construction?',
             answer:
-              "All construction was completed in 2021 with final occupancy certificate issued. No active permits. Approved plans for a detached gym/studio are available if the buyer wishes to build.",
+              'All construction was completed in 2021 with final occupancy certificate issued. No active permits. Approved plans for a detached gym/studio are available if the buyer wishes to build.',
           },
         ]
 
     const footerDescription =
       props.footer?.description ??
-      "An architectural masterpiece in Bel Air. Floor-to-ceiling glass, panoramic views, and refined luxury living."
+      'An architectural masterpiece in Bel Air. Floor-to-ceiling glass, panoramic views, and refined luxury living.'
     const footerPrice = props.footer?.price ?? heroPrice
-    const footerQuickLinksLabel = props.footer?.quickLinksLabel ?? "Quick Links"
+    const footerQuickLinksLabel = props.footer?.quickLinksLabel ?? 'Quick Links'
     const footerQuickLinks = props.footer?.quickLinks?.length
       ? props.footer.quickLinks
-      : ["Gallery", "Features", "Book Tour", "Floor Plans"]
-    const footerContactLabel = props.footer?.contactLabel ?? "Contact"
+      : ['Gallery', 'Features', 'Book Tour', 'Floor Plans']
+    const footerContactLabel = props.footer?.contactLabel ?? 'Contact'
     const footerContactLines = props.footer?.contactLines?.length
       ? props.footer.contactLines
       : [
-          "Elena Martinez",
-          "Compass Beverly Hills",
-          "(310) 555-0187",
-          "elena.martinez@compass.com",
+          'Elena Martinez',
+          'Compass Beverly Hills',
+          '(310) 555-0187',
+          'elena.martinez@compass.com',
         ]
     const footerCopyright =
-      props.footer?.copyright ?? "The Glass House. All rights reserved."
+      props.footer?.copyright ?? 'The Glass House. All rights reserved.'
     const footerLegalLinks = props.footer?.legalLinks?.length
       ? props.footer.legalLinks
-      : ["Privacy Policy", "Terms of Service"]
+      : ['Privacy Policy', 'Terms of Service']
 
     // Lakebed hooks
     const tourBookings = lakebed.useQuery('tourBookings')
@@ -515,20 +518,17 @@ export const PropertyListingKimiPage = defineCapsule({
       textClassName?: string
     }) => (
       <span
-        className={cn(
-          "grid place-items-center rounded font-serif",
-          className,
-        )}
+        className={cn('grid place-items-center rounded font-serif', className)}
         aria-hidden="true"
       >
         <span className={textClassName}>
           {brand
-            .split(" ")
+            .split(' ')
             .filter((w) => /^[A-Za-z]/.test(w))
             .map((w) => w[0])
-            .join("")
+            .join('')
             .slice(0, 2)
-            .toUpperCase() || "GH"}
+            .toUpperCase() || 'GH'}
         </span>
       </span>
     )
@@ -651,14 +651,14 @@ export const PropertyListingKimiPage = defineCapsule({
     ]
 
     const inputCls =
-      "w-full border border-input bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-ring focus:outline-none"
+      'w-full border border-input bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground transition-colors focus:border-ring focus:outline-none'
 
-    const labelCls = "mb-2 block text-sm font-medium text-foreground/80"
+    const labelCls = 'mb-2 block text-sm font-medium text-foreground/80'
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -713,7 +713,9 @@ export const PropertyListingKimiPage = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Saved Properties</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Saved Properties
+                      </SheetTitle>
                       <SheetDescription>
                         {isFavorite
                           ? `You have 1 saved property.`
@@ -810,7 +812,9 @@ export const PropertyListingKimiPage = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Scheduled Tours</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Scheduled Tours
+                      </SheetTitle>
                       <SheetDescription>
                         {tourCount > 0
                           ? `${tourCount} tour${tourCount === 1 ? '' : 's'} scheduled.`
@@ -838,7 +842,8 @@ export const PropertyListingKimiPage = defineCapsule({
                                   {heroTitle}
                                 </h3>
                                 <p className="mt-1 text-xs text-muted-foreground">
-                                  {booking.preferredDate} · {booking.preferredTime}
+                                  {booking.preferredDate} ·{' '}
+                                  {booking.preferredTime}
                                 </p>
                                 <p className="mt-1 text-xs text-muted-foreground">
                                   {booking.firstName} {booking.lastName}
@@ -1136,8 +1141,8 @@ export const PropertyListingKimiPage = defineCapsule({
                   <div
                     key={item.imageAlt}
                     className={cn(
-                      i === 0 && "col-span-2 row-span-2",
-                      (i === 5 || i === 6) && "col-span-2",
+                      i === 0 && 'col-span-2 row-span-2',
+                      (i === 5 || i === 6) && 'col-span-2',
                     )}
                   >
                     <Image
@@ -1146,10 +1151,10 @@ export const PropertyListingKimiPage = defineCapsule({
                       h={i === 0 ? 1000 : 600}
                       loading="lazy"
                       className={cn(
-                        "w-full object-cover",
+                        'w-full object-cover',
                         i === 0
-                          ? "h-full min-h-[300px] lg:min-h-[500px]"
-                          : "h-48 lg:h-60",
+                          ? 'h-full min-h-[300px] lg:min-h-[500px]'
+                          : 'h-48 lg:h-60',
                       )}
                     />
                   </div>
@@ -1266,7 +1271,14 @@ export const PropertyListingKimiPage = defineCapsule({
                       const preferredTime = timeRef.current?.value ?? ''
                       const notes = notesRef.current?.value ?? ''
 
-                      if (firstName && lastName && email && phone && preferredDate && preferredTime) {
+                      if (
+                        firstName &&
+                        lastName &&
+                        email &&
+                        phone &&
+                        preferredDate &&
+                        preferredTime
+                      ) {
                         void bookTour({
                           firstName,
                           lastName,
@@ -1354,7 +1366,7 @@ export const PropertyListingKimiPage = defineCapsule({
                         <select
                           ref={timeRef}
                           id="pl-time"
-                          className={cn(inputCls, "appearance-none")}
+                          className={cn(inputCls, 'appearance-none')}
                           defaultValue=""
                         >
                           <option value="" disabled>
@@ -1378,7 +1390,7 @@ export const PropertyListingKimiPage = defineCapsule({
                         id="pl-message"
                         rows={4}
                         placeholder="Tell us about your timeline, financing status, or specific interests..."
-                        className={cn(inputCls, "resize-none")}
+                        className={cn(inputCls, 'resize-none')}
                       />
                     </div>
 

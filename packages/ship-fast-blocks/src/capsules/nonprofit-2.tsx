@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -24,9 +24,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const NonprofitKimiPage2 = defineCapsule({
-  name: "NonprofitKimiPage2",
+  name: 'NonprofitKimiPage2',
   description:
-    "Nonprofit second style sibling to NonprofitKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Nonprofit second style sibling to NonprofitKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const NonprofitKimiPage2 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -81,10 +83,19 @@ export const NonprofitKimiPage2 = defineCapsule({
       donationTotal: ({ db }) =>
         db.donations
           .all()
-          .reduce((sum, d) => sum + Number.parseFloat(d.amount.replace(/[^0-9.]+/g, '')) || 0, 0),
+          .reduce(
+            (sum, d) =>
+              sum + Number.parseFloat(d.amount.replace(/[^0-9.]+/g, '')) || 0,
+            0,
+          ),
     },
     mutations: {
-      addDonation: ({ db }, amount: string, program: string, frequency: string) => {
+      addDonation: (
+        { db },
+        amount: string,
+        program: string,
+        frequency: string,
+      ) => {
         db.donations.insert({ amount, program, frequency })
         return db.donations.all()
       },
@@ -98,7 +109,12 @@ export const NonprofitKimiPage2 = defineCapsule({
         }
         return []
       },
-      addProgram: ({ db }, name: string, description: string, impact: string) => {
+      addProgram: (
+        { db },
+        name: string,
+        description: string,
+        impact: string,
+      ) => {
         db.programs.insert({ name, description, impact })
         return db.programs.all()
       },
@@ -108,102 +124,110 @@ export const NonprofitKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [donationOpen, setDonationOpen] = useState(false)
     const [mobileOpen, setMobileOpen] = useState(false)
-    const brand = props.brand ?? "Bright Futures Foundation Every Child Deserves a Future"
-    const nav = props.nav?.length ? props.nav : ["B Bright Futures", "Mission", "Impact", "Programs", "Stories", "FAQ"]
+    const brand =
+      props.brand ?? 'Bright Futures Foundation Every Child Deserves a Future'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['B Bright Futures', 'Mission', 'Impact', 'Programs', 'Stories', 'FAQ']
     const hero = {
-      eyebrow: "Nonprofit / Variant 2",
-      title: "Every child deserves a future worth living.",
-      description: "Bright Futures Foundation Every Child Deserves a Future B Bright Futures Mission Impact Programs Stories FAQ Donate Now Founded in 2008 50,000+ donors Every child deserves a fut...",
-      primaryCta: "Choose $47/month",
-      secondaryCta: "Choose $94/month",
-      imageAlt: "professional headshot of a smiling Black man wearing glasses",
+      eyebrow: 'Nonprofit / Variant 2',
+      title: 'Every child deserves a future worth living.',
+      description:
+        'Bright Futures Foundation Every Child Deserves a Future B Bright Futures Mission Impact Programs Stories FAQ Donate Now Founded in 2008 50,000+ donors Every child deserves a fut...',
+      primaryCta: 'Choose $47/month',
+      secondaryCta: 'Choose $94/month',
+      imageAlt: 'professional headshot of a smiling Black man wearing glasses',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Real impact, real numbers",
-    "body": "Bright Futures Foundation Every Child Deserves a Future B Bright Futures Mission Impact Programs Stories FAQ Donate Now Founded in 2008 50,000+ donors Every child deserves a fut...",
-    "items": [
-      "In the field",
-      "Pick your impact level",
-      "Stories from our community"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "Programs that change lives",
-    "body": "Nonprofit page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Frequently asked questions",
-      "Join 52,000 donors changing the world one child at a time.",
-      "Scholarship Fund"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "How your donation works",
-    "body": "Nonprofit page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Daily Meals Program",
-      "1-on-1 Mentorship",
-      "School Construction"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "In the field",
-    "body": "Nonprofit page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Health & Wellness",
-      "Digital Skills Lab",
-      "Choose your gift"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "Programs that change lives",
-    "alt": "professional headshot of a smiling Black man wearing glasses",
-    "caption": "Nonprofit generated page detail"
-  },
-  {
-    "title": "How your donation works",
-    "alt": "professional headshot of a smiling young woman with brown hair",
-    "caption": "Nonprofit generated page detail"
-  },
-  {
-    "title": "In the field",
-    "alt": "professional headshot of a smiling man with a beard",
-    "caption": "Nonprofit generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'Real impact, real numbers',
+            body: 'Bright Futures Foundation Every Child Deserves a Future B Bright Futures Mission Impact Programs Stories FAQ Donate Now Founded in 2008 50,000+ donors Every child deserves a fut...',
+            items: [
+              'In the field',
+              'Pick your impact level',
+              'Stories from our community',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'Programs that change lives',
+            body: "Nonprofit page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Frequently asked questions',
+              'Join 52,000 donors changing the world one child at a time.',
+              'Scholarship Fund',
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'How your donation works',
+            body: "Nonprofit page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Daily Meals Program',
+              '1-on-1 Mentorship',
+              'School Construction',
+            ],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'In the field',
+            body: "Nonprofit page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Health & Wellness',
+              'Digital Skills Lab',
+              'Choose your gift',
+            ],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'Programs that change lives',
+            alt: 'professional headshot of a smiling Black man wearing glasses',
+            caption: 'Nonprofit generated page detail',
+          },
+          {
+            title: 'How your donation works',
+            alt: 'professional headshot of a smiling young woman with brown hair',
+            caption: 'Nonprofit generated page detail',
+          },
+          {
+            title: 'In the field',
+            alt: 'professional headshot of a smiling man with a beard',
+            caption: 'Nonprofit generated page detail',
+          },
+        ]
 
     const donations = lakebed.useQuery('donations')
-    const programs = lakebed.useQuery('programs')
     const donationTotal = lakebed.useQuery('donationTotal')
     const addDonation = lakebed.useMutation('addDonation')
     const removeDonation = lakebed.useMutation('removeDonation')
     const clearDonations = lakebed.useMutation('clearDonations')
-    const addProgram = lakebed.useMutation('addProgram')
     const auth = lakebed.useAuth()
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
@@ -268,10 +292,19 @@ export const NonprofitKimiPage2 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -478,7 +511,8 @@ export const NonprofitKimiPage2 = defineCapsule({
                           No donations in cart
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Select a donation level to start supporting our mission.
+                          Select a donation level to start supporting our
+                          mission.
                         </p>
                       </div>
                     )}
@@ -641,7 +675,8 @@ export const NonprofitKimiPage2 = defineCapsule({
                   <button
                     type="button"
                     onClick={() => {
-                      const amount = hero.primaryCta.match(/\$[\d,]+/)?.[0] || '$47'
+                      const amount =
+                        hero.primaryCta.match(/\$[\d,]+/)?.[0] || '$47'
                       void addDonation(amount, 'General Fund', 'Monthly')
                       setDonationOpen(true)
                     }}
@@ -652,7 +687,8 @@ export const NonprofitKimiPage2 = defineCapsule({
                   <button
                     type="button"
                     onClick={() => {
-                      const amount = hero.secondaryCta.match(/\$[\d,]+/)?.[0] || '$94'
+                      const amount =
+                        hero.secondaryCta.match(/\$[\d,]+/)?.[0] || '$94'
                       void addDonation(amount, 'General Fund', 'Monthly')
                       setDonationOpen(true)
                     }}
@@ -663,16 +699,28 @@ export const NonprofitKimiPage2 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -680,10 +728,19 @@ export const NonprofitKimiPage2 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -710,13 +767,18 @@ export const NonprofitKimiPage2 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
                 onClick={() => {
-                  const amount = hero.secondaryCta.match(/\$[\d,]+/)?.[0] || '$94'
+                  const amount =
+                    hero.secondaryCta.match(/\$[\d,]+/)?.[0] || '$94'
                   void addDonation(amount, 'General Fund', 'Monthly')
                   setDonationOpen(true)
                 }}
@@ -727,11 +789,26 @@ export const NonprofitKimiPage2 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -742,14 +819,21 @@ export const NonprofitKimiPage2 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => {
-                    const amount = hero.primaryCta.match(/\$[\d,]+/)?.[0] || '$47'
+                    const amount =
+                      hero.primaryCta.match(/\$[\d,]+/)?.[0] || '$47'
                     void addDonation(amount, 'General Fund', 'Monthly')
                     setDonationOpen(true)
                   }}
@@ -764,10 +848,17 @@ export const NonprofitKimiPage2 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

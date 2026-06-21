@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * TestimonialsKimiPage — a complete, self-contained CUSTOMER-PROOF / TESTIMONIALS page.
@@ -46,7 +46,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * Callers supply ONLY content data; rich defaults make it render great on no props.
  */
 export const TestimonialsKimiPage = defineCapsule({
-  name: "TestimonialsKimiPage",
+  name: 'TestimonialsKimiPage',
   description:
     "Complete CUSTOMER TESTIMONIALS / SOCIAL-PROOF / CASE-STUDIES page with a clean, light, editorial SaaS aesthetic: neutral canvas, crisp borders, muted section bands. Includes a sticky navbar, a calm hero ('Trusted by 2,500+ teams worldwide' with eyebrow + dual CTAs), a trusted-by logo wall, a four-up metrics/stats strip (productivity gain, tasks, uptime, savings), a 3-column WALL OF QUOTE TESTIMONIALS (five-star ratings, customer quotes, headshot avatars with name + role + company), a 2-column in-depth CASE-STUDY grid (cover photo, industry tag, headline, narrative, three result KPIs, read-full-case-study link), a VERIFIED-REVIEWS band (G2 / Capterra / Trustpilot / GetApp star-rating cards plus one featured long-form review with a Verified Buyer badge), a dark conversion CTA ('Ready to transform your workflows?' free-trial + demo), and a rich multi-column footer with social + sitemap links. Use as a dedicated testimonials / reviews / customer-stories / social-proof / case-studies page for any SaaS, B2B, agency, or product brand that wants credibility through real quotes, ratings, logos and metrics. Supply content only — brand, nav, hero, logos, stats, testimonials, caseStudies, reviews, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -217,10 +217,12 @@ export const TestimonialsKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [savedOpen, setSavedOpen] = useState(false)
-    const brand = props.brand ?? "FlowSync"
+    const brand = props.brand ?? 'FlowSync'
     const storedTestimonials = lakebed.useQuery('testimonials')
     const bookmarkedTestimonials = lakebed.useQuery('bookmarkedTestimonials')
-    const bookmarkedTestimonialNames = lakebed.useQuery('bookmarkedTestimonialNames')
+    const bookmarkedTestimonialNames = lakebed.useQuery(
+      'bookmarkedTestimonialNames',
+    )
     const toggleBookmark = lakebed.useMutation('toggleBookmark')
     const removeBookmark = lakebed.useMutation('removeBookmark')
     const auth = lakebed.useAuth()
@@ -251,86 +253,87 @@ export const TestimonialsKimiPage = defineCapsule({
     }
     const nav = props.nav?.length
       ? props.nav
-      : ["Testimonials", "Case Studies", "Results", "Get Started"]
+      : ['Testimonials', 'Case Studies', 'Results', 'Get Started']
 
-    const heroEyebrow = props.hero?.eyebrow ?? "Customer Success"
-    const heroHeading = props.hero?.heading ?? "Trusted by 2,500+ teams worldwide"
+    const heroEyebrow = props.hero?.eyebrow ?? 'Customer Success'
+    const heroHeading =
+      props.hero?.heading ?? 'Trusted by 2,500+ teams worldwide'
     const heroSub =
       props.hero?.subheading ??
-      "See how industry leaders use FlowSync to streamline workflows, boost productivity, and deliver exceptional results. Real stories, real metrics, real impact."
-    const heroPrimary = props.hero?.primaryCta ?? "Read Stories"
-    const heroSecondary = props.hero?.secondaryCta ?? "View Results"
+      'See how industry leaders use FlowSync to streamline workflows, boost productivity, and deliver exceptional results. Real stories, real metrics, real impact.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Read Stories'
+    const heroSecondary = props.hero?.secondaryCta ?? 'View Results'
 
     const logosHeading =
-      props.logos?.heading ?? "Powering teams at leading companies"
+      props.logos?.heading ?? 'Powering teams at leading companies'
     const logoCompanies = props.logos?.companies?.length
       ? props.logos.companies
-      : ["Stripe", "Notion", "Figma", "Linear", "Vercel", "Webflow"]
+      : ['Stripe', 'Notion', 'Figma', 'Linear', 'Vercel', 'Webflow']
 
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "47%", label: "Average productivity gain" },
-          { value: "2.5M+", label: "Tasks completed daily" },
-          { value: "99.9%", label: "Uptime guarantee" },
-          { value: "$12M", label: "Customer savings in 2024" },
+          { value: '47%', label: 'Average productivity gain' },
+          { value: '2.5M+', label: 'Tasks completed daily' },
+          { value: '99.9%', label: 'Uptime guarantee' },
+          { value: '$12M', label: 'Customer savings in 2024' },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What our customers say"
+      props.testimonials?.heading ?? 'What our customers say'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Hear from the teams that transformed their workflows with FlowSync."
+      'Hear from the teams that transformed their workflows with FlowSync.'
     const defaultTestimonialItems = [
-          {
-            quote:
-              "FlowSync reduced our project handoff time by 62%. What used to take three days of back-and-forth emails now happens in real-time. Our client satisfaction scores jumped from 7.2 to 9.1.",
-            name: "Sarah Chen",
-            role: "VP of Operations, TechStream Solutions",
-            avatarAlt:
-              "Professional headshot of Sarah Chen, VP of Operations at TechStream Solutions",
-          },
-          {
-            quote:
-              "We onboarded 340 new employees in Q1 using FlowSync's automated workflows. Saved us roughly $180,000 in training costs and cut onboarding time from 5 days to 2. Absolutely transformative.",
-            name: "Marcus Rodriguez",
-            role: "Chief People Officer, Vertex Dynamics",
-            avatarAlt:
-              "Professional headshot of Marcus Rodriguez, Chief People Officer at Vertex Dynamics",
-          },
-          {
-            quote:
-              "The analytics dashboard alone paid for our annual subscription in the first month. We identified 14 redundant processes and consolidated vendor contracts, saving $47,000 per quarter.",
-            name: "Dr. Elena Vasquez",
-            role: "Director of Finance, Meridian Global",
-            avatarAlt:
-              "Professional headshot of Dr. Elena Vasquez, Director of Finance at Meridian Global",
-          },
-          {
-            quote:
-              "Our development team shipped 3x more features after implementing FlowSync. The cross-functional visibility eliminated the 'who's working on what' problem completely.",
-            name: "James Nakamura",
-            role: "Engineering Lead, CodeCraft Studios",
-            avatarAlt:
-              "Professional headshot of James Nakamura, Engineering Lead at CodeCraft Studios",
-          },
-          {
-            quote:
-              "Switching from our legacy project management tool to FlowSync was the best decision we made in 2024. Support response time dropped from 24 hours to under 2 hours.",
-            name: "Amanda Foster",
-            role: "Head of Customer Success, CloudBridge Inc",
-            avatarAlt:
-              "Professional headshot of Amanda Foster, Head of Customer Success at CloudBridge Inc",
-          },
-          {
-            quote:
-              "As a fully remote team of 89 people across 12 time zones, FlowSync is our virtual HQ. The async standups and workflow automation keep us in sync without endless meetings.",
-            name: "David Park",
-            role: "CEO, Distributed Labs",
-            avatarAlt:
-              "Professional headshot of David Park, CEO at Distributed Labs",
-          },
-        ]
+      {
+        quote:
+          'FlowSync reduced our project handoff time by 62%. What used to take three days of back-and-forth emails now happens in real-time. Our client satisfaction scores jumped from 7.2 to 9.1.',
+        name: 'Sarah Chen',
+        role: 'VP of Operations, TechStream Solutions',
+        avatarAlt:
+          'Professional headshot of Sarah Chen, VP of Operations at TechStream Solutions',
+      },
+      {
+        quote:
+          "We onboarded 340 new employees in Q1 using FlowSync's automated workflows. Saved us roughly $180,000 in training costs and cut onboarding time from 5 days to 2. Absolutely transformative.",
+        name: 'Marcus Rodriguez',
+        role: 'Chief People Officer, Vertex Dynamics',
+        avatarAlt:
+          'Professional headshot of Marcus Rodriguez, Chief People Officer at Vertex Dynamics',
+      },
+      {
+        quote:
+          'The analytics dashboard alone paid for our annual subscription in the first month. We identified 14 redundant processes and consolidated vendor contracts, saving $47,000 per quarter.',
+        name: 'Dr. Elena Vasquez',
+        role: 'Director of Finance, Meridian Global',
+        avatarAlt:
+          'Professional headshot of Dr. Elena Vasquez, Director of Finance at Meridian Global',
+      },
+      {
+        quote:
+          "Our development team shipped 3x more features after implementing FlowSync. The cross-functional visibility eliminated the 'who's working on what' problem completely.",
+        name: 'James Nakamura',
+        role: 'Engineering Lead, CodeCraft Studios',
+        avatarAlt:
+          'Professional headshot of James Nakamura, Engineering Lead at CodeCraft Studios',
+      },
+      {
+        quote:
+          'Switching from our legacy project management tool to FlowSync was the best decision we made in 2024. Support response time dropped from 24 hours to under 2 hours.',
+        name: 'Amanda Foster',
+        role: 'Head of Customer Success, CloudBridge Inc',
+        avatarAlt:
+          'Professional headshot of Amanda Foster, Head of Customer Success at CloudBridge Inc',
+      },
+      {
+        quote:
+          'As a fully remote team of 89 people across 12 time zones, FlowSync is our virtual HQ. The async standups and workflow automation keep us in sync without endless meetings.',
+        name: 'David Park',
+        role: 'CEO, Distributed Labs',
+        avatarAlt:
+          'Professional headshot of David Park, CEO at Distributed Labs',
+      },
+    ]
     const testimonialItems =
       storedTestimonials && storedTestimonials.length > 0
         ? storedTestimonials
@@ -338,88 +341,89 @@ export const TestimonialsKimiPage = defineCapsule({
           ? props.testimonials.items
           : defaultTestimonialItems
 
-    const caseHeading = props.caseStudies?.heading ?? "In-depth case studies"
+    const caseHeading = props.caseStudies?.heading ?? 'In-depth case studies'
     const caseDesc =
       props.caseStudies?.description ??
-      "Detailed breakdowns of how organizations achieved measurable results with FlowSync."
-    const caseReadMore = props.caseStudies?.readMore ?? "Read full case study"
+      'Detailed breakdowns of how organizations achieved measurable results with FlowSync.'
+    const caseReadMore = props.caseStudies?.readMore ?? 'Read full case study'
     const defaultCaseItems = [
-          {
-            tag: "SaaS",
-            meta: "250+ employees",
-            title: "How Notionly cut sprint planning time by 73%",
-            body: "Notionly's engineering team was spending 12 hours per week on sprint planning across three product squads. After implementing FlowSync's automated workflow templates and real-time capacity dashboards, planning time dropped to 3.2 hours per week—freeing up 468 engineering hours monthly for actual development work.",
-            imageAlt:
-              "Modern open-plan office workspace with teams collaborating at standing desks",
-            metrics: [
-              { value: "73%", label: "Time saved" },
-              { value: "$340K", label: "Annual savings" },
-              { value: "6 weeks", label: "ROI achieved" },
-            ],
-          },
-          {
-            tag: "Healthcare",
-            meta: "1,200+ staff",
-            title: "Metro Health reduced patient wait times by 41%",
-            body: "Metro Health Systems was struggling with 47-minute average patient wait times across 12 outpatient clinics. FlowSync's patient flow optimization and staff scheduling modules helped them redesign their intake process. Average wait time dropped to 27 minutes, patient satisfaction scores rose 23 points, and they saw an 18% increase in daily patient volume.",
-            imageAlt:
-              "Healthcare professionals reviewing patient data on tablets in a modern clinic",
-            metrics: [
-              { value: "41%", label: "Wait time reduction" },
-              { value: "18%", label: "Volume increase" },
-              { value: "23 pts", label: "Satisfaction gain" },
-            ],
-          },
-          {
-            tag: "E-commerce",
-            meta: "89 employees",
-            title: "Boutique Co scaled order processing 5x without hiring",
-            body: "Boutique Co was drowning in manual order processing during peak seasons, processing 340 orders daily with a team of 12. After integrating FlowSync with their Shopify store and warehouse systems, the same team now processes 1,700+ orders daily—handling Black Friday volume that previously required 8 seasonal temps, saving $67,000 in temp labor costs.",
-            imageAlt:
-              "E-commerce fulfillment warehouse with workers processing orders and packages",
-            metrics: [
-              { value: "5x", label: "Throughput increase" },
-              { value: "$67K", label: "Labor cost saved" },
-              { value: "12→12", label: "Zero new hires" },
-            ],
-          },
-          {
-            tag: "Agency",
-            meta: "34 employees",
-            title: "Pinnacle Creative doubled client retention to 94%",
-            body: "Pinnacle Creative Agency was losing clients at a 23% annual churn rate due to missed deadlines and poor communication visibility. FlowSync's client portal and automated milestone tracking gave clients real-time project visibility. Churn dropped to 6%, NPS scores jumped from 32 to 71, and their sales cycle shortened by 19 days due to stronger reference pipeline.",
-            imageAlt:
-              "Creative marketing agency team brainstorming in a collaborative workspace",
-            metrics: [
-              { value: "94%", label: "Retention rate" },
-              { value: "32→71", label: "NPS increase" },
-              { value: "-19 days", label: "Sales cycle" },
-            ],
-          },
-        ]
+      {
+        tag: 'SaaS',
+        meta: '250+ employees',
+        title: 'How Notionly cut sprint planning time by 73%',
+        body: "Notionly's engineering team was spending 12 hours per week on sprint planning across three product squads. After implementing FlowSync's automated workflow templates and real-time capacity dashboards, planning time dropped to 3.2 hours per week—freeing up 468 engineering hours monthly for actual development work.",
+        imageAlt:
+          'Modern open-plan office workspace with teams collaborating at standing desks',
+        metrics: [
+          { value: '73%', label: 'Time saved' },
+          { value: '$340K', label: 'Annual savings' },
+          { value: '6 weeks', label: 'ROI achieved' },
+        ],
+      },
+      {
+        tag: 'Healthcare',
+        meta: '1,200+ staff',
+        title: 'Metro Health reduced patient wait times by 41%',
+        body: "Metro Health Systems was struggling with 47-minute average patient wait times across 12 outpatient clinics. FlowSync's patient flow optimization and staff scheduling modules helped them redesign their intake process. Average wait time dropped to 27 minutes, patient satisfaction scores rose 23 points, and they saw an 18% increase in daily patient volume.",
+        imageAlt:
+          'Healthcare professionals reviewing patient data on tablets in a modern clinic',
+        metrics: [
+          { value: '41%', label: 'Wait time reduction' },
+          { value: '18%', label: 'Volume increase' },
+          { value: '23 pts', label: 'Satisfaction gain' },
+        ],
+      },
+      {
+        tag: 'E-commerce',
+        meta: '89 employees',
+        title: 'Boutique Co scaled order processing 5x without hiring',
+        body: 'Boutique Co was drowning in manual order processing during peak seasons, processing 340 orders daily with a team of 12. After integrating FlowSync with their Shopify store and warehouse systems, the same team now processes 1,700+ orders daily—handling Black Friday volume that previously required 8 seasonal temps, saving $67,000 in temp labor costs.',
+        imageAlt:
+          'E-commerce fulfillment warehouse with workers processing orders and packages',
+        metrics: [
+          { value: '5x', label: 'Throughput increase' },
+          { value: '$67K', label: 'Labor cost saved' },
+          { value: '12→12', label: 'Zero new hires' },
+        ],
+      },
+      {
+        tag: 'Agency',
+        meta: '34 employees',
+        title: 'Pinnacle Creative doubled client retention to 94%',
+        body: "Pinnacle Creative Agency was losing clients at a 23% annual churn rate due to missed deadlines and poor communication visibility. FlowSync's client portal and automated milestone tracking gave clients real-time project visibility. Churn dropped to 6%, NPS scores jumped from 32 to 71, and their sales cycle shortened by 19 days due to stronger reference pipeline.",
+        imageAlt:
+          'Creative marketing agency team brainstorming in a collaborative workspace',
+        metrics: [
+          { value: '94%', label: 'Retention rate' },
+          { value: '32→71', label: 'NPS increase' },
+          { value: '-19 days', label: 'Sales cycle' },
+        ],
+      },
+    ]
     const caseItems = props.caseStudies?.items?.length
       ? props.caseStudies.items.map((item, index) => ({
           ...item,
           metrics: item.metrics?.length
             ? item.metrics
-            : (defaultCaseItems[index % defaultCaseItems.length]?.metrics ?? []),
+            : (defaultCaseItems[index % defaultCaseItems.length]?.metrics ??
+              []),
         }))
       : defaultCaseItems
 
-    const reviewsHeading = props.reviews?.heading ?? "Verified reviews"
+    const reviewsHeading = props.reviews?.heading ?? 'Verified reviews'
     const reviewsDesc =
       props.reviews?.description ??
-      "Authentic feedback from verified customers on independent platforms."
+      'Authentic feedback from verified customers on independent platforms.'
     const reviewPlatforms = props.reviews?.platforms?.length
       ? props.reviews.platforms
       : [
-          { rating: "4.9", name: "G2 Rating", count: "2,847 reviews" },
-          { rating: "4.8", name: "Capterra", count: "1,523 reviews" },
-          { rating: "4.9", name: "Trustpilot", count: "4,192 reviews" },
-          { rating: "4.7", name: "GetApp", count: "987 reviews" },
+          { rating: '4.9', name: 'G2 Rating', count: '2,847 reviews' },
+          { rating: '4.8', name: 'Capterra', count: '1,523 reviews' },
+          { rating: '4.9', name: 'Trustpilot', count: '4,192 reviews' },
+          { rating: '4.7', name: 'GetApp', count: '987 reviews' },
         ]
     const featuredPosted =
-      props.reviews?.featured?.posted ?? "Posted on G2, March 2025"
+      props.reviews?.featured?.posted ?? 'Posted on G2, March 2025'
     const featuredTitle =
       props.reviews?.featured?.title ??
       '"Best-in-class workflow automation with enterprise-grade security"'
@@ -427,71 +431,73 @@ export const TestimonialsKimiPage = defineCapsule({
       ? props.reviews.featured.body
       : [
           "We've evaluated 14 different workflow platforms over the past 18 months. FlowSync is the only solution that combines intuitive UX with robust enterprise security features. The SSO integration took 20 minutes to set up, and their SCIM provisioning automatically syncs with our Okta directory. Our security team finally approved a workflow tool without caveats.",
-          "The API is exceptionally well-documented—we had our first custom integration running in under 3 hours. Support response times average under 4 minutes during business hours, and their solutions engineers actually understand complex technical requirements.",
+          'The API is exceptionally well-documented—we had our first custom integration running in under 3 hours. Support response times average under 4 minutes during business hours, and their solutions engineers actually understand complex technical requirements.',
         ]
-    const featuredName = props.reviews?.featured?.name ?? "Thomas Andersson"
-    const featuredRole = props.reviews?.featured?.role ?? "CTO, Nordic Ventures"
-    const featuredBadge = props.reviews?.featured?.badge ?? "Verified Buyer"
+    const featuredName = props.reviews?.featured?.name ?? 'Thomas Andersson'
+    const featuredRole = props.reviews?.featured?.role ?? 'CTO, Nordic Ventures'
+    const featuredBadge = props.reviews?.featured?.badge ?? 'Verified Buyer'
     const featuredAvatarAlt =
       props.reviews?.featured?.avatarAlt ??
-      "Professional headshot of Thomas Andersson, CTO at Nordic Ventures"
+      'Professional headshot of Thomas Andersson, CTO at Nordic Ventures'
 
     const ctaHeading =
-      props.cta?.heading ?? "Ready to transform your workflows?"
+      props.cta?.heading ?? 'Ready to transform your workflows?'
     const ctaDesc =
       props.cta?.description ??
-      "Join 2,500+ teams already using FlowSync to streamline operations, boost productivity, and deliver better results. Start your free 14-day trial today."
-    const ctaPrimary = props.cta?.primaryCta ?? "Start free trial"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Schedule demo"
+      'Join 2,500+ teams already using FlowSync to streamline operations, boost productivity, and deliver better results. Start your free 14-day trial today.'
+    const ctaPrimary = props.cta?.primaryCta ?? 'Start free trial'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'Schedule demo'
     const ctaNote =
-      props.cta?.note ?? "No credit card required. Full feature access during trial."
+      props.cta?.note ??
+      'No credit card required. Full feature access during trial.'
 
     const footerDesc =
       props.footer?.description ??
-      "Workflow automation and team collaboration platform trusted by industry leaders worldwide."
+      'Workflow automation and team collaboration platform trusted by industry leaders worldwide.'
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Twitter", "LinkedIn", "GitHub"]
+      : ['Twitter', 'LinkedIn', 'GitHub']
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Product",
+            title: 'Product',
             links: [
-              "Features",
-              "Integrations",
-              "Pricing",
-              "Changelog",
-              "API Docs",
+              'Features',
+              'Integrations',
+              'Pricing',
+              'Changelog',
+              'API Docs',
             ],
           },
           {
-            title: "Company",
-            links: ["About", "Blog", "Careers", "Press", "Partners"],
+            title: 'Company',
+            links: ['About', 'Blog', 'Careers', 'Press', 'Partners'],
           },
           {
-            title: "Resources",
+            title: 'Resources',
             links: [
-              "Help Center",
-              "Community",
-              "Templates",
-              "Webinars",
-              "Contact",
+              'Help Center',
+              'Community',
+              'Templates',
+              'Webinars',
+              'Contact',
             ],
           },
         ]
     const footerCopyright =
-      props.footer?.copyright ?? `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
+      props.footer?.copyright ??
+      `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Settings"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
 
     // Brand mark — decorative stacked-chevron glyph using the primary token.
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
         viewBox="0 0 32 32"
         fill="none"
-        className={cn("text-primary", className)}
+        className={cn('text-primary', className)}
         aria-hidden="true"
       >
         <rect width="32" height="32" rx="8" fill="currentColor" />
@@ -515,7 +521,10 @@ export const TestimonialsKimiPage = defineCapsule({
     )
 
     const Stars = ({ count = 5 }: { count?: number }) => (
-      <div className="flex items-center gap-1" aria-label={`${count} out of 5 stars`}>
+      <div
+        className="flex items-center gap-1"
+        aria-label={`${count} out of 5 stars`}
+      >
         {Array.from({ length: count }).map((_, i) => (
           <svg
             key={i}
@@ -532,7 +541,7 @@ export const TestimonialsKimiPage = defineCapsule({
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-4", className)}
+        className={cn('size-4', className)}
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -582,16 +591,16 @@ export const TestimonialsKimiPage = defineCapsule({
 
     // Industry tag accent classes — rotate semantic data tokens (no raw palette).
     const tagStyles = [
-      "bg-chart-1/15 text-chart-1",
-      "bg-chart-2/15 text-chart-2",
-      "bg-chart-3/15 text-chart-3",
-      "bg-chart-4/15 text-chart-4",
+      'bg-chart-1/15 text-chart-1',
+      'bg-chart-2/15 text-chart-2',
+      'bg-chart-3/15 text-chart-3',
+      'bg-chart-4/15 text-chart-4',
     ]
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -638,7 +647,9 @@ export const TestimonialsKimiPage = defineCapsule({
                       className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
                     >
                       <BookmarkIcon />
-                      {isSignedIn && bookmarkedTestimonialNames && bookmarkedTestimonialNames.size > 0 ? (
+                      {isSignedIn &&
+                      bookmarkedTestimonialNames &&
+                      bookmarkedTestimonialNames.size > 0 ? (
                         <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
                           {bookmarkedTestimonialNames.size}
                         </span>
@@ -650,10 +661,13 @@ export const TestimonialsKimiPage = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Saved testimonials</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Saved testimonials
+                      </SheetTitle>
                       <SheetDescription>
                         {isSignedIn
-                          ? bookmarkedTestimonialNames && bookmarkedTestimonialNames.size > 0
+                          ? bookmarkedTestimonialNames &&
+                            bookmarkedTestimonialNames.size > 0
                             ? `${bookmarkedTestimonialNames.size} testimonial${bookmarkedTestimonialNames.size === 1 ? '' : 's'} saved.`
                             : 'No saved testimonials yet.'
                           : 'Sign in to save testimonials for later.'}
@@ -661,7 +675,8 @@ export const TestimonialsKimiPage = defineCapsule({
                     </SheetHeader>
                     <div className="flex-1 overflow-y-auto px-6 py-5">
                       {isSignedIn ? (
-                        bookmarkedTestimonials && bookmarkedTestimonials.length > 0 ? (
+                        bookmarkedTestimonials &&
+                        bookmarkedTestimonials.length > 0 ? (
                           <div className="space-y-5">
                             {bookmarkedTestimonials.map((t) => (
                               <div
@@ -703,7 +718,8 @@ export const TestimonialsKimiPage = defineCapsule({
                               No saved testimonials
                             </p>
                             <p className="mt-2 text-sm text-muted-foreground">
-                              Bookmark testimonials from the wall to save them for later.
+                              Bookmark testimonials from the wall to save them
+                              for later.
                             </p>
                           </div>
                         )
@@ -713,7 +729,8 @@ export const TestimonialsKimiPage = defineCapsule({
                             Sign in to save testimonials
                           </p>
                           <p className="mt-2 text-sm text-muted-foreground">
-                            Create an account to bookmark your favorite testimonials.
+                            Create an account to bookmark your favorite
+                            testimonials.
                           </p>
                           <Button
                             type="button"
@@ -1063,7 +1080,9 @@ export const TestimonialsKimiPage = defineCapsule({
                         />
                         <div>
                           <p className="font-semibold">{t.name}</p>
-                          <p className="text-sm text-muted-foreground">{t.role}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {t.role}
+                          </p>
                         </div>
                       </div>
                     </article>
@@ -1100,7 +1119,7 @@ export const TestimonialsKimiPage = defineCapsule({
                       <div className="mb-4 flex items-center gap-3">
                         <span
                           className={cn(
-                            "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium",
+                            'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium',
                             tagStyles[i % tagStyles.length],
                           )}
                         >
@@ -1169,7 +1188,9 @@ export const TestimonialsKimiPage = defineCapsule({
                     <p className="mb-2 text-sm font-medium text-muted-foreground">
                       {p.name}
                     </p>
-                    <p className="text-xs text-muted-foreground/80">{p.count}</p>
+                    <p className="text-xs text-muted-foreground/80">
+                      {p.count}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -1198,8 +1219,8 @@ export const TestimonialsKimiPage = defineCapsule({
                       <p
                         key={i}
                         className={cn(
-                          "leading-relaxed text-muted-foreground",
-                          i < featuredBody.length - 1 ? "mb-4" : "mb-6",
+                          'leading-relaxed text-muted-foreground',
+                          i < featuredBody.length - 1 ? 'mb-4' : 'mb-6',
                         )}
                       >
                         {para}
@@ -1259,7 +1280,9 @@ export const TestimonialsKimiPage = defineCapsule({
                   {ctaSecondary}
                 </button>
               </div>
-              <p className="mt-6 text-sm text-primary-foreground/60">{ctaNote}</p>
+              <p className="mt-6 text-sm text-primary-foreground/60">
+                {ctaNote}
+              </p>
             </div>
           </section>
         </main>

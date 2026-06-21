@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * BarNightclubKimiPage2 — bold, neon-accented bar & nightclub landing + reservations page.
@@ -43,9 +43,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * supply ONLY content data; rich defaults make it render fully on zero args.
  */
 export const BarNightclubKimiPage2 = defineCapsule({
-  name: "BarNightclubKimiPage2",
+  name: 'BarNightclubKimiPage2',
   description:
-    "Bold, neon-accented BAR & NIGHTCLUB landing and reservations page with a sticky navigation bar, editorial uppercase display headings, event cards with photo overlays and neon-pill date badges, a two-column cocktail and bottle-service menu with prices, a masonry photo gallery, guest testimonials with headshots and star ratings, a 4-up stat strip, a centered booking form with time and guest selectors, a walk-ins CTA section with a background image, and a multi-column footer with social icons. Use as the second style sibling to BarNightclubKimiPage when a more vibrant, poster-style nightlife layout is wanted — featuring rounded event cards, neon-pill date badges, split drink menus, and press-logos that suit cocktail bars, nightclubs, lounges, and late-night music venues offering table reservations and bottle service. Supply content only — brand, nav, hero, logos, events, menu, gallery, reviews, stats, reservations, cta, footer; the block owns all layout and styling.",
+    'Bold, neon-accented BAR & NIGHTCLUB landing and reservations page with a sticky navigation bar, editorial uppercase display headings, event cards with photo overlays and neon-pill date badges, a two-column cocktail and bottle-service menu with prices, a masonry photo gallery, guest testimonials with headshots and star ratings, a 4-up stat strip, a centered booking form with time and guest selectors, a walk-ins CTA section with a background image, and a multi-column footer with social icons. Use as the second style sibling to BarNightclubKimiPage when a more vibrant, poster-style nightlife layout is wanted — featuring rounded event cards, neon-pill date badges, split drink menus, and press-logos that suit cocktail bars, nightclubs, lounges, and late-night music venues offering table reservations and bottle service. Supply content only — brand, nav, hero, logos, events, menu, gallery, reviews, stats, reservations, cta, footer; the block owns all layout and styling.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -74,7 +74,7 @@ export const BarNightclubKimiPage2 = defineCapsule({
               description: z.string(),
               price: z.string(),
               imageAlt: z.string(),
-              badgeStyle: z.enum(["primary", "secondary"]).optional(),
+              badgeStyle: z.enum(['primary', 'secondary']).optional(),
             }),
           )
           .optional(),
@@ -84,7 +84,7 @@ export const BarNightclubKimiPage2 = defineCapsule({
               title: z.string(),
               description: z.string(),
               tag: z.string(),
-              tagStyle: z.enum(["primary", "secondary"]).optional(),
+              tagStyle: z.enum(['primary', 'secondary']).optional(),
             }),
           )
           .optional(),
@@ -270,159 +270,164 @@ export const BarNightclubKimiPage2 = defineCapsule({
     const safeReservations = storedReservations ?? []
     const reservationCount = safeReservations.length
 
-    const brand = props.brand ?? "Nocturne"
+    const brand = props.brand ?? 'Nocturne'
     const nav = props.nav?.length
       ? props.nav
-      : ["Events", "Cocktails", "Gallery", "Reservations", "Reviews"]
+      : ['Events', 'Cocktails', 'Gallery', 'Reservations', 'Reviews']
 
-    const heroEyebrow = props.hero?.eyebrow ?? "Downtown · Open Thu–Sun"
-    const heroTop = props.hero?.headingTop ?? "The Night"
-    const heroGradient = props.hero?.headingGradient ?? "Belongs Here"
+    const heroEyebrow = props.hero?.eyebrow ?? 'Downtown · Open Thu–Sun'
+    const heroTop = props.hero?.headingTop ?? 'The Night'
+    const heroGradient = props.hero?.headingGradient ?? 'Belongs Here'
     const heroSub =
       props.hero?.subheading ??
-      "Craft cocktails, curated sound, and an atmosphere built for after-dark memories. Walk-ins welcome, tables by reservation."
-    const heroPrimary = props.hero?.primaryCta ?? "Reserve a Table"
+      'Craft cocktails, curated sound, and an atmosphere built for after-dark memories. Walk-ins welcome, tables by reservation.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Reserve a Table'
     const heroSecondary = props.hero?.secondaryCta ?? "This Week's Events"
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Dark moody bar interior with amber neon lighting reflecting off bottles"
+      'Dark moody bar interior with amber neon lighting reflecting off bottles'
 
     const logos = props.logos?.length
       ? props.logos
-      : ["Time Out", "Eater", "Thrillist", "The Infatuation", "Resident Advisor"]
+      : [
+          'Time Out',
+          'Eater',
+          'Thrillist',
+          'The Infatuation',
+          'Resident Advisor',
+        ]
 
-    const eventsEyebrow = props.events?.eyebrow ?? "Up Next"
-    const eventsHeading = props.events?.heading ?? "Events & DJs"
-    const eventsCtaLabel =
-      props.events?.ctaLabel ?? "Reserve for any night →"
+    const eventsEyebrow = props.events?.eyebrow ?? 'Up Next'
+    const eventsHeading = props.events?.heading ?? 'Events & DJs'
+    const eventsCtaLabel = props.events?.ctaLabel ?? 'Reserve for any night →'
     const eventItems = props.events?.items?.length
       ? props.events.items
       : [
           {
-            dateBadge: "Thu, Jun 4",
-            title: "Midnight Grooves",
-            description: "DJ Marcus Vale · Deep house & disco until 3 AM",
-            price: "$15 cover · 10 PM – 3 AM",
-            imageAlt: "DJ performing at a nightclub with pink and blue stage lights",
-            badgeStyle: "primary" as const,
+            dateBadge: 'Thu, Jun 4',
+            title: 'Midnight Grooves',
+            description: 'DJ Marcus Vale · Deep house & disco until 3 AM',
+            price: '$15 cover · 10 PM – 3 AM',
+            imageAlt:
+              'DJ performing at a nightclub with pink and blue stage lights',
+            badgeStyle: 'primary' as const,
           },
           {
-            dateBadge: "Fri, Jun 5",
-            title: "Neon Fridays",
-            description: "Live sax + DJ set · open format dancefloor",
-            price: "$20 cover · 10 PM – 4 AM",
+            dateBadge: 'Fri, Jun 5',
+            title: 'Neon Fridays',
+            description: 'Live sax + DJ set · open format dancefloor',
+            price: '$20 cover · 10 PM – 4 AM',
             imageAlt:
-              "Crowd dancing under warm golden and red nightclub lights",
-            badgeStyle: "secondary" as const,
+              'Crowd dancing under warm golden and red nightclub lights',
+            badgeStyle: 'secondary' as const,
           },
           {
-            dateBadge: "Sat, Jun 6",
-            title: "Smoke & Mirrors",
-            description: "Interactive cocktail show + resident DJs",
-            price: "$25 cover · includes one signature drink",
+            dateBadge: 'Sat, Jun 6',
+            title: 'Smoke & Mirrors',
+            description: 'Interactive cocktail show + resident DJs',
+            price: '$25 cover · includes one signature drink',
             imageAlt:
-              "Professional bartender pouring a flaming cocktail in a dark upscale bar",
-            badgeStyle: "primary" as const,
+              'Professional bartender pouring a flaming cocktail in a dark upscale bar',
+            badgeStyle: 'primary' as const,
           },
         ]
     const eventExtras = props.events?.extras?.length
       ? props.events.extras
       : [
           {
-            title: "Sunday Industry Night",
-            description: "50% off for service industry · 8 PM – midnight",
-            tag: "FREE",
-            tagStyle: "primary" as const,
+            title: 'Sunday Industry Night',
+            description: '50% off for service industry · 8 PM – midnight',
+            tag: 'FREE',
+            tagStyle: 'primary' as const,
           },
           {
-            title: "Private Booth Package",
-            description: "Bottle service + dedicated host · up to 8 guests",
-            tag: "FROM $350",
-            tagStyle: "secondary" as const,
+            title: 'Private Booth Package',
+            description: 'Bottle service + dedicated host · up to 8 guests',
+            tag: 'FROM $350',
+            tagStyle: 'secondary' as const,
           },
         ]
 
-    const menuEyebrow = props.menu?.eyebrow ?? "The Menu"
-    const menuHeading = props.menu?.heading ?? "Cocktails & Bottles"
+    const menuEyebrow = props.menu?.eyebrow ?? 'The Menu'
+    const menuHeading = props.menu?.heading ?? 'Cocktails & Bottles'
     const menuDesc =
       props.menu?.description ??
-      "Every drink is built fresh. No premix. House syrups, hand-cut ice, and spirits selected by our head bartender."
+      'Every drink is built fresh. No premix. House syrups, hand-cut ice, and spirits selected by our head bartender.'
     const menuColumns = props.menu?.columns?.length
       ? props.menu.columns
       : [
           {
-            title: "Signature Cocktails",
+            title: 'Signature Cocktails',
             items: [
               {
-                name: "Velvet Nocturne",
+                name: 'Velvet Nocturne',
                 description:
-                  "Mezcal, pomegranate, lime, jalapeño agave, smoked salt rim",
-                price: "$18",
+                  'Mezcal, pomegranate, lime, jalapeño agave, smoked salt rim',
+                price: '$18',
               },
               {
-                name: "Electric Garden",
+                name: 'Electric Garden',
                 description:
-                  "Empress 190 gin, cucumber, elderflower, lemon, basil oil",
-                price: "$17",
+                  'Empress 190 gin, cucumber, elderflower, lemon, basil oil',
+                price: '$17',
               },
               {
-                name: "Dark Matter",
+                name: 'Dark Matter',
                 description:
-                  "Bourbon, cold-brew, vanilla bean, black walnut bitters",
-                price: "$18",
+                  'Bourbon, cold-brew, vanilla bean, black walnut bitters',
+                price: '$18',
               },
               {
-                name: "Gold Rush",
+                name: 'Gold Rush',
                 description:
-                  "Rye whiskey, honey-ginger syrup, fresh lemon, angostura",
-                price: "$16",
+                  'Rye whiskey, honey-ginger syrup, fresh lemon, angostura',
+                price: '$16',
               },
               {
-                name: "Negroni Sbagliato",
-                description:
-                  "Campari, sweet vermouth, prosecco, orange twist",
-                price: "$15",
+                name: 'Negroni Sbagliato',
+                description: 'Campari, sweet vermouth, prosecco, orange twist',
+                price: '$15',
               },
               {
-                name: "Midnight Mai Tai",
+                name: 'Midnight Mai Tai',
                 description:
-                  "Aged rum, orgeat, lime, orange curaçao, mint bouquet",
-                price: "$17",
+                  'Aged rum, orgeat, lime, orange curaçao, mint bouquet',
+                price: '$17',
               },
             ],
           },
           {
-            title: "Beer, Wine & Shots",
+            title: 'Beer, Wine & Shots',
             items: [
               {
-                name: "Local IPA",
-                description: "Rotating tap from regional microbreweries",
-                price: "$9",
+                name: 'Local IPA',
+                description: 'Rotating tap from regional microbreweries',
+                price: '$9',
               },
               {
-                name: "Imported Lager",
-                description: "Premium European pilsner, ice-cold serve",
-                price: "$8",
+                name: 'Imported Lager',
+                description: 'Premium European pilsner, ice-cold serve',
+                price: '$8',
               },
               {
-                name: "Red / White by the Glass",
-                description: "Curated small-producer rotation",
-                price: "$12",
+                name: 'Red / White by the Glass',
+                description: 'Curated small-producer rotation',
+                price: '$12',
               },
               {
-                name: "Champagne Split",
-                description: "Mini bottle of brut for the table",
-                price: "$28",
+                name: 'Champagne Split',
+                description: 'Mini bottle of brut for the table',
+                price: '$28',
               },
               {
-                name: "Premium Shot Selection",
-                description: "Patrón, Casamigos, Macallan 12, Grey Goose",
-                price: "$14",
+                name: 'Premium Shot Selection',
+                description: 'Patrón, Casamigos, Macallan 12, Grey Goose',
+                price: '$14',
               },
               {
-                name: "Bottle Service — Vodka",
-                description: "Beluga or Grey Goose with mixers & garnishes",
-                price: "$280",
+                name: 'Bottle Service — Vodka',
+                description: 'Beluga or Grey Goose with mixers & garnishes',
+                price: '$280',
               },
             ],
           },
@@ -430,128 +435,124 @@ export const BarNightclubKimiPage2 = defineCapsule({
     const menuImages = props.menu?.images?.length
       ? props.menu.images
       : [
-          "Three colorful cocktails in coupe glasses with dried citrus garnish on a marble bar",
-          "Close-up of an amber cocktail with large clear ice cube in a rocks glass",
-          "Bartender shaking a silver cocktail shaker under warm bar lighting",
-          "Top-down view of a dark bar with bottles and neon reflections on the counter",
+          'Three colorful cocktails in coupe glasses with dried citrus garnish on a marble bar',
+          'Close-up of an amber cocktail with large clear ice cube in a rocks glass',
+          'Bartender shaking a silver cocktail shaker under warm bar lighting',
+          'Top-down view of a dark bar with bottles and neon reflections on the counter',
         ]
 
-    const galleryEyebrow = props.gallery?.eyebrow ?? "Inside"
-    const galleryHeading = props.gallery?.heading ?? "The Space"
+    const galleryEyebrow = props.gallery?.eyebrow ?? 'Inside'
+    const galleryHeading = props.gallery?.heading ?? 'The Space'
     const galleryImages = props.gallery?.images?.length
       ? props.gallery.images
       : [
-          "Wide angle interior of an upscale nightclub featuring dark leather banquettes and a long bar",
-          "Abstract bokeh from colorful club lights in a dark venue",
-          "Close-up of a cocktail being poured over crushed ice with fresh rosemary",
-          "Friends laughing and toasting with drinks at a dimly lit bar table",
-          "DJ mixing on turntables under purple and blue neon lighting in a club booth",
+          'Wide angle interior of an upscale nightclub featuring dark leather banquettes and a long bar',
+          'Abstract bokeh from colorful club lights in a dark venue',
+          'Close-up of a cocktail being poured over crushed ice with fresh rosemary',
+          'Friends laughing and toasting with drinks at a dimly lit bar table',
+          'DJ mixing on turntables under purple and blue neon lighting in a club booth',
         ]
 
-    const reviewsEyebrow = props.reviews?.eyebrow ?? "Reviews"
-    const reviewsHeading = props.reviews?.heading ?? "What Guests Say"
+    const reviewsEyebrow = props.reviews?.eyebrow ?? 'Reviews'
+    const reviewsHeading = props.reviews?.heading ?? 'What Guests Say'
     const reviewItems = props.reviews?.items?.length
       ? props.reviews.items
       : [
           {
-            name: "Sarah Lin",
-            role: "Food & Drink Editor · Thrillist",
+            name: 'Sarah Lin',
+            role: 'Food & Drink Editor · Thrillist',
             avatarAlt:
-              "Professional headshot of a smiling woman with dark hair in a studio setting",
+              'Professional headshot of a smiling woman with dark hair in a studio setting',
             quote:
-              "The Velvet Nocturne might be the best mezcal cocktail in the city. The bartenders actually talk to you about flavor—not just recipes.",
+              'The Velvet Nocturne might be the best mezcal cocktail in the city. The bartenders actually talk to you about flavor—not just recipes.',
           },
           {
-            name: "David Cortez",
-            role: "Resident DJ & Producer",
+            name: 'David Cortez',
+            role: 'Resident DJ & Producer',
             avatarAlt:
-              "Professional headshot of a smiling man with a beard wearing a dark jacket",
+              'Professional headshot of a smiling man with a beard wearing a dark jacket',
             quote:
-              "I play here monthly. The sound system is dialed in, the crowd is there for music, and the staff treats artists like family.",
+              'I play here monthly. The sound system is dialed in, the crowd is there for music, and the staff treats artists like family.',
           },
           {
-            name: "Elena Vo",
-            role: "Event Planner · Bloom Agency",
+            name: 'Elena Vo',
+            role: 'Event Planner · Bloom Agency',
             avatarAlt:
-              "Professional headshot of a woman with blonde hair smiling warmly",
+              'Professional headshot of a woman with blonde hair smiling warmly',
             quote:
-              "Hosted a team celebration in the private booth. Seamless booking, attentive host, and the atmosphere made the entire night effortless.",
+              'Hosted a team celebration in the private booth. Seamless booking, attentive host, and the atmosphere made the entire night effortless.',
           },
         ]
 
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "140+", label: "Spirits on the back bar" },
-          { value: "12", label: "Signature cocktails" },
-          { value: "4.9", label: "Average guest rating" },
-          { value: "3 AM", label: "Last call Friday & Saturday" },
+          { value: '140+', label: 'Spirits on the back bar' },
+          { value: '12', label: 'Signature cocktails' },
+          { value: '4.9', label: 'Average guest rating' },
+          { value: '3 AM', label: 'Last call Friday & Saturday' },
         ]
 
-    const resEyebrow = props.reservations?.eyebrow ?? "Plan Your Night"
-    const resHeading = props.reservations?.heading ?? "Reservations"
+    const resEyebrow = props.reservations?.eyebrow ?? 'Plan Your Night'
+    const resHeading = props.reservations?.heading ?? 'Reservations'
     const resDesc =
       props.reservations?.description ??
-      "Tables fill fast on weekends. Book ahead for booth seating, bottle service, or large groups."
-    const resLoc1 = props.reservations?.locationLine1 ?? "1240 Vine Street"
+      'Tables fill fast on weekends. Book ahead for booth seating, bottle service, or large groups.'
+    const resLoc1 = props.reservations?.locationLine1 ?? '1240 Vine Street'
     const resLoc2 =
-      props.reservations?.locationLine2 ?? "Downtown Arts District"
-    const resHours1 =
-      props.reservations?.hoursLine1 ?? "Thu–Sat: 8 PM – 4 AM"
-    const resHours2 = props.reservations?.hoursLine2 ?? "Sun: 8 PM – 12 AM"
-    const resEmail = props.reservations?.email ?? "reservations@nocturne.bar"
-    const resPhone = props.reservations?.phone ?? "(213) 555-0192"
-    const resSubmit = props.reservations?.submitLabel ?? "Confirm Reservation"
-    const resSuccess =
-      props.reservations?.successMessage ??
-      "Reservation request received. We will confirm shortly."
+      props.reservations?.locationLine2 ?? 'Downtown Arts District'
+    const resHours1 = props.reservations?.hoursLine1 ?? 'Thu–Sat: 8 PM – 4 AM'
+    const resHours2 = props.reservations?.hoursLine2 ?? 'Sun: 8 PM – 12 AM'
+    const resEmail = props.reservations?.email ?? 'reservations@nocturne.bar'
+    const resPhone = props.reservations?.phone ?? '(213) 555-0192'
+    const resSubmit = props.reservations?.submitLabel ?? 'Confirm Reservation'
     const timeOptions = props.reservations?.timeOptions?.length
       ? props.reservations.timeOptions
-      : ["8:00 PM", "9:00 PM", "10:00 PM", "11:00 PM", "12:00 AM"]
+      : ['8:00 PM', '9:00 PM', '10:00 PM', '11:00 PM', '12:00 AM']
     const guestOptions = props.reservations?.guestOptions?.length
       ? props.reservations.guestOptions
-      : ["1", "2", "3", "4", "5", "6", "7", "8+"]
+      : ['1', '2', '3', '4', '5', '6', '7', '8+']
 
-    const ctaHeading = props.cta?.heading ?? "Walk-Ins Welcome"
+    const ctaHeading = props.cta?.heading ?? 'Walk-Ins Welcome'
     const ctaDesc =
       props.cta?.description ??
-      "No plan? No problem. The front bar is first come, first served. Bring your ID and your energy."
-    const ctaPrimary = props.cta?.primaryCta ?? "Book a Table"
-    const ctaSecondary = props.cta?.secondaryCta ?? "View the Menu"
+      'No plan? No problem. The front bar is first come, first served. Bring your ID and your energy.'
+    const ctaPrimary = props.cta?.primaryCta ?? 'Book a Table'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'View the Menu'
     const ctaImageAlt =
       props.cta?.imageAlt ??
-      "Wide shot of a nightclub dancefloor filled with silhouettes and laser beams cutting through fog"
+      'Wide shot of a nightclub dancefloor filled with silhouettes and laser beams cutting through fog'
 
     const footerAbout =
       props.footer?.about ??
-      "A downtown bar and nightclub built for late nights, good drinks, and better company."
-    const footerExploreHeading = props.footer?.exploreHeading ?? "Explore"
-    const footerInfoHeading = props.footer?.infoHeading ?? "Info"
-    const footerFollowHeading = props.footer?.followHeading ?? "Follow"
+      'A downtown bar and nightclub built for late nights, good drinks, and better company.'
+    const footerExploreHeading = props.footer?.exploreHeading ?? 'Explore'
+    const footerInfoHeading = props.footer?.infoHeading ?? 'Info'
+    const footerFollowHeading = props.footer?.followHeading ?? 'Follow'
     const footerExplore = props.footer?.explore?.length
       ? props.footer.explore
-      : ["Events", "Menu", "Gallery", "Reservations"]
+      : ['Events', 'Menu', 'Gallery', 'Reservations']
     const footerInfo = props.footer?.info?.length
       ? props.footer.info
       : [
-          "Age 21+ with valid ID",
-          "Smart casual dress code",
-          "Large bags subject to search",
-          "Accessibility entrance on Lane St",
+          'Age 21+ with valid ID',
+          'Smart casual dress code',
+          'Large bags subject to search',
+          'Accessibility entrance on Lane St',
         ]
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Instagram", "Facebook", "Twitter"]
+      : ['Instagram', 'Facebook', 'Twitter']
     const footerCopyright =
       props.footer?.copyright ??
-      "© 2026 Nocturne Bar & Nightclub. All rights reserved."
+      '© 2026 Nocturne Bar & Nightclub. All rights reserved.'
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service"]
+      : ['Privacy Policy', 'Terms of Service']
 
     const inputCls =
-      "w-full rounded-xl border border-border bg-card px-4 py-3 text-foreground placeholder-muted-foreground/60 outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring"
-    const labelCls = "mb-2 block text-sm font-medium text-muted-foreground"
+      'w-full rounded-xl border border-border bg-card px-4 py-3 text-foreground placeholder-muted-foreground/60 outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring'
+    const labelCls = 'mb-2 block text-sm font-medium text-muted-foreground'
 
     const HeartIcon = ({ active = false }: { active?: boolean }) => (
       <svg
@@ -616,7 +617,7 @@ export const BarNightclubKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh overflow-x-hidden bg-background text-foreground antialiased",
+          'min-h-svh overflow-x-hidden bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -736,7 +737,10 @@ export const BarNightclubKimiPage2 = defineCapsule({
                     <span>{authLabel}</span>
                   </button>
                 )}
-                <Sheet open={reservationsOpen} onOpenChange={setReservationsOpen}>
+                <Sheet
+                  open={reservationsOpen}
+                  onOpenChange={setReservationsOpen}
+                >
                   <SheetTrigger asChild>
                     <button
                       type="button"
@@ -1039,8 +1043,7 @@ export const BarNightclubKimiPage2 = defineCapsule({
 
               <div className="grid gap-8 md:grid-cols-3">
                 {eventItems.map((ev) => {
-                  const isFavorite =
-                    favoriteEventTitles?.has(ev.title) ?? false
+                  const isFavorite = favoriteEventTitles?.has(ev.title) ?? false
 
                   return (
                     <div
@@ -1058,10 +1061,10 @@ export const BarNightclubKimiPage2 = defineCapsule({
                         <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
                         <span
                           className={cn(
-                            "absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-semibold tracking-wide",
-                            ev.badgeStyle === "secondary"
-                              ? "bg-secondary text-secondary-foreground"
-                              : "bg-primary text-primary-foreground",
+                            'absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-semibold tracking-wide',
+                            ev.badgeStyle === 'secondary'
+                              ? 'bg-secondary text-secondary-foreground'
+                              : 'bg-primary text-primary-foreground',
                           )}
                         >
                           {ev.dateBadge}
@@ -1120,10 +1123,10 @@ export const BarNightclubKimiPage2 = defineCapsule({
                     </div>
                     <span
                       className={cn(
-                        "whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold tracking-wide",
-                        extra.tagStyle === "secondary"
-                          ? "bg-secondary text-secondary-foreground"
-                          : "bg-primary text-primary-foreground",
+                        'whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold tracking-wide',
+                        extra.tagStyle === 'secondary'
+                          ? 'bg-secondary text-secondary-foreground'
+                          : 'bg-primary text-primary-foreground',
                       )}
                     >
                       {extra.tag}
@@ -1208,7 +1211,7 @@ export const BarNightclubKimiPage2 = defineCapsule({
                 {galleryImages.map((alt, i) => (
                   <div
                     key={alt}
-                    className={cn(i === 0 && "lg:col-span-2 lg:row-span-2")}
+                    className={cn(i === 0 && 'lg:col-span-2 lg:row-span-2')}
                   >
                     <Image
                       alt={alt}
@@ -1216,10 +1219,10 @@ export const BarNightclubKimiPage2 = defineCapsule({
                       h={i === 0 ? 800 : 300}
                       loading="lazy"
                       className={cn(
-                        "w-full rounded-xl object-cover",
+                        'w-full rounded-xl object-cover',
                         i === 0
-                          ? "min-h-[300px] lg:h-full lg:min-h-full"
-                          : "h-48 lg:h-64",
+                          ? 'min-h-[300px] lg:h-full lg:min-h-full'
+                          : 'h-48 lg:h-64',
                       )}
                     />
                   </div>
@@ -1341,9 +1344,15 @@ export const BarNightclubKimiPage2 = defineCapsule({
                   onSubmit={(e) => {
                     e.preventDefault()
                     const form = e.currentTarget
-                    const name = (form.elements.namedItem('res-name') as HTMLInputElement).value
-                    const time = (form.elements.namedItem('res-time') as HTMLSelectElement).value
-                    const guests = (form.elements.namedItem('res-guests') as HTMLSelectElement).value
+                    const name = (
+                      form.elements.namedItem('res-name') as HTMLInputElement
+                    ).value
+                    const time = (
+                      form.elements.namedItem('res-time') as HTMLSelectElement
+                    ).value
+                    const guests = (
+                      form.elements.namedItem('res-guests') as HTMLSelectElement
+                    ).value
                     void addReservation(name, time, guests)
                     setReservationsOpen(true)
                     form.reset()

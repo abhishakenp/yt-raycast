@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * ProductDetailKimiPage2 — a complete, self-contained e-commerce PRODUCT DETAIL page
@@ -41,7 +41,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * alt-driven <Image> component. Callers supply ONLY content; rich defaults render the full page.
  */
 export const ProductDetailKimiPage2 = defineCapsule({
-  name: "ProductDetailKimiPage2",
+  name: 'ProductDetailKimiPage2',
   description:
     "Complete e-commerce PRODUCT DETAIL / product page (PDP) for a single item in a BOLD streetwear sneaker-drop style ('KICKS') — the loud, high-energy ALTERNATIVE / second style sibling to the minimalist ProductDetailKimiPage. Heavy black display type, a hot accent color used for the 'NEW RELEASE' badge, star ratings and Add-to-Cart CTAs, rounded cards with soft shadows. Includes a sticky shop navbar (search + cart with item-count badge), the core product layout (square image gallery with selectable thumbnails beside product info: release badge + SKU, big title, star rating with review count, sale price with strikethrough original, description, color swatch selector, US size grid with selected/sold-out states, quantity stepper, Add to Cart + wishlist, free-shipping line), a Product Details band (feature cards with icons + a specifications grid + a sticky cart-summary rail), a Customer Reviews section (big average score, star breakdown bars, verified-buyer review cards with avatars and size/fit tags, view-all link), a 'You Might Also Like' related-products grid, a newsletter CTA band, and a dark multi-column footer with circular social icons + legal links. Use as the ROOT page for any hyped single-product retail view — sneakers, streetwear, hype apparel, electronics drops, limited-edition DTC goods — when you want a punchy, conversion-focused PDP rather than a quiet editorial one. Supply content only — brand, nav, product, details, reviews, related, newsletter, footer; the block owns all layout and styling.",
   props: z.object({
@@ -178,15 +178,21 @@ export const ProductDetailKimiPage2 = defineCapsule({
           product: {
             id: item.productId,
             name: item.productId,
-            price: "225.00",
-            alt: "Featured product on a clean studio background",
+            price: '225.00',
+            alt: 'Featured product on a clean studio background',
           },
         })),
       favoriteProductNames: ({ db }) =>
         new Set(db.favorites.all().map((favorite) => favorite.productName)),
     },
     mutations: {
-      addToCart: ({ db }, productName: string, size: string, color: string, quantity: number) => {
+      addToCart: (
+        { db },
+        productName: string,
+        size: string,
+        color: string,
+        quantity: number,
+      ) => {
         const existingItem = db.cartItems
           .where('productId', productName)
           .where('size', size)
@@ -253,8 +259,8 @@ export const ProductDetailKimiPage2 = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [cartOpen, setCartOpen] = useState(false)
-    const [selectedColor, setSelectedColor] = useState("Classic")
-    const [selectedSize, setSelectedSize] = useState("M")
+    const [selectedColor, setSelectedColor] = useState('Classic')
+    const [selectedSize, setSelectedSize] = useState('M')
     const [quantity, setQuantity] = useState(1)
 
     const cartLines = lakebed.useQuery('cartLines')
@@ -317,90 +323,89 @@ export const ProductDetailKimiPage2 = defineCapsule({
     const cartShipping = cartSubtotal > 0 && cartSubtotal < 150 ? 12 : 0
     const cartTotal = cartSubtotal + cartShipping
 
-    const brand = props.brand ?? "Storefront"
+    const brand = props.brand ?? 'Storefront'
     const nav = props.nav?.length
       ? props.nav
-      : ["New Arrivals", "Shop", "Collections", "About", "Sale"]
+      : ['New Arrivals', 'Shop', 'Collections', 'About', 'Sale']
 
     const p = props.product ?? {}
-    const badge = p.badge ?? "NEW RELEASE"
-    const sku = p.sku ?? "SKU: PR-0001"
-    const productTitle = p.title ?? "Signature Series"
+    const badge = p.badge ?? 'NEW RELEASE'
+    const sku = p.sku ?? 'SKU: PR-0001'
+    const productTitle = p.title ?? 'Signature Series'
     const rating = p.rating ?? 4.9
-    const ratingLabel = p.ratingLabel ?? "4.9 (2,847 reviews)"
-    const price = p.price ?? "$225.00"
-    const comparePrice = p.comparePrice ?? "$280.00"
+    const ratingLabel = p.ratingLabel ?? '4.9 (2,847 reviews)'
+    const price = p.price ?? '$225.00'
+    const comparePrice = p.comparePrice ?? '$280.00'
     const summary =
       p.summary ??
-      "Our Signature Series brings together premium materials and refined craftsmanship in a design built to last. Thoughtfully made, endlessly versatile, and finished to the highest standard."
+      'Our Signature Series brings together premium materials and refined craftsmanship in a design built to last. Thoughtfully made, endlessly versatile, and finished to the highest standard.'
     const images = p.images?.length
       ? p.images
       : [
-          "Featured product on a clean studio background",
-          "Front angle of the product on a neutral background",
-          "Close-up product detail on a neutral background",
-          "Underside detail of the product on a neutral background",
+          'Featured product on a clean studio background',
+          'Front angle of the product on a neutral background',
+          'Close-up product detail on a neutral background',
+          'Underside detail of the product on a neutral background',
         ]
-    const colorLabel = p.colorLabel ?? "Classic"
     const colors = p.colors?.length
       ? p.colors
-      : ["Classic", "Neutral", "Slate", "Signature"]
-    const sizeLabel = p.sizeLabel ?? "Select Option"
-    const sizes = p.sizes?.length
-      ? p.sizes
-      : ["XS", "S", "M", "L", "XL", "XXL"]
-    const soldOutSizes = p.soldOutSizes?.length ? p.soldOutSizes : ["XXL"]
+      : ['Classic', 'Neutral', 'Slate', 'Signature']
+    const sizeLabel = p.sizeLabel ?? 'Select Option'
+    const sizes = p.sizes?.length ? p.sizes : ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+    const soldOutSizes = p.soldOutSizes?.length ? p.soldOutSizes : ['XXL']
     const addToCartLabel = p.addToCart ?? `Add to Cart — ${price}`
     const shippingCopy =
       p.shipping ??
-      "Free shipping on orders over $150. Arrives in 3-5 business days."
+      'Free shipping on orders over $150. Arrives in 3-5 business days.'
 
     const det = props.details ?? {}
-    const detailsHeading = det.heading ?? "Product Details"
+    const detailsHeading = det.heading ?? 'Product Details'
     const features = det.features?.length
       ? det.features
       : [
           {
-            title: "Built for Comfort",
-            body: "Thoughtful construction provides lightweight, responsive comfort for all-day wear.",
+            title: 'Built for Comfort',
+            body: 'Thoughtful construction provides lightweight, responsive comfort for all-day wear.',
           },
           {
-            title: "Premium Materials",
-            body: "Crafted from premium materials chosen for durability and a refined feel.",
+            title: 'Premium Materials',
+            body: 'Crafted from premium materials chosen for durability and a refined feel.',
           },
           {
-            title: "Signature Details",
-            body: "Considered finishing touches and signature detailing set this piece apart.",
+            title: 'Signature Details',
+            body: 'Considered finishing touches and signature detailing set this piece apart.',
           },
           {
-            title: "Timeless Design",
-            body: "A versatile, enduring design that stays relevant season after season.",
+            title: 'Timeless Design',
+            body: 'A versatile, enduring design that stays relevant season after season.',
           },
         ]
-    const specsHeading = det.specsHeading ?? "Specifications"
+    const specsHeading = det.specsHeading ?? 'Specifications'
     const specs = det.specs?.length
       ? det.specs
       : [
-          { label: "Release Date", value: "Latest Release" },
-          { label: "Product Code", value: "PR-0001" },
-          { label: "Finish", value: "Classic" },
-          { label: "Collection", value: "Signature Series" },
-          { label: "Warranty", value: "1 Year" },
-          { label: "Origin", value: "Ethically Made" },
+          { label: 'Release Date', value: 'Latest Release' },
+          { label: 'Product Code', value: 'PR-0001' },
+          { label: 'Finish', value: 'Classic' },
+          { label: 'Collection', value: 'Signature Series' },
+          { label: 'Warranty', value: '1 Year' },
+          { label: 'Origin', value: 'Ethically Made' },
         ]
     const summaryTitle = det.summaryTitle ?? productTitle
-    const summaryTotalLabel = det.summaryTotalLabel ?? "Total"
-    const summaryTotal = det.summaryTotal ?? price
-    const summaryCta = det.summaryCta ?? "Add to Cart"
-    const summaryNote = det.summaryNote ?? "Free shipping on orders over $150"
+    const summaryTotalLabel = det.summaryTotalLabel ?? 'Total'
+    const summaryTotal =
+      det.summaryTotal ?? formatCurrency(priceAmount(price) * quantity)
+    const summaryCta = det.summaryCta ?? 'Add to Cart'
+    const summaryNote = det.summaryNote ?? 'Free shipping on orders over $150'
     const summaryImageAlt =
-      det.summaryImageAlt ?? "Featured product thumbnail on a neutral background"
+      det.summaryImageAlt ??
+      'Featured product thumbnail on a neutral background'
 
     const r = props.reviews ?? {}
-    const reviewsHeading = r.heading ?? "Customer Reviews"
-    const writeCta = r.writeCta ?? "Write a Review"
+    const reviewsHeading = r.heading ?? 'Customer Reviews'
+    const writeCta = r.writeCta ?? 'Write a Review'
     const reviewAverage = r.average ?? 4.9
-    const countLabel = r.countLabel ?? "Based on 2,847 reviews"
+    const countLabel = r.countLabel ?? 'Based on 2,847 reviews'
     const breakdown = r.breakdown?.length
       ? r.breakdown
       : [
@@ -414,129 +419,145 @@ export const ProductDetailKimiPage2 = defineCapsule({
       ? r.items
       : [
           {
-            name: "Marcus Chen",
-            meta: "Verified Buyer • Recently",
+            name: 'Marcus Chen',
+            meta: 'Verified Buyer • Recently',
             rating: 5,
-            title: "Worth every penny!",
+            title: 'Worth every penny!',
             body: "Hands down one of the best purchases I've made. The quality is premium and the finish is flawless. Comfortable for everyday use and I've already gotten compliments. Highly recommend!",
-            size: "Option: L",
-            fit: "Quality: Excellent",
+            size: 'Option: L',
+            fit: 'Quality: Excellent',
             avatarAlt:
-              "Professional headshot of Marcus Chen, a young man with short dark hair wearing a casual blue shirt",
+              'Professional headshot of Marcus Chen, a young man with short dark hair wearing a casual blue shirt',
           },
           {
-            name: "Sarah Williams",
-            meta: "Verified Buyer • Recently",
+            name: 'Sarah Williams',
+            meta: 'Verified Buyer • Recently',
             rating: 5,
-            title: "Even better than expected",
-            body: "The materials feel premium, the construction is solid, and the details are spot on. Shipping was fast and the packaging was perfect. Will definitely buy again!",
-            size: "Option: S",
-            fit: "Quality: Excellent",
+            title: 'Even better than expected',
+            body: 'The materials feel premium, the construction is solid, and the details are spot on. Shipping was fast and the packaging was perfect. Will definitely buy again!',
+            size: 'Option: S',
+            fit: 'Quality: Excellent',
             avatarAlt:
-              "Professional headshot of Sarah Williams, a smiling woman with shoulder-length brown hair wearing a cream blouse",
+              'Professional headshot of Sarah Williams, a smiling woman with shoulder-length brown hair wearing a cream blouse',
           },
           {
-            name: "James Rodriguez",
-            meta: "Verified Buyer • Recently",
+            name: 'James Rodriguez',
+            meta: 'Verified Buyer • Recently',
             rating: 4,
-            title: "Great value, modern quality",
+            title: 'Great value, modern quality',
             body: "A must-have for anyone who appreciates good design. Refined without being loud. Only giving 4 stars because I'd have liked one more option, but otherwise perfect!",
-            size: "Option: XL",
-            fit: "Quality: Very Good",
+            size: 'Option: XL',
+            fit: 'Quality: Very Good',
             avatarAlt:
-              "Professional headshot of James Rodriguez, a bearded man in his 30s wearing a black t-shirt",
+              'Professional headshot of James Rodriguez, a bearded man in his 30s wearing a black t-shirt',
           },
           {
-            name: "Emily Zhang",
-            meta: "Verified Buyer • Recently",
+            name: 'Emily Zhang',
+            meta: 'Verified Buyer • Recently',
             rating: 5,
-            title: "My new favorite",
+            title: 'My new favorite',
             body: "I've bought from a lot of brands and this is by far one of the best. The finish is beautiful and the materials are top notch. Thank you for the fast shipping and great customer service!",
-            size: "Option: XS",
-            fit: "Quality: Excellent",
+            size: 'Option: XS',
+            fit: 'Quality: Excellent',
             avatarAlt:
-              "Professional headshot of Emily Zhang, an Asian woman with glasses and a warm smile wearing a navy blazer",
+              'Professional headshot of Emily Zhang, an Asian woman with glasses and a warm smile wearing a navy blazer',
           },
         ]
-    const viewAll = r.viewAll ?? "View all 2,847 reviews →"
+    const viewAll = r.viewAll ?? 'View all 2,847 reviews →'
 
     const rel = props.related ?? {}
-    const relatedHeading = rel.heading ?? "You Might Also Like"
+    const relatedHeading = rel.heading ?? 'You Might Also Like'
     const relatedItems = rel.items?.length
       ? rel.items
       : [
           {
-            title: "Everyday Essential",
-            price: "$180.00",
-            imageAlt:
-              "Everyday Essential product on a clean studio background",
+            title: 'Everyday Essential',
+            price: '$180.00',
+            imageAlt: 'Everyday Essential product on a clean studio background',
           },
           {
-            title: "Classic Edition",
-            price: "$210.00",
-            imageAlt:
-              "Classic Edition product on a neutral background",
+            title: 'Classic Edition',
+            price: '$210.00',
+            imageAlt: 'Classic Edition product on a neutral background',
           },
           {
-            title: "Limited Release",
-            price: "$225.00",
-            imageAlt:
-              "Limited Release product on a clean studio background",
+            title: 'Limited Release',
+            price: '$225.00',
+            imageAlt: 'Limited Release product on a clean studio background',
           },
           {
-            title: "Premium Pick",
-            price: "$200.00",
-            imageAlt: "Premium Pick product detail on a neutral background",
+            title: 'Premium Pick',
+            price: '$200.00',
+            imageAlt: 'Premium Pick product detail on a neutral background',
           },
         ]
 
     const nl = props.newsletter ?? {}
-    const newsletterHeading = nl.heading ?? "Join Our Community"
+    const newsletterHeading = nl.heading ?? 'Join Our Community'
     const newsletterBody =
       nl.body ??
-      "Get exclusive launches, early access to new releases, and member-only discounts. No spam, just the good stuff."
-    const newsletterPlaceholder = nl.placeholder ?? "Enter your email"
-    const newsletterCta = nl.cta ?? "Subscribe"
+      'Get exclusive launches, early access to new releases, and member-only discounts. No spam, just the good stuff.'
+    const newsletterPlaceholder = nl.placeholder ?? 'Enter your email'
+    const newsletterCta = nl.cta ?? 'Subscribe'
 
     const foot = props.footer ?? {}
     const footerTagline =
       foot.tagline ??
-      "Your destination for quality products. New releases, classics, and everything in between."
+      'Your destination for quality products. New releases, classics, and everything in between.'
     const footerColumns = foot.columns?.length
       ? foot.columns
       : [
           {
-            title: "Shop",
-            links: ["New Arrivals", "Best Sellers", "Collections", "Featured", "Sale"],
+            title: 'Shop',
+            links: [
+              'New Arrivals',
+              'Best Sellers',
+              'Collections',
+              'Featured',
+              'Sale',
+            ],
           },
           {
-            title: "Support",
-            links: ["FAQ", "Shipping", "Returns", "Order Guide", "Contact Us"],
+            title: 'Support',
+            links: ['FAQ', 'Shipping', 'Returns', 'Order Guide', 'Contact Us'],
           },
         ]
     const socials = foot.socials?.length
       ? foot.socials
-      : ["Instagram", "Twitter", "TikTok"]
-    const footerNote = foot.note ?? "All rights reserved."
+      : ['Instagram', 'Twitter', 'TikTok']
+    const footerNote = foot.note ?? 'All rights reserved.'
     const legal = foot.legal?.length
       ? foot.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Settings"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
 
     // ---- Decorative inline icons (token-colored via currentColor) ----
     const Star = ({ className }: { className?: string }) => (
-      <svg viewBox="0 0 20 20" fill="currentColor" className={className} aria-hidden="true">
+      <svg
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        className={className}
+        aria-hidden="true"
+      >
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
       </svg>
     )
 
-    const Stars = ({ value, size = "size-5" }: { value: number; size?: string }) => (
+    const Stars = ({
+      value,
+      size = 'size-5',
+    }: {
+      value: number
+      size?: string
+    }) => (
       <div className="flex items-center" aria-label={`${value} out of 5 stars`}>
         {[1, 2, 3, 4, 5].map((i) => (
           <Star
             key={i}
             className={cn(
               size,
-              i <= Math.round(value) ? "text-primary" : "text-muted-foreground/30",
+              i <= Math.round(value)
+                ? 'text-primary'
+                : 'text-muted-foreground/30',
             )}
           />
         ))}
@@ -544,23 +565,28 @@ export const ProductDetailKimiPage2 = defineCapsule({
     )
 
     const featureIcons = [
-      "M13 10V3L4 14h7v7l9-11h-7z",
-      "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10",
-      "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
-      "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
+      'M13 10V3L4 14h7v7l9-11h-7z',
+      'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
+      'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+      'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
     ]
 
     const socialIcons: Record<string, string> = {
       Instagram:
-        "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z",
+        'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z',
       Twitter:
-        "M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z",
+        'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z',
       TikTok:
-        "M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z",
+        'M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z',
     }
 
     // Swatch background tokens cycle through theme colors (no raw palette).
-    const swatchTokens = ["bg-foreground", "bg-secondary", "bg-primary", "bg-destructive"]
+    const swatchTokens = [
+      'bg-foreground',
+      'bg-secondary',
+      'bg-primary',
+      'bg-destructive',
+    ]
 
     // ---- Shared sub-components ----
     const HeartIcon = ({ active = false }: { active?: boolean }) => (
@@ -615,7 +641,7 @@ export const ProductDetailKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-muted text-foreground antialiased",
+          'min-h-svh bg-muted text-foreground antialiased',
           props.className,
         )}
       >
@@ -638,8 +664,8 @@ export const ProductDetailKimiPage2 = defineCapsule({
                       type="button"
                       onClick={() => go(label)}
                       className={cn(
-                        "transition-colors hover:text-primary",
-                        i === 0 ? "text-foreground" : "text-muted-foreground",
+                        'transition-colors hover:text-primary',
+                        i === 0 ? 'text-foreground' : 'text-muted-foreground',
                       )}
                     >
                       {label}
@@ -651,10 +677,19 @@ export const ProductDetailKimiPage2 = defineCapsule({
                 <button
                   type="button"
                   aria-label="Search"
-                  onClick={() => go("Search")}
+                  onClick={() => go('Search')}
                   className="rounded-full p-2 transition-colors hover:bg-accent"
                 >
-                  <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg
+                    className="size-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
                     <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </button>
@@ -765,7 +800,16 @@ export const ProductDetailKimiPage2 = defineCapsule({
                       aria-label="Shopping cart"
                       className="relative rounded-full p-2 transition-colors hover:bg-accent"
                     >
-                      <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
                         <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                       </svg>
                       {cartItemCount > 0 ? (
@@ -857,9 +901,7 @@ export const ProductDetailKimiPage2 = defineCapsule({
                                   </div>
                                   <button
                                     type="button"
-                                    onClick={() =>
-                                      void removeFromCart(item.id)
-                                    }
+                                    onClick={() => void removeFromCart(item.id)}
                                     className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                                   >
                                     Remove
@@ -875,7 +917,8 @@ export const ProductDetailKimiPage2 = defineCapsule({
                             No products in cart
                           </p>
                           <p className="mt-2 text-sm text-muted-foreground">
-                            Add an item from the product details to start a cart for this session.
+                            Add an item from the product details to start a cart
+                            for this session.
                           </p>
                         </div>
                       )}
@@ -889,7 +932,9 @@ export const ProductDetailKimiPage2 = defineCapsule({
                         <div className="flex justify-between text-muted-foreground">
                           <span>Shipping</span>
                           <span>
-                            {cartShipping ? formatCurrency(cartShipping) : 'Free'}
+                            {cartShipping
+                              ? formatCurrency(cartShipping)
+                              : 'Free'}
                           </span>
                         </div>
                         <div className="flex justify-between pt-2 text-base font-bold text-foreground">
@@ -939,7 +984,12 @@ export const ProductDetailKimiPage2 = defineCapsule({
             {/* Gallery */}
             <div className="space-y-4">
               <div className="aspect-square overflow-hidden rounded-2xl bg-muted">
-                <Image alt={images[0]} w={800} h={800} className="size-full object-cover" />
+                <Image
+                  alt={images[0]}
+                  w={800}
+                  h={800}
+                  className="size-full object-cover"
+                />
               </div>
               <div className="grid grid-cols-4 gap-3">
                 {images.map((img, i) => (
@@ -949,10 +999,10 @@ export const ProductDetailKimiPage2 = defineCapsule({
                     onClick={() => go(productTitle)}
                     aria-label={`View image ${i + 1} of ${productTitle}`}
                     className={cn(
-                      "aspect-square overflow-hidden rounded-xl bg-muted ring-offset-2 ring-offset-card transition-all",
+                      'aspect-square overflow-hidden rounded-xl bg-muted ring-offset-2 ring-offset-card transition-all',
                       i === 0
-                        ? "ring-2 ring-primary"
-                        : "hover:ring-2 hover:ring-border",
+                        ? 'ring-2 ring-primary'
+                        : 'hover:ring-2 hover:ring-border',
                     )}
                   >
                     <Image
@@ -988,7 +1038,7 @@ export const ProductDetailKimiPage2 = defineCapsule({
               </div>
 
               <p className="mb-6 text-3xl font-black">
-                {price}{" "}
+                {price}{' '}
                 <span className="text-lg font-normal text-muted-foreground line-through">
                   {comparePrice}
                 </span>
@@ -1001,8 +1051,10 @@ export const ProductDetailKimiPage2 = defineCapsule({
               {/* Color */}
               <div className="mb-6">
                 <p className="mb-3 block text-sm font-bold">
-                  Color:{" "}
-                  <span className="font-normal text-muted-foreground">{selectedColor}</span>
+                  Color:{' '}
+                  <span className="font-normal text-muted-foreground">
+                    {selectedColor}
+                  </span>
                 </p>
                 <div className="flex gap-3">
                   {colors.map((color, i) => (
@@ -1013,11 +1065,11 @@ export const ProductDetailKimiPage2 = defineCapsule({
                       title={color}
                       onClick={() => setSelectedColor(color)}
                       className={cn(
-                        "size-12 rounded-full ring-offset-2 ring-offset-card",
+                        'size-12 rounded-full ring-offset-2 ring-offset-card',
                         swatchTokens[i % swatchTokens.length],
                         color === selectedColor
-                          ? "ring-2 ring-primary"
-                          : "hover:ring-2 hover:ring-border",
+                          ? 'ring-2 ring-primary'
+                          : 'hover:ring-2 hover:ring-border',
                       )}
                     />
                   ))}
@@ -1030,7 +1082,7 @@ export const ProductDetailKimiPage2 = defineCapsule({
                   <p className="text-sm font-bold">{sizeLabel}</p>
                   <button
                     type="button"
-                    onClick={() => go("Size Guide")}
+                    onClick={() => go('Size Guide')}
                     className="text-sm font-medium text-primary hover:underline"
                   >
                     Size Guide
@@ -1047,12 +1099,12 @@ export const ProductDetailKimiPage2 = defineCapsule({
                         disabled={soldOut}
                         onClick={() => setSelectedSize(size)}
                         className={cn(
-                          "rounded-lg border-2 px-4 py-3 transition-colors",
+                          'rounded-lg border-2 px-4 py-3 transition-colors',
                           soldOut
-                            ? "cursor-not-allowed border-border font-medium text-muted-foreground/50"
+                            ? 'cursor-not-allowed border-border font-medium text-muted-foreground/50'
                             : selected
-                              ? "border-primary bg-accent font-bold text-foreground ring-2 ring-primary ring-offset-2 ring-offset-card"
-                              : "border-border font-medium text-muted-foreground hover:border-foreground hover:text-foreground",
+                              ? 'border-primary bg-accent font-bold text-foreground ring-2 ring-primary ring-offset-2 ring-offset-card'
+                              : 'border-border font-medium text-muted-foreground hover:border-foreground hover:text-foreground',
                         )}
                       >
                         {size}
@@ -1086,7 +1138,12 @@ export const ProductDetailKimiPage2 = defineCapsule({
                 <button
                   type="button"
                   onClick={() => {
-                    void addCartItem(productTitle, selectedSize, selectedColor, quantity)
+                    void addCartItem(
+                      productTitle,
+                      selectedSize,
+                      selectedColor,
+                      quantity,
+                    )
                     setCartOpen(true)
                   }}
                   className="flex-1 rounded-lg bg-primary px-8 py-4 text-lg font-bold text-primary-foreground shadow-lg shadow-primary/30 transition-colors hover:bg-primary/90"
@@ -1099,13 +1156,24 @@ export const ProductDetailKimiPage2 = defineCapsule({
                   onClick={() => void toggleFavorite(productTitle)}
                   className="rounded-lg border-2 border-border p-4 transition-colors hover:border-foreground"
                 >
-                  <HeartIcon active={favoriteProductNames?.has(productTitle) ?? false} />
+                  <HeartIcon
+                    active={favoriteProductNames?.has(productTitle) ?? false}
+                  />
                 </button>
               </div>
 
               {/* Shipping */}
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <svg className="size-5 text-primary" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+                <svg
+                  className="size-5 text-primary"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
                   <path d="M5 13l4 4L19 7" />
                 </svg>
                 <span>{shippingCopy}</span>
@@ -1127,12 +1195,23 @@ export const ProductDetailKimiPage2 = defineCapsule({
                     className="rounded-xl bg-card p-6 text-card-foreground shadow-sm"
                   >
                     <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-primary/10">
-                      <svg className="size-6 text-primary" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+                      <svg
+                        className="size-6 text-primary"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
                         <path d={featureIcons[i % featureIcons.length]} />
                       </svg>
                     </div>
                     <h3 className="mb-2 font-bold">{feature.title}</h3>
-                    <p className="text-sm text-muted-foreground">{feature.body}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {feature.body}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -1142,7 +1221,9 @@ export const ProductDetailKimiPage2 = defineCapsule({
                 <dl className="grid grid-cols-2 gap-4 text-sm">
                   {specs.map((spec) => (
                     <div key={spec.label}>
-                      <dt className="mb-1 text-muted-foreground">{spec.label}</dt>
+                      <dt className="mb-1 text-muted-foreground">
+                        {spec.label}
+                      </dt>
                       <dd className="font-medium">{spec.value}</dd>
                     </div>
                   ))}
@@ -1160,15 +1241,22 @@ export const ProductDetailKimiPage2 = defineCapsule({
                   className="mb-4 size-20 rounded-lg object-cover"
                 />
                 <h3 className="mb-1 font-bold">{summaryTitle}</h3>
-                <p className="mb-4 text-sm text-muted-foreground">{selectedColor} • {selectedSize}</p>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  {selectedColor} • {selectedSize}
+                </p>
                 <div className="mb-4 flex items-center justify-between text-lg font-bold">
                   <span>{summaryTotalLabel}</span>
-                  <span>{formatCurrency(priceAmount(price) * quantity)}</span>
+                  <span>{summaryTotal}</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => {
-                    void addCartItem(productTitle, selectedSize, selectedColor, quantity)
+                    void addCartItem(
+                      productTitle,
+                      selectedSize,
+                      selectedColor,
+                      quantity,
+                    )
                     setCartOpen(true)
                   }}
                   className="w-full rounded-lg bg-primary py-3 font-bold text-primary-foreground shadow-lg shadow-primary/30 transition-colors hover:bg-primary/90"
@@ -1211,7 +1299,9 @@ export const ProductDetailKimiPage2 = defineCapsule({
                   <div className="space-y-2">
                     {breakdown.map((b) => (
                       <div key={b.stars} className="flex items-center gap-3">
-                        <span className="w-12 text-sm font-medium">{b.stars} star</span>
+                        <span className="w-12 text-sm font-medium">
+                          {b.stars} star
+                        </span>
                         <div className="h-3 flex-1 overflow-hidden rounded-full bg-border">
                           <div
                             className="h-3 rounded-full bg-primary"
@@ -1245,7 +1335,9 @@ export const ProductDetailKimiPage2 = defineCapsule({
                       />
                       <div>
                         <p className="font-bold">{review.name}</p>
-                        <p className="text-sm text-muted-foreground">{review.meta}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {review.meta}
+                        </p>
                       </div>
                     </div>
                     <Stars value={review.rating} size="size-4" />
@@ -1295,7 +1387,9 @@ export const ProductDetailKimiPage2 = defineCapsule({
                       />
                     </div>
                     <div className="p-4">
-                      <h3 className="mb-1 font-bold text-card-foreground">{item.title}</h3>
+                      <h3 className="mb-1 font-bold text-card-foreground">
+                        {item.title}
+                      </h3>
                       <p className="font-bold text-primary">{item.price}</p>
                     </div>
                   </div>
@@ -1308,8 +1402,12 @@ export const ProductDetailKimiPage2 = defineCapsule({
         {/* Newsletter CTA */}
         <section className="bg-primary py-16 text-primary-foreground">
           <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-            <h2 className="mb-4 text-3xl font-black sm:text-4xl">{newsletterHeading}</h2>
-            <p className="mb-8 text-lg text-primary-foreground/90">{newsletterBody}</p>
+            <h2 className="mb-4 text-3xl font-black sm:text-4xl">
+              {newsletterHeading}
+            </h2>
+            <p className="mb-8 text-lg text-primary-foreground/90">
+              {newsletterBody}
+            </p>
             <form
               className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
               onSubmit={(e) => {
@@ -1377,8 +1475,15 @@ export const ProductDetailKimiPage2 = defineCapsule({
                       onClick={() => go(social)}
                       className="flex size-10 items-center justify-center rounded-full bg-background/10 transition-colors hover:bg-primary"
                     >
-                      <svg className="size-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d={socialIcons[social] ?? socialIcons.Instagram} />
+                      <svg
+                        className="size-5"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d={socialIcons[social] ?? socialIcons.Instagram}
+                        />
                       </svg>
                     </button>
                   ))}

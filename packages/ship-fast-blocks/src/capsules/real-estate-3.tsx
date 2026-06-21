@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -24,9 +24,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const RealEstateKimiPage3 = defineCapsule({
-  name: "RealEstateKimiPage3",
+  name: 'RealEstateKimiPage3',
   description:
-    "Real Estate third style sibling to RealEstateKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Real Estate third style sibling to RealEstateKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const RealEstateKimiPage3 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -108,95 +110,105 @@ export const RealEstateKimiPage3 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [inquiryOpen, setInquiryOpen] = useState(false)
-    const [inquiryForm, setInquiryForm] = useState({ name: '', email: '', message: '' })
-    const brand = props.brand ?? "Aura Estates"
-    const nav = props.nav?.length ? props.nav : ["Aura Estates", "Listings", "Agents", "Services", "Reviews", "FAQ"]
+    const [inquiryForm, setInquiryForm] = useState({
+      name: '',
+      email: '',
+      message: '',
+    })
+    const brand = props.brand ?? 'Aura Estates'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Aura Estates', 'Listings', 'Agents', 'Services', 'Reviews', 'FAQ']
     const hero = {
-      eyebrow: "Real Estate / Variant 3",
-      title: "Find your sanctuary in the city",
-      description: "Aura Estates | Premium Real Estate Aura Estates Listings Agents Services Reviews FAQ (415) 555-1234 Get in Touch Over 2,400 homes sold since 2014 Find your sanctuary in the city...",
-      primaryCta: "Search",
-      secondaryCta: "All",
-      imageAlt: "Luxury modern home exterior with wooden accents and large windows in a forested setting",
+      eyebrow: 'Real Estate / Variant 3',
+      title: 'Find your sanctuary in the city',
+      description:
+        'Aura Estates | Premium Real Estate Aura Estates Listings Agents Services Reviews FAQ (415) 555-1234 Get in Touch Over 2,400 homes sold since 2014 Find your sanctuary in the city...',
+      primaryCta: 'Search',
+      secondaryCta: 'All',
+      imageAlt:
+        'Luxury modern home exterior with wooden accents and large windows in a forested setting',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Why buyers and sellers choose Aura",
-    "body": "Aura Estates | Premium Real Estate Aura Estates Listings Agents Services Reviews FAQ (415) 555-1234 Get in Touch Over 2,400 homes sold since 2014 Find your sanctuary in the city...",
-    "items": [
-      "Meet your agents",
-      "What our clients say",
-      "Questions & answers"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "Your journey home, simplified",
-    "body": "Real Estate page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Ready to find your place in the world?",
-      "Neighborhood Intelligence",
-      "Cinematic Listings"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Featured listings",
-    "body": "Real Estate page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Data-Driven Pricing",
-      "Secure Transactions",
-      "Global Network"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Meet your agents",
-    "body": "Real Estate page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Concierge Support",
-      "Discovery Call",
-      "Curated Tours"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "Your journey home, simplified",
-    "alt": "Luxury modern home exterior with wooden accents and large windows in a forested setting",
-    "caption": "Real Estate generated page detail"
-  },
-  {
-    "title": "Featured listings",
-    "alt": "Contemporary waterfront mansion with infinity pool overlooking the ocean at sunset",
-    "caption": "Real Estate generated page detail"
-  },
-  {
-    "title": "Meet your agents",
-    "alt": "Spacious open-concept loft interior with exposed brick walls and floor-to-ceiling windows",
-    "caption": "Real Estate generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'Why buyers and sellers choose Aura',
+            body: 'Aura Estates | Premium Real Estate Aura Estates Listings Agents Services Reviews FAQ (415) 555-1234 Get in Touch Over 2,400 homes sold since 2014 Find your sanctuary in the city...',
+            items: [
+              'Meet your agents',
+              'What our clients say',
+              'Questions & answers',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'Your journey home, simplified',
+            body: "Real Estate page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Ready to find your place in the world?',
+              'Neighborhood Intelligence',
+              'Cinematic Listings',
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Featured listings',
+            body: "Real Estate page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Data-Driven Pricing',
+              'Secure Transactions',
+              'Global Network',
+            ],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Meet your agents',
+            body: "Real Estate page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['Concierge Support', 'Discovery Call', 'Curated Tours'],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'Your journey home, simplified',
+            alt: 'Luxury modern home exterior with wooden accents and large windows in a forested setting',
+            caption: 'Real Estate generated page detail',
+          },
+          {
+            title: 'Featured listings',
+            alt: 'Contemporary waterfront mansion with infinity pool overlooking the ocean at sunset',
+            caption: 'Real Estate generated page detail',
+          },
+          {
+            title: 'Meet your agents',
+            alt: 'Spacious open-concept loft interior with exposed brick walls and floor-to-ceiling windows',
+            caption: 'Real Estate generated page detail',
+          },
+        ]
 
     const storedListings = lakebed.useQuery('listings')
     const favoriteListingTitles = lakebed.useQuery('favoriteListingTitles')
@@ -274,17 +286,31 @@ export const RealEstateKimiPage3 = defineCapsule({
 
     const handleInquirySubmit = (e: React.FormEvent) => {
       e.preventDefault()
-      if (!inquiryForm.name || !inquiryForm.email || !inquiryForm.message) return
-      void submitInquiry(inquiryForm.name, inquiryForm.email, inquiryForm.message)
+      if (!inquiryForm.name || !inquiryForm.email || !inquiryForm.message)
+        return
+      void submitInquiry(
+        inquiryForm.name,
+        inquiryForm.email,
+        inquiryForm.message,
+      )
       setInquiryForm({ name: '', email: '', message: '' })
       setInquiryOpen(false)
     }
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -421,47 +447,72 @@ export const RealEstateKimiPage3 = defineCapsule({
                   <SheetHeader className="border-b border-border p-6">
                     <SheetTitle className="text-xl">Contact Us</SheetTitle>
                     <SheetDescription>
-                      Send us a message and we'll get back to you within 24 hours.
+                      Send us a message and we'll get back to you within 24
+                      hours.
                     </SheetDescription>
                   </SheetHeader>
                   <div className="flex-1 overflow-y-auto px-6 py-5">
                     <form onSubmit={handleInquirySubmit} className="space-y-4">
                       <div>
-                        <label htmlFor="name" className="mb-2 block text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="name"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
                           Name
                         </label>
                         <input
                           id="name"
                           type="text"
                           value={inquiryForm.name}
-                          onChange={(e) => setInquiryForm({ ...inquiryForm, name: e.target.value })}
+                          onChange={(e) =>
+                            setInquiryForm({
+                              ...inquiryForm,
+                              name: e.target.value,
+                            })
+                          }
                           placeholder="Your name"
                           required
                           className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                         />
                       </div>
                       <div>
-                        <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="email"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
                           Email
                         </label>
                         <input
                           id="email"
                           type="email"
                           value={inquiryForm.email}
-                          onChange={(e) => setInquiryForm({ ...inquiryForm, email: e.target.value })}
+                          onChange={(e) =>
+                            setInquiryForm({
+                              ...inquiryForm,
+                              email: e.target.value,
+                            })
+                          }
                           placeholder="your@email.com"
                           required
                           className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                         />
                       </div>
                       <div>
-                        <label htmlFor="message" className="mb-2 block text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="message"
+                          className="mb-2 block text-sm font-medium text-foreground"
+                        >
                           Message
                         </label>
                         <textarea
                           id="message"
                           value={inquiryForm.message}
-                          onChange={(e) => setInquiryForm({ ...inquiryForm, message: e.target.value })}
+                          onChange={(e) =>
+                            setInquiryForm({
+                              ...inquiryForm,
+                              message: e.target.value,
+                            })
+                          }
                           placeholder="Tell us about your real estate needs..."
                           required
                           rows={4}
@@ -474,7 +525,11 @@ export const RealEstateKimiPage3 = defineCapsule({
                     <Button
                       type="button"
                       onClick={handleInquirySubmit}
-                      disabled={!inquiryForm.name || !inquiryForm.email || !inquiryForm.message}
+                      disabled={
+                        !inquiryForm.name ||
+                        !inquiryForm.email ||
+                        !inquiryForm.message
+                      }
                       className="w-full rounded-full"
                     >
                       Send Message
@@ -621,16 +676,28 @@ export const RealEstateKimiPage3 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -638,10 +705,19 @@ export const RealEstateKimiPage3 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -665,8 +741,12 @@ export const RealEstateKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Featured Listings</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Featured Listings
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -682,9 +762,18 @@ export const RealEstateKimiPage3 = defineCapsule({
                   favoriteListingTitles?.has(item.title) ?? false
 
                 return (
-                  <article key={item.title} className="group overflow-hidden rounded-lg border border-border bg-card">
+                  <article
+                    key={item.title}
+                    className="group overflow-hidden rounded-lg border border-border bg-card"
+                  >
                     <div className="relative">
-                      <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                      <Image
+                        alt={item.alt}
+                        w={900}
+                        h={700}
+                        loading="lazy"
+                        className="aspect-[4/3] w-full object-cover"
+                      />
                       <button
                         type="button"
                         onClick={() => void toggleFavorite(item.title)}
@@ -705,8 +794,14 @@ export const RealEstateKimiPage3 = defineCapsule({
                       </button>
                     </div>
                     <div className="p-5">
-                      <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                      {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                      <h3 className="text-lg font-semibold text-card-foreground">
+                        {item.title}
+                      </h3>
+                      {item.caption ? (
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                          {item.caption}
+                        </p>
+                      ) : null}
                     </div>
                   </article>
                 )
@@ -718,9 +813,15 @@ export const RealEstateKimiPage3 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -736,10 +837,17 @@ export const RealEstateKimiPage3 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

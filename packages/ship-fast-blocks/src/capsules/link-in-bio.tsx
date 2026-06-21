@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * LinkInBioKimiPage — a complete, self-contained "link in bio" / link-hub page.
@@ -44,7 +44,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * with no props at all.
  */
 export const LinkInBioKimiPage = defineCapsule({
-  name: "LinkInBioKimiPage",
+  name: 'LinkInBioKimiPage',
   description:
     "Complete minimal LINK-IN-BIO / link-hub / bio-link page — a single, centered, narrow-column profile page (think Linktree / Bento / 'link in bio') with a calm, light, paper-toned aesthetic. Includes a circular avatar headshot with an online/available status dot, a name + role/tagline + short bio, a vertical stack of large tappable link-buttons (each with a leading icon tile, a title and subtitle, and a trailing open-arrow or 'New' badge), a row of round social icon buttons (Twitter/X, GitHub, Dribbble, LinkedIn), a 'Featured Work' card with a wide image and caption, and a small copyright footer. Use as the ROOT/home page for a personal landing page, creator or influencer link hub, freelancer/portfolio bio link, 'all my links in one place' page, social-profile splash, or a mobile-first contact/links page. Supply content only — brand/name, nav, profile, links, socials, featured, footer; the block owns all layout and styling.",
   props: z.object({
@@ -66,7 +66,7 @@ export const LinkInBioKimiPage = defineCapsule({
       .array(
         z.object({
           /** Icon key: globe | shop | mail | calendar. */
-          icon: z.enum(["globe", "shop", "mail", "calendar"]),
+          icon: z.enum(['globe', 'shop', 'mail', 'calendar']),
           title: z.string(),
           subtitle: z.string(),
           /** Optional pill (e.g. "New") shown instead of the trailing arrow. */
@@ -79,7 +79,7 @@ export const LinkInBioKimiPage = defineCapsule({
       .array(
         z.object({
           /** Icon key: twitter | github | dribbble | linkedin. */
-          icon: z.enum(["twitter", "github", "dribbble", "linkedin"]),
+          icon: z.enum(['twitter', 'github', 'dribbble', 'linkedin']),
           label: z.string(),
         }),
       )
@@ -116,10 +116,14 @@ export const LinkInBioKimiPage = defineCapsule({
     },
     queries: {
       savedLinks: ({ db }) => db.savedLinks.orderBy('createdAt').all(),
-      contactInquiries: ({ db }) => db.contactInquiries.orderBy('createdAt').all(),
     },
     mutations: {
-      saveLink: ({ db }, linkTitle: string, linkSubtitle: string, icon: string) => {
+      saveLink: (
+        { db },
+        linkTitle: string,
+        linkSubtitle: string,
+        icon: string,
+      ) => {
         db.savedLinks.insert({ linkTitle, linkSubtitle, icon })
         return db.savedLinks.all()
       },
@@ -137,68 +141,67 @@ export const LinkInBioKimiPage = defineCapsule({
     const go = useNavigate()
     const [savedLinksOpen, setSavedLinksOpen] = useState(false)
     const [contactOpen, setContactOpen] = useState(false)
-    const brand = props.brand ?? "Sarah Chen"
+    const brand = props.brand ?? 'Sarah Chen'
     const nav = props.nav?.length
       ? props.nav
-      : ["Portfolio", "UI Kit Shop", "Newsletter", "Book a Call"]
+      : ['Portfolio', 'UI Kit Shop', 'Newsletter', 'Book a Call']
 
     const avatarAlt =
       props.profile?.avatarAlt ??
-      "professional headshot of a smiling woman with dark hair wearing a minimal cream sweater"
-    const status = props.profile?.status ?? "Available for work"
-    const role = props.profile?.role ?? "Design Engineer at Notion"
+      'professional headshot of a smiling woman with dark hair wearing a minimal cream sweater'
+    const status = props.profile?.status ?? 'Available for work'
+    const role = props.profile?.role ?? 'Design Engineer at Notion'
     const bio =
       props.profile?.bio ??
-      "Crafting thoughtful interfaces. Writing about design systems, React, and the craft of digital products."
+      'Crafting thoughtful interfaces. Writing about design systems, React, and the craft of digital products.'
 
     const links = props.links?.length
       ? props.links
       : [
           {
-            icon: "globe" as const,
-            title: "Portfolio",
-            subtitle: "sarahchen.design",
+            icon: 'globe' as const,
+            title: 'Portfolio',
+            subtitle: 'sarahchen.design',
           },
           {
-            icon: "shop" as const,
-            title: "UI Kit Shop",
-            subtitle: "Figma templates & icons",
-            badge: "New",
+            icon: 'shop' as const,
+            title: 'UI Kit Shop',
+            subtitle: 'Figma templates & icons',
+            badge: 'New',
           },
           {
-            icon: "mail" as const,
-            title: "Newsletter",
-            subtitle: "12,400+ subscribers",
+            icon: 'mail' as const,
+            title: 'Newsletter',
+            subtitle: '12,400+ subscribers',
           },
           {
-            icon: "calendar" as const,
-            title: "Book a Call",
-            subtitle: "30 min consultation — $150",
+            icon: 'calendar' as const,
+            title: 'Book a Call',
+            subtitle: '30 min consultation — $150',
           },
         ]
 
     const socials = props.socials?.length
       ? props.socials
       : [
-          { icon: "twitter" as const, label: "Twitter" },
-          { icon: "github" as const, label: "GitHub" },
-          { icon: "dribbble" as const, label: "Dribbble" },
-          { icon: "linkedin" as const, label: "LinkedIn" },
+          { icon: 'twitter' as const, label: 'Twitter' },
+          { icon: 'github' as const, label: 'GitHub' },
+          { icon: 'dribbble' as const, label: 'Dribbble' },
+          { icon: 'linkedin' as const, label: 'LinkedIn' },
         ]
 
-    const featuredHeading = props.featured?.heading ?? "Featured Work"
+    const featuredHeading = props.featured?.heading ?? 'Featured Work'
     const featuredImageAlt =
       props.featured?.imageAlt ??
-      "abstract minimalist 3D render of soft pastel geometric shapes with smooth shadows"
-    const featuredTitle = props.featured?.title ?? "Notion Calendar Launch"
+      'abstract minimalist 3D render of soft pastel geometric shapes with smooth shadows'
+    const featuredTitle = props.featured?.title ?? 'Notion Calendar Launch'
     const featuredDesc =
       props.featured?.description ??
-      "Design system, motion, and landing experience"
+      'Design system, motion, and landing experience'
 
-    const footerNote = props.footer?.note ?? "All rights reserved."
+    const footerNote = props.footer?.note ?? 'All rights reserved.'
 
     const savedLinks = lakebed.useQuery('savedLinks')
-    const contactInquiries = lakebed.useQuery('contactInquiries')
     const saveLink = lakebed.useMutation('saveLink')
     const removeSavedLink = lakebed.useMutation('removeSavedLink')
     const submitInquiry = lakebed.useMutation('submitInquiry')
@@ -382,25 +385,12 @@ export const LinkInBioKimiPage = defineCapsule({
       </svg>
     )
 
-    const ArrowRight = () => (
-      <svg
-        className="size-4"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <line x1="5" y1="12" x2="19" y2="12" />
-        <polyline points="12 5 19 12 12 19" />
-      </svg>
-    )
-
     const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
       <svg
-        className={cn('size-5', active ? 'text-primary' : 'text-muted-foreground')}
+        className={cn(
+          'size-5',
+          active ? 'text-primary' : 'text-muted-foreground',
+        )}
         fill={active ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="2"
@@ -416,14 +406,16 @@ export const LinkInBioKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
         {/* Header with auth and saved links */}
         <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
           <div className="mx-auto flex h-14 max-w-md items-center justify-between px-6">
-            <span className="text-sm font-semibold text-foreground">{brand}</span>
+            <span className="text-sm font-semibold text-foreground">
+              {brand}
+            </span>
             <div className="flex items-center gap-2">
               {isSignedIn ? (
                 <Popover>
@@ -439,7 +431,10 @@ export const LinkInBioKimiPage = defineCapsule({
                         aria-hidden="true"
                       >
                         {authPicture ? (
-                          <AvatarImage src={authPicture} alt={authDisplayName} />
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
                         ) : null}
                         <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
                           {authInitials}
@@ -458,9 +453,12 @@ export const LinkInBioKimiPage = defineCapsule({
                   >
                     <div className="bg-muted/40 px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <Avatar size="md" className="ring-2 ring-background">
+                        <Avatar size="lg" className="ring-2 ring-background">
                           {authPicture ? (
-                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
                           ) : null}
                           <AvatarFallback className="bg-foreground text-xs font-bold text-background">
                             {authInitials}
@@ -516,7 +514,10 @@ export const LinkInBioKimiPage = defineCapsule({
                     ) : null}
                   </button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-sm">
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-sm"
+                >
                   <SheetHeader className="border-b border-border p-6">
                     <SheetTitle className="text-xl">Saved Links</SheetTitle>
                     <SheetDescription>
@@ -581,7 +582,11 @@ export const LinkInBioKimiPage = defineCapsule({
                   </div>
                   <SheetFooter className="border-t border-border p-6">
                     <SheetClose asChild>
-                      <Button type="button" variant="outline" className="w-full rounded-full">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full rounded-full"
+                      >
                         Close
                       </Button>
                     </SheetClose>
@@ -736,7 +741,10 @@ export const LinkInBioKimiPage = defineCapsule({
                   </span>
                 </button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+              <SheetContent
+                side="right"
+                className="w-full gap-0 p-0 sm:max-w-md"
+              >
                 <SheetHeader className="border-b border-border p-6">
                   <SheetTitle className="text-xl">Get in Touch</SheetTitle>
                   <SheetDescription>
@@ -750,9 +758,16 @@ export const LinkInBioKimiPage = defineCapsule({
                     onSubmit={(e) => {
                       e.preventDefault()
                       const form = e.currentTarget
-                      const name = form.name.value
-                      const email = form.email.value
-                      const message = form.message.value
+                      const elements = form.elements
+                      const name = (
+                        elements.namedItem('name') as HTMLInputElement
+                      ).value
+                      const email = (
+                        elements.namedItem('email') as HTMLInputElement
+                      ).value
+                      const message = (
+                        elements.namedItem('message') as HTMLTextAreaElement
+                      ).value
                       if (name && email && message) {
                         void submitInquiry(name, email, message)
                         form.reset()
@@ -819,7 +834,11 @@ export const LinkInBioKimiPage = defineCapsule({
                     Send Message
                   </Button>
                   <SheetClose asChild>
-                    <Button type="button" variant="outline" className="w-full rounded-full">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full rounded-full"
+                    >
                       Cancel
                     </Button>
                   </SheetClose>

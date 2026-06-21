@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, useEffect } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -13,15 +13,14 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * WeddingKimiPage — a complete, self-contained wedding-invitation / save-the-date
@@ -44,7 +43,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * props at all — the orchestrator may call it with just (brand, nav).
  */
 export const WeddingKimiPage = defineCapsule({
-  name: "WeddingKimiPage",
+  name: 'WeddingKimiPage',
   description:
     "Complete WEDDING invitation / save-the-date / wedding-website LANDING page with an elegant, editorial, romantic warm-neutral aesthetic: serif display headings, airy whitespace, thin divider rules and soft section bands. Includes a full-bleed photographic hero (couple names like 'Emma & James', wedding date, venue/location, RSVP + Our Story CTAs, scroll cue), an 'Our Story / How We Met' dated milestone timeline, a center-line day-of 'Wedding Schedule' with alternating photo cards (arrival, ceremony, cocktail hour, dinner, dancing), a 'Travel & Stay' details grid (venue address, accommodations, dress code) with a getting-there/shuttle split, a masonry photo gallery of engagement memories, a full RSVP form (first/last name, email, joyfully-accept/regretfully-decline radios, guest count select, dietary restrictions, shuttle opt-in), and a dark footer with couple monogram and Instagram social link. Use as the ROOT/home page for weddings, engagements, save-the-dates, marriage celebrations, bridal events, vow renewals or couple event sites when a refined, photo-led, RSVP-focused page is wanted. Supply content only — brand/monogram, nav, hero, story, schedule, details, gallery, rsvp, footer; the block owns all layout and styling.",
   props: z.object({
@@ -107,7 +106,7 @@ export const WeddingKimiPage = defineCapsule({
         cards: z
           .array(
             z.object({
-              icon: z.enum(["pin", "building", "dress"]),
+              icon: z.enum(['pin', 'building', 'dress']),
               title: z.string(),
               text: z.string(),
               link: z.string().optional(),
@@ -172,8 +171,6 @@ export const WeddingKimiPage = defineCapsule({
     },
     queries: {
       rsvps: ({ db }) => db.rsvps.orderBy('createdAt').all(),
-      myRsvp: ({ db }, email: string) =>
-        db.rsvps.where('email', email).all()[0],
     },
     mutations: {
       submitRsvp: (
@@ -230,7 +227,7 @@ export const WeddingKimiPage = defineCapsule({
       dietaryRestrictions: '',
       needsShuttle: false,
     })
-    const brand = props.brand ?? "E & J"
+    const brand = props.brand ?? 'E & J'
 
     const rsvps = lakebed.useQuery('rsvps')
     const submitRsvp = lakebed.useMutation('submitRsvp')
@@ -300,181 +297,182 @@ export const WeddingKimiPage = defineCapsule({
 
     const nav = props.nav?.length
       ? props.nav
-      : ["Our Story", "Schedule", "Gallery", "Details", "RSVP"]
+      : ['Our Story', 'Schedule', 'Gallery', 'Details', 'RSVP']
 
-    const heroEyebrow = props.hero?.eyebrow ?? "Together Forever"
-    const heroNames = props.hero?.names ?? "Emma & James"
-    const heroDate = props.hero?.date ?? "September 12, 2026"
+    const heroEyebrow = props.hero?.eyebrow ?? 'Together Forever'
+    const heroNames = props.hero?.names ?? 'Emma & James'
+    const heroDate = props.hero?.date ?? 'September 12, 2026'
     const heroLocation =
-      props.hero?.location ?? "Willowbrook Estate • Napa Valley, California"
+      props.hero?.location ?? 'Willowbrook Estate • Napa Valley, California'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "couple walking through a sunlit vineyard path holding hands"
-    const heroPrimary = props.hero?.primaryCta ?? "RSVP Now"
-    const heroSecondary = props.hero?.secondaryCta ?? "Our Story"
+      'couple walking through a sunlit vineyard path holding hands'
+    const heroPrimary = props.hero?.primaryCta ?? 'RSVP Now'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Our Story'
 
-    const storyEyebrow = props.story?.eyebrow ?? "Our Journey"
-    const storyHeading = props.story?.heading ?? "How We Met"
+    const storyEyebrow = props.story?.eyebrow ?? 'Our Journey'
+    const storyHeading = props.story?.heading ?? 'How We Met'
     const storyImageAlt =
       props.story?.imageAlt ??
-      "young couple laughing together at a cozy coffee shop with warm lighting"
+      'young couple laughing together at a cozy coffee shop with warm lighting'
     const storyMilestones = props.story?.milestones?.length
       ? props.story.milestones
       : [
           {
-            date: "June 2018",
-            title: "The Coffee Shop Encounter",
-            text: "Emma was working on her laptop at Blue Bottle Coffee on Market Street when James accidentally knocked her americano onto her keyboard. Mortified, he offered to buy her another—and a new keyboard. Three hours later, they were still talking.",
+            date: 'June 2018',
+            title: 'The Coffee Shop Encounter',
+            text: 'Emma was working on her laptop at Blue Bottle Coffee on Market Street when James accidentally knocked her americano onto her keyboard. Mortified, he offered to buy her another—and a new keyboard. Three hours later, they were still talking.',
           },
           {
-            date: "March 2019",
-            title: "Our First Adventure",
+            date: 'March 2019',
+            title: 'Our First Adventure',
             text: "We spent a long weekend in Mendocino, hiking coastal trails and staying in a tiny cabin with no WiFi. It rained the entire time. We didn't mind. That weekend, we knew this was something special.",
           },
           {
-            date: "December 2024",
-            title: "The Proposal",
-            text: "On a quiet Tuesday evening at our favorite neighborhood restaurant, E Tutto Qua, James got down on one knee while the staff—who had been in on the plan—played our song. Emma said yes before he could finish asking.",
+            date: 'December 2024',
+            title: 'The Proposal',
+            text: 'On a quiet Tuesday evening at our favorite neighborhood restaurant, E Tutto Qua, James got down on one knee while the staff—who had been in on the plan—played our song. Emma said yes before he could finish asking.',
           },
         ]
 
-    const scheduleEyebrow = props.schedule?.eyebrow ?? "The Day Of"
-    const scheduleHeading = props.schedule?.heading ?? "Wedding Schedule"
+    const scheduleEyebrow = props.schedule?.eyebrow ?? 'The Day Of'
+    const scheduleHeading = props.schedule?.heading ?? 'Wedding Schedule'
     const scheduleSub =
       props.schedule?.subheading ??
-      "September 12, 2026 • Willowbrook Estate, 4825 Napa Valley Highway, Napa, CA 94558"
+      'September 12, 2026 • Willowbrook Estate, 4825 Napa Valley Highway, Napa, CA 94558'
     const scheduleItems = props.schedule?.items?.length
       ? props.schedule.items
       : [
           {
-            time: "3:00 PM",
-            title: "Guest Arrival",
-            text: "Welcome drinks served on the garden terrace. Please arrive by 3:30 PM to be seated.",
-            imageAlt: "elegant champagne glasses on a garden terrace at sunset",
+            time: '3:00 PM',
+            title: 'Guest Arrival',
+            text: 'Welcome drinks served on the garden terrace. Please arrive by 3:30 PM to be seated.',
+            imageAlt: 'elegant champagne glasses on a garden terrace at sunset',
           },
           {
-            time: "4:00 PM",
-            title: "Ceremony",
+            time: '4:00 PM',
+            title: 'Ceremony',
             text: "Outdoor ceremony in the estate garden. In case of rain, we'll move to the covered pavilion.",
             imageAlt:
-              "wedding ceremony setup with white chairs in a garden setting",
+              'wedding ceremony setup with white chairs in a garden setting',
           },
           {
-            time: "4:45 PM",
-            title: "Cocktail Hour",
+            time: '4:45 PM',
+            title: 'Cocktail Hour',
             text: "Signature cocktails, passed hors d'oeuvres, and lawn games while we take photos.",
-            imageAlt: "elegant cocktail drinks served on a garden bar",
+            imageAlt: 'elegant cocktail drinks served on a garden bar',
           },
           {
-            time: "6:00 PM",
-            title: "Dinner Reception",
-            text: "Seated dinner in the vineyard barn. Toasts, first dance, and family-style California cuisine.",
+            time: '6:00 PM',
+            title: 'Dinner Reception',
+            text: 'Seated dinner in the vineyard barn. Toasts, first dance, and family-style California cuisine.',
             imageAlt:
-              "elegant wedding reception dinner table with floral centerpieces",
+              'elegant wedding reception dinner table with floral centerpieces',
           },
           {
-            time: "8:00 PM",
-            title: "Dancing",
-            text: "Live band starts, cake cutting, and dancing until late. Sparkler send-off at 10:30 PM.",
+            time: '8:00 PM',
+            title: 'Dancing',
+            text: 'Live band starts, cake cutting, and dancing until late. Sparkler send-off at 10:30 PM.',
             imageAlt:
-              "wedding guests dancing at an outdoor evening reception with string lights",
+              'wedding guests dancing at an outdoor evening reception with string lights',
           },
         ]
 
-    const detailsEyebrow = props.details?.eyebrow ?? "Practical Information"
-    const detailsHeading = props.details?.heading ?? "Travel & Stay"
+    const detailsEyebrow = props.details?.eyebrow ?? 'Practical Information'
+    const detailsHeading = props.details?.heading ?? 'Travel & Stay'
     const detailsCards = props.details?.cards?.length
       ? props.details.cards
       : [
           {
-            icon: "pin" as const,
-            title: "Venue",
-            text: "Willowbrook Estate, 4825 Napa Valley Highway, Napa, CA 94558",
-            note: "45 minutes from San Francisco International Airport",
+            icon: 'pin' as const,
+            title: 'Venue',
+            text: 'Willowbrook Estate, 4825 Napa Valley Highway, Napa, CA 94558',
+            note: '45 minutes from San Francisco International Airport',
           },
           {
-            icon: "building" as const,
-            title: "Accommodations",
+            icon: 'building' as const,
+            title: 'Accommodations',
             text: "We've reserved a room block at the Vintage House in Yountville, 10 minutes from the venue.",
-            link: "Book by August 1st",
+            link: 'Book by August 1st',
           },
           {
-            icon: "dress" as const,
-            title: "Dress Code",
-            text: "Garden party formal. The ceremony and cocktail hour are outdoors on grass—please wear appropriate footwear.",
-            note: "Warm neutral tones recommended",
+            icon: 'dress' as const,
+            title: 'Dress Code',
+            text: 'Garden party formal. The ceremony and cocktail hour are outdoors on grass—please wear appropriate footwear.',
+            note: 'Warm neutral tones recommended',
           },
         ]
     const gettingThereHeading =
-      props.details?.gettingThereHeading ?? "Getting There"
+      props.details?.gettingThereHeading ?? 'Getting There'
     const gettingThere = props.details?.gettingThere?.length
       ? props.details.gettingThere
       : [
           {
-            label: "By Car:",
-            text: "From San Francisco, take Highway 101 North to Highway 37 East, then Highway 121 North to Highway 12 East. The estate is 2 miles past the town of Napa on the right.",
+            label: 'By Car:',
+            text: 'From San Francisco, take Highway 101 North to Highway 37 East, then Highway 121 North to Highway 12 East. The estate is 2 miles past the town of Napa on the right.',
           },
           {
-            label: "Shuttle Service:",
+            label: 'Shuttle Service:',
             text: "We'll be providing shuttle buses from the Vintage House in Yountville departing at 2:30 PM and 3:00 PM. Return shuttles leave the venue at 11:00 PM.",
           },
           {
-            label: "Rideshare:",
-            text: "Uber and Lyft operate in the area, but availability can be limited on weekend evenings. We recommend booking your return ride in advance.",
+            label: 'Rideshare:',
+            text: 'Uber and Lyft operate in the area, but availability can be limited on weekend evenings. We recommend booking your return ride in advance.',
           },
         ]
     const gettingThereImageAlt =
       props.details?.gettingThereImageAlt ??
-      "aerial view of rolling vineyard hills in Napa Valley at golden hour"
+      'aerial view of rolling vineyard hills in Napa Valley at golden hour'
 
-    const galleryEyebrow = props.gallery?.eyebrow ?? "Memories"
-    const galleryHeading = props.gallery?.heading ?? "Photo Gallery"
+    const galleryEyebrow = props.gallery?.eyebrow ?? 'Memories'
+    const galleryHeading = props.gallery?.heading ?? 'Photo Gallery'
     const gallerySub =
       props.gallery?.subheading ??
-      "Moments from our engagement and favorite adventures together"
+      'Moments from our engagement and favorite adventures together'
     const galleryImages = props.gallery?.images?.length
       ? props.gallery.images
       : [
-          "couple laughing while sitting on a park bench in autumn",
-          "couple walking hand in hand on a sandy beach at sunset",
-          "couple hiking in a forest with backpacks",
-          "couple embracing in a golden wheat field at sunset",
-          "couple toasting wine glasses at a vineyard winery",
-          "couple riding bicycles on a coastal road",
-          "couple cooking together in a modern kitchen",
-          "couple sitting by a campfire under a starry night sky",
+          'couple laughing while sitting on a park bench in autumn',
+          'couple walking hand in hand on a sandy beach at sunset',
+          'couple hiking in a forest with backpacks',
+          'couple embracing in a golden wheat field at sunset',
+          'couple toasting wine glasses at a vineyard winery',
+          'couple riding bicycles on a coastal road',
+          'couple cooking together in a modern kitchen',
+          'couple sitting by a campfire under a starry night sky',
         ]
     const galleryWide = [
-      "engagement ring close-up with bokeh lights in background",
-      "couple dancing at a rooftop bar at night",
-      "couple exploring a farmers market on a sunny morning",
+      'engagement ring close-up with bokeh lights in background',
+      'couple dancing at a rooftop bar at night',
+      'couple exploring a farmers market on a sunny morning',
     ]
 
-    const rsvpEyebrow = props.rsvp?.eyebrow ?? "Join Us"
-    const rsvpHeading = props.rsvp?.heading ?? "RSVP"
-    const rsvpSub = props.rsvp?.subheading ?? "Please respond by August 1, 2026"
+    const rsvpEyebrow = props.rsvp?.eyebrow ?? 'Join Us'
+    const rsvpHeading = props.rsvp?.heading ?? 'RSVP'
+    const rsvpSub = props.rsvp?.subheading ?? 'Please respond by August 1, 2026'
     const attendOptions = props.rsvp?.attendOptions?.length
       ? props.rsvp.attendOptions
-      : ["Joyfully Accept", "Regretfully Decline"]
+      : ['Joyfully Accept', 'Regretfully Decline']
     const guestOptions = props.rsvp?.guestOptions?.length
       ? props.rsvp.guestOptions
-      : ["1 guest", "2 guests", "3 guests", "4 guests"]
+      : ['1 guest', '2 guests', '3 guests', '4 guests']
     const shuttleLabel =
       props.rsvp?.shuttleLabel ??
-      "We would like to use the shuttle service from the Vintage House"
-    const rsvpSubmit = props.rsvp?.submit ?? "Submit RSVP"
-    const rsvpContactNote = props.rsvp?.contactNote ?? "Questions? Email us at"
-    const rsvpEmail = props.rsvp?.email ?? "wedding@emmaandjames.com"
+      'We would like to use the shuttle service from the Vintage House'
+    const rsvpSubmit = props.rsvp?.submit ?? 'Submit RSVP'
+    const rsvpContactNote = props.rsvp?.contactNote ?? 'Questions? Email us at'
+    const rsvpEmail = props.rsvp?.email ?? 'wedding@emmaandjames.com'
 
-    const footerDate = props.footer?.date ?? "September 12, 2026"
-    const footerLocation = props.footer?.location ?? "Napa Valley, California"
-    const footerMessage = props.footer?.message ?? "With love, Emma & James"
+    const footerDate = props.footer?.date ?? 'September 12, 2026'
+    const footerLocation = props.footer?.location ?? 'Napa Valley, California'
+    const footerMessage = props.footer?.message ?? 'With love, Emma & James'
     const footerMessageSub =
-      props.footer?.messageSub ?? "Thank you for being part of our story"
-    const footerNote = props.footer?.note ?? "Made with love for our wedding day"
+      props.footer?.messageSub ?? 'Thank you for being part of our story'
+    const footerNote =
+      props.footer?.note ?? 'Made with love for our wedding day'
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Instagram"]
+      : ['Instagram']
 
     const navCta = nav[nav.length - 1]
 
@@ -559,12 +557,12 @@ export const WeddingKimiPage = defineCapsule({
     }
 
     const inputCls =
-      "w-full rounded-sm border border-input bg-muted px-4 py-3 text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none"
+      'w-full rounded-sm border border-input bg-muted px-4 py-3 text-foreground placeholder-muted-foreground transition-colors focus:border-ring focus:outline-none'
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -604,7 +602,10 @@ export const WeddingKimiPage = defineCapsule({
                           aria-hidden="true"
                         >
                           {authPicture ? (
-                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
                           ) : null}
                           <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
                             {authInitials}
@@ -625,7 +626,10 @@ export const WeddingKimiPage = defineCapsule({
                         <div className="flex items-center gap-3">
                           <Avatar size="lg" className="ring-2 ring-background">
                             {authPicture ? (
-                              <AvatarImage src={authPicture} alt={authDisplayName} />
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
                             ) : null}
                             <AvatarFallback className="bg-foreground text-sm font-bold text-background">
                               {authInitials}
@@ -742,7 +746,10 @@ export const WeddingKimiPage = defineCapsule({
                       <div className="flex items-center gap-3">
                         <Avatar size="lg">
                           {authPicture ? (
-                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
                           ) : null}
                           <AvatarFallback className="bg-foreground text-sm font-bold text-background">
                             {authInitials}
@@ -927,8 +934,8 @@ export const WeddingKimiPage = defineCapsule({
                   const TextBlock = (
                     <div
                       className={cn(
-                        "md:w-1/2",
-                        textFirst ? "md:pl-12" : "md:pr-12 md:text-right",
+                        'md:w-1/2',
+                        textFirst ? 'md:pl-12' : 'md:pr-12 md:text-right',
                       )}
                     >
                       <span className="text-sm text-muted-foreground">
@@ -943,8 +950,8 @@ export const WeddingKimiPage = defineCapsule({
                   const ImageBlock = (
                     <div
                       className={cn(
-                        "mt-4 md:mt-0 md:w-1/2",
-                        textFirst ? "md:pr-12" : "md:pl-12",
+                        'mt-4 md:mt-0 md:w-1/2',
+                        textFirst ? 'md:pr-12' : 'md:pl-12',
                       )}
                     >
                       <Image
@@ -964,8 +971,8 @@ export const WeddingKimiPage = defineCapsule({
                       {textFirst ? ImageBlock : TextBlock}
                       <div
                         className={cn(
-                          "z-10 hidden size-4 rounded-full border-4 border-muted md:flex",
-                          textFirst ? "bg-primary" : "bg-muted-foreground",
+                          'z-10 hidden size-4 rounded-full border-4 border-muted md:flex',
+                          textFirst ? 'bg-primary' : 'bg-muted-foreground',
                         )}
                       />
                       {textFirst ? TextBlock : ImageBlock}
@@ -1030,7 +1037,7 @@ export const WeddingKimiPage = defineCapsule({
                         <p key={g.label}>
                           <strong className="text-card-foreground">
                             {g.label}
-                          </strong>{" "}
+                          </strong>{' '}
                           {g.text}
                         </p>
                       ))}
@@ -1075,8 +1082,8 @@ export const WeddingKimiPage = defineCapsule({
                       h={i % 2 === 0 ? 520 : 400}
                       loading="lazy"
                       className={cn(
-                        "w-full rounded-sm object-cover transition-opacity hover:opacity-90",
-                        i % 2 === 0 ? "aspect-[3/4]" : "aspect-square",
+                        'w-full rounded-sm object-cover transition-opacity hover:opacity-90',
+                        i % 2 === 0 ? 'aspect-[3/4]' : 'aspect-square',
                       )}
                     />
                   </div>
@@ -1092,8 +1099,8 @@ export const WeddingKimiPage = defineCapsule({
                     h={338}
                     loading="lazy"
                     className={cn(
-                      "aspect-video w-full rounded-sm object-cover transition-opacity hover:opacity-90",
-                      i === 2 ? "hidden md:block" : null,
+                      'aspect-video w-full rounded-sm object-cover transition-opacity hover:opacity-90',
+                      i === 2 ? 'hidden md:block' : null,
                     )}
                   />
                 ))}
@@ -1115,10 +1122,7 @@ export const WeddingKimiPage = defineCapsule({
                 <div className="mx-auto mt-6 h-px w-16 bg-border" />
               </div>
 
-              <form
-                className="space-y-6"
-                onSubmit={handleRsvpSubmit}
-              >
+              <form className="space-y-6" onSubmit={handleRsvpSubmit}>
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
                     <label
@@ -1196,7 +1200,10 @@ export const WeddingKimiPage = defineCapsule({
                           value={opt}
                           checked={rsvpForm.attendance === opt}
                           onChange={(e) =>
-                            setRsvpForm({ ...rsvpForm, attendance: e.target.value })
+                            setRsvpForm({
+                              ...rsvpForm,
+                              attendance: e.target.value,
+                            })
                           }
                           className="size-4 accent-primary"
                         />
@@ -1222,7 +1229,7 @@ export const WeddingKimiPage = defineCapsule({
                         guestCount: Number.parseInt(e.target.value, 10),
                       })
                     }
-                    className={cn(inputCls, "appearance-none")}
+                    className={cn(inputCls, 'appearance-none')}
                   >
                     {guestOptions.map((opt, i) => (
                       <option key={opt} value={i + 1} className="bg-background">
@@ -1250,7 +1257,7 @@ export const WeddingKimiPage = defineCapsule({
                         dietaryRestrictions: e.target.value,
                       })
                     }
-                    className={cn(inputCls, "resize-none")}
+                    className={cn(inputCls, 'resize-none')}
                   />
                 </div>
 
@@ -1261,7 +1268,10 @@ export const WeddingKimiPage = defineCapsule({
                       name="shuttle"
                       checked={rsvpForm.needsShuttle}
                       onChange={(e) =>
-                        setRsvpForm({ ...rsvpForm, needsShuttle: e.target.checked })
+                        setRsvpForm({
+                          ...rsvpForm,
+                          needsShuttle: e.target.checked,
+                        })
                       }
                       className="mt-1 size-4 accent-primary"
                     />
@@ -1281,7 +1291,7 @@ export const WeddingKimiPage = defineCapsule({
 
               <div className="mt-12 border-t border-border pt-12 text-center">
                 <p className="text-sm text-muted-foreground">
-                  {rsvpContactNote}{" "}
+                  {rsvpContactNote}{' '}
                   <button
                     type="button"
                     onClick={() => go(rsvpEmail)}

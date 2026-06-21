@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { z } from 'zod/v4'
 import { cn } from '#/lib/utils.ts'
 import { defineCapsule } from './openui.ts'
 import { number, string, table } from '@ship-fast/lakebed/server'
@@ -20,7 +19,9 @@ import {
   PopoverTrigger,
 } from '#/components/ui/popover.tsx'
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
-import FlightSimulator, { flightSimulatorProps } from '#/components/game/flight-simulator.tsx'
+import FlightSimulator, {
+  flightSimulatorProps,
+} from '#/components/game/flight-simulator.tsx'
 
 export const FlightSimulatorKimiPage = defineCapsule({
   name: 'FlightSimulatorKimiPage',
@@ -57,7 +58,7 @@ export const FlightSimulatorKimiPage = defineCapsule({
     queries: {
       savedConfigs: ({ db }) => db.savedConfigs.orderBy('createdAt').all(),
       flightSessions: ({ db }) =>
-        db.flightSessions.orderBy('createdAt').take(10),
+        (db.flightSessions.orderBy('createdAt') as any).take(10),
     },
     mutations: {
       saveConfig: ({ db }, config: Record<string, string>) => {
@@ -71,7 +72,10 @@ export const FlightSimulatorKimiPage = defineCapsule({
       loadConfig: ({ db }, id: string) => {
         return db.savedConfigs.get(id)
       },
-      recordFlight: ({ db }, session: { duration: number; distance: number; configName: string }) => {
+      recordFlight: (
+        { db },
+        session: { duration: number; distance: number; configName: string },
+      ) => {
         db.flightSessions.insert(session)
         return db.flightSessions.all()
       },
@@ -83,10 +87,7 @@ export const FlightSimulatorKimiPage = defineCapsule({
 
     const savedConfigs = lakebed.useQuery('savedConfigs')
     const flightSessions = lakebed.useQuery('flightSessions')
-    const saveConfig = lakebed.useMutation('saveConfig')
     const deleteConfig = lakebed.useMutation('deleteConfig')
-    const loadConfig = lakebed.useMutation('loadConfig')
-    const recordFlight = lakebed.useMutation('recordFlight')
     const auth = lakebed.useAuth()
 
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
@@ -128,22 +129,6 @@ export const FlightSimulatorKimiPage = defineCapsule({
         aria-hidden="true"
       >
         <polyline points="6 9 12 15 18 9" />
-      </svg>
-    )
-
-    const ArrowRight = () => (
-      <svg
-        className="size-4"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <line x1="5" y1="12" x2="19" y2="12" />
-        <polyline points="12 5 19 12 12 19" />
       </svg>
     )
 
@@ -358,7 +343,8 @@ export const FlightSimulatorKimiPage = defineCapsule({
                                   {config.name}
                                 </p>
                                 <p className="mt-1 text-xs text-muted-foreground">
-                                  {config.aircraftModel} · {config.aircraftColor}
+                                  {config.aircraftModel} ·{' '}
+                                  {config.aircraftColor}
                                 </p>
                               </div>
                               <button
@@ -394,7 +380,7 @@ export const FlightSimulatorKimiPage = defineCapsule({
                         </h4>
                         {flightSessions && flightSessions.length > 0 ? (
                           <div className="space-y-2">
-                            {flightSessions.map((session) => (
+                            {flightSessions.map((session: any) => (
                               <div
                                 key={session.id}
                                 className="flex items-center justify-between text-sm"
@@ -403,7 +389,10 @@ export const FlightSimulatorKimiPage = defineCapsule({
                                   {session.configName || 'Custom'}
                                 </span>
                                 <span className="font-semibold text-foreground">
-                                  {Math.floor(session.duration / 60)}:{(session.duration % 60).toString().padStart(2, '0')}
+                                  {Math.floor(session.duration / 60)}:
+                                  {(session.duration % 60)
+                                    .toString()
+                                    .padStart(2, '0')}
                                 </span>
                               </div>
                             ))}

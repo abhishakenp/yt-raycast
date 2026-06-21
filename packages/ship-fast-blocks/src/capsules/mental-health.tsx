@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * MentalHealthKimiPage — a complete, self-contained therapy / counseling practice
@@ -44,7 +44,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * data; rich defaults make it render great with no props at all.
  */
 export const MentalHealthKimiPage = defineCapsule({
-  name: "MentalHealthKimiPage",
+  name: 'MentalHealthKimiPage',
   description:
     "Complete therapy, counseling and mental-health practice LANDING page with a calm, warm, wellness aesthetic: soft sage-and-sand surfaces, rounded cards, generous whitespace and a reassuring clinical-yet-human mood. Includes a split hero (calming therapy-office photo, 'next available' floating card, licensed-clinician trust checks, dual CTAs), an insurance-provider trust strip, a 6-up services grid (individual, couples, family, EMDR/trauma, anxiety & depression, life transitions), a 3-step 'how it works' flow with a help/consultation band, a 4-up clinician team gallery with headshots, a 3-tier transparent pricing block (individual / couples 'most popular' / psychiatry) plus sliding-scale note, a client-stats band, a 3-up testimonials grid with star ratings and avatars, a 6-item FAQ accordion, a final 'book a free consultation' CTA with HIPAA/secure trust badges, and a multi-column footer. Use as the ROOT/home page for therapists, counselors, psychologists, psychiatrists, mental-health clinics, wellness centers, telehealth or behavioral-health practices when a soothing, trustworthy, conversion-focused page with services, team, pricing and social proof is wanted. Supply content only — brand, nav, hero, services, steps, team, pricing, stats, testimonials, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -239,7 +239,14 @@ export const MentalHealthKimiPage = defineCapsule({
         new Set(db.favoriteClinicians.all().map((fav) => fav.clinicianName)),
     },
     mutations: {
-      bookAppointment: ({ db }, clinicianName: string, serviceType: string, date: string, time: string, price: string) => {
+      bookAppointment: (
+        { db },
+        clinicianName: string,
+        serviceType: string,
+        date: string,
+        time: string,
+        price: string,
+      ) => {
         db.appointments.insert({
           clinicianName,
           serviceType,
@@ -254,7 +261,9 @@ export const MentalHealthKimiPage = defineCapsule({
         return db.appointments.all()
       },
       toggleFavoriteClinician: ({ db }, clinicianName: string) => {
-        const existing = db.favoriteClinicians.where('clinicianName', clinicianName).all()[0]
+        const existing = db.favoriteClinicians
+          .where('clinicianName', clinicianName)
+          .all()[0]
         if (existing) {
           db.favoriteClinicians.delete(existing.id)
           return false
@@ -269,18 +278,22 @@ export const MentalHealthKimiPage = defineCapsule({
     const [mobileOpen, setMobileOpen] = useState(false)
     const [appointmentsOpen, setAppointmentsOpen] = useState(false)
     const [bookingOpen, setBookingOpen] = useState(false)
-    const [selectedClinician, setSelectedClinician] = useState<string | null>(null)
+    const [selectedClinician, setSelectedClinician] = useState<string | null>(
+      null,
+    )
     const [selectedService, setSelectedService] = useState<string | null>(null)
     const [selectedDate, setSelectedDate] = useState<string | null>(null)
     const [selectedTime, setSelectedTime] = useState<string | null>(null)
-    const brand = props.brand ?? "Stillpoint"
+    const brand = props.brand ?? 'Stillpoint'
 
     // Lakebed queries and mutations
     const appointments = lakebed.useQuery('appointments')
     const favoriteClinicianNames = lakebed.useQuery('favoriteClinicianNames')
     const bookAppointment = lakebed.useMutation('bookAppointment')
     const cancelAppointment = lakebed.useMutation('cancelAppointment')
-    const toggleFavoriteClinician = lakebed.useMutation('toggleFavoriteClinician')
+    const toggleFavoriteClinician = lakebed.useMutation(
+      'toggleFavoriteClinician',
+    )
     const auth = lakebed.useAuth()
 
     // Auth state
@@ -313,100 +326,100 @@ export const MentalHealthKimiPage = defineCapsule({
 
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Approach", "Team", "Pricing", "FAQ", "Book Session"]
-    const bookLabel = nav[nav.length - 1] ?? "Book Session"
+      : ['Services', 'Approach', 'Team', 'Pricing', 'FAQ', 'Book Session']
+    const bookLabel = nav[nav.length - 1] ?? 'Book Session'
 
-    const headingTop = props.hero?.headingTop ?? "Find your calm."
-    const heroHighlight = props.hero?.highlight ?? "Begin healing."
+    const headingTop = props.hero?.headingTop ?? 'Find your calm.'
+    const heroHighlight = props.hero?.highlight ?? 'Begin healing.'
     const heroSub =
       props.hero?.subheading ??
       "Professional therapy services in Portland's Pearl District. Licensed clinicians providing evidence-based care for anxiety, depression, relationships, and life transitions. Most insurance accepted."
-    const heroPrimary = props.hero?.primaryCta ?? "Schedule a Session"
-    const heroSecondary = props.hero?.secondaryCta ?? "Explore Services"
+    const heroPrimary = props.hero?.primaryCta ?? 'Schedule a Session'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Explore Services'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Serene therapy office with comfortable seating, soft natural lighting, and calming neutral decor"
-    const heroCardTitle = props.hero?.cardTitle ?? "Next Available"
-    const heroCardSubtitle = props.hero?.cardSubtitle ?? "Tomorrow, 10:00 AM"
+      'Serene therapy office with comfortable seating, soft natural lighting, and calming neutral decor'
+    const heroCardTitle = props.hero?.cardTitle ?? 'Next Available'
+    const heroCardSubtitle = props.hero?.cardSubtitle ?? 'Tomorrow, 10:00 AM'
     const heroTrust = props.hero?.trust?.length
       ? props.hero.trust
-      : ["Licensed Clinicians", "In-Person & Virtual"]
+      : ['Licensed Clinicians', 'In-Person & Virtual']
 
     const logosTitle =
-      props.logos?.title ?? "Trusted by major insurance providers"
+      props.logos?.title ?? 'Trusted by major insurance providers'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
-      : ["BlueCross", "Aetna", "United", "Cigna", "Kaiser", "Providence"]
+      : ['BlueCross', 'Aetna', 'United', 'Cigna', 'Kaiser', 'Providence']
 
-    const servicesEyebrow = props.services?.eyebrow ?? "Our Services"
+    const servicesEyebrow = props.services?.eyebrow ?? 'Our Services'
     const servicesHeading =
-      props.services?.heading ?? "Personalized care for your journey"
+      props.services?.heading ?? 'Personalized care for your journey'
     const servicesDesc =
       props.services?.description ??
-      "We offer a range of therapeutic approaches tailored to your unique needs. All sessions are available in-person at our Pearl District office or via secure video conferencing."
+      'We offer a range of therapeutic approaches tailored to your unique needs. All sessions are available in-person at our Pearl District office or via secure video conferencing.'
     const serviceItems = props.services?.items?.length
       ? props.services.items
       : [
           {
-            title: "Individual Therapy",
+            title: 'Individual Therapy',
             description:
-              "One-on-one sessions addressing anxiety, depression, trauma, stress management, and personal growth. Using CBT, mindfulness, and psychodynamic approaches.",
-            points: ["50-minute sessions", "Weekly or bi-weekly", "Ages 18+"],
+              'One-on-one sessions addressing anxiety, depression, trauma, stress management, and personal growth. Using CBT, mindfulness, and psychodynamic approaches.',
+            points: ['50-minute sessions', 'Weekly or bi-weekly', 'Ages 18+'],
           },
           {
-            title: "Couples Therapy",
+            title: 'Couples Therapy',
             description:
-              "Evidence-based couples counseling using Gottman Method and EFT. Strengthen communication, rebuild trust, and navigate major life transitions together.",
+              'Evidence-based couples counseling using Gottman Method and EFT. Strengthen communication, rebuild trust, and navigate major life transitions together.',
             points: [
-              "80-minute sessions",
-              "Premarital counseling available",
-              "All relationship types welcome",
+              '80-minute sessions',
+              'Premarital counseling available',
+              'All relationship types welcome',
             ],
           },
           {
-            title: "Family Therapy",
+            title: 'Family Therapy',
             description:
-              "Support for families navigating conflict, communication breakdowns, parenting challenges, divorce transitions, and multigenerational dynamics.",
+              'Support for families navigating conflict, communication breakdowns, parenting challenges, divorce transitions, and multigenerational dynamics.',
             points: [
-              "90-minute sessions",
-              "Up to 6 family members",
-              "All ages included",
+              '90-minute sessions',
+              'Up to 6 family members',
+              'All ages included',
             ],
           },
           {
-            title: "EMDR & Trauma",
+            title: 'EMDR & Trauma',
             description:
-              "Specialized EMDR therapy for PTSD, complex trauma, and processing difficult experiences. A structured approach to reduce emotional distress.",
+              'Specialized EMDR therapy for PTSD, complex trauma, and processing difficult experiences. A structured approach to reduce emotional distress.',
             points: [
-              "Certified EMDR therapists",
-              "60-90 minute sessions",
-              "Phased treatment protocol",
+              'Certified EMDR therapists',
+              '60-90 minute sessions',
+              'Phased treatment protocol',
             ],
           },
           {
-            title: "Anxiety & Depression",
+            title: 'Anxiety & Depression',
             description:
-              "Comprehensive treatment for mood disorders, panic attacks, social anxiety, and OCD. Combining CBT, ACT, and mindfulness-based interventions.",
+              'Comprehensive treatment for mood disorders, panic attacks, social anxiety, and OCD. Combining CBT, ACT, and mindfulness-based interventions.',
             points: [
-              "Evidence-based protocols",
-              "Between-session support",
-              "Medication coordination",
+              'Evidence-based protocols',
+              'Between-session support',
+              'Medication coordination',
             ],
           },
           {
-            title: "Life Transitions",
+            title: 'Life Transitions',
             description:
-              "Support through career changes, grief and loss, relocation, becoming a parent, aging, retirement, and other major life adjustments.",
+              'Support through career changes, grief and loss, relocation, becoming a parent, aging, retirement, and other major life adjustments.',
             points: [
-              "Flexible scheduling",
-              "Short-term options",
-              "Strengths-based focus",
+              'Flexible scheduling',
+              'Short-term options',
+              'Strengths-based focus',
             ],
           },
         ]
 
-    const stepsEyebrow = props.steps?.eyebrow ?? "How It Works"
-    const stepsHeading = props.steps?.heading ?? "Beginning therapy is simple"
+    const stepsEyebrow = props.steps?.eyebrow ?? 'How It Works'
+    const stepsHeading = props.steps?.heading ?? 'Beginning therapy is simple'
     const stepsDesc =
       props.steps?.description ??
       "We've streamlined our process to make starting therapy as comfortable and straightforward as possible."
@@ -414,134 +427,134 @@ export const MentalHealthKimiPage = defineCapsule({
       ? props.steps.items
       : [
           {
-            title: "Schedule a Consultation",
+            title: 'Schedule a Consultation',
             description:
               "Book a free 15-minute phone consultation through our online calendar. We'll discuss your needs and match you with the best-fit therapist from our team.",
           },
           {
-            title: "Complete Intake Forms",
+            title: 'Complete Intake Forms',
             description:
-              "Fill out our secure online intake forms at your convenience. Insurance verification and payment setup happens automatically through our patient portal.",
+              'Fill out our secure online intake forms at your convenience. Insurance verification and payment setup happens automatically through our patient portal.',
           },
           {
-            title: "Begin Your Sessions",
+            title: 'Begin Your Sessions',
             description:
-              "Attend your first session in-person or via secure video. Your therapist will work with you to establish goals and create a personalized treatment plan.",
+              'Attend your first session in-person or via secure video. Your therapist will work with you to establish goals and create a personalized treatment plan.',
           },
         ]
-    const helpHeading = props.steps?.helpHeading ?? "Not sure where to start?"
+    const helpHeading = props.steps?.helpHeading ?? 'Not sure where to start?'
     const helpDesc =
       props.steps?.helpDescription ??
-      "Our client care team is available Monday through Friday, 8am to 6pm, to answer questions and help you find the right therapist for your specific concerns."
-    const helpPhone = props.steps?.helpPhone ?? "(503) 555-0147"
-    const helpCta = props.steps?.helpCta ?? "Book Online"
+      'Our client care team is available Monday through Friday, 8am to 6pm, to answer questions and help you find the right therapist for your specific concerns.'
+    const helpPhone = props.steps?.helpPhone ?? '(503) 555-0147'
+    const helpCta = props.steps?.helpCta ?? 'Book Online'
     const helpStats = props.steps?.helpStats?.length
       ? props.steps.helpStats
       : [
-          { value: "48h", label: "Average response time" },
-          { value: "95%", label: "Match satisfaction" },
+          { value: '48h', label: 'Average response time' },
+          { value: '95%', label: 'Match satisfaction' },
         ]
 
-    const teamEyebrow = props.team?.eyebrow ?? "Our Team"
+    const teamEyebrow = props.team?.eyebrow ?? 'Our Team'
     const teamHeading =
-      props.team?.heading ?? "Experienced, compassionate clinicians"
+      props.team?.heading ?? 'Experienced, compassionate clinicians'
     const teamDesc =
       props.team?.description ??
-      "Our therapists are licensed professionals with advanced training in evidence-based approaches."
+      'Our therapists are licensed professionals with advanced training in evidence-based approaches.'
     const teamMembers = props.team?.members?.length
       ? props.team.members
       : [
           {
-            name: "Dr. Sarah Chen, PsyD",
-            role: "Clinical Director",
-            bio: "Specializes in anxiety disorders, trauma, and EMDR. 12+ years experience. Licensed in Oregon since 2015.",
+            name: 'Dr. Sarah Chen, PsyD',
+            role: 'Clinical Director',
+            bio: 'Specializes in anxiety disorders, trauma, and EMDR. 12+ years experience. Licensed in Oregon since 2015.',
             imageAlt:
-              "Professional headshot of Dr. Sarah Chen, a licensed clinical psychologist with warm smile and professional attire",
+              'Professional headshot of Dr. Sarah Chen, a licensed clinical psychologist with warm smile and professional attire',
           },
           {
-            name: "Marcus Williams, LMFT",
-            role: "Couples & Family Specialist",
-            bio: "Gottman-certified couples therapist. Expert in family systems, divorce mediation, and co-parenting support.",
+            name: 'Marcus Williams, LMFT',
+            role: 'Couples & Family Specialist',
+            bio: 'Gottman-certified couples therapist. Expert in family systems, divorce mediation, and co-parenting support.',
             imageAlt:
-              "Professional headshot of Marcus Williams, a licensed marriage and family therapist with kind expression",
+              'Professional headshot of Marcus Williams, a licensed marriage and family therapist with kind expression',
           },
           {
-            name: "Dr. Elena Rodriguez, MD",
-            role: "Psychiatrist",
-            bio: "Board-certified psychiatrist. Medication management for depression, anxiety, bipolar, and ADHD. Available Thursdays.",
+            name: 'Dr. Elena Rodriguez, MD',
+            role: 'Psychiatrist',
+            bio: 'Board-certified psychiatrist. Medication management for depression, anxiety, bipolar, and ADHD. Available Thursdays.',
             imageAlt:
-              "Professional headshot of Dr. Elena Rodriguez, a psychiatrist with compassionate demeanor",
+              'Professional headshot of Dr. Elena Rodriguez, a psychiatrist with compassionate demeanor',
           },
           {
-            name: "Jennifer Park, LCSW",
-            role: "Anxiety & Life Transitions",
+            name: 'Jennifer Park, LCSW',
+            role: 'Anxiety & Life Transitions',
             bio: "CBT and mindfulness-based therapy. Special focus on young adults, career transitions, and women's mental health.",
             imageAlt:
-              "Professional headshot of Jennifer Park, a licensed clinical social worker with warm approachable presence",
+              'Professional headshot of Jennifer Park, a licensed clinical social worker with warm approachable presence',
           },
         ]
     const teamSpecialtyHeading =
-      props.team?.specialtyHeading ?? "Looking for a specific specialty?"
+      props.team?.specialtyHeading ?? 'Looking for a specific specialty?'
     const teamSpecialtyDesc =
       props.team?.specialtyDescription ??
-      "We also have clinicians specializing in eating disorders, substance recovery, LGBTQ+ affirming care, and adolescent therapy."
+      'We also have clinicians specializing in eating disorders, substance recovery, LGBTQ+ affirming care, and adolescent therapy.'
     const teamSpecialtyCta =
-      props.team?.specialtyCta ?? "Contact us for therapist matching"
+      props.team?.specialtyCta ?? 'Contact us for therapist matching'
 
-    const pricingEyebrow = props.pricing?.eyebrow ?? "Investment in You"
-    const pricingHeading = props.pricing?.heading ?? "Transparent pricing"
+    const pricingEyebrow = props.pricing?.eyebrow ?? 'Investment in You'
+    const pricingHeading = props.pricing?.heading ?? 'Transparent pricing'
     const pricingDesc =
       props.pricing?.description ??
-      "We believe mental health care should be accessible. We accept most major insurance plans and offer sliding scale options."
+      'We believe mental health care should be accessible. We accept most major insurance plans and offer sliding scale options.'
     const pricingTiers = props.pricing?.tiers?.length
       ? props.pricing.tiers
       : [
           {
-            name: "Individual Therapy",
-            cadence: "50-minute session",
-            price: "$175",
-            unit: "/session",
+            name: 'Individual Therapy',
+            cadence: '50-minute session',
+            price: '$175',
+            unit: '/session',
             features: [
-              "Licensed therapist",
-              "In-person or virtual",
-              "Insurance billing included",
-              "Between-session messaging",
+              'Licensed therapist',
+              'In-person or virtual',
+              'Insurance billing included',
+              'Between-session messaging',
             ],
-            cta: "Book Individual",
+            cta: 'Book Individual',
             popular: false,
           },
           {
-            name: "Couples Therapy",
-            cadence: "80-minute session",
-            price: "$250",
-            unit: "/session",
+            name: 'Couples Therapy',
+            cadence: '80-minute session',
+            price: '$250',
+            unit: '/session',
             features: [
-              "Gottman-trained therapist",
-              "Extended 80-minute format",
-              "Relationship assessment tools",
-              "Homework & resources included",
+              'Gottman-trained therapist',
+              'Extended 80-minute format',
+              'Relationship assessment tools',
+              'Homework & resources included',
             ],
-            cta: "Book Couples",
+            cta: 'Book Couples',
             popular: true,
           },
           {
-            name: "Psychiatry",
-            cadence: "Medication management",
-            price: "$350",
-            unit: "/initial",
+            name: 'Psychiatry',
+            cadence: 'Medication management',
+            price: '$350',
+            unit: '/initial',
             features: [
-              "Board-certified psychiatrist",
-              "60-minute initial evaluation",
-              "Follow-ups: $175 (30 min)",
-              "Prescription management",
+              'Board-certified psychiatrist',
+              '60-minute initial evaluation',
+              'Follow-ups: $175 (30 min)',
+              'Prescription management',
             ],
-            cta: "Book Psychiatry",
+            cta: 'Book Psychiatry',
             popular: false,
           },
         ]
     const pricingNote =
       props.pricing?.note ??
-      "Sliding scale available: We reserve a limited number of reduced-rate slots for clients experiencing financial hardship. Contact us to inquire about availability."
+      'Sliding scale available: We reserve a limited number of reduced-rate slots for clients experiencing financial hardship. Contact us to inquire about availability.'
 
     // Helper to get price from service type
     const getServicePrice = (serviceType: string) => {
@@ -551,9 +564,21 @@ export const MentalHealthKimiPage = defineCapsule({
 
     // Helper to handle booking
     const handleBookAppointment = () => {
-      if (!selectedClinician || !selectedService || !selectedDate || !selectedTime) return
+      if (
+        !selectedClinician ||
+        !selectedService ||
+        !selectedDate ||
+        !selectedTime
+      )
+        return
       const price = getServicePrice(selectedService)
-      void bookAppointment(selectedClinician, selectedService, selectedDate, selectedTime, price)
+      void bookAppointment(
+        selectedClinician,
+        selectedService,
+        selectedDate,
+        selectedTime,
+        price,
+      )
       setBookingOpen(false)
       setAppointmentsOpen(true)
       setSelectedClinician(null)
@@ -571,49 +596,49 @@ export const MentalHealthKimiPage = defineCapsule({
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "2,400+", label: "Clients supported" },
-          { value: "8", label: "Licensed clinicians" },
-          { value: "12", label: "Years in practice" },
-          { value: "94%", label: "Client satisfaction" },
+          { value: '2,400+', label: 'Clients supported' },
+          { value: '8', label: 'Licensed clinicians' },
+          { value: '12', label: 'Years in practice' },
+          { value: '94%', label: 'Client satisfaction' },
         ]
 
-    const testimonialsEyebrow = props.testimonials?.eyebrow ?? "Testimonials"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'Testimonials'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Words from our clients"
+      props.testimonials?.heading ?? 'Words from our clients'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Real stories from people who have found support and healing through our services."
+      'Real stories from people who have found support and healing through our services.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "After years of struggling with anxiety, I finally found a therapist who truly understands me. Dr. Chen helped me develop tools I use every day. My life has changed in ways I never thought possible.",
-            name: "David Mitchell",
-            detail: "Individual Therapy • 18 months",
+              'After years of struggling with anxiety, I finally found a therapist who truly understands me. Dr. Chen helped me develop tools I use every day. My life has changed in ways I never thought possible.',
+            name: 'David Mitchell',
+            detail: 'Individual Therapy • 18 months',
             avatarAlt:
-              "Professional headshot of David Mitchell, a client with warm genuine smile",
+              'Professional headshot of David Mitchell, a client with warm genuine smile',
           },
           {
             quote:
               "Marcus saved our marriage. We were on the verge of separating, and six months of couples therapy gave us the communication tools we desperately needed. We're closer now than we've been in years.",
-            name: "Rebecca & James Torres",
-            detail: "Couples Therapy • 8 months",
+            name: 'Rebecca & James Torres',
+            detail: 'Couples Therapy • 8 months',
             avatarAlt:
-              "Professional headshot of Rebecca Torres, a client with confident friendly expression",
+              'Professional headshot of Rebecca Torres, a client with confident friendly expression',
           },
           {
             quote:
-              "As a parent of a teenager struggling with depression, finding the right help felt overwhelming. The team here made the process simple and my daughter actually looks forward to her sessions with Jennifer.",
-            name: "Michael Chen",
-            detail: "Family Services • 6 months",
+              'As a parent of a teenager struggling with depression, finding the right help felt overwhelming. The team here made the process simple and my daughter actually looks forward to her sessions with Jennifer.',
+            name: 'Michael Chen',
+            detail: 'Family Services • 6 months',
             avatarAlt:
-              "Professional headshot of Michael Chen, a parent client with thoughtful caring expression",
+              'Professional headshot of Michael Chen, a parent client with thoughtful caring expression',
           },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Common questions"
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Common questions'
     const faqDesc =
       props.faq?.description ??
       `Everything you need to know about starting therapy at ${brand}.`
@@ -621,24 +646,24 @@ export const MentalHealthKimiPage = defineCapsule({
       ? props.faq.items
       : [
           {
-            question: "Do you accept insurance?",
+            question: 'Do you accept insurance?',
             answer:
               "Yes, we accept most major insurance plans including BlueCross BlueShield, Aetna, United Healthcare, Cigna, Kaiser, and Providence. We also offer out-of-network billing for PPO plans. Contact us with your specific plan details and we'll verify your coverage before your first session.",
           },
           {
             question: "What's the difference between therapy and psychiatry?",
             answer:
-              "Therapists (psychologists, counselors, social workers) provide talk therapy to help you process emotions, develop coping skills, and change patterns. Psychiatrists are medical doctors who can prescribe and manage medications for conditions like depression, anxiety, and ADHD. Many clients benefit from working with both.",
+              'Therapists (psychologists, counselors, social workers) provide talk therapy to help you process emotions, develop coping skills, and change patterns. Psychiatrists are medical doctors who can prescribe and manage medications for conditions like depression, anxiety, and ADHD. Many clients benefit from working with both.',
           },
           {
-            question: "How long are therapy sessions?",
+            question: 'How long are therapy sessions?',
             answer:
-              "Individual therapy sessions are 50 minutes. Couples and family sessions are typically 80 minutes to allow adequate time for all parties to participate. Psychiatry initial evaluations are 60 minutes, with follow-up medication management appointments at 30 minutes.",
+              'Individual therapy sessions are 50 minutes. Couples and family sessions are typically 80 minutes to allow adequate time for all parties to participate. Psychiatry initial evaluations are 60 minutes, with follow-up medication management appointments at 30 minutes.',
           },
           {
-            question: "Is virtual therapy as effective as in-person?",
+            question: 'Is virtual therapy as effective as in-person?',
             answer:
-              "Research consistently shows that teletherapy can be just as effective as in-person sessions for many conditions, including anxiety and depression. We use HIPAA-compliant video platforms and many clients appreciate the convenience. Some clients prefer to start in-person and transition to virtual, or mix both formats.",
+              'Research consistently shows that teletherapy can be just as effective as in-person sessions for many conditions, including anxiety and depression. We use HIPAA-compliant video platforms and many clients appreciate the convenience. Some clients prefer to start in-person and transition to virtual, or mix both formats.',
           },
           {
             question: "What if I don't connect with my therapist?",
@@ -646,52 +671,52 @@ export const MentalHealthKimiPage = defineCapsule({
               "The therapeutic relationship is crucial for success. If after 2-3 sessions you feel your therapist isn't the right fit, we'll happily transfer you to another clinician in our practice at no additional cost. Your comfort and progress are our priority.",
           },
           {
-            question: "What are your cancellation policies?",
+            question: 'What are your cancellation policies?',
             answer:
-              "We require 24 hours notice for cancellations or rescheduling. Sessions cancelled with less than 24 hours notice are charged at the full session rate, as that time has been reserved specifically for you. We understand emergencies happen and handle those case-by-case.",
+              'We require 24 hours notice for cancellations or rescheduling. Sessions cancelled with less than 24 hours notice are charged at the full session rate, as that time has been reserved specifically for you. We understand emergencies happen and handle those case-by-case.',
           },
         ]
-    const faqFooterNote = props.faq?.footerNote ?? "Still have questions?"
-    const faqFooterCta = props.faq?.footerCta ?? "Call us at (503) 555-0147"
+    const faqFooterNote = props.faq?.footerNote ?? 'Still have questions?'
+    const faqFooterCta = props.faq?.footerCta ?? 'Call us at (503) 555-0147'
 
-    const ctaHeading = props.cta?.heading ?? "Ready to take the first step?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to take the first step?'
     const ctaDesc =
       props.cta?.description ??
       "Schedule your free 15-minute consultation today. We'll discuss your needs, answer questions, and match you with the right therapist. No obligation, no pressure."
-    const ctaPrimary = props.cta?.primaryCta ?? "Book Online Now"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Call (503) 555-0147"
+    const ctaPrimary = props.cta?.primaryCta ?? 'Book Online Now'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'Call (503) 555-0147'
     const ctaBadges = props.cta?.badges?.length
       ? props.cta.badges
-      : ["HIPAA Compliant", "Secure & Confidential", "Next Day Appointments"]
+      : ['HIPAA Compliant', 'Secure & Confidential', 'Next Day Appointments']
 
     const footerAbout =
       props.footer?.about ??
       "Professional mental health services in Portland's Pearl District. Licensed, compassionate care for individuals, couples, and families."
-    const footerServicesTitle = props.footer?.servicesTitle ?? "Services"
+    const footerServicesTitle = props.footer?.servicesTitle ?? 'Services'
     const footerServicesLinks = props.footer?.servicesLinks?.length
       ? props.footer.servicesLinks
       : [
-          "Individual Therapy",
-          "Couples Therapy",
-          "Family Therapy",
-          "EMDR & Trauma",
-          "Psychiatry",
+          'Individual Therapy',
+          'Couples Therapy',
+          'Family Therapy',
+          'EMDR & Trauma',
+          'Psychiatry',
         ]
-    const footerCompanyTitle = props.footer?.companyTitle ?? "Company"
+    const footerCompanyTitle = props.footer?.companyTitle ?? 'Company'
     const footerCompanyLinks = props.footer?.companyLinks?.length
       ? props.footer.companyLinks
-      : ["About Us", "Our Team", "Careers", "Blog", "Privacy Policy"]
-    const footerContactTitle = props.footer?.contactTitle ?? "Contact"
+      : ['About Us', 'Our Team', 'Careers', 'Blog', 'Privacy Policy']
+    const footerContactTitle = props.footer?.contactTitle ?? 'Contact'
     const footerAddress =
-      props.footer?.address ?? "1234 NW Lovejoy St, Portland, OR 97209"
-    const footerPhone = props.footer?.phone ?? "(503) 555-0147"
-    const footerEmail = props.footer?.email ?? "hello@stillpointtherapy.com"
-    const footerHours = props.footer?.hours ?? "Mon-Fri: 8am - 8pm"
+      props.footer?.address ?? '1234 NW Lovejoy St, Portland, OR 97209'
+    const footerPhone = props.footer?.phone ?? '(503) 555-0147'
+    const footerEmail = props.footer?.email ?? 'hello@stillpointtherapy.com'
+    const footerHours = props.footer?.hours ?? 'Mon-Fri: 8am - 8pm'
     const footerCopyright =
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand} Therapy, LLC. All rights reserved.`
     const footerLicense =
-      props.footer?.license ?? "Licensed in Oregon • HIPAA Compliant"
+      props.footer?.license ?? 'Licensed in Oregon • HIPAA Compliant'
 
     // Calming "sun/wellness" brand mark (decorative inline SVG).
     const LogoMark = ({ className }: { className?: string }) => (
@@ -756,10 +781,16 @@ export const MentalHealthKimiPage = defineCapsule({
       </svg>
     )
 
-    const Heart = ({ className, active = false }: { className?: string; active?: boolean }) => (
+    const Heart = ({
+      className,
+      active = false,
+    }: {
+      className?: string
+      active?: boolean
+    }) => (
       <svg
         className={className}
-        fill={active ? "currentColor" : "none"}
+        fill={active ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -906,7 +937,7 @@ export const MentalHealthKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-muted/40 font-sans text-foreground antialiased",
+          'min-h-svh bg-muted/40 font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -945,7 +976,10 @@ export const MentalHealthKimiPage = defineCapsule({
               </div>
               <div className="flex items-center gap-4">
                 {/* Appointments drawer trigger */}
-                <Sheet open={appointmentsOpen} onOpenChange={setAppointmentsOpen}>
+                <Sheet
+                  open={appointmentsOpen}
+                  onOpenChange={setAppointmentsOpen}
+                >
                   <SheetTrigger asChild>
                     <button
                       type="button"
@@ -965,7 +999,9 @@ export const MentalHealthKimiPage = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">My Appointments</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        My Appointments
+                      </SheetTitle>
                       <SheetDescription>
                         {appointments && appointments.length > 0
                           ? `${appointments.length} appointment${appointments.length === 1 ? '' : 's'} scheduled.`
@@ -1033,7 +1069,8 @@ export const MentalHealthKimiPage = defineCapsule({
                             No appointments yet
                           </p>
                           <p className="mt-2 text-sm text-muted-foreground">
-                            Book your first session to get started on your journey.
+                            Book your first session to get started on your
+                            journey.
                           </p>
                         </div>
                       )}
@@ -1059,9 +1096,12 @@ export const MentalHealthKimiPage = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Book Your Session</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Book Your Session
+                      </SheetTitle>
                       <SheetDescription>
-                        Select a clinician, date, and time to schedule your appointment.
+                        Select a clinician, date, and time to schedule your
+                        appointment.
                       </SheetDescription>
                     </SheetHeader>
                     <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -1092,7 +1132,9 @@ export const MentalHealthKimiPage = defineCapsule({
                           </label>
                           <select
                             value={selectedClinician || ''}
-                            onChange={(e) => setSelectedClinician(e.target.value)}
+                            onChange={(e) =>
+                              setSelectedClinician(e.target.value)
+                            }
                             className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                           >
                             <option value="">Select a clinician</option>
@@ -1129,7 +1171,17 @@ export const MentalHealthKimiPage = defineCapsule({
                             className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                           >
                             <option value="">Select a time</option>
-                            {['9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'].map((time) => (
+                            {[
+                              '9:00 AM',
+                              '10:00 AM',
+                              '11:00 AM',
+                              '12:00 PM',
+                              '1:00 PM',
+                              '2:00 PM',
+                              '3:00 PM',
+                              '4:00 PM',
+                              '5:00 PM',
+                            ].map((time) => (
                               <option key={time} value={time}>
                                 {time}
                               </option>
@@ -1155,7 +1207,12 @@ export const MentalHealthKimiPage = defineCapsule({
                     <SheetFooter className="border-t border-border p-6">
                       <Button
                         type="button"
-                        disabled={!selectedClinician || !selectedService || !selectedDate || !selectedTime}
+                        disabled={
+                          !selectedClinician ||
+                          !selectedService ||
+                          !selectedDate ||
+                          !selectedTime
+                        }
                         className="w-full rounded-full"
                         onClick={handleBookAppointment}
                       >
@@ -1625,7 +1682,8 @@ export const MentalHealthKimiPage = defineCapsule({
 
               <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
                 {teamMembers.map((m) => {
-                  const isFavorite = favoriteClinicianNames?.has(m.name) ?? false
+                  const isFavorite =
+                    favoriteClinicianNames?.has(m.name) ?? false
                   return (
                     <div key={m.name} className="group">
                       <div className="relative mb-4 overflow-hidden rounded-2xl">
@@ -1646,10 +1704,10 @@ export const MentalHealthKimiPage = defineCapsule({
                               : `Add ${m.name} to favorites`
                           }
                           className={cn(
-                            "absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100",
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
                             isFavorite
-                              ? "bg-primary text-primary-foreground opacity-100"
-                              : "bg-background/90 text-foreground opacity-0 hover:bg-background",
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
                           )}
                         >
                           <Heart active={isFavorite} className="size-5" />
@@ -1721,10 +1779,10 @@ export const MentalHealthKimiPage = defineCapsule({
                   <div
                     key={tier.name}
                     className={cn(
-                      "relative rounded-2xl p-8",
+                      'relative rounded-2xl p-8',
                       tier.popular
-                        ? "border-2 border-primary bg-card shadow-xl"
-                        : "border border-border bg-muted/50",
+                        ? 'border-2 border-primary bg-card shadow-xl'
+                        : 'border border-border bg-muted/50',
                     )}
                   >
                     {tier.popular ? (
@@ -1756,10 +1814,10 @@ export const MentalHealthKimiPage = defineCapsule({
                       type="button"
                       onClick={() => openBookingForService(tier.name)}
                       className={cn(
-                        "block w-full rounded-full px-6 py-3 text-center font-medium transition-colors",
+                        'block w-full rounded-full px-6 py-3 text-center font-medium transition-colors',
                         tier.popular
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
                       )}
                     >
                       {tier.cta}
@@ -1972,7 +2030,7 @@ export const MentalHealthKimiPage = defineCapsule({
                 </div>
                 <p className="mb-6 text-sm leading-relaxed">{footerAbout}</p>
                 <div className="flex gap-4">
-                  {(["Facebook", "Instagram", "LinkedIn"] as const).map(
+                  {(['Facebook', 'Instagram', 'LinkedIn'] as const).map(
                     (social) => (
                       <button
                         key={social}
@@ -1999,7 +2057,7 @@ export const MentalHealthKimiPage = defineCapsule({
                     <li key={link}>
                       <button
                         type="button"
-                        onClick={() => go("Services")}
+                        onClick={() => go('Services')}
                         className="transition-colors hover:text-background"
                       >
                         {link}

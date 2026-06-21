@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,7 +12,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "#/components/ui/command.tsx"
+} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetClose,
@@ -22,14 +22,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * PodcastKimiPage2 — a complete, self-contained PODCAST show LANDING page.
@@ -55,7 +55,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * make it render great with no props at all.
  */
 export const PodcastKimiPage2 = defineCapsule({
-  name: "PodcastKimiPage2",
+  name: 'PodcastKimiPage2',
   description:
     "Complete PODCAST / audio-show LANDING page in a bold, dark, high-energy conversion-forward aesthetic with a warm orange/primary accent, glowing blurred background orbs, big display headlines and rounded pill CTAs — the punchy alternative / second style sibling to the calm, light, editorial PodcastKimiPage. Includes a split hero with a pulsing 'New Episode Every Tuesday' live badge, Play Latest Episode / Subscribe Free CTAs, stacked listener avatars with a social-proof line, and a tilted gradient cover-art card with a 'Now Playing' overlay; a 3-up 'why listen' feature grid (diverse voices, bite-sized episodes, actionable insights); a Latest Episodes list with guest headshots, hover play overlays, a NEW badge, date / duration meta and a host byline; an inverted accent stats band (episodes, weekly listeners, guest interviews, rating); a 3-up listener-review testimonial grid with 5-star ratings and avatars; a glowing 'subscribe wherever you listen' panel with Apple / Google / Spotify / YouTube platform buttons; a closing CTA band; and a 4-column footer with social icons. Use as the ROOT/home page for a podcast, audio show, interview series or host's personal show site when a punchy, energetic, dark-mode page emphasizing episodes, guests and subscribing is wanted. Supply content only — brand, nav, hero, features, episodes, stats, testimonials, subscribe, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -190,12 +190,15 @@ export const PodcastKimiPage2 = defineCapsule({
     queries: {
       episodes: ({ db }) => db.episodes.orderBy('createdAt').all(),
       queueLines: ({ db }) =>
-        db.queue.orderBy('position').all().flatMap((item) => {
-          const episode = db.episodes
-            .where('title', item.episodeTitle)
-            .all()[0]
-          return episode ? [{ ...item, episode }] : []
-        }),
+        db.queue
+          .orderBy('position')
+          .all()
+          .flatMap((item) => {
+            const episode = db.episodes
+              .where('title', item.episodeTitle)
+              .all()[0]
+            return episode ? [{ ...item, episode }] : []
+          }),
       favoriteEpisodeTitles: ({ db }) =>
         new Set(db.favorites.all().map((favorite) => favorite.episodeTitle)),
     },
@@ -204,10 +207,9 @@ export const PodcastKimiPage2 = defineCapsule({
         const episode = db.episodes.where('title', episodeTitle).all()[0]
         if (!episode) return db.queue.all()
 
-        const maxPosition = db.queue.all().reduce(
-          (max, item) => Math.max(max, item.position),
-          0,
-        )
+        const maxPosition = db.queue
+          .all()
+          .reduce((max, item) => Math.max(max, item.position), 0)
 
         db.queue.insert({
           episodeTitle,
@@ -250,38 +252,36 @@ export const PodcastKimiPage2 = defineCapsule({
     const [mobileOpen, setMobileOpen] = useState(false)
     const [searchOpen, setSearchOpen] = useState(false)
     const [queueOpen, setQueueOpen] = useState(false)
-    const brand = props.brand ?? "Hustle & Heart"
+    const brand = props.brand ?? 'Hustle & Heart'
     const nav = props.nav?.length
       ? props.nav
-      : ["Episodes", "About", "Subscribe"]
+      : ['Episodes', 'About', 'Subscribe']
 
-    const heroBadge = props.hero?.badge ?? "New Episode Every Tuesday"
-    const headingTop = props.hero?.headingTop ?? "Stories That"
-    const headingEmphasis = props.hero?.headingEmphasis ?? "Move You"
+    const heroBadge = props.hero?.badge ?? 'New Episode Every Tuesday'
+    const headingTop = props.hero?.headingTop ?? 'Stories That'
+    const headingEmphasis = props.hero?.headingEmphasis ?? 'Move You'
     const heroSub =
       props.hero?.subheading ??
-      "Real conversations with entrepreneurs, artists, and changemakers. Raw, honest, and unfiltered. Join 50,000+ listeners every week."
-    const heroPrimary = props.hero?.primaryCta ?? "Play Latest Episode"
-    const heroSecondary = props.hero?.secondaryCta ?? "Subscribe Free"
+      'Real conversations with entrepreneurs, artists, and changemakers. Raw, honest, and unfiltered. Join 50,000+ listeners every week.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Play Latest Episode'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Subscribe Free'
     const heroCoverAlt =
       props.hero?.coverAlt ??
-      "Podcast show cover art featuring vintage microphone with dramatic red lighting"
-    const nowPlayingLabel = props.hero?.nowPlayingLabel ?? "Now Playing"
+      'Podcast show cover art featuring vintage microphone with dramatic red lighting'
+    const nowPlayingLabel = props.hero?.nowPlayingLabel ?? 'Now Playing'
     const nowPlayingTitle =
-      props.hero?.nowPlayingTitle ?? "Ep 247: The Art of Reinvention"
-    const socialProof = props.hero?.socialProof ?? "Trusted by weekly listeners"
-    const socialProofHighlight =
-      props.hero?.socialProofHighlight ?? "50,000+"
+      props.hero?.nowPlayingTitle ?? 'Ep 247: The Art of Reinvention'
+    const socialProof = props.hero?.socialProof ?? 'Trusted by weekly listeners'
+    const socialProofHighlight = props.hero?.socialProofHighlight ?? '50,000+'
     const heroAvatars = props.hero?.avatars?.length
       ? props.hero.avatars
       : [
-          "Podcast listener headshot of smiling woman with brown hair",
-          "Podcast listener headshot of bearded man with glasses",
-          "Podcast listener headshot of woman with blonde hair",
+          'Podcast listener headshot of smiling woman with brown hair',
+          'Podcast listener headshot of bearded man with glasses',
+          'Podcast listener headshot of woman with blonde hair',
         ]
 
-    const featuresHeading =
-      props.features?.heading ?? `Why Listen to ${brand}?`
+    const featuresHeading = props.features?.heading ?? `Why Listen to ${brand}?`
     const featuresDesc =
       props.features?.description ??
       "Authentic conversations that inspire action. No fluff, just real stories from people who've been there."
@@ -289,70 +289,70 @@ export const PodcastKimiPage2 = defineCapsule({
       ? props.features.items
       : [
           {
-            title: "Diverse Voices",
+            title: 'Diverse Voices',
             description:
-              "From Silicon Valley founders to underground artists. We feature 150+ guests from every walk of life.",
+              'From Silicon Valley founders to underground artists. We feature 150+ guests from every walk of life.',
           },
           {
-            title: "Bite-Sized Episodes",
+            title: 'Bite-Sized Episodes',
             description:
-              "30-45 minutes of pure value. Perfect for your commute, workout, or coffee break. No filler content.",
+              '30-45 minutes of pure value. Perfect for your commute, workout, or coffee break. No filler content.',
           },
           {
-            title: "Actionable Insights",
+            title: 'Actionable Insights',
             description:
-              "Every episode ends with three concrete takeaways. Build better habits and make real changes.",
+              'Every episode ends with three concrete takeaways. Build better habits and make real changes.',
           },
         ]
 
-    const episodesHeading = props.episodes?.heading ?? "Latest Episodes"
+    const episodesHeading = props.episodes?.heading ?? 'Latest Episodes'
     const episodesSub =
       props.episodes?.subheading ??
-      "Fresh conversations dropped every Tuesday morning"
-    const episodesViewAll = props.episodes?.viewAll ?? "View All 247 Episodes"
+      'Fresh conversations dropped every Tuesday morning'
+    const episodesViewAll = props.episodes?.viewAll ?? 'View All 247 Episodes'
     const episodeItems = props.episodes?.items?.length
       ? props.episodes.items
       : [
           {
-            badge: "NEW",
-            date: "May 27, 2026",
-            duration: "42 min",
-            title: "The Art of Reinvention: From Burnout to Breakthrough",
+            badge: 'NEW',
+            date: 'May 27, 2026',
+            duration: '42 min',
+            title: 'The Art of Reinvention: From Burnout to Breakthrough',
             description:
-              "Sarah Chen shares her journey from VP at a Fortune 500 company to founding a $20M sustainable fashion brand. We discuss the warning signs of burnout and the courage it takes to start over.",
-            host: "with Sarah Chen",
+              'Sarah Chen shares her journey from VP at a Fortune 500 company to founding a $20M sustainable fashion brand. We discuss the warning signs of burnout and the courage it takes to start over.',
+            host: 'with Sarah Chen',
             guestAlt:
-              "Episode guest professional headshot of female tech executive in navy blazer",
+              'Episode guest professional headshot of female tech executive in navy blazer',
           },
           {
-            date: "May 20, 2026",
-            duration: "38 min",
-            title: "Building in Public: The Transparency Playbook",
+            date: 'May 20, 2026',
+            duration: '38 min',
+            title: 'Building in Public: The Transparency Playbook',
             description:
-              "Marcus Williams built a $5M ARR SaaS company by documenting every failure on Twitter. We explore the psychology of vulnerability and why showing your work beats perfect launches.",
-            host: "with Marcus Williams",
+              'Marcus Williams built a $5M ARR SaaS company by documenting every failure on Twitter. We explore the psychology of vulnerability and why showing your work beats perfect launches.',
+            host: 'with Marcus Williams',
             guestAlt:
-              "Episode guest professional headshot of male entrepreneur in business suit",
+              'Episode guest professional headshot of male entrepreneur in business suit',
           },
           {
-            date: "May 13, 2026",
-            duration: "51 min",
+            date: 'May 13, 2026',
+            duration: '51 min',
             title: "The Creative's Guide to Making Money",
             description:
               'Award-winning director Aisha Patel breaks down how artists can build sustainable careers without selling out. From pricing your work to negotiating with clients who "want exposure."',
-            host: "with Aisha Patel",
+            host: 'with Aisha Patel',
             guestAlt:
-              "Episode guest professional headshot of creative director with artistic style",
+              'Episode guest professional headshot of creative director with artistic style',
           },
           {
-            date: "May 6, 2026",
-            duration: "45 min",
-            title: "Rejected by 100 VCs: The Unlikely Founder Story",
+            date: 'May 6, 2026',
+            duration: '45 min',
+            title: 'Rejected by 100 VCs: The Unlikely Founder Story',
             description:
               "David Park pitched 100 venture capital firms and got 100 no's. Two years later, his company IPO'd at $800M. The untold story of persistence, pivoting, and proving them wrong.",
-            host: "with David Park",
+            host: 'with David Park',
             guestAlt:
-              "Episode guest professional headshot of startup founder with casual style",
+              'Episode guest professional headshot of startup founder with casual style',
           },
         ]
     const normalizedEpisodeItems = episodeItems.map((ep) => ({
@@ -405,23 +405,27 @@ export const PodcastKimiPage2 = defineCapsule({
     const queueCount = safeQueueLines.length
 
     // For queue items, if we're using static defaults, look up episodes by title
-    const enrichedQueueLines = safeQueueLines.map((item) => {
-      if (item.episode) return item
-      const episode = displayEpisodes.find((ep) => ep.title === item.episodeTitle)
-      return episode ? { ...item, episode } : null
-    }).filter(Boolean)
+    const enrichedQueueLines = safeQueueLines
+      .map((item) => {
+        if (item.episode) return item
+        const episode = displayEpisodes.find(
+          (ep) => ep.title === item.episodeTitle,
+        )
+        return episode ? { ...item, episode } : null
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null)
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "247", label: "Episodes" },
-          { value: "50K+", label: "Weekly Listeners" },
-          { value: "150+", label: "Guest Interviews" },
-          { value: "4.9★", label: "Apple Podcasts" },
+          { value: '247', label: 'Episodes' },
+          { value: '50K+', label: 'Weekly Listeners' },
+          { value: '150+', label: 'Guest Interviews' },
+          { value: '4.9★', label: 'Apple Podcasts' },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Listeners Say"
+      props.testimonials?.heading ?? 'What Listeners Say'
     const testimonialsSub =
       props.testimonials?.subheading ??
       `Join thousands who start their week with ${brand}`
@@ -430,69 +434,69 @@ export const PodcastKimiPage2 = defineCapsule({
       : [
           {
             quote:
-              "This podcast single-handedly changed how I approach my mornings. The episode with Sarah Chen on reinvention? I literally pulled over my car to take notes. Essential listening.",
-            name: "Maya Thompson",
-            role: "Startup Founder, Austin",
+              'This podcast single-handedly changed how I approach my mornings. The episode with Sarah Chen on reinvention? I literally pulled over my car to take notes. Essential listening.',
+            name: 'Maya Thompson',
+            role: 'Startup Founder, Austin',
             avatarAlt:
-              "Listener testimonial headshot of young woman with curly hair",
+              'Listener testimonial headshot of young woman with curly hair',
           },
           {
             quote:
               "I've listened to hundreds of podcasts. Hustle & Heart cuts through the BS and delivers real, actionable wisdom. The production quality is unmatched. My commute is now my classroom.",
-            name: "James Rodriguez",
-            role: "Product Manager, NYC",
+            name: 'James Rodriguez',
+            role: 'Product Manager, NYC',
             avatarAlt:
-              "Listener testimonial headshot of middle-aged man with warm smile",
+              'Listener testimonial headshot of middle-aged man with warm smile',
           },
           {
             quote:
               "As a creative who struggles with the business side, this podcast is my secret weapon. Aisha Patel's episode on pricing your work? I doubled my rates the next day and landed three clients.",
-            name: "Priya Sharma",
-            role: "Freelance Designer, London",
+            name: 'Priya Sharma',
+            role: 'Freelance Designer, London',
             avatarAlt:
-              "Listener testimonial headshot of professional woman with short hair",
+              'Listener testimonial headshot of professional woman with short hair',
           },
         ]
 
     const subscribeHeading =
-      props.subscribe?.heading ?? "Subscribe Wherever You Listen"
+      props.subscribe?.heading ?? 'Subscribe Wherever You Listen'
     const subscribeDesc =
       props.subscribe?.description ??
       `Never miss an episode. Get ${brand} delivered to your favorite podcast app every Tuesday morning, completely free.`
     const subscribePlatforms = props.subscribe?.platforms?.length
       ? props.subscribe.platforms
-      : ["Apple Podcasts", "Google Podcasts", "Spotify", "YouTube"]
+      : ['Apple Podcasts', 'Google Podcasts', 'Spotify', 'YouTube']
 
-    const ctaHeading = props.cta?.heading ?? "Ready to start listening?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to start listening?'
     const ctaDesc =
       props.cta?.description ??
-      "Join 50,000+ listeners. New episodes every Tuesday. Always free, always inspiring."
-    const ctaPrimary = props.cta?.primaryCta ?? "Play Latest Episode"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Browse All Episodes"
+      'Join 50,000+ listeners. New episodes every Tuesday. Always free, always inspiring.'
+    const ctaPrimary = props.cta?.primaryCta ?? 'Play Latest Episode'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'Browse All Episodes'
 
     const footerNote =
       props.footer?.note ??
-      "Real conversations with entrepreneurs, artists, and changemakers. Raw, honest, and unfiltered stories that move you."
+      'Real conversations with entrepreneurs, artists, and changemakers. Raw, honest, and unfiltered stories that move you.'
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Twitter", "Instagram", "TikTok", "LinkedIn"]
+      : ['Twitter', 'Instagram', 'TikTok', 'LinkedIn']
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Podcast",
-            links: ["All Episodes", "Featured Guests", "Topics", "Transcripts"],
+            title: 'Podcast',
+            links: ['All Episodes', 'Featured Guests', 'Topics', 'Transcripts'],
           },
           {
-            title: "Connect",
-            links: ["About Us", "Become a Guest", "Sponsor", "Newsletter"],
+            title: 'Connect',
+            links: ['About Us', 'Become a Guest', 'Sponsor', 'Newsletter'],
           },
         ]
     const footerCopyright =
       props.footer?.copyright ?? `© 2026 ${brand} Podcast. All rights reserved.`
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service"]
+      : ['Privacy Policy', 'Terms of Service']
 
     const PlayTriangle = ({ className }: { className?: string }) => (
       <svg
@@ -578,15 +582,15 @@ export const PodcastKimiPage2 = defineCapsule({
     )
 
     const featureIcons = [
-      "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z",
-      "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
-      "M13 10V3L4 14h7v7l9-11h-7z",
+      'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
+      'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+      'M13 10V3L4 14h7v7l9-11h-7z',
     ]
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -1093,13 +1097,13 @@ export const PodcastKimiPage2 = defineCapsule({
                       ))}
                     </div>
                     <p>
-                      {socialProof.split("by")[0]}by{" "}
+                      {socialProof.split('by')[0]}by{' '}
                       <span className="font-semibold text-foreground">
                         {socialProofHighlight}
                       </span>
-                      {socialProof.includes("by")
-                        ? socialProof.split("by")[1]
-                        : ""}
+                      {socialProof.includes('by')
+                        ? socialProof.split('by')[1]
+                        : ''}
                     </p>
                   </div>
                 </div>
@@ -1405,10 +1409,10 @@ export const PodcastKimiPage2 = defineCapsule({
                         type="button"
                         onClick={() => go(platform)}
                         className={cn(
-                          "flex items-center gap-3 rounded-xl px-6 py-4 font-semibold transition-colors",
+                          'flex items-center gap-3 rounded-xl px-6 py-4 font-semibold transition-colors',
                           i === 0
-                            ? "bg-foreground text-background hover:bg-foreground/90"
-                            : "border border-input bg-card text-foreground hover:bg-accent hover:text-accent-foreground",
+                            ? 'bg-foreground text-background hover:bg-foreground/90'
+                            : 'border border-input bg-card text-foreground hover:bg-accent hover:text-accent-foreground',
                         )}
                       >
                         <PlayTriangle className="size-6" />

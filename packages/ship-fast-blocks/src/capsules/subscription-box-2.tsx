@@ -1,10 +1,11 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -13,15 +14,14 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * SubscriptionBoxKimiPage2 — a complete, self-contained subscription-box e-commerce
@@ -46,7 +46,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * supply ONLY content data; rich defaults make it render great with no props at all.
  */
 export const SubscriptionBoxKimiPage2 = defineCapsule({
-  name: "SubscriptionBoxKimiPage2",
+  name: 'SubscriptionBoxKimiPage2',
   description:
     "Complete subscription-box / coffee-of-the-month e-commerce LANDING page with a bold, product-forward light aesthetic (premium 'RoastCraft' coffee-delivery style). This is the SECOND, visually DISTINCT alternative style to SubscriptionBoxKimiPage (BrewBox) — pick this variant when you want a punchier, more commerce-y look with a product gallery and a billing toggle rather than an editorial farm-story layout. Includes a split hero (live-roast status pill, large headline with accent phrase, dual CTAs, inline free-shipping/cancel/guarantee trust ticks, a floating subscriber-count card and a '48h roast-to-door' badge), a tinted press/'featured in' logos strip, a 4-step 'how it works' grid with gradient tiles and connector chevrons, a 6-up 'why choose us' feature grid with icon tiles, a unique COFFEE-COLLECTION image gallery with roast-tag overlays and tasting notes, a 3-tier subscription PRICING block with a monthly/yearly billing toggle, check and cross feature lists, and a highlighted 'Most Popular' plan, a dark stats/metrics band, a 3-up customer testimonials grid with 5-star ratings, avatars and a trust-badge row, an accordion FAQ (details/summary), a gradient closing CTA with decorative blur orbs and reassurance ticks, and a fat dark multi-column footer with product/company/support links and social icons. Use as the ROOT/home page for subscription boxes, monthly-delivery DTC brands, coffee/tea/wine/snack/meal-kit clubs, curated-goods memberships, or any recurring-shipment commerce product needing trust signals, tiered plans, a product showcase, social proof and FAQ. Supply content only — brand, nav, hero, logos, steps, features, collection, plans, stats, testimonials, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -186,9 +186,7 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
         eyebrow: z.string().optional(),
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       })
       .optional(),
     /** Closing gradient CTA. */
@@ -206,9 +204,7 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
       .object({
         description: z.string().optional(),
         columns: z
-          .array(
-            z.object({ heading: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ heading: z.string(), links: z.array(z.string()) }))
           .optional(),
         copyright: z.string().optional(),
         legal: z.array(z.string()).optional(),
@@ -236,7 +232,12 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
         new Set(db.favorites.all().map((favorite) => favorite.coffeeName)),
     },
     mutations: {
-      subscribe: ({ db }, planName: string, planPrice: string, billingPeriod: string) => {
+      subscribe: (
+        { db },
+        planName: string,
+        planPrice: string,
+        billingPeriod: string,
+      ) => {
         db.subscriptions.insert({
           planName,
           planPrice,
@@ -247,7 +248,11 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
         })
         return db.subscriptions.all()
       },
-      updateSubscription: ({ db }, id: string, updates: Record<string, unknown>) => {
+      updateSubscription: (
+        { db },
+        id: string,
+        updates: Record<string, unknown>,
+      ) => {
         const subscription = db.subscriptions.get(id)
         if (subscription) {
           db.subscriptions.update(id, updates)
@@ -276,10 +281,10 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [subscriptionOpen, setSubscriptionOpen] = useState(false)
-    const brand = props.brand ?? "RoastCraft"
+    const brand = props.brand ?? 'RoastCraft'
     const nav = props.nav?.length
       ? props.nav
-      : ["How It Works", "Pricing", "Our Coffee", "Reviews", "FAQ"]
+      : ['How It Works', 'Pricing', 'Our Coffee', 'Reviews', 'FAQ']
 
     const subscriptions = lakebed.useQuery('subscriptions')
     const favoriteCoffeeNames = lakebed.useQuery('favoriteCoffeeNames')
@@ -316,34 +321,40 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
     const activeSubscription = subscriptions?.[0]
     const subscriptionCount = subscriptions?.length ?? 0
 
-    const heroBadge = props.hero?.badge ?? "Now roasting: Ethiopia Yirgacheffe"
-    const heroHeadingBefore = props.hero?.headingBefore ?? "Coffee That "
-    const heroHighlight = props.hero?.highlight ?? "Awakens"
-    const heroHeadingAfter = props.hero?.headingAfter ?? " Your Senses"
+    const heroBadge = props.hero?.badge ?? 'Now roasting: Ethiopia Yirgacheffe'
+    const heroHeadingBefore = props.hero?.headingBefore ?? 'Coffee That '
+    const heroHighlight = props.hero?.highlight ?? 'Awakens'
+    const heroHeadingAfter = props.hero?.headingAfter ?? ' Your Senses'
     const heroSub =
       props.hero?.subheading ??
-      "Freshly roasted single-origin beans delivered within 48 hours of roasting. Curated by award-winning roasters. Personalized to your perfect taste profile."
-    const heroPrimary = props.hero?.primaryCta ?? "Start Your Journey"
-    const heroSecondary = props.hero?.secondaryCta ?? "See How It Works"
+      'Freshly roasted single-origin beans delivered within 48 hours of roasting. Curated by award-winning roasters. Personalized to your perfect taste profile.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Start Your Journey'
+    const heroSecondary = props.hero?.secondaryCta ?? 'See How It Works'
     const heroTicks = props.hero?.ticks?.length
       ? props.hero.ticks
-      : ["Free shipping", "Skip or cancel anytime", "30-day guarantee"]
+      : ['Free shipping', 'Skip or cancel anytime', '30-day guarantee']
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "professional coffee pour-over brewing with rich crema in ceramic cup on wooden counter"
-    const heroCardTitle = props.hero?.cardTitle ?? "48,000+ happy subscribers"
-    const heroCardSubtitle = props.hero?.cardSubtitle ?? "Across 12 countries"
-    const heroBadgeValue = props.hero?.badgeValue ?? "48h"
-    const heroBadgeLabel = props.hero?.badgeLabel ?? "Roast to Door"
+      'professional coffee pour-over brewing with rich crema in ceramic cup on wooden counter'
+    const heroCardTitle = props.hero?.cardTitle ?? '48,000+ happy subscribers'
+    const heroCardSubtitle = props.hero?.cardSubtitle ?? 'Across 12 countries'
+    const heroBadgeValue = props.hero?.badgeValue ?? '48h'
+    const heroBadgeLabel = props.hero?.badgeLabel ?? 'Roast to Door'
 
     const logosHeading =
-      props.logos?.heading ?? "Featured in leading publications"
+      props.logos?.heading ?? 'Featured in leading publications'
     const logosItems = props.logos?.items?.length
       ? props.logos.items
-      : ["Bon Appétit", "Food & Wine", "Thrillist", "Serious Eats", "Wirecutter"]
+      : [
+          'Bon Appétit',
+          'Food & Wine',
+          'Thrillist',
+          'Serious Eats',
+          'Wirecutter',
+        ]
 
-    const stepsEyebrow = props.steps?.eyebrow ?? "Simple Process"
-    const stepsHeading = props.steps?.heading ?? "How RoastCraft Works"
+    const stepsEyebrow = props.steps?.eyebrow ?? 'Simple Process'
+    const stepsHeading = props.steps?.heading ?? 'How RoastCraft Works'
     const stepsDesc =
       props.steps?.description ??
       "From bean selection to your first sip, we've perfected every step of the journey."
@@ -351,34 +362,33 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
       ? props.steps.items
       : [
           {
-            title: "Take the Quiz",
+            title: 'Take the Quiz',
             description:
-              "Answer 6 quick questions about your taste preferences, brewing method, and caffeine needs.",
-            meta: "Takes 2 minutes",
+              'Answer 6 quick questions about your taste preferences, brewing method, and caffeine needs.',
+            meta: 'Takes 2 minutes',
           },
           {
-            title: "Get Matched",
+            title: 'Get Matched',
             description:
-              "Our algorithm selects 3 coffees perfectly suited to your profile from our rotating collection.",
-            meta: "200+ coffees in rotation",
+              'Our algorithm selects 3 coffees perfectly suited to your profile from our rotating collection.',
+            meta: '200+ coffees in rotation',
           },
           {
-            title: "Roasted Fresh",
+            title: 'Roasted Fresh',
             description:
-              "Your coffee is roasted in small batches on our Probat roasters and shipped within 24 hours.",
-            meta: "3 roasteries nationwide",
+              'Your coffee is roasted in small batches on our Probat roasters and shipped within 24 hours.',
+            meta: '3 roasteries nationwide',
           },
           {
-            title: "Delivered & Enjoyed",
+            title: 'Delivered & Enjoyed',
             description:
-              "Track your delivery in real-time. Rate each coffee to help us perfect your next selection.",
-            meta: "Free shipping over $25",
+              'Track your delivery in real-time. Rate each coffee to help us perfect your next selection.',
+            meta: 'Free shipping over $25',
           },
         ]
 
-    const featuresEyebrow = props.features?.eyebrow ?? "Why Choose Us"
-    const featuresHeading =
-      props.features?.heading ?? "What Makes Us Different"
+    const featuresEyebrow = props.features?.eyebrow ?? 'Why Choose Us'
+    const featuresHeading = props.features?.heading ?? 'What Makes Us Different'
     const featuresDesc =
       props.features?.description ??
       "We're obsessed with every detail of your coffee experience, from sourcing to your morning cup."
@@ -386,166 +396,165 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
       ? props.features.items
       : [
           {
-            title: "Direct Trade Sourcing",
+            title: 'Direct Trade Sourcing',
             description:
-              "We work directly with farmers in 18 countries, paying 40% above fair trade minimums. Annual farm visits ensure quality and sustainability.",
+              'We work directly with farmers in 18 countries, paying 40% above fair trade minimums. Annual farm visits ensure quality and sustainability.',
           },
           {
-            title: "48-Hour Freshness",
+            title: '48-Hour Freshness',
             description:
-              "Coffee roasted Monday ships Tuesday. Wednesday roasts ship Thursday. Your beans arrive at peak flavor, never warehouse-stale.",
+              'Coffee roasted Monday ships Tuesday. Wednesday roasts ship Thursday. Your beans arrive at peak flavor, never warehouse-stale.',
           },
           {
-            title: "Flavor Profiling",
+            title: 'Flavor Profiling',
             description:
-              "Our Q-graders score every batch on acidity, body, sweetness, and flavor notes. You receive detailed tasting notes and brewing guides.",
+              'Our Q-graders score every batch on acidity, body, sweetness, and flavor notes. You receive detailed tasting notes and brewing guides.',
           },
           {
-            title: "Carbon Neutral",
+            title: 'Carbon Neutral',
             description:
-              "100% carbon neutral shipping via partnerships with Gold Standard reforestation projects. Compostable packaging made from plant fibers.",
+              '100% carbon neutral shipping via partnerships with Gold Standard reforestation projects. Compostable packaging made from plant fibers.',
           },
           {
-            title: "Fully Customizable",
+            title: 'Fully Customizable',
             description:
-              "Adjust grind size, delivery frequency (weekly to monthly), and quantity anytime. Add decaf blends, single origins, or espresso roasts.",
+              'Adjust grind size, delivery frequency (weekly to monthly), and quantity anytime. Add decaf blends, single origins, or espresso roasts.',
           },
           {
-            title: "Brewing Support",
+            title: 'Brewing Support',
             description:
-              "Access video brewing guides, live chat with our baristas, and troubleshooting help. Join 15,000 members in our private coffee community.",
+              'Access video brewing guides, live chat with our baristas, and troubleshooting help. Join 15,000 members in our private coffee community.',
           },
         ]
 
-    const collectionEyebrow =
-      props.collection?.eyebrow ?? "Current Selection"
+    const collectionEyebrow = props.collection?.eyebrow ?? 'Current Selection'
     const collectionHeading =
       props.collection?.heading ?? "This Month's Collection"
     const collectionDesc =
       props.collection?.description ??
-      "Each month our roasters curate 12 exceptional coffees from our partner farms worldwide."
+      'Each month our roasters curate 12 exceptional coffees from our partner farms worldwide.'
     const collectionItems = props.collection?.items?.length
       ? props.collection.items
       : [
           {
-            tag: "Light Roast",
-            name: "Ethiopia Yirgacheffe",
-            notes: "Blueberry, jasmine, bergamot · Gedeo Zone",
+            tag: 'Light Roast',
+            name: 'Ethiopia Yirgacheffe',
+            notes: 'Blueberry, jasmine, bergamot · Gedeo Zone',
             imageAlt:
-              "close up of dark roasted Ethiopian coffee beans with oil sheen in burlap sack",
+              'close up of dark roasted Ethiopian coffee beans with oil sheen in burlap sack',
           },
           {
-            tag: "Medium Roast",
-            name: "Colombia Huila",
-            notes: "Caramel, red apple, cocoa · San Agustín",
+            tag: 'Medium Roast',
+            name: 'Colombia Huila',
+            notes: 'Caramel, red apple, cocoa · San Agustín',
             imageAlt:
-              "rich Colombian coffee beans scattered on wooden surface with sunlight",
+              'rich Colombian coffee beans scattered on wooden surface with sunlight',
           },
           {
-            tag: "Dark Roast",
-            name: "Sumatra Mandheling",
-            notes: "Earth, dark chocolate, smoke · Lintong",
+            tag: 'Dark Roast',
+            name: 'Sumatra Mandheling',
+            notes: 'Earth, dark chocolate, smoke · Lintong',
             imageAlt:
-              "Sumatra Mandheling coffee beans in a wooden scoop showing dark oily surface",
+              'Sumatra Mandheling coffee beans in a wooden scoop showing dark oily surface',
           },
           {
-            tag: "Light-Medium",
-            name: "Guatemala Antigua",
-            notes: "Spice, orange, nougat · Antigua Valley",
+            tag: 'Light-Medium',
+            name: 'Guatemala Antigua',
+            notes: 'Spice, orange, nougat · Antigua Valley',
             imageAlt:
-              "freshly roasted Guatemala Antigua beans cooling on tray with steam",
+              'freshly roasted Guatemala Antigua beans cooling on tray with steam',
           },
           {
-            tag: "Light Roast",
-            name: "Kenya AA Nyeri",
-            notes: "Blackcurrant, tomato, winey · Nyeri County",
+            tag: 'Light Roast',
+            name: 'Kenya AA Nyeri',
+            notes: 'Blackcurrant, tomato, winey · Nyeri County',
             imageAlt:
-              "Kenya AA coffee beans with distinctive shape and deep color in ceramic bowl",
+              'Kenya AA coffee beans with distinctive shape and deep color in ceramic bowl',
           },
           {
-            tag: "Medium Roast",
-            name: "Brazil Santos",
-            notes: "Nutty, chocolate, low acid · Minas Gerais",
+            tag: 'Medium Roast',
+            name: 'Brazil Santos',
+            notes: 'Nutty, chocolate, low acid · Minas Gerais',
             imageAlt:
-              "Brazil Santos coffee beans arranged in heart shape on slate background",
+              'Brazil Santos coffee beans arranged in heart shape on slate background',
           },
         ]
 
-    const plansEyebrow = props.plans?.eyebrow ?? "Flexible Plans"
-    const plansHeading = props.plans?.heading ?? "Choose Your Perfect Plan"
+    const plansEyebrow = props.plans?.eyebrow ?? 'Flexible Plans'
+    const plansHeading = props.plans?.heading ?? 'Choose Your Perfect Plan'
     const plansDesc =
       props.plans?.description ??
-      "All plans include free shipping, cancel anytime, and our 30-day satisfaction guarantee."
-    const billingMonthly = props.plans?.billingMonthly ?? "Monthly"
-    const billingYearly = props.plans?.billingYearly ?? "Yearly"
-    const billingYearlyNote = props.plans?.billingYearlyNote ?? "Save 20%"
+      'All plans include free shipping, cancel anytime, and our 30-day satisfaction guarantee.'
+    const billingMonthly = props.plans?.billingMonthly ?? 'Monthly'
+    const billingYearly = props.plans?.billingYearly ?? 'Yearly'
+    const billingYearlyNote = props.plans?.billingYearlyNote ?? 'Save 20%'
     const planItems = props.plans?.items?.length
       ? props.plans.items
       : [
           {
-            name: "Explorer",
-            tagline: "Perfect for trying new flavors",
-            price: "$19",
-            period: "/month",
+            name: 'Explorer',
+            tagline: 'Perfect for trying new flavors',
+            price: '$19',
+            period: '/month',
             features: [
-              "1 bag (12oz) per month",
-              "Rotating single origins",
-              "Whole bean or ground",
-              "Brewing guide included",
+              '1 bag (12oz) per month',
+              'Rotating single origins',
+              'Whole bean or ground',
+              'Brewing guide included',
             ],
-            disabled: ["Swap coffees"],
-            cta: "Get Started",
+            disabled: ['Swap coffees'],
+            cta: 'Get Started',
           },
           {
-            name: "Enthusiast",
-            tagline: "For the daily coffee lover",
-            price: "$34",
-            period: "/month",
+            name: 'Enthusiast',
+            tagline: 'For the daily coffee lover',
+            price: '$34',
+            period: '/month',
             features: [
-              "2 bags (12oz each) per month",
-              "Choose your coffees",
-              "Access to limited editions",
-              "Detailed tasting notes",
-              "Swap coffees anytime",
-              "Free sample pack quarterly",
+              '2 bags (12oz each) per month',
+              'Choose your coffees',
+              'Access to limited editions',
+              'Detailed tasting notes',
+              'Swap coffees anytime',
+              'Free sample pack quarterly',
             ],
-            cta: "Get Started",
+            cta: 'Get Started',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Connoisseur",
-            tagline: "For serious coffee aficionados",
-            price: "$59",
-            period: "/month",
+            name: 'Connoisseur',
+            tagline: 'For serious coffee aficionados',
+            price: '$59',
+            period: '/month',
             features: [
-              "4 bags (12oz each) per month",
-              "Rare micro-lot access",
-              "Priority access to limited releases",
-              "Private cupping sessions",
-              "Direct roaster chat support",
-              "Brewing equipment discounts",
+              '4 bags (12oz each) per month',
+              'Rare micro-lot access',
+              'Priority access to limited releases',
+              'Private cupping sessions',
+              'Direct roaster chat support',
+              'Brewing equipment discounts',
             ],
-            cta: "Get Started",
+            cta: 'Get Started',
           },
         ]
     const plansFootnote =
       props.plans?.footnote ??
-      "All plans include: Free shipping · Cancel anytime · 30-day guarantee · Compostable packaging"
+      'All plans include: Free shipping · Cancel anytime · 30-day guarantee · Compostable packaging'
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "48,000+", label: "Active Subscribers" },
-          { value: "200+", label: "Coffees in Rotation" },
-          { value: "4.9/5", label: "Average Rating" },
-          { value: "18", label: "Source Countries" },
+          { value: '48,000+', label: 'Active Subscribers' },
+          { value: '200+', label: 'Coffees in Rotation' },
+          { value: '4.9/5', label: 'Average Rating' },
+          { value: '18', label: 'Source Countries' },
         ]
 
     const testimonialsEyebrow =
-      props.testimonials?.eyebrow ?? "Loved by Coffee Lovers"
+      props.testimonials?.eyebrow ?? 'Loved by Coffee Lovers'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Our Subscribers Say"
+      props.testimonials?.heading ?? 'What Our Subscribers Say'
     const testimonialsDesc =
       props.testimonials?.description ??
       "Join thousands of coffee enthusiasts who've transformed their morning ritual."
@@ -555,115 +564,115 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
           {
             quote:
               "The Ethiopia Yirgacheffe I got last month had the most incredible blueberry notes. I've been a subscriber for 2 years now and every bag has been exceptional. The tasting notes are spot-on.",
-            name: "Sarah Chen",
-            role: "Software Engineer, Seattle · 2 years",
+            name: 'Sarah Chen',
+            role: 'Software Engineer, Seattle · 2 years',
             avatarAlt:
-              "professional headshot of a smiling woman with dark hair in natural light",
+              'professional headshot of a smiling woman with dark hair in natural light',
           },
           {
             quote:
               "As a former barista, I'm incredibly picky about my coffee. RoastCraft consistently delivers beans that rival the best specialty shops. The freshness is unmatched—no more stale supermarket coffee.",
-            name: "Marcus Williams",
-            role: "Former Head Barista, Portland · 1.5 years",
+            name: 'Marcus Williams',
+            role: 'Former Head Barista, Portland · 1.5 years',
             avatarAlt:
-              "professional headshot of a bearded man with glasses and warm smile",
+              'professional headshot of a bearded man with glasses and warm smile',
           },
           {
             quote:
-              "I love that I can customize my delivery schedule around travel. The ability to swap coffees based on my mood has introduced me to origins I never would have tried otherwise. Best subscription service ever.",
-            name: "Emily Rodriguez",
-            role: "Travel Photographer, Austin · 3 years",
+              'I love that I can customize my delivery schedule around travel. The ability to swap coffees based on my mood has introduced me to origins I never would have tried otherwise. Best subscription service ever.',
+            name: 'Emily Rodriguez',
+            role: 'Travel Photographer, Austin · 3 years',
             avatarAlt:
-              "professional headshot of a woman with blonde hair and confident expression",
+              'professional headshot of a woman with blonde hair and confident expression',
           },
         ]
     const testimonialBadges = props.testimonials?.badges?.length
       ? props.testimonials.badges
       : [
-          "12,000+ 5-star reviews on Trustpilot",
-          "94% renewal rate",
-          "30-day satisfaction guarantee",
+          '12,000+ 5-star reviews on Trustpilot',
+          '94% renewal rate',
+          '30-day satisfaction guarantee',
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "Got Questions?"
-    const faqHeading = props.faq?.heading ?? "Frequently Asked Questions"
+    const faqEyebrow = props.faq?.eyebrow ?? 'Got Questions?'
+    const faqHeading = props.faq?.heading ?? 'Frequently Asked Questions'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know about your coffee subscription."
+      'Everything you need to know about your coffee subscription.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "How fresh is the coffee when it arrives?",
-            a: "All our coffee is roasted in small batches and shipped within 24 hours of roasting. Most subscribers receive their coffee 2-4 days after roasting, which is the sweet spot for brewing—fresh enough for peak flavor, rested enough for optimal extraction.",
+            q: 'How fresh is the coffee when it arrives?',
+            a: 'All our coffee is roasted in small batches and shipped within 24 hours of roasting. Most subscribers receive their coffee 2-4 days after roasting, which is the sweet spot for brewing—fresh enough for peak flavor, rested enough for optimal extraction.',
           },
           {
-            q: "Can I change my plan or skip a month?",
-            a: "Absolutely! You can upgrade, downgrade, or pause your subscription anytime through your account dashboard. Going on vacation? Just skip a delivery. Changed your brewing method? Adjust your grind size preference instantly. No penalties, no hassle.",
+            q: 'Can I change my plan or skip a month?',
+            a: 'Absolutely! You can upgrade, downgrade, or pause your subscription anytime through your account dashboard. Going on vacation? Just skip a delivery. Changed your brewing method? Adjust your grind size preference instantly. No penalties, no hassle.',
           },
           {
             q: "What if I don't like a particular coffee?",
             a: "Our 30-day satisfaction guarantee has you covered. If any coffee doesn't meet your expectations, contact our support team and we'll either send a replacement or issue a credit for your next shipment. Your feedback also helps us refine your flavor profile for better future matches.",
           },
           {
-            q: "Do you offer decaf options?",
-            a: "Yes! We offer several Swiss Water Process decaf options that retain exceptional flavor without the caffeine. During signup, simply indicate your preference for decaf or half-caf, and our algorithm will prioritize those selections while still matching your taste profile.",
+            q: 'Do you offer decaf options?',
+            a: 'Yes! We offer several Swiss Water Process decaf options that retain exceptional flavor without the caffeine. During signup, simply indicate your preference for decaf or half-caf, and our algorithm will prioritize those selections while still matching your taste profile.',
           },
           {
-            q: "What brewing equipment do you recommend?",
-            a: "We provide brewing guides for every method: pour-over (V60, Chemex, Kalita), French press, AeroPress, espresso, and drip. Enthusiast and Connoisseur members receive equipment discounts of up to 25% on partners like Fellow, Hario, and Baratza through our member portal.",
+            q: 'What brewing equipment do you recommend?',
+            a: 'We provide brewing guides for every method: pour-over (V60, Chemex, Kalita), French press, AeroPress, espresso, and drip. Enthusiast and Connoisseur members receive equipment discounts of up to 25% on partners like Fellow, Hario, and Baratza through our member portal.',
           },
           {
-            q: "How do you ensure ethical sourcing?",
+            q: 'How do you ensure ethical sourcing?',
             a: "We pay an average of 40% above fair trade minimums and visit partner farms annually. Many relationships span 5+ years, allowing us to invest in processing improvements and environmental initiatives. Every bag includes the farmer's name and cooperative details.",
           },
         ]
 
     const ctaHeading =
-      props.cta?.heading ?? "Ready to Transform Your Coffee Experience?"
+      props.cta?.heading ?? 'Ready to Transform Your Coffee Experience?'
     const ctaDesc =
       props.cta?.description ??
-      "Join 48,000+ coffee lovers who start their day with RoastCraft. Take our 2-minute quiz and get your first bag for 50% off."
-    const ctaPrimary = props.cta?.primaryCta ?? "Start Your Journey"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Learn More"
+      'Join 48,000+ coffee lovers who start their day with RoastCraft. Take our 2-minute quiz and get your first bag for 50% off.'
+    const ctaPrimary = props.cta?.primaryCta ?? 'Start Your Journey'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'Learn More'
     const ctaTicks = props.cta?.ticks?.length
       ? props.cta.ticks
-      : ["No commitment", "Skip or cancel anytime", "30-day guarantee"]
+      : ['No commitment', 'Skip or cancel anytime', '30-day guarantee']
 
     const footerDesc =
       props.footer?.description ??
-      "Premium single-origin coffee, freshly roasted and delivered to your door. Elevating your morning ritual since 2019."
+      'Premium single-origin coffee, freshly roasted and delivered to your door. Elevating your morning ritual since 2019.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            heading: "Product",
+            heading: 'Product',
             links: [
-              "Our Coffee",
-              "Subscriptions",
-              "Gift Cards",
-              "Brewing Equipment",
-              "Merchandise",
+              'Our Coffee',
+              'Subscriptions',
+              'Gift Cards',
+              'Brewing Equipment',
+              'Merchandise',
             ],
           },
           {
-            heading: "Company",
+            heading: 'Company',
             links: [
-              "About Us",
-              "Our Roasteries",
-              "Sustainability",
-              "Careers",
-              "Press",
+              'About Us',
+              'Our Roasteries',
+              'Sustainability',
+              'Careers',
+              'Press',
             ],
           },
           {
-            heading: "Support",
+            heading: 'Support',
             links: [
-              "Help Center",
-              "Brewing Guides",
-              "Track Order",
-              "Contact Us",
-              "Wholesale",
+              'Help Center',
+              'Brewing Guides',
+              'Track Order',
+              'Contact Us',
+              'Wholesale',
             ],
           },
         ]
@@ -672,7 +681,7 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
       `© ${new Date().getFullYear()} ${brand} Coffee Co. All rights reserved.`
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Settings"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
 
     // Brand mark — steam/wifi-style glyph (decorative brand asset).
     const BrandMark = () => (
@@ -902,27 +911,27 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
 
     const socialIcons: { label: string; path: string }[] = [
       {
-        label: "Instagram",
-        path: "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z",
+        label: 'Instagram',
+        path: 'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z',
       },
       {
-        label: "Twitter",
-        path: "M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z",
+        label: 'Twitter',
+        path: 'M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z',
       },
       {
-        label: "Facebook",
-        path: "M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z",
+        label: 'Facebook',
+        path: 'M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z',
       },
       {
-        label: "YouTube",
-        path: "M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z",
+        label: 'YouTube',
+        path: 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z',
       },
     ]
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -1089,10 +1098,7 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
         </header>
 
         <Sheet open={subscriptionOpen} onOpenChange={setSubscriptionOpen}>
-          <SheetContent
-            side="right"
-            className="w-full gap-0 p-0 sm:max-w-md"
-          >
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
             <SheetHeader className="border-b border-border p-6">
               <SheetTitle className="text-xl">Subscription</SheetTitle>
               <SheetDescription>
@@ -1163,7 +1169,8 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
                           value={activeSubscription.quantity}
                           onChange={(e) => {
                             void updateSubscription(activeSubscription.id, {
-                              quantity: Number.parseInt(e.target.value, 10) || 1,
+                              quantity:
+                                Number.parseInt(e.target.value, 10) || 1,
                             })
                           }}
                           className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -1178,7 +1185,8 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
                     No active subscription
                   </p>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Choose a plan from the Pricing section to start your coffee journey.
+                    Choose a plan from the Pricing section to start your coffee
+                    journey.
                   </p>
                 </div>
               )}
@@ -1459,7 +1467,9 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
                         <h3 className="mb-1 text-xl font-bold text-background">
                           {item.name}
                         </h3>
-                        <p className="text-sm text-background/80">{item.notes}</p>
+                        <p className="text-sm text-background/80">
+                          {item.notes}
+                        </p>
                       </div>
                     </button>
                   )
@@ -1509,10 +1519,10 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
                   <div
                     key={plan.name}
                     className={cn(
-                      "relative flex flex-col rounded-3xl p-8",
+                      'relative flex flex-col rounded-3xl p-8',
                       plan.featured
-                        ? "border-2 border-primary bg-card shadow-xl shadow-primary/10"
-                        : "border-2 border-border bg-card transition-colors hover:border-primary/40",
+                        ? 'border-2 border-primary bg-card shadow-xl shadow-primary/10'
+                        : 'border-2 border-border bg-card transition-colors hover:border-primary/40',
                     )}
                   >
                     {plan.badge && (
@@ -1557,14 +1567,18 @@ export const SubscriptionBoxKimiPage2 = defineCapsule({
                     <button
                       type="button"
                       onClick={() => {
-                        void subscribe(plan.name, plan.price, plan.period.replace('/', ''))
+                        void subscribe(
+                          plan.name,
+                          plan.price,
+                          plan.period.replace('/', ''),
+                        )
                         setSubscriptionOpen(true)
                       }}
                       className={cn(
-                        "w-full rounded-xl py-4 font-bold transition-colors",
+                        'w-full rounded-xl py-4 font-bold transition-colors',
                         plan.featured
-                          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 hover:bg-primary/90"
-                          : "border-2 border-border text-foreground hover:border-primary hover:text-primary",
+                          ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30 hover:bg-primary/90'
+                          : 'border-2 border-border text-foreground hover:border-primary hover:text-primary',
                       )}
                     >
                       {plan.cta}

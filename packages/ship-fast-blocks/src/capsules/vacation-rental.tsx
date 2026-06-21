@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -13,15 +13,14 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * VacationRentalKimiPage — a complete, self-contained vacation-rental / short-term
@@ -45,7 +44,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * props at all.
  */
 export const VacationRentalKimiPage = defineCapsule({
-  name: "VacationRentalKimiPage",
+  name: 'VacationRentalKimiPage',
   description:
     "Complete vacation-rental / short-term-stay LISTING-DETAIL page in the Airbnb marketplace style: a clean, light, photo-forward property page with a coral primary accent. Includes a sticky search navbar with a pill search bar, a listing title with star rating / review-count / Superhost / location meta, a 5-up bento photo gallery with a 'show all photos' button, a two-column body (entire-home host header with avatar, four feature highlights with icons, a multi-paragraph description, a two-up amenities grid with a 'show all amenities' button, a check-in/checkout date selector, a category-rating bar breakdown plus a grid of dated guest reviews with headshots, a 'where you'll be' location/map card with neighborhood highlights, and a host bio block with verification badges) alongside a sticky price-per-night booking card with date+guest inputs, a Reserve button, an itemized fee breakdown and total, free-cancellation and rare-find notes, then a 'more places to stay' recommendation grid of nearby rentals and a multi-column footer with social links. Use as the listing/detail page for vacation rentals, holiday homes, villas, cabins, beach houses, Airbnb-style marketplaces, property bookings, or short-term-stay sites whenever a photo-rich, trust-building, conversion-focused stay page with reviews, amenities and an inline booking widget is wanted. Supply content only — brand, nav, listing, gallery, host, features, description, amenities, reviews, location, booking, similar stays, footer; the block owns all layout and styling.",
   props: z.object({
@@ -199,9 +198,7 @@ export const VacationRentalKimiPage = defineCapsule({
     footer: z
       .object({
         columns: z
-          .array(
-            z.object({ heading: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ heading: z.string(), links: z.array(z.string()) }))
           .optional(),
         copyright: z.string().optional(),
         legal: z.array(z.string()).optional(),
@@ -231,7 +228,14 @@ export const VacationRentalKimiPage = defineCapsule({
         new Set(db.favorites.all().map((favorite) => favorite.propertyName)),
     },
     mutations: {
-      createBooking: ({ db }, checkIn: string, checkOut: string, guests: number, price: string, propertyName: string) => {
+      createBooking: (
+        { db },
+        checkIn: string,
+        checkOut: string,
+        guests: number,
+        price: string,
+        propertyName: string,
+      ) => {
         db.bookings.insert({
           checkIn,
           checkOut,
@@ -260,7 +264,7 @@ export const VacationRentalKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [bookingOpen, setBookingOpen] = useState(false)
-    const brand = props.brand ?? "Airbnb"
+    const brand = props.brand ?? 'Airbnb'
     const bookings = lakebed.useQuery('bookings')
     const favoritePropertyNames = lakebed.useQuery('favoritePropertyNames')
     const auth = lakebed.useAuth()
@@ -295,264 +299,263 @@ export const VacationRentalKimiPage = defineCapsule({
     const bookingCount = safeBookings.length
     const nav = props.nav?.length
       ? props.nav
-      : ["Anywhere", "Any week", "Add guests", "Airbnb your home"]
+      : ['Anywhere', 'Any week', 'Add guests', 'Airbnb your home']
 
     const listing = {
-      title:
-        props.listing?.title ?? "Sunset Cliffs Villa - Ocean View Retreat",
-      rating: props.listing?.rating ?? "4.98",
-      reviewCount: props.listing?.reviewCount ?? "247 reviews",
-      hostTier: props.listing?.hostTier ?? "Superhost",
+      title: props.listing?.title ?? 'Sunset Cliffs Villa - Ocean View Retreat',
+      rating: props.listing?.rating ?? '4.98',
+      reviewCount: props.listing?.reviewCount ?? '247 reviews',
+      hostTier: props.listing?.hostTier ?? 'Superhost',
       location:
-        props.listing?.location ?? "La Jolla, California, United States",
+        props.listing?.location ?? 'La Jolla, California, United States',
     }
 
-    const galleryShowAll = props.gallery?.showAll ?? "Show all photos"
+    const galleryShowAll = props.gallery?.showAll ?? 'Show all photos'
     const galleryImages = props.gallery?.images?.length
       ? props.gallery.images
       : [
-          "Modern coastal villa exterior with floor-to-ceiling windows overlooking the Pacific Ocean at golden hour",
-          "Bright open-concept living room with white sectional sofa and ocean views through large windows",
-          "Modern infinity pool terrace with lounge chairs overlooking the ocean at sunset",
-          "Luxury master bedroom with king bed and panoramic ocean views",
-          "Outdoor dining area on terrace with string lights and ocean backdrop",
+          'Modern coastal villa exterior with floor-to-ceiling windows overlooking the Pacific Ocean at golden hour',
+          'Bright open-concept living room with white sectional sofa and ocean views through large windows',
+          'Modern infinity pool terrace with lounge chairs overlooking the ocean at sunset',
+          'Luxury master bedroom with king bed and panoramic ocean views',
+          'Outdoor dining area on terrace with string lights and ocean backdrop',
         ]
 
     const host = {
-      title: props.host?.title ?? "Entire villa hosted by Sarah",
-      meta: props.host?.meta ?? "4 guests · 2 bedrooms · 3 beds · 2 baths",
+      title: props.host?.title ?? 'Entire villa hosted by Sarah',
+      meta: props.host?.meta ?? '4 guests · 2 bedrooms · 3 beds · 2 baths',
       avatarAlt:
         props.host?.avatarAlt ??
-        "Professional headshot of host Sarah, a smiling woman with warm blonde hair in her 30s",
-      superhostNote: props.host?.superhostNote ?? "Sarah is a Superhost",
+        'Professional headshot of host Sarah, a smiling woman with warm blonde hair in her 30s',
+      superhostNote: props.host?.superhostNote ?? 'Sarah is a Superhost',
     }
 
     const features = props.features?.length
       ? props.features
       : [
           {
-            title: "Entire home",
+            title: 'Entire home',
             description: "You'll have the villa to yourself.",
           },
           {
-            title: "Self check-in",
-            description: "Check yourself in with the smart lock.",
+            title: 'Self check-in',
+            description: 'Check yourself in with the smart lock.',
           },
           {
-            title: "Unbeatable location",
+            title: 'Unbeatable location',
             description:
-              "100% of recent guests gave the location a 5-star rating.",
+              '100% of recent guests gave the location a 5-star rating.',
           },
           {
-            title: "Dive right in",
+            title: 'Dive right in',
             description:
-              "This is one of the few places in the area with a pool.",
+              'This is one of the few places in the area with a pool.',
           },
         ]
 
     const descEyebrow =
-      props.description?.eyebrow ?? "Welcome to the California coast"
+      props.description?.eyebrow ?? 'Welcome to the California coast'
     const descParagraphs = props.description?.paragraphs?.length
       ? props.description.paragraphs
       : [
-          "Escape to this stunning oceanfront villa perched on the cliffs of La Jolla. Wake up to the sound of waves and panoramic Pacific Ocean views from nearly every room. This architectural masterpiece seamlessly blends indoor luxury with outdoor beauty.",
-          "The open-concept living space features soaring ceilings, a gourmet kitchen with Thermador appliances, and floor-to-ceiling glass doors that open to the infinity pool terrace. Both bedrooms offer ocean views and spa-like en-suite bathrooms.",
+          'Escape to this stunning oceanfront villa perched on the cliffs of La Jolla. Wake up to the sound of waves and panoramic Pacific Ocean views from nearly every room. This architectural masterpiece seamlessly blends indoor luxury with outdoor beauty.',
+          'The open-concept living space features soaring ceilings, a gourmet kitchen with Thermador appliances, and floor-to-ceiling glass doors that open to the infinity pool terrace. Both bedrooms offer ocean views and spa-like en-suite bathrooms.',
           "Steps from Windansea Beach and minutes from La Jolla Cove, Torrey Pines, and downtown's finest dining. Perfect for couples seeking a romantic retreat or small families wanting a beach vacation.",
         ]
-    const descShowMore = props.description?.showMore ?? "Show more"
+    const descShowMore = props.description?.showMore ?? 'Show more'
 
     const amenitiesHeading =
-      props.amenities?.heading ?? "What this place offers"
+      props.amenities?.heading ?? 'What this place offers'
     const amenityItems = props.amenities?.items?.length
       ? props.amenities.items
       : [
-          "Ocean view",
-          "Beach access",
-          "Private pool - heated",
-          "Outdoor shower",
+          'Ocean view',
+          'Beach access',
+          'Private pool - heated',
+          'Outdoor shower',
           '65" 4K HDTV with Netflix, HBO Max',
-          "Fast WiFi (400 Mbps)",
-          "Fire pit",
-          "Full kitchen",
-          "Washer & dryer in unit",
-          "Free parking on premises",
-          "Free washer / dryer",
-          "Security cameras on property",
+          'Fast WiFi (400 Mbps)',
+          'Fire pit',
+          'Full kitchen',
+          'Washer & dryer in unit',
+          'Free parking on premises',
+          'Free washer / dryer',
+          'Security cameras on property',
         ]
-    const amenitiesShowAll = props.amenities?.showAll ?? "Show all 42 amenities"
+    const amenitiesShowAll = props.amenities?.showAll ?? 'Show all 42 amenities'
 
     const calendar = {
-      heading: props.calendar?.heading ?? "Select check-in date",
+      heading: props.calendar?.heading ?? 'Select check-in date',
       subheading:
-        props.calendar?.subheading ?? "Add your travel dates for exact pricing",
-      checkInLabel: props.calendar?.checkInLabel ?? "CHECK-IN",
-      checkOutLabel: props.calendar?.checkOutLabel ?? "CHECKOUT",
-      placeholder: props.calendar?.placeholder ?? "Add date",
-      note: props.calendar?.note ?? "Minimum stay: 2 nights",
+        props.calendar?.subheading ?? 'Add your travel dates for exact pricing',
+      checkInLabel: props.calendar?.checkInLabel ?? 'CHECK-IN',
+      checkOutLabel: props.calendar?.checkOutLabel ?? 'CHECKOUT',
+      placeholder: props.calendar?.placeholder ?? 'Add date',
+      note: props.calendar?.note ?? 'Minimum stay: 2 nights',
     }
 
-    const reviewsSummary =
-      props.reviews?.summary ?? "4.98 · 247 reviews"
+    const reviewsSummary = props.reviews?.summary ?? '4.98 · 247 reviews'
     const reviewCategories = props.reviews?.categories?.length
       ? props.reviews.categories
       : [
-          { label: "Cleanliness", score: "4.9" },
-          { label: "Accuracy", score: "5.0" },
-          { label: "Check-in", score: "5.0" },
-          { label: "Communication", score: "5.0" },
-          { label: "Location", score: "5.0" },
-          { label: "Value", score: "4.9" },
+          { label: 'Cleanliness', score: '4.9' },
+          { label: 'Accuracy', score: '5.0' },
+          { label: 'Check-in', score: '5.0' },
+          { label: 'Communication', score: '5.0' },
+          { label: 'Location', score: '5.0' },
+          { label: 'Value', score: '4.9' },
         ]
     const reviewItems = props.reviews?.items?.length
       ? props.reviews.items
       : [
           {
-            name: "Michael",
-            date: "December 2024",
-            text: "We celebrated our anniversary here and it was magical. Waking up to the ocean view, watching dolphins from the pool deck, and the sunsets were unforgettable. Sarah thought of every detail.",
+            name: 'Michael',
+            date: 'December 2024',
+            text: 'We celebrated our anniversary here and it was magical. Waking up to the ocean view, watching dolphins from the pool deck, and the sunsets were unforgettable. Sarah thought of every detail.',
             avatarAlt:
-              "Professional headshot of Michael, a smiling man with short dark hair and glasses",
+              'Professional headshot of Michael, a smiling man with short dark hair and glasses',
           },
           {
-            name: "Jennifer",
-            date: "November 2024",
+            name: 'Jennifer',
+            date: 'November 2024',
             text: "Best Airbnb experience we've ever had. The heated pool was perfect even in November. The kitchen was stocked with everything we needed to cook Thanksgiving dinner.",
             avatarAlt:
-              "Professional headshot of Jennifer, a smiling woman with shoulder-length brown hair",
+              'Professional headshot of Jennifer, a smiling woman with shoulder-length brown hair',
           },
           {
-            name: "David",
-            date: "October 2024",
-            text: "Perfect for our family of four. The kids loved the beach access. Location is ideal - walking distance to restaurants but feels secluded and private. Already booked our return trip.",
+            name: 'David',
+            date: 'October 2024',
+            text: 'Perfect for our family of four. The kids loved the beach access. Location is ideal - walking distance to restaurants but feels secluded and private. Already booked our return trip.',
             avatarAlt:
-              "Professional headshot of David, a smiling man with light beard and blue eyes in his 40s",
+              'Professional headshot of David, a smiling man with light beard and blue eyes in his 40s',
           },
           {
-            name: "Emily",
-            date: "September 2024",
+            name: 'Emily',
+            date: 'September 2024',
             text: "Used the home as a remote work base for a week. WiFi was flawless, the workspace had an incredible view. Pool breaks between meetings were life-changing. Can't recommend enough.",
             avatarAlt:
-              "Professional headshot of Emily, a smiling young woman with curly red hair and freckles",
+              'Professional headshot of Emily, a smiling young woman with curly red hair and freckles',
           },
           {
-            name: "Robert",
-            date: "August 2024",
+            name: 'Robert',
+            date: 'August 2024',
             text: "We've stayed at luxury resorts worldwide and this villa exceeded them all. The attention to detail, the views, the amenities - absolutely world class. Sarah is a phenomenal host.",
             avatarAlt:
-              "Professional headshot of Robert, a smiling man with salt and pepper hair in his 50s",
+              'Professional headshot of Robert, a smiling man with salt and pepper hair in his 50s',
           },
           {
-            name: "Sophia",
-            date: "July 2024",
-            text: "Hosted a small bachelorette party here and it was perfect. The outdoor space, the fire pit at night, the stunning photos we took - memories for a lifetime. Thank you Sarah!",
+            name: 'Sophia',
+            date: 'July 2024',
+            text: 'Hosted a small bachelorette party here and it was perfect. The outdoor space, the fire pit at night, the stunning photos we took - memories for a lifetime. Thank you Sarah!',
             avatarAlt:
-              "Professional headshot of Sophia, a smiling woman with elegant dark hair and warm brown eyes",
+              'Professional headshot of Sophia, a smiling woman with elegant dark hair and warm brown eyes',
           },
         ]
-    const reviewsShowAll = props.reviews?.showAll ?? "Show all 247 reviews"
+    const reviewsShowAll = props.reviews?.showAll ?? 'Show all 247 reviews'
 
     const location = {
       heading: props.location?.heading ?? "Where you'll be",
-      place: props.location?.place ?? "La Jolla, California, United States",
+      place: props.location?.place ?? 'La Jolla, California, United States',
       mapAlt:
         props.location?.mapAlt ??
-        "Aerial view of La Jolla coastline showing beaches, cliffs, and Pacific Ocean",
+        'Aerial view of La Jolla coastline showing beaches, cliffs, and Pacific Ocean',
       mapBadge:
-        props.location?.mapBadge ?? "Exact location provided after booking",
+        props.location?.mapBadge ?? 'Exact location provided after booking',
       highlightsHeading:
-        props.location?.highlightsHeading ?? "Neighborhood highlights",
+        props.location?.highlightsHeading ?? 'Neighborhood highlights',
       highlights: props.location?.highlights?.length
         ? props.location.highlights
         : [
-            "Windansea Beach — 3 min walk",
-            "La Jolla Cove — 8 min drive",
-            "Torrey Pines Golf Course — 12 min drive",
-            "UC San Diego — 15 min drive",
-            "San Diego International Airport — 25 min drive",
+            'Windansea Beach — 3 min walk',
+            'La Jolla Cove — 8 min drive',
+            'Torrey Pines Golf Course — 12 min drive',
+            'UC San Diego — 15 min drive',
+            'San Diego International Airport — 25 min drive',
           ],
     }
 
     const hostBio = {
-      heading: props.hostBio?.heading ?? "Hosted by Sarah",
-      meta: props.hostBio?.meta ?? "Superhost · 8 years hosting",
+      heading: props.hostBio?.heading ?? 'Hosted by Sarah',
+      meta: props.hostBio?.meta ?? 'Superhost · 8 years hosting',
       avatarAlt:
         props.hostBio?.avatarAlt ??
-        "Professional headshot of host Sarah, a smiling woman with warm blonde hair in her 30s",
+        'Professional headshot of host Sarah, a smiling woman with warm blonde hair in her 30s',
       badges: props.hostBio?.badges?.length
         ? props.hostBio.badges
-        : ["Identity verified", "Superhost"],
+        : ['Identity verified', 'Superhost'],
       bio:
         props.hostBio?.bio ??
         "Hi, I'm Sarah! I've called La Jolla home for 15 years and absolutely love sharing this magical corner of California with guests. I designed Sunset Cliffs Villa as my dream home and now enjoy hosting travelers seeking an unforgettable coastal experience. I'm always available to help with local recommendations - from hidden beach coves to the best fish tacos in town!",
       responseLines: props.hostBio?.responseLines?.length
         ? props.hostBio.responseLines
-        : ["Response rate: 100%", "Responds within an hour"],
-      cta: props.hostBio?.cta ?? "Message host",
+        : ['Response rate: 100%', 'Responds within an hour'],
+      cta: props.hostBio?.cta ?? 'Message host',
       protectNote:
         props.hostBio?.protectNote ??
-        "To protect your payment, never transfer money or communicate outside of the Airbnb website or app.",
+        'To protect your payment, never transfer money or communicate outside of the Airbnb website or app.',
     }
 
     const booking = {
-      price: props.booking?.price ?? "$485",
-      priceUnit: props.booking?.priceUnit ?? "night",
-      rating: props.booking?.rating ?? "4.98",
-      reviewCount: props.booking?.reviewCount ?? "247 reviews",
-      checkInLabel: props.booking?.checkInLabel ?? "CHECK-IN",
-      checkInDate: props.booking?.checkInDate ?? "6/12/2025",
-      checkOutLabel: props.booking?.checkOutLabel ?? "CHECKOUT",
-      checkOutDate: props.booking?.checkOutDate ?? "6/17/2025",
-      guestsLabel: props.booking?.guestsLabel ?? "GUESTS",
-      guestsValue: props.booking?.guestsValue ?? "2 guests",
-      reserve: props.booking?.reserve ?? "Reserve",
+      price: props.booking?.price ?? '$485',
+      priceUnit: props.booking?.priceUnit ?? 'night',
+      rating: props.booking?.rating ?? '4.98',
+      reviewCount: props.booking?.reviewCount ?? '247 reviews',
+      checkInLabel: props.booking?.checkInLabel ?? 'CHECK-IN',
+      checkInDate: props.booking?.checkInDate ?? '6/12/2025',
+      checkOutLabel: props.booking?.checkOutLabel ?? 'CHECKOUT',
+      checkOutDate: props.booking?.checkOutDate ?? '6/17/2025',
+      guestsLabel: props.booking?.guestsLabel ?? 'GUESTS',
+      guestsValue: props.booking?.guestsValue ?? '2 guests',
+      reserve: props.booking?.reserve ?? 'Reserve',
       chargeNote: props.booking?.chargeNote ?? "You won't be charged yet",
       lineItems: props.booking?.lineItems?.length
         ? props.booking.lineItems
         : [
-            { label: "$485 x 5 nights", amount: "$2,425" },
-            { label: "Cleaning fee", amount: "$275" },
-            { label: "Airbnb service fee", amount: "$388" },
-            { label: "Occupancy taxes", amount: "$285" },
+            { label: '$485 x 5 nights', amount: '$2,425' },
+            { label: 'Cleaning fee', amount: '$275' },
+            { label: 'Airbnb service fee', amount: '$388' },
+            { label: 'Occupancy taxes', amount: '$285' },
           ],
-      totalLabel: props.booking?.totalLabel ?? "Total before taxes",
-      totalAmount: props.booking?.totalAmount ?? "$3,373",
-      cancelTitle: props.booking?.cancelTitle ?? "Free cancellation for 48 hours",
+      totalLabel: props.booking?.totalLabel ?? 'Total before taxes',
+      totalAmount: props.booking?.totalAmount ?? '$3,373',
+      cancelTitle:
+        props.booking?.cancelTitle ?? 'Free cancellation for 48 hours',
       cancelNote:
         props.booking?.cancelNote ??
-        "Cancel within 48 hours of booking to get a full refund.",
+        'Cancel within 48 hours of booking to get a full refund.',
       rareFind:
         props.booking?.rareFind ??
         "This is a rare find. Sarah's place is usually booked.",
     }
 
     const similarHeading =
-      props.similar?.heading ?? "More places to stay in La Jolla"
+      props.similar?.heading ?? 'More places to stay in La Jolla'
     const similarItems = props.similar?.items?.length
       ? props.similar.items
       : [
           {
-            title: "Contemporary Beach House",
-            rating: "4.95",
-            meta: "Ocean view · 1.2 miles away",
-            price: "$395",
+            title: 'Contemporary Beach House',
+            rating: '4.95',
+            meta: 'Ocean view · 1.2 miles away',
+            price: '$395',
           },
           {
-            title: "Tropical Villa Retreat",
-            rating: "4.92",
-            meta: "Pool · 0.8 miles away",
-            price: "$625",
+            title: 'Tropical Villa Retreat',
+            rating: '4.92',
+            meta: 'Pool · 0.8 miles away',
+            price: '$625',
           },
           {
-            title: "Minimalist Coastal Bungalow",
-            rating: "4.88",
-            meta: "Garden view · 2.1 miles away",
-            price: "$285",
+            title: 'Minimalist Coastal Bungalow',
+            rating: '4.88',
+            meta: 'Garden view · 2.1 miles away',
+            price: '$285',
           },
           {
-            title: "Cliffside Infinity Villa",
-            rating: "4.97",
-            meta: "Panoramic view · 0.3 miles away",
-            price: "$750",
+            title: 'Cliffside Infinity Villa',
+            rating: '4.97',
+            meta: 'Panoramic view · 0.3 miles away',
+            price: '$750',
           },
         ]
 
@@ -560,36 +563,36 @@ export const VacationRentalKimiPage = defineCapsule({
       ? props.footer.columns
       : [
           {
-            heading: "Support",
+            heading: 'Support',
             links: [
-              "Help Center",
-              "AirCover",
-              "Safety information",
-              "Cancellation options",
-              "Report a neighborhood concern",
+              'Help Center',
+              'AirCover',
+              'Safety information',
+              'Cancellation options',
+              'Report a neighborhood concern',
             ],
           },
           {
-            heading: "Community",
-            links: ["Airbnb.org: disaster relief", "Combating discrimination"],
+            heading: 'Community',
+            links: ['Airbnb.org: disaster relief', 'Combating discrimination'],
           },
           {
-            heading: "Hosting",
+            heading: 'Hosting',
             links: [
-              "Airbnb your home",
-              "AirCover for Hosts",
-              "Explore hosting resources",
-              "Visit our community forum",
+              'Airbnb your home',
+              'AirCover for Hosts',
+              'Explore hosting resources',
+              'Visit our community forum',
             ],
           },
           {
-            heading: "Airbnb",
+            heading: 'Airbnb',
             links: [
-              "Newsroom",
-              "New features",
-              "Careers",
-              "Investors",
-              "Gift cards",
+              'Newsroom',
+              'New features',
+              'Careers',
+              'Investors',
+              'Gift cards',
             ],
           },
         ]
@@ -597,12 +600,12 @@ export const VacationRentalKimiPage = defineCapsule({
       props.footer?.copyright ?? `© ${new Date().getFullYear()} Airbnb, Inc.`
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy", "Terms", "Sitemap"]
-    const footerLanguage = props.footer?.language ?? "English (US)"
-    const footerCurrency = props.footer?.currency ?? "$ USD"
+      : ['Privacy', 'Terms', 'Sitemap']
+    const footerLanguage = props.footer?.language ?? 'English (US)'
+    const footerCurrency = props.footer?.currency ?? '$ USD'
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Facebook", "Twitter", "Instagram"]
+      : ['Facebook', 'Twitter', 'Instagram']
 
     // Brand logo glyph — fixed decorative brand asset.
     const Logo = () => (
@@ -618,7 +621,7 @@ export const VacationRentalKimiPage = defineCapsule({
 
     const Star = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-4", className)}
+        className={cn('size-4', className)}
         viewBox="0 0 24 24"
         fill="currentColor"
         aria-hidden="true"
@@ -644,7 +647,7 @@ export const VacationRentalKimiPage = defineCapsule({
 
     const Globe = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5", className)}
+        className={cn('size-5', className)}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -660,10 +663,10 @@ export const VacationRentalKimiPage = defineCapsule({
     const HeartIcon = ({ active = false }: { active?: boolean }) => (
       <svg
         className={cn(
-          "size-5",
-          active ? "text-primary-foreground" : "text-foreground",
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
         )}
-        fill={active ? "currentColor" : "none"}
+        fill={active ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -677,7 +680,10 @@ export const VacationRentalKimiPage = defineCapsule({
 
     const ChevronDown = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-5 text-muted-foreground transition-transform", className)}
+        className={cn(
+          'size-5 text-muted-foreground transition-transform',
+          className,
+        )}
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
@@ -691,12 +697,12 @@ export const VacationRentalKimiPage = defineCapsule({
     )
 
     const inputCardCls =
-      "rounded-lg border border-input p-4 text-left transition-colors hover:border-foreground"
+      'rounded-lg border border-input p-4 text-left transition-colors hover:border-foreground'
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -727,7 +733,7 @@ export const VacationRentalKimiPage = defineCapsule({
                     onClick={() => go(nav[1] ?? nav[0])}
                     className="px-2 text-sm font-medium"
                   >
-                    {nav[1] ?? "Any week"}
+                    {nav[1] ?? 'Any week'}
                   </button>
                   <span className="mx-1 h-4 w-px bg-border" />
                   <button
@@ -735,7 +741,7 @@ export const VacationRentalKimiPage = defineCapsule({
                     onClick={() => go(nav[2] ?? nav[0])}
                     className="px-2 text-sm text-muted-foreground"
                   >
-                    {nav[2] ?? "Add guests"}
+                    {nav[2] ?? 'Add guests'}
                   </button>
                   <button
                     type="button"
@@ -764,7 +770,7 @@ export const VacationRentalKimiPage = defineCapsule({
                   onClick={() => go(nav[3] ?? nav[0])}
                   className="hidden rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-muted md:block"
                 >
-                  {nav[3] ?? "Airbnb your home"}
+                  {nav[3] ?? 'Airbnb your home'}
                 </button>
                 <button
                   type="button"
@@ -826,7 +832,7 @@ export const VacationRentalKimiPage = defineCapsule({
                               {authDisplayName}
                             </p>
                             <p className="truncate text-xs text-muted-foreground">
-                              {authEmail ?? "Signed in to this session"}
+                              {authEmail ?? 'Signed in to this session'}
                             </p>
                           </div>
                         </div>
@@ -834,7 +840,7 @@ export const VacationRentalKimiPage = defineCapsule({
                       <div className="p-2">
                         <button
                           type="button"
-                          onClick={() => go("Bookings")}
+                          onClick={() => go('Bookings')}
                           className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           Bookings
@@ -844,7 +850,7 @@ export const VacationRentalKimiPage = defineCapsule({
                         </button>
                         <button
                           type="button"
-                          onClick={() => go("Favorites")}
+                          onClick={() => go('Favorites')}
                           className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           Favorites
@@ -948,7 +954,7 @@ export const VacationRentalKimiPage = defineCapsule({
                               {authDisplayName}
                             </p>
                             <p className="truncate text-xs text-muted-foreground">
-                              {authEmail ?? "Signed in"}
+                              {authEmail ?? 'Signed in'}
                             </p>
                           </div>
                         </div>
@@ -1001,7 +1007,7 @@ export const VacationRentalKimiPage = defineCapsule({
                 <span className="text-muted-foreground">·</span>
                 <button
                   type="button"
-                  onClick={() => go("reviews")}
+                  onClick={() => go('reviews')}
                   className="font-medium underline"
                 >
                   {listing.reviewCount}
@@ -1009,7 +1015,9 @@ export const VacationRentalKimiPage = defineCapsule({
                 <span className="text-muted-foreground">·</span>
                 <span className="font-medium">{listing.hostTier}</span>
                 <span className="text-muted-foreground">·</span>
-                <span className="text-muted-foreground">{listing.location}</span>
+                <span className="text-muted-foreground">
+                  {listing.location}
+                </span>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -1172,8 +1180,8 @@ export const VacationRentalKimiPage = defineCapsule({
                   <p
                     key={i}
                     className={cn(
-                      "leading-relaxed text-foreground/80",
-                      i < descParagraphs.length - 1 && "mb-4",
+                      'leading-relaxed text-foreground/80',
+                      i < descParagraphs.length - 1 && 'mb-4',
                     )}
                   >
                     {p}
@@ -1226,7 +1234,7 @@ export const VacationRentalKimiPage = defineCapsule({
                 </div>
                 <button
                   type="button"
-                  onClick={() => go("amenities")}
+                  onClick={() => go('amenities')}
                   className="mt-6 rounded-lg border border-foreground px-6 py-3 font-medium transition-colors hover:bg-muted"
                 >
                   {amenitiesShowAll}
@@ -1327,7 +1335,7 @@ export const VacationRentalKimiPage = defineCapsule({
 
                 <button
                   type="button"
-                  onClick={() => go("reviews")}
+                  onClick={() => go('reviews')}
                   className="mt-8 rounded-lg border border-foreground px-6 py-3 font-medium transition-colors hover:bg-muted"
                 >
                   {reviewsShowAll}
@@ -1468,7 +1476,7 @@ export const VacationRentalKimiPage = defineCapsule({
                     <div>
                       <span className="text-2xl font-semibold">
                         {booking.price}
-                      </span>{" "}
+                      </span>{' '}
                       <span className="text-muted-foreground">
                         {booking.priceUnit}
                       </span>
@@ -1479,7 +1487,7 @@ export const VacationRentalKimiPage = defineCapsule({
                       <span className="text-muted-foreground">·</span>
                       <button
                         type="button"
-                        onClick={() => go("reviews")}
+                        onClick={() => go('reviews')}
                         className="text-muted-foreground underline"
                       >
                         {booking.reviewCount}
@@ -1611,10 +1619,7 @@ export const VacationRentalKimiPage = defineCapsule({
 
         {/* Booking Drawer */}
         <Sheet open={bookingOpen} onOpenChange={setBookingOpen}>
-          <SheetContent
-            side="right"
-            className="w-full gap-0 p-0 sm:max-w-md"
-          >
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
             <SheetHeader className="border-b border-border p-6">
               <SheetTitle className="text-xl">Book your stay</SheetTitle>
               <SheetDescription>
@@ -1738,10 +1743,10 @@ export const VacationRentalKimiPage = defineCapsule({
                           : `Save ${s.title} to favorites`
                       }
                       className={cn(
-                        "absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100",
+                        'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
                         isFavorite
-                          ? "bg-primary text-primary-foreground opacity-100"
-                          : "bg-background/90 text-foreground opacity-0 hover:bg-background",
+                          ? 'bg-primary text-primary-foreground opacity-100'
+                          : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
                       )}
                     >
                       <HeartIcon active={isFavorite} />

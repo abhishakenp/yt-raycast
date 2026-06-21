@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * AiProductKimiPage8 — a complete, self-contained AI SaaS PRODUCT landing page.
@@ -48,9 +48,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * stats, testimonials, faq, finalCta, footer; the block owns all layout and styling.
  */
 export const AiProductKimiPage8 = defineCapsule({
-  name: "AiProductKimiPage8",
+  name: 'AiProductKimiPage8',
   description:
-    "Complete AI-product / AI-SaaS LANDING page in a bold, high-contrast 8th style variant (brash editorial dark/light alternating aesthetic, razor-sharp borders, neon hero, marquee logos, color-blocked feature cards with hover inversions, 3-step timeline, 4×2 image gallery, 3-tier pricing with missing-feature crosses and Most-Popular badge, colored stats band, alternating-palette testimonial wall, stacked FAQ, gradient final CTA, multi-column footer with social icons). Use as the ROOT/home page for AI writing assistants, AI copilots, generative-AI tools, AI productivity apps, or any modern SaaS/startup launch page when a bold, street-poster, conversion-focused marketing site with pricing, social proof and FAQ is wanted. Supply content only — brand, nav, hero, logos, features, steps, gallery, pricing, stats, testimonials, faq, finalCta, footer; the block owns all layout and styling. The 8th style sibling to AiProductKimiPage.",
+    'Complete AI-product / AI-SaaS LANDING page in a bold, high-contrast 8th style variant (brash editorial dark/light alternating aesthetic, razor-sharp borders, neon hero, marquee logos, color-blocked feature cards with hover inversions, 3-step timeline, 4×2 image gallery, 3-tier pricing with missing-feature crosses and Most-Popular badge, colored stats band, alternating-palette testimonial wall, stacked FAQ, gradient final CTA, multi-column footer with social icons). Use as the ROOT/home page for AI writing assistants, AI copilots, generative-AI tools, AI productivity apps, or any modern SaaS/startup launch page when a bold, street-poster, conversion-focused marketing site with pricing, social proof and FAQ is wanted. Supply content only — brand, nav, hero, logos, features, steps, gallery, pricing, stats, testimonials, faq, finalCta, footer; the block owns all layout and styling. The 8th style sibling to AiProductKimiPage.',
   props: z.object({
     /** Brand / product name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -223,7 +223,13 @@ export const AiProductKimiPage8 = defineCapsule({
       savedContent: ({ db }) => db.savedContent.orderBy('createdAt').all(),
     },
     mutations: {
-      saveContent: ({ db }, title: string, category: string, categoryColor: string, imageAlt: string) => {
+      saveContent: (
+        { db },
+        title: string,
+        category: string,
+        categoryColor: string,
+        imageAlt: string,
+      ) => {
         const existing = db.savedContent.where('title', title).all()[0]
         if (existing) {
           db.savedContent.delete(existing.id)
@@ -249,226 +255,234 @@ export const AiProductKimiPage8 = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [savedOpen, setSavedOpen] = useState(false)
-    const brand = props.brand ?? "WRITR"
+    const brand = props.brand ?? 'WRITR'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "Pricing", "Stories", "FAQ"]
+      : ['Features', 'Pricing', 'Stories', 'FAQ']
 
-    const heroBadge =
-      props.hero?.badge ?? "New: Claude 3.7 Sonnet Integration"
-    const headingTop = props.hero?.headingTop ?? "WRITE LIKE"
+    const heroBadge = props.hero?.badge ?? 'New: Claude 3.7 Sonnet Integration'
+    const headingTop = props.hero?.headingTop ?? 'WRITE LIKE'
     const headingBottom = props.hero?.headingBottom ?? "IT'S 2026"
     const heroSub =
       props.hero?.subheading ??
-      "The generative writing assistant that understands your voice. Draft blog posts, emails, ad copy, and novels 10x faster without losing your soul."
-    const heroPrimary = props.hero?.primaryCta ?? "Start Free Trial"
-    const heroSecondary = props.hero?.secondaryCta ?? "Watch Demo"
+      'The generative writing assistant that understands your voice. Draft blog posts, emails, ad copy, and novels 10x faster without losing your soul.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Start Free Trial'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Watch Demo'
     const heroTrust = props.hero?.trust?.length
       ? props.hero.trust
-      : ["No credit card", "14-day free trial", "Cancel anytime"]
-    const previewFile = props.hero?.previewFile ?? "wrtr-editor.tsx"
+      : ['No credit card', '14-day free trial', 'Cancel anytime']
+    const previewFile = props.hero?.previewFile ?? 'wrtr-editor.tsx'
     const previewIntro =
-      props.hero?.previewIntro ?? "AI-powered content generation"
+      props.hero?.previewIntro ?? 'AI-powered content generation'
     const previewQuote =
       props.hero?.previewQuote ??
-      "Generated 5-email sequence in 23 seconds matching your brand voice with 94% consistency score..."
+      'Generated 5-email sequence in 23 seconds matching your brand voice with 94% consistency score...'
 
-    const logosLabel = props.logos?.label ?? "Trusted by teams at"
+    const logosLabel = props.logos?.label ?? 'Trusted by teams at'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
-      : ["NOTION", "STRIPE", "FIGMA", "LINEAR", "VERCEL", "RAMP", "BREX", "COPYAI"]
+      : [
+          'NOTION',
+          'STRIPE',
+          'FIGMA',
+          'LINEAR',
+          'VERCEL',
+          'RAMP',
+          'BREX',
+          'COPYAI',
+        ]
 
-    const featuresLabel = props.features?.label ?? "Features"
+    const featuresLabel = props.features?.label ?? 'Features'
     const featuresHeading =
-      props.features?.heading ?? "EVERYTHING YOU NEED TO WRITE WITHOUT LIMITS"
+      props.features?.heading ?? 'EVERYTHING YOU NEED TO WRITE WITHOUT LIMITS'
     const featuresDesc =
       props.features?.description ??
-      "From first draft to final polish. WRITR handles the heavy lifting so you can focus on what matters—your ideas."
+      'From first draft to final polish. WRITR handles the heavy lifting so you can focus on what matters—your ideas.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Lightning Drafts",
+            title: 'Lightning Drafts',
             description:
-              "Generate 2,000 words in under 30 seconds. Blog posts, essays, product descriptions—just describe what you need.",
+              'Generate 2,000 words in under 30 seconds. Blog posts, essays, product descriptions—just describe what you need.',
           },
           {
-            title: "Brand Voice Lock",
+            title: 'Brand Voice Lock',
             description:
-              "Train WRITR on your existing content. It learns your tone, vocabulary, and style rules—then never deviates.",
+              'Train WRITR on your existing content. It learns your tone, vocabulary, and style rules—then never deviates.',
           },
           {
-            title: "Content Calendar",
+            title: 'Content Calendar',
             description:
-              "Plan, generate, and schedule weeks of content. Bulk-create 50 social posts or plan a month of blog articles.",
+              'Plan, generate, and schedule weeks of content. Bulk-create 50 social posts or plan a month of blog articles.',
           },
           {
-            title: "Smart Editor",
+            title: 'Smart Editor',
             description:
-              "Inline suggestions, rewrite options, tone adjustments. Select any text and get 5 alternative versions instantly.",
+              'Inline suggestions, rewrite options, tone adjustments. Select any text and get 5 alternative versions instantly.',
           },
           {
-            title: "Project Folders",
+            title: 'Project Folders',
             description:
-              "Organize by client, campaign, or content type. Each folder gets its own AI model tuned to that specific context.",
+              'Organize by client, campaign, or content type. Each folder gets its own AI model tuned to that specific context.',
           },
           {
-            title: "Team Workspaces",
+            title: 'Team Workspaces',
             description:
-              "Collaborate with your entire content team. Shared templates, approval workflows, and version history.",
+              'Collaborate with your entire content team. Shared templates, approval workflows, and version history.',
           },
         ]
 
-    const stepsLabel = props.steps?.label ?? "How It Works"
+    const stepsLabel = props.steps?.label ?? 'How It Works'
     const stepsHeading =
-      props.steps?.heading ?? "FROM BLANK PAGE TO FINISHED PIECE IN 3 STEPS"
-    const stepsDesc = props.steps?.description ?? ""
+      props.steps?.heading ?? 'FROM BLANK PAGE TO FINISHED PIECE IN 3 STEPS'
+    const stepsDesc = props.steps?.description ?? ''
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Describe Your Goal",
+            title: 'Describe Your Goal',
             description:
-              "Tell WRITR what you need—a product launch email, SEO blog post, or ad headline. The more context, the better the output.",
+              'Tell WRITR what you need—a product launch email, SEO blog post, or ad headline. The more context, the better the output.',
           },
           {
-            title: "AI Generates Draft",
+            title: 'AI Generates Draft',
             description:
-              "WRITR produces a complete first draft in seconds. It considers your brand voice, target audience, and content goals.",
+              'WRITR produces a complete first draft in seconds. It considers your brand voice, target audience, and content goals.',
           },
           {
-            title: "Refine & Publish",
+            title: 'Refine & Publish',
             description:
-              "Use inline editing tools to polish. Export to your CMS, schedule for later, or share with your team for review.",
+              'Use inline editing tools to polish. Export to your CMS, schedule for later, or share with your team for review.',
           },
         ]
     const stepStats = props.steps?.stats?.length
       ? props.steps.stats
       : [
-          { value: "2.3s", label: "Average generation time" },
-          { value: "94%", label: "Brand voice accuracy" },
-          { value: "10x", label: "Faster than manual writing" },
+          { value: '2.3s', label: 'Average generation time' },
+          { value: '94%', label: 'Brand voice accuracy' },
+          { value: '10x', label: 'Faster than manual writing' },
         ]
 
-    const galleryLabel = props.gallery?.label ?? "Use Cases"
-    const galleryHeading = props.gallery?.heading ?? "WRITE ANYTHING. EVERYTHING."
+    const galleryLabel = props.gallery?.label ?? 'Use Cases'
+    const galleryHeading =
+      props.gallery?.heading ?? 'WRITE ANYTHING. EVERYTHING.'
     const galleryDesc =
       props.gallery?.description ??
-      "See how teams use WRITR to create content across every channel and format."
+      'See how teams use WRITR to create content across every channel and format.'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
           {
-            title: "Long-Form Articles",
-            category: "Blog Content",
-            categoryColor: "primary",
+            title: 'Long-Form Articles',
+            category: 'Blog Content',
+            categoryColor: 'primary',
             imageAlt:
-              "Minimalist desk setup with laptop showing blog editing interface",
+              'Minimalist desk setup with laptop showing blog editing interface',
           },
           {
-            title: "Email Sequences",
-            category: "Marketing",
-            categoryColor: "accent",
+            title: 'Email Sequences',
+            category: 'Marketing',
+            categoryColor: 'accent',
             imageAlt:
-              "Digital marketing analytics dashboard with colorful charts",
+              'Digital marketing analytics dashboard with colorful charts',
           },
           {
-            title: "Social Posts",
-            category: "Social",
-            categoryColor: "secondary",
-            imageAlt: "Social media content on smartphone screens",
+            title: 'Social Posts',
+            category: 'Social',
+            categoryColor: 'secondary',
+            imageAlt: 'Social media content on smartphone screens',
           },
           {
-            title: "Ad Copy",
-            category: "Product",
-            categoryColor: "primary",
+            title: 'Ad Copy',
+            category: 'Product',
+            categoryColor: 'primary',
             imageAlt:
-              "Creative team brainstorming in modern office with sticky notes",
+              'Creative team brainstorming in modern office with sticky notes',
           },
           {
-            title: "Website Copy",
-            category: "Web",
-            categoryColor: "accent",
+            title: 'Website Copy',
+            category: 'Web',
+            categoryColor: 'accent',
+            imageAlt: 'Team meeting discussing website copy in conference room',
+          },
+          {
+            title: 'Scripts & Stories',
+            category: 'Creative',
+            categoryColor: 'secondary',
+            imageAlt: 'Screenplay script on desk with coffee',
+          },
+          {
+            title: 'Meta Descriptions',
+            category: 'SEO',
+            categoryColor: 'primary',
             imageAlt:
-              "Team meeting discussing website copy in conference room",
+              'SEO specialist analyzing search rankings on multiple monitors',
           },
           {
-            title: "Scripts & Stories",
-            category: "Creative",
-            categoryColor: "secondary",
-            imageAlt: "Screenplay script on desk with coffee",
-          },
-          {
-            title: "Meta Descriptions",
-            category: "SEO",
-            categoryColor: "primary",
-            imageAlt:
-              "SEO specialist analyzing search rankings on multiple monitors",
-          },
-          {
-            title: "Help Docs",
-            category: "Support",
-            categoryColor: "accent",
-            imageAlt: "Customer support knowledge base interface",
+            title: 'Help Docs',
+            category: 'Support',
+            categoryColor: 'accent',
+            imageAlt: 'Customer support knowledge base interface',
           },
         ]
 
-    const pricingLabel = props.pricing?.label ?? "Pricing"
+    const pricingLabel = props.pricing?.label ?? 'Pricing'
     const pricingHeading =
-      props.pricing?.heading ?? "SIMPLE PRICING. NO SURPRISES."
+      props.pricing?.heading ?? 'SIMPLE PRICING. NO SURPRISES.'
     const pricingDescription =
       props.pricing?.description ??
       "Start free. Scale when you're ready. All plans include core AI features."
     const pricingNote =
       props.pricing?.note ??
-      "Need enterprise features? Contact our sales team for custom pricing."
-    const pricingNoteCta = props.pricing?.noteCta ?? "Contact our sales team"
+      'Need enterprise features? Contact our sales team for custom pricing.'
+    const pricingNoteCta = props.pricing?.noteCta ?? 'Contact our sales team'
     const pricingPlans = props.pricing?.plans?.length
       ? props.pricing.plans
       : [
           {
-            name: "Starter",
-            tagline: "Perfect for trying WRITR",
-            price: "$0",
-            period: "/month",
-            cta: "Get Started Free",
+            name: 'Starter',
+            tagline: 'Perfect for trying WRITR',
+            price: '$0',
+            period: '/month',
+            cta: 'Get Started Free',
             featured: false,
             features: [
-              "10,000 words / month",
-              "Basic templates",
-              "Email support",
+              '10,000 words / month',
+              'Basic templates',
+              'Email support',
             ],
-            missing: ["No brand voice training", "No team features"],
+            missing: ['No brand voice training', 'No team features'],
           },
           {
-            name: "Pro",
-            tagline: "For serious content creators",
-            price: "$29",
-            period: "/month",
-            cta: "Start 14-Day Trial",
+            name: 'Pro',
+            tagline: 'For serious content creators',
+            price: '$29',
+            period: '/month',
+            cta: 'Start 14-Day Trial',
             featured: true,
             features: [
-              "Unlimited words",
-              "All 50+ templates",
-              "Brand voice training",
-              "Priority support",
-              "API access",
+              'Unlimited words',
+              'All 50+ templates',
+              'Brand voice training',
+              'Priority support',
+              'API access',
             ],
             missing: [],
           },
           {
-            name: "Team",
-            tagline: "For marketing teams (5 users)",
-            price: "$79",
-            period: "/month",
-            cta: "Contact Sales",
+            name: 'Team',
+            tagline: 'For marketing teams (5 users)',
+            price: '$79',
+            period: '/month',
+            cta: 'Contact Sales',
             featured: false,
             features: [
-              "Everything in Pro",
-              "5 team members",
-              "Shared workspaces",
-              "Approval workflows",
-              "Custom integrations",
+              'Everything in Pro',
+              '5 team members',
+              'Shared workspaces',
+              'Approval workflows',
+              'Custom integrations',
             ],
             missing: [],
           },
@@ -477,139 +491,152 @@ export const AiProductKimiPage8 = defineCapsule({
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "2M+", label: "Articles Generated", color: "primary" },
-          { value: "50K+", label: "Active Writers", color: "accent" },
-          { value: "4.9/5", label: "Average Rating", color: "secondary" },
-          { value: "15M+", label: "Hours Saved", color: "background" },
+          { value: '2M+', label: 'Articles Generated', color: 'primary' },
+          { value: '50K+', label: 'Active Writers', color: 'accent' },
+          { value: '4.9/5', label: 'Average Rating', color: 'secondary' },
+          { value: '15M+', label: 'Hours Saved', color: 'background' },
         ]
 
-    const testimonialsLabel = props.testimonials?.label ?? "Testimonials"
+    const testimonialsLabel = props.testimonials?.label ?? 'Testimonials'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "WRITERS LOVE WRITR"
-    const testimonialsDesc = props.testimonials?.description ?? ""
+      props.testimonials?.heading ?? 'WRITERS LOVE WRITR'
+    const testimonialsDesc = props.testimonials?.description ?? ''
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
               "We cut our blog production time from 3 weeks to 3 days. WRITR doesn't just write—it understands our product and audience better than some of our junior writers.",
-            name: "Sarah Chen",
-            role: "Content Director, Notion",
+            name: 'Sarah Chen',
+            role: 'Content Director, Notion',
             avatarAlt:
-              "Professional headshot of Sarah Chen, content marketing director",
+              'Professional headshot of Sarah Chen, content marketing director',
           },
           {
             quote:
-              "As a solo founder, WRITR is my secret weapon. I generate my entire content calendar in one morning. The brand voice training is scary accurate.",
-            name: "Marcus Williams",
-            role: "Founder, TaskFlow",
+              'As a solo founder, WRITR is my secret weapon. I generate my entire content calendar in one morning. The brand voice training is scary accurate.',
+            name: 'Marcus Williams',
+            role: 'Founder, TaskFlow',
             avatarAlt:
-              "Professional headshot of Marcus Williams, founder of a SaaS startup",
+              'Professional headshot of Marcus Williams, founder of a SaaS startup',
           },
           {
             quote:
-              "I was skeptical about AI writing tools. WRITR changed my mind. It handles the grunt work—first drafts, outlines—so I can focus on the creative refinement.",
-            name: "Emma Rodriguez",
-            role: "Freelance Copywriter",
+              'I was skeptical about AI writing tools. WRITR changed my mind. It handles the grunt work—first drafts, outlines—so I can focus on the creative refinement.',
+            name: 'Emma Rodriguez',
+            role: 'Freelance Copywriter',
             avatarAlt:
-              "Professional headshot of Emma Rodriguez, freelance copywriter",
+              'Professional headshot of Emma Rodriguez, freelance copywriter',
           },
           {
             quote:
-              "Our email open rates increased 40% after switching to WRITR-generated subject lines. The AI understands what makes our dev audience click.",
-            name: "David Park",
-            role: "Marketing Manager, Figma",
+              'Our email open rates increased 40% after switching to WRITR-generated subject lines. The AI understands what makes our dev audience click.',
+            name: 'David Park',
+            role: 'Marketing Manager, Figma',
             avatarAlt:
-              "Professional headshot of David Park, marketing manager at Figma",
+              'Professional headshot of David Park, marketing manager at Figma',
           },
           {
             quote:
               "I use WRITR for research and character development. It's like having a brainstorming partner that never gets tired. My latest novel hit the NYT bestseller list.",
-            name: "Lisa Thompson",
-            role: "Novelist & Coach",
+            name: 'Lisa Thompson',
+            role: 'Novelist & Coach',
             avatarAlt:
-              "Professional headshot of Lisa Thompson, novelist and writing coach",
+              'Professional headshot of Lisa Thompson, novelist and writing coach',
           },
           {
             quote:
               "We trained WRITR on 2 years of our content. Now it writes product updates that sound exactly like our team. It's become indispensable.",
-            name: "James Miller",
-            role: "Head of Content, Linear",
+            name: 'James Miller',
+            role: 'Head of Content, Linear',
             avatarAlt:
-              "Professional headshot of James Miller, head of content at a tech startup",
+              'Professional headshot of James Miller, head of content at a tech startup',
           },
         ]
 
-    const faqLabel = props.faq?.label ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "QUESTIONS? ANSWERED."
-    const faqDescription = props.faq?.description ?? ""
+    const faqLabel = props.faq?.label ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'QUESTIONS? ANSWERED.'
+    const faqDescription = props.faq?.description ?? ''
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "Is the content generated by WRITR original?",
+            question: 'Is the content generated by WRITR original?',
             answer:
               "Yes. Every word is generated fresh by our AI models. We don't scrape or spin existing content. Plus, our built-in plagiarism checker scans against billions of web pages to ensure uniqueness.",
           },
           {
-            question: "Can I train WRITR on my existing content?",
+            question: 'Can I train WRITR on my existing content?',
             answer:
-              "Absolutely. Upload your blog posts, emails, or any writing samples. WRITR analyzes your tone, vocabulary, sentence structure, and style rules. Future outputs will match your voice with 94% accuracy on average.",
+              'Absolutely. Upload your blog posts, emails, or any writing samples. WRITR analyzes your tone, vocabulary, sentence structure, and style rules. Future outputs will match your voice with 94% accuracy on average.',
           },
           {
-            question: "What languages does WRITR support?",
+            question: 'What languages does WRITR support?',
             answer:
-              "WRITR writes fluently in 25+ languages including English, Spanish, French, German, Portuguese, Japanese, Chinese, and more. Brand voice training works across all supported languages.",
+              'WRITR writes fluently in 25+ languages including English, Spanish, French, German, Portuguese, Japanese, Chinese, and more. Brand voice training works across all supported languages.',
           },
           {
-            question: "Do I need to install anything?",
+            question: 'Do I need to install anything?',
             answer:
-              "Nope. WRITR is 100% cloud-based. Access from any browser, anywhere. We also offer browser extensions for Chrome and Safari, plus plugins for WordPress, Webflow, and Notion.",
+              'Nope. WRITR is 100% cloud-based. Access from any browser, anywhere. We also offer browser extensions for Chrome and Safari, plus plugins for WordPress, Webflow, and Notion.',
           },
           {
-            question: "What happens to my data?",
+            question: 'What happens to my data?',
             answer:
-              "Your content is yours. We never train our AI models on customer data without explicit consent. Enterprise plans include SOC 2 Type II compliance, GDPR compliance, and custom data retention policies.",
+              'Your content is yours. We never train our AI models on customer data without explicit consent. Enterprise plans include SOC 2 Type II compliance, GDPR compliance, and custom data retention policies.',
           },
           {
-            question: "Can I cancel my subscription?",
+            question: 'Can I cancel my subscription?',
             answer:
-              "Anytime. No questions asked. If you cancel, you keep access until the end of your billing period. We also offer a 30-day money-back guarantee for all paid plans.",
+              'Anytime. No questions asked. If you cancel, you keep access until the end of your billing period. We also offer a 30-day money-back guarantee for all paid plans.',
           },
         ]
 
     const finalHeading =
-      props.finalCta?.heading ?? "STOP STARING AT\nBLANK PAGES"
+      props.finalCta?.heading ?? 'STOP STARING AT\nBLANK PAGES'
     const finalDesc =
       props.finalCta?.description ??
       "Join 50,000+ writers who've already made the switch. Start your free trial today and write your first piece in the next 5 minutes."
-    const finalPrimary = props.finalCta?.primaryCta ?? "Start Free Trial"
-    const finalSecondary = props.finalCta?.secondaryCta ?? "Book a Demo"
+    const finalPrimary = props.finalCta?.primaryCta ?? 'Start Free Trial'
+    const finalSecondary = props.finalCta?.secondaryCta ?? 'Book a Demo'
     const finalTrust =
       props.finalCta?.trustLine ??
-      "No credit card required • 14-day free trial • Cancel anytime"
+      'No credit card required • 14-day free trial • Cancel anytime'
 
     const footerTagline =
       props.footer?.tagline ??
-      "The generative AI writing assistant that understands your voice. Write faster without losing your soul."
+      'The generative AI writing assistant that understands your voice. Write faster without losing your soul.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Product",
-            links: ["Features", "Pricing", "API Docs", "Integrations", "Changelog"],
+            title: 'Product',
+            links: [
+              'Features',
+              'Pricing',
+              'API Docs',
+              'Integrations',
+              'Changelog',
+            ],
           },
           {
-            title: "Resources",
-            links: ["Blog", "Help Center", "Community", "Templates", "Webinars"],
+            title: 'Resources',
+            links: [
+              'Blog',
+              'Help Center',
+              'Community',
+              'Templates',
+              'Webinars',
+            ],
           },
           {
-            title: "Company",
-            links: ["About", "Careers", "Press", "Contact", "Status"],
+            title: 'Company',
+            links: ['About', 'Careers', 'Press', 'Contact', 'Status'],
           },
         ]
     const footerCopyright =
-      props.footer?.copyright ?? `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
+      props.footer?.copyright ??
+      `© ${new Date().getFullYear()} ${brand} Inc. All rights reserved.`
 
     // Lakebed integration
     const savedContent = lakebed.useQuery('savedContent')
@@ -693,53 +720,202 @@ export const AiProductKimiPage8 = defineCapsule({
     )
 
     const featureSvgs = [
-      <svg key="f0" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
-      <svg key="f1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-      <svg key="f2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>,
-      <svg key="f3" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>,
-      <svg key="f4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>,
-      <svg key="f5" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+      <svg
+        key="f0"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>,
+      <svg
+        key="f1"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>,
+      <svg
+        key="f2"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>,
+      <svg
+        key="f3"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+      </svg>,
+      <svg
+        key="f4"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+      </svg>,
+      <svg
+        key="f5"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>,
     ]
 
     const featureCardMeta = [
-      { card: "bg-foreground text-background hover:bg-background hover:text-foreground", icon: "bg-primary text-foreground", desc: "text-muted-foreground group-hover:text-foreground/70" },
-      { card: "bg-background text-foreground hover:bg-foreground hover:text-background", icon: "bg-accent text-background", desc: "text-foreground/70 group-hover:text-muted-foreground" },
-      { card: "bg-muted text-foreground hover:bg-foreground hover:text-background", icon: "bg-secondary text-foreground", desc: "text-foreground/70 group-hover:text-muted-foreground" },
-      { card: "bg-foreground text-background hover:bg-primary hover:text-foreground", icon: "bg-background text-foreground", desc: "text-muted-foreground" },
-      { card: "bg-background text-foreground hover:bg-accent hover:text-background", icon: "bg-foreground text-background", desc: "text-foreground/70 group-hover:text-background/80" },
-      { card: "bg-primary text-foreground hover:bg-foreground hover:text-background", icon: "bg-foreground text-primary", desc: "text-foreground/70 group-hover:text-muted-foreground" },
+      {
+        card: 'bg-foreground text-background hover:bg-background hover:text-foreground',
+        icon: 'bg-primary text-foreground',
+        desc: 'text-muted-foreground group-hover:text-foreground/70',
+      },
+      {
+        card: 'bg-background text-foreground hover:bg-foreground hover:text-background',
+        icon: 'bg-accent text-background',
+        desc: 'text-foreground/70 group-hover:text-muted-foreground',
+      },
+      {
+        card: 'bg-muted text-foreground hover:bg-foreground hover:text-background',
+        icon: 'bg-secondary text-foreground',
+        desc: 'text-foreground/70 group-hover:text-muted-foreground',
+      },
+      {
+        card: 'bg-foreground text-background hover:bg-primary hover:text-foreground',
+        icon: 'bg-background text-foreground',
+        desc: 'text-muted-foreground',
+      },
+      {
+        card: 'bg-background text-foreground hover:bg-accent hover:text-background',
+        icon: 'bg-foreground text-background',
+        desc: 'text-foreground/70 group-hover:text-background/80',
+      },
+      {
+        card: 'bg-primary text-foreground hover:bg-foreground hover:text-background',
+        icon: 'bg-foreground text-primary',
+        desc: 'text-foreground/70 group-hover:text-muted-foreground',
+      },
     ]
 
     const stepNumberMeta = [
-      { bg: "bg-primary", text: "text-foreground" },
-      { bg: "bg-accent", text: "text-background" },
-      { bg: "bg-secondary", text: "text-foreground" },
+      { bg: 'bg-primary', text: 'text-foreground' },
+      { bg: 'bg-accent', text: 'text-background' },
+      { bg: 'bg-secondary', text: 'text-foreground' },
     ]
 
     const stepStatMeta = [
-      { color: "text-primary" },
-      { color: "text-accent" },
-      { color: "text-secondary" },
+      { color: 'text-primary' },
+      { color: 'text-accent' },
+      { color: 'text-secondary' },
     ]
 
     const testimonialMeta = [
-      { card: "bg-muted border-foreground", text: "text-foreground", role: "text-muted-foreground", quote: "text-foreground/80", star: "text-primary", avatarBorder: "border-foreground" },
-      { card: "bg-foreground border-foreground text-background", text: "text-background", role: "text-muted-foreground", quote: "text-background/70", star: "text-primary", avatarBorder: "border-background" },
-      { card: "bg-muted border-foreground", text: "text-foreground", role: "text-muted-foreground", quote: "text-foreground/80", star: "text-primary", avatarBorder: "border-foreground" },
-      { card: "bg-foreground border-foreground text-background", text: "text-background", role: "text-muted-foreground", quote: "text-background/70", star: "text-primary", avatarBorder: "border-background" },
-      { card: "bg-muted border-foreground", text: "text-foreground", role: "text-muted-foreground", quote: "text-foreground/80", star: "text-primary", avatarBorder: "border-foreground" },
-      { card: "bg-primary border-foreground text-foreground", text: "text-foreground", role: "text-foreground/70", quote: "text-foreground/80", star: "text-foreground", avatarBorder: "border-foreground" },
+      {
+        card: 'bg-muted border-foreground',
+        text: 'text-foreground',
+        role: 'text-muted-foreground',
+        quote: 'text-foreground/80',
+        star: 'text-primary',
+        avatarBorder: 'border-foreground',
+      },
+      {
+        card: 'bg-foreground border-foreground text-background',
+        text: 'text-background',
+        role: 'text-muted-foreground',
+        quote: 'text-background/70',
+        star: 'text-primary',
+        avatarBorder: 'border-background',
+      },
+      {
+        card: 'bg-muted border-foreground',
+        text: 'text-foreground',
+        role: 'text-muted-foreground',
+        quote: 'text-foreground/80',
+        star: 'text-primary',
+        avatarBorder: 'border-foreground',
+      },
+      {
+        card: 'bg-foreground border-foreground text-background',
+        text: 'text-background',
+        role: 'text-muted-foreground',
+        quote: 'text-background/70',
+        star: 'text-primary',
+        avatarBorder: 'border-background',
+      },
+      {
+        card: 'bg-muted border-foreground',
+        text: 'text-foreground',
+        role: 'text-muted-foreground',
+        quote: 'text-foreground/80',
+        star: 'text-primary',
+        avatarBorder: 'border-foreground',
+      },
+      {
+        card: 'bg-primary border-foreground text-foreground',
+        text: 'text-foreground',
+        role: 'text-foreground/70',
+        quote: 'text-foreground/80',
+        star: 'text-foreground',
+        avatarBorder: 'border-foreground',
+      },
     ]
 
     const statsColorMeta = [
-      "text-primary",
-      "text-accent",
-      "text-secondary",
-      "text-background",
+      'text-primary',
+      'text-accent',
+      'text-secondary',
+      'text-background',
     ]
 
     return (
-      <div className={cn("min-h-svh bg-background text-foreground antialiased", props.className)}>
+      <div
+        className={cn(
+          'min-h-svh bg-background text-foreground antialiased',
+          props.className,
+        )}
+      >
         <style>{`
           @keyframes marquee {
             0% { transform: translateX(0); }
@@ -826,7 +1002,7 @@ export const AiProductKimiPage8 = defineCapsule({
                             <div className="min-w-0">
                               <span
                                 className={cn(
-                                  "mb-1 block font-mono text-xs uppercase tracking-widest",
+                                  'mb-1 block font-mono text-xs uppercase tracking-widest',
                                   `text-${item.categoryColor}`,
                                 )}
                               >
@@ -852,7 +1028,8 @@ export const AiProductKimiPage8 = defineCapsule({
                           No saved content
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Click the bookmark icon on gallery items to save them for later.
+                          Click the bookmark icon on gallery items to save them
+                          for later.
                         </p>
                       </div>
                     )}
@@ -868,10 +1045,7 @@ export const AiProductKimiPage8 = defineCapsule({
                       Clear All
                     </Button>
                     <SheetClose asChild>
-                      <Button
-                        type="button"
-                        className="w-full rounded-full"
-                      >
+                      <Button type="button" className="w-full rounded-full">
                         Continue
                       </Button>
                     </SheetClose>
@@ -1060,31 +1234,44 @@ export const AiProductKimiPage8 = defineCapsule({
                       </span>
                     </div>
                     <div className="p-6 font-mono text-sm">
-                      <div className="mb-2 text-muted-foreground">// {previewIntro}</div>
+                      <div className="mb-2 text-muted-foreground">
+                        // {previewIntro}
+                      </div>
                       <div className="space-y-1">
                         <div>
-                          <span className="text-chart-1">const</span>{" "}
-                          <span className="text-chart-2">campaign</span> ={" "}
+                          <span className="text-chart-1">const</span>{' '}
+                          <span className="text-chart-2">campaign</span> ={' '}
                           <span className="text-chart-1">await</span> writr.
-                          <span className="text-chart-4">generate</span>({"{"})
+                          <span className="text-chart-4">generate</span>({'{'})
                         </div>
                         <div className="pl-4">
-                          <span className="text-chart-3">type</span>:{" "}
-                          <span className="text-chart-5">&apos;email_sequence&apos;</span>,
+                          <span className="text-chart-3">type</span>:{' '}
+                          <span className="text-chart-5">
+                            &apos;email_sequence&apos;
+                          </span>
+                          ,
                         </div>
                         <div className="pl-4">
-                          <span className="text-chart-3">tone</span>:{" "}
-                          <span className="text-chart-5">&apos;confident_but_warm&apos;</span>,
+                          <span className="text-chart-3">tone</span>:{' '}
+                          <span className="text-chart-5">
+                            &apos;confident_but_warm&apos;
+                          </span>
+                          ,
                         </div>
                         <div className="pl-4">
-                          <span className="text-chart-3">audience</span>:{" "}
-                          <span className="text-chart-5">&apos;saas_founders&apos;</span>,
+                          <span className="text-chart-3">audience</span>:{' '}
+                          <span className="text-chart-5">
+                            &apos;saas_founders&apos;
+                          </span>
+                          ,
                         </div>
                         <div className="pl-4">
-                          <span className="text-chart-3">goal</span>:{" "}
-                          <span className="text-chart-5">&apos;trial_conversion&apos;</span>
+                          <span className="text-chart-3">goal</span>:{' '}
+                          <span className="text-chart-5">
+                            &apos;trial_conversion&apos;
+                          </span>
                         </div>
-                        <div>{"}"});</div>
+                        <div>{'}'});</div>
                       </div>
                       <div className="mt-4 border-l-2 border-primary bg-muted/50 p-3">
                         <p className="italic text-card-foreground">
@@ -1102,7 +1289,10 @@ export const AiProductKimiPage8 = defineCapsule({
           </section>
 
           {/* Logos */}
-          <section className="border-y-4 border-foreground bg-muted py-12" aria-label="Trusted by">
+          <section
+            className="border-y-4 border-foreground bg-muted py-12"
+            aria-label="Trusted by"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <p className="mb-6 text-center font-mono text-sm uppercase tracking-widest text-muted-foreground">
                 {logosLabel}
@@ -1160,13 +1350,13 @@ export const AiProductKimiPage8 = defineCapsule({
                       type="button"
                       onClick={() => go(item.title)}
                       className={cn(
-                        "group border-2 border-foreground p-8 text-left transition-all duration-300",
+                        'group border-2 border-foreground p-8 text-left transition-all duration-300',
                         meta.card,
                       )}
                     >
                       <div
                         className={cn(
-                          "mb-6 flex h-12 w-12 items-center justify-center",
+                          'mb-6 flex h-12 w-12 items-center justify-center',
                           meta.icon,
                         )}
                       >
@@ -1184,7 +1374,10 @@ export const AiProductKimiPage8 = defineCapsule({
           </section>
 
           {/* Steps */}
-          <section id="steps" className="bg-foreground py-24 text-background lg:py-32">
+          <section
+            id="steps"
+            className="bg-foreground py-24 text-background lg:py-32"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="mx-auto mb-16 max-w-3xl text-center">
                 <span className="font-mono text-sm uppercase tracking-widest text-primary">
@@ -1194,7 +1387,9 @@ export const AiProductKimiPage8 = defineCapsule({
                   {stepsHeading}
                 </h2>
                 {stepsDesc && (
-                  <p className="mt-4 text-xl text-muted-foreground">{stepsDesc}</p>
+                  <p className="mt-4 text-xl text-muted-foreground">
+                    {stepsDesc}
+                  </p>
                 )}
               </div>
 
@@ -1206,12 +1401,12 @@ export const AiProductKimiPage8 = defineCapsule({
                     <div key={step.title} className="relative z-10 text-center">
                       <div
                         className={cn(
-                          "mx-auto mb-6 flex h-16 w-16 items-center justify-center border-4 border-foreground font-black text-2xl",
+                          'mx-auto mb-6 flex h-16 w-16 items-center justify-center border-4 border-foreground font-black text-2xl',
                           meta.bg,
                           meta.text,
                         )}
                       >
-                        {String(i + 1).padStart(2, "0")}
+                        {String(i + 1).padStart(2, '0')}
                       </div>
                       <h3 className="mb-4 font-mono text-xl font-bold uppercase">
                         {step.title}
@@ -1232,7 +1427,7 @@ export const AiProductKimiPage8 = defineCapsule({
                       key={stat.label}
                       className="border border-background/10 bg-background/5 p-6"
                     >
-                      <div className={cn("mb-2 text-4xl font-black", color)}>
+                      <div className={cn('mb-2 text-4xl font-black', color)}>
                         {stat.value}
                       </div>
                       <div className="font-mono text-sm uppercase text-muted-foreground">
@@ -1264,7 +1459,9 @@ export const AiProductKimiPage8 = defineCapsule({
 
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {galleryItems.map((item) => {
-                  const isSaved = savedContent?.some((saved) => saved.title === item.title) ?? false
+                  const isSaved =
+                    savedContent?.some((saved) => saved.title === item.title) ??
+                    false
                   return (
                     <button
                       key={item.title}
@@ -1283,7 +1480,12 @@ export const AiProductKimiPage8 = defineCapsule({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation()
-                          void saveContent(item.title, item.category, item.categoryColor ?? 'primary', item.imageAlt)
+                          void saveContent(
+                            item.title,
+                            item.category,
+                            item.categoryColor ?? 'primary',
+                            item.imageAlt,
+                          )
                         }}
                         aria-pressed={isSaved}
                         aria-label={
@@ -1303,7 +1505,7 @@ export const AiProductKimiPage8 = defineCapsule({
                       <div className="absolute inset-0 flex flex-col justify-end bg-foreground/80 p-6 opacity-0 transition-opacity group-hover:opacity-100">
                         <span
                           className={cn(
-                            "mb-2 font-mono text-xs uppercase tracking-widest",
+                            'mb-2 font-mono text-xs uppercase tracking-widest',
                             `text-${item.categoryColor}`,
                           )}
                         >
@@ -1340,10 +1542,10 @@ export const AiProductKimiPage8 = defineCapsule({
                   <div
                     key={plan.name}
                     className={cn(
-                      "flex flex-col border-2 border-foreground p-8",
+                      'flex flex-col border-2 border-foreground p-8',
                       plan.featured
-                        ? "relative bg-foreground text-background"
-                        : "bg-card text-card-foreground",
+                        ? 'relative bg-foreground text-background'
+                        : 'bg-card text-card-foreground',
                     )}
                   >
                     {plan.featured && (
@@ -1354,14 +1556,16 @@ export const AiProductKimiPage8 = defineCapsule({
                     <div className="mb-6">
                       <h3
                         className={cn(
-                          "mb-2 font-mono text-lg uppercase tracking-wider",
-                          plan.featured && "text-primary",
+                          'mb-2 font-mono text-lg uppercase tracking-wider',
+                          plan.featured && 'text-primary',
                         )}
                       >
                         {plan.name}
                       </h3>
                       <div className="flex items-baseline gap-1">
-                        <span className="text-5xl font-black">{plan.price}</span>
+                        <span className="text-5xl font-black">
+                          {plan.price}
+                        </span>
                         <span className="font-mono text-muted-foreground">
                           {plan.period}
                         </span>
@@ -1372,7 +1576,10 @@ export const AiProductKimiPage8 = defineCapsule({
                     </div>
                     <ul className="mb-8 flex-grow space-y-3">
                       {plan.features?.map((feat) => (
-                        <li key={feat} className="flex items-center gap-3 font-mono text-sm">
+                        <li
+                          key={feat}
+                          className="flex items-center gap-3 font-mono text-sm"
+                        >
                           <span className="text-primary">✓</span>
                           <span>{feat}</span>
                         </li>
@@ -1391,10 +1598,10 @@ export const AiProductKimiPage8 = defineCapsule({
                       type="button"
                       onClick={() => go(plan.cta)}
                       className={cn(
-                        "w-full py-4 font-mono text-sm font-bold uppercase tracking-wider transition-all",
+                        'w-full py-4 font-mono text-sm font-bold uppercase tracking-wider transition-all',
                         plan.featured
-                          ? "bg-primary text-foreground hover:bg-background"
-                          : "border-2 border-foreground hover:bg-foreground hover:text-background",
+                          ? 'bg-primary text-foreground hover:bg-background'
+                          : 'border-2 border-foreground hover:bg-foreground hover:text-background',
                       )}
                     >
                       {plan.cta}
@@ -1405,7 +1612,7 @@ export const AiProductKimiPage8 = defineCapsule({
 
               <div className="mt-12 text-center">
                 <p className="font-mono text-sm text-muted-foreground">
-                  {pricingNote}{" "}
+                  {pricingNote}{' '}
                   <button
                     type="button"
                     onClick={() => go(pricingNoteCta)}
@@ -1423,10 +1630,16 @@ export const AiProductKimiPage8 = defineCapsule({
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="grid grid-cols-2 gap-8 text-center lg:grid-cols-4">
                 {statsItems.map((s, i) => {
-                  const color = s.color ?? statsColorMeta[i % statsColorMeta.length]
+                  const color =
+                    s.color ?? statsColorMeta[i % statsColorMeta.length]
                   return (
                     <div key={s.label}>
-                      <div className={cn("mb-2 text-4xl font-black sm:text-5xl", color)}>
+                      <div
+                        className={cn(
+                          'mb-2 text-4xl font-black sm:text-5xl',
+                          color,
+                        )}
+                      >
                         {s.value}
                       </div>
                       <div className="font-mono text-sm uppercase tracking-wider text-muted-foreground">
@@ -1460,10 +1673,7 @@ export const AiProductKimiPage8 = defineCapsule({
                 {testimonialItems.map((t, i) => {
                   const meta = testimonialMeta[i % testimonialMeta.length]
                   return (
-                    <div
-                      key={t.name}
-                      className={cn("border-2 p-8", meta.card)}
-                    >
+                    <div key={t.name} className={cn('border-2 p-8', meta.card)}>
                       <div className="mb-6 flex items-center gap-4">
                         <Image
                           alt={t.avatarAlt}
@@ -1471,29 +1681,22 @@ export const AiProductKimiPage8 = defineCapsule({
                           h={100}
                           loading="lazy"
                           className={cn(
-                            "h-14 w-14 object-cover",
+                            'h-14 w-14 object-cover',
                             meta.avatarBorder,
-                            "border-2",
+                            'border-2',
                           )}
                         />
                         <div>
-                          <div className={cn("font-bold", meta.text)}>
+                          <div className={cn('font-bold', meta.text)}>
                             {t.name}
                           </div>
-                          <div
-                            className={cn(
-                              "font-mono text-sm",
-                              meta.role,
-                            )}
-                          >
+                          <div className={cn('font-mono text-sm', meta.role)}>
                             {t.role}
                           </div>
                         </div>
                       </div>
-                      <p className={cn("mb-4", meta.quote)}>{t.quote}</p>
-                      <div className={cn("flex gap-1", meta.star)}>
-                        ★★★★★
-                      </div>
+                      <p className={cn('mb-4', meta.quote)}>{t.quote}</p>
+                      <div className={cn('flex gap-1', meta.star)}>★★★★★</div>
                     </div>
                   )
                 })}
@@ -1528,9 +1731,7 @@ export const AiProductKimiPage8 = defineCapsule({
                       <span className="font-mono text-accent">Q:</span>
                       {item.question}
                     </h3>
-                    <p className="pl-7 text-muted-foreground">
-                      {item.answer}
-                    </p>
+                    <p className="pl-7 text-muted-foreground">{item.answer}</p>
                   </div>
                 ))}
               </div>
@@ -1545,7 +1746,7 @@ export const AiProductKimiPage8 = defineCapsule({
             <div className="absolute inset-0 bg-gradient-to-br from-accent/20 via-transparent to-primary/20" />
             <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
               <h2 className="mb-6 text-4xl font-black tracking-tight sm:text-5xl lg:text-7xl">
-                {finalHeading.split("\n").map((line, i, arr) => (
+                {finalHeading.split('\n').map((line, i, arr) => (
                   <span key={i}>
                     {line}
                     {i < arr.length - 1 && <br />}
@@ -1598,30 +1799,42 @@ export const AiProductKimiPage8 = defineCapsule({
                   <button
                     type="button"
                     aria-label="Twitter"
-                    onClick={() => go("Twitter")}
+                    onClick={() => go('Twitter')}
                     className="flex h-10 w-10 items-center justify-center border border-border transition-colors hover:border-primary hover:text-primary"
                   >
-                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      className="h-5 w-5"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                     </svg>
                   </button>
                   <button
                     type="button"
                     aria-label="LinkedIn"
-                    onClick={() => go("LinkedIn")}
+                    onClick={() => go('LinkedIn')}
                     className="flex h-10 w-10 items-center justify-center border border-border transition-colors hover:border-primary hover:text-primary"
                   >
-                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      className="h-5 w-5"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.14-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                     </svg>
                   </button>
                   <button
                     type="button"
                     aria-label="GitHub"
-                    onClick={() => go("GitHub")}
+                    onClick={() => go('GitHub')}
                     className="flex h-10 w-10 items-center justify-center border border-border transition-colors hover:border-primary hover:text-primary"
                   >
-                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      className="h-5 w-5"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
                     </svg>
                   </button>
@@ -1655,16 +1868,32 @@ export const AiProductKimiPage8 = defineCapsule({
                 {footerCopyright}
               </p>
               <div className="flex gap-6 font-mono text-sm text-muted-foreground">
-                <button type="button" onClick={() => go("Privacy")} className="transition-colors hover:text-background">
+                <button
+                  type="button"
+                  onClick={() => go('Privacy')}
+                  className="transition-colors hover:text-background"
+                >
                   Privacy
                 </button>
-                <button type="button" onClick={() => go("Terms")} className="transition-colors hover:text-background">
+                <button
+                  type="button"
+                  onClick={() => go('Terms')}
+                  className="transition-colors hover:text-background"
+                >
                   Terms
                 </button>
-                <button type="button" onClick={() => go("Security")} className="transition-colors hover:text-background">
+                <button
+                  type="button"
+                  onClick={() => go('Security')}
+                  className="transition-colors hover:text-background"
+                >
                   Security
                 </button>
-                <button type="button" onClick={() => go("Cookies")} className="transition-colors hover:text-background">
+                <button
+                  type="button"
+                  onClick={() => go('Cookies')}
+                  className="transition-colors hover:text-background"
+                >
                   Cookies
                 </button>
               </div>

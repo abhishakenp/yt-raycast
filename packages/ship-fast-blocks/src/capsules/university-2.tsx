@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * UniversityKimiPage2 — a complete, self-contained higher-education / university
@@ -48,7 +48,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * rich defaults make it render the full page with no props at all.
  */
 export const UniversityKimiPage2 = defineCapsule({
-  name: "UniversityKimiPage2",
+  name: 'UniversityKimiPage2',
   description:
     "Complete higher-education / UNIVERSITY, college or campus marketing + admissions LANDING page in a bold, vibrant, conversion-driven style — the visually DISTINCT alternative / second-style sibling to UniversityKimiPage (which is warm, editorial and monochrome). Includes a fixed navbar with a pill 'Apply Now' CTA, a two-column gradient hero with a live 'applications open' status pill, big black 'Innovate / Create / Lead' headline, dual CTAs, ranking trust badges and an inline image card with a 'Virtual Campus Tour' video overlay plus a floating brand monogram, a 4-up stats band (students, programs, employment, ratio), a 6-up academic-programs grid of rounded image-topped cards with category chips and duration (Computer Science & AI, Biomedical Sciences, Business Administration, Architecture & Design, Education, Law) and a 'View All Programs' button, a campus-life split section with four icon highlights (housing, clubs, wellness, events) and a 4-image photo mosaic plus a virtual-tour button, a glassy three-up 'Why Westfield' feature band on a secondary surface (research excellence, global network, career success), a masonry campus-gallery, a 3-up star-rated student-story testimonial grid with headshots, a 3-tier tuition pricing section (In-State, Out-of-State featured 'Most Popular', Graduate) with checklists and per-tier CTAs, an accordion FAQ (deadlines, test-optional scores, financial aid, campus visits, housing), a vibrant gradient apply CTA with application-fee note, and a multi-column footer (Academics, Admissions, Contact) with address/phone/email and social links. Use as the ROOT/home page for a university, college, school, graduate program, online-degree provider, admissions office, or any education institution that needs an energetic, conversion-focused page driving applications and campus visits. Supply content only — brand, nav, hero, stats, programs, campus, features, gallery, testimonials, tuition, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -196,9 +196,7 @@ export const UniversityKimiPage2 = defineCapsule({
       .object({
         about: z.string().optional(),
         columns: z
-          .array(
-            z.object({ title: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ title: z.string(), links: z.array(z.string()) }))
           .optional(),
         address: z.string().optional(),
         phone: z.string().optional(),
@@ -244,7 +242,9 @@ export const UniversityKimiPage2 = defineCapsule({
         return true
       },
       removeFromFavorites: ({ db }, programTitle: string) => {
-        for (const item of db.favorites.where('programTitle', programTitle).all()) {
+        for (const item of db.favorites
+          .where('programTitle', programTitle)
+          .all()) {
           db.favorites.delete(item.id)
         }
 
@@ -256,111 +256,111 @@ export const UniversityKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [favoritesOpen, setFavoritesOpen] = useState(false)
-    const brand = props.brand ?? "Westfield"
+    const brand = props.brand ?? 'Westfield'
     const nav = props.nav?.length
       ? props.nav
-      : ["Programs", "Campus Life", "Admissions", "Research", "About"]
+      : ['Programs', 'Campus Life', 'Admissions', 'Research', 'About']
 
-    const heroStatus = props.hero?.statusPill ?? "Applications Open for Fall 2025"
+    const heroStatus =
+      props.hero?.statusPill ?? 'Applications Open for Fall 2025'
     const heroLines = props.hero?.headingLines?.length
       ? props.hero.headingLines
-      : ["Innovate.", "Create.", "Lead."]
+      : ['Innovate.', 'Create.', 'Lead.']
     const heroAccentLine = props.hero?.accentLine ?? 1
     const heroSub =
       props.hero?.subheading ??
-      "Join 15,000+ students at Westfield University. World-class programs, breakthrough research, and a vibrant campus community in the heart of Boston."
-    const heroPrimary = props.hero?.primaryCta ?? "Start Your Application"
-    const heroSecondary = props.hero?.secondaryCta ?? "Explore Programs"
+      'Join 15,000+ students at Westfield University. World-class programs, breakthrough research, and a vibrant campus community in the heart of Boston.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Start Your Application'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Explore Programs'
     const heroBadges = props.hero?.badges?.length
       ? props.hero.badges
-      : ["#12 in Research Output", "94% Employment Rate"]
+      : ['#12 in Research Output', '94% Employment Rate']
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Aerial view of modern university campus with historic buildings and green quad"
+      'Aerial view of modern university campus with historic buildings and green quad'
     const heroCardAlt =
-      props.hero?.cardAlt ??
-      "Students studying together in modern library"
-    const heroCardTitle = props.hero?.cardTitle ?? "Virtual Campus Tour"
+      props.hero?.cardAlt ?? 'Students studying together in modern library'
+    const heroCardTitle = props.hero?.cardTitle ?? 'Virtual Campus Tour'
     const heroCardSubtitle =
-      props.hero?.cardSubtitle ?? "Experience Westfield from anywhere"
+      props.hero?.cardSubtitle ?? 'Experience Westfield from anywhere'
 
     const statItems = props.stats?.length
       ? props.stats
       : [
-          { value: "15,400+", label: "Students Enrolled" },
-          { value: "200+", label: "Degree Programs" },
-          { value: "94%", label: "Graduate Employment" },
-          { value: "85:1", label: "Student-Faculty Ratio" },
+          { value: '15,400+', label: 'Students Enrolled' },
+          { value: '200+', label: 'Degree Programs' },
+          { value: '94%', label: 'Graduate Employment' },
+          { value: '85:1', label: 'Student-Faculty Ratio' },
         ]
 
-    const programsEyebrow = props.programs?.eyebrow ?? "Academic Excellence"
-    const programsHeading = props.programs?.heading ?? "Discover Your Path"
+    const programsEyebrow = props.programs?.eyebrow ?? 'Academic Excellence'
+    const programsHeading = props.programs?.heading ?? 'Discover Your Path'
     const programsDesc =
       props.programs?.description ??
-      "Choose from over 200 undergraduate and graduate programs across 8 schools and colleges."
-    const programsCta = props.programs?.cta ?? "View All Programs"
+      'Choose from over 200 undergraduate and graduate programs across 8 schools and colleges.'
+    const programsCta = props.programs?.cta ?? 'View All Programs'
     const programItems = props.programs?.items?.length
       ? props.programs.items
       : [
           {
-            tag: "STEM",
-            duration: "4 years",
-            title: "Computer Science & AI",
+            tag: 'STEM',
+            duration: '4 years',
+            title: 'Computer Science & AI',
             description:
-              "Master machine learning, software engineering, and data science with industry leaders from Google and Microsoft.",
-            link: "Learn more",
+              'Master machine learning, software engineering, and data science with industry leaders from Google and Microsoft.',
+            link: 'Learn more',
             imageAlt:
-              "Computer science student working at multi-monitor workstation with code",
+              'Computer science student working at multi-monitor workstation with code',
           },
           {
-            tag: "HEALTH",
-            duration: "4 years",
-            title: "Biomedical Sciences",
+            tag: 'HEALTH',
+            duration: '4 years',
+            title: 'Biomedical Sciences',
             description:
-              "Pioneer breakthroughs in genetics, neuroscience, and public health with our $50M research facility.",
-            link: "Learn more",
+              'Pioneer breakthroughs in genetics, neuroscience, and public health with our $50M research facility.',
+            link: 'Learn more',
             imageAlt:
-              "Medical students in modern simulation lab practicing procedures",
+              'Medical students in modern simulation lab practicing procedures',
           },
           {
-            tag: "BUSINESS",
-            duration: "4 years",
-            title: "Business Administration",
+            tag: 'BUSINESS',
+            duration: '4 years',
+            title: 'Business Administration',
             description:
-              "Develop leadership skills with Fortune 500 executives. MBA partnerships with Harvard and MIT.",
-            link: "Learn more",
+              'Develop leadership skills with Fortune 500 executives. MBA partnerships with Harvard and MIT.',
+            link: 'Learn more',
             imageAlt:
-              "Business professionals in modern conference room discussing strategy",
+              'Business professionals in modern conference room discussing strategy',
           },
           {
-            tag: "DESIGN",
-            duration: "5 years",
-            title: "Architecture & Design",
+            tag: 'DESIGN',
+            duration: '5 years',
+            title: 'Architecture & Design',
             description:
-              "Create sustainable spaces and digital experiences. Accredited by NAAB with global studio opportunities.",
-            link: "Learn more",
+              'Create sustainable spaces and digital experiences. Accredited by NAAB with global studio opportunities.',
+            link: 'Learn more',
             imageAlt:
-              "Architecture students reviewing building blueprints in design studio",
+              'Architecture students reviewing building blueprints in design studio',
           },
           {
-            tag: "EDUCATION",
-            duration: "4 years",
-            title: "Education & Teaching",
+            tag: 'EDUCATION',
+            duration: '4 years',
+            title: 'Education & Teaching',
             description:
-              "Shape the next generation. 100% job placement rate for graduates in K-12 education.",
-            link: "Learn more",
+              'Shape the next generation. 100% job placement rate for graduates in K-12 education.',
+            link: 'Learn more',
             imageAlt:
-              "Elementary school teacher helping students with art project in colorful classroom",
+              'Elementary school teacher helping students with art project in colorful classroom',
           },
           {
-            tag: "LAW",
-            duration: "3 years",
-            title: "Law & Policy",
+            tag: 'LAW',
+            duration: '3 years',
+            title: 'Law & Policy',
             description:
-              "Advocate for justice with our J.D. program. Top 20 law school with clinical practice in immigration and civil rights.",
-            link: "Learn more",
+              'Advocate for justice with our J.D. program. Top 20 law school with clinical practice in immigration and civil rights.',
+            link: 'Learn more',
             imageAlt:
-              "Law students in university courtroom during mock trial session",
+              'Law students in university courtroom during mock trial session',
           },
         ]
 
@@ -410,247 +410,247 @@ export const UniversityKimiPage2 = defineCapsule({
     const safeFavoriteProgramTitles = favoriteProgramTitles ?? new Set<string>()
     const favoriteCount = safeFavoriteProgramTitles.size
 
-    const campusEyebrow = props.campus?.eyebrow ?? "Campus Life"
-    const campusHeading = props.campus?.heading ?? "Live, Learn & Thrive"
+    const campusEyebrow = props.campus?.eyebrow ?? 'Campus Life'
+    const campusHeading = props.campus?.heading ?? 'Live, Learn & Thrive'
     const campusDesc =
       props.campus?.description ??
-      "Our 200-acre Boston campus combines historic architecture with cutting-edge facilities. From state-of-the-art labs to vibrant student centers, everything you need is steps away."
-    const campusCta = props.campus?.cta ?? "Take Virtual Tour"
+      'Our 200-acre Boston campus combines historic architecture with cutting-edge facilities. From state-of-the-art labs to vibrant student centers, everything you need is steps away.'
+    const campusCta = props.campus?.cta ?? 'Take Virtual Tour'
     const campusHighlights = props.campus?.highlights?.length
       ? props.campus.highlights
       : [
           {
-            title: "Modern Housing",
-            description: "12 residence halls with suite-style living",
+            title: 'Modern Housing',
+            description: '12 residence halls with suite-style living',
           },
           {
-            title: "300+ Clubs",
-            description: "From robotics to rugby, find your community",
+            title: '300+ Clubs',
+            description: 'From robotics to rugby, find your community',
           },
           {
-            title: "Health & Wellness",
-            description: "24/7 health center and fitness complex",
+            title: 'Health & Wellness',
+            description: '24/7 health center and fitness complex',
           },
           {
-            title: "Night & Weekend",
-            description: "Events, concerts, and activities year-round",
+            title: 'Night & Weekend',
+            description: 'Events, concerts, and activities year-round',
           },
         ]
     const campusImages = props.campus?.images?.length
       ? props.campus.images
       : [
-          "University library interior with students studying at wooden desks",
-          "Students playing basketball in modern campus gymnasium",
-          "Modern university science laboratory with equipment",
-          "University amphitheater with students attending outdoor event",
+          'University library interior with students studying at wooden desks',
+          'Students playing basketball in modern campus gymnasium',
+          'Modern university science laboratory with equipment',
+          'University amphitheater with students attending outdoor event',
         ]
 
-    const featuresEyebrow = props.features?.eyebrow ?? "Why Westfield"
-    const featuresHeading =
-      props.features?.heading ?? "World-Class Education"
+    const featuresEyebrow = props.features?.eyebrow ?? 'Why Westfield'
+    const featuresHeading = props.features?.heading ?? 'World-Class Education'
     const featuresDesc =
       props.features?.description ??
-      "Experience the difference of learning at a top-tier research university with global impact."
+      'Experience the difference of learning at a top-tier research university with global impact.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Research Excellence",
+            title: 'Research Excellence',
             description:
-              "$180M annually in research funding. Work alongside Nobel laureates and pioneers in AI, medicine, and climate science.",
+              '$180M annually in research funding. Work alongside Nobel laureates and pioneers in AI, medicine, and climate science.',
           },
           {
-            title: "Global Network",
+            title: 'Global Network',
             description:
-              "Study abroad in 40+ countries. Partner universities include Oxford, ETH Zurich, and National University of Singapore.",
+              'Study abroad in 40+ countries. Partner universities include Oxford, ETH Zurich, and National University of Singapore.',
           },
           {
-            title: "Career Success",
+            title: 'Career Success',
             description:
-              "94% employed within 6 months. Top employers: Google, Goldman Sachs, Mayo Clinic, Tesla, and McKinsey.",
+              '94% employed within 6 months. Top employers: Google, Goldman Sachs, Mayo Clinic, Tesla, and McKinsey.',
           },
         ]
 
-    const galleryEyebrow = props.gallery?.eyebrow ?? "Student Life"
-    const galleryHeading = props.gallery?.heading ?? "Campus Gallery"
+    const galleryEyebrow = props.gallery?.eyebrow ?? 'Student Life'
+    const galleryHeading = props.gallery?.heading ?? 'Campus Gallery'
     const galleryDesc =
       props.gallery?.description ??
-      "A glimpse into daily life at Westfield University."
+      'A glimpse into daily life at Westfield University.'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
-          "Graduation ceremony with students in caps and gowns celebrating",
-          "Group of diverse students studying together in dorm common area",
-          "College football game with cheering fans in stadium",
-          "Modern university cafeteria with students eating and socializing",
-          "Student orchestra performing in concert hall",
-          "Students walking across campus in autumn with fall foliage",
+          'Graduation ceremony with students in caps and gowns celebrating',
+          'Group of diverse students studying together in dorm common area',
+          'College football game with cheering fans in stadium',
+          'Modern university cafeteria with students eating and socializing',
+          'Student orchestra performing in concert hall',
+          'Students walking across campus in autumn with fall foliage',
         ]
 
-    const testimonialsEyebrow = props.testimonials?.eyebrow ?? "Student Stories"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'Student Stories'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Our Students Say"
+      props.testimonials?.heading ?? 'What Our Students Say'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Hear from the Westfield community about their transformative experiences."
+      'Hear from the Westfield community about their transformative experiences.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "The AI research program here is incredible. I worked on a neural network project that got published at NeurIPS. The faculty genuinely care about your success.",
-            name: "Marcus Chen",
+              'The AI research program here is incredible. I worked on a neural network project that got published at NeurIPS. The faculty genuinely care about your success.',
+            name: 'Marcus Chen',
             role: "CS '24 • Now at Google Brain",
             avatarAlt:
-              "Professional headshot of Marcus Chen, Computer Science graduate",
+              'Professional headshot of Marcus Chen, Computer Science graduate',
           },
           {
             quote:
-              "Studying abroad in Copenhagen changed my perspective completely. The international office made everything seamless. Best semester of my life!",
-            name: "Sarah Williams",
+              'Studying abroad in Copenhagen changed my perspective completely. The international office made everything seamless. Best semester of my life!',
+            name: 'Sarah Williams',
             role: "Business '25 • Intern at Deloitte",
             avatarAlt:
-              "Professional headshot of Sarah Williams, International Business major",
+              'Professional headshot of Sarah Williams, International Business major',
           },
           {
             quote:
-              "The pre-med program prepared me so well for MCATs and med school interviews. My advisor helped me secure research at Mass General. Dream come true!",
-            name: "Dr. Priya Patel",
+              'The pre-med program prepared me so well for MCATs and med school interviews. My advisor helped me secure research at Mass General. Dream come true!',
+            name: 'Dr. Priya Patel',
             role: "Biology '23 • HMS Medical Student",
             avatarAlt:
-              "Professional headshot of Dr. Priya Patel, Biology graduate and medical student",
+              'Professional headshot of Dr. Priya Patel, Biology graduate and medical student',
           },
         ]
 
-    const tuitionEyebrow = props.tuition?.eyebrow ?? "Tuition & Aid"
-    const tuitionHeading = props.tuition?.heading ?? "Invest in Your Future"
+    const tuitionEyebrow = props.tuition?.eyebrow ?? 'Tuition & Aid'
+    const tuitionHeading = props.tuition?.heading ?? 'Invest in Your Future'
     const tuitionDesc =
       props.tuition?.description ??
-      "Affordable excellence. 78% of students receive financial aid. Average award: $28,500/year."
+      'Affordable excellence. 78% of students receive financial aid. Average award: $28,500/year.'
     const tuitionNote =
       props.tuition?.note ??
-      "Additional fees: Student Activity ($450), Technology ($280), Health Services ($180)"
-    const tuitionNoteCta = props.tuition?.noteCta ?? "View full cost breakdown"
+      'Additional fees: Student Activity ($450), Technology ($280), Health Services ($180)'
+    const tuitionNoteCta = props.tuition?.noteCta ?? 'View full cost breakdown'
     const tuitionItems = props.tuition?.items?.length
       ? props.tuition.items
       : [
           {
-            title: "In-State",
-            price: "$18,450",
-            period: "/year",
+            title: 'In-State',
+            price: '$18,450',
+            period: '/year',
             features: [
-              "Full-time tuition (12-18 credits)",
-              "Access to all facilities",
-              "Career services included",
-              "Merit scholarships available",
+              'Full-time tuition (12-18 credits)',
+              'Access to all facilities',
+              'Career services included',
+              'Merit scholarships available',
             ],
-            cta: "Calculate Your Aid",
+            cta: 'Calculate Your Aid',
           },
           {
-            title: "Out-of-State",
-            price: "$34,200",
-            period: "/year",
+            title: 'Out-of-State',
+            price: '$34,200',
+            period: '/year',
             features: [
-              "Everything in In-State",
-              "Priority housing selection",
-              "Research assistant opportunities",
-              "Study abroad grants up to $5K",
+              'Everything in In-State',
+              'Priority housing selection',
+              'Research assistant opportunities',
+              'Study abroad grants up to $5K',
             ],
-            cta: "Apply Now",
+            cta: 'Apply Now',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            title: "Graduate",
-            price: "$24,800",
-            period: "/year",
+            title: 'Graduate',
+            price: '$24,800',
+            period: '/year',
             features: [
               "Master's & PhD programs",
-              "Teaching assistantships",
-              "Research stipends available",
-              "Professional networking",
+              'Teaching assistantships',
+              'Research stipends available',
+              'Professional networking',
             ],
-            cta: "Explore Graduate Programs",
+            cta: 'Explore Graduate Programs',
           },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Common Questions"
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Common Questions'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know about applying to Westfield."
+      'Everything you need to know about applying to Westfield.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "What are the application deadlines?",
-            a: "Early Decision: November 1 (notification by December 15). Regular Decision: January 15 (notification by April 1). Transfer students: March 1 for Fall, October 1 for Spring. Graduate programs vary by department—check specific program pages for details.",
+            q: 'What are the application deadlines?',
+            a: 'Early Decision: November 1 (notification by December 15). Regular Decision: January 15 (notification by April 1). Transfer students: March 1 for Fall, October 1 for Spring. Graduate programs vary by department—check specific program pages for details.',
           },
           {
-            q: "What SAT/ACT scores do I need?",
-            a: "Westfield is test-optional for Fall 2025 applicants. However, submitting scores can strengthen your application. Typical enrolled students have SAT 1300-1480 or ACT 28-33. International students must submit TOEFL (min 100) or IELTS (min 7.0) scores.",
+            q: 'What SAT/ACT scores do I need?',
+            a: 'Westfield is test-optional for Fall 2025 applicants. However, submitting scores can strengthen your application. Typical enrolled students have SAT 1300-1480 or ACT 28-33. International students must submit TOEFL (min 100) or IELTS (min 7.0) scores.',
           },
           {
-            q: "How do I apply for financial aid?",
-            a: "Complete the FAFSA (code: 002222) and CSS Profile by February 1. Merit scholarships are automatically considered with your application—no separate form needed. Work-study awards are included in financial aid packages for eligible students.",
+            q: 'How do I apply for financial aid?',
+            a: 'Complete the FAFSA (code: 002222) and CSS Profile by February 1. Merit scholarships are automatically considered with your application—no separate form needed. Work-study awards are included in financial aid packages for eligible students.',
           },
           {
-            q: "Can I visit campus before applying?",
-            a: "Absolutely! We offer daily campus tours, open houses each semester, and virtual information sessions. Overnight visits are available for admitted students in April. Book your visit at westfield.edu/visit or call 1-800-WESTFLD.",
+            q: 'Can I visit campus before applying?',
+            a: 'Absolutely! We offer daily campus tours, open houses each semester, and virtual information sessions. Overnight visits are available for admitted students in April. Book your visit at westfield.edu/visit or call 1-800-WESTFLD.',
           },
           {
-            q: "What housing options are available?",
-            a: "First-years live in one of four residential colleges: Summit, Harbor, Quad, or Tower. All rooms include WiFi, laundry, and meal plans. Upperclassmen can choose apartments, suites, or themed housing (Arts House, Green Living, Honors Community).",
+            q: 'What housing options are available?',
+            a: 'First-years live in one of four residential colleges: Summit, Harbor, Quad, or Tower. All rooms include WiFi, laundry, and meal plans. Upperclassmen can choose apartments, suites, or themed housing (Arts House, Green Living, Honors Community).',
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to Start Your Journey?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to Start Your Journey?'
     const ctaDesc =
       props.cta?.description ??
-      "Applications for Fall 2025 are now open. Join our community of innovators, creators, and leaders. Your future starts here."
-    const ctaPrimary = props.cta?.primaryCta ?? "Apply for Fall 2025"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Request Info"
+      'Applications for Fall 2025 are now open. Join our community of innovators, creators, and leaders. Your future starts here.'
+    const ctaPrimary = props.cta?.primaryCta ?? 'Apply for Fall 2025'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'Request Info'
     const ctaNote =
       props.cta?.note ??
-      "Application fee: $65 (waivers available) • Deadline: January 15, 2025"
+      'Application fee: $65 (waivers available) • Deadline: January 15, 2025'
 
     const footerAbout =
       props.footer?.about ??
-      "Empowering students to innovate, create, and lead since 1892. Located in the heart of Boston."
+      'Empowering students to innovate, create, and lead since 1892. Located in the heart of Boston.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Academics",
+            title: 'Academics',
             links: [
-              "Undergraduate Programs",
-              "Graduate Programs",
-              "Online Learning",
-              "Research Centers",
-              "Libraries",
+              'Undergraduate Programs',
+              'Graduate Programs',
+              'Online Learning',
+              'Research Centers',
+              'Libraries',
             ],
           },
           {
-            title: "Admissions",
+            title: 'Admissions',
             links: [
-              "Apply Online",
-              "Visit Campus",
-              "Financial Aid",
-              "Tuition & Fees",
-              "International Students",
+              'Apply Online',
+              'Visit Campus',
+              'Financial Aid',
+              'Tuition & Fees',
+              'International Students',
             ],
           },
         ]
-    const footerAddress = props.footer?.address ?? "450 Beacon Street, Boston, MA 02115"
-    const footerPhone = props.footer?.phone ?? "1-800-WESTFLD"
-    const footerEmail = props.footer?.email ?? "admissions@westfield.edu"
+    const footerAddress =
+      props.footer?.address ?? '450 Beacon Street, Boston, MA 02115'
+    const footerPhone = props.footer?.phone ?? '1-800-WESTFLD'
+    const footerEmail = props.footer?.email ?? 'admissions@westfield.edu'
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Facebook", "Twitter", "Instagram", "LinkedIn"]
-    const footerCopyright = props.footer?.copyright ?? "All rights reserved."
+      : ['Facebook', 'Twitter', 'Instagram', 'LinkedIn']
+    const footerCopyright = props.footer?.copyright ?? 'All rights reserved.'
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Use", "Accessibility"]
+      : ['Privacy Policy', 'Terms of Use', 'Accessibility']
 
     const initial = brand.charAt(0).toUpperCase()
 
@@ -730,55 +730,191 @@ export const UniversityKimiPage2 = defineCapsule({
 
     const campusIcons = [
       // housing / building
-      <svg key="c0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>,
+      <svg
+        key="c0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-6"
+        aria-hidden="true"
+      >
+        <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+      </svg>,
       // clubs / bolt
-      <svg key="c1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
+      <svg
+        key="c1"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-6"
+        aria-hidden="true"
+      >
+        <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>,
       // wellness / heart
-      <svg key="c2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>,
+      <svg
+        key="c2"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-6"
+        aria-hidden="true"
+      >
+        <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+      </svg>,
       // events / clock
-      <svg key="c3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" aria-hidden="true"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+      <svg
+        key="c3"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-6"
+        aria-hidden="true"
+      >
+        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>,
     ]
 
     const featureIcons = [
       // research / lightbulb
-      <svg key="f0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-7" aria-hidden="true"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>,
+      <svg
+        key="f0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-7"
+        aria-hidden="true"
+      >
+        <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+      </svg>,
       // global / share
-      <svg key="f1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-7" aria-hidden="true"><path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+      <svg
+        key="f1"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-7"
+        aria-hidden="true"
+      >
+        <path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>,
       // career / briefcase
-      <svg key="f2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-7" aria-hidden="true"><path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
+      <svg
+        key="f2"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="size-7"
+        aria-hidden="true"
+      >
+        <path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>,
     ]
 
     const playIcon = (
-      <svg className="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M6.3 5.84a.75.75 0 00-1.06 1.06l4.78 4.78-4.78 4.78a.75.75 0 101.06 1.06l5.25-5.25a.75.75 0 000-1.06L6.3 5.84z" /></svg>
+      <svg
+        className="size-5"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M6.3 5.84a.75.75 0 00-1.06 1.06l4.78 4.78-4.78 4.78a.75.75 0 101.06 1.06l5.25-5.25a.75.75 0 000-1.06L6.3 5.84z" />
+      </svg>
     )
     const badgeIcon = (
-      <svg className="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+      <svg
+        className="size-5"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          fillRule="evenodd"
+          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+          clipRule="evenodd"
+        />
+      </svg>
     )
     const pinIcon = (
-      <svg className="size-5 flex-shrink-0 mt-0.5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+      <svg
+        className="size-5 flex-shrink-0 mt-0.5 text-primary"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+        <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
     )
     const phoneIcon = (
-      <svg className="size-5 flex-shrink-0 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+      <svg
+        className="size-5 flex-shrink-0 text-primary"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+      </svg>
     )
     const mailIcon = (
-      <svg className="size-5 flex-shrink-0 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+      <svg
+        className="size-5 flex-shrink-0 text-primary"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
     )
 
     const socialPaths: Record<string, string> = {
       Facebook:
-        "M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z",
+        'M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z',
       Twitter:
-        "M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 00-2.163-2.723c-.951-.544-2.08-.647-3.148-.295-1.068.352-1.94.998-2.487 1.841-.546.843-.723 1.84-.497 2.79.226.951.77 1.781 1.515 2.315a4.978 4.978 0 01-2.255-.623v.063a4.986 4.986 0 003.976 4.89 5.026 5.026 0 01-2.26.086 4.978 4.978 0 004.633 3.453 9.993 9.993 0 01-7.424 2.078 14.098 14.098 0 007.608 2.228c9.127 0 14.124-7.56 14.124-14.124 0-.214-.005-.428-.014-.64a10.088 10.088 0 002.486-2.549z",
+        'M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 00-2.163-2.723c-.951-.544-2.08-.647-3.148-.295-1.068.352-1.94.998-2.487 1.841-.546.843-.723 1.84-.497 2.79.226.951.77 1.781 1.515 2.315a4.978 4.978 0 01-2.255-.623v.063a4.986 4.986 0 003.976 4.89 5.026 5.026 0 01-2.26.086 4.978 4.978 0 004.633 3.453 9.993 9.993 0 01-7.424 2.078 14.098 14.098 0 007.608 2.228c9.127 0 14.124-7.56 14.124-14.124 0-.214-.005-.428-.014-.64a10.088 10.088 0 002.486-2.549z',
       Instagram:
-        "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z",
+        'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z',
       LinkedIn:
-        "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z",
+        'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z',
     }
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -797,7 +933,9 @@ export const UniversityKimiPage2 = defineCapsule({
                 >
                   {initial}
                 </span>
-                <span className="text-xl font-bold text-foreground">{brand}</span>
+                <span className="text-xl font-bold text-foreground">
+                  {brand}
+                </span>
               </button>
               <div className="hidden items-center gap-8 md:flex">
                 {nav.map((label) => (
@@ -832,7 +970,9 @@ export const UniversityKimiPage2 = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Saved Programs</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Saved Programs
+                      </SheetTitle>
                       <SheetDescription>
                         {favoriteCount > 0
                           ? `${favoriteCount} program${favoriteCount === 1 ? '' : 's'} saved for your application.`
@@ -1044,7 +1184,18 @@ export const UniversityKimiPage2 = defineCapsule({
                   onClick={() => setMobileOpen((v: boolean) => !v)}
                   className="p-2 text-muted-foreground md:hidden"
                 >
-                  <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+                  <svg
+                    className="size-6"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
                 </button>
               </div>
             </div>
@@ -1130,7 +1281,10 @@ export const UniversityKimiPage2 = defineCapsule({
               <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
                 <div className="text-center lg:text-left">
                   <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-secondary-foreground/20 bg-secondary-foreground/10 px-4 py-2">
-                    <span className="size-2 animate-pulse rounded-full bg-primary" aria-hidden="true" />
+                    <span
+                      className="size-2 animate-pulse rounded-full bg-primary"
+                      aria-hidden="true"
+                    />
                     <span className="text-sm font-medium text-secondary-foreground/90">
                       {heroStatus}
                     </span>
@@ -1140,8 +1294,8 @@ export const UniversityKimiPage2 = defineCapsule({
                       <span
                         key={line}
                         className={cn(
-                          "block",
-                          i === heroAccentLine && "text-primary",
+                          'block',
+                          i === heroAccentLine && 'text-primary',
                         )}
                       >
                         {line}
@@ -1217,7 +1371,10 @@ export const UniversityKimiPage2 = defineCapsule({
                     </div>
                   </div>
                   <div className="absolute -right-6 -top-6 grid size-24 place-items-center rounded-2xl bg-primary shadow-xl">
-                    <span className="text-2xl font-black text-primary-foreground" aria-hidden="true">
+                    <span
+                      className="text-2xl font-black text-primary-foreground"
+                      aria-hidden="true"
+                    >
                       {initial}
                     </span>
                   </div>
@@ -1235,7 +1392,9 @@ export const UniversityKimiPage2 = defineCapsule({
                     <p className="mb-2 text-4xl font-black text-primary lg:text-5xl">
                       {s.value}
                     </p>
-                    <p className="font-medium text-muted-foreground">{s.label}</p>
+                    <p className="font-medium text-muted-foreground">
+                      {s.label}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -1302,7 +1461,9 @@ export const UniversityKimiPage2 = defineCapsule({
                         <h3 className="mb-2 text-xl font-bold text-card-foreground">
                           {p.title}
                         </h3>
-                        <p className="mb-4 text-muted-foreground">{p.description}</p>
+                        <p className="mb-4 text-muted-foreground">
+                          {p.description}
+                        </p>
                         <button
                           type="button"
                           onClick={() => go(p.link)}
@@ -1471,8 +1632,8 @@ export const UniversityKimiPage2 = defineCapsule({
                   <div
                     key={alt}
                     className={cn(
-                      "overflow-hidden rounded-2xl shadow-lg",
-                      (i === 0 || i === 4) && "md:col-span-2",
+                      'overflow-hidden rounded-2xl shadow-lg',
+                      (i === 0 || i === 4) && 'md:col-span-2',
                     )}
                   >
                     <Image
@@ -1525,7 +1686,9 @@ export const UniversityKimiPage2 = defineCapsule({
                       />
                       <div>
                         <p className="font-bold text-foreground">{t.name}</p>
-                        <p className="text-sm text-muted-foreground">{t.role}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {t.role}
+                        </p>
                       </div>
                     </div>
                   </article>
@@ -1551,10 +1714,10 @@ export const UniversityKimiPage2 = defineCapsule({
                   <div
                     key={t.title}
                     className={cn(
-                      "relative rounded-2xl p-8 shadow-lg",
+                      'relative rounded-2xl p-8 shadow-lg',
                       t.featured
-                        ? "border-4 border-primary bg-secondary shadow-2xl md:-translate-y-4"
-                        : "border border-border bg-card",
+                        ? 'border-4 border-primary bg-secondary shadow-2xl md:-translate-y-4'
+                        : 'border border-border bg-card',
                     )}
                   >
                     {t.badge && (
@@ -1565,10 +1728,10 @@ export const UniversityKimiPage2 = defineCapsule({
                     <div className="mb-6 text-center">
                       <h3
                         className={cn(
-                          "mb-2 text-lg font-bold",
+                          'mb-2 text-lg font-bold',
                           t.featured
-                            ? "text-secondary-foreground"
-                            : "text-card-foreground",
+                            ? 'text-secondary-foreground'
+                            : 'text-card-foreground',
                         )}
                       >
                         {t.title}
@@ -1576,10 +1739,10 @@ export const UniversityKimiPage2 = defineCapsule({
                       <div className="flex items-baseline justify-center gap-1">
                         <span
                           className={cn(
-                            "text-4xl font-black",
+                            'text-4xl font-black',
                             t.featured
-                              ? "text-secondary-foreground"
-                              : "text-card-foreground",
+                              ? 'text-secondary-foreground'
+                              : 'text-card-foreground',
                           )}
                         >
                           {t.price}
@@ -1587,8 +1750,8 @@ export const UniversityKimiPage2 = defineCapsule({
                         <span
                           className={cn(
                             t.featured
-                              ? "text-secondary-foreground/70"
-                              : "text-muted-foreground",
+                              ? 'text-secondary-foreground/70'
+                              : 'text-muted-foreground',
                           )}
                         >
                           {t.period}
@@ -1600,10 +1763,10 @@ export const UniversityKimiPage2 = defineCapsule({
                         <li
                           key={f}
                           className={cn(
-                            "flex items-center gap-3",
+                            'flex items-center gap-3',
                             t.featured
-                              ? "text-secondary-foreground/90"
-                              : "text-muted-foreground",
+                              ? 'text-secondary-foreground/90'
+                              : 'text-muted-foreground',
                           )}
                         >
                           <Check className="size-5 flex-shrink-0 text-primary" />
@@ -1615,10 +1778,10 @@ export const UniversityKimiPage2 = defineCapsule({
                       type="button"
                       onClick={() => go(t.cta)}
                       className={cn(
-                        "block w-full rounded-xl py-3 text-center font-semibold transition-colors",
+                        'block w-full rounded-xl py-3 text-center font-semibold transition-colors',
                         t.featured
-                          ? "bg-primary text-primary-foreground shadow-lg hover:bg-primary/90"
-                          : "border-2 border-border text-foreground hover:border-primary hover:text-primary",
+                          ? 'bg-primary text-primary-foreground shadow-lg hover:bg-primary/90'
+                          : 'border-2 border-border text-foreground hover:border-primary hover:text-primary',
                       )}
                     >
                       {t.cta}
@@ -1706,7 +1869,9 @@ export const UniversityKimiPage2 = defineCapsule({
                   {ctaSecondary}
                 </button>
               </div>
-              <p className="mt-8 text-sm text-primary-foreground/80">{ctaNote}</p>
+              <p className="mt-8 text-sm text-primary-foreground/80">
+                {ctaNote}
+              </p>
             </div>
           </section>
         </main>
@@ -1809,7 +1974,8 @@ export const UniversityKimiPage2 = defineCapsule({
             </div>
             <div className="flex flex-col items-center justify-between gap-4 border-t border-secondary-foreground/10 pt-8 md:flex-row">
               <p className="text-sm text-secondary-foreground/50">
-                © {new Date().getFullYear()} {brand} University. {footerCopyright}
+                © {new Date().getFullYear()} {brand} University.{' '}
+                {footerCopyright}
               </p>
               <div className="flex gap-6 text-sm">
                 {footerLegal.map((link) => (

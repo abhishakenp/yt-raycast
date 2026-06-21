@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * BlogPostKimiPage2 — SECOND, visually distinct editorial BLOG POST / article
@@ -45,9 +45,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * ONLY content; rich defaults make it render great with no props at all.
  */
 export const BlogPostKimiPage2 = defineCapsule({
-  name: "BlogPostKimiPage2",
+  name: 'BlogPostKimiPage2',
   description:
-    "SECOND, alternative editorial BLOG POST / long-form ARTICLE DETAIL page — a warmer, more journalistic magazine style and a visually distinct sibling to BlogPostKimiPage. Big serif (Playfair-style) display headline, accent category pill, centered article header (author avatar + date + read-time byline), a FULL-WIDTH rounded cover photo with caption, a typeset reading column, an accent-bordered serif pull-quote with an oversized decorative quote mark, h2/h3 section headings, a tag/topic list, an author bio card on a muted band, a 3-up related-articles grid with hover-zoom thumbnails, a BOLD primary-colored newsletter subscribe band with email form, and an inverted dark multi-column footer with social icons. Use this when you want a blog post, journal/magazine article, essay, editorial story, design or engineering journal, news article, case study writeup or changelog entry rendered in a confident, cover-led publication aesthetic (NOT a marketing landing hero) — pick this over the calmer BlogPostKimiPage for a more saturated, magazine feel. Supply content only — brand, nav, header, cover, body sections, tags, author, related posts, newsletter, footer; the block owns all layout and styling.",
+    'SECOND, alternative editorial BLOG POST / long-form ARTICLE DETAIL page — a warmer, more journalistic magazine style and a visually distinct sibling to BlogPostKimiPage. Big serif (Playfair-style) display headline, accent category pill, centered article header (author avatar + date + read-time byline), a FULL-WIDTH rounded cover photo with caption, a typeset reading column, an accent-bordered serif pull-quote with an oversized decorative quote mark, h2/h3 section headings, a tag/topic list, an author bio card on a muted band, a 3-up related-articles grid with hover-zoom thumbnails, a BOLD primary-colored newsletter subscribe band with email form, and an inverted dark multi-column footer with social icons. Use this when you want a blog post, journal/magazine article, essay, editorial story, design or engineering journal, news article, case study writeup or changelog entry rendered in a confident, cover-led publication aesthetic (NOT a marketing landing hero) — pick this over the calmer BlogPostKimiPage for a more saturated, magazine feel. Supply content only — brand, nav, header, cover, body sections, tags, author, related posts, newsletter, footer; the block owns all layout and styling.',
   props: z.object({
     /** Publication / brand name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -175,18 +175,21 @@ export const BlogPostKimiPage2 = defineCapsule({
     },
     queries: {
       readingList: ({ db }) => db.readingList.orderBy('createdAt').all(),
-      comments: ({ db }) => db.comments.where('articleTitle', 'The Art of Resilient Design').all(),
-      isSubscribed: ({ db }, email: string) =>
-        db.subscribers.where('email', email).all().length > 0,
+      comments: ({ db }) =>
+        db.comments.where('articleTitle', 'The Art of Resilient Design').all(),
+      isSubscribed: ({ db }) => db.subscribers.all().length > 0,
     },
     mutations: {
-      addToReadingList: ({ db }, articleData: {
-        title: string
-        category: string
-        date: string
-        excerpt: string
-        imageAlt: string
-      }) => {
+      addToReadingList: (
+        { db },
+        articleData: {
+          title: string
+          category: string
+          date: string
+          excerpt: string
+          imageAlt: string
+        },
+      ) => {
         const existing = db.readingList
           .where('articleTitle', articleData.title)
           .all()[0]
@@ -202,17 +205,22 @@ export const BlogPostKimiPage2 = defineCapsule({
         return db.readingList.all()
       },
       removeFromReadingList: ({ db }, articleTitle: string) => {
-        for (const item of db.readingList.where('articleTitle', articleTitle).all()) {
+        for (const item of db.readingList
+          .where('articleTitle', articleTitle)
+          .all()) {
           db.readingList.delete(item.id)
         }
         return db.readingList.all()
       },
-      addComment: ({ db }, commentData: {
-        articleTitle: string
-        authorName: string
-        authorEmail: string
-        content: string
-      }) => {
+      addComment: (
+        { db },
+        commentData: {
+          articleTitle: string
+          authorName: string
+          authorEmail: string
+          content: string
+        },
+      ) => {
         db.comments.insert({
           articleTitle: commentData.articleTitle,
           authorName: commentData.authorName,
@@ -233,39 +241,38 @@ export const BlogPostKimiPage2 = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [readingListOpen, setReadingListOpen] = useState(false)
-    const [commentOpen, setCommentOpen] = useState(false)
-    const brand = props.brand ?? "Atlas"
+    const brand = props.brand ?? 'Atlas'
     const nav = props.nav?.length
       ? props.nav
-      : ["Articles", "Case Studies", "Podcast", "Resources"]
-    const navCta = props.navCta ?? "Subscribe"
+      : ['Articles', 'Case Studies', 'Podcast', 'Resources']
+    const navCta = props.navCta ?? 'Subscribe'
 
-    const category = props.header?.category ?? "Design Systems"
-    const title = props.header?.title ?? "The Art of"
-    const titleAccent = props.header?.titleAccent ?? "Resilient Design"
+    const category = props.header?.category ?? 'Design Systems'
+    const title = props.header?.title ?? 'The Art of'
+    const titleAccent = props.header?.titleAccent ?? 'Resilient Design'
     const dek =
       props.header?.dek ??
       "How the world's most reliable systems are built on principles of graceful degradation, redundancy, and adaptive architecture."
-    const authorName = props.header?.authorName ?? "Elena Vasquez"
+    const authorName = props.header?.authorName ?? 'Elena Vasquez'
     const authorRole =
-      props.header?.authorRole ?? "Senior Design Director, Shopify"
+      props.header?.authorRole ?? 'Senior Design Director, Shopify'
     const headerAvatarAlt =
       props.header?.authorAvatarAlt ??
-      "Professional headshot of a smiling woman with shoulder-length dark hair"
-    const date = props.header?.date ?? "March 15, 2026"
-    const readTime = props.header?.readTime ?? "18 min read"
+      'Professional headshot of a smiling woman with shoulder-length dark hair'
+    const date = props.header?.date ?? 'March 15, 2026'
+    const readTime = props.header?.readTime ?? '18 min read'
 
     const coverAlt =
       props.cover?.imageAlt ??
-      "Close-up view of a complex electronic circuit board with golden traces and red components"
+      'Close-up view of a complex electronic circuit board with golden traces and red components'
     const coverCaption =
       props.cover?.caption ??
-      "The interconnected nature of modern systems demands new approaches to reliability. · Photo by Umberto"
+      'The interconnected nature of modern systems demands new approaches to reliability. · Photo by Umberto'
 
     const lead = props.lead?.length
       ? props.lead
       : [
-          "In October 2024, a single configuration error at a major cloud provider cascaded into a global outage affecting 42 million websites, 12,000 enterprises, and an estimated $4.2 billion in lost revenue. It was the largest infrastructure failure since the 2021 Facebook blackout, and it reignited a crucial conversation about how we design for failure.",
+          'In October 2024, a single configuration error at a major cloud provider cascaded into a global outage affecting 42 million websites, 12,000 enterprises, and an estimated $4.2 billion in lost revenue. It was the largest infrastructure failure since the 2021 Facebook blackout, and it reignited a crucial conversation about how we design for failure.',
         ]
 
     const introParagraphs = [
@@ -276,35 +283,35 @@ export const BlogPostKimiPage2 = defineCapsule({
       ? props.sections
       : [
           {
-            heading: "The Three Pillars of Resilience",
+            heading: 'The Three Pillars of Resilience',
             blocks: [
               {
-                p: "After studying 147 major system failures across fintech, healthcare, and e-commerce platforms over the past five years, patterns emerge. Every resilient architecture rests on three foundational principles: graceful degradation, strategic redundancy, and circuit-breaking patterns.",
+                p: 'After studying 147 major system failures across fintech, healthcare, and e-commerce platforms over the past five years, patterns emerge. Every resilient architecture rests on three foundational principles: graceful degradation, strategic redundancy, and circuit-breaking patterns.',
               },
-              { h3: "Graceful Degradation in Practice" },
+              { h3: 'Graceful Degradation in Practice' },
               {
                 p: "When Netflix's recommendation engine went down during peak hours on New Year's Eve 2023, the streaming service didn't go dark. Instead, users saw a simplified \"Trending Now\" carousel powered by cached data. The core experience—watching video—remained intact. This is graceful degradation: the art of maintaining essential functionality while non-essential features gracefully retreat.",
               },
               {
-                p: "Amazon employs a similar strategy during Prime Day events. When personalization services experience strain, the site falls back to category-level recommendations rather than user-specific suggestions. Conversion rates drop by 8-12% during these fallback periods—significant, but far better than the 100% revenue loss of a complete outage.",
+                p: 'Amazon employs a similar strategy during Prime Day events. When personalization services experience strain, the site falls back to category-level recommendations rather than user-specific suggestions. Conversion rates drop by 8-12% during these fallback periods—significant, but far better than the 100% revenue loss of a complete outage.',
               },
             ],
           },
           {
-            heading: "Strategic Redundancy",
+            heading: 'Strategic Redundancy',
             blocks: [
               {
-                p: "Redundancy is expensive. Running duplicate infrastructure can increase operational costs by 40-60%. The key is being strategic about what you duplicate and how those duplicates behave.",
+                p: 'Redundancy is expensive. Running duplicate infrastructure can increase operational costs by 40-60%. The key is being strategic about what you duplicate and how those duplicates behave.',
               },
               {
                 p: "Consider Stripe's approach to payment processing. They maintain three independent payment processors with automatic failover at 200ms latency thresholds. If the primary processor shows any degradation, traffic shifts seamlessly to a secondary. Users never see a declined card due to processor timeout. The cost? An estimated $18 million annually in redundant infrastructure. The benefit? Zero payment downtime in six years of operation.",
               },
               {
-                p: "Not every system needs triple redundancy. A content management system might prioritize read replicas over write availability. An analytics dashboard might accept 5-minute data delays during peak load. The art is in understanding user expectations and designing redundancy that protects what matters most.",
+                p: 'Not every system needs triple redundancy. A content management system might prioritize read replicas over write availability. An analytics dashboard might accept 5-minute data delays during peak load. The art is in understanding user expectations and designing redundancy that protects what matters most.',
               },
-              { h3: "Circuit Breakers and Bulkheads" },
+              { h3: 'Circuit Breakers and Bulkheads' },
               {
-                p: "The circuit breaker pattern, popularized by Michael Nygard's \"Release It!\" in 2007, remains one of the most effective tools for preventing cascade failures. When a service starts failing, the circuit breaker opens, stopping requests from flooding the already-struggling component. After a cooling-off period, it attempts a partial reset.",
+                p: 'The circuit breaker pattern, popularized by Michael Nygard\'s "Release It!" in 2007, remains one of the most effective tools for preventing cascade failures. When a service starts failing, the circuit breaker opens, stopping requests from flooding the already-struggling component. After a cooling-off period, it attempts a partial reset.',
               },
               {
                 p: "Shopify's platform processes over $200 billion in annual GMV. Their implementation of circuit breakers across 847 microservices has prevented an estimated 340 potential cascade failures in the past 18 months alone. Each prevented outage represents millions in saved revenue and preserved customer trust.",
@@ -315,21 +322,21 @@ export const BlogPostKimiPage2 = defineCapsule({
             ],
           },
           {
-            heading: "Designing for Chaos",
+            heading: 'Designing for Chaos',
             blocks: [
               {
-                p: "Netflix pioneered chaos engineering with their Chaos Monkey tool in 2010. The philosophy is counterintuitive: by intentionally causing failures in production, teams build confidence in their resilience mechanisms.",
+                p: 'Netflix pioneered chaos engineering with their Chaos Monkey tool in 2010. The philosophy is counterintuitive: by intentionally causing failures in production, teams build confidence in their resilience mechanisms.',
               },
               {
                 p: "Today, chaos engineering has matured. Amazon Web Services runs over 2 million controlled failure experiments annually across their infrastructure. These aren't random acts of destruction—they're carefully designed scenarios that validate specific resilience hypotheses.",
               },
               {
-                p: "A typical chaos experiment might simulate a database failover during peak traffic, measuring not just whether the system stays up, but whether latency stays below 500ms and error rates remain under 0.1%. These quantified resilience metrics become part of service level objectives, with on-call rotations trained to respond to automated chaos events just as they would real incidents.",
+                p: 'A typical chaos experiment might simulate a database failover during peak traffic, measuring not just whether the system stays up, but whether latency stays below 500ms and error rates remain under 0.1%. These quantified resilience metrics become part of service level objectives, with on-call rotations trained to respond to automated chaos events just as they would real incidents.',
               },
             ],
           },
           {
-            heading: "The Human Element",
+            heading: 'The Human Element',
             blocks: [
               {
                 p: "Technical resilience means nothing without organizational resilience. The most sophisticated circuit breakers won't save you if your on-call engineer has been awake for 36 hours or your incident response playbook hasn't been updated since the last major architecture change.",
@@ -343,21 +350,21 @@ export const BlogPostKimiPage2 = defineCapsule({
             ],
           },
           {
-            heading: "Building Resilient Design Systems",
+            heading: 'Building Resilient Design Systems',
             blocks: [
               {
-                p: "These principles extend beyond backend infrastructure into the design systems that power user interfaces. A resilient component library anticipates failure modes: What happens when the API for user avatars times out? What does a data table look like with partial information? How does a checkout flow behave when the address validation service is unavailable?",
+                p: 'These principles extend beyond backend infrastructure into the design systems that power user interfaces. A resilient component library anticipates failure modes: What happens when the API for user avatars times out? What does a data table look like with partial information? How does a checkout flow behave when the address validation service is unavailable?',
               },
               {
                 p: "Airbnb's design system includes \"stress states\" for every component—visual representations of how elements appear when data is missing, loading, or in error conditions. These aren't afterthoughts; they're first-class design patterns with the same attention to detail as the happy path.",
               },
               {
-                p: "The result is interfaces that feel reliable even when the systems behind them struggle. Users might notice a simplified experience, but they rarely encounter broken screens or confusing error messages. This perceived reliability builds trust at a fundamental level.",
+                p: 'The result is interfaces that feel reliable even when the systems behind them struggle. Users might notice a simplified experience, but they rarely encounter broken screens or confusing error messages. This perceived reliability builds trust at a fundamental level.',
               },
             ],
           },
           {
-            heading: "Looking Forward",
+            heading: 'Looking Forward',
             blocks: [
               {
                 p: "As systems grow more complex—AI-powered features, real-time collaboration, edge computing—the challenge of resilience intensifies. The next frontier is adaptive resilience: systems that don't just survive failure modes but automatically reconfigure to optimize for changing conditions.",
@@ -377,115 +384,119 @@ export const BlogPostKimiPage2 = defineCapsule({
       "The question isn't whether your system will fail. It's whether your users will notice when it does."
     const pullQuoteAttribution =
       props.pullQuote?.attribution ??
-      "Susan Fowler, author of \"Production-Ready Microservices\""
+      'Susan Fowler, author of "Production-Ready Microservices"'
 
     const tags = props.tags?.length
       ? props.tags
-      : ["#DesignSystems", "#Resilience", "#Infrastructure", "#UXStrategy"]
+      : ['#DesignSystems', '#Resilience', '#Infrastructure', '#UXStrategy']
 
-    const authorBioName = props.author?.name ?? "Elena Vasquez"
+    const authorBioName = props.author?.name ?? 'Elena Vasquez'
     const authorBio =
       props.author?.bio ??
-      "Senior Design Director at Shopify, where she leads design systems and platform experience. Previously built resilience patterns at AWS and Airbnb. Author of \"Designing for Scale\" (O'Reilly, 2024). Speaking at DesignOps Summit and Config 2026."
+      'Senior Design Director at Shopify, where she leads design systems and platform experience. Previously built resilience patterns at AWS and Airbnb. Author of "Designing for Scale" (O\'Reilly, 2024). Speaking at DesignOps Summit and Config 2026.'
     const authorBioAvatarAlt =
       props.author?.avatarAlt ??
-      "Professional headshot of Elena Vasquez, Senior Design Director at Shopify"
+      'Professional headshot of Elena Vasquez, Senior Design Director at Shopify'
     const authorLinks = props.author?.links?.length
       ? props.author.links
-      : ["Follow on X", "LinkedIn", "More articles"]
+      : ['Follow on X', 'LinkedIn', 'More articles']
 
-    const relatedHeading = props.related?.heading ?? "More from Atlas"
+    const relatedHeading = props.related?.heading ?? 'More from Atlas'
     const relatedItems = props.related?.items?.length
       ? props.related.items
       : [
           {
-            category: "Engineering",
-            date: "Feb 28",
-            title: "Scaling to 10 Million Users: A Postgres Story",
+            category: 'Engineering',
+            date: 'Feb 28',
+            title: 'Scaling to 10 Million Users: A Postgres Story',
             excerpt:
               "How Figma's engineering team redesigned their database architecture to handle 10x growth without downtime.",
             imageAlt:
-              "Server room with rows of blue-lit server racks extending into the distance",
+              'Server room with rows of blue-lit server racks extending into the distance',
           },
           {
-            category: "Analytics",
-            date: "Feb 14",
-            title: "The Metrics That Actually Matter",
+            category: 'Analytics',
+            date: 'Feb 14',
+            title: 'The Metrics That Actually Matter',
             excerpt:
               "Stop drowning in vanity metrics. Here's how product teams at Linear and Notion focus on actionable signals.",
             imageAlt:
-              "Laptop screen displaying a colorful data analytics dashboard with charts and graphs",
+              'Laptop screen displaying a colorful data analytics dashboard with charts and graphs',
           },
           {
-            category: "Leadership",
-            date: "Jan 30",
-            title: "Building Design-Engineering Partnerships",
+            category: 'Leadership',
+            date: 'Jan 30',
+            title: 'Building Design-Engineering Partnerships',
             excerpt:
-              "How Figma, Linear, and Vercel structure their teams for shipping velocity without sacrificing quality.",
+              'How Figma, Linear, and Vercel structure their teams for shipping velocity without sacrificing quality.',
             imageAlt:
-              "Diverse team of designers and engineers collaborating around a laptop in a modern office",
+              'Diverse team of designers and engineers collaborating around a laptop in a modern office',
           },
         ]
 
     const newsletterHeading =
-      props.newsletter?.heading ?? "Join 47,000+ designers and engineers"
+      props.newsletter?.heading ?? 'Join 47,000+ designers and engineers'
     const newsletterDesc =
       props.newsletter?.description ??
-      "Get our best articles on design systems, engineering culture, and building products at scale. No spam, unsubscribe anytime."
+      'Get our best articles on design systems, engineering culture, and building products at scale. No spam, unsubscribe anytime.'
     const newsletterPlaceholder =
-      props.newsletter?.placeholder ?? "your@email.com"
-    const newsletterSubmit = props.newsletter?.submit ?? "Subscribe Free"
+      props.newsletter?.placeholder ?? 'your@email.com'
+    const newsletterSubmit = props.newsletter?.submit ?? 'Subscribe Free'
     const newsletterFootnote =
       props.newsletter?.footnote ??
-      "Join readers from Shopify, Figma, Linear, Vercel, and 2,400+ other companies"
+      'Join readers from Shopify, Figma, Linear, Vercel, and 2,400+ other companies'
 
     const footerBlurb =
       props.footer?.blurb ??
-      "The journal for people who build products at scale. Design systems, engineering culture, and the craft of reliable software."
+      'The journal for people who build products at scale. Design systems, engineering culture, and the craft of reliable software.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            heading: "Content",
+            heading: 'Content',
             links: [
-              "Articles",
-              "Case Studies",
-              "Podcast",
-              "Video Library",
-              "Newsletter Archive",
+              'Articles',
+              'Case Studies',
+              'Podcast',
+              'Video Library',
+              'Newsletter Archive',
             ],
           },
           {
-            heading: "Resources",
+            heading: 'Resources',
             links: [
-              "Design Systems",
-              "Component Library",
-              "Templates",
-              "Engineering Guides",
-              "API Reference",
+              'Design Systems',
+              'Component Library',
+              'Templates',
+              'Engineering Guides',
+              'API Reference',
             ],
           },
           {
-            heading: "Atlas",
-            links: ["About", "Careers", "Advertise", "Contact", "Privacy Policy"],
+            heading: 'Atlas',
+            links: [
+              'About',
+              'Careers',
+              'Advertise',
+              'Contact',
+              'Privacy Policy',
+            ],
           },
         ]
     const footerSocial = props.footer?.social?.length
       ? props.footer.social
-      : ["Twitter", "LinkedIn", "YouTube"]
+      : ['Twitter', 'LinkedIn', 'YouTube']
     const footerNote =
-      props.footer?.note ?? "Atlas Media Inc. All rights reserved."
+      props.footer?.note ?? 'Atlas Media Inc. All rights reserved.'
     const footerMadeNote =
       props.footer?.madeNote ??
-      "Made with care in San Francisco and distributed worldwide."
+      'Made with care in San Francisco and distributed worldwide.'
 
     // Lakebed integration
     const readingList = lakebed.useQuery('readingList')
-    const comments = lakebed.useQuery('comments')
     const auth = lakebed.useAuth()
     const addToReadingList = lakebed.useMutation('addToReadingList')
     const removeFromReadingList = lakebed.useMutation('removeFromReadingList')
-    const addComment = lakebed.useMutation('addComment')
     const subscribe = lakebed.useMutation('subscribe')
 
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
@@ -553,7 +564,10 @@ export const BlogPostKimiPage2 = defineCapsule({
 
     const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
       <svg
-        className={cn('size-5', active ? 'text-primary-foreground' : 'text-foreground')}
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
         fill={active ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="2"
@@ -569,7 +583,7 @@ export const BlogPostKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -617,7 +631,7 @@ export const BlogPostKimiPage2 = defineCapsule({
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => go("Search")}
+                  onClick={() => go('Search')}
                   className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
                 >
                   Search
@@ -685,7 +699,9 @@ export const BlogPostKimiPage2 = defineCapsule({
                                 <button
                                   type="button"
                                   onClick={() =>
-                                    void removeFromReadingList(item.articleTitle)
+                                    void removeFromReadingList(
+                                      item.articleTitle,
+                                    )
                                   }
                                   className="mt-3 text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                                 >
@@ -701,7 +717,8 @@ export const BlogPostKimiPage2 = defineCapsule({
                             No articles saved
                           </p>
                           <p className="mt-2 text-sm text-muted-foreground">
-                            Bookmark articles to read later by clicking the bookmark icon.
+                            Bookmark articles to read later by clicking the
+                            bookmark icon.
                           </p>
                         </div>
                       )}
@@ -856,7 +873,7 @@ export const BlogPostKimiPage2 = defineCapsule({
             </div>
             <h1 className="mb-6 font-serif text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-6xl xl:text-7xl">
               {title}
-              <br className="hidden sm:block" />{" "}
+              <br className="hidden sm:block" />{' '}
               <span className="text-primary">{titleAccent}</span>
             </h1>
             <p className="mx-auto max-w-3xl text-xl font-light leading-relaxed text-muted-foreground sm:text-2xl">
@@ -1075,8 +1092,9 @@ export const BlogPostKimiPage2 = defineCapsule({
             <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
               {relatedItems.map((post) => {
                 const postInReadingList =
-                  readingList?.some((item) => item.articleTitle === post.title) ??
-                  false
+                  readingList?.some(
+                    (item) => item.articleTitle === post.title,
+                  ) ?? false
 
                 return (
                   <article key={post.title} className="group">
@@ -1234,7 +1252,7 @@ export const BlogPostKimiPage2 = defineCapsule({
                       aria-label={s}
                       className="text-background/70 transition-colors hover:text-background"
                     >
-                      {s === "Twitter" ? (
+                      {s === 'Twitter' ? (
                         <svg
                           className="size-5"
                           fill="currentColor"
@@ -1243,7 +1261,7 @@ export const BlogPostKimiPage2 = defineCapsule({
                         >
                           <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
                         </svg>
-                      ) : s === "LinkedIn" ? (
+                      ) : s === 'LinkedIn' ? (
                         <svg
                           className="size-5"
                           fill="currentColor"

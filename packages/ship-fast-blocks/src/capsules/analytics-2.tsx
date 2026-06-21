@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -42,7 +42,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
  * All color via semantic tokens; data-viz uses chart-1..5.
  */
 export const AnalyticsKimiPage2 = defineCapsule({
-  name: "AnalyticsKimiPage2",
+  name: 'AnalyticsKimiPage2',
   description:
     "Alternative / SECOND-style SaaS analytics DASHBOARD page (a visually distinct sibling to AnalyticsKimiPage) ported from a Kimi 'MetricFlow' admin design: busier and more navigation-rich. Layout pairs a fixed TOP navbar (brand logo, a wide 'Search analytics, reports, or metrics' field, a notification bell with an unread dot, and a named user avatar with role) with a fixed LEFT sidebar whose links are grouped under Overview / Insights / Settings section captions (Dashboard, Analytics, Revenue, Customers, Reports, Trends, Experiments, Settings, Help Center) and topped off by a gradient 'Pro Plan — days left in trial / Upgrade Now' upsell card. The main column has a page header with a Day/Week/Month/Year segmented date toggle and an Export Report button, a 4-up KPI metric grid where every card embeds its own micro-visualization (a sparkline bar chart for Total Revenue, stacked active-user avatars, a goal progress bar for Conversion Rate, and a mobile/desktop session split), a wide dual-line Revenue Overview chart comparing 2024 vs 2023 with a legend, a doughnut Traffic Sources chart with a labeled percentage legend and a total-visitors center stat, and a Recent Transactions data table (transaction IDs, customer avatars + emails, date/time, amount, Completed/Processing/Failed/Refunded status pills, payment-method rows, per-row detail action, and numbered 1·2·3…475 pagination). Use as the ROOT/home page for analytics dashboards, admin panels, business-intelligence consoles, revenue or product-metrics overviews, customer/subscription reporting, or any data-visualization control panel when a denser, grouped-nav alternative style is wanted. Supply content only — brand, nav, header copy, KPIs, charts, transactions; the block owns all layout and styling.",
   props: z.object({
@@ -163,12 +163,7 @@ export const AnalyticsKimiPage2 = defineCapsule({
               date: z.string(),
               time: z.string(),
               amount: z.string(),
-              status: z.enum([
-                "completed",
-                "processing",
-                "failed",
-                "refunded",
-              ]),
+              status: z.enum(['completed', 'processing', 'failed', 'refunded']),
               payment: z.string(),
             }),
           )
@@ -208,7 +203,12 @@ export const AnalyticsKimiPage2 = defineCapsule({
         db.alerts.where('read', 'false').orderBy('createdAt').all(),
     },
     mutations: {
-      saveReport: ({ db }, name: string, description: string, dateRange: string) => {
+      saveReport: (
+        { db },
+        name: string,
+        description: string,
+        dateRange: string,
+      ) => {
         db.savedReports.insert({ name, description, dateRange })
         return db.savedReports.all()
       },
@@ -232,91 +232,103 @@ export const AnalyticsKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [notificationsOpen, setNotificationsOpen] = useState(false)
-    const brand = props.brand ?? "MetricFlow"
+    const brand = props.brand ?? 'MetricFlow'
     const nav = props.nav?.length
       ? props.nav
       : [
-          "Dashboard",
-          "Analytics",
-          "Revenue",
-          "Customers",
-          "Reports",
-          "Trends",
-          "Experiments",
-          "Settings",
-          "Help Center",
+          'Dashboard',
+          'Analytics',
+          'Revenue',
+          'Customers',
+          'Reports',
+          'Trends',
+          'Experiments',
+          'Settings',
+          'Help Center',
         ]
 
     const searchPlaceholder =
-      props.searchPlaceholder ?? "Search analytics, reports, or metrics..."
+      props.searchPlaceholder ?? 'Search analytics, reports, or metrics...'
 
-    const userName = props.user?.name ?? "Sarah Chen"
-    const userRole = props.user?.role ?? "Product Manager"
+    const userRole = props.user?.role ?? 'Product Manager'
     const userAvatarAlt =
       props.user?.avatarAlt ??
-      "Professional headshot of Sarah Chen, Product Manager"
+      'Professional headshot of Sarah Chen, Product Manager'
 
     const navGroups = props.navGroups?.length
       ? props.navGroups
       : [
-          { caption: "Overview", count: 4 },
-          { caption: "Insights", count: 3 },
-          { caption: "Settings", count: 2 },
+          { caption: 'Overview', count: 4 },
+          { caption: 'Insights', count: 3 },
+          { caption: 'Settings', count: 2 },
         ]
 
-    const upsellPlan = props.upsell?.plan ?? "Pro Plan"
-    const upsellNote = props.upsell?.note ?? "12 days left in trial"
-    const upsellCta = props.upsell?.cta ?? "Upgrade Now"
+    const upsellPlan = props.upsell?.plan ?? 'Pro Plan'
+    const upsellNote = props.upsell?.note ?? '12 days left in trial'
+    const upsellCta = props.upsell?.cta ?? 'Upgrade Now'
 
-    const headerTitle = props.header?.title ?? "Dashboard Overview"
+    const headerTitle = props.header?.title ?? 'Dashboard Overview'
     const headerSubtitle =
       props.header?.subtitle ??
-      "Track your key metrics and performance indicators"
+      'Track your key metrics and performance indicators'
     const headerToggles = props.header?.toggles?.length
       ? props.header.toggles
-      : ["Day", "Week", "Month", "Year"]
-    const activeToggle = "Month"
-    const exportLabel = props.header?.exportLabel ?? "Export Report"
+      : ['Day', 'Week', 'Month', 'Year']
+    const activeToggle = 'Month'
+    const exportLabel = props.header?.exportLabel ?? 'Export Report'
 
     const revenueKpi = {
-      label: props.revenueKpi?.label ?? "Total Revenue",
-      value: props.revenueKpi?.value ?? "$284,592",
-      delta: props.revenueKpi?.delta ?? "+12.5%",
-      caption: props.revenueKpi?.caption ?? "vs last month",
+      label: props.revenueKpi?.label ?? 'Total Revenue',
+      value: props.revenueKpi?.value ?? '$284,592',
+      delta: props.revenueKpi?.delta ?? '+12.5%',
+      caption: props.revenueKpi?.caption ?? 'vs last month',
       bars: props.revenueKpi?.bars?.length
         ? props.revenueKpi.bars
         : [40, 60, 45, 80, 55, 70, 100],
     }
     const usersKpi = {
-      label: props.usersKpi?.label ?? "Active Users",
-      value: props.usersKpi?.value ?? "48,293",
-      delta: props.usersKpi?.delta ?? "+8.2%",
-      caption: props.usersKpi?.caption ?? "vs last month",
-      note: props.usersKpi?.note ?? "+2,847 new today",
+      label: props.usersKpi?.label ?? 'Active Users',
+      value: props.usersKpi?.value ?? '48,293',
+      delta: props.usersKpi?.delta ?? '+8.2%',
+      caption: props.usersKpi?.caption ?? 'vs last month',
+      note: props.usersKpi?.note ?? '+2,847 new today',
     }
     const conversionKpi = {
-      label: props.conversionKpi?.label ?? "Conversion Rate",
-      value: props.conversionKpi?.value ?? "3.24%",
-      delta: props.conversionKpi?.delta ?? "-2.1%",
-      target: props.conversionKpi?.target ?? "Target: 4.0%",
+      label: props.conversionKpi?.label ?? 'Conversion Rate',
+      value: props.conversionKpi?.value ?? '3.24%',
+      delta: props.conversionKpi?.delta ?? '-2.1%',
+      target: props.conversionKpi?.target ?? 'Target: 4.0%',
       percent: props.conversionKpi?.percent ?? 81,
     }
     const sessionKpi = {
-      label: props.sessionKpi?.label ?? "Avg. Session",
-      value: props.sessionKpi?.value ?? "4m 32s",
-      delta: props.sessionKpi?.delta ?? "+18.3%",
-      mobile: props.sessionKpi?.mobile ?? "2m 48s",
-      desktop: props.sessionKpi?.desktop ?? "6m 15s",
+      label: props.sessionKpi?.label ?? 'Avg. Session',
+      value: props.sessionKpi?.value ?? '4m 32s',
+      delta: props.sessionKpi?.delta ?? '+18.3%',
+      mobile: props.sessionKpi?.mobile ?? '2m 48s',
+      desktop: props.sessionKpi?.desktop ?? '6m 15s',
     }
 
-    const revenueTitle = props.revenue?.title ?? "Revenue Overview"
+    const revenueTitle = props.revenue?.title ?? 'Revenue Overview'
     const revenueSubtitle =
-      props.revenue?.subtitle ?? "Monthly revenue performance"
-    const revenueCurrentLabel = props.revenue?.currentLabel ?? "2024"
-    const revenuePriorLabel = props.revenue?.priorLabel ?? "2023"
+      props.revenue?.subtitle ?? 'Monthly revenue performance'
+    const revenueCurrentLabel = props.revenue?.currentLabel ?? '2024'
+    const revenuePriorLabel = props.revenue?.priorLabel ?? '2023'
     const revenueMonths = props.revenue?.months?.length
       ? props.revenue.months
-      : ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+      : [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+        ]
     const revenueCurrent = props.revenue?.current?.length
       ? props.revenue.current
       : [40, 70, 120, 100, 160, 140, 200, 180, 220, 210, 240, 260]
@@ -324,103 +336,100 @@ export const AnalyticsKimiPage2 = defineCapsule({
       ? props.revenue.prior
       : [60, 80, 100, 90, 120, 110, 140, 130, 160, 150, 180, 200]
 
-    const trafficTitle = props.traffic?.title ?? "Traffic Sources"
+    const trafficTitle = props.traffic?.title ?? 'Traffic Sources'
     const trafficSubtitle =
-      props.traffic?.subtitle ?? "Where your visitors come from"
-    const trafficTotal = props.traffic?.total ?? "482K"
-    const trafficTotalCaption = props.traffic?.totalCaption ?? "Total Visitors"
+      props.traffic?.subtitle ?? 'Where your visitors come from'
+    const trafficTotal = props.traffic?.total ?? '482K'
+    const trafficTotalCaption = props.traffic?.totalCaption ?? 'Total Visitors'
     const trafficSources = props.traffic?.sources?.length
       ? props.traffic.sources
       : [
-          { label: "Organic Search", value: 45 },
-          { label: "Direct", value: 25 },
-          { label: "Social Media", value: 18 },
-          { label: "Referral", value: 12 },
+          { label: 'Organic Search', value: 45 },
+          { label: 'Direct', value: 25 },
+          { label: 'Social Media', value: 18 },
+          { label: 'Referral', value: 12 },
         ]
 
-    const txTitle = props.transactions?.title ?? "Recent Transactions"
+    const txTitle = props.transactions?.title ?? 'Recent Transactions'
     const txSubtitle =
-      props.transactions?.subtitle ?? "Latest customer orders and payments"
+      props.transactions?.subtitle ?? 'Latest customer orders and payments'
     const txSearchPlaceholder =
-      props.transactions?.searchPlaceholder ?? "Search transactions..."
-    const txFilterLabel = props.transactions?.filterLabel ?? "Filter"
+      props.transactions?.searchPlaceholder ?? 'Search transactions...'
+    const txFilterLabel = props.transactions?.filterLabel ?? 'Filter'
     const txFootnote =
-      props.transactions?.footnote ?? "Showing 1-6 of 2,847 transactions"
+      props.transactions?.footnote ?? 'Showing 1-6 of 2,847 transactions'
     const txPages = props.transactions?.pages?.length
       ? props.transactions.pages
-      : ["1", "2", "3", "...", "475"]
+      : ['1', '2', '3', '...', '475']
     const txRows = props.transactions?.rows?.length
       ? props.transactions.rows
       : ([
           {
-            id: "#TRX-2024-8842",
-            name: "Sarah Chen",
-            email: "sarah@techflow.io",
-            date: "May 28, 2024",
-            time: "2:34 PM",
-            amount: "$2,450.00",
-            status: "completed",
-            payment: "Visa ending in 4242",
+            id: '#TRX-2024-8842',
+            name: 'Sarah Chen',
+            email: 'sarah@techflow.io',
+            date: 'May 28, 2024',
+            time: '2:34 PM',
+            amount: '$2,450.00',
+            status: 'completed',
+            payment: 'Visa ending in 4242',
           },
           {
-            id: "#TRX-2024-8841",
-            name: "Marcus Johnson",
-            email: "marcus@designstudio.co",
-            date: "May 28, 2024",
-            time: "11:15 AM",
-            amount: "$899.00",
-            status: "completed",
-            payment: "Mastercard •••• 8856",
+            id: '#TRX-2024-8841',
+            name: 'Marcus Johnson',
+            email: 'marcus@designstudio.co',
+            date: 'May 28, 2024',
+            time: '11:15 AM',
+            amount: '$899.00',
+            status: 'completed',
+            payment: 'Mastercard •••• 8856',
           },
           {
-            id: "#TRX-2024-8840",
-            name: "Emily Rodriguez",
-            email: "emily@startup.xyz",
-            date: "May 27, 2024",
-            time: "4:52 PM",
-            amount: "$4,999.00",
-            status: "processing",
-            payment: "Visa ending in 8391",
+            id: '#TRX-2024-8840',
+            name: 'Emily Rodriguez',
+            email: 'emily@startup.xyz',
+            date: 'May 27, 2024',
+            time: '4:52 PM',
+            amount: '$4,999.00',
+            status: 'processing',
+            payment: 'Visa ending in 8391',
           },
           {
-            id: "#TRX-2024-8839",
-            name: "David Kim",
-            email: "david@techventures.com",
-            date: "May 27, 2024",
-            time: "10:30 AM",
-            amount: "$1,299.00",
-            status: "failed",
-            payment: "Amex •••• 1024",
+            id: '#TRX-2024-8839',
+            name: 'David Kim',
+            email: 'david@techventures.com',
+            date: 'May 27, 2024',
+            time: '10:30 AM',
+            amount: '$1,299.00',
+            status: 'failed',
+            payment: 'Amex •••• 1024',
           },
           {
-            id: "#TRX-2024-8838",
-            name: "Jessica Williams",
-            email: "jessica@creative.agency",
-            date: "May 26, 2024",
-            time: "3:45 PM",
-            amount: "$3,750.00",
-            status: "completed",
-            payment: "Visa ending in 6572",
+            id: '#TRX-2024-8838',
+            name: 'Jessica Williams',
+            email: 'jessica@creative.agency',
+            date: 'May 26, 2024',
+            time: '3:45 PM',
+            amount: '$3,750.00',
+            status: 'completed',
+            payment: 'Visa ending in 6572',
           },
           {
-            id: "#TRX-2024-8837",
-            name: "Michael Foster",
-            email: "michael@enterprise.io",
-            date: "May 26, 2024",
-            time: "9:12 AM",
-            amount: "$12,500.00",
-            status: "refunded",
-            payment: "Mastercard •••• 4401",
+            id: '#TRX-2024-8837',
+            name: 'Michael Foster',
+            email: 'michael@enterprise.io',
+            date: 'May 26, 2024',
+            time: '9:12 AM',
+            amount: '$12,500.00',
+            status: 'refunded',
+            payment: 'Mastercard •••• 4401',
           },
         ] as const)
 
     // Lakebed hooks
     const storedTransactions = lakebed.useQuery('transactions')
-    const savedReports = lakebed.useQuery('savedReports')
     const unreadAlerts = lakebed.useQuery('unreadAlerts')
     const auth = lakebed.useAuth()
-    const saveReport = lakebed.useMutation('saveReport')
-    const deleteReport = lakebed.useMutation('deleteReport')
     const markAlertRead = lakebed.useMutation('markAlertRead')
     const markAllAlertsRead = lakebed.useMutation('markAllAlertsRead')
 
@@ -452,20 +461,21 @@ export const AnalyticsKimiPage2 = defineCapsule({
     }
 
     // Use stored transactions if available, otherwise fall back to static defaults
-    const displayTxRows = storedTransactions && storedTransactions.length > 0
-      ? storedTransactions
-      : txRows
+    const displayTxRows =
+      storedTransactions && storedTransactions.length > 0
+        ? storedTransactions
+        : txRows
 
     const alertCount = unreadAlerts?.length ?? 0
 
     // Chart tokens cycled for doughnut slices / legend dots (data viz only).
-    const sliceTokens = ["bg-chart-1", "bg-chart-2", "bg-chart-3", "bg-chart-4"]
+    const sliceTokens = ['bg-chart-1', 'bg-chart-2', 'bg-chart-3', 'bg-chart-4']
 
     // Brand logo tile — solid token mark with the brand initial (decorative).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary font-black text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary font-black text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -478,13 +488,13 @@ export const AnalyticsKimiPage2 = defineCapsule({
     const iconProps = {
       width: 20,
       height: 20,
-      viewBox: "0 0 24 24",
-      fill: "none",
-      stroke: "currentColor",
+      viewBox: '0 0 24 24',
+      fill: 'none',
+      stroke: 'currentColor',
       strokeWidth: 2,
-      strokeLinecap: "round" as const,
-      strokeLinejoin: "round" as const,
-      "aria-hidden": true,
+      strokeLinecap: 'round' as const,
+      strokeLinejoin: 'round' as const,
+      'aria-hidden': true,
     }
 
     const navIcons: Record<string, ReactNode> = {
@@ -529,7 +539,7 @@ export const AnalyticsKimiPage2 = defineCapsule({
           <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
       ),
-      "Help Center": (
+      'Help Center': (
         <svg {...iconProps}>
           <path d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
         </svg>
@@ -537,32 +547,17 @@ export const AnalyticsKimiPage2 = defineCapsule({
     }
 
     const statusStyles: Record<string, string> = {
-      completed: "bg-chart-1/15 text-chart-1",
-      processing: "bg-chart-3/15 text-chart-3",
-      failed: "bg-destructive/15 text-destructive",
-      refunded: "bg-chart-2/15 text-chart-2",
+      completed: 'bg-chart-1/15 text-chart-1',
+      processing: 'bg-chart-3/15 text-chart-3',
+      failed: 'bg-destructive/15 text-destructive',
+      refunded: 'bg-chart-2/15 text-chart-2',
     }
     const statusLabels: Record<string, string> = {
-      completed: "Completed",
-      processing: "Processing",
-      failed: "Failed",
-      refunded: "Refunded",
+      completed: 'Completed',
+      processing: 'Processing',
+      failed: 'Failed',
+      refunded: 'Refunded',
     }
-
-    const ChevronDown = () => (
-      <svg
-        className="size-5 text-muted-foreground group-open:rotate-180 transition-transform"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <polyline points="6 9 12 15 18 9" />
-      </svg>
-    )
 
     const ArrowRight = () => (
       <svg
@@ -588,7 +583,7 @@ export const AnalyticsKimiPage2 = defineCapsule({
       return { caption: g.caption, items }
     })
     if (cursor < nav.length) {
-      navSections.push({ caption: "More", items: nav.slice(cursor) })
+      navSections.push({ caption: 'More', items: nav.slice(cursor) })
     }
 
     // ---- Dual-line revenue chart geometry ----
@@ -605,14 +600,13 @@ export const AnalyticsKimiPage2 = defineCapsule({
           const y = chartH - (v / maxRev) * (chartH - 20) - 10
           return `${x.toFixed(1)},${y.toFixed(1)}`
         })
-        .join(" ")
+        .join(' ')
     const currentPts = toPoints(revenueCurrent)
     const priorPts = toPoints(revenuePrior)
     const areaPts = `0,${chartH} ${currentPts} ${chartW},${chartH}`
 
     // ---- Doughnut geometry (stroke-dasharray) ----
-    const trafficSum =
-      trafficSources.reduce((sum, s) => sum + s.value, 0) || 1
+    const trafficSum = trafficSources.reduce((sum, s) => sum + s.value, 0) || 1
     const radius = 40
     const circumference = 2 * Math.PI * radius
     let dashAcc = 0
@@ -622,7 +616,7 @@ export const AnalyticsKimiPage2 = defineCapsule({
         dash: frac * circumference,
         gap: circumference - frac * circumference,
         offset: -dashAcc,
-        token: sliceTokens[i % sliceTokens.length].replace("bg-", "stroke-"),
+        token: sliceTokens[i % sliceTokens.length].replace('bg-', 'stroke-'),
       }
       dashAcc += frac * circumference
       return seg
@@ -631,7 +625,7 @@ export const AnalyticsKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "relative min-h-svh bg-background text-foreground antialiased",
+          'relative min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -663,10 +657,10 @@ export const AnalyticsKimiPage2 = defineCapsule({
                         type="button"
                         onClick={() => go(label)}
                         className={cn(
-                          "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                          'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                           active
-                            ? "bg-accent text-accent-foreground"
-                            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                            ? 'bg-accent text-accent-foreground'
+                            : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                         )}
                       >
                         {navIcons[label] ?? navIcons.Dashboard}
@@ -738,7 +732,10 @@ export const AnalyticsKimiPage2 = defineCapsule({
                       <div className="flex items-center gap-3">
                         <Avatar size="lg">
                           {authPicture ? (
-                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
                           ) : null}
                           <AvatarFallback className="bg-foreground text-sm font-bold text-background">
                             {authInitials}
@@ -808,7 +805,10 @@ export const AnalyticsKimiPage2 = defineCapsule({
             </form>
 
             <div className="flex items-center gap-3 lg:gap-4">
-              <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+              <Sheet
+                open={notificationsOpen}
+                onOpenChange={setNotificationsOpen}
+              >
                 <SheetTrigger asChild>
                   <button
                     type="button"
@@ -916,7 +916,10 @@ export const AnalyticsKimiPage2 = defineCapsule({
                     >
                       {authPicture ? (
                         <Avatar size="sm" className="ring-2 ring-background">
-                          <AvatarImage src={authPicture} alt={authDisplayName} />
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
                           <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
                             {authInitials}
                           </AvatarFallback>
@@ -933,7 +936,9 @@ export const AnalyticsKimiPage2 = defineCapsule({
                         <p className="text-sm font-semibold text-card-foreground">
                           {authDisplayName}
                         </p>
-                        <p className="text-xs text-muted-foreground">{userRole}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {userRole}
+                        </p>
                       </div>
                     </button>
                   </PopoverTrigger>
@@ -946,7 +951,10 @@ export const AnalyticsKimiPage2 = defineCapsule({
                       <div className="flex items-center gap-3">
                         <Avatar size="lg" className="ring-2 ring-background">
                           {authPicture ? (
-                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
                           ) : null}
                           <AvatarFallback className="bg-foreground text-sm font-bold text-background">
                             {authInitials}
@@ -1028,10 +1036,10 @@ export const AnalyticsKimiPage2 = defineCapsule({
                       type="button"
                       onClick={() => go(t)}
                       className={cn(
-                        "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                        'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
                         t === activeToggle
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:text-foreground",
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-muted-foreground hover:text-foreground',
                       )}
                     >
                       {t}
@@ -1134,10 +1142,10 @@ export const AnalyticsKimiPage2 = defineCapsule({
                   <div className="mt-4 flex items-center gap-2">
                     <div className="flex -space-x-2">
                       {[
-                        "Active user profile photo of young woman with curly hair",
-                        "Active user profile photo of professional man with beard",
-                        "Active user profile photo of smiling businesswoman",
-                        "Active user profile photo of young man in casual attire",
+                        'Active user profile photo of young woman with curly hair',
+                        'Active user profile photo of professional man with beard',
+                        'Active user profile photo of smiling businesswoman',
+                        'Active user profile photo of young man in casual attire',
                       ].map((alt) => (
                         <Image
                           key={alt}
@@ -1404,7 +1412,7 @@ export const AnalyticsKimiPage2 = defineCapsule({
                         <div className="flex items-center gap-2">
                           <span
                             className={cn(
-                              "size-3 rounded-full",
+                              'size-3 rounded-full',
                               sliceTokens[i % sliceTokens.length],
                             )}
                           />
@@ -1475,12 +1483,12 @@ export const AnalyticsKimiPage2 = defineCapsule({
                     <thead className="bg-muted">
                       <tr>
                         {[
-                          "Transaction ID",
-                          "Customer",
-                          "Date",
-                          "Amount",
-                          "Status",
-                          "Payment Method",
+                          'Transaction ID',
+                          'Customer',
+                          'Date',
+                          'Amount',
+                          'Status',
+                          'Payment Method',
                         ].map((h) => (
                           <th
                             key={h}
@@ -1543,7 +1551,7 @@ export const AnalyticsKimiPage2 = defineCapsule({
                           <td className="whitespace-nowrap px-6 py-4">
                             <span
                               className={cn(
-                                "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+                                'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
                                 statusStyles[row.status],
                               )}
                             >
@@ -1587,7 +1595,9 @@ export const AnalyticsKimiPage2 = defineCapsule({
 
                 <div className="border-t border-border px-6 py-4">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground">{txFootnote}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {txFootnote}
+                    </p>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
@@ -1600,7 +1610,7 @@ export const AnalyticsKimiPage2 = defineCapsule({
                         </svg>
                       </button>
                       {txPages.map((p, i) =>
-                        p === "..." ? (
+                        p === '...' ? (
                           <span
                             key={`ellipsis-${i}`}
                             className="px-2 text-muted-foreground"
@@ -1613,10 +1623,10 @@ export const AnalyticsKimiPage2 = defineCapsule({
                             type="button"
                             onClick={() => go(`Transactions page ${p}`)}
                             className={cn(
-                              "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                              'rounded-lg px-4 py-2 text-sm font-medium transition-colors',
                               i === 0
-                                ? "bg-primary text-primary-foreground"
-                                : "border border-border text-foreground hover:bg-muted",
+                                ? 'bg-primary text-primary-foreground'
+                                : 'border border-border text-foreground hover:bg-muted',
                             )}
                           >
                             {p}
@@ -1626,7 +1636,7 @@ export const AnalyticsKimiPage2 = defineCapsule({
                       <button
                         type="button"
                         aria-label="Next page"
-                        onClick={() => go("Next transactions")}
+                        onClick={() => go('Next transactions')}
                         className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted"
                       >
                         <svg {...iconProps}>

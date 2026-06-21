@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,7 +12,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "#/components/ui/command.tsx"
+} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetClose,
@@ -22,14 +22,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * MarketplaceKimiPage — a complete, self-contained multi-vendor MARKETPLACE
@@ -57,7 +57,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * props at all.
  */
 export const MarketplaceKimiPage = defineCapsule({
-  name: "MarketplaceKimiPage",
+  name: 'MarketplaceKimiPage',
   description:
     "Complete multi-vendor MARKETPLACE / e-commerce home page with a clean, neutral, shopping-first aesthetic on a light canvas. Includes a sticky commerce navbar (brand mark, full-width product/brand/seller search bar, wishlist link, cart icon with item-count badge, account avatar, and a secondary category navigation bar), a split hero (live 'products added this week' status pill, large headline with a muted highlight, Explore-Products / Start-Selling CTAs, a secure-payments / fast-shipping / buyer-protection trust row, and a 4-image product collage with a floating Verified-Seller badge), a 'Browse by Category' grid of 8 icon tiles each with an item count (Electronics, Fashion, Home & Living, Art & Collectibles, Health & Beauty, Sports & Outdoors, Books & Media, Crafts & Supplies), a 'Featured Sellers' grid of 4 storefront cards (cover photo, star-rating chip, eco-verified badge, seller avatar, location, product + follower counts, View-all-sellers link), and a footer. Use as the ROOT/home page for online marketplaces, multi-vendor or maker/artisan platforms, handmade/craft stores, seller communities, retail aggregators, and shopping destinations when a trustworthy, product-and-seller-forward catalog landing page is wanted. Supply content only — brand, nav, hero, categories, sellers, footer; the block owns all layout and styling.",
   props: z.object({
@@ -157,7 +157,7 @@ export const MarketplaceKimiPage = defineCapsule({
       }),
     },
     queries: {
-      products: ({ db }) => db.products.orderBy("createdAt").all(),
+      products: ({ db }) => db.products.orderBy('createdAt').all(),
       cartLines: ({ db }) =>
         db.cartItems.all().flatMap((item) => {
           const product = db.products.get(item.productId)
@@ -168,11 +168,11 @@ export const MarketplaceKimiPage = defineCapsule({
     },
     mutations: {
       addToCart: ({ db }, productName: string) => {
-        const product = db.products.where("name", productName).all()[0]
+        const product = db.products.where('name', productName).all()[0]
         if (!product) return db.cartItems.all()
 
         const existingItem = db.cartItems
-          .where("productId", product.id)
+          .where('productId', product.id)
           .all()[0]
 
         if (existingItem) {
@@ -191,7 +191,7 @@ export const MarketplaceKimiPage = defineCapsule({
       updateCartQuantity: ({ db }, productId: string, quantity: number) => {
         const nextQuantity = Math.max(0, Math.floor(quantity))
 
-        for (const item of db.cartItems.where("productId", productId).all()) {
+        for (const item of db.cartItems.where('productId', productId).all()) {
           if (nextQuantity) {
             db.cartItems.update(item.id, { quantity: nextQuantity })
           } else {
@@ -202,7 +202,7 @@ export const MarketplaceKimiPage = defineCapsule({
         return db.cartItems.all()
       },
       removeFromCart: ({ db }, productId: string) => {
-        for (const item of db.cartItems.where("productId", productId).all()) {
+        for (const item of db.cartItems.where('productId', productId).all()) {
           db.cartItems.delete(item.id)
         }
 
@@ -217,7 +217,7 @@ export const MarketplaceKimiPage = defineCapsule({
       },
       toggleFavorite: ({ db }, productName: string) => {
         const existingFavorite = db.favorites
-          .where("productName", productName)
+          .where('productName', productName)
           .all()[0]
 
         if (existingFavorite) {
@@ -235,158 +235,158 @@ export const MarketplaceKimiPage = defineCapsule({
     const [mobileOpen, setMobileOpen] = useState(false)
     const [searchOpen, setSearchOpen] = useState(false)
     const [cartOpen, setCartOpen] = useState(false)
-    const brand = props.brand ?? "MarketHub"
+    const brand = props.brand ?? 'MarketHub'
     const nav = props.nav?.length
       ? props.nav
       : [
-          "Categories",
-          "Featured Sellers",
-          "Trending",
-          "Reviews",
-          "Sell on MarketHub",
+          'Categories',
+          'Featured Sellers',
+          'Trending',
+          'Reviews',
+          'Sell on MarketHub',
         ]
 
     const searchPlaceholder =
-      props.navbar?.searchPlaceholder ?? "Search for products, brands, sellers..."
-    const wishlistLabel = props.navbar?.wishlistLabel ?? "Wishlist"
-    const cartLabel = props.navbar?.cartLabel ?? "Cart"
-    const cartCount = props.navbar?.cartCount ?? "3"
-    const accountLabel = props.navbar?.accountLabel ?? "Account"
+      props.navbar?.searchPlaceholder ??
+      'Search for products, brands, sellers...'
+    const cartLabel = props.navbar?.cartLabel ?? 'Cart'
 
-    const heroBadge =
-      props.hero?.badge ?? "12,847 products added this week"
-    const headingLead = props.hero?.headingLead ?? "Discover unique products from"
-    const heroHighlight = props.hero?.highlight ?? "verified sellers"
-    const headingTail = props.hero?.headingTail ?? "worldwide"
+    const heroBadge = props.hero?.badge ?? '12,847 products added this week'
+    const headingLead =
+      props.hero?.headingLead ?? 'Discover unique products from'
+    const heroHighlight = props.hero?.highlight ?? 'verified sellers'
+    const headingTail = props.hero?.headingTail ?? 'worldwide'
     const heroSub =
       props.hero?.subheading ??
-      "Join over 2 million shoppers buying directly from independent artisans, designers, and small businesses. Quality goods, fair prices, no middlemen."
-    const heroPrimary = props.hero?.primaryCta ?? "Explore Products"
-    const heroSecondary = props.hero?.secondaryCta ?? "Start Selling"
+      'Join over 2 million shoppers buying directly from independent artisans, designers, and small businesses. Quality goods, fair prices, no middlemen.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Explore Products'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Start Selling'
     const heroTrust = props.hero?.trust?.length
       ? props.hero.trust
-      : ["Secure payments", "Fast shipping", "Buyer protection"]
+      : ['Secure payments', 'Fast shipping', 'Buyer protection']
     const heroGallery = props.hero?.gallery?.length
       ? props.hero.gallery
       : [
-          "Modern minimalist watch with leather strap on white surface",
-          "Premium wireless headphones with sleek design on gray background",
-          "Vibrant red running shoe with white sole on white background",
-          "Classic sunglasses with black frames and dark lenses",
+          'Modern minimalist watch with leather strap on white surface',
+          'Premium wireless headphones with sleek design on gray background',
+          'Vibrant red running shoe with white sole on white background',
+          'Classic sunglasses with black frames and dark lenses',
         ]
-    const heroBadgeTitle = props.hero?.badgeTitle ?? "Verified Seller"
-    const heroBadgeSubtitle = props.hero?.badgeSubtitle ?? "Artisan Collective"
+    const heroBadgeTitle = props.hero?.badgeTitle ?? 'Verified Seller'
+    const heroBadgeSubtitle = props.hero?.badgeSubtitle ?? 'Artisan Collective'
 
-    const catHeading = props.categories?.heading ?? "Browse by Category"
+    const catHeading = props.categories?.heading ?? 'Browse by Category'
     const catDesc =
       props.categories?.description ??
-      "Explore our curated collection across 8 major categories with over 50,000 unique products"
+      'Explore our curated collection across 8 major categories with over 50,000 unique products'
     const catItems = props.categories?.items?.length
       ? props.categories.items
       : [
-          { title: "Electronics", count: "12,847 items" },
-          { title: "Fashion", count: "24,392 items" },
-          { title: "Home & Living", count: "8,156 items" },
-          { title: "Art & Collectibles", count: "5,203 items" },
-          { title: "Health & Beauty", count: "6,891 items" },
-          { title: "Sports & Outdoors", count: "4,127 items" },
-          { title: "Books & Media", count: "9,564 items" },
-          { title: "Crafts & Supplies", count: "3,742 items" },
+          { title: 'Electronics', count: '12,847 items' },
+          { title: 'Fashion', count: '24,392 items' },
+          { title: 'Home & Living', count: '8,156 items' },
+          { title: 'Art & Collectibles', count: '5,203 items' },
+          { title: 'Health & Beauty', count: '6,891 items' },
+          { title: 'Sports & Outdoors', count: '4,127 items' },
+          { title: 'Books & Media', count: '9,564 items' },
+          { title: 'Crafts & Supplies', count: '3,742 items' },
         ]
 
-    const sellersHeading = props.sellers?.heading ?? "Featured Sellers"
+    const sellersHeading = props.sellers?.heading ?? 'Featured Sellers'
     const sellersDesc =
       props.sellers?.description ??
-      "Discover our most trusted and top-rated sellers, each verified and committed to quality"
-    const sellersViewAll = props.sellers?.viewAll ?? "View all 12,483 sellers"
+      'Discover our most trusted and top-rated sellers, each verified and committed to quality'
+    const sellersViewAll = props.sellers?.viewAll ?? 'View all 12,483 sellers'
     const sellerItems = props.sellers?.items?.length
       ? props.sellers.items
       : [
           {
-            name: "Artisan Home Co.",
-            location: "Portland, Oregon",
-            rating: "4.9",
-            products: "847 products",
-            followers: "12.4k followers",
+            name: 'Artisan Home Co.',
+            location: 'Portland, Oregon',
+            rating: '4.9',
+            products: '847 products',
+            followers: '12.4k followers',
             coverAlt:
-              "Handcrafted wooden kitchen utensils and cutting boards on marble countertop",
-            avatarAlt: "Portrait of male artisan woodworker in his workshop",
+              'Handcrafted wooden kitchen utensils and cutting boards on marble countertop',
+            avatarAlt: 'Portrait of male artisan woodworker in his workshop',
           },
           {
-            name: "Tech Forward",
-            location: "Austin, Texas",
-            rating: "4.8",
-            products: "1,234 products",
-            followers: "28.9k followers",
+            name: 'Tech Forward',
+            location: 'Austin, Texas',
+            rating: '4.8',
+            products: '1,234 products',
+            followers: '28.9k followers',
             coverAlt:
-              "Modern electronic gadgets including smartphone, earbuds, and smartwatch on dark surface",
-            avatarAlt: "Professional headshot of female tech entrepreneur with short hair",
+              'Modern electronic gadgets including smartphone, earbuds, and smartwatch on dark surface',
+            avatarAlt:
+              'Professional headshot of female tech entrepreneur with short hair',
           },
           {
-            name: "Green Earth Organics",
-            location: "Sonoma, California",
-            rating: "5.0",
-            products: "342 products",
-            followers: "8.2k followers",
+            name: 'Green Earth Organics',
+            location: 'Sonoma, California',
+            rating: '5.0',
+            products: '342 products',
+            followers: '8.2k followers',
             coverAlt:
-              "Organic fresh produce and vegetables in woven baskets at farmers market",
-            avatarAlt: "Portrait of male organic farmer in field wearing work shirt",
+              'Organic fresh produce and vegetables in woven baskets at farmers market',
+            avatarAlt:
+              'Portrait of male organic farmer in field wearing work shirt',
             eco: true,
           },
           {
-            name: "Vintage Revival",
-            location: "Brooklyn, New York",
-            rating: "4.9",
-            products: "567 products",
-            followers: "15.6k followers",
+            name: 'Vintage Revival',
+            location: 'Brooklyn, New York',
+            rating: '4.9',
+            products: '567 products',
+            followers: '15.6k followers',
             coverAlt:
-              "Collection of vintage leather bags and accessories on rustic wooden shelf",
+              'Collection of vintage leather bags and accessories on rustic wooden shelf',
             avatarAlt:
-              "Portrait of female vintage curator with styled hair and statement earrings",
+              'Portrait of female vintage curator with styled hair and statement earrings',
           },
         ]
 
-    const footerNote = props.footer?.note ?? "All rights reserved."
+    const footerNote = props.footer?.note ?? 'All rights reserved.'
     const footerLinks = props.footer?.links?.length
       ? props.footer.links
-      : ["Privacy", "Terms", "Help Center", "Sell on MarketHub"]
+      : ['Privacy', 'Terms', 'Help Center', 'Sell on MarketHub']
 
     const priceAmount = (price: string) => {
-      const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ""))
+      const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ''))
       return Number.isFinite(amount) ? amount : 0
     }
     const formatCurrency = (amount: number) =>
-      new Intl.NumberFormat("en-US", {
-        currency: "USD",
-        style: "currency",
+      new Intl.NumberFormat('en-US', {
+        currency: 'USD',
+        style: 'currency',
       }).format(amount)
 
-    const storedProducts = lakebed.useQuery("products")
-    const cartLines = lakebed.useQuery("cartLines")
-    const favoriteProductNames = lakebed.useQuery("favoriteProductNames")
+    const storedProducts = lakebed.useQuery('products')
+    const cartLines = lakebed.useQuery('cartLines')
+    const favoriteProductNames = lakebed.useQuery('favoriteProductNames')
     const auth = lakebed.useAuth()
-    const addToCart = lakebed.useMutation("addToCart")
-    const updateCartQuantity = lakebed.useMutation("updateCartQuantity")
-    const removeFromCart = lakebed.useMutation("removeFromCart")
-    const clearCart = lakebed.useMutation("clearCart")
-    const toggleFavorite = lakebed.useMutation("toggleFavorite")
+    const addToCart = lakebed.useMutation('addToCart')
+    const updateCartQuantity = lakebed.useMutation('updateCartQuantity')
+    const removeFromCart = lakebed.useMutation('removeFromCart')
+    const clearCart = lakebed.useMutation('clearCart')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
     const authDisplayName =
-      auth.displayName || auth.user?.displayName || authEmail || "Account"
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
     const authInitials =
       authDisplayName
         .split(/\s+/)
         .filter(Boolean)
         .slice(0, 2)
         .map((part) => part[0]?.toUpperCase())
-        .join("") || "ME"
+        .join('') || 'ME'
     const authLabel = auth.isLoading
-      ? "Checking..."
+      ? 'Checking...'
       : isSignedIn
         ? authDisplayName
-        : "Sign in"
+        : 'Sign in'
     const handleSignIn = () => {
       if (auth.isLoading) return
 
@@ -398,68 +398,68 @@ export const MarketplaceKimiPage = defineCapsule({
 
     const productItems = [
       {
-        brand: "Featured",
-        name: "Handcrafted Wooden Bowl",
-        alt: "Handcrafted wooden bowl on marble surface",
-        price: "$85",
-        oldPrice: "$110",
-        badge: "Bestseller",
+        brand: 'Featured',
+        name: 'Handcrafted Wooden Bowl',
+        alt: 'Handcrafted wooden bowl on marble surface',
+        price: '$85',
+        oldPrice: '$110',
+        badge: 'Bestseller',
       },
       {
-        brand: "Featured",
-        name: "Ceramic Vase Set",
-        alt: "Set of ceramic vases on wooden shelf",
-        price: "$120",
+        brand: 'Featured',
+        name: 'Ceramic Vase Set',
+        alt: 'Set of ceramic vases on wooden shelf',
+        price: '$120',
       },
       {
-        brand: "Featured",
-        name: "Woven Basket Collection",
-        alt: "Collection of woven baskets in natural tones",
-        price: "$65",
-        oldPrice: "$85",
-        badge: "Sale",
+        brand: 'Featured',
+        name: 'Woven Basket Collection',
+        alt: 'Collection of woven baskets in natural tones',
+        price: '$65',
+        oldPrice: '$85',
+        badge: 'Sale',
       },
       {
-        brand: "Featured",
-        name: "Artisan Soap Bundle",
-        alt: "Bundle of artisan soaps with dried flowers",
-        price: "$45",
+        brand: 'Featured',
+        name: 'Artisan Soap Bundle',
+        alt: 'Bundle of artisan soaps with dried flowers',
+        price: '$45',
       },
       {
-        brand: "Featured",
-        name: "Leather Journal",
-        alt: "Handbound leather journal on desk",
-        price: "$55",
-        badge: "New",
+        brand: 'Featured',
+        name: 'Leather Journal',
+        alt: 'Handbound leather journal on desk',
+        price: '$55',
+        badge: 'New',
       },
       {
-        brand: "Featured",
-        name: "Macramé Wall Hanging",
-        alt: "Macramé wall hanging in bohemian style",
-        price: "$75",
+        brand: 'Featured',
+        name: 'Macramé Wall Hanging',
+        alt: 'Macramé wall hanging in bohemian style',
+        price: '$75',
       },
       {
-        brand: "Featured",
-        name: "Scented Candle Set",
-        alt: "Set of scented candles in glass jars",
-        price: "$35",
-        oldPrice: "$45",
-        badge: "-22%",
+        brand: 'Featured',
+        name: 'Scented Candle Set',
+        alt: 'Set of scented candles in glass jars',
+        price: '$35',
+        oldPrice: '$45',
+        badge: '-22%',
       },
       {
-        brand: "Featured",
-        name: "Throw Pillow Collection",
-        alt: "Collection of patterned throw pillows",
-        price: "$95",
+        brand: 'Featured',
+        name: 'Throw Pillow Collection',
+        alt: 'Collection of patterned throw pillows',
+        price: '$95',
       },
     ]
     const normalizedProductItems = productItems.map((product) => ({
       alt: product.alt,
-      badge: product.badge ?? "",
-      brand: product.brand ?? "",
-      image: product.image ?? "",
+      badge: product.badge ?? '',
+      brand: product.brand ?? '',
+      image: (product as { image?: string }).image ?? '',
       name: product.name,
-      oldPrice: product.oldPrice ?? "",
+      oldPrice: product.oldPrice ?? '',
       price: product.price,
     }))
     const displayProducts =
@@ -482,7 +482,7 @@ export const MarketplaceKimiPage = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary font-bold text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary font-bold text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -508,7 +508,7 @@ export const MarketplaceKimiPage = defineCapsule({
 
     const ArrowRight = ({ className }: { className?: string }) => (
       <svg
-        className={className ?? "size-4"}
+        className={className ?? 'size-4'}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -522,7 +522,12 @@ export const MarketplaceKimiPage = defineCapsule({
     )
 
     const Star = ({ className }: { className?: string }) => (
-      <svg className={className} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <svg
+        className={className}
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        aria-hidden="true"
+      >
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
       </svg>
     )
@@ -575,10 +580,10 @@ export const MarketplaceKimiPage = defineCapsule({
     const HeartIcon = ({ active = false }: { active?: boolean }) => (
       <svg
         className={cn(
-          "size-5",
-          active ? "text-primary-foreground" : "text-foreground",
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
         )}
-        fill={active ? "currentColor" : "none"}
+        fill={active ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -652,46 +657,131 @@ export const MarketplaceKimiPage = defineCapsule({
 
     const categoryIcons: ReactNode[] = [
       // phone (electronics)
-      <svg key="i0" className="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="i0"
+        className="size-8"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
       </svg>,
       // bag (fashion)
-      <svg key="i1" className="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="i1"
+        className="size-8"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
       </svg>,
       // home (home & living)
-      <svg key="i2" className="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="i2"
+        className="size-8"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
       </svg>,
       // photo (art & collectibles)
-      <svg key="i3" className="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="i3"
+        className="size-8"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>,
       // heart (health & beauty)
-      <svg key="i4" className="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="i4"
+        className="size-8"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
       </svg>,
       // globe (sports & outdoors)
-      <svg key="i5" className="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="i5"
+        className="size-8"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
       </svg>,
       // book (books & media)
-      <svg key="i6" className="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="i6"
+        className="size-8"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
       </svg>,
       // pencil (crafts & supplies)
-      <svg key="i7" className="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        key="i7"
+        className="size-8"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
       </svg>,
     ]
 
     // Hero collage tiles: alternating tall/square aspect to match the source layout.
-    const galleryAspect = ["aspect-[4/5]", "aspect-square", "aspect-square", "aspect-[4/5]"]
+    const galleryAspect = [
+      'aspect-[4/5]',
+      'aspect-square',
+      'aspect-square',
+      'aspect-[4/5]',
+    ]
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -710,7 +800,9 @@ export const MarketplaceKimiPage = defineCapsule({
                 className="flex items-center gap-2"
               >
                 <LogoMark className="size-8 text-sm" />
-                <span className="text-xl font-semibold text-foreground">{brand}</span>
+                <span className="text-xl font-semibold text-foreground">
+                  {brand}
+                </span>
               </button>
 
               {/* Search - Desktop */}
@@ -794,7 +886,7 @@ export const MarketplaceKimiPage = defineCapsule({
                               {authDisplayName}
                             </p>
                             <p className="truncate text-xs text-muted-foreground">
-                              {authEmail ?? "Signed in to this session"}
+                              {authEmail ?? 'Signed in to this session'}
                             </p>
                           </div>
                         </div>
@@ -802,7 +894,7 @@ export const MarketplaceKimiPage = defineCapsule({
                       <div className="p-2">
                         <button
                           type="button"
-                          onClick={() => go("Account")}
+                          onClick={() => go('Account')}
                           className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           Account
@@ -810,7 +902,7 @@ export const MarketplaceKimiPage = defineCapsule({
                         </button>
                         <button
                           type="button"
-                          onClick={() => go("Orders")}
+                          onClick={() => go('Orders')}
                           className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           Orders
@@ -849,7 +941,16 @@ export const MarketplaceKimiPage = defineCapsule({
                       aria-label="Shopping Cart"
                       className="relative flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                     >
-                      <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <svg
+                        className="size-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
                         <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                       </svg>
                       <span className="hidden sm:inline">{cartLabel}</span>
@@ -868,8 +969,8 @@ export const MarketplaceKimiPage = defineCapsule({
                       <SheetTitle className="text-xl">Shopping cart</SheetTitle>
                       <SheetDescription>
                         {cartItemCount > 0
-                          ? `${cartItemCount} item${cartItemCount === 1 ? "" : "s"} ready for checkout.`
-                          : "Your cart is empty."}
+                          ? `${cartItemCount} item${cartItemCount === 1 ? '' : 's'} ready for checkout.`
+                          : 'Your cart is empty.'}
                       </SheetDescription>
                     </SheetHeader>
                     <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -958,8 +1059,8 @@ export const MarketplaceKimiPage = defineCapsule({
                             No products in cart
                           </p>
                           <p className="mt-2 text-sm text-muted-foreground">
-                            Add an item from the marketplace to start a cart for this
-                            session.
+                            Add an item from the marketplace to start a cart for
+                            this session.
                           </p>
                         </div>
                       )}
@@ -973,7 +1074,7 @@ export const MarketplaceKimiPage = defineCapsule({
                         <div className="flex justify-between text-muted-foreground">
                           <span>Shipping</span>
                           <span>
-                            {shipping ? formatCurrency(shipping) : "Free"}
+                            {shipping ? formatCurrency(shipping) : 'Free'}
                           </span>
                         </div>
                         <div className="flex justify-between pt-2 text-base font-bold text-foreground">
@@ -985,7 +1086,7 @@ export const MarketplaceKimiPage = defineCapsule({
                         type="button"
                         disabled={!safeCartLines.length}
                         className="w-full rounded-full"
-                        onClick={() => go("Checkout")}
+                        onClick={() => go('Checkout')}
                       >
                         Checkout
                       </Button>
@@ -1045,10 +1146,10 @@ export const MarketplaceKimiPage = defineCapsule({
                   type="button"
                   onClick={() => go(label)}
                   className={cn(
-                    "transition-colors hover:text-foreground",
+                    'transition-colors hover:text-foreground',
                     i === 0
-                      ? "font-medium text-muted-foreground"
-                      : "text-muted-foreground",
+                      ? 'font-medium text-muted-foreground'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {label}
@@ -1093,7 +1194,7 @@ export const MarketplaceKimiPage = defineCapsule({
                             {authDisplayName}
                           </p>
                           <p className="truncate text-xs text-muted-foreground">
-                            {authEmail ?? "Signed in"}
+                            {authEmail ?? 'Signed in'}
                           </p>
                         </div>
                       </div>
@@ -1194,8 +1295,10 @@ export const MarketplaceKimiPage = defineCapsule({
                     id="hero-heading"
                     className="text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl"
                   >
-                    {headingLead}{" "}
-                    <span className="text-muted-foreground">{heroHighlight}</span>{" "}
+                    {headingLead}{' '}
+                    <span className="text-muted-foreground">
+                      {heroHighlight}
+                    </span>{' '}
                     {headingTail}
                   </h1>
                   <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
@@ -1235,12 +1338,14 @@ export const MarketplaceKimiPage = defineCapsule({
                         <div
                           key={idx}
                           className={cn(
-                            "overflow-hidden rounded-2xl bg-muted",
+                            'overflow-hidden rounded-2xl bg-muted',
                             galleryAspect[idx],
                           )}
                         >
                           <Image
-                            alt={heroGallery[idx] ?? "Featured marketplace product"}
+                            alt={
+                              heroGallery[idx] ?? 'Featured marketplace product'
+                            }
                             w={600}
                             h={idx === 0 ? 750 : 600}
                             className="size-full object-cover transition-transform duration-500 hover:scale-105"
@@ -1253,12 +1358,14 @@ export const MarketplaceKimiPage = defineCapsule({
                         <div
                           key={idx}
                           className={cn(
-                            "overflow-hidden rounded-2xl bg-muted",
+                            'overflow-hidden rounded-2xl bg-muted',
                             galleryAspect[idx],
                           )}
                         >
                           <Image
-                            alt={heroGallery[idx] ?? "Featured marketplace product"}
+                            alt={
+                              heroGallery[idx] ?? 'Featured marketplace product'
+                            }
                             w={600}
                             h={idx === 3 ? 750 : 600}
                             className="size-full object-cover transition-transform duration-500 hover:scale-105"
@@ -1344,7 +1451,7 @@ export const MarketplaceKimiPage = defineCapsule({
                 </div>
                 <button
                   type="button"
-                  onClick={() => go("View All Products")}
+                  onClick={() => go('View All Products')}
                   className="inline-flex items-center gap-2 text-sm font-semibold text-foreground transition-colors hover:text-muted-foreground"
                 >
                   View All Products
@@ -1371,11 +1478,11 @@ export const MarketplaceKimiPage = defineCapsule({
                         {product.badge ? (
                           <span
                             className={cn(
-                              "absolute left-3 top-3 rounded px-2 py-1 text-xs font-semibold text-primary-foreground",
-                              product.badge === "Sale" ||
-                                product.badge === "-22%"
-                                ? "bg-destructive"
-                                : "bg-foreground",
+                              'absolute left-3 top-3 rounded px-2 py-1 text-xs font-semibold text-primary-foreground',
+                              product.badge === 'Sale' ||
+                                product.badge === '-22%'
+                                ? 'bg-destructive'
+                                : 'bg-foreground',
                             )}
                           >
                             {product.badge}
@@ -1391,10 +1498,10 @@ export const MarketplaceKimiPage = defineCapsule({
                               : `Add ${product.name} to favorites`
                           }
                           className={cn(
-                            "absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100",
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
                             isFavorite
-                              ? "bg-primary text-primary-foreground opacity-100"
-                              : "bg-background/90 text-foreground opacity-0 hover:bg-background",
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
                           )}
                         >
                           <HeartIcon active={isFavorite} />

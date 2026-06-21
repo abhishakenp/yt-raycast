@@ -4,7 +4,7 @@ import { defineCapsule } from './openui.ts'
 import { cn } from '#/lib/utils.ts'
 import { useNavigate } from '#/lib/use-navigate.tsx'
 import { Image } from '#/lib/img.tsx'
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -967,7 +967,10 @@ export const CorporateKimiPage = defineCapsule({
                           aria-hidden="true"
                         >
                           {authPicture ? (
-                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
                           ) : null}
                           <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
                             {authInitials}
@@ -988,7 +991,10 @@ export const CorporateKimiPage = defineCapsule({
                         <div className="flex items-center gap-3">
                           <Avatar size="lg" className="ring-2 ring-background">
                             {authPicture ? (
-                              <AvatarImage src={authPicture} alt={authDisplayName} />
+                              <AvatarImage
+                                src={authPicture}
+                                alt={authDisplayName}
+                              />
                             ) : null}
                             <AvatarFallback className="bg-foreground text-sm font-bold text-background">
                               {authInitials}
@@ -1057,9 +1063,14 @@ export const CorporateKimiPage = defineCapsule({
                       Request Demo
                     </button>
                   </SheetTrigger>
-                  <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                  <SheetContent
+                    side="right"
+                    className="w-full gap-0 p-0 sm:max-w-md"
+                  >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Request a Demo</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Request a Demo
+                      </SheetTitle>
                       <SheetDescription>
                         Schedule a personalized demo with our solutions team.
                       </SheetDescription>
@@ -1146,7 +1157,11 @@ export const CorporateKimiPage = defineCapsule({
                         Submit Request
                       </Button>
                       <SheetClose asChild>
-                        <Button type="button" variant="secondary" className="w-full rounded-lg">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="w-full rounded-lg"
+                        >
                           Cancel
                         </Button>
                       </SheetClose>
@@ -1201,7 +1216,10 @@ export const CorporateKimiPage = defineCapsule({
                       <div className="flex items-center gap-3">
                         <Avatar size="lg">
                           {authPicture ? (
-                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
                           ) : null}
                           <AvatarFallback className="bg-foreground text-sm font-bold text-background">
                             {authInitials}

@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,19 +14,19 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const AgencyKimiPage3 = defineCapsule({
-  name: "AgencyKimiPage3",
+  name: 'AgencyKimiPage3',
   description:
-    "A premium dark-themed creative digital agency LANDING page — the third style sibling to AgencyKimiPage — featuring a sophisticated violet-fuchsia gradient accent system, ambient glow orbs, and a structured layout with hero badge, avatar social proof, end-to-end capabilities grid, four-phase process timeline, selected-work gallery with hover-zoom overlays, transparent three-tier pricing, testimonial cards with star ratings, accordion FAQ, and a bold contact CTA. Use when a moody, premium agency page with strong work showcase, pricing transparency, and structured process narrative is desired for design studios, branding agencies, marketing firms, or creative consultancies. Supply content only — brand, nav, hero, logos, services, process, work, stats, pricing, testimonials, faq, contact, footer; the block owns all layout and styling.",
+    'A premium dark-themed creative digital agency LANDING page — the third style sibling to AgencyKimiPage — featuring a sophisticated violet-fuchsia gradient accent system, ambient glow orbs, and a structured layout with hero badge, avatar social proof, end-to-end capabilities grid, four-phase process timeline, selected-work gallery with hover-zoom overlays, transparent three-tier pricing, testimonial cards with star ratings, accordion FAQ, and a bold contact CTA. Use when a moody, premium agency page with strong work showcase, pricing transparency, and structured process narrative is desired for design studios, branding agencies, marketing firms, or creative consultancies. Supply content only — brand, nav, hero, logos, services, process, work, stats, pricing, testimonials, faq, contact, footer; the block owns all layout and styling.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -216,7 +216,13 @@ export const AgencyKimiPage3 = defineCapsule({
       inquiries: ({ db }) => db.inquiries.orderBy('createdAt').all(),
     },
     mutations: {
-      saveProject: ({ db }, title: string, tag: string, metric: string, imageAlt: string) => {
+      saveProject: (
+        { db },
+        title: string,
+        tag: string,
+        metric: string,
+        imageAlt: string,
+      ) => {
         const existing = db.savedProjects.where('title', title).all()[0]
         if (existing) {
           db.savedProjects.delete(existing.id)
@@ -231,7 +237,13 @@ export const AgencyKimiPage3 = defineCapsule({
         }
         return db.savedProjects.all()
       },
-      submitInquiry: ({ db }, name: string, email: string, company: string, message: string) => {
+      submitInquiry: (
+        { db },
+        name: string,
+        email: string,
+        company: string,
+        message: string,
+      ) => {
         db.inquiries.insert({ name, email, company, message })
         return db.inquiries.all()
       },
@@ -274,277 +286,283 @@ export const AgencyKimiPage3 = defineCapsule({
       lakebed.signOut()
     }
 
-    const brand = props.brand ?? "Luminary"
+    const brand = props.brand ?? 'Luminary'
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Work", "Process", "Pricing", "Contact"]
-    const navCta = "Start a Project"
+      : ['Services', 'Work', 'Process', 'Pricing', 'Contact']
+    const navCta = 'Start a Project'
 
-    const heroBadge = props.hero?.badge ?? "Award-Winning Creative Agency"
-    const headingTop = props.hero?.headingTop ?? "We Build Digital "
-    const heroHighlight = props.hero?.highlight ?? "Experiences"
-    const headingBottom = props.hero?.headingBottom ?? " That Define Brands"
+    const heroBadge = props.hero?.badge ?? 'Award-Winning Creative Agency'
+    const headingTop = props.hero?.headingTop ?? 'We Build Digital '
+    const heroHighlight = props.hero?.highlight ?? 'Experiences'
+    const headingBottom = props.hero?.headingBottom ?? ' That Define Brands'
     const heroSub =
       props.hero?.subheading ??
-      "Strategy, design, and engineering for companies ready to lead. From Series A startups to Fortune 500s, we craft websites and identities that drive measurable growth."
-    const heroPrimary = props.hero?.primaryCta ?? "View Our Work"
-    const heroSecondary = props.hero?.secondaryCta ?? "Book a Strategy Call"
+      'Strategy, design, and engineering for companies ready to lead. From Series A startups to Fortune 500s, we craft websites and identities that drive measurable growth.'
+    const heroPrimary = props.hero?.primaryCta ?? 'View Our Work'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Book a Strategy Call'
     const heroAvatars = props.hero?.avatars?.length
       ? props.hero.avatars
       : [
-          { alt: "Professional headshot of a smiling female executive with dark hair in a white blazer" },
-          { alt: "Professional headshot of a Black businessman with a short beard wearing a navy suit" },
-          { alt: "Professional headshot of a smiling Latina woman with curly brown hair and gold earrings" },
-          { alt: "Professional headshot of a middle-aged man with glasses and a friendly expression" },
+          {
+            alt: 'Professional headshot of a smiling female executive with dark hair in a white blazer',
+          },
+          {
+            alt: 'Professional headshot of a Black businessman with a short beard wearing a navy suit',
+          },
+          {
+            alt: 'Professional headshot of a smiling Latina woman with curly brown hair and gold earrings',
+          },
+          {
+            alt: 'Professional headshot of a middle-aged man with glasses and a friendly expression',
+          },
         ]
     const trustLabel =
-      props.hero?.trustLabel ?? "Trusted by 340+ founders & executives"
+      props.hero?.trustLabel ?? 'Trusted by 340+ founders & executives'
 
-    const logosHeading =
-      props.logos?.heading ?? "Trusted by industry leaders"
+    const logosHeading = props.logos?.heading ?? 'Trusted by industry leaders'
     const logosItems = props.logos?.items?.length
       ? props.logos.items
       : [
-          "Vertex Labs",
-          "Aura Beauty",
-          "Meridian Hotels",
-          "Terra Botanicals",
-          "Pulse Fitness",
-          "Cipher Security",
+          'Vertex Labs',
+          'Aura Beauty',
+          'Meridian Hotels',
+          'Terra Botanicals',
+          'Pulse Fitness',
+          'Cipher Security',
         ]
 
     const servicesHeading =
-      props.services?.heading ?? "End-to-end creative capabilities"
+      props.services?.heading ?? 'End-to-end creative capabilities'
     const servicesDesc =
       props.services?.description ??
-      "We handle the full lifecycle—from initial brand strategy through production-grade engineering. Every touchpoint is intentional, every interaction is polished."
+      'We handle the full lifecycle—from initial brand strategy through production-grade engineering. Every touchpoint is intentional, every interaction is polished.'
     const serviceItems = props.services?.items?.length
       ? props.services.items
       : [
           {
-            title: "Brand Strategy & Identity",
+            title: 'Brand Strategy & Identity',
             description:
-              "Positioning, visual identity systems, voice & tone guidelines, and brand architecture that scales across every channel.",
+              'Positioning, visual identity systems, voice & tone guidelines, and brand architecture that scales across every channel.',
           },
           {
-            title: "Web Design & Development",
+            title: 'Web Design & Development',
             description:
-              "Next.js, React, and headless CMS builds. Performance-optimized, accessible, and designed to convert visitors into customers.",
+              'Next.js, React, and headless CMS builds. Performance-optimized, accessible, and designed to convert visitors into customers.',
           },
           {
-            title: "Motion Design & Video",
+            title: 'Motion Design & Video',
             description:
-              "3D animation, product explainers, social reels, and interactive motion systems that make interfaces feel alive.",
+              '3D animation, product explainers, social reels, and interactive motion systems that make interfaces feel alive.',
           },
           {
-            title: "Growth & CRO",
+            title: 'Growth & CRO',
             description:
-              "Conversion rate optimization, landing page testing, SEO infrastructure, and paid creative that lowers acquisition costs.",
+              'Conversion rate optimization, landing page testing, SEO infrastructure, and paid creative that lowers acquisition costs.',
           },
         ]
 
-    const processHeading = props.process?.heading ?? "How we work"
+    const processHeading = props.process?.heading ?? 'How we work'
     const processDesc =
       props.process?.description ??
-      "Our process is designed to de-risk creativity. Every phase includes structured checkpoints, clear deliverables, and room for iteration."
+      'Our process is designed to de-risk creativity. Every phase includes structured checkpoints, clear deliverables, and room for iteration.'
     const processSteps = props.process?.steps?.length
       ? props.process.steps
       : [
           {
-            number: "01",
-            title: "Discover",
+            number: '01',
+            title: 'Discover',
             description:
-              "Strategy Intensive: stakeholder interviews, competitive audits, analytics review, and customer research to define the real problem.",
+              'Strategy Intensive: stakeholder interviews, competitive audits, analytics review, and customer research to define the real problem.',
           },
           {
-            number: "02",
-            title: "Design",
+            number: '02',
+            title: 'Design',
             description:
-              "Wireframes, high-fidelity UI, motion prototypes, and a full component library. Every screen is tested for accessibility and responsiveness.",
+              'Wireframes, high-fidelity UI, motion prototypes, and a full component library. Every screen is tested for accessibility and responsiveness.',
           },
           {
-            number: "03",
-            title: "Develop",
+            number: '03',
+            title: 'Develop',
             description:
-              "Production-grade engineering in Next.js or Webflow, headless CMS integration, performance tuning, and cross-browser QA.",
+              'Production-grade engineering in Next.js or Webflow, headless CMS integration, performance tuning, and cross-browser QA.',
           },
           {
-            number: "04",
-            title: "Deliver",
+            number: '04',
+            title: 'Deliver',
             description:
-              "Launch support, 30-day warranty, analytics setup, training sessions, and a seamless handoff to your internal team or our retainer program.",
+              'Launch support, 30-day warranty, analytics setup, training sessions, and a seamless handoff to your internal team or our retainer program.',
           },
         ]
 
-    const workHeading = props.work?.heading ?? "Selected Work"
+    const workHeading = props.work?.heading ?? 'Selected Work'
     const workDesc =
       props.work?.description ??
-      "A curated set of recent launches spanning e-commerce, fintech, hospitality, and consumer brands."
-    const workViewAll = props.work?.viewAll ?? "View All Projects"
+      'A curated set of recent launches spanning e-commerce, fintech, hospitality, and consumer brands.'
+    const workViewAll = props.work?.viewAll ?? 'View All Projects'
     const workItems = props.work?.items?.length
       ? props.work.items
       : [
           {
-            title: "Aura Skincare",
-            tag: "E-Commerce Redesign",
-            metric: "Launched March 2024 · 240% increase in add-to-cart rate",
+            title: 'Aura Skincare',
+            tag: 'E-Commerce Redesign',
+            metric: 'Launched March 2024 · 240% increase in add-to-cart rate',
             imageAlt:
-              "Minimalist skincare product flat lay with rose quartz serum bottle and dried flowers on a warm beige stone surface",
+              'Minimalist skincare product flat lay with rose quartz serum bottle and dried flowers on a warm beige stone surface',
           },
           {
-            title: "Vertex Finance",
-            tag: "SaaS Platform",
-            metric: "Shipped November 2023 · 4.9/5 user satisfaction score",
+            title: 'Vertex Finance',
+            tag: 'SaaS Platform',
+            metric: 'Shipped November 2023 · 4.9/5 user satisfaction score',
             imageAlt:
-              "Modern fintech analytics dashboard displayed on a large desktop monitor showing dark mode charts and data visualizations",
+              'Modern fintech analytics dashboard displayed on a large desktop monitor showing dark mode charts and data visualizations',
           },
           {
-            title: "Terra Botanicals",
-            tag: "Brand Identity & Web",
-            metric: "Launched June 2024 · 3 flagship locations opened",
+            title: 'Terra Botanicals',
+            tag: 'Brand Identity & Web',
+            metric: 'Launched June 2024 · 3 flagship locations opened',
             imageAlt:
-              "Bright modern botanical retail interior with hanging plants, natural wood shelving, and abundant sunlight streaming through large windows",
+              'Bright modern botanical retail interior with hanging plants, natural wood shelving, and abundant sunlight streaming through large windows',
           },
           {
-            title: "Pulse Fitness",
-            tag: "App & Website",
-            metric: "Shipped January 2024 · 50K app downloads in 60 days",
+            title: 'Pulse Fitness',
+            tag: 'App & Website',
+            metric: 'Shipped January 2024 · 50K app downloads in 60 days',
             imageAlt:
-              "High-end modern gym interior with dramatic overhead lighting, black rubber flooring, and rows of kettlebells and dumbbells",
+              'High-end modern gym interior with dramatic overhead lighting, black rubber flooring, and rows of kettlebells and dumbbells',
           },
           {
-            title: "Meridian Hotels",
-            tag: "Booking Platform",
-            metric: "Launched September 2023 · 18% boost in direct bookings",
+            title: 'Meridian Hotels',
+            tag: 'Booking Platform',
+            metric: 'Launched September 2023 · 18% boost in direct bookings',
             imageAlt:
-              "Luxury infinity pool overlooking a tropical ocean at sunset with warm golden light reflecting on the calm water surface",
+              'Luxury infinity pool overlooking a tropical ocean at sunset with warm golden light reflecting on the calm water surface',
           },
           {
-            title: "Cipher Security",
-            tag: "Corporate Site",
-            metric: "Shipped April 2024 · Series B announcement campaign",
+            title: 'Cipher Security',
+            tag: 'Corporate Site',
+            metric: 'Shipped April 2024 · Series B announcement campaign',
             imageAlt:
-              "Cybersecurity server room with blue neon LED lights illuminating rows of rack-mounted hardware and fiber optic cables",
+              'Cybersecurity server room with blue neon LED lights illuminating rows of rack-mounted hardware and fiber optic cables',
           },
         ]
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "12", label: "Years of Excellence" },
-          { value: "340+", label: "Projects Delivered" },
-          { value: "98%", label: "Client Retention" },
-          { value: "28", label: "Industry Awards" },
+          { value: '12', label: 'Years of Excellence' },
+          { value: '340+', label: 'Projects Delivered' },
+          { value: '98%', label: 'Client Retention' },
+          { value: '28', label: 'Industry Awards' },
         ]
 
-    const pricingHeading =
-      props.pricing?.heading ?? "Transparent Pricing"
+    const pricingHeading = props.pricing?.heading ?? 'Transparent Pricing'
     const pricingDesc =
       props.pricing?.description ??
-      "No hidden fees, no surprise scope creep. Every package includes discovery, design, development, and a 30-day post-launch warranty."
+      'No hidden fees, no surprise scope creep. Every package includes discovery, design, development, and a 30-day post-launch warranty.'
     const pricingTiers = props.pricing?.tiers?.length
       ? props.pricing.tiers
       : [
           {
-            name: "Launch",
+            name: 'Launch',
             description:
-              "Perfect for startups validating a new idea or launching an MVP.",
-            price: "$8,500",
-            period: " / project",
+              'Perfect for startups validating a new idea or launching an MVP.',
+            price: '$8,500',
+            period: ' / project',
             features: [
-              { text: "Single landing page or brand identity", included: true },
-              { text: "3-week design sprint", included: true },
-              { text: "Mobile-responsive build", included: true },
-              { text: "Basic SEO setup", included: true },
-              { text: "Custom CMS integration", included: false },
+              { text: 'Single landing page or brand identity', included: true },
+              { text: '3-week design sprint', included: true },
+              { text: 'Mobile-responsive build', included: true },
+              { text: 'Basic SEO setup', included: true },
+              { text: 'Custom CMS integration', included: false },
             ],
             featured: false,
-            cta: "Get Started",
+            cta: 'Get Started',
           },
           {
-            name: "Scale",
+            name: 'Scale',
             description:
-              "For growth-stage companies ready to invest in a flagship digital presence.",
-            price: "$24,000",
-            period: " / project",
+              'For growth-stage companies ready to invest in a flagship digital presence.',
+            price: '$24,000',
+            period: ' / project',
             features: [
-              { text: "Full website (up to 12 pages)", included: true },
+              { text: 'Full website (up to 12 pages)', included: true },
               {
-                text: "Headless CMS (Sanity/Contentful)",
+                text: 'Headless CMS (Sanity/Contentful)',
                 included: true,
               },
               {
-                text: "Motion design & micro-interactions",
+                text: 'Motion design & micro-interactions',
                 included: true,
               },
               {
-                text: "Technical SEO & performance tuning",
+                text: 'Technical SEO & performance tuning',
                 included: true,
               },
               {
-                text: "Brand strategy workshop included",
+                text: 'Brand strategy workshop included',
                 included: true,
               },
             ],
             featured: true,
-            cta: "Get Started",
+            cta: 'Get Started',
           },
           {
-            name: "Partner",
+            name: 'Partner',
             description:
-              "An embedded creative team for organizations with ongoing product needs.",
-            price: "Custom",
-            period: " / month",
+              'An embedded creative team for organizations with ongoing product needs.',
+            price: 'Custom',
+            period: ' / month',
             features: [
               {
-                text: "Dedicated strategist & designer",
+                text: 'Dedicated strategist & designer',
                 included: true,
               },
-              { text: "Priority engineering support", included: true },
-              { text: "Monthly CRO & analytics review", included: true },
-              { text: "Shared Slack channel", included: true },
-              { text: "Quarterly strategy planning", included: true },
+              { text: 'Priority engineering support', included: true },
+              { text: 'Monthly CRO & analytics review', included: true },
+              { text: 'Shared Slack channel', included: true },
+              { text: 'Quarterly strategy planning', included: true },
             ],
             featured: false,
-            cta: "Contact Us",
+            cta: 'Contact Us',
           },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Our Clients Say"
+      props.testimonials?.heading ?? 'What Our Clients Say'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "We measure success by the longevity of our partnerships. Here is what founders and marketing leaders say about working with Luminary."
+      'We measure success by the longevity of our partnerships. Here is what founders and marketing leaders say about working with Luminary.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "Working with Luminary transformed our entire digital presence. The conversion rate on our product pages jumped 240% within the first quarter after launch.",
-            name: "Sarah Chen",
-            role: "Founder & CEO, Aura Skincare",
+              'Working with Luminary transformed our entire digital presence. The conversion rate on our product pages jumped 240% within the first quarter after launch.',
+            name: 'Sarah Chen',
+            role: 'Founder & CEO, Aura Skincare',
             avatarAlt:
-              "Professional headshot of Sarah Chen, a confident Asian woman CEO with shoulder-length dark hair wearing a white blazer against a neutral studio background",
+              'Professional headshot of Sarah Chen, a confident Asian woman CEO with shoulder-length dark hair wearing a white blazer against a neutral studio background',
           },
           {
             quote:
-              "The technical execution was flawless, and the design language finally matches the sophistication of our product. Our enterprise demos close faster because the site builds instant credibility.",
-            name: "Marcus Webb",
-            role: "CTO, Vertex Finance",
+              'The technical execution was flawless, and the design language finally matches the sophistication of our product. Our enterprise demos close faster because the site builds instant credibility.',
+            name: 'Marcus Webb',
+            role: 'CTO, Vertex Finance',
             avatarAlt:
-              "Professional headshot of Marcus Webb, a Black man with a short beard and warm smile wearing a tailored navy suit and light blue dress shirt",
+              'Professional headshot of Marcus Webb, a Black man with a short beard and warm smile wearing a tailored navy suit and light blue dress shirt',
           },
           {
             quote:
               "They didn't just redesign our site—they redefined how we talk to customers online. The brand workshop alone clarified positioning we'd struggled with for two years.",
-            name: "Elena Rodriguez",
-            role: "VP of Marketing, Terra Botanicals",
+            name: 'Elena Rodriguez',
+            role: 'VP of Marketing, Terra Botanicals',
             avatarAlt:
-              "Professional headshot of Elena Rodriguez, a Latina woman with curly brown hair and a bright smile wearing gold hoop earrings and a rust-colored blouse",
+              'Professional headshot of Elena Rodriguez, a Latina woman with curly brown hair and a bright smile wearing gold hoop earrings and a rust-colored blouse',
           },
         ]
 
-    const faqHeading = props.faq?.heading ?? "Common Questions"
+    const faqHeading = props.faq?.heading ?? 'Common Questions'
     const faqDesc =
       props.faq?.description ??
       "Everything you need to know before starting a project. Can't find what you're looking for? Book a call and we'll walk through it together."
@@ -552,77 +570,72 @@ export const AgencyKimiPage3 = defineCapsule({
       ? props.faq.items
       : [
           {
-            question: "How long does a typical project take?",
+            question: 'How long does a typical project take?',
             answer:
-              "A focused brand sprint takes 4–6 weeks. A full website redesign typically spans 10–14 weeks depending on scope, CMS complexity, and the number of unique page templates. Enterprise engagements with custom animation or 3D work may extend to 16–20 weeks. We build detailed timelines during our Strategy Intensive so there are no surprises.",
+              'A focused brand sprint takes 4–6 weeks. A full website redesign typically spans 10–14 weeks depending on scope, CMS complexity, and the number of unique page templates. Enterprise engagements with custom animation or 3D work may extend to 16–20 weeks. We build detailed timelines during our Strategy Intensive so there are no surprises.',
           },
           {
-            question: "Do you work with early-stage startups?",
+            question: 'Do you work with early-stage startups?',
             answer:
               "Yes. We have tailored Launch packages designed specifically for pre-seed to Series A companies that need maximum impact on a defined budget. We've helped startups like Aura Skincare and Pulse Fitness go from concept to live product in under six weeks. If you're fundraising, we also offer investor-deck design as a fast add-on.",
           },
           {
-            question: "What platforms and technologies do you use?",
+            question: 'What platforms and technologies do you use?',
             answer:
               "We specialize in Next.js, React, TypeScript, and Tailwind CSS for production web applications. For content management, we deploy headless architectures using Sanity, Contentful, or Strapi. For marketing sites that need rapid iteration without engineering overhead, we deliver production-grade Webflow builds. Every stack decision is made based on your team's capacity and long-term maintainability.",
           },
           {
-            question: "How do you handle ongoing support after launch?",
+            question: 'How do you handle ongoing support after launch?',
             answer:
-              "Every project includes a 30-day warranty period post-launch covering bug fixes, browser compatibility issues, and minor adjustments. For ongoing needs, our Partner retainer provides priority support, iterative improvements, a dedicated Slack channel, and quarterly strategic planning sessions. About 60% of our clients transition into a retainer within three months of launch.",
+              'Every project includes a 30-day warranty period post-launch covering bug fixes, browser compatibility issues, and minor adjustments. For ongoing needs, our Partner retainer provides priority support, iterative improvements, a dedicated Slack channel, and quarterly strategic planning sessions. About 60% of our clients transition into a retainer within three months of launch.',
           },
           {
-            question: "What does your discovery process involve?",
+            question: 'What does your discovery process involve?',
             answer:
-              "We begin with a multi-day Strategy Intensive—structured workshops, competitive audits, stakeholder interviews, analytics review, and customer insight synthesis. The output is a strategic brief that defines positioning, information architecture, key performance indicators, and creative direction. This ensures every design decision we make is backed by insight, not opinion.",
+              'We begin with a multi-day Strategy Intensive—structured workshops, competitive audits, stakeholder interviews, analytics review, and customer insight synthesis. The output is a strategic brief that defines positioning, information architecture, key performance indicators, and creative direction. This ensures every design decision we make is backed by insight, not opinion.',
           },
         ]
 
     const contactHeading =
-      props.contact?.heading ?? "Ready to Build Something Iconic?"
+      props.contact?.heading ?? 'Ready to Build Something Iconic?'
     const contactDesc =
       props.contact?.description ??
       "Tell us what you're making. We'll reply within one business day with honest feedback on scope, timeline, and whether we're the right fit."
-    const contactPrimary = props.contact?.primaryCta ?? "Schedule a Call"
-    const contactSecondary =
-      props.contact?.secondaryCta ?? "Explore Our Work"
-    const contactEmail = props.contact?.email ?? "hello@luminary.digital"
+    const contactPrimary = props.contact?.primaryCta ?? 'Schedule a Call'
+    const contactSecondary = props.contact?.secondaryCta ?? 'Explore Our Work'
+    const contactEmail = props.contact?.email ?? 'hello@luminary.digital'
 
     const footerNote =
       props.footer?.note ??
-      "Premium digital experiences for ambitious brands. Based in San Francisco, working globally."
+      'Premium digital experiences for ambitious brands. Based in San Francisco, working globally.'
     const footerServices = props.footer?.services?.length
       ? props.footer.services
       : [
-          "Brand Strategy",
-          "Web Design",
-          "Development",
-          "Motion Design",
-          "Growth & CRO",
+          'Brand Strategy',
+          'Web Design',
+          'Development',
+          'Motion Design',
+          'Growth & CRO',
         ]
     const footerCompany = props.footer?.company?.length
       ? props.footer.company
-      : ["About Us", "Case Studies", "Careers", "Blog", "Contact"]
+      : ['About Us', 'Case Studies', 'Careers', 'Blog', 'Contact']
     const footerContact = props.footer?.contactInfo ?? {
-      email: "hello@luminary.digital",
-      phone: "+1 (415) 555-0147",
-      address: [
-        "580 Market Street",
-        "Suite 400",
-        "San Francisco, CA 94104",
-      ],
+      email: 'hello@luminary.digital',
+      phone: '+1 (415) 555-0147',
+      address: ['580 Market Street', 'Suite 400', 'San Francisco, CA 94104'],
     }
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Twitter", "LinkedIn", "Instagram", "Dribbble"]
+      : ['Twitter', 'LinkedIn', 'Instagram', 'Dribbble']
     const footerLinks = props.footer?.links?.length
       ? props.footer.links
-      : ["Privacy Policy", "Terms of Service"]
+      : ['Privacy Policy', 'Terms of Service']
 
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-gradient-to-br from-primary to-accent font-black text-primary-foreground",
+          'grid place-items-center rounded-lg bg-gradient-to-br from-primary to-accent font-black text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -690,24 +703,6 @@ export const AgencyKimiPage3 = defineCapsule({
         aria-hidden="true"
       >
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-      </svg>
-    )
-
-    const HeartIcon = ({ active = false }: { active?: boolean }) => (
-      <svg
-        className={cn(
-          'h-5 w-5',
-          active ? 'text-primary-foreground' : 'text-foreground',
-        )}
-        fill={active ? 'currentColor' : 'none'}
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
       </svg>
     )
 
@@ -789,7 +784,7 @@ export const AgencyKimiPage3 = defineCapsule({
     return (
       <div
         className={cn(
-          "relative min-h-svh overflow-x-hidden bg-background text-foreground antialiased",
+          'relative min-h-svh overflow-x-hidden bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -1336,10 +1331,10 @@ export const AgencyKimiPage3 = defineCapsule({
                 <div
                   key={tier.name}
                   className={cn(
-                    "relative flex flex-col rounded-2xl border p-8",
+                    'relative flex flex-col rounded-2xl border p-8',
                     tier.featured
-                      ? "border-primary/40 bg-card shadow-xl"
-                      : "border-border bg-card/50",
+                      ? 'border-primary/40 bg-card shadow-xl'
+                      : 'border-border bg-card/50',
                   )}
                 >
                   {tier.featured && (
@@ -1359,19 +1354,17 @@ export const AgencyKimiPage3 = defineCapsule({
                     <span className="text-4xl font-bold text-foreground">
                       {tier.price}
                     </span>
-                    <span className="text-muted-foreground">
-                      {tier.period}
-                    </span>
+                    <span className="text-muted-foreground">{tier.period}</span>
                   </div>
                   <ul className="mb-10 flex-1 space-y-4">
                     {tier.features?.map((f) => (
                       <li
                         key={f.text}
                         className={cn(
-                          "flex items-start gap-3 text-sm",
+                          'flex items-start gap-3 text-sm',
                           f.included
-                            ? "text-foreground/90"
-                            : "text-muted-foreground",
+                            ? 'text-foreground/90'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {f.included ? <CheckIcon /> : <CrossIcon />}
@@ -1383,10 +1376,10 @@ export const AgencyKimiPage3 = defineCapsule({
                     type="button"
                     onClick={() => go(tier.cta)}
                     className={cn(
-                      "w-full inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition-colors",
+                      'w-full inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition-colors',
                       tier.featured
-                        ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
-                        : "border border-input text-foreground hover:border-ring hover:bg-card",
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg'
+                        : 'border border-input text-foreground hover:border-ring hover:bg-card',
                     )}
                   >
                     {tier.cta}
@@ -1432,12 +1425,8 @@ export const AgencyKimiPage3 = defineCapsule({
                       className="h-12 w-12 rounded-full object-cover"
                     />
                     <div>
-                      <p className="font-semibold text-foreground">
-                        {t.name}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {t.role}
-                      </p>
+                      <p className="font-semibold text-foreground">{t.name}</p>
+                      <p className="text-sm text-muted-foreground">{t.role}</p>
                     </div>
                   </div>
                 </div>
@@ -1523,7 +1512,7 @@ export const AgencyKimiPage3 = defineCapsule({
                   </button>
                 </div>
                 <p className="mt-8 text-sm text-muted-foreground/70">
-                  Or email us directly at{" "}
+                  Or email us directly at{' '}
                   <button
                     type="button"
                     onClick={() => go(nav[nav.length - 1])}
@@ -1563,7 +1552,7 @@ export const AgencyKimiPage3 = defineCapsule({
                       className="text-muted-foreground transition-colors hover:text-foreground"
                       aria-label={social}
                     >
-                      {social === "Twitter" && (
+                      {social === 'Twitter' && (
                         <svg
                           className="h-5 w-5"
                           fill="currentColor"
@@ -1573,7 +1562,7 @@ export const AgencyKimiPage3 = defineCapsule({
                           <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                         </svg>
                       )}
-                      {social === "LinkedIn" && (
+                      {social === 'LinkedIn' && (
                         <svg
                           className="h-5 w-5"
                           fill="currentColor"
@@ -1583,7 +1572,7 @@ export const AgencyKimiPage3 = defineCapsule({
                           <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                         </svg>
                       )}
-                      {social === "Instagram" && (
+                      {social === 'Instagram' && (
                         <svg
                           className="h-5 w-5"
                           fill="currentColor"
@@ -1593,7 +1582,7 @@ export const AgencyKimiPage3 = defineCapsule({
                           <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
                         </svg>
                       )}
-                      {social === "Dribbble" && (
+                      {social === 'Dribbble' && (
                         <svg
                           className="h-5 w-5"
                           fill="currentColor"
@@ -1775,7 +1764,8 @@ export const AgencyKimiPage3 = defineCapsule({
             <SheetHeader className="border-b border-border p-6">
               <SheetTitle className="text-xl">{navCta}</SheetTitle>
               <SheetDescription>
-                Share a project brief and keep the conversation attached to this capsule session.
+                Share a project brief and keep the conversation attached to this
+                capsule session.
               </SheetDescription>
             </SheetHeader>
             <div className="flex-1 space-y-6 overflow-y-auto p-6">
@@ -1784,10 +1774,10 @@ export const AgencyKimiPage3 = defineCapsule({
                 onSubmit={(e) => {
                   e.preventDefault()
                   const form = new FormData(e.currentTarget)
-                  const name = String(form.get("name") ?? "").trim()
-                  const email = String(form.get("email") ?? "").trim()
-                  const company = String(form.get("company") ?? "").trim()
-                  const message = String(form.get("message") ?? "").trim()
+                  const name = String(form.get('name') ?? '').trim()
+                  const email = String(form.get('email') ?? '').trim()
+                  const company = String(form.get('company') ?? '').trim()
+                  const message = String(form.get('message') ?? '').trim()
                   if (!name || !email || !message) return
                   void submitInquiry(name, email, company, message)
                   e.currentTarget.reset()

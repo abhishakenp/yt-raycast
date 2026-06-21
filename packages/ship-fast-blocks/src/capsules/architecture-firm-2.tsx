@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -13,15 +13,14 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * ArchitectureFirmKimiPage2 — a complete, self-contained architecture-studio
@@ -57,7 +56,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * project-forward dark page with strong work showcase and social proof.
  */
 export const ArchitectureFirmKimiPage2 = defineCapsule({
-  name: "ArchitectureFirmKimiPage2",
+  name: 'ArchitectureFirmKimiPage2',
   description:
     "Complete architecture-firm / design-studio LANDING page — the SECOND, visually DISTINCT alternative style to ArchitectureFirmKimiPage (a sibling variant). Where the other is a calm light Scandinavian look, THIS one is a bold, dramatic, high-contrast DARK editorial aesthetic on a near-black canvas with a warm amber/gold brand accent and heavy bold display typography. Includes a full-bleed cinematic hero (background facade photo with gradient overlay, uppercase eyebrow, huge bold headline with an accent word, dual CTAs, and an inline three-up stat row), a 'featured in & collaborated with' publication wordmark strip, a split philosophy/approach section (model photo with offset accent block plus context/material/experience pillars), a 6-up project/portfolio gallery with image-zoom hover and typology/year captions, a striking solid-amber statistics band with dark numerals, a 6-up services/expertise grid with tinted icon tiles, a 4-step big-numeral process timeline, a 3-up client testimonials grid with five-star ratings and portraits, a leadership/partners grid with portrait photos, an accordion FAQ, a full-bleed photo contact CTA with email and phone, and a four-column footer with newsletter signup, address and social links. Use as the ROOT/home page for architecture firms, architecture studios, design-build practices, structural design, interior-design studios, urban planners, landscape architects, construction or built-environment portfolio sites when a premium, dramatic, dark, project-forward page with strong work showcase and social proof is wanted. Supply content only — brand, nav, hero, logos, philosophy, gallery, stats, services, process, testimonials, team, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -268,7 +267,15 @@ export const ArchitectureFirmKimiPage2 = defineCapsule({
         db.favorites.insert({ projectTitle })
         return true
       },
-      submitInquiry: ({ db }, data: { name: string; email: string; projectType: string; message: string }) => {
+      submitInquiry: (
+        { db },
+        data: {
+          name: string
+          email: string
+          projectType: string
+          message: string
+        },
+      ) => {
         db.inquiries.insert(data)
         return db.inquiries.all()
       },
@@ -278,12 +285,11 @@ export const ArchitectureFirmKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [inquiryOpen, setInquiryOpen] = useState(false)
-    const brand = props.brand ?? "FORMA"
+    const brand = props.brand ?? 'FORMA'
 
     // Lakebed queries and mutations
     const storedProjects = lakebed.useQuery('projects')
     const favoriteProjectTitles = lakebed.useQuery('favoriteProjectTitles')
-    const inquiries = lakebed.useQuery('inquiries')
     const toggleFavorite = lakebed.useMutation('toggleFavorite')
     const submitInquiry = lakebed.useMutation('submitInquiry')
     const auth = lakebed.useAuth()
@@ -367,129 +373,125 @@ export const ArchitectureFirmKimiPage2 = defineCapsule({
 
     const nav = props.nav?.length
       ? props.nav
-      : ["Philosophy", "Projects", "Process", "Studio", "Start a Project"]
+      : ['Philosophy', 'Projects', 'Process', 'Studio', 'Start a Project']
 
-    const heroEyebrow =
-      props.hero?.eyebrow ?? "Architecture Studio — Est. 2008"
-    const heroLine1 = props.hero?.headingLine1 ?? "Spatial Poetry"
-    const heroLine2 = props.hero?.headingLine2 ?? "Meets"
-    const heroAccent = props.hero?.headingAccent ?? "Structure"
+    const heroEyebrow = props.hero?.eyebrow ?? 'Architecture Studio — Est. 2008'
+    const heroLine1 = props.hero?.headingLine1 ?? 'Spatial Poetry'
+    const heroLine2 = props.hero?.headingLine2 ?? 'Meets'
+    const heroAccent = props.hero?.headingAccent ?? 'Structure'
     const heroSub =
       props.hero?.subheading ??
-      "We design buildings and spaces that honor context, embrace material honesty, and elevate the human experience. From intimate residences to cultural landmarks."
-    const heroPrimary = props.hero?.primaryCta ?? "Explore Our Work"
-    const heroSecondary = props.hero?.secondaryCta ?? "Our Philosophy"
+      'We design buildings and spaces that honor context, embrace material honesty, and elevate the human experience. From intimate residences to cultural landmarks.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Explore Our Work'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Our Philosophy'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Modern concrete architecture with dramatic angular forms and warm sunset lighting"
+      'Modern concrete architecture with dramatic angular forms and warm sunset lighting'
     const heroStats = props.hero?.stats?.length
       ? props.hero.stats
       : [
-          { value: "127", label: "Projects Completed" },
-          { value: "17", label: "Years Practicing" },
-          { value: "24", label: "Design Awards" },
+          { value: '127', label: 'Projects Completed' },
+          { value: '17', label: 'Years Practicing' },
+          { value: '24', label: 'Design Awards' },
         ]
 
-    const logosLabel =
-      props.logos?.label ?? "Featured In & Collaborated With"
+    const logosLabel = props.logos?.label ?? 'Featured In & Collaborated With'
     const logosItems = props.logos?.items?.length
       ? props.logos.items
       : [
-          "ARCHITECTURAL DIGEST",
-          "DEZEEN",
-          "WALLPAPER*",
-          "MONOCLE",
-          "DWELL",
-          "ARCHDAILY",
+          'ARCHITECTURAL DIGEST',
+          'DEZEEN',
+          'WALLPAPER*',
+          'MONOCLE',
+          'DWELL',
+          'ARCHDAILY',
         ]
 
-    const philEyebrow = props.philosophy?.eyebrow ?? "Our Philosophy"
+    const philEyebrow = props.philosophy?.eyebrow ?? 'Our Philosophy'
     const philHeading =
       props.philosophy?.heading ??
-      "Architecture as a Conversation Between Place and People"
+      'Architecture as a Conversation Between Place and People'
     const philBody1 =
       props.philosophy?.body1 ??
-      "Every site has a story. Our role is to listen—to the topography, the climate, the cultural memory embedded in a location—and translate that narrative into built form that serves the people who will inhabit it."
+      'Every site has a story. Our role is to listen—to the topography, the climate, the cultural memory embedded in a location—and translate that narrative into built form that serves the people who will inhabit it.'
     const philBody2 =
       props.philosophy?.body2 ??
-      "We reject the notion of signature style. Instead, we pursue material honesty, spatial clarity, and environmental responsibility. Each project emerges from rigorous inquiry rather than preconceived aesthetic."
+      'We reject the notion of signature style. Instead, we pursue material honesty, spatial clarity, and environmental responsibility. Each project emerges from rigorous inquiry rather than preconceived aesthetic.'
     const philImageAlt =
       props.philosophy?.imageAlt ??
-      "Architectural model of modern building with natural light streaming through studio windows"
+      'Architectural model of modern building with natural light streaming through studio windows'
     const philPoints = props.philosophy?.points?.length
       ? props.philosophy.points
       : [
           {
-            title: "Context",
+            title: 'Context',
             description:
-              "Every design responds to its unique site and cultural setting",
+              'Every design responds to its unique site and cultural setting',
           },
           {
-            title: "Material",
+            title: 'Material',
             description:
-              "Honest expression of structure and authentic materiality",
+              'Honest expression of structure and authentic materiality',
           },
           {
-            title: "Experience",
-            description:
-              "Spaces that elevate daily life and foster connection",
+            title: 'Experience',
+            description: 'Spaces that elevate daily life and foster connection',
           },
         ]
 
-    const galleryEyebrow = props.gallery?.eyebrow ?? "Selected Projects"
-    const galleryHeading =
-      props.gallery?.heading ?? "Work That Defines Places"
-    const galleryCta = props.gallery?.cta ?? "View All 127 Projects"
+    const galleryEyebrow = props.gallery?.eyebrow ?? 'Selected Projects'
+    const galleryHeading = props.gallery?.heading ?? 'Work That Defines Places'
+    const galleryCta = props.gallery?.cta ?? 'View All 127 Projects'
     const staticGalleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
           {
-            title: "Malibu Ridge Residence",
-            meta: "Residential — 2024",
+            title: 'Malibu Ridge Residence',
+            meta: 'Residential — 2024',
             description:
-              "Cliffside home with cantilevered terraces framing Pacific Ocean views. 4,200 sq ft.",
+              'Cliffside home with cantilevered terraces framing Pacific Ocean views. 4,200 sq ft.',
             imageAlt:
-              "Modern hillside residence with floor-to-ceiling glass walls overlooking ocean at golden hour",
+              'Modern hillside residence with floor-to-ceiling glass walls overlooking ocean at golden hour',
           },
           {
-            title: "Marin Contemporary Art Museum",
-            meta: "Cultural — 2023",
+            title: 'Marin Contemporary Art Museum',
+            meta: 'Cultural — 2023',
             description:
-              "Daylight-driven gallery spaces in a converted industrial warehouse. 28,000 sq ft.",
+              'Daylight-driven gallery spaces in a converted industrial warehouse. 28,000 sq ft.',
             imageAlt:
-              "Minimalist art museum interior with soaring white walls and dramatic skylight illumination",
+              'Minimalist art museum interior with soaring white walls and dramatic skylight illumination',
           },
           {
-            title: "Apex Tower Renovation",
-            meta: "Commercial — 2023",
+            title: 'Apex Tower Renovation',
+            meta: 'Commercial — 2023',
             description:
-              "Adaptive reuse of 1970s office building into mixed-use creative hub. 180,000 sq ft.",
+              'Adaptive reuse of 1970s office building into mixed-use creative hub. 180,000 sq ft.',
             imageAlt:
-              "Sleek modern office tower with glass curtain wall reflecting city skyline at dusk",
+              'Sleek modern office tower with glass curtain wall reflecting city skyline at dusk',
           },
           {
-            title: "Sedona Wellness Resort",
-            meta: "Hospitality — 2022",
+            title: 'Sedona Wellness Resort',
+            meta: 'Hospitality — 2022',
             description:
-              "Desert retreat integrating rammed earth construction with luxury amenities. 52 rooms.",
+              'Desert retreat integrating rammed earth construction with luxury amenities. 52 rooms.',
             imageAlt:
-              "Luxury boutique hotel courtyard with sculptural water feature and native desert landscaping",
+              'Luxury boutique hotel courtyard with sculptural water feature and native desert landscaping',
           },
           {
-            title: "Berkeley Hills House",
-            meta: "Residential — 2022",
+            title: 'Berkeley Hills House',
+            meta: 'Residential — 2022',
             description:
-              "Family home cascading down a steep slope with indoor-outdoor living spaces. 3,800 sq ft.",
+              'Family home cascading down a steep slope with indoor-outdoor living spaces. 3,800 sq ft.',
             imageAlt:
-              "Modern residential interior with double-height living space and sculptural concrete staircase",
+              'Modern residential interior with double-height living space and sculptural concrete staircase',
           },
           {
-            title: "Studio Collective HQ",
-            meta: "Workplace — 2021",
+            title: 'Studio Collective HQ',
+            meta: 'Workplace — 2021',
             description:
-              "Biophilic office design for creative agency with living walls and flexible studios. 15,000 sq ft.",
+              'Biophilic office design for creative agency with living walls and flexible studios. 15,000 sq ft.',
             imageAlt:
-              "Open-plan creative workspace with exposed timber beams and abundant natural lighting",
+              'Open-plan creative workspace with exposed timber beams and abundant natural lighting',
           },
         ]
     const displayGalleryItems =
@@ -500,88 +502,88 @@ export const ArchitectureFirmKimiPage2 = defineCapsule({
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "127", label: "Projects Delivered" },
-          { value: "24", label: "Design Awards" },
-          { value: "12", label: "Countries" },
-          { value: "94%", label: "Client Return Rate" },
+          { value: '127', label: 'Projects Delivered' },
+          { value: '24', label: 'Design Awards' },
+          { value: '12', label: 'Countries' },
+          { value: '94%', label: 'Client Return Rate' },
         ]
 
-    const servicesEyebrow = props.services?.eyebrow ?? "Our Expertise"
+    const servicesEyebrow = props.services?.eyebrow ?? 'Our Expertise'
     const servicesHeading =
-      props.services?.heading ?? "Comprehensive Design Services"
+      props.services?.heading ?? 'Comprehensive Design Services'
     const servicesDesc =
       props.services?.description ??
-      "From initial concept through construction administration, we guide projects with precision and care."
+      'From initial concept through construction administration, we guide projects with precision and care.'
     const servicesItems = props.services?.items?.length
       ? props.services.items
       : [
           {
-            title: "Master Planning",
+            title: 'Master Planning',
             description:
-              "Strategic site analysis and comprehensive planning for mixed-use developments, campuses, and urban districts.",
+              'Strategic site analysis and comprehensive planning for mixed-use developments, campuses, and urban districts.',
           },
           {
-            title: "Residential Design",
+            title: 'Residential Design',
             description:
-              "Custom homes, multi-family housing, and residential communities that prioritize livability and connection to place.",
+              'Custom homes, multi-family housing, and residential communities that prioritize livability and connection to place.',
           },
           {
-            title: "Commercial & Workplace",
+            title: 'Commercial & Workplace',
             description:
-              "Office buildings, retail environments, and hospitality spaces designed for human-centered productivity.",
+              'Office buildings, retail environments, and hospitality spaces designed for human-centered productivity.',
           },
           {
-            title: "Cultural & Institutional",
+            title: 'Cultural & Institutional',
             description:
-              "Museums, libraries, schools, and community centers that inspire learning and civic engagement.",
+              'Museums, libraries, schools, and community centers that inspire learning and civic engagement.',
           },
           {
-            title: "Adaptive Reuse",
+            title: 'Adaptive Reuse',
             description:
-              "Transforming existing structures for new purposes—honoring history while meeting contemporary needs.",
+              'Transforming existing structures for new purposes—honoring history while meeting contemporary needs.',
           },
           {
-            title: "Sustainable Design",
+            title: 'Sustainable Design',
             description:
-              "Net-zero strategies, passive house standards, and regenerative design integrated from project inception.",
+              'Net-zero strategies, passive house standards, and regenerative design integrated from project inception.',
           },
         ]
 
-    const processEyebrow = props.process?.eyebrow ?? "Our Process"
-    const processHeading = props.process?.heading ?? "How We Work"
+    const processEyebrow = props.process?.eyebrow ?? 'Our Process'
+    const processHeading = props.process?.heading ?? 'How We Work'
     const processDesc =
       props.process?.description ??
-      "A collaborative, iterative approach that ensures every project reflects client vision and site potential."
+      'A collaborative, iterative approach that ensures every project reflects client vision and site potential.'
     const processSteps = props.process?.steps?.length
       ? props.process.steps
       : [
           {
-            title: "Discovery",
+            title: 'Discovery',
             description:
-              "Deep site analysis, client interviews, and precedent research to establish project foundations.",
-            duration: "2–4 weeks",
+              'Deep site analysis, client interviews, and precedent research to establish project foundations.',
+            duration: '2–4 weeks',
           },
           {
-            title: "Concept",
+            title: 'Concept',
             description:
-              "Schematic design exploring spatial organization, massing, and material palettes through iterative exploration.",
-            duration: "4–8 weeks",
+              'Schematic design exploring spatial organization, massing, and material palettes through iterative exploration.',
+            duration: '4–8 weeks',
           },
           {
-            title: "Development",
+            title: 'Development',
             description:
-              "Design development and construction documents with engineering coordination and detail refinement.",
-            duration: "8–16 weeks",
+              'Design development and construction documents with engineering coordination and detail refinement.',
+            duration: '8–16 weeks',
           },
           {
-            title: "Realization",
+            title: 'Realization',
             description:
-              "Construction administration, site visits, and quality oversight until successful project completion.",
-            duration: "Project duration",
+              'Construction administration, site visits, and quality oversight until successful project completion.',
+            duration: 'Project duration',
           },
         ]
 
-    const testEyebrow = props.testimonials?.eyebrow ?? "Client Perspectives"
+    const testEyebrow = props.testimonials?.eyebrow ?? 'Client Perspectives'
     const testHeading =
       props.testimonials?.heading ?? "Words From Those We've Built For"
     const testItems = props.testimonials?.items?.length
@@ -589,133 +591,131 @@ export const ArchitectureFirmKimiPage2 = defineCapsule({
       : [
           {
             quote:
-              "Forma transformed our vision into a home that exceeds every expectation. They listened deeply and delivered a space that feels both dramatic and intimately livable.",
-            name: "Elena Vasquez",
-            role: "Homeowner, Malibu Ridge Residence",
+              'Forma transformed our vision into a home that exceeds every expectation. They listened deeply and delivered a space that feels both dramatic and intimately livable.',
+            name: 'Elena Vasquez',
+            role: 'Homeowner, Malibu Ridge Residence',
             avatarAlt:
-              "Professional headshot of a smiling woman with dark hair wearing a navy blazer",
+              'Professional headshot of a smiling woman with dark hair wearing a navy blazer',
           },
           {
             quote:
-              "The museum they designed for us honors the industrial heritage of our building while creating perfect conditions for contemporary art. Visitors constantly remark on the quality of light.",
-            name: "James Whitmore",
-            role: "Director, Marin Contemporary Art Museum",
+              'The museum they designed for us honors the industrial heritage of our building while creating perfect conditions for contemporary art. Visitors constantly remark on the quality of light.',
+            name: 'James Whitmore',
+            role: 'Director, Marin Contemporary Art Museum',
             avatarAlt:
-              "Professional headshot of a middle-aged man with glasses and gray hair in a dark sweater",
+              'Professional headshot of a middle-aged man with glasses and gray hair in a dark sweater',
           },
           {
             quote:
-              "Their adaptive reuse of our 1970s office tower exceeded every sustainability goal. We achieved LEED Platinum and created the most desirable creative workspace in the city.",
-            name: "David Chen",
-            role: "CEO, Apex Development Group",
+              'Their adaptive reuse of our 1970s office tower exceeded every sustainability goal. We achieved LEED Platinum and created the most desirable creative workspace in the city.',
+            name: 'David Chen',
+            role: 'CEO, Apex Development Group',
             avatarAlt:
-              "Professional headshot of a man in his 30s with short brown hair and a light beard wearing a white collared shirt",
+              'Professional headshot of a man in his 30s with short brown hair and a light beard wearing a white collared shirt',
           },
         ]
 
-    const teamEyebrow = props.team?.eyebrow ?? "Leadership"
-    const teamHeading = props.team?.heading ?? "The Partners"
+    const teamEyebrow = props.team?.eyebrow ?? 'Leadership'
+    const teamHeading = props.team?.heading ?? 'The Partners'
     const teamItems = props.team?.items?.length
       ? props.team.items
       : [
           {
-            name: "Marcus Williams",
-            role: "Founding Principal",
+            name: 'Marcus Williams',
+            role: 'Founding Principal',
             bio: "Harvard GSD '99. Former SOM. 25+ years designing cultural and educational institutions.",
             imageAlt:
-              "Professional portrait of a man in his 40s with salt-and-pepper hair wearing a charcoal suit jacket over a black turtleneck",
+              'Professional portrait of a man in his 40s with salt-and-pepper hair wearing a charcoal suit jacket over a black turtleneck',
           },
           {
-            name: "Sarah Okonkwo",
-            role: "Design Principal",
+            name: 'Sarah Okonkwo',
+            role: 'Design Principal',
             bio: "Columbia GSAPP '03. Expert in sustainable systems and net-zero building strategies.",
             imageAlt:
-              "Professional portrait of a woman in her 40s with shoulder-length dark hair wearing a cream blazer",
+              'Professional portrait of a woman in her 40s with shoulder-length dark hair wearing a cream blazer',
           },
           {
-            name: "Kenji Tanaka",
-            role: "Technical Principal",
+            name: 'Kenji Tanaka',
+            role: 'Technical Principal',
             bio: "UC Berkeley '06. Master of complex geometries and digital fabrication workflows.",
             imageAlt:
-              "Professional portrait of a man in his 30s with dark hair and glasses wearing a dark gray blazer over a white shirt",
+              'Professional portrait of a man in his 30s with dark hair and glasses wearing a dark gray blazer over a white shirt',
           },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "Common Questions"
-    const faqHeading = props.faq?.heading ?? "What Clients Ask"
+    const faqEyebrow = props.faq?.eyebrow ?? 'Common Questions'
+    const faqHeading = props.faq?.heading ?? 'What Clients Ask'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "What types of projects do you take on?",
+            question: 'What types of projects do you take on?',
             answer:
-              "We work across project types and scales—from single-family residences to master plans for mixed-use districts. Our portfolio includes custom homes, multi-family housing, workplace design, cultural institutions, hospitality projects, and adaptive reuse. We select projects based on design potential and client alignment rather than scale or budget.",
+              'We work across project types and scales—from single-family residences to master plans for mixed-use districts. Our portfolio includes custom homes, multi-family housing, workplace design, cultural institutions, hospitality projects, and adaptive reuse. We select projects based on design potential and client alignment rather than scale or budget.',
           },
           {
-            question: "What is your typical project timeline?",
+            question: 'What is your typical project timeline?',
             answer:
-              "Timelines vary by project scope. A custom home typically takes 18–24 months from initial engagement to move-in. Larger commercial or institutional projects may span 2–4 years. Our design phases generally require 4–6 months, with construction duration depending on complexity. We provide detailed schedules during our proposal phase.",
+              'Timelines vary by project scope. A custom home typically takes 18–24 months from initial engagement to move-in. Larger commercial or institutional projects may span 2–4 years. Our design phases generally require 4–6 months, with construction duration depending on complexity. We provide detailed schedules during our proposal phase.',
           },
           {
-            question: "How do you approach sustainability?",
+            question: 'How do you approach sustainability?',
             answer:
-              "Sustainability is integral to our design philosophy, not an add-on. We pursue passive strategies first—orientation, massing, natural ventilation, daylighting—before adding systems. Many of our projects target Passive House, LEED Platinum, or net-zero standards. We conduct life-cycle assessments and prioritize low-carbon, non-toxic materials.",
+              'Sustainability is integral to our design philosophy, not an add-on. We pursue passive strategies first—orientation, massing, natural ventilation, daylighting—before adding systems. Many of our projects target Passive House, LEED Platinum, or net-zero standards. We conduct life-cycle assessments and prioritize low-carbon, non-toxic materials.',
           },
           {
-            question: "What are your fee structures?",
+            question: 'What are your fee structures?',
             answer:
-              "We typically work on a percentage-of-construction basis for full architectural services (10–15% depending on complexity) or hourly rates for consulting engagements. For select projects, we offer fixed fees with clearly defined scopes. We provide detailed proposals after initial consultations when we understand project scope.",
+              'We typically work on a percentage-of-construction basis for full architectural services (10–15% depending on complexity) or hourly rates for consulting engagements. For select projects, we offer fixed fees with clearly defined scopes. We provide detailed proposals after initial consultations when we understand project scope.',
           },
           {
-            question: "Do you work outside California?",
+            question: 'Do you work outside California?',
             answer:
-              "Absolutely. While our studio is based in San Francisco, we maintain active projects across 12 countries. We collaborate with local architects of record when required by jurisdiction and have established relationships with consultants worldwide. Video conferencing and collaborative software make remote work seamless.",
+              'Absolutely. While our studio is based in San Francisco, we maintain active projects across 12 countries. We collaborate with local architects of record when required by jurisdiction and have established relationships with consultants worldwide. Video conferencing and collaborative software make remote work seamless.',
           },
           {
-            question: "How do I start a conversation about my project?",
+            question: 'How do I start a conversation about my project?',
             answer:
               "Reach out via our contact form or email us directly at hello@forma-studio.com. Share a brief description of your project, location, timeline, and any inspiration you've gathered. We respond to all inquiries within 48 hours and schedule introductory calls to explore fit and next steps.",
           },
         ]
 
     const ctaHeading =
-      props.cta?.heading ?? "Ready to Build Something Meaningful?"
+      props.cta?.heading ?? 'Ready to Build Something Meaningful?'
     const ctaDesc =
       props.cta?.description ??
       "Let's explore how your vision, our expertise, and the unique potential of your site can converge into architecture that endures."
-    const ctaPrimary = props.cta?.primaryCta ?? "Start a Conversation"
-    const ctaPhone = props.cta?.phone ?? "+1 (415) 555-1234"
+    const ctaPrimary = props.cta?.primaryCta ?? 'Start a Conversation'
+    const ctaPhone = props.cta?.phone ?? '+1 (415) 555-1234'
     const ctaNote =
       props.cta?.note ??
-      "Studio visits by appointment. 456 Montgomery Street, Suite 1200, San Francisco, CA 94104"
+      'Studio visits by appointment. 456 Montgomery Street, Suite 1200, San Francisco, CA 94104'
     const ctaImageAlt =
       props.cta?.imageAlt ??
-      "Architectural detail of modern building facade with geometric concrete forms"
+      'Architectural detail of modern building facade with geometric concrete forms'
 
     const footerAbout =
       props.footer?.about ??
-      "Architecture studio creating spaces that honor context, embrace material honesty, and elevate the human experience since 2008."
-    const footerStudioLabel = props.footer?.studioLabel ?? "Studio"
+      'Architecture studio creating spaces that honor context, embrace material honesty, and elevate the human experience since 2008.'
+    const footerStudioLabel = props.footer?.studioLabel ?? 'Studio'
     const footerStudioLinks = props.footer?.studioLinks?.length
       ? props.footer.studioLinks
-      : ["Philosophy", "Projects", "Process", "Services", "Careers"]
-    const footerConnectLabel = props.footer?.connectLabel ?? "Connect"
-    const footerEmail = props.footer?.email ?? "hello@forma-studio.com"
-    const footerPhone = props.footer?.phone ?? "+1 (415) 555-1234"
+      : ['Philosophy', 'Projects', 'Process', 'Services', 'Careers']
+    const footerConnectLabel = props.footer?.connectLabel ?? 'Connect'
+    const footerEmail = props.footer?.email ?? 'hello@forma-studio.com'
+    const footerPhone = props.footer?.phone ?? '+1 (415) 555-1234'
     const footerAddress = props.footer?.address?.length
       ? props.footer.address
-      : ["456 Montgomery Street", "Suite 1200", "San Francisco, CA 94104"]
-    const footerNewsletterLabel =
-      props.footer?.newsletterLabel ?? "Newsletter"
+      : ['456 Montgomery Street', 'Suite 1200', 'San Francisco, CA 94104']
+    const footerNewsletterLabel = props.footer?.newsletterLabel ?? 'Newsletter'
     const footerNewsletterCopy =
       props.footer?.newsletterCopy ??
-      "Quarterly studio updates, project reveals, and architectural reflections."
-    const footerNewsletterCta = props.footer?.newsletterCta ?? "Join"
-    const footerCopyright =
-      props.footer?.copyright ?? "All rights reserved."
+      'Quarterly studio updates, project reveals, and architectural reflections.'
+    const footerNewsletterCta = props.footer?.newsletterCta ?? 'Join'
+    const footerCopyright = props.footer?.copyright ?? 'All rights reserved.'
     const footerLegalLinks = props.footer?.legalLinks?.length
       ? props.footer.legalLinks
-      : ["Privacy Policy", "Terms of Service", "Sitemap"]
+      : ['Privacy Policy', 'Terms of Service', 'Sitemap']
 
     // Star rating used in testimonials.
     const Star = () => (
@@ -826,23 +826,23 @@ export const ArchitectureFirmKimiPage2 = defineCapsule({
     // Footer social icons.
     const socials: { label: string; path: string }[] = [
       {
-        label: "Instagram",
-        path: "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z",
+        label: 'Instagram',
+        path: 'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z',
       },
       {
-        label: "LinkedIn",
-        path: "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z",
+        label: 'LinkedIn',
+        path: 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z',
       },
       {
-        label: "Pinterest",
-        path: "M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z",
+        label: 'Pinterest',
+        path: 'M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z',
       },
     ]
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -858,7 +858,10 @@ export const ArchitectureFirmKimiPage2 = defineCapsule({
                 onClick={() => go(nav[0])}
                 className="flex items-center gap-2"
               >
-                <span className="size-8 rounded-sm bg-primary" aria-hidden="true" />
+                <span
+                  className="size-8 rounded-sm bg-primary"
+                  aria-hidden="true"
+                />
                 <span className="text-xl font-bold tracking-tight text-foreground lg:text-2xl">
                   {brand}
                 </span>
@@ -1412,7 +1415,7 @@ export const ArchitectureFirmKimiPage2 = defineCapsule({
                 {processSteps.map((step, i) => (
                   <div key={step.title} className="relative">
                     <div className="mb-4 text-6xl font-bold text-primary/20">
-                      {String(i + 1).padStart(2, "0")}
+                      {String(i + 1).padStart(2, '0')}
                     </div>
                     <h3 className="mb-3 text-xl font-bold text-foreground">
                       {step.title}
@@ -1607,9 +1610,7 @@ export const ArchitectureFirmKimiPage2 = defineCapsule({
                   {ctaPhone}
                 </button>
               </div>
-              <p className="mt-8 text-sm text-muted-foreground/70">
-                {ctaNote}
-              </p>
+              <p className="mt-8 text-sm text-muted-foreground/70">{ctaNote}</p>
             </div>
           </section>
         </main>
@@ -1623,7 +1624,10 @@ export const ArchitectureFirmKimiPage2 = defineCapsule({
             <div className="mb-12 grid gap-12 md:grid-cols-2 lg:grid-cols-5">
               <div className="lg:col-span-2">
                 <div className="mb-4 flex items-center gap-2">
-                  <span className="size-8 rounded-sm bg-primary" aria-hidden="true" />
+                  <span
+                    className="size-8 rounded-sm bg-primary"
+                    aria-hidden="true"
+                  />
                   <span className="text-2xl font-bold tracking-tight text-foreground">
                     {brand}
                   </span>
@@ -1740,7 +1744,7 @@ export const ArchitectureFirmKimiPage2 = defineCapsule({
 
             <div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
               <p className="text-sm text-muted-foreground/70">
-                © {new Date().getFullYear()} {brand} Architecture Studio.{" "}
+                © {new Date().getFullYear()} {brand} Architecture Studio.{' '}
                 {footerCopyright}
               </p>
               <div className="flex gap-6 text-sm">

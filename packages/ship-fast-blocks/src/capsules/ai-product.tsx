@@ -1,10 +1,11 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +15,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * AiProductKimiPage — a complete, self-contained AI SaaS PRODUCT landing page.
@@ -43,9 +44,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * supply ONLY content data; rich defaults make it render great with no props.
  */
 export const AiProductKimiPage = defineCapsule({
-  name: "AiProductKimiPage",
+  name: 'AiProductKimiPage',
   description:
-    "Complete AI-product / AI-SaaS LANDING page with a clean, light, minimal aesthetic: neutral surfaces, near-black primary CTAs, sticky blurred navbar and generous whitespace. Includes a split hero (live status pill, large headline, dual CTAs, no-credit-card trust line) with a mocked AI chat/editor preview card, a trusted-by logo strip, a 6-up feature grid with icon tiles, a 3-step onboarding timeline, a product screenshot gallery, a 3-tier pricing table with a highlighted Most-Popular plan, a 4-up metrics/stats band, a 6-card star-rated testimonial wall, an FAQ accordion, a dark inverted final call-to-action, and a multi-column footer with social links and an all-systems-operational status. Use as the ROOT/home page for AI writing assistants, AI copilots, generative-AI tools, AI productivity apps, developer-AI products, or any modern SaaS/startup launch page when a polished, trustworthy, conversion-focused marketing site with features, pricing, social proof and FAQ is wanted. Supply content only — brand, nav, hero, logos, features, steps, gallery, pricing, stats, testimonials, faq, finalCta, footer; the block owns all layout and styling.",
+    'Complete AI-product / AI-SaaS LANDING page with a clean, light, minimal aesthetic: neutral surfaces, near-black primary CTAs, sticky blurred navbar and generous whitespace. Includes a split hero (live status pill, large headline, dual CTAs, no-credit-card trust line) with a mocked AI chat/editor preview card, a trusted-by logo strip, a 6-up feature grid with icon tiles, a 3-step onboarding timeline, a product screenshot gallery, a 3-tier pricing table with a highlighted Most-Popular plan, a 4-up metrics/stats band, a 6-card star-rated testimonial wall, an FAQ accordion, a dark inverted final call-to-action, and a multi-column footer with social links and an all-systems-operational status. Use as the ROOT/home page for AI writing assistants, AI copilots, generative-AI tools, AI productivity apps, developer-AI products, or any modern SaaS/startup launch page when a polished, trustworthy, conversion-focused marketing site with features, pricing, social proof and FAQ is wanted. Supply content only — brand, nav, hero, logos, features, steps, gallery, pricing, stats, testimonials, faq, finalCta, footer; the block owns all layout and styling.',
   props: z.object({
     /** Brand / product name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -211,7 +212,7 @@ export const AiProductKimiPage = defineCapsule({
     mutations: {
       createDocument: ({ db }, title: string, content: string) => {
         const wordCount = content.split(/\s+/).filter(Boolean).length
-        const doc = db.documents.insert({ title, content, wordCount })
+        db.documents.insert({ title, content, wordCount })
         return db.documents.all()
       },
       saveDocument: ({ db }, documentId: string) => {
@@ -224,13 +225,17 @@ export const AiProductKimiPage = defineCapsule({
         return db.savedDocuments.all()
       },
       unsaveDocument: ({ db }, documentId: string) => {
-        for (const item of db.savedDocuments.where('documentId', documentId).all()) {
+        for (const item of db.savedDocuments
+          .where('documentId', documentId)
+          .all()) {
           db.savedDocuments.delete(item.id)
         }
         return db.savedDocuments.all()
       },
       deleteDocument: ({ db }, documentId: string) => {
-        for (const item of db.savedDocuments.where('documentId', documentId).all()) {
+        for (const item of db.savedDocuments
+          .where('documentId', documentId)
+          .all()) {
           db.savedDocuments.delete(item.id)
         }
         db.documents.delete(documentId)
@@ -241,10 +246,10 @@ export const AiProductKimiPage = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [drawerOpen, setDrawerOpen] = useState(false)
-    const brand = props.brand ?? "WriteFlow"
+    const brand = props.brand ?? 'WriteFlow'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "Pricing", "Stories", "FAQ"]
+      : ['Features', 'Pricing', 'Stories', 'FAQ']
 
     const storedDocuments = lakebed.useQuery('documents')
     const savedDocumentIds = lakebed.useQuery('savedDocumentIds')
@@ -281,19 +286,18 @@ export const AiProductKimiPage = defineCapsule({
     const safeSavedIds = savedDocumentIds ?? new Set()
     const savedCount = safeSavedIds.size
 
-    const heroBadge =
-      props.hero?.badge ?? "Now with GPT-4 powered suggestions"
-    const headingTop = props.hero?.headingTop ?? "Write faster."
-    const headingBottom = props.hero?.headingBottom ?? "Think clearer."
+    const heroBadge = props.hero?.badge ?? 'Now with GPT-4 powered suggestions'
+    const headingTop = props.hero?.headingTop ?? 'Write faster.'
+    const headingBottom = props.hero?.headingBottom ?? 'Think clearer.'
     const heroSub =
       props.hero?.subheading ??
-      "WriteFlow AI understands your voice and helps you draft, edit, and polish content in minutes instead of hours. Trusted by 50,000+ writers at companies like Notion, Figma, and Stripe."
-    const heroPrimary = props.hero?.primaryCta ?? "Start writing free"
-    const heroSecondary = props.hero?.secondaryCta ?? "Watch demo (2:34)"
+      'WriteFlow AI understands your voice and helps you draft, edit, and polish content in minutes instead of hours. Trusted by 50,000+ writers at companies like Notion, Figma, and Stripe.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Start writing free'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Watch demo (2:34)'
     const heroTrust = props.hero?.trust?.length
       ? props.hero.trust
-      : ["No credit card required", "14-day free trial"]
-    const previewFile = props.hero?.previewFile ?? "blog-post-draft.md"
+      : ['No credit card required', '14-day free trial']
+    const previewFile = props.hero?.previewFile ?? 'blog-post-draft.md'
     const previewIntro =
       props.hero?.previewIntro ??
       "Here's a refined opening that hooks readers immediately:"
@@ -302,338 +306,336 @@ export const AiProductKimiPage = defineCapsule({
       "The blank page stares back. You've been here before—the cursor blinking, the deadline looming, the perfect words hiding just out of reach. What if writing didn't have to be this hard?"
     const previewActions = props.hero?.previewActions?.length
       ? props.hero.previewActions
-      : ["Use this", "Try again", "Make shorter"]
+      : ['Use this', 'Try again', 'Make shorter']
 
-    const logosLabel = props.logos?.label ?? "Trusted by teams at"
+    const logosLabel = props.logos?.label ?? 'Trusted by teams at'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
-      : ["Notion", "Figma", "Stripe", "Linear", "Vercel", "Shopify"]
+      : ['Notion', 'Figma', 'Stripe', 'Linear', 'Vercel', 'Shopify']
 
     const featuresHeading =
-      props.features?.heading ?? "Everything you need to write better"
+      props.features?.heading ?? 'Everything you need to write better'
     const featuresDesc =
       props.features?.description ??
-      "From first draft to final polish, WriteFlow accelerates every step of your writing workflow."
+      'From first draft to final polish, WriteFlow accelerates every step of your writing workflow.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
-        {
-          title: "AI-Powered Suggestions",
-          description:
-            "Get intelligent completions, rewrites, and tone adjustments as you type. Trained on millions of professional documents to match your style.",
-        },
-        {
-          title: "Grammar & Clarity",
-          description:
-            "Catch grammar errors, awkward phrasing, and unclear sentences before you publish. Our AI explains every suggestion so you learn as you edit.",
-        },
-        {
-          title: "Tone & Voice Control",
-          description:
-            "Switch between professional, casual, persuasive, or friendly tones with one click. Perfect for adapting content for different audiences.",
-        },
-        {
-          title: "Templates Library",
-          description:
-            "Start with 200+ professionally crafted templates for emails, blog posts, social media, proposals, and more. Customizable to your brand voice.",
-        },
-        {
-          title: "Team Collaboration",
-          description:
-            "Share documents, leave comments, and maintain a consistent brand voice across your entire team with shared style guides and approval workflows.",
-        },
-        {
-          title: "API & Integrations",
-          description:
-            "Connect WriteFlow to your existing tools with our REST API and native integrations for VS Code, Chrome, Slack, Notion, and Google Docs.",
-        },
-      ]
+          {
+            title: 'AI-Powered Suggestions',
+            description:
+              'Get intelligent completions, rewrites, and tone adjustments as you type. Trained on millions of professional documents to match your style.',
+          },
+          {
+            title: 'Grammar & Clarity',
+            description:
+              'Catch grammar errors, awkward phrasing, and unclear sentences before you publish. Our AI explains every suggestion so you learn as you edit.',
+          },
+          {
+            title: 'Tone & Voice Control',
+            description:
+              'Switch between professional, casual, persuasive, or friendly tones with one click. Perfect for adapting content for different audiences.',
+          },
+          {
+            title: 'Templates Library',
+            description:
+              'Start with 200+ professionally crafted templates for emails, blog posts, social media, proposals, and more. Customizable to your brand voice.',
+          },
+          {
+            title: 'Team Collaboration',
+            description:
+              'Share documents, leave comments, and maintain a consistent brand voice across your entire team with shared style guides and approval workflows.',
+          },
+          {
+            title: 'API & Integrations',
+            description:
+              'Connect WriteFlow to your existing tools with our REST API and native integrations for VS Code, Chrome, Slack, Notion, and Google Docs.',
+          },
+        ]
 
     const stepsHeading =
-      props.steps?.heading ?? "Start writing smarter in 3 steps"
+      props.steps?.heading ?? 'Start writing smarter in 3 steps'
     const stepsDesc =
       props.steps?.description ??
-      "From signup to your first AI-assisted document in under 5 minutes."
+      'From signup to your first AI-assisted document in under 5 minutes.'
     const stepsCta = props.steps?.cta ?? "Get started now — it's free"
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
-        {
-          title: "Create your account",
-          description:
-            "Sign up with your email or Google account. No credit card required for the 14-day trial. Choose your primary use case during onboarding.",
-        },
-        {
-          title: "Set your preferences",
-          description:
-            "Tell us about your writing style, preferred tone, and industry. The AI learns from examples you provide to match your unique voice.",
-        },
-        {
-          title: "Start creating",
-          description:
-            "Open the editor, pick a template or start from scratch, and experience AI-assisted writing. Export to any format or publish directly.",
-        },
-      ]
+          {
+            title: 'Create your account',
+            description:
+              'Sign up with your email or Google account. No credit card required for the 14-day trial. Choose your primary use case during onboarding.',
+          },
+          {
+            title: 'Set your preferences',
+            description:
+              'Tell us about your writing style, preferred tone, and industry. The AI learns from examples you provide to match your unique voice.',
+          },
+          {
+            title: 'Start creating',
+            description:
+              'Open the editor, pick a template or start from scratch, and experience AI-assisted writing. Export to any format or publish directly.',
+          },
+        ]
 
-    const galleryHeading =
-      props.gallery?.heading ?? "See WriteFlow in action"
+    const galleryHeading = props.gallery?.heading ?? 'See WriteFlow in action'
     const galleryDesc =
       props.gallery?.description ??
-      "Real screenshots from the app showing powerful features that transform your writing workflow."
+      'Real screenshots from the app showing powerful features that transform your writing workflow.'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
-        {
-          title: "Distraction-free editor",
-          description: "Clean interface that keeps you focused on writing.",
-        },
-        {
-          title: "Real-time collaboration",
-          description: "Work together with your team in real-time.",
-        },
-        {
-          title: "Writing analytics",
-          description: "Track productivity and improvement over time.",
-        },
-        {
-          title: "Template library",
-          description: "200+ templates to jumpstart any writing project.",
-        },
-        {
-          title: "Idea capture",
-          description: "Quick capture tools for inspiration anywhere.",
-        },
-        {
-          title: "Export anywhere",
-          description: "Publish to Word, PDF, Markdown, or your CMS.",
-        },
-      ]
+          {
+            title: 'Distraction-free editor',
+            description: 'Clean interface that keeps you focused on writing.',
+          },
+          {
+            title: 'Real-time collaboration',
+            description: 'Work together with your team in real-time.',
+          },
+          {
+            title: 'Writing analytics',
+            description: 'Track productivity and improvement over time.',
+          },
+          {
+            title: 'Template library',
+            description: '200+ templates to jumpstart any writing project.',
+          },
+          {
+            title: 'Idea capture',
+            description: 'Quick capture tools for inspiration anywhere.',
+          },
+          {
+            title: 'Export anywhere',
+            description: 'Publish to Word, PDF, Markdown, or your CMS.',
+          },
+        ]
 
     const pricingHeading =
-      props.pricing?.heading ?? "Simple, transparent pricing"
+      props.pricing?.heading ?? 'Simple, transparent pricing'
     const pricingDesc =
       props.pricing?.description ??
       "Start free, upgrade when you're ready. No hidden fees, cancel anytime."
     const pricingNote =
       props.pricing?.note ??
-      "All plans include a 14-day free trial. Need a custom enterprise solution?"
+      'All plans include a 14-day free trial. Need a custom enterprise solution?'
     const pricingNoteLink = props.pricing?.noteLink ?? "Let's talk"
     const pricingPlans = props.pricing?.plans?.length
       ? props.pricing.plans
       : [
-        {
-          name: "Free",
-          tagline: "Perfect for trying out WriteFlow",
-          price: "$0",
-          period: "/month",
-          cta: "Get started free",
-          features: [
-            "10 AI generations per day",
-            "Basic grammar & spelling",
-            "25 templates",
-            "Chrome extension",
-          ],
-        },
-        {
-          name: "Pro",
-          tagline: "For serious writers & professionals",
-          price: "$19",
-          period: "/month",
-          cta: "Start 14-day free trial",
-          featured: true,
-          features: [
-            "Unlimited AI generations",
-            "Advanced tone & style controls",
-            "200+ templates",
-            "Plagiarism detection",
-            "All integrations",
-            "Priority support",
-          ],
-        },
-        {
-          name: "Team",
-          tagline: "For teams that write together",
-          price: "$49",
-          period: "/user/month",
-          cta: "Contact sales",
-          features: [
-            "Everything in Pro",
-            "Team style guides",
-            "Admin controls & analytics",
-            "SSO & advanced security",
-            "Dedicated success manager",
-          ],
-        },
-      ]
+          {
+            name: 'Free',
+            tagline: 'Perfect for trying out WriteFlow',
+            price: '$0',
+            period: '/month',
+            cta: 'Get started free',
+            features: [
+              '10 AI generations per day',
+              'Basic grammar & spelling',
+              '25 templates',
+              'Chrome extension',
+            ],
+          },
+          {
+            name: 'Pro',
+            tagline: 'For serious writers & professionals',
+            price: '$19',
+            period: '/month',
+            cta: 'Start 14-day free trial',
+            featured: true,
+            features: [
+              'Unlimited AI generations',
+              'Advanced tone & style controls',
+              '200+ templates',
+              'Plagiarism detection',
+              'All integrations',
+              'Priority support',
+            ],
+          },
+          {
+            name: 'Team',
+            tagline: 'For teams that write together',
+            price: '$49',
+            period: '/user/month',
+            cta: 'Contact sales',
+            features: [
+              'Everything in Pro',
+              'Team style guides',
+              'Admin controls & analytics',
+              'SSO & advanced security',
+              'Dedicated success manager',
+            ],
+          },
+        ]
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-        { value: "50K+", label: "Active writers" },
-        { value: "12M+", label: "Documents created" },
-        { value: "4.9", label: "Average rating" },
-        { value: "3.2 hrs", label: "Saved per day on average" },
-      ]
+          { value: '50K+', label: 'Active writers' },
+          { value: '12M+', label: 'Documents created' },
+          { value: '4.9', label: 'Average rating' },
+          { value: '3.2 hrs', label: 'Saved per day on average' },
+        ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Loved by writers worldwide"
+      props.testimonials?.heading ?? 'Loved by writers worldwide'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "See what professionals say about how WriteFlow transformed their writing workflow."
+      'See what professionals say about how WriteFlow transformed their writing workflow.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
-        {
-          quote:
-            "WriteFlow has completely changed how I approach content creation. What used to take me 4 hours now takes 90 minutes. The tone adjustment feature alone is worth the subscription.",
-          name: "Sarah Chen",
-          role: "Content Lead at Notion",
-          avatarAlt:
-            "Professional headshot of Sarah Chen, a content marketing manager with dark hair",
-        },
-        {
-          quote:
-            "As a freelance copywriter, I juggle 15+ clients with different brand voices. WriteFlow's style guides help me switch between them instantly. Game changer for my business.",
-          name: "Marcus Thompson",
-          role: "Freelance Copywriter",
-          avatarAlt:
-            "Professional headshot of Marcus Thompson, a copywriter with short beard and glasses",
-        },
-        {
-          quote:
-            "Our marketing team doubled output after adopting WriteFlow. The collaborative features and brand voice consistency have made us significantly more efficient.",
-          name: "Elena Rodriguez",
-          role: "Marketing Director at Figma",
-          avatarAlt:
-            "Professional headshot of Elena Rodriguez, a marketing director with curly brown hair",
-        },
-        {
-          quote:
-            "I was skeptical about AI writing tools until I tried WriteFlow. It doesn't replace my voice—it amplifies it. My editor noticed the improvement immediately.",
-          name: "David Park",
-          role: "Author & Journalist",
-          avatarAlt:
-            "Professional headshot of David Park, an author with thoughtful expression",
-        },
-        {
-          quote:
-            "The Chrome extension is incredible—I use it for emails, social posts, and even comments. It's like having a professional editor looking over my shoulder.",
-          name: "Amara Wilson",
-          role: "CEO at TechFlow",
-          avatarAlt:
-            "Professional headshot of Amara Wilson, a startup founder with bright smile",
-        },
-        {
-          quote:
-            "We evaluated 8 different AI writing tools. WriteFlow won on output quality, UI design, and customer support. Our whole team is on it now.",
-          name: "James Miller",
-          role: "CTO at StackBlitz",
-          avatarAlt:
-            "Professional headshot of James Miller, a CTO with confident expression",
-        },
-      ]
+          {
+            quote:
+              'WriteFlow has completely changed how I approach content creation. What used to take me 4 hours now takes 90 minutes. The tone adjustment feature alone is worth the subscription.',
+            name: 'Sarah Chen',
+            role: 'Content Lead at Notion',
+            avatarAlt:
+              'Professional headshot of Sarah Chen, a content marketing manager with dark hair',
+          },
+          {
+            quote:
+              "As a freelance copywriter, I juggle 15+ clients with different brand voices. WriteFlow's style guides help me switch between them instantly. Game changer for my business.",
+            name: 'Marcus Thompson',
+            role: 'Freelance Copywriter',
+            avatarAlt:
+              'Professional headshot of Marcus Thompson, a copywriter with short beard and glasses',
+          },
+          {
+            quote:
+              'Our marketing team doubled output after adopting WriteFlow. The collaborative features and brand voice consistency have made us significantly more efficient.',
+            name: 'Elena Rodriguez',
+            role: 'Marketing Director at Figma',
+            avatarAlt:
+              'Professional headshot of Elena Rodriguez, a marketing director with curly brown hair',
+          },
+          {
+            quote:
+              "I was skeptical about AI writing tools until I tried WriteFlow. It doesn't replace my voice—it amplifies it. My editor noticed the improvement immediately.",
+            name: 'David Park',
+            role: 'Author & Journalist',
+            avatarAlt:
+              'Professional headshot of David Park, an author with thoughtful expression',
+          },
+          {
+            quote:
+              "The Chrome extension is incredible—I use it for emails, social posts, and even comments. It's like having a professional editor looking over my shoulder.",
+            name: 'Amara Wilson',
+            role: 'CEO at TechFlow',
+            avatarAlt:
+              'Professional headshot of Amara Wilson, a startup founder with bright smile',
+          },
+          {
+            quote:
+              'We evaluated 8 different AI writing tools. WriteFlow won on output quality, UI design, and customer support. Our whole team is on it now.',
+            name: 'James Miller',
+            role: 'CTO at StackBlitz',
+            avatarAlt:
+              'Professional headshot of James Miller, a CTO with confident expression',
+          },
+        ]
 
-    const faqHeading = props.faq?.heading ?? "Frequently asked questions"
+    const faqHeading = props.faq?.heading ?? 'Frequently asked questions'
     const faqDesc =
       props.faq?.description ??
       "Everything you need to know about WriteFlow. Can't find what you're looking for?"
-    const faqContactLink = props.faq?.contactLink ?? "Contact our team"
+    const faqContactLink = props.faq?.contactLink ?? 'Contact our team'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
-        {
-          question: "How does WriteFlow's AI actually work?",
-          answer:
-            "WriteFlow uses a combination of large language models (including GPT-4) trained specifically on high-quality professional writing. When you use our suggestions feature, the AI analyzes your context, writing style, and intent to provide relevant completions and improvements. Your data is never used to train our models—your writing stays private.",
-        },
-        {
-          question: "Is my content secure and private?",
-          answer:
-            "Absolutely. We use enterprise-grade encryption (AES-256) for all data at rest and in transit. Your documents are never used to train AI models. We're SOC 2 Type II certified and GDPR compliant. For enterprise customers, we offer data residency options and custom security configurations.",
-        },
-        {
-          question: "Can I cancel my subscription anytime?",
-          answer:
-            "Yes, you can cancel anytime with no questions asked. If you cancel, you'll continue to have access until the end of your billing period. We also offer a 30-day money-back guarantee for annual plans if you're not completely satisfied.",
-        },
-        {
-          question: "What integrations do you support?",
-          answer:
-            "We offer native integrations with Google Docs, Notion, Slack, VS Code, Chrome, Microsoft Word, and Figma. Our REST API and Zapier integration let you connect to 5,000+ other apps. New integrations are released monthly based on user requests.",
-        },
-        {
-          question: "Do you offer discounts for students or non-profits?",
-          answer:
-            "Yes! We offer 50% off Pro plans for verified students and educators through GitHub Education. Registered non-profits receive 40% off Team plans. Contact our sales team with your organization's documentation to get set up.",
-        },
-        {
-          question: "What's included in the 14-day free trial?",
-          answer:
-            "The trial includes full access to all Pro features: unlimited AI generations, all 200+ templates, tone adjustments, plagiarism detection, and all integrations. No credit card required to start. At the end of 14 days, choose a plan or continue with our generous free tier.",
-        },
-      ]
+          {
+            question: "How does WriteFlow's AI actually work?",
+            answer:
+              'WriteFlow uses a combination of large language models (including GPT-4) trained specifically on high-quality professional writing. When you use our suggestions feature, the AI analyzes your context, writing style, and intent to provide relevant completions and improvements. Your data is never used to train our models—your writing stays private.',
+          },
+          {
+            question: 'Is my content secure and private?',
+            answer:
+              "Absolutely. We use enterprise-grade encryption (AES-256) for all data at rest and in transit. Your documents are never used to train AI models. We're SOC 2 Type II certified and GDPR compliant. For enterprise customers, we offer data residency options and custom security configurations.",
+          },
+          {
+            question: 'Can I cancel my subscription anytime?',
+            answer:
+              "Yes, you can cancel anytime with no questions asked. If you cancel, you'll continue to have access until the end of your billing period. We also offer a 30-day money-back guarantee for annual plans if you're not completely satisfied.",
+          },
+          {
+            question: 'What integrations do you support?',
+            answer:
+              'We offer native integrations with Google Docs, Notion, Slack, VS Code, Chrome, Microsoft Word, and Figma. Our REST API and Zapier integration let you connect to 5,000+ other apps. New integrations are released monthly based on user requests.',
+          },
+          {
+            question: 'Do you offer discounts for students or non-profits?',
+            answer:
+              "Yes! We offer 50% off Pro plans for verified students and educators through GitHub Education. Registered non-profits receive 40% off Team plans. Contact our sales team with your organization's documentation to get set up.",
+          },
+          {
+            question: "What's included in the 14-day free trial?",
+            answer:
+              'The trial includes full access to all Pro features: unlimited AI generations, all 200+ templates, tone adjustments, plagiarism detection, and all integrations. No credit card required to start. At the end of 14 days, choose a plan or continue with our generous free tier.',
+          },
+        ]
 
-    const finalHeading =
-      props.finalCta?.heading ?? "Start writing better today"
+    const finalHeading = props.finalCta?.heading ?? 'Start writing better today'
     const finalDesc =
       props.finalCta?.description ??
       "Join 50,000+ writers who've already transformed their workflow. 14-day free trial, no credit card required."
-    const finalPrimary = props.finalCta?.primaryCta ?? "Get started free"
-    const finalSecondary = props.finalCta?.secondaryCta ?? "Talk to sales"
+    const finalPrimary = props.finalCta?.primaryCta ?? 'Get started free'
+    const finalSecondary = props.finalCta?.secondaryCta ?? 'Talk to sales'
     const finalBadges = props.finalCta?.badges?.length
       ? props.finalCta.badges
-      : ["Free 14-day trial", "No credit card", "Cancel anytime"]
+      : ['Free 14-day trial', 'No credit card', 'Cancel anytime']
 
     const footerTagline =
       props.footer?.tagline ??
-      "AI-powered writing assistant that helps professionals write faster, clearer, and with more confidence."
+      'AI-powered writing assistant that helps professionals write faster, clearer, and with more confidence.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
-        {
-          title: "Product",
-          links: [
-            "Features",
-            "Pricing",
-            "Integrations",
-            "Changelog",
-            "Roadmap",
-          ],
-        },
-        {
-          title: "Resources",
-          links: [
-            "Documentation",
-            "API Reference",
-            "Templates",
-            "Blog",
-            "Community",
-          ],
-        },
-        {
-          title: "Company",
-          links: ["About", "Careers", "Press Kit", "Contact"],
-        },
-        {
-          title: "Legal",
-          links: [
-            "Privacy Policy",
-            "Terms of Service",
-            "Cookie Policy",
-            "Security",
-          ],
-        },
-      ]
+          {
+            title: 'Product',
+            links: [
+              'Features',
+              'Pricing',
+              'Integrations',
+              'Changelog',
+              'Roadmap',
+            ],
+          },
+          {
+            title: 'Resources',
+            links: [
+              'Documentation',
+              'API Reference',
+              'Templates',
+              'Blog',
+              'Community',
+            ],
+          },
+          {
+            title: 'Company',
+            links: ['About', 'Careers', 'Press Kit', 'Contact'],
+          },
+          {
+            title: 'Legal',
+            links: [
+              'Privacy Policy',
+              'Terms of Service',
+              'Cookie Policy',
+              'Security',
+            ],
+          },
+        ]
     const footerCopyright =
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand} AI, Inc. All rights reserved.`
-    const footerStatus = props.footer?.status ?? "All systems operational"
+    const footerStatus = props.footer?.status ?? 'All systems operational'
 
     // Brand mark — near-black tile with a pen/edit glyph (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-foreground text-background",
+          'grid place-items-center rounded-lg bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
@@ -827,7 +829,7 @@ export const AiProductKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased selection:bg-primary/20",
+          'min-h-svh bg-background text-foreground antialiased selection:bg-primary/20',
           props.className,
         )}
       >
@@ -962,7 +964,10 @@ export const AiProductKimiPage = defineCapsule({
                       type="button"
                       className="w-full rounded-full"
                       onClick={() => {
-                        void createDocument('Untitled Document', 'Start writing here...')
+                        void createDocument(
+                          'Untitled Document',
+                          'Start writing here...',
+                        )
                         setDrawerOpen(false)
                       }}
                     >
@@ -1203,10 +1208,10 @@ export const AiProductKimiPage = defineCapsule({
                                 type="button"
                                 onClick={() => go(action)}
                                 className={cn(
-                                  "rounded px-3 py-1.5 text-xs font-medium transition-colors",
+                                  'rounded px-3 py-1.5 text-xs font-medium transition-colors',
                                   i === 0
-                                    ? "bg-foreground text-background hover:bg-foreground/90"
-                                    : "text-muted-foreground hover:text-foreground",
+                                    ? 'bg-foreground text-background hover:bg-foreground/90'
+                                    : 'text-muted-foreground hover:text-foreground',
                                 )}
                               >
                                 {action}
@@ -1388,10 +1393,10 @@ export const AiProductKimiPage = defineCapsule({
                   <div
                     key={plan.name}
                     className={cn(
-                      "relative rounded-2xl bg-card p-8",
+                      'relative rounded-2xl bg-card p-8',
                       plan.featured
-                        ? "border-2 border-foreground"
-                        : "border border-border",
+                        ? 'border-2 border-foreground'
+                        : 'border border-border',
                     )}
                   >
                     {plan.featured && (
@@ -1431,10 +1436,10 @@ export const AiProductKimiPage = defineCapsule({
                       type="button"
                       onClick={() => go(plan.cta)}
                       className={cn(
-                        "block w-full rounded-lg px-4 py-3 text-center font-medium transition-colors",
+                        'block w-full rounded-lg px-4 py-3 text-center font-medium transition-colors',
                         plan.featured
-                          ? "bg-foreground text-background hover:bg-foreground/90"
-                          : "bg-muted text-foreground hover:bg-accent",
+                          ? 'bg-foreground text-background hover:bg-foreground/90'
+                          : 'bg-muted text-foreground hover:bg-accent',
                       )}
                     >
                       {plan.cta}
@@ -1444,7 +1449,7 @@ export const AiProductKimiPage = defineCapsule({
               </div>
               <div className="mt-12 text-center">
                 <p className="text-sm text-muted-foreground">
-                  {pricingNote}{" "}
+                  {pricingNote}{' '}
                   <button
                     type="button"
                     onClick={() => go(pricingNoteLink)}
@@ -1532,7 +1537,7 @@ export const AiProductKimiPage = defineCapsule({
                   {faqHeading}
                 </h2>
                 <p className="text-lg text-muted-foreground">
-                  {faqDesc}{" "}
+                  {faqDesc}{' '}
                   <button
                     type="button"
                     onClick={() => go(faqContactLink)}
@@ -1623,7 +1628,7 @@ export const AiProductKimiPage = defineCapsule({
                   {footerTagline}
                 </p>
                 <div className="flex gap-4">
-                  {(["Twitter", "LinkedIn", "GitHub"] as const).map(
+                  {(['Twitter', 'LinkedIn', 'GitHub'] as const).map(
                     (social) => (
                       <button
                         key={social}

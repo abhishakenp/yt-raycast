@@ -1,10 +1,11 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,7 +13,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "#/components/ui/command.tsx"
+} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetClose,
@@ -22,14 +23,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * TravelAgencyKimiPage — a complete, self-contained premium TRAVEL-AGENCY landing page.
@@ -54,7 +55,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * no props at all.
  */
 export const TravelAgencyKimiPage = defineCapsule({
-  name: "TravelAgencyKimiPage",
+  name: 'TravelAgencyKimiPage',
   description:
     "Complete premium TRAVEL-AGENCY / tour-operator landing page with a warm editorial sand-and-stone aesthetic, charcoal ink and an earthy tan accent. Includes a full-bleed photographic hero with eyebrow, oversized headline, an inline trip-search widget (destination / duration / travelers selects + search button) and trust badges, a 'featured in' travel-publication logo strip, a 3-up 'why travel with us' feature grid (expert local guides, boutique stays, 24/7 concierge), a magazine-style trending-destinations gallery with one large feature tile plus price-overlay cards, a 4-step 'how it works' timeline, a 3-tier travel-package pricing block (Essential / Premium most-popular / Bespoke), a dark stats band, a 3-up star-rated traveler-review testimonial grid with avatars, an accordion FAQ, a dark split contact CTA with call/email actions, and a rich multi-column footer with destinations/company/support links and social icons. Use as the ROOT/home page for travel agencies, tour operators, vacation planners, luxury journey curators, adventure-trip companies, destination-wedding or honeymoon planners, and booking sites when a warm, aspirational, conversion-focused page with destination showcase, packages and social proof is wanted. Supply content only — brand, nav, hero, logos, features, destinations, steps, packages, stats, testimonials, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -182,9 +183,7 @@ export const TravelAgencyKimiPage = defineCapsule({
       .object({
         eyebrow: z.string().optional(),
         heading: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       })
       .optional(),
     /** Dark split contact CTA. */
@@ -203,9 +202,7 @@ export const TravelAgencyKimiPage = defineCapsule({
       .object({
         tagline: z.string().optional(),
         columns: z
-          .array(
-            z.object({ title: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ title: z.string(), links: z.array(z.string()) }))
           .optional(),
         socials: z.array(z.string()).optional(),
         legal: z.array(z.string()).optional(),
@@ -241,11 +238,21 @@ export const TravelAgencyKimiPage = defineCapsule({
           return destination ? [{ ...item, destination }] : []
         }),
       favoriteDestinationTitles: ({ db }) =>
-        new Set(db.favorites.all().map((favorite) => favorite.destinationTitle)),
+        new Set(
+          db.favorites.all().map((favorite) => favorite.destinationTitle),
+        ),
     },
     mutations: {
-      bookDestination: ({ db }, destinationTitle: string, travelers: number, duration: string, date: string) => {
-        const destination = db.destinations.where('title', destinationTitle).all()[0]
+      bookDestination: (
+        { db },
+        destinationTitle: string,
+        travelers: number,
+        duration: string,
+        date: string,
+      ) => {
+        const destination = db.destinations
+          .where('title', destinationTitle)
+          .all()[0]
         if (!destination) return db.bookings.all()
 
         db.bookings.insert({
@@ -300,125 +307,124 @@ export const TravelAgencyKimiPage = defineCapsule({
     const [mobileOpen, setMobileOpen] = useState(false)
     const [searchOpen, setSearchOpen] = useState(false)
     const [bookingsOpen, setBookingsOpen] = useState(false)
-    const brand = props.brand ?? "Wanderlust"
+    const brand = props.brand ?? 'Wanderlust'
     const nav = props.nav?.length
       ? props.nav
-      : ["Destinations", "Packages", "Reviews", "About"]
+      : ['Destinations', 'Packages', 'Reviews', 'About']
 
-    const heroEyebrow = props.hero?.eyebrow ?? "Premium Travel Experiences"
+    const heroEyebrow = props.hero?.eyebrow ?? 'Premium Travel Experiences'
     const heroHeading =
       props.hero?.heading ?? "Discover the World's Most Extraordinary Places"
     const heroSub =
       props.hero?.subheading ??
-      "Handcrafted journeys to over 50 destinations. Expert local guides, boutique accommodations, and seamless logistics."
+      'Handcrafted journeys to over 50 destinations. Expert local guides, boutique accommodations, and seamless logistics.'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Panoramic view of snow-capped Swiss Alps mountains at golden hour with alpine lake reflection"
-    const searchCta = props.hero?.searchCta ?? "Search"
-    const destinationLabel = props.hero?.destinationLabel ?? "Destination"
+      'Panoramic view of snow-capped Swiss Alps mountains at golden hour with alpine lake reflection'
+    const searchCta = props.hero?.searchCta ?? 'Search'
+    const destinationLabel = props.hero?.destinationLabel ?? 'Destination'
     const heroDestinations = props.hero?.destinations?.length
       ? props.hero.destinations
       : [
-          "Where do you want to go?",
-          "Japan — Cherry Blossom Tours",
-          "Greece — Santorini & Mykonos",
-          "Iceland — Northern Lights",
-          "Morocco — Imperial Cities",
-          "Peru — Machu Picchu",
-          "New Zealand — South Island",
-          "Norway — Fjords & Aurora",
-          "Indonesia — Bali Retreat",
+          'Where do you want to go?',
+          'Japan — Cherry Blossom Tours',
+          'Greece — Santorini & Mykonos',
+          'Iceland — Northern Lights',
+          'Morocco — Imperial Cities',
+          'Peru — Machu Picchu',
+          'New Zealand — South Island',
+          'Norway — Fjords & Aurora',
+          'Indonesia — Bali Retreat',
         ]
-    const durationLabel = props.hero?.durationLabel ?? "Duration"
+    const durationLabel = props.hero?.durationLabel ?? 'Duration'
     const heroDurations = props.hero?.durations?.length
       ? props.hero.durations
-      : ["Any", "5-7 days", "8-12 days", "13+ days"]
-    const travelersLabel = props.hero?.travelersLabel ?? "Travelers"
+      : ['Any', '5-7 days', '8-12 days', '13+ days']
+    const travelersLabel = props.hero?.travelersLabel ?? 'Travelers'
     const heroTravelers = props.hero?.travelers?.length
       ? props.hero.travelers
-      : ["2 Adults", "1 Adult", "Family (2+2)", "Small Group (4-8)"]
+      : ['2 Adults', '1 Adult', 'Family (2+2)', 'Small Group (4-8)']
     const heroBadges = props.hero?.badges?.length
       ? props.hero.badges
-      : ["Free cancellation up to 30 days", "Price match guarantee"]
-    const heroPhone = props.hero?.phone ?? "1-800-123-4567"
-    const planCta = props.hero?.planCta ?? "Plan Your Trip"
+      : ['Free cancellation up to 30 days', 'Price match guarantee']
+    const heroPhone = props.hero?.phone ?? '1-800-123-4567'
 
     const logosHeading =
       props.logos?.heading ??
-      "Featured in & trusted by leading travel publications"
+      'Featured in & trusted by leading travel publications'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
       : [
-          "Travel+Leisure",
-          "Condé Nast",
-          "AFAR",
-          "National Geographic",
-          "Lonely Planet",
+          'Travel+Leisure',
+          'Condé Nast',
+          'AFAR',
+          'National Geographic',
+          'Lonely Planet',
         ]
 
-    const featuresEyebrow = props.features?.eyebrow ?? "Why Travel With Us"
+    const featuresEyebrow = props.features?.eyebrow ?? 'Why Travel With Us'
     const featuresHeading =
-      props.features?.heading ?? "Curated experiences, exceptional service"
+      props.features?.heading ?? 'Curated experiences, exceptional service'
     const featuresDesc =
       props.features?.description ??
-      "We handle every detail so you can focus on what matters — immersing yourself in extraordinary destinations and creating lasting memories."
+      'We handle every detail so you can focus on what matters — immersing yourself in extraordinary destinations and creating lasting memories.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Expert Local Guides",
+            title: 'Expert Local Guides',
             description:
-              "Our network of 200+ certified guides brings deep cultural knowledge and insider access to every destination.",
+              'Our network of 200+ certified guides brings deep cultural knowledge and insider access to every destination.',
           },
           {
-            title: "Boutique Accommodations",
+            title: 'Boutique Accommodations',
             description:
-              "Handpicked hotels, riads, and lodges that reflect local character — from cliffside villas to traditional ryokans.",
+              'Handpicked hotels, riads, and lodges that reflect local character — from cliffside villas to traditional ryokans.',
           },
           {
-            title: "24/7 Concierge Support",
+            title: '24/7 Concierge Support',
             description:
               "Real human support before, during, and after your trip. We're here whenever you need us, anywhere in the world.",
           },
         ]
 
-    const destEyebrow = props.destinations?.eyebrow ?? "Popular Destinations"
-    const destHeading = props.destinations?.heading ?? "Trending journeys"
-    const destViewAll = props.destinations?.viewAll ?? "View all destinations"
+    const destEyebrow = props.destinations?.eyebrow ?? 'Popular Destinations'
+    const destHeading = props.destinations?.heading ?? 'Trending journeys'
+    const destViewAll = props.destinations?.viewAll ?? 'View all destinations'
     const destItems = props.destinations?.items?.length
       ? props.destinations.items
       : [
           {
-            title: "Japan — Cherry Blossoms & Ancient Temples",
+            title: 'Japan — Cherry Blossoms & Ancient Temples',
             imageAlt:
-              "Ancient temple pathway lined with traditional stone lanterns in Kyoto, Japan",
-            tag: "12-day journey",
-            detail: "Tokyo • Kyoto • Osaka • Hakone",
-            price: "From $4,850 per person",
+              'Ancient temple pathway lined with traditional stone lanterns in Kyoto, Japan',
+            tag: '12-day journey',
+            detail: 'Tokyo • Kyoto • Osaka • Hakone',
+            price: 'From $4,850 per person',
           },
           {
-            title: "Greek Islands",
+            title: 'Greek Islands',
             imageAlt:
-              "White-washed buildings with blue domes cascading down cliffs to the Aegean Sea in Santorini, Greece",
-            price: "From $3,200",
+              'White-washed buildings with blue domes cascading down cliffs to the Aegean Sea in Santorini, Greece',
+            price: 'From $3,200',
           },
           {
-            title: "Iceland — Aurora Hunt",
+            title: 'Iceland — Aurora Hunt',
             imageAlt:
-              "Northern lights aurora borealis dancing over snow-covered mountains in Iceland",
-            price: "From $3,950",
+              'Northern lights aurora borealis dancing over snow-covered mountains in Iceland',
+            price: 'From $3,950',
           },
           {
-            title: "Morocco — Imperial Cities",
+            title: 'Morocco — Imperial Cities',
             imageAlt:
-              "Colorful traditional Moroccan market souks with hanging lanterns in Marrakech medina",
-            price: "From $2,850",
+              'Colorful traditional Moroccan market souks with hanging lanterns in Marrakech medina',
+            price: 'From $2,850',
           },
           {
-            title: "Peru — Machu Picchu",
+            title: 'Peru — Machu Picchu',
             imageAlt:
-              "Inca citadel Machu Picchu perched on misty Andes mountain peaks at sunrise",
-            price: "From $3,450",
+              'Inca citadel Machu Picchu perched on misty Andes mountain peaks at sunrise',
+            price: 'From $3,450',
           },
         ]
     const normalizedDestItems = destItems.map((dest) => ({
@@ -430,9 +436,10 @@ export const TravelAgencyKimiPage = defineCapsule({
     }))
     const storedDestinations = lakebed.useQuery('destinations')
     const bookingLines = lakebed.useQuery('bookingLines')
-    const favoriteDestinationTitles = lakebed.useQuery('favoriteDestinationTitles')
+    const favoriteDestinationTitles = lakebed.useQuery(
+      'favoriteDestinationTitles',
+    )
     const auth = lakebed.useAuth()
-    const bookDestination = lakebed.useMutation('bookDestination')
     const updateBooking = lakebed.useMutation('updateBooking')
     const removeBooking = lakebed.useMutation('removeBooking')
     const clearBookings = lakebed.useMutation('clearBookings')
@@ -473,205 +480,213 @@ export const TravelAgencyKimiPage = defineCapsule({
       0,
     )
 
-    const stepsEyebrow = props.steps?.eyebrow ?? "How It Works"
+    const stepsEyebrow = props.steps?.eyebrow ?? 'How It Works'
     const stepsHeading =
-      props.steps?.heading ?? "Planning your journey is simple"
+      props.steps?.heading ?? 'Planning your journey is simple'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Browse & Select",
+            title: 'Browse & Select',
             description:
-              "Explore our curated collection of journeys. Filter by region, duration, or travel style.",
+              'Explore our curated collection of journeys. Filter by region, duration, or travel style.',
           },
           {
-            title: "Customize",
+            title: 'Customize',
             description:
-              "Work with your travel designer to personalize accommodations, activities, and pacing.",
+              'Work with your travel designer to personalize accommodations, activities, and pacing.',
           },
           {
-            title: "Confirm & Pay",
+            title: 'Confirm & Pay',
             description:
-              "Secure your spot with flexible payment options. Full transparency, no hidden fees.",
+              'Secure your spot with flexible payment options. Full transparency, no hidden fees.',
           },
           {
-            title: "Travel with Confidence",
+            title: 'Travel with Confidence',
             description:
-              "Receive your detailed itinerary, pack your bags, and enjoy your perfectly planned journey.",
+              'Receive your detailed itinerary, pack your bags, and enjoy your perfectly planned journey.',
           },
         ]
 
-    const pkgEyebrow = props.packages?.eyebrow ?? "Travel Packages"
-    const pkgHeading = props.packages?.heading ?? "Journeys for every style"
+    const pkgEyebrow = props.packages?.eyebrow ?? 'Travel Packages'
+    const pkgHeading = props.packages?.heading ?? 'Journeys for every style'
     const pkgDesc =
       props.packages?.description ??
-      "All packages include accommodations, guided experiences, transfers, and 24/7 support."
+      'All packages include accommodations, guided experiences, transfers, and 24/7 support.'
     const pkgTiers = props.packages?.tiers?.length
       ? props.packages.tiers
       : [
           {
-            name: "Essential",
+            name: 'Essential',
             tagline:
-              "Perfect for independent travelers who want local expertise.",
-            price: "$2,500",
-            per: "/person",
-            note: "Starting price for 7-day journeys",
+              'Perfect for independent travelers who want local expertise.',
+            price: '$2,500',
+            per: '/person',
+            note: 'Starting price for 7-day journeys',
             features: [
-              "Boutique 3-4 star accommodations",
-              "Expert local guides for key experiences",
-              "Daily breakfast included",
-              "Airport transfers",
-              "24/7 emergency support",
+              'Boutique 3-4 star accommodations',
+              'Expert local guides for key experiences',
+              'Daily breakfast included',
+              'Airport transfers',
+              '24/7 emergency support',
             ],
-            cta: "View Essential Trips",
+            cta: 'View Essential Trips',
           },
           {
-            name: "Premium",
+            name: 'Premium',
             tagline:
-              "Our signature experience with elevated touches throughout.",
-            price: "$4,200",
-            per: "/person",
-            note: "Starting price for 7-day journeys",
+              'Our signature experience with elevated touches throughout.',
+            price: '$4,200',
+            per: '/person',
+            note: 'Starting price for 7-day journeys',
             features: [
-              "Luxury 4-5 star & boutique properties",
-              "Private guides throughout your journey",
-              "Most meals included (breakfast + 5 dinners)",
-              "Private transfers & domestic flights",
-              "Exclusive after-hours access & special experiences",
-              "Dedicated travel concierge",
+              'Luxury 4-5 star & boutique properties',
+              'Private guides throughout your journey',
+              'Most meals included (breakfast + 5 dinners)',
+              'Private transfers & domestic flights',
+              'Exclusive after-hours access & special experiences',
+              'Dedicated travel concierge',
             ],
-            cta: "Explore Premium",
+            cta: 'Explore Premium',
             popular: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Bespoke",
-            tagline: "Fully custom journeys designed from scratch.",
-            price: "Custom",
-            note: "Pricing based on your unique itinerary",
+            name: 'Bespoke',
+            tagline: 'Fully custom journeys designed from scratch.',
+            price: 'Custom',
+            note: 'Pricing based on your unique itinerary',
             features: [
-              "Ultra-luxury accommodations",
-              "Complete itinerary customization",
-              "Private jet & yacht charters available",
-              "Private security & guides",
-              "Travel designer travels with you (optional)",
+              'Ultra-luxury accommodations',
+              'Complete itinerary customization',
+              'Private jet & yacht charters available',
+              'Private security & guides',
+              'Travel designer travels with you (optional)',
             ],
-            cta: "Start Planning",
+            cta: 'Start Planning',
           },
         ]
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "15,000+", label: "Happy travelers" },
-          { value: "52", label: "Destinations" },
-          { value: "4.9", label: "Average rating" },
-          { value: "12", label: "Years of expertise" },
+          { value: '15,000+', label: 'Happy travelers' },
+          { value: '52', label: 'Destinations' },
+          { value: '4.9', label: 'Average rating' },
+          { value: '12', label: 'Years of expertise' },
         ]
 
-    const tEyebrow = props.testimonials?.eyebrow ?? "Traveler Stories"
-    const tHeading = props.testimonials?.heading ?? "What our guests say"
+    const tEyebrow = props.testimonials?.eyebrow ?? 'Traveler Stories'
+    const tHeading = props.testimonials?.heading ?? 'What our guests say'
     const tMore =
-      props.testimonials?.moreLink ?? "Read more reviews on Trustpilot"
+      props.testimonials?.moreLink ?? 'Read more reviews on Trustpilot'
     const tItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "Our Japan trip was absolutely flawless. The cherry blossom timing was perfect, our guide in Kyoto was a local historian, and every hotel felt special. Already booking our next adventure!",
-            name: "Sarah Mitchell",
-            meta: "Traveled to Japan • April 2025",
+              'Our Japan trip was absolutely flawless. The cherry blossom timing was perfect, our guide in Kyoto was a local historian, and every hotel felt special. Already booking our next adventure!',
+            name: 'Sarah Mitchell',
+            meta: 'Traveled to Japan • April 2025',
             avatarAlt:
-              "Professional headshot of a smiling woman with shoulder-length brown hair, outdoor setting",
+              'Professional headshot of a smiling woman with shoulder-length brown hair, outdoor setting',
           },
           {
             quote:
-              "Iceland exceeded every expectation. Seeing the Northern Lights dance across the sky was life-changing. The boutique hotel in Reykjavik was stunning, and our glacier guide was incredible.",
-            name: "David Chen",
-            meta: "Traveled to Iceland • February 2025",
+              'Iceland exceeded every expectation. Seeing the Northern Lights dance across the sky was life-changing. The boutique hotel in Reykjavik was stunning, and our glacier guide was incredible.',
+            name: 'David Chen',
+            meta: 'Traveled to Iceland • February 2025',
             avatarAlt:
-              "Professional headshot of a smiling man with short dark hair wearing a casual button-up shirt",
+              'Professional headshot of a smiling man with short dark hair wearing a casual button-up shirt',
           },
           {
             quote:
-              "Morocco was a dream. The riad in Marrakech was like stepping into a movie. Our guide knew every hidden corner of the medina. The camel trek and desert camp under the stars was magical.",
-            name: "Emma Rodriguez",
-            meta: "Traveled to Morocco • March 2025",
+              'Morocco was a dream. The riad in Marrakech was like stepping into a movie. Our guide knew every hidden corner of the medina. The camel trek and desert camp under the stars was magical.',
+            name: 'Emma Rodriguez',
+            meta: 'Traveled to Morocco • March 2025',
             avatarAlt:
-              "Professional headshot of a smiling woman with curly blonde hair and natural lighting",
+              'Professional headshot of a smiling woman with curly blonde hair and natural lighting',
           },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Common questions"
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Common questions'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
             q: "What's included in your travel packages?",
-            a: "All our packages include carefully selected accommodations, expert local guides, daily breakfast, airport transfers, and 24/7 emergency support. Premium and Bespoke packages include additional meals, private guides, and exclusive experiences. International flights are quoted separately so you can use miles or book through your preferred airline.",
+            a: 'All our packages include carefully selected accommodations, expert local guides, daily breakfast, airport transfers, and 24/7 emergency support. Premium and Bespoke packages include additional meals, private guides, and exclusive experiences. International flights are quoted separately so you can use miles or book through your preferred airline.',
           },
           {
-            q: "Can I customize my itinerary?",
-            a: "Absolutely. Every journey can be tailored to your preferences. Work with your dedicated travel designer to adjust pacing, swap activities, upgrade accommodations, or add special celebrations. For fully custom trips, our Bespoke service creates entirely unique itineraries from scratch.",
+            q: 'Can I customize my itinerary?',
+            a: 'Absolutely. Every journey can be tailored to your preferences. Work with your dedicated travel designer to adjust pacing, swap activities, upgrade accommodations, or add special celebrations. For fully custom trips, our Bespoke service creates entirely unique itineraries from scratch.',
           },
           {
             q: "What's your cancellation policy?",
-            a: "We offer free cancellation up to 30 days before departure for a full refund. Cancellations 15-29 days prior receive a 50% refund. Within 14 days, we work with you to reschedule or provide credit for future travel. We also recommend purchasing comprehensive travel insurance for additional protection.",
+            a: 'We offer free cancellation up to 30 days before departure for a full refund. Cancellations 15-29 days prior receive a 50% refund. Within 14 days, we work with you to reschedule or provide credit for future travel. We also recommend purchasing comprehensive travel insurance for additional protection.',
           },
           {
-            q: "Do you offer solo traveler packages?",
-            a: "Yes! We design solo-friendly journeys with single accommodations at no or low supplement. Many of our small group departures are perfect for solo travelers looking to connect with like-minded explorers. Your travel designer can recommend the best options based on your preferences.",
+            q: 'Do you offer solo traveler packages?',
+            a: 'Yes! We design solo-friendly journeys with single accommodations at no or low supplement. Many of our small group departures are perfect for solo travelers looking to connect with like-minded explorers. Your travel designer can recommend the best options based on your preferences.',
           },
           {
-            q: "How far in advance should I book?",
-            a: "For peak seasons (cherry blossom in Japan, Northern Lights in Iceland, summer in Europe), we recommend booking 6-9 months ahead. For other destinations, 3-4 months is typically sufficient. Last-minute bookings are sometimes possible — contact us to check availability.",
+            q: 'How far in advance should I book?',
+            a: 'For peak seasons (cherry blossom in Japan, Northern Lights in Iceland, summer in Europe), we recommend booking 6-9 months ahead. For other destinations, 3-4 months is typically sufficient. Last-minute bookings are sometimes possible — contact us to check availability.',
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to explore?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to explore?'
     const ctaDesc =
       props.cta?.description ??
-      "Start planning your journey today. Connect with a travel designer for a complimentary consultation and custom itinerary proposal."
+      'Start planning your journey today. Connect with a travel designer for a complimentary consultation and custom itinerary proposal.'
     const ctaCall = props.cta?.callCta ?? `Call ${heroPhone}`
-    const ctaEmail = props.cta?.emailCta ?? "Email Us"
+    const ctaEmail = props.cta?.emailCta ?? 'Email Us'
     const ctaNote =
-      props.cta?.note ?? "Or request a callback — we'll reach out within 24 hours"
+      props.cta?.note ??
+      "Or request a callback — we'll reach out within 24 hours"
     const ctaImageAlt =
       props.cta?.imageAlt ??
-      "Overhead view of travel planning materials with world map, compass, camera, and vintage suitcase"
+      'Overhead view of travel planning materials with world map, compass, camera, and vintage suitcase'
 
     const footerTagline =
       props.footer?.tagline ??
-      "Curated journeys for discerning travelers. Authentic experiences, exceptional service, unforgettable memories since 2013."
+      'Curated journeys for discerning travelers. Authentic experiences, exceptional service, unforgettable memories since 2013.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Destinations",
-            links: ["Japan", "Greece", "Iceland", "Morocco", "Peru", "New Zealand"],
-          },
-          {
-            title: "Company",
-            links: ["About Us", "Our Team", "Careers", "Press", "Travel Blog"],
-          },
-          {
-            title: "Support",
+            title: 'Destinations',
             links: [
-              "Contact Us",
-              "FAQs",
-              "Booking Terms",
-              "Travel Insurance",
-              "Sustainability",
+              'Japan',
+              'Greece',
+              'Iceland',
+              'Morocco',
+              'Peru',
+              'New Zealand',
+            ],
+          },
+          {
+            title: 'Company',
+            links: ['About Us', 'Our Team', 'Careers', 'Press', 'Travel Blog'],
+          },
+          {
+            title: 'Support',
+            links: [
+              'Contact Us',
+              'FAQs',
+              'Booking Terms',
+              'Travel Insurance',
+              'Sustainability',
             ],
           },
         ]
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Instagram", "Facebook", "Twitter", "Pinterest"]
+      : ['Instagram', 'Facebook', 'Twitter', 'Pinterest']
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Settings"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
     const footerCopyright =
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand} Travel. All rights reserved.`
@@ -825,12 +840,12 @@ export const TravelAgencyKimiPage = defineCapsule({
     }
 
     const selectCls =
-      "w-full cursor-pointer bg-transparent font-medium text-foreground outline-none"
+      'w-full cursor-pointer bg-transparent font-medium text-foreground outline-none'
 
     return (
       <div
         className={cn(
-          "min-h-svh overflow-x-hidden bg-background font-sans text-foreground antialiased",
+          'min-h-svh overflow-x-hidden bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -1080,9 +1095,7 @@ export const TravelAgencyKimiPage = defineCapsule({
                                 </div>
                                 <button
                                   type="button"
-                                  onClick={() =>
-                                    void removeBooking(item.id)
-                                  }
+                                  onClick={() => void removeBooking(item.id)}
                                   className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                                 >
                                   Remove
@@ -1328,7 +1341,10 @@ export const TravelAgencyKimiPage = defineCapsule({
                       <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
                         {destinationLabel}
                       </label>
-                      <select className={selectCls} aria-label={destinationLabel}>
+                      <select
+                        className={selectCls}
+                        aria-label={destinationLabel}
+                      >
                         {heroDestinations.map((d) => (
                           <option key={d} className="bg-card">
                             {d}
@@ -1482,16 +1498,16 @@ export const TravelAgencyKimiPage = defineCapsule({
                       type="button"
                       onClick={() => go(d.title)}
                       className={cn(
-                        "group block w-full cursor-pointer text-left",
-                        feature && "lg:col-span-2 lg:row-span-2",
+                        'group block w-full cursor-pointer text-left',
+                        feature && 'lg:col-span-2 lg:row-span-2',
                       )}
                     >
                       <div
                         className={cn(
-                          "relative overflow-hidden rounded-2xl",
+                          'relative overflow-hidden rounded-2xl',
                           feature
-                            ? "h-full min-h-[400px] lg:min-h-[500px]"
-                            : "h-64",
+                            ? 'h-full min-h-[400px] lg:min-h-[500px]'
+                            : 'h-64',
                         )}
                       >
                         <Image
@@ -1503,8 +1519,10 @@ export const TravelAgencyKimiPage = defineCapsule({
                         />
                         <div
                           className={cn(
-                            "absolute inset-0 bg-gradient-to-t to-transparent",
-                            feature ? "from-foreground/80 via-transparent" : "from-foreground/70",
+                            'absolute inset-0 bg-gradient-to-t to-transparent',
+                            feature
+                              ? 'from-foreground/80 via-transparent'
+                              : 'from-foreground/70',
                           )}
                         />
                         <button
@@ -1520,18 +1538,18 @@ export const TravelAgencyKimiPage = defineCapsule({
                               : `Add ${d.title} to favorites`
                           }
                           className={cn(
-                            "absolute top-4 right-4 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100",
+                            'absolute top-4 right-4 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
                             isFavorite
-                              ? "bg-primary text-primary-foreground opacity-100"
-                              : "bg-background/90 text-foreground opacity-0 hover:bg-background",
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
                           )}
                         >
                           <HeartIcon active={isFavorite} />
                         </button>
                         <div
                           className={cn(
-                            "absolute inset-x-0 bottom-0",
-                            feature ? "p-6" : "p-5",
+                            'absolute inset-x-0 bottom-0',
+                            feature ? 'p-6' : 'p-5',
                           )}
                         >
                           {d.tag ? (
@@ -1541,8 +1559,8 @@ export const TravelAgencyKimiPage = defineCapsule({
                           ) : null}
                           <h3
                             className={cn(
-                              "font-semibold text-background",
-                              feature ? "mb-2 text-2xl" : "mb-1 text-lg",
+                              'font-semibold text-background',
+                              feature ? 'mb-2 text-2xl' : 'mb-1 text-lg',
                             )}
                           >
                             {d.title}
@@ -1552,8 +1570,10 @@ export const TravelAgencyKimiPage = defineCapsule({
                           ) : null}
                           <p
                             className={cn(
-                              "text-background",
-                              feature ? "mt-3 font-semibold" : "text-sm text-background/80",
+                              'text-background',
+                              feature
+                                ? 'mt-3 font-semibold'
+                                : 'text-sm text-background/80',
                             )}
                           >
                             {d.price}
@@ -1586,15 +1606,17 @@ export const TravelAgencyKimiPage = defineCapsule({
                     <div key={step.title} className="relative">
                       <div
                         className={cn(
-                          "mb-6 flex size-12 items-center justify-center rounded-full text-xl font-semibold",
+                          'mb-6 flex size-12 items-center justify-center rounded-full text-xl font-semibold',
                           last
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-foreground text-background",
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-foreground text-background',
                         )}
                       >
                         {i + 1}
                       </div>
-                      <h3 className="mb-3 text-lg font-semibold">{step.title}</h3>
+                      <h3 className="mb-3 text-lg font-semibold">
+                        {step.title}
+                      </h3>
                       <p className="leading-relaxed text-muted-foreground">
                         {step.description}
                       </p>
@@ -1626,10 +1648,10 @@ export const TravelAgencyKimiPage = defineCapsule({
                   <div
                     key={tier.name}
                     className={cn(
-                      "relative rounded-2xl p-8",
+                      'relative rounded-2xl p-8',
                       tier.popular
-                        ? "bg-foreground text-background shadow-xl"
-                        : "bg-card text-card-foreground shadow-sm",
+                        ? 'bg-foreground text-background shadow-xl'
+                        : 'bg-card text-card-foreground shadow-sm',
                     )}
                   >
                     {tier.popular && tier.badge ? (
@@ -1639,28 +1661,32 @@ export const TravelAgencyKimiPage = defineCapsule({
                     ) : null}
                     <h3
                       className={cn(
-                        "mb-2 text-lg font-semibold uppercase tracking-wide",
-                        tier.popular ? "text-primary" : "text-muted-foreground",
+                        'mb-2 text-lg font-semibold uppercase tracking-wide',
+                        tier.popular ? 'text-primary' : 'text-muted-foreground',
                       )}
                     >
                       {tier.name}
                     </h3>
                     <p
                       className={cn(
-                        "mb-6",
-                        tier.popular ? "text-background/80" : "text-muted-foreground",
+                        'mb-6',
+                        tier.popular
+                          ? 'text-background/80'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {tier.tagline}
                     </p>
                     <div className="mb-6">
-                      <span className="text-4xl font-semibold">{tier.price}</span>
+                      <span className="text-4xl font-semibold">
+                        {tier.price}
+                      </span>
                       {tier.per ? (
                         <span
                           className={cn(
                             tier.popular
-                              ? "text-background/70"
-                              : "text-muted-foreground",
+                              ? 'text-background/70'
+                              : 'text-muted-foreground',
                           )}
                         >
                           {tier.per}
@@ -1669,8 +1695,10 @@ export const TravelAgencyKimiPage = defineCapsule({
                     </div>
                     <p
                       className={cn(
-                        "mb-8 text-sm",
-                        tier.popular ? "text-background/70" : "text-muted-foreground",
+                        'mb-8 text-sm',
+                        tier.popular
+                          ? 'text-background/70'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {tier.note}
@@ -1683,8 +1711,8 @@ export const TravelAgencyKimiPage = defineCapsule({
                           <span
                             className={cn(
                               tier.popular
-                                ? "text-background/80"
-                                : "text-muted-foreground",
+                                ? 'text-background/80'
+                                : 'text-muted-foreground',
                             )}
                           >
                             {feat}
@@ -1697,10 +1725,10 @@ export const TravelAgencyKimiPage = defineCapsule({
                       type="button"
                       onClick={() => go(tier.cta)}
                       className={cn(
-                        "w-full rounded-xl px-6 py-3 font-medium transition-colors",
+                        'w-full rounded-xl px-6 py-3 font-medium transition-colors',
                         tier.popular
-                          ? "bg-background text-foreground hover:bg-muted"
-                          : "border-2 border-foreground text-foreground hover:bg-foreground hover:text-background",
+                          ? 'bg-background text-foreground hover:bg-muted'
+                          : 'border-2 border-foreground text-foreground hover:bg-foreground hover:text-background',
                       )}
                     >
                       {tier.cta}
@@ -1734,7 +1762,9 @@ export const TravelAgencyKimiPage = defineCapsule({
                 <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary">
                   {tEyebrow}
                 </p>
-                <h2 className="text-4xl font-semibold md:text-5xl">{tHeading}</h2>
+                <h2 className="text-4xl font-semibold md:text-5xl">
+                  {tHeading}
+                </h2>
               </div>
 
               <div className="grid gap-8 md:grid-cols-3">
@@ -1757,7 +1787,9 @@ export const TravelAgencyKimiPage = defineCapsule({
                       />
                       <div>
                         <p className="font-semibold">{t.name}</p>
-                        <p className="text-sm text-muted-foreground">{t.meta}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {t.meta}
+                        </p>
                       </div>
                     </div>
                   </article>

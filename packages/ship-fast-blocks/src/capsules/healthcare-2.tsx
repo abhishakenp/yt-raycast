@@ -1,11 +1,11 @@
-import { useState } from "react"
-import { type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -15,14 +15,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * HealthcareKimiPage2 — the SECOND, visually distinct healthcare / medical-clinic
@@ -53,7 +53,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * props.
  */
 export const HealthcareKimiPage2 = defineCapsule({
-  name: "HealthcareKimiPage2",
+  name: 'HealthcareKimiPage2',
   description:
     "Second, visually DISTINCT primary-care / medical-clinic / healthcare LANDING page (an alternative style to HealthcareKimiPage) with a bold, vivid, photo-rich aesthetic: a saturated full-bleed teal-gradient hero (now-accepting-patients pill, Your-Health-Our-Priority headline, dual CTAs, years/patients/rating trust stats, doctor photo with floating Open-Now hours card), an accepted-insurance logo strip (BlueCross, Aetna, UnitedHealthcare, Cigna, Humana, Medicare), a 6-up medical services grid with icon tiles (Primary Care, Cardiology, Urgent Care, Pediatrics, Diagnostic Imaging, Telehealth), a 4-up board-certified physician team grid with hover-reveal credential overlays, a teal Your-Care-Journey 3-step how-it-works band with glassy stat chips (booking time, wait time, portal access), a multi-tile FACILITIES masonry gallery (reception, exam room, diagnostic lab, pediatric wing, telehealth suite), a transparent 3-tier membership pricing table with a center-elevated Most-Popular plan and feature checklists, a separate DARK statistics band with patients-served / providers / rating / wait-time plus satisfaction/locations/years sub-cards, a 3-up 5-star patient-testimonial grid with avatars, an accordion FAQ (walk-ins, insurance, records, same-day, telehealth), a full-bleed teal-gradient call-to-action band with call and book-online buttons, and a rich multi-column footer with quick links, services, contact and social links. Use as the ROOT/home page for medical centers, doctors' offices, urgent-care, cardiology, pediatric, family-medicine, telehealth, wellness or multi-specialty clinics and hospitals when a bolder teal/orange brand mood and a facilities showcase are wanted over the calmer sibling. Supply content only — brand, nav, hero, insurers, services, doctors, steps, gallery, pricing, stats, testimonials, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -269,18 +269,23 @@ export const HealthcareKimiPage2 = defineCapsule({
     queries: {
       appointments: ({ db }) => db.appointments.orderBy('createdAt').all(),
       favoriteDoctorNames: ({ db }) =>
-        new Set(db.favoriteDoctors.all().map((favorite) => favorite.doctorName)),
+        new Set(
+          db.favoriteDoctors.all().map((favorite) => favorite.doctorName),
+        ),
     },
     mutations: {
-      bookAppointment: ({ db }, data: {
-        doctorName: string
-        service: string
-        date: string
-        time: string
-        patientName: string
-        patientEmail: string
-        patientPhone: string
-      }) => {
+      bookAppointment: (
+        { db },
+        data: {
+          doctorName: string
+          service: string
+          date: string
+          time: string
+          patientName: string
+          patientEmail: string
+          patientPhone: string
+        },
+      ) => {
         db.appointments.insert(data)
         return db.appointments.all()
       },
@@ -308,7 +313,7 @@ export const HealthcareKimiPage2 = defineCapsule({
     const [appointmentOpen, setAppointmentOpen] = useState(false)
     const [selectedDoctor, setSelectedDoctor] = useState<string | null>(null)
     const [selectedService, setSelectedService] = useState<string | null>(null)
-    const brand = props.brand ?? "VitalCare"
+    const brand = props.brand ?? 'VitalCare'
 
     const appointments = lakebed.useQuery('appointments')
     const favoriteDoctorNames = lakebed.useQuery('favoriteDoctorNames')
@@ -320,7 +325,10 @@ export const HealthcareKimiPage2 = defineCapsule({
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
     const authDisplayName =
-      auth.displayName || auth.user?.displayName || authEmail || 'Patient Portal'
+      auth.displayName ||
+      auth.user?.displayName ||
+      authEmail ||
+      'Patient Portal'
     const authInitials =
       authDisplayName
         .split(/\s+/)
@@ -344,396 +352,404 @@ export const HealthcareKimiPage2 = defineCapsule({
     const appointmentCount = safeAppointments.length
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Doctors", "Reviews", "Pricing", "FAQ"]
+      : ['Services', 'Doctors', 'Reviews', 'Pricing', 'FAQ']
 
-    const heroBadge = props.hero?.badge ?? "Now Accepting New Patients"
-    const heroLine1 = props.hero?.headingLine1 ?? "Your Health,"
-    const heroLine2 = props.hero?.headingLine2 ?? "Our Priority"
+    const heroBadge = props.hero?.badge ?? 'Now Accepting New Patients'
+    const heroLine1 = props.hero?.headingLine1 ?? 'Your Health,'
+    const heroLine2 = props.hero?.headingLine2 ?? 'Our Priority'
     const heroSub =
       props.hero?.subheading ??
-      "Experience compassionate, comprehensive healthcare from board-certified physicians. Same-day appointments available with average wait times under 15 minutes."
-    const heroPrimary = props.hero?.primaryCta ?? "Book Appointment"
-    const heroSecondary = props.hero?.secondaryCta ?? "Our Services"
+      'Experience compassionate, comprehensive healthcare from board-certified physicians. Same-day appointments available with average wait times under 15 minutes.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Book Appointment'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Our Services'
     const heroStats = props.hero?.stats?.length
       ? props.hero.stats
       : [
-          { value: "25+", label: "Years Experience" },
-          { value: "50k+", label: "Patients Served" },
-          { value: "4.9", label: "Google Rating" },
+          { value: '25+', label: 'Years Experience' },
+          { value: '50k+', label: 'Patients Served' },
+          { value: '4.9', label: 'Google Rating' },
         ]
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Friendly female doctor in white coat with stethoscope smiling in a modern medical office"
-    const openLabel = props.hero?.openLabel ?? "Open Now"
-    const openValue = props.hero?.openValue ?? "Mon-Fri 7AM-8PM"
+      'Friendly female doctor in white coat with stethoscope smiling in a modern medical office'
+    const openLabel = props.hero?.openLabel ?? 'Open Now'
+    const openValue = props.hero?.openValue ?? 'Mon-Fri 7AM-8PM'
 
     const insurersLabel =
-      props.insurers?.label ?? "Accepted Insurance Providers"
+      props.insurers?.label ?? 'Accepted Insurance Providers'
     const insurerItems = props.insurers?.items?.length
       ? props.insurers.items
       : [
-          "BlueCross",
-          "Aetna",
-          "UnitedHealthcare",
-          "Cigna",
-          "Humana",
-          "Medicare",
+          'BlueCross',
+          'Aetna',
+          'UnitedHealthcare',
+          'Cigna',
+          'Humana',
+          'Medicare',
         ]
 
-    const servicesEyebrow = props.services?.eyebrow ?? "Our Services"
+    const servicesEyebrow = props.services?.eyebrow ?? 'Our Services'
     const servicesHeading =
-      props.services?.heading ?? "Comprehensive Care for Every Stage of Life"
+      props.services?.heading ?? 'Comprehensive Care for Every Stage of Life'
     const servicesDesc =
       props.services?.description ??
-      "From preventive wellness to specialized treatments, our multidisciplinary team provides personalized care using the latest medical advancements."
+      'From preventive wellness to specialized treatments, our multidisciplinary team provides personalized care using the latest medical advancements.'
     const serviceItems = props.services?.items?.length
       ? props.services.items
       : [
           {
-            title: "Primary Care",
+            title: 'Primary Care',
             description:
-              "Complete health management including annual physicals, chronic disease management, vaccinations, and health screenings for adults and seniors.",
-            cta: "Schedule Visit",
+              'Complete health management including annual physicals, chronic disease management, vaccinations, and health screenings for adults and seniors.',
+            cta: 'Schedule Visit',
           },
           {
-            title: "Cardiology",
+            title: 'Cardiology',
             description:
-              "Advanced heart care including EKGs, echocardiograms, stress testing, cholesterol management, and treatment for hypertension and heart disease.",
-            cta: "Schedule Visit",
+              'Advanced heart care including EKGs, echocardiograms, stress testing, cholesterol management, and treatment for hypertension and heart disease.',
+            cta: 'Schedule Visit',
           },
           {
-            title: "Urgent Care",
+            title: 'Urgent Care',
             description:
-              "Same-day treatment for non-life-threatening emergencies including infections, minor injuries, flu symptoms, and urgent prescription refills.",
-            cta: "Walk In or Book",
+              'Same-day treatment for non-life-threatening emergencies including infections, minor injuries, flu symptoms, and urgent prescription refills.',
+            cta: 'Walk In or Book',
           },
           {
-            title: "Pediatrics",
+            title: 'Pediatrics',
             description:
-              "Specialized care for infants, children, and adolescents including well-child visits, immunizations, developmental screenings, and acute illness care.",
-            cta: "Schedule Visit",
+              'Specialized care for infants, children, and adolescents including well-child visits, immunizations, developmental screenings, and acute illness care.',
+            cta: 'Schedule Visit',
           },
           {
-            title: "Diagnostic Imaging",
+            title: 'Diagnostic Imaging',
             description:
-              "On-site X-rays, ultrasounds, and lab services with rapid results. Digital imaging technology ensures accurate diagnosis and treatment planning.",
-            cta: "Learn More",
+              'On-site X-rays, ultrasounds, and lab services with rapid results. Digital imaging technology ensures accurate diagnosis and treatment planning.',
+            cta: 'Learn More',
           },
           {
-            title: "Telehealth",
+            title: 'Telehealth',
             description:
-              "Virtual consultations for follow-ups, prescription renewals, and minor health concerns. Secure video visits from the comfort of your home.",
-            cta: "Book Virtual Visit",
+              'Virtual consultations for follow-ups, prescription renewals, and minor health concerns. Secure video visits from the comfort of your home.',
+            cta: 'Book Virtual Visit',
           },
         ]
 
-    const doctorsEyebrow = props.doctors?.eyebrow ?? "Our Team"
+    const doctorsEyebrow = props.doctors?.eyebrow ?? 'Our Team'
     const doctorsHeading =
-      props.doctors?.heading ?? "Meet Our Board-Certified Physicians"
+      props.doctors?.heading ?? 'Meet Our Board-Certified Physicians'
     const doctorsDesc =
       props.doctors?.description ??
-      "Our diverse team of medical experts brings decades of combined experience from top medical institutions across the country."
-    const doctorsCta = props.doctors?.cta ?? "View All 24 Providers"
+      'Our diverse team of medical experts brings decades of combined experience from top medical institutions across the country.'
+    const doctorsCta = props.doctors?.cta ?? 'View All 24 Providers'
     const doctorItems = props.doctors?.items?.length
       ? props.doctors.items
       : [
           {
-            name: "Dr. Sarah Chen, MD",
-            specialty: "Internal Medicine",
+            name: 'Dr. Sarah Chen, MD',
+            specialty: 'Internal Medicine',
             bio: "Board-certified in internal medicine with special interest in preventive care and women's health.",
-            experience: "15+ years experience",
-            school: "Harvard Medical School",
+            experience: '15+ years experience',
+            school: 'Harvard Medical School',
             photoAlt:
-              "Professional headshot of Dr. Sarah Chen, a smiling Asian female physician in a white coat with stethoscope",
+              'Professional headshot of Dr. Sarah Chen, a smiling Asian female physician in a white coat with stethoscope',
           },
           {
-            name: "Dr. Michael Rodriguez, MD",
-            specialty: "Cardiology",
-            bio: "Fellowship-trained interventional cardiologist specializing in heart disease prevention and management.",
-            experience: "20+ years experience",
-            school: "Johns Hopkins",
+            name: 'Dr. Michael Rodriguez, MD',
+            specialty: 'Cardiology',
+            bio: 'Fellowship-trained interventional cardiologist specializing in heart disease prevention and management.',
+            experience: '20+ years experience',
+            school: 'Johns Hopkins',
             photoAlt:
-              "Professional headshot of Dr. Michael Rodriguez, a confident Hispanic male cardiologist in navy scrubs",
+              'Professional headshot of Dr. Michael Rodriguez, a confident Hispanic male cardiologist in navy scrubs',
           },
           {
-            name: "Dr. Emily Watson, MD",
-            specialty: "Pediatrics",
-            bio: "Dedicated pediatrician with expertise in developmental pediatrics and childhood nutrition.",
-            experience: "12+ years experience",
-            school: "Stanford Medicine",
+            name: 'Dr. Emily Watson, MD',
+            specialty: 'Pediatrics',
+            bio: 'Dedicated pediatrician with expertise in developmental pediatrics and childhood nutrition.',
+            experience: '12+ years experience',
+            school: 'Stanford Medicine',
             photoAlt:
-              "Professional headshot of Dr. Emily Watson, a friendly female pediatrician with warm smile and blonde hair",
+              'Professional headshot of Dr. Emily Watson, a friendly female pediatrician with warm smile and blonde hair',
           },
           {
-            name: "Dr. James Park, MD",
-            specialty: "Family Medicine",
-            bio: "Family physician passionate about holistic care for patients of all ages, from newborns to seniors.",
-            experience: "18+ years experience",
-            school: "UCSF Medical Center",
+            name: 'Dr. James Park, MD',
+            specialty: 'Family Medicine',
+            bio: 'Family physician passionate about holistic care for patients of all ages, from newborns to seniors.',
+            experience: '18+ years experience',
+            school: 'UCSF Medical Center',
             photoAlt:
-              "Professional headshot of Dr. James Park, a Korean-American male physician wearing glasses and a white coat",
+              'Professional headshot of Dr. James Park, a Korean-American male physician wearing glasses and a white coat',
           },
         ]
 
-    const stepsEyebrow = props.steps?.eyebrow ?? "How It Works"
+    const stepsEyebrow = props.steps?.eyebrow ?? 'How It Works'
     const stepsHeading =
-      props.steps?.heading ?? "Your Care Journey in 3 Simple Steps"
+      props.steps?.heading ?? 'Your Care Journey in 3 Simple Steps'
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
           {
-            title: "Book Online",
+            title: 'Book Online',
             description:
-              "Schedule your appointment in under 2 minutes through our secure online portal or mobile app. Same-day slots often available.",
+              'Schedule your appointment in under 2 minutes through our secure online portal or mobile app. Same-day slots often available.',
           },
           {
-            title: "Check In",
+            title: 'Check In',
             description:
-              "Complete digital forms from home. Arrive 10 minutes early for verification. Average wait time is under 15 minutes.",
+              'Complete digital forms from home. Arrive 10 minutes early for verification. Average wait time is under 15 minutes.',
           },
           {
-            title: "Get Care",
+            title: 'Get Care',
             description:
-              "Meet with your provider, receive personalized treatment, and get prescriptions sent directly to your pharmacy.",
+              'Meet with your provider, receive personalized treatment, and get prescriptions sent directly to your pharmacy.',
           },
         ]
     const stepChips = props.steps?.chips?.length
       ? props.steps.chips
       : [
-          { value: "2 min", label: "Average booking time" },
-          { value: "10 min", label: "Early arrival recommended" },
-          { value: "15 min", label: "Average wait time" },
-          { value: "24/7", label: "Patient portal access" },
+          { value: '2 min', label: 'Average booking time' },
+          { value: '10 min', label: 'Early arrival recommended' },
+          { value: '15 min', label: 'Average wait time' },
+          { value: '24/7', label: 'Patient portal access' },
         ]
 
-    const galleryEyebrow = props.gallery?.eyebrow ?? "Our Facilities"
+    const galleryEyebrow = props.gallery?.eyebrow ?? 'Our Facilities'
     const galleryHeading =
-      props.gallery?.heading ?? "Modern, Comfortable Environment"
+      props.gallery?.heading ?? 'Modern, Comfortable Environment'
     const galleryDesc =
       props.gallery?.description ??
-      "State-of-the-art medical facilities designed with your comfort and care in mind."
+      'State-of-the-art medical facilities designed with your comfort and care in mind.'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
           {
-            title: "Reception & Waiting Area",
-            caption: "Comfortable, welcoming space with complimentary WiFi",
+            title: 'Reception & Waiting Area',
+            caption: 'Comfortable, welcoming space with complimentary WiFi',
             imageAlt:
-              "Spacious modern clinic reception area with comfortable seating and natural lighting",
+              'Spacious modern clinic reception area with comfortable seating and natural lighting',
           },
           {
-            title: "Examination Room",
+            title: 'Examination Room',
             imageAlt:
-              "Modern examination room with medical equipment and patient bed",
+              'Modern examination room with medical equipment and patient bed',
           },
           {
-            title: "Diagnostic Lab",
+            title: 'Diagnostic Lab',
             imageAlt:
-              "Advanced diagnostic imaging equipment in a modern medical facility",
+              'Advanced diagnostic imaging equipment in a modern medical facility',
           },
           {
-            title: "Pediatric Wing",
-            caption: "Child-friendly environment designed for young patients",
+            title: 'Pediatric Wing',
+            caption: 'Child-friendly environment designed for young patients',
             imageAlt:
-              "Clean, modern pediatric care room with child-friendly decor",
+              'Clean, modern pediatric care room with child-friendly decor',
           },
           {
-            title: "Telehealth Suite",
+            title: 'Telehealth Suite',
             imageAlt:
-              "Private telehealth consultation room with video conferencing setup",
+              'Private telehealth consultation room with video conferencing setup',
           },
         ]
 
-    const pricingEyebrow = props.pricing?.eyebrow ?? "Pricing & Membership"
-    const pricingHeading = props.pricing?.heading ?? "Transparent, Affordable Care"
+    const pricingEyebrow = props.pricing?.eyebrow ?? 'Pricing & Membership'
+    const pricingHeading =
+      props.pricing?.heading ?? 'Transparent, Affordable Care'
     const pricingDesc =
       props.pricing?.description ??
-      "We accept most major insurance plans and offer competitive self-pay rates. No surprise billing, ever."
+      'We accept most major insurance plans and offer competitive self-pay rates. No surprise billing, ever.'
     const pricingItems = props.pricing?.items?.length
       ? props.pricing.items
       : [
           {
-            name: "One-Time Visit",
-            tagline: "Perfect for occasional care needs",
-            price: "$149",
-            unit: "/visit",
+            name: 'One-Time Visit',
+            tagline: 'Perfect for occasional care needs',
+            price: '$149',
+            unit: '/visit',
             features: [
-              "New patient consultation",
-              "Follow-up appointments",
-              "Urgent care visits",
-              "Specialist referrals",
+              'New patient consultation',
+              'Follow-up appointments',
+              'Urgent care visits',
+              'Specialist referrals',
             ],
-            cta: "Book Visit",
+            cta: 'Book Visit',
           },
           {
-            name: "VitalCare Plus",
-            tagline: "Comprehensive annual membership",
-            price: "$79",
-            unit: "/month",
+            name: 'VitalCare Plus',
+            tagline: 'Comprehensive annual membership',
+            price: '$79',
+            unit: '/month',
             features: [
-              "Unlimited primary care visits",
-              "24/7 telehealth access",
-              "Annual physical included",
-              "Priority scheduling",
-              "Labs & basic imaging",
+              'Unlimited primary care visits',
+              '24/7 telehealth access',
+              'Annual physical included',
+              'Priority scheduling',
+              'Labs & basic imaging',
             ],
-            cta: "Join Now",
+            cta: 'Join Now',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Family Plan",
-            tagline: "Coverage for up to 5 family members",
-            price: "$199",
-            unit: "/month",
+            name: 'Family Plan',
+            tagline: 'Coverage for up to 5 family members',
+            price: '$199',
+            unit: '/month',
             features: [
-              "All VitalCare Plus benefits",
-              "Pediatric care included",
-              "Well-child visits",
-              "School physicals",
-              "Vaccinations included",
+              'All VitalCare Plus benefits',
+              'Pediatric care included',
+              'Well-child visits',
+              'School physicals',
+              'Vaccinations included',
             ],
-            cta: "Enroll Family",
+            cta: 'Enroll Family',
           },
         ]
     const pricingNote =
-      props.pricing?.note ?? "All plans include HSA/FSA eligibility."
-    const pricingNoteCta = props.pricing?.noteCta ?? "View full pricing details"
+      props.pricing?.note ?? 'All plans include HSA/FSA eligibility.'
+    const pricingNoteCta = props.pricing?.noteCta ?? 'View full pricing details'
 
     const statItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "50,000+", label: "Patients Served" },
-          { value: "24", label: "Board-Certified Providers" },
-          { value: "4.9★", label: "Google Rating (2,400+ reviews)" },
-          { value: "15 min", label: "Average Wait Time" },
+          { value: '50,000+', label: 'Patients Served' },
+          { value: '24', label: 'Board-Certified Providers' },
+          { value: '4.9★', label: 'Google Rating (2,400+ reviews)' },
+          { value: '15 min', label: 'Average Wait Time' },
         ]
     const statSubItems = props.stats?.subItems?.length
       ? props.stats.subItems
       : [
-          { value: "98%", label: "Patient Satisfaction" },
-          { value: "6", label: "Convenient Locations" },
-          { value: "25+", label: "Years of Excellence" },
+          { value: '98%', label: 'Patient Satisfaction' },
+          { value: '6', label: 'Convenient Locations' },
+          { value: '25+', label: 'Years of Excellence' },
         ]
 
-    const testimonialsEyebrow = props.testimonials?.eyebrow ?? "Testimonials"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'Testimonials'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Our Patients Say"
+      props.testimonials?.heading ?? 'What Our Patients Say'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Join thousands of satisfied patients who trust VitalCare for their healthcare needs."
+      'Join thousands of satisfied patients who trust VitalCare for their healthcare needs.'
     const testimonialsCta =
-      props.testimonials?.cta ?? "Read 2,400+ more reviews on Google"
+      props.testimonials?.cta ?? 'Read 2,400+ more reviews on Google'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "Dr. Chen has been my primary care physician for 3 years. She takes time to listen and never rushes appointments. The online booking makes scheduling so convenient.",
-            name: "Jennifer Martinez",
-            meta: "Primary Care Patient since 2021",
+              'Dr. Chen has been my primary care physician for 3 years. She takes time to listen and never rushes appointments. The online booking makes scheduling so convenient.',
+            name: 'Jennifer Martinez',
+            meta: 'Primary Care Patient since 2021',
             avatarAlt:
-              "Portrait of Jennifer Martinez, a smiling professional woman in her 30s",
+              'Portrait of Jennifer Martinez, a smiling professional woman in her 30s',
           },
           {
             quote:
-              "The urgent care here saved me during a weekend emergency. I was seen within 20 minutes, diagnosed properly, and had my prescription sent to the pharmacy instantly.",
-            name: "Robert Thompson",
-            meta: "Urgent Care Patient",
+              'The urgent care here saved me during a weekend emergency. I was seen within 20 minutes, diagnosed properly, and had my prescription sent to the pharmacy instantly.',
+            name: 'Robert Thompson',
+            meta: 'Urgent Care Patient',
             avatarAlt:
-              "Portrait of Robert Thompson, a middle-aged man with short gray hair and friendly expression",
+              'Portrait of Robert Thompson, a middle-aged man with short gray hair and friendly expression',
           },
           {
             quote:
-              "Dr. Watson is amazing with my kids! They actually look forward to doctor visits now. The pediatric waiting area has toys and books that keep them entertained.",
-            name: "Amanda Foster",
-            meta: "Mother of 3, Family Plan Member",
+              'Dr. Watson is amazing with my kids! They actually look forward to doctor visits now. The pediatric waiting area has toys and books that keep them entertained.',
+            name: 'Amanda Foster',
+            meta: 'Mother of 3, Family Plan Member',
             avatarAlt:
-              "Portrait of Amanda Foster, a young mother with warm smile and brown hair",
+              'Portrait of Amanda Foster, a young mother with warm smile and brown hair',
           },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Common Questions"
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Common Questions'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "Do you accept walk-in patients?",
+            question: 'Do you accept walk-in patients?',
             answer:
-              "Yes, we welcome walk-in patients for urgent care needs. However, booking an appointment online or by phone ensures minimal wait time. Our urgent care operates Monday-Saturday with extended evening hours.",
+              'Yes, we welcome walk-in patients for urgent care needs. However, booking an appointment online or by phone ensures minimal wait time. Our urgent care operates Monday-Saturday with extended evening hours.',
           },
           {
-            question: "What insurance plans do you accept?",
+            question: 'What insurance plans do you accept?',
             answer:
-              "We accept most major insurance plans including BlueCross BlueShield, Aetna, UnitedHealthcare, Cigna, Humana, and Medicare. We also offer competitive self-pay rates for uninsured patients. Contact us to verify your specific plan coverage.",
+              'We accept most major insurance plans including BlueCross BlueShield, Aetna, UnitedHealthcare, Cigna, Humana, and Medicare. We also offer competitive self-pay rates for uninsured patients. Contact us to verify your specific plan coverage.',
           },
           {
-            question: "How do I access my medical records?",
+            question: 'How do I access my medical records?',
             answer:
-              "All patients have 24/7 access to their medical records through our secure patient portal. You can view visit summaries, lab results, prescriptions, and message your care team. Access is available via web browser or our mobile app.",
+              'All patients have 24/7 access to their medical records through our secure patient portal. You can view visit summaries, lab results, prescriptions, and message your care team. Access is available via web browser or our mobile app.',
           },
           {
-            question: "Can I get a same-day appointment?",
+            question: 'Can I get a same-day appointment?',
             answer:
-              "Absolutely! We reserve daily appointment slots for same-day urgent needs. For non-urgent visits, we typically have availability within 24-48 hours. Our online booking system shows real-time availability.",
+              'Absolutely! We reserve daily appointment slots for same-day urgent needs. For non-urgent visits, we typically have availability within 24-48 hours. Our online booking system shows real-time availability.',
           },
           {
-            question: "Do you offer telehealth appointments?",
+            question: 'Do you offer telehealth appointments?',
             answer:
-              "Yes, we offer secure video consultations for follow-ups, prescription renewals, and minor health concerns. VitalCare Plus members receive unlimited telehealth access. Telehealth is available 7 days a week from 7AM to 9PM.",
+              'Yes, we offer secure video consultations for follow-ups, prescription renewals, and minor health concerns. VitalCare Plus members receive unlimited telehealth access. Telehealth is available 7 days a week from 7AM to 9PM.',
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to Prioritize Your Health?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to Prioritize Your Health?'
     const ctaDesc =
       props.cta?.description ??
-      "Join 50,000+ patients who trust VitalCare for their healthcare needs. Same-day appointments available."
-    const ctaCall = props.cta?.callCta ?? "Call (555) 123-4567"
-    const ctaBook = props.cta?.bookCta ?? "Book Online Now"
+      'Join 50,000+ patients who trust VitalCare for their healthcare needs. Same-day appointments available.'
+    const ctaCall = props.cta?.callCta ?? 'Call (555) 123-4567'
+    const ctaBook = props.cta?.bookCta ?? 'Book Online Now'
     const ctaNote =
       props.cta?.note ?? 'Or text "APPT" to (555) 987-6543 for a callback'
 
     const footerTagline =
       props.footer?.tagline ??
-      "Comprehensive healthcare for the whole family. Board-certified physicians, modern facilities, and patient-centered care."
-    const footerQuickHeading = props.footer?.quickHeading ?? "Quick Links"
+      'Comprehensive healthcare for the whole family. Board-certified physicians, modern facilities, and patient-centered care.'
+    const footerQuickHeading = props.footer?.quickHeading ?? 'Quick Links'
     const footerQuickLinks = props.footer?.quickLinks?.length
       ? props.footer.quickLinks
       : [
-          "Our Services",
-          "Meet the Team",
-          "Pricing & Insurance",
-          "Patient Portal",
-          "Careers",
+          'Our Services',
+          'Meet the Team',
+          'Pricing & Insurance',
+          'Patient Portal',
+          'Careers',
         ]
-    const footerServicesHeading = props.footer?.servicesHeading ?? "Services"
+    const footerServicesHeading = props.footer?.servicesHeading ?? 'Services'
     const footerServicesLinks = props.footer?.servicesLinks?.length
       ? props.footer.servicesLinks
-      : ["Primary Care", "Urgent Care", "Pediatrics", "Cardiology", "Telehealth"]
-    const footerContactHeading = props.footer?.contactHeading ?? "Contact"
+      : [
+          'Primary Care',
+          'Urgent Care',
+          'Pediatrics',
+          'Cardiology',
+          'Telehealth',
+        ]
+    const footerContactHeading = props.footer?.contactHeading ?? 'Contact'
     const footerAddress =
       props.footer?.address ??
-      "1234 Health Center Drive, Suite 100, San Francisco, CA 94102"
-    const footerPhone = props.footer?.phone ?? "(555) 123-4567"
-    const footerEmail = props.footer?.email ?? "care@vitalcare.com"
+      '1234 Health Center Drive, Suite 100, San Francisco, CA 94102'
+    const footerPhone = props.footer?.phone ?? '(555) 123-4567'
+    const footerEmail = props.footer?.email ?? 'care@vitalcare.com'
     const footerHours =
-      props.footer?.hours ?? "Mon-Fri: 7AM-8PM · Sat: 8AM-5PM · Sun: Urgent Care Only"
+      props.footer?.hours ??
+      'Mon-Fri: 7AM-8PM · Sat: 8AM-5PM · Sun: Urgent Care Only'
     const footerCopyright =
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand} Medical Center. All rights reserved.`
     const footerLegal = props.footer?.legalLinks?.length
       ? props.footer.legalLinks
-      : ["Privacy Policy", "Terms of Service", "HIPAA Notice"]
+      : ['Privacy Policy', 'Terms of Service', 'HIPAA Notice']
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Facebook", "Twitter", "Instagram", "LinkedIn"]
+      : ['Facebook', 'Twitter', 'Instagram', 'LinkedIn']
 
     // Brand mark — heart-in-tile (decorative brand asset).
     const HeartMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-xl bg-primary text-primary-foreground",
+          'grid place-items-center rounded-xl bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -834,9 +850,19 @@ export const HealthcareKimiPage2 = defineCapsule({
       </svg>
     )
 
-    const HeartIcon = ({ active = false, className }: { active?: boolean; className?: string }) => (
+    const HeartIcon = ({
+      active = false,
+      className,
+    }: {
+      active?: boolean
+      className?: string
+    }) => (
       <svg
-        className={cn('size-5', className, active ? 'fill-primary text-primary' : 'text-foreground')}
+        className={cn(
+          'size-5',
+          className,
+          active ? 'fill-primary text-primary' : 'text-foreground',
+        )}
         fill={active ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="2"
@@ -945,7 +971,7 @@ export const HealthcareKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -1110,7 +1136,9 @@ export const HealthcareKimiPage2 = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">My Appointments</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        My Appointments
+                      </SheetTitle>
                       <SheetDescription>
                         {appointmentCount > 0
                           ? `${appointmentCount} appointment${appointmentCount === 1 ? '' : 's'} scheduled.`
@@ -1160,7 +1188,9 @@ export const HealthcareKimiPage2 = defineCapsule({
                                 <div className="mt-4 flex items-center justify-between">
                                   <button
                                     type="button"
-                                    onClick={() => void cancelAppointment(appointment.id)}
+                                    onClick={() =>
+                                      void cancelAppointment(appointment.id)
+                                    }
                                     className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-destructive hover:underline"
                                   >
                                     Cancel Appointment
@@ -1173,7 +1203,9 @@ export const HealthcareKimiPage2 = defineCapsule({
                       ) : (
                         <div className="space-y-6">
                           <div className="rounded-lg border border-border bg-muted/40 p-6">
-                            <h3 className="mb-4 text-lg font-semibold text-foreground">Book an Appointment</h3>
+                            <h3 className="mb-4 text-lg font-semibold text-foreground">
+                              Book an Appointment
+                            </h3>
                             <form
                               className="space-y-4"
                               onSubmit={(e) => {
@@ -1181,15 +1213,35 @@ export const HealthcareKimiPage2 = defineCapsule({
                                 const form = e.currentTarget
                                 const formData = new FormData(form)
                                 const data = {
-                                  doctorName: selectedDoctor || doctorItems[0]?.name || '',
-                                  service: selectedService || serviceItems[0]?.title || '',
+                                  doctorName:
+                                    selectedDoctor ||
+                                    doctorItems[0]?.name ||
+                                    '',
+                                  service:
+                                    selectedService ||
+                                    serviceItems[0]?.title ||
+                                    '',
                                   date: formData.get('date') as string,
                                   time: formData.get('time') as string,
-                                  patientName: formData.get('patientName') as string,
-                                  patientEmail: formData.get('patientEmail') as string,
-                                  patientPhone: formData.get('patientPhone') as string,
+                                  patientName: formData.get(
+                                    'patientName',
+                                  ) as string,
+                                  patientEmail: formData.get(
+                                    'patientEmail',
+                                  ) as string,
+                                  patientPhone: formData.get(
+                                    'patientPhone',
+                                  ) as string,
                                 }
-                                if (data.doctorName && data.service && data.date && data.time && data.patientName && data.patientEmail && data.patientPhone) {
+                                if (
+                                  data.doctorName &&
+                                  data.service &&
+                                  data.date &&
+                                  data.time &&
+                                  data.patientName &&
+                                  data.patientEmail &&
+                                  data.patientPhone
+                                ) {
                                   void bookAppointment(data)
                                   setAppointmentOpen(false)
                                 }
@@ -1202,8 +1254,12 @@ export const HealthcareKimiPage2 = defineCapsule({
                                 <select
                                   name="doctor"
                                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
-                                  defaultValue={selectedDoctor || doctorItems[0]?.name}
-                                  onChange={(e) => setSelectedDoctor(e.target.value)}
+                                  defaultValue={
+                                    selectedDoctor || doctorItems[0]?.name
+                                  }
+                                  onChange={(e) =>
+                                    setSelectedDoctor(e.target.value)
+                                  }
                                 >
                                   {doctorItems.map((doc) => (
                                     <option key={doc.name} value={doc.name}>
@@ -1219,11 +1275,18 @@ export const HealthcareKimiPage2 = defineCapsule({
                                 <select
                                   name="service"
                                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
-                                  defaultValue={selectedService || serviceItems[0]?.title}
-                                  onChange={(e) => setSelectedService(e.target.value)}
+                                  defaultValue={
+                                    selectedService || serviceItems[0]?.title
+                                  }
+                                  onChange={(e) =>
+                                    setSelectedService(e.target.value)
+                                  }
                                 >
                                   {serviceItems.map((service) => (
-                                    <option key={service.title} value={service.title}>
+                                    <option
+                                      key={service.title}
+                                      value={service.title}
+                                    >
                                       {service.title}
                                     </option>
                                   ))}
@@ -1370,7 +1433,9 @@ export const HealthcareKimiPage2 = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">My Appointments</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        My Appointments
+                      </SheetTitle>
                       <SheetDescription>
                         {appointmentCount > 0
                           ? `${appointmentCount} appointment${appointmentCount === 1 ? '' : 's'} scheduled.`
@@ -1420,7 +1485,9 @@ export const HealthcareKimiPage2 = defineCapsule({
                                 <div className="mt-4 flex items-center justify-between">
                                   <button
                                     type="button"
-                                    onClick={() => void cancelAppointment(appointment.id)}
+                                    onClick={() =>
+                                      void cancelAppointment(appointment.id)
+                                    }
                                     className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-destructive hover:underline"
                                   >
                                     Cancel Appointment
@@ -1433,7 +1500,9 @@ export const HealthcareKimiPage2 = defineCapsule({
                       ) : (
                         <div className="space-y-6">
                           <div className="rounded-lg border border-border bg-muted/40 p-6">
-                            <h3 className="mb-4 text-lg font-semibold text-foreground">Book an Appointment</h3>
+                            <h3 className="mb-4 text-lg font-semibold text-foreground">
+                              Book an Appointment
+                            </h3>
                             <form
                               className="space-y-4"
                               onSubmit={(e) => {
@@ -1441,15 +1510,35 @@ export const HealthcareKimiPage2 = defineCapsule({
                                 const form = e.currentTarget
                                 const formData = new FormData(form)
                                 const data = {
-                                  doctorName: selectedDoctor || doctorItems[0]?.name || '',
-                                  service: selectedService || serviceItems[0]?.title || '',
+                                  doctorName:
+                                    selectedDoctor ||
+                                    doctorItems[0]?.name ||
+                                    '',
+                                  service:
+                                    selectedService ||
+                                    serviceItems[0]?.title ||
+                                    '',
                                   date: formData.get('date') as string,
                                   time: formData.get('time') as string,
-                                  patientName: formData.get('patientName') as string,
-                                  patientEmail: formData.get('patientEmail') as string,
-                                  patientPhone: formData.get('patientPhone') as string,
+                                  patientName: formData.get(
+                                    'patientName',
+                                  ) as string,
+                                  patientEmail: formData.get(
+                                    'patientEmail',
+                                  ) as string,
+                                  patientPhone: formData.get(
+                                    'patientPhone',
+                                  ) as string,
                                 }
-                                if (data.doctorName && data.service && data.date && data.time && data.patientName && data.patientEmail && data.patientPhone) {
+                                if (
+                                  data.doctorName &&
+                                  data.service &&
+                                  data.date &&
+                                  data.time &&
+                                  data.patientName &&
+                                  data.patientEmail &&
+                                  data.patientPhone
+                                ) {
                                   void bookAppointment(data)
                                   setAppointmentOpen(false)
                                 }
@@ -1462,8 +1551,12 @@ export const HealthcareKimiPage2 = defineCapsule({
                                 <select
                                   name="doctor"
                                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
-                                  defaultValue={selectedDoctor || doctorItems[0]?.name}
-                                  onChange={(e) => setSelectedDoctor(e.target.value)}
+                                  defaultValue={
+                                    selectedDoctor || doctorItems[0]?.name
+                                  }
+                                  onChange={(e) =>
+                                    setSelectedDoctor(e.target.value)
+                                  }
                                 >
                                   {doctorItems.map((doc) => (
                                     <option key={doc.name} value={doc.name}>
@@ -1479,11 +1572,18 @@ export const HealthcareKimiPage2 = defineCapsule({
                                 <select
                                   name="service"
                                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
-                                  defaultValue={selectedService || serviceItems[0]?.title}
-                                  onChange={(e) => setSelectedService(e.target.value)}
+                                  defaultValue={
+                                    selectedService || serviceItems[0]?.title
+                                  }
+                                  onChange={(e) =>
+                                    setSelectedService(e.target.value)
+                                  }
                                 >
                                   {serviceItems.map((service) => (
-                                    <option key={service.title} value={service.title}>
+                                    <option
+                                      key={service.title}
+                                      value={service.title}
+                                    >
                                       {service.title}
                                     </option>
                                   ))}
@@ -1608,7 +1708,10 @@ export const HealthcareKimiPage2 = defineCapsule({
             className="relative overflow-hidden bg-gradient-to-br from-primary via-primary to-primary/80"
             aria-labelledby="hero-heading"
           >
-            <div className="absolute inset-0 bg-foreground/10" aria-hidden="true" />
+            <div
+              className="absolute inset-0 bg-foreground/10"
+              aria-hidden="true"
+            />
             <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
               <div className="grid items-center gap-12 lg:grid-cols-2">
                 <div className="text-center lg:text-left">
@@ -1840,7 +1943,9 @@ export const HealthcareKimiPage2 = defineCapsule({
                       <h3 className="text-xl font-bold text-foreground">
                         {doc.name}
                       </h3>
-                      <p className="font-medium text-primary">{doc.specialty}</p>
+                      <p className="font-medium text-primary">
+                        {doc.specialty}
+                      </p>
                       <p className="mt-2 text-sm text-muted-foreground">
                         {doc.bio}
                       </p>
@@ -1950,9 +2055,9 @@ export const HealthcareKimiPage2 = defineCapsule({
                   <div
                     key={item.title}
                     className={cn(
-                      "group relative overflow-hidden rounded-2xl",
-                      i === 0 ? "lg:col-span-2 lg:row-span-2" : "",
-                      i === 3 ? "lg:col-span-2" : "",
+                      'group relative overflow-hidden rounded-2xl',
+                      i === 0 ? 'lg:col-span-2 lg:row-span-2' : '',
+                      i === 3 ? 'lg:col-span-2' : '',
                     )}
                   >
                     <Image
@@ -1961,8 +2066,8 @@ export const HealthcareKimiPage2 = defineCapsule({
                       h={i === 0 ? 600 : 300}
                       loading="lazy"
                       className={cn(
-                        "w-full object-cover transition-transform duration-500 group-hover:scale-105",
-                        i === 0 ? "h-full min-h-80" : "h-64",
+                        'w-full object-cover transition-transform duration-500 group-hover:scale-105',
+                        i === 0 ? 'h-full min-h-80' : 'h-64',
                       )}
                     />
                     <div
@@ -2006,10 +2111,10 @@ export const HealthcareKimiPage2 = defineCapsule({
                   <article
                     key={plan.name}
                     className={cn(
-                      "rounded-2xl p-8",
+                      'rounded-2xl p-8',
                       plan.featured
-                        ? "border-2 border-primary bg-primary shadow-2xl md:-translate-y-4"
-                        : "border-2 border-border bg-muted transition-colors hover:border-primary",
+                        ? 'border-2 border-primary bg-primary shadow-2xl md:-translate-y-4'
+                        : 'border-2 border-border bg-muted transition-colors hover:border-primary',
                     )}
                   >
                     {plan.featured && plan.badge ? (
@@ -2019,20 +2124,20 @@ export const HealthcareKimiPage2 = defineCapsule({
                     ) : null}
                     <h3
                       className={cn(
-                        "mb-2 text-2xl font-bold",
+                        'mb-2 text-2xl font-bold',
                         plan.featured
-                          ? "text-primary-foreground"
-                          : "text-foreground",
+                          ? 'text-primary-foreground'
+                          : 'text-foreground',
                       )}
                     >
                       {plan.name}
                     </h3>
                     <p
                       className={cn(
-                        "mb-6",
+                        'mb-6',
                         plan.featured
-                          ? "text-primary-foreground/80"
-                          : "text-muted-foreground",
+                          ? 'text-primary-foreground/80'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {plan.tagline}
@@ -2040,10 +2145,10 @@ export const HealthcareKimiPage2 = defineCapsule({
                     <div className="mb-6">
                       <span
                         className={cn(
-                          "text-5xl font-bold",
+                          'text-5xl font-bold',
                           plan.featured
-                            ? "text-primary-foreground"
-                            : "text-foreground",
+                            ? 'text-primary-foreground'
+                            : 'text-foreground',
                         )}
                       >
                         {plan.price}
@@ -2051,8 +2156,8 @@ export const HealthcareKimiPage2 = defineCapsule({
                       <span
                         className={
                           plan.featured
-                            ? "text-primary-foreground/80"
-                            : "text-muted-foreground"
+                            ? 'text-primary-foreground/80'
+                            : 'text-muted-foreground'
                         }
                       >
                         {plan.unit}
@@ -2063,18 +2168,18 @@ export const HealthcareKimiPage2 = defineCapsule({
                         <li
                           key={f}
                           className={cn(
-                            "flex items-center",
+                            'flex items-center',
                             plan.featured
-                              ? "text-primary-foreground"
-                              : "text-foreground/80",
+                              ? 'text-primary-foreground'
+                              : 'text-foreground/80',
                           )}
                         >
                           <Check
                             className={cn(
-                              "mr-3 shrink-0",
+                              'mr-3 shrink-0',
                               plan.featured
-                                ? "text-primary-foreground/80"
-                                : "text-primary",
+                                ? 'text-primary-foreground/80'
+                                : 'text-primary',
                             )}
                           />
                           {f}
@@ -2085,10 +2190,10 @@ export const HealthcareKimiPage2 = defineCapsule({
                       type="button"
                       onClick={() => go(plan.cta)}
                       className={cn(
-                        "block w-full rounded-full px-6 py-3 text-center font-semibold transition-colors",
+                        'block w-full rounded-full px-6 py-3 text-center font-semibold transition-colors',
                         plan.featured
-                          ? "bg-accent text-accent-foreground shadow-lg hover:bg-accent/90"
-                          : "border-2 border-primary bg-background text-primary hover:bg-primary hover:text-primary-foreground",
+                          ? 'bg-accent text-accent-foreground shadow-lg hover:bg-accent/90'
+                          : 'border-2 border-primary bg-background text-primary hover:bg-primary hover:text-primary-foreground',
                       )}
                     >
                       {plan.cta}
@@ -2098,7 +2203,7 @@ export const HealthcareKimiPage2 = defineCapsule({
               </div>
 
               <p className="mt-8 text-center text-muted-foreground">
-                {pricingNote}{" "}
+                {pricingNote}{' '}
                 <button
                   type="button"
                   onClick={() => go(pricingNoteCta)}
@@ -2111,7 +2216,10 @@ export const HealthcareKimiPage2 = defineCapsule({
           </section>
 
           {/* Dark stats band */}
-          <section className="bg-foreground py-20 lg:py-32" aria-label="Clinic statistics">
+          <section
+            className="bg-foreground py-20 lg:py-32"
+            aria-label="Clinic statistics"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="grid grid-cols-2 gap-8 lg:grid-cols-4 lg:gap-12">
                 {statItems.map((s) => (
@@ -2267,7 +2375,10 @@ export const HealthcareKimiPage2 = defineCapsule({
             className="relative overflow-hidden bg-gradient-to-br from-primary via-primary to-primary/80 py-20 lg:py-32"
             aria-labelledby="cta-heading"
           >
-            <div className="absolute inset-0 bg-foreground/10" aria-hidden="true" />
+            <div
+              className="absolute inset-0 bg-foreground/10"
+              aria-hidden="true"
+            />
             <div
               className="absolute right-0 top-0 size-96 -translate-y-1/2 translate-x-1/2 rounded-full bg-primary-foreground/5"
               aria-hidden="true"

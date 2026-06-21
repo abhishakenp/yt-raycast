@@ -1,4 +1,7 @@
-import { Debouncer } from '@ikhrustalev/convex-debouncer'
+import {
+  Debouncer,
+  type DebouncerComponentApi,
+} from '@ikhrustalev/convex-debouncer'
 import { components, internal } from './_generated/api'
 import type { Id } from './_generated/dataModel'
 import {
@@ -179,10 +182,13 @@ import {
 } from './lib/session_validators'
 import { loadSessionWorkspace } from './lib/session_workspace_helpers'
 
-const editedSessionExportDebouncer = new Debouncer(components.debouncer, {
-  delay: 10_000,
-  mode: 'sliding',
-})
+const editedSessionExportDebouncer = new Debouncer(
+  components.debouncer as unknown as DebouncerComponentApi,
+  {
+    delay: 10_000,
+    mode: 'sliding',
+  },
+)
 
 const scheduleEditedSessionExportAutomation = async (
   ctx: MutationCtx,

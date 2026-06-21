@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -23,9 +23,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const PetVeterinaryKimiPage3 = defineCapsule({
-  name: "PetVeterinaryKimiPage3",
+  name: 'PetVeterinaryKimiPage3',
   description:
-    "Pet Veterinary third style sibling to PetVeterinaryKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Pet Veterinary third style sibling to PetVeterinaryKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -39,7 +39,9 @@ export const PetVeterinaryKimiPage3 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -83,7 +85,13 @@ export const PetVeterinaryKimiPage3 = defineCapsule({
       appointments: ({ db }) => db.appointments.orderBy('createdAt').all(),
     },
     mutations: {
-      bookAppointment: ({ db }, serviceName: string, petName: string, date: string, time: string) => {
+      bookAppointment: (
+        { db },
+        serviceName: string,
+        petName: string,
+        date: string,
+        time: string,
+      ) => {
         const service = db.services.where('name', serviceName).all()[0]
         if (!service) return db.appointments.all()
 
@@ -115,94 +123,67 @@ export const PetVeterinaryKimiPage3 = defineCapsule({
     const [petName, setPetName] = useState('')
     const [appointmentDate, setAppointmentDate] = useState('')
     const [appointmentTime, setAppointmentTime] = useState('')
-    const brand = props.brand ?? "Lumina Veterinary Hospital"
-    const nav = props.nav?.length ? props.nav : ["Services", "Our Team", "Pricing", "Reviews", "FAQ", "Lumina Veterinary Hospital"]
+    const brand = props.brand ?? 'Lumina Veterinary Hospital'
+    const nav = props.nav?.length
+      ? props.nav
+      : [
+          'Services',
+          'Our Team',
+          'Pricing',
+          'Reviews',
+          'FAQ',
+          'Lumina Veterinary Hospital',
+        ]
     const hero = {
-      eyebrow: "Pet Veterinary / Variant 3",
-      title: "Where Every Pet Is Family",
-      description: "Lumina Veterinary Hospital | Compassionate Care for Every Pet Lumina Veterinary Hospital Services Our Team Pricing Reviews FAQ (503) 555-1234 Book Appointment Services Our Team...",
-      primaryCta: "Book Online",
-      secondaryCta: "Lumina Veterinary Hospital",
-      imageAlt: "Golden retriever receiving gentle examination from a female veterinarian in a modern clinic",
+      eyebrow: 'Pet Veterinary / Variant 3',
+      title: 'Where Every Pet Is Family',
+      description:
+        'Lumina Veterinary Hospital | Compassionate Care for Every Pet Lumina Veterinary Hospital Services Our Team Pricing Reviews FAQ (503) 555-1234 Book Appointment Services Our Team...',
+      primaryCta: 'Book Online',
+      secondaryCta: 'Lumina Veterinary Hospital',
+      imageAlt:
+        'Golden retriever receiving gentle examination from a female veterinarian in a modern clinic',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Our Services",
-    "body": "Lumina Veterinary Hospital | Compassionate Care for Every Pet Lumina Veterinary Hospital Services Our Team Pricing Reviews FAQ (503) 555-1234 Book Appointment Services Our Team...",
-    "items": [
-      "Transparent Pricing",
-      "Client Stories",
-      "Ready to Give Your Pet the Best Care?"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "Simple Process",
-    "body": "Pet Veterinary page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Wellness & Preventive Care",
-      "Vaccinations",
-      "Dental Care"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Our Facility",
-    "body": "Pet Veterinary page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Diagnostics & Imaging",
-      "24/7 Emergency Care",
-      "Book Online or Call"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Transparent Pricing",
-    "body": "Pet Veterinary page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Receive Fear-Free Care",
-      "Follow-Up & Monitoring",
-      "Young Adult Wellness"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "Simple Process",
-    "alt": "Golden retriever receiving gentle examination from a female veterinarian in a modern clinic",
-    "caption": "Pet Veterinary generated page detail"
-  },
-  {
-    "title": "Our Facility",
-    "alt": "Person using a smartphone to book a medical appointment online",
-    "caption": "Pet Veterinary generated page detail"
-  },
-  {
-    "title": "Transparent Pricing",
-    "alt": "Veterinarian examining a calm beagle on an examination table in a bright modern clinic",
-    "caption": "Pet Veterinary generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'Simple Process',
+            alt: 'Golden retriever receiving gentle examination from a female veterinarian in a modern clinic',
+            caption: 'Pet Veterinary generated page detail',
+          },
+          {
+            title: 'Our Facility',
+            alt: 'Person using a smartphone to book a medical appointment online',
+            caption: 'Pet Veterinary generated page detail',
+          },
+          {
+            title: 'Transparent Pricing',
+            alt: 'Veterinarian examining a calm beagle on an examination table in a bright modern clinic',
+            caption: 'Pet Veterinary generated page detail',
+          },
+        ]
 
     const defaultServices = [
       {
@@ -331,12 +312,17 @@ export const PetVeterinaryKimiPage3 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
           <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 lg:h-20">
             <button
               type="button"
-              onClick={() => go("Home")}
+              onClick={() => go('Home')}
               className="text-lg font-bold tracking-tight text-foreground"
             >
               {brand}
@@ -456,15 +442,18 @@ export const PetVeterinaryKimiPage3 = defineCapsule({
                   <span>{authLabel}</span>
                 </button>
               )}
-              <Sheet open={bookingOpen} onOpenChange={(open) => {
-                setBookingOpen(open)
-                if (!open) {
-                  setSelectedService(null)
-                  setPetName('')
-                  setAppointmentDate('')
-                  setAppointmentTime('')
-                }
-              }}>
+              <Sheet
+                open={bookingOpen}
+                onOpenChange={(open) => {
+                  setBookingOpen(open)
+                  if (!open) {
+                    setSelectedService(null)
+                    setPetName('')
+                    setAppointmentDate('')
+                    setAppointmentTime('')
+                  }
+                }}
+              >
                 <SheetTrigger asChild>
                   <button
                     type="button"
@@ -507,7 +496,10 @@ export const PetVeterinaryKimiPage3 = defineCapsule({
                           </div>
                         </div>
                         <div>
-                          <label htmlFor="petName" className="mb-2 block text-sm font-medium text-foreground">
+                          <label
+                            htmlFor="petName"
+                            className="mb-2 block text-sm font-medium text-foreground"
+                          >
                             Pet Name
                           </label>
                           <input
@@ -520,7 +512,10 @@ export const PetVeterinaryKimiPage3 = defineCapsule({
                           />
                         </div>
                         <div>
-                          <label htmlFor="appointmentDate" className="mb-2 block text-sm font-medium text-foreground">
+                          <label
+                            htmlFor="appointmentDate"
+                            className="mb-2 block text-sm font-medium text-foreground"
+                          >
                             Date
                           </label>
                           <input
@@ -532,7 +527,10 @@ export const PetVeterinaryKimiPage3 = defineCapsule({
                           />
                         </div>
                         <div>
-                          <label htmlFor="appointmentTime" className="mb-2 block text-sm font-medium text-foreground">
+                          <label
+                            htmlFor="appointmentTime"
+                            className="mb-2 block text-sm font-medium text-foreground"
+                          >
                             Time
                           </label>
                           <select
@@ -600,7 +598,8 @@ export const PetVeterinaryKimiPage3 = defineCapsule({
                           No appointments scheduled
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Book your first appointment from our services to get started.
+                          Book your first appointment from our services to get
+                          started.
                         </p>
                       </div>
                     )}
@@ -612,15 +611,27 @@ export const PetVeterinaryKimiPage3 = defineCapsule({
                           type="button"
                           className="w-full rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-60"
                           onClick={() => {
-                            if (selectedService && petName && appointmentDate && appointmentTime) {
-                              void bookAppointment(selectedService, petName, appointmentDate, appointmentTime)
+                            if (
+                              selectedService &&
+                              petName &&
+                              appointmentDate &&
+                              appointmentTime
+                            ) {
+                              void bookAppointment(
+                                selectedService,
+                                petName,
+                                appointmentDate,
+                                appointmentTime,
+                              )
                               setSelectedService(null)
                               setPetName('')
                               setAppointmentDate('')
                               setAppointmentTime('')
                             }
                           }}
-                          disabled={!petName || !appointmentDate || !appointmentTime}
+                          disabled={
+                            !petName || !appointmentDate || !appointmentTime
+                          }
                         >
                           Confirm Booking
                         </button>
@@ -794,16 +805,28 @@ export const PetVeterinaryKimiPage3 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -812,16 +835,29 @@ export const PetVeterinaryKimiPage3 = defineCapsule({
             <div className="mx-auto max-w-7xl px-5 py-14">
               <div className="mb-8">
                 <p className="text-sm font-medium text-primary">Our Services</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Veterinary Services</h2>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Veterinary Services
+                </h2>
               </div>
               <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                 {displayServices.map((service) => (
-                  <article key={service.name} className="rounded-lg border border-border bg-card p-6">
-                    <p className="text-sm font-medium text-primary">{service.category}</p>
-                    <h3 className="mt-3 text-xl font-semibold tracking-tight text-card-foreground">{service.name}</h3>
-                    <p className="mt-3 leading-7 text-muted-foreground">{service.description}</p>
+                  <article
+                    key={service.name}
+                    className="rounded-lg border border-border bg-card p-6"
+                  >
+                    <p className="text-sm font-medium text-primary">
+                      {service.category}
+                    </p>
+                    <h3 className="mt-3 text-xl font-semibold tracking-tight text-card-foreground">
+                      {service.name}
+                    </h3>
+                    <p className="mt-3 leading-7 text-muted-foreground">
+                      {service.description}
+                    </p>
                     <div className="mt-5 flex items-center justify-between">
-                      <span className="text-lg font-bold text-foreground">{service.price}</span>
+                      <span className="text-lg font-bold text-foreground">
+                        {service.price}
+                      </span>
                       <button
                         type="button"
                         onClick={() => {
@@ -842,8 +878,12 @@ export const PetVeterinaryKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -855,11 +895,26 @@ export const PetVeterinaryKimiPage3 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -870,9 +925,15 @@ export const PetVeterinaryKimiPage3 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -888,10 +949,17 @@ export const PetVeterinaryKimiPage3 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

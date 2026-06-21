@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
@@ -24,9 +24,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const ScheduleKimiPage4 = defineCapsule({
-  name: "ScheduleKimiPage4",
+  name: 'ScheduleKimiPage4',
   description:
-    "Schedule fourth style sibling to ScheduleKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Schedule fourth style sibling to ScheduleKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const ScheduleKimiPage4 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -119,127 +121,125 @@ export const ScheduleKimiPage4 = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [bookingsOpen, setBookingsOpen] = useState(false)
-    const brand = props.brand ?? "Class Schedule"
+    const brand = props.brand ?? 'Class Schedule'
     const nav = props.nav?.length
       ? props.nav
-      : ["Schedule", "Workshops", "Artists", "Gallery"]
+      : ['Schedule', 'Workshops', 'Artists', 'Gallery']
 
     const hero = {
-      eyebrow: "Schedule / Variant 4",
-      title: "Workshop Schedule",
+      eyebrow: 'Schedule / Variant 4',
+      title: 'Workshop Schedule',
       description:
-        "Class Schedule Art Studio Schedule Workshops Artists Gallery Workshop Schedule Unleash your creativity with our art classes All Workshops Painting Drawing Ceramics Photography P...",
-      primaryCta: "All Workshops",
-      secondaryCta: "Painting",
-      imageAlt: "schedule hero scene",
+        'Class Schedule Art Studio Schedule Workshops Artists Gallery Workshop Schedule Unleash your creativity with our art classes All Workshops Painting Drawing Ceramics Photography P...',
+      primaryCta: 'All Workshops',
+      secondaryCta: 'Painting',
+      imageAlt: 'schedule hero scene',
       ...props.hero,
     }
     const metrics = props.metrics?.length
       ? props.metrics
       : [
           {
-            value: "24/7",
-            label: "Responsive service",
+            value: '24/7',
+            label: 'Responsive service',
           },
           {
-            value: "98%",
-            label: "Positive outcomes",
+            value: '98%',
+            label: 'Positive outcomes',
           },
           {
-            value: "4.9",
-            label: "Average rating",
+            value: '4.9',
+            label: 'Average rating',
           },
           {
-            value: "12+",
-            label: "Core capabilities",
+            value: '12+',
+            label: 'Core capabilities',
           },
         ]
     const sections = props.sections?.length
       ? props.sections
       : [
           {
-            "eyebrow": "Overview",
-            "title": "Watercolor Basics",
-            "body": "Class Schedule Art Studio Schedule Workshops Artists Gallery Workshop Schedule Unleash your creativity with our art classes All Workshops Painting Drawing Ceramics Photography P...",
-            "items": [
-              "Outdoor Photography",
-            ],
+            eyebrow: 'Overview',
+            title: 'Watercolor Basics',
+            body: 'Class Schedule Art Studio Schedule Workshops Artists Gallery Workshop Schedule Unleash your creativity with our art classes All Workshops Painting Drawing Ceramics Photography P...',
+            items: ['Outdoor Photography'],
           },
           {
-            "eyebrow": "Experience",
-            "title": "Portrait Sketching",
-            "body": "Schedule page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-            "items": [],
+            eyebrow: 'Experience',
+            title: 'Portrait Sketching',
+            body: "Schedule page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [],
           },
           {
-            "eyebrow": "Proof",
-            "title": "Wheel Throwing 101",
-            "body": "Schedule page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-            "items": [],
+            eyebrow: 'Proof',
+            title: 'Wheel Throwing 101',
+            body: "Schedule page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [],
           },
           {
-            "eyebrow": "Next steps",
-            "title": "Outdoor Photography",
-            "body": "Schedule page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-            "items": [],
+            eyebrow: 'Next steps',
+            title: 'Outdoor Photography',
+            body: "Schedule page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [],
           },
         ]
     const gallery = props.gallery?.length
       ? props.gallery
       : [
           {
-            title: "Portrait Sketching",
-            alt: "schedule hero scene",
-            caption: "Schedule generated page detail",
+            title: 'Portrait Sketching',
+            alt: 'schedule hero scene',
+            caption: 'Schedule generated page detail',
           },
           {
-            title: "Wheel Throwing 101",
-            alt: "schedule customer experience",
-            caption: "Schedule generated page detail",
+            title: 'Wheel Throwing 101',
+            alt: 'schedule customer experience',
+            caption: 'Schedule generated page detail',
           },
           {
-            title: "Outdoor Photography",
-            alt: "schedule service detail",
-            caption: "Schedule generated page detail",
+            title: 'Outdoor Photography',
+            alt: 'schedule service detail',
+            caption: 'Schedule generated page detail',
           },
         ]
 
     const staticClasses = [
       {
-        name: "Watercolor Basics",
-        instructor: "Maya Chen",
-        time: "Mon 10:00 AM",
-        duration: "75 min",
-        level: "Beginner",
+        name: 'Watercolor Basics',
+        instructor: 'Maya Chen',
+        time: 'Mon 10:00 AM',
+        duration: '75 min',
+        level: 'Beginner',
         capacity: 14,
-        alt: "schedule hero scene",
+        alt: 'schedule hero scene',
       },
       {
-        name: "Portrait Sketching",
-        instructor: "Lena Ortiz",
-        time: "Tue 2:00 PM",
-        duration: "60 min",
-        level: "Intermediate",
+        name: 'Portrait Sketching',
+        instructor: 'Lena Ortiz',
+        time: 'Tue 2:00 PM',
+        duration: '60 min',
+        level: 'Intermediate',
         capacity: 10,
-        alt: "schedule hero scene",
+        alt: 'schedule hero scene',
       },
       {
-        name: "Wheel Throwing 101",
-        instructor: "Noah Kim",
-        time: "Wed 4:00 PM",
-        duration: "90 min",
-        level: "All levels",
+        name: 'Wheel Throwing 101',
+        instructor: 'Noah Kim',
+        time: 'Wed 4:00 PM',
+        duration: '90 min',
+        level: 'All levels',
         capacity: 8,
-        alt: "schedule service detail",
+        alt: 'schedule service detail',
       },
       {
-        name: "Outdoor Photography",
-        instructor: "Ari Rivera",
-        time: "Thu 6:30 PM",
-        duration: "60 min",
-        level: "Beginner",
+        name: 'Outdoor Photography',
+        instructor: 'Ari Rivera',
+        time: 'Thu 6:30 PM',
+        duration: '60 min',
+        level: 'Beginner',
         capacity: 12,
-        alt: "schedule customer experience",
+        alt: 'schedule customer experience',
       },
     ]
 
@@ -279,8 +279,7 @@ export const ScheduleKimiPage4 = defineCapsule({
       return Number.isFinite(normalized) ? normalized : 0
     }
     const bookedMinutes = safeUserBookings.reduce(
-      (total, booking) =>
-        total + durationToMinutes(booking.classItem.duration),
+      (total, booking) => total + durationToMinutes(booking.classItem.duration),
       0,
     )
     const bookedHours = Math.round((bookedMinutes / 60) * 100) / 100
@@ -355,12 +354,17 @@ export const ScheduleKimiPage4 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
             <button
               type="button"
-              onClick={() => go("Home")}
+              onClick={() => go('Home')}
               className="text-left text-lg font-semibold tracking-tight"
             >
               {brand}
@@ -656,7 +660,7 @@ export const ScheduleKimiPage4 = defineCapsule({
 
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
-              {sections.map((section, index) => (
+              {sections.map((section) => (
                 <article
                   key={section.title}
                   className="rounded-lg border border-border bg-card p-6"
@@ -708,7 +712,9 @@ export const ScheduleKimiPage4 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
                 <h2 className="mt-2 text-3xl font-semibold tracking-tight">
                   Content-led page moments
                 </h2>

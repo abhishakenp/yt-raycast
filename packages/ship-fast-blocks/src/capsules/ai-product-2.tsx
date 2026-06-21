@@ -1,11 +1,11 @@
-import { useState } from "react"
-import { type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -15,14 +15,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * AiProductKimiPage2 — VARIANT 2 of the AI-product / AI-SaaS landing page.
@@ -37,7 +37,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * a live AI chat-bubble conversation preview card.
  */
 export const AiProductKimiPage2 = defineCapsule({
-  name: "AiProductKimiPage2",
+  name: 'AiProductKimiPage2',
   description:
     "ALTERNATIVE / second-style AI-product / AI-SaaS LANDING page — a bold, vivid, high-contrast sibling to AiProductKimiPage (use this when a more colorful, energetic, conversion-punchy generative-AI marketing site is wanted instead of the clean minimal look). Built on a saturated brand-primary hue with dramatic dark inverted bands: a glowing gradient hero with a live AI chat-bubble conversation preview, a trusted-by logo strip, a 6-up icon-tile feature grid, a dark 3-step 'how it works' timeline, an image use-case gallery with overlay captions, a 3-tier pricing table with a dark highlighted Most-Popular plan, a saturated 4-up stats band, a 6-card star-rated testimonial wall with avatars, an FAQ accordion, a dark inverted final call-to-action with pulse-glow CTAs, and a dark multi-column footer with social icons. Ideal as the ROOT/home page for AI writing assistants, generative-AI copilots, content-generation tools, AI productivity apps, or any modern SaaS/startup launch that wants a punchy, gradient-accented, trustworthy marketing site with features, pricing, social proof and FAQ. Supply content only — brand, nav, hero, logos, features, steps, gallery, pricing, stats, testimonials, faq, finalCta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -63,7 +63,7 @@ export const AiProductKimiPage2 = defineCapsule({
         chat: z
           .array(
             z.object({
-              role: z.enum(["ai", "you"]),
+              role: z.enum(['ai', 'you']),
               text: z.string(),
             }),
           )
@@ -246,10 +246,10 @@ export const AiProductKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [draftsOpen, setDraftsOpen] = useState(false)
-    const brand = props.brand ?? "WriteFlow AI"
+    const brand = props.brand ?? 'WriteFlow AI'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "Pricing", "Reviews", "FAQ"]
+      : ['Features', 'Pricing', 'Reviews', 'FAQ']
 
     // Lakebed queries and mutations
     const storedDrafts = lakebed.useQuery('drafts')
@@ -288,88 +288,88 @@ export const AiProductKimiPage2 = defineCapsule({
     const safeDrafts = storedDrafts ?? []
     const draftsCount = safeDrafts.length
 
-    const heroBadge = props.hero?.badge ?? "Now with GPT-4 Turbo"
-    const headingTop = props.hero?.headingTop ?? "Write faster."
-    const headingBottom = props.hero?.headingBottom ?? "Think clearer."
+    const heroBadge = props.hero?.badge ?? 'Now with GPT-4 Turbo'
+    const headingTop = props.hero?.headingTop ?? 'Write faster.'
+    const headingBottom = props.hero?.headingBottom ?? 'Think clearer.'
     const heroSub =
       props.hero?.subheading ??
-      "The generative AI writing assistant that helps marketing teams, creators, and professionals produce high-quality content in minutes—not hours."
-    const heroPrimary = props.hero?.primaryCta ?? "Start free 14-day trial"
-    const heroSecondary = props.hero?.secondaryCta ?? "Watch demo"
+      'The generative AI writing assistant that helps marketing teams, creators, and professionals produce high-quality content in minutes—not hours.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Start free 14-day trial'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Watch demo'
     const heroTrust = props.hero?.trust?.length
       ? props.hero.trust
-      : ["No credit card required", "Cancel anytime"]
-    const previewFile = props.hero?.previewFile ?? "writeflow.ai/editor"
+      : ['No credit card required', 'Cancel anytime']
+    const previewFile = props.hero?.previewFile ?? 'writeflow.ai/editor'
     const chat = props.hero?.chat?.length
       ? props.hero.chat
       : [
           {
-            role: "ai" as const,
+            role: 'ai' as const,
             text: "I've analyzed your brand voice. Ready to draft that product announcement?",
           },
           {
-            role: "you" as const,
-            text: "Yes—launching WriteFlow 3.0 next Tuesday. Emphasize speed and collaboration.",
+            role: 'you' as const,
+            text: 'Yes—launching WriteFlow 3.0 next Tuesday. Emphasize speed and collaboration.',
           },
         ]
-    const draftTitle = props.hero?.draftTitle ?? "Draft generated (847 words)"
+    const draftTitle = props.hero?.draftTitle ?? 'Draft generated (847 words)'
     const draftBody =
       props.hero?.draftBody ??
-      "WriteFlow 3.0 launches Tuesday with real-time collaboration, AI-assisted editing, and 10x faster content workflows..."
+      'WriteFlow 3.0 launches Tuesday with real-time collaboration, AI-assisted editing, and 10x faster content workflows...'
     const draftActions = props.hero?.draftActions?.length
       ? props.hero.draftActions
-      : ["Insert", "Regenerate", "Edit tone"]
+      : ['Insert', 'Regenerate', 'Edit tone']
 
     const logosLabel =
-      props.logos?.label ?? "Trusted by content teams at leading companies"
+      props.logos?.label ?? 'Trusted by content teams at leading companies'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
-      : ["Notion", "Shopify", "HubSpot", "Stripe", "Intercom", "Figma"]
+      : ['Notion', 'Shopify', 'HubSpot', 'Stripe', 'Intercom', 'Figma']
 
-    const featuresBadge = props.features?.badge ?? "Powerful Features"
+    const featuresBadge = props.features?.badge ?? 'Powerful Features'
     const featuresHeading =
-      props.features?.heading ?? "Everything you need to write at scale"
+      props.features?.heading ?? 'Everything you need to write at scale'
     const featuresDesc =
       props.features?.description ??
-      "From first draft to final polish, WriteFlow AI streamlines every step of your content creation workflow."
+      'From first draft to final polish, WriteFlow AI streamlines every step of your content creation workflow.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Lightning-fast drafts",
+            title: 'Lightning-fast drafts',
             description:
-              "Generate blog posts, emails, social captions, and ad copy in seconds. Choose from 50+ content templates or create custom workflows.",
+              'Generate blog posts, emails, social captions, and ad copy in seconds. Choose from 50+ content templates or create custom workflows.',
           },
           {
-            title: "AI-powered editing",
+            title: 'AI-powered editing',
             description:
-              "Rewrite, expand, shorten, or change tone with one click. Fix grammar, improve clarity, and match your brand voice automatically.",
+              'Rewrite, expand, shorten, or change tone with one click. Fix grammar, improve clarity, and match your brand voice automatically.',
           },
           {
-            title: "SEO optimization",
+            title: 'SEO optimization',
             description:
-              "Built-in keyword research, readability scoring, and SERP analysis. Get real-time suggestions to rank higher on Google.",
+              'Built-in keyword research, readability scoring, and SERP analysis. Get real-time suggestions to rank higher on Google.',
           },
           {
-            title: "Team collaboration",
+            title: 'Team collaboration',
             description:
-              "Shared workspaces, real-time editing, comments, and approvals. Keep your entire content team aligned and moving fast.",
+              'Shared workspaces, real-time editing, comments, and approvals. Keep your entire content team aligned and moving fast.',
           },
           {
-            title: "30+ languages",
+            title: '30+ languages',
             description:
-              "Create content in English, Spanish, German, French, Japanese, and more. Maintain consistent quality across global markets.",
+              'Create content in English, Spanish, German, French, Japanese, and more. Maintain consistent quality across global markets.',
           },
           {
-            title: "Integrations",
+            title: 'Integrations',
             description:
-              "Connect with WordPress, HubSpot, Mailchimp, Google Docs, Notion, and more. Publish directly to your favorite platforms.",
+              'Connect with WordPress, HubSpot, Mailchimp, Google Docs, Notion, and more. Publish directly to your favorite platforms.',
           },
         ]
 
-    const stepsBadge = props.steps?.badge ?? "How it works"
+    const stepsBadge = props.steps?.badge ?? 'How it works'
     const stepsHeading =
-      props.steps?.heading ?? "From idea to published in 3 steps"
+      props.steps?.heading ?? 'From idea to published in 3 steps'
     const stepsDesc =
       props.steps?.description ??
       "WriteFlow AI eliminates writer's block and tedious editing so you can focus on strategy."
@@ -377,117 +377,118 @@ export const AiProductKimiPage2 = defineCapsule({
       ? props.steps.items
       : [
           {
-            title: "Describe your content",
+            title: 'Describe your content',
             description:
-              "Tell WriteFlow what you need—topic, audience, tone, and length. Or choose from 50+ proven templates for any content type.",
+              'Tell WriteFlow what you need—topic, audience, tone, and length. Or choose from 50+ proven templates for any content type.',
           },
           {
-            title: "AI generates your draft",
+            title: 'AI generates your draft',
             description:
-              "Our GPT-4 powered engine creates a complete, ready-to-edit draft in seconds. Every output is original and plagiarism-free.",
+              'Our GPT-4 powered engine creates a complete, ready-to-edit draft in seconds. Every output is original and plagiarism-free.',
           },
           {
-            title: "Refine and publish",
+            title: 'Refine and publish',
             description:
-              "Edit with AI assistance, get SEO suggestions, collaborate with your team, and publish to your CMS with one click.",
+              'Edit with AI assistance, get SEO suggestions, collaborate with your team, and publish to your CMS with one click.',
           },
         ]
 
-    const galleryBadge = props.gallery?.badge ?? "Use cases"
-    const galleryHeading = props.gallery?.heading ?? "Content that converts"
+    const galleryBadge = props.gallery?.badge ?? 'Use cases'
+    const galleryHeading = props.gallery?.heading ?? 'Content that converts'
     const galleryDesc =
       props.gallery?.description ??
-      "See what teams are creating with WriteFlow AI every day."
+      'See what teams are creating with WriteFlow AI every day.'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
           {
-            title: "Blog posts & articles",
-            description: "Long-form content that ranks",
+            title: 'Blog posts & articles',
+            description: 'Long-form content that ranks',
           },
           {
-            title: "Marketing copy",
-            description: "Landing pages, ads & emails",
+            title: 'Marketing copy',
+            description: 'Landing pages, ads & emails',
           },
           {
-            title: "Social media",
-            description: "Captions, threads & video scripts",
+            title: 'Social media',
+            description: 'Captions, threads & video scripts',
           },
           {
-            title: "Product descriptions",
-            description: "E-commerce & app store copy",
+            title: 'Product descriptions',
+            description: 'E-commerce & app store copy',
           },
           {
-            title: "Video scripts",
-            description: "YouTube, TikTok & webinars",
+            title: 'Video scripts',
+            description: 'YouTube, TikTok & webinars',
           },
           {
-            title: "Email sequences",
-            description: "Drip campaigns & newsletters",
+            title: 'Email sequences',
+            description: 'Drip campaigns & newsletters',
           },
           {
-            title: "Documentation",
-            description: "Help centers & API docs",
+            title: 'Documentation',
+            description: 'Help centers & API docs',
           },
           {
-            title: "Proposals & decks",
-            description: "Sales & investor materials",
+            title: 'Proposals & decks',
+            description: 'Sales & investor materials',
           },
         ]
 
-    const pricingBadge = props.pricing?.badge ?? "Pricing"
+    const pricingBadge = props.pricing?.badge ?? 'Pricing'
     const pricingHeading =
-      props.pricing?.heading ?? "Simple, transparent pricing"
+      props.pricing?.heading ?? 'Simple, transparent pricing'
     const pricingDesc =
-      props.pricing?.description ?? "Start free. Scale as you grow. No hidden fees."
+      props.pricing?.description ??
+      'Start free. Scale as you grow. No hidden fees.'
     const pricingNote =
       props.pricing?.note ??
-      "All plans include a 14-day free trial. No credit card required."
+      'All plans include a 14-day free trial. No credit card required.'
     const pricingPlans = props.pricing?.plans?.length
       ? props.pricing.plans
       : [
           {
-            name: "Starter",
-            tagline: "Perfect for individuals trying AI writing",
-            price: "$0",
-            period: "/month",
-            cta: "Get started free",
+            name: 'Starter',
+            tagline: 'Perfect for individuals trying AI writing',
+            price: '$0',
+            period: '/month',
+            cta: 'Get started free',
             features: [
-              "10,000 words/month",
-              "20+ templates",
-              "Basic editor",
-              "Email support",
+              '10,000 words/month',
+              '20+ templates',
+              'Basic editor',
+              'Email support',
             ],
           },
           {
-            name: "Professional",
-            tagline: "For freelancers and small teams",
-            price: "$29",
-            period: "/month",
-            cta: "Start 14-day trial",
+            name: 'Professional',
+            tagline: 'For freelancers and small teams',
+            price: '$29',
+            period: '/month',
+            cta: 'Start 14-day trial',
             featured: true,
             features: [
-              "Unlimited words",
-              "50+ templates",
-              "AI editing & SEO tools",
-              "5 team members",
-              "Priority support",
-              "API access",
+              'Unlimited words',
+              '50+ templates',
+              'AI editing & SEO tools',
+              '5 team members',
+              'Priority support',
+              'API access',
             ],
           },
           {
-            name: "Enterprise",
-            tagline: "For large teams with custom needs",
-            price: "$99",
-            period: "/month",
-            cta: "Contact sales",
+            name: 'Enterprise',
+            tagline: 'For large teams with custom needs',
+            price: '$99',
+            period: '/month',
+            cta: 'Contact sales',
             features: [
-              "Everything in Pro",
-              "Unlimited team members",
-              "SSO & advanced security",
-              "Custom AI training",
-              "Dedicated account manager",
-              "SLA guarantee",
+              'Everything in Pro',
+              'Unlimited team members',
+              'SSO & advanced security',
+              'Custom AI training',
+              'Dedicated account manager',
+              'SLA guarantee',
             ],
           },
         ]
@@ -495,145 +496,146 @@ export const AiProductKimiPage2 = defineCapsule({
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "50K+", label: "Active writers" },
-          { value: "2M+", label: "Articles generated" },
-          { value: "10x", label: "Faster content creation" },
-          { value: "98%", label: "Customer satisfaction" },
+          { value: '50K+', label: 'Active writers' },
+          { value: '2M+', label: 'Articles generated' },
+          { value: '10x', label: 'Faster content creation' },
+          { value: '98%', label: 'Customer satisfaction' },
         ]
 
-    const testimonialsBadge = props.testimonials?.badge ?? "Testimonials"
+    const testimonialsBadge = props.testimonials?.badge ?? 'Testimonials'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Loved by content teams"
+      props.testimonials?.heading ?? 'Loved by content teams'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "See how professionals are transforming their writing workflow."
+      'See how professionals are transforming their writing workflow.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "WriteFlow cut our blog production time by 70%. What used to take a week now takes two days. The SEO suggestions alone are worth the subscription.",
-            name: "Sarah Chen",
-            role: "Marketing Director, TechFlow",
+              'WriteFlow cut our blog production time by 70%. What used to take a week now takes two days. The SEO suggestions alone are worth the subscription.',
+            name: 'Sarah Chen',
+            role: 'Marketing Director, TechFlow',
             avatarAlt:
-              "Professional headshot of Sarah Chen, marketing director with dark hair",
+              'Professional headshot of Sarah Chen, marketing director with dark hair',
           },
           {
             quote:
-              "As a freelance copywriter, WriteFlow is my secret weapon. I can take on 3x more clients without sacrificing quality. The tone-matching feature is incredible.",
-            name: "Marcus Williams",
-            role: "Freelance Copywriter",
+              'As a freelance copywriter, WriteFlow is my secret weapon. I can take on 3x more clients without sacrificing quality. The tone-matching feature is incredible.',
+            name: 'Marcus Williams',
+            role: 'Freelance Copywriter',
             avatarAlt:
-              "Professional headshot of Marcus Williams, freelance copywriter with short beard",
+              'Professional headshot of Marcus Williams, freelance copywriter with short beard',
           },
           {
             quote:
-              "We onboarded our entire 12-person content team to WriteFlow Enterprise. The custom AI training means our brand voice stays consistent across all channels.",
-            name: "Elena Rodriguez",
-            role: "VP of Content, ScaleUp",
+              'We onboarded our entire 12-person content team to WriteFlow Enterprise. The custom AI training means our brand voice stays consistent across all channels.',
+            name: 'Elena Rodriguez',
+            role: 'VP of Content, ScaleUp',
             avatarAlt:
-              "Professional headshot of Elena Rodriguez, VP of content with curly brown hair",
+              'Professional headshot of Elena Rodriguez, VP of content with curly brown hair',
           },
           {
             quote:
-              "The multilingual support is a game-changer. We create content for 8 markets and WriteFlow maintains quality across all languages. Our international traffic is up 340%.",
-            name: "James Park",
-            role: "Growth Lead, GlobalMart",
+              'The multilingual support is a game-changer. We create content for 8 markets and WriteFlow maintains quality across all languages. Our international traffic is up 340%.',
+            name: 'James Park',
+            role: 'Growth Lead, GlobalMart',
             avatarAlt:
-              "Professional headshot of James Park, growth lead with confident expression",
+              'Professional headshot of James Park, growth lead with confident expression',
           },
           {
             quote:
               "I was skeptical about AI writing tools, but WriteFlow actually understands context. It doesn't just string keywords together—it crafts compelling narratives.",
-            name: "Aisha Patel",
-            role: "Content Strategist",
+            name: 'Aisha Patel',
+            role: 'Content Strategist',
             avatarAlt:
-              "Professional headshot of Aisha Patel, content strategist with warm smile",
+              'Professional headshot of Aisha Patel, content strategist with warm smile',
           },
           {
             quote:
-              "The API integration let us embed WriteFlow directly into our product. Our users now generate help articles automatically. Support tickets dropped 45%.",
-            name: "David Kim",
-            role: "CTO, HelpDesk Pro",
+              'The API integration let us embed WriteFlow directly into our product. Our users now generate help articles automatically. Support tickets dropped 45%.',
+            name: 'David Kim',
+            role: 'CTO, HelpDesk Pro',
             avatarAlt:
-              "Professional headshot of David Kim, CTO with glasses and thoughtful expression",
+              'Professional headshot of David Kim, CTO with glasses and thoughtful expression',
           },
         ]
 
-    const faqBadge = props.faq?.badge ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Frequently asked questions"
+    const faqBadge = props.faq?.badge ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Frequently asked questions'
     const faqDesc =
-      props.faq?.description ?? "Everything you need to know about WriteFlow AI."
+      props.faq?.description ??
+      'Everything you need to know about WriteFlow AI.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "Is the content generated by WriteFlow original?",
+            question: 'Is the content generated by WriteFlow original?',
             answer:
-              "Yes. WriteFlow uses advanced AI models to generate completely original content. Every output is unique and passes plagiarism checks. We do not scrape or copy from existing sources—instead, the AI generates text based on patterns learned during training, similar to how humans write.",
+              'Yes. WriteFlow uses advanced AI models to generate completely original content. Every output is unique and passes plagiarism checks. We do not scrape or copy from existing sources—instead, the AI generates text based on patterns learned during training, similar to how humans write.',
           },
           {
-            question: "Can I cancel my subscription at any time?",
+            question: 'Can I cancel my subscription at any time?',
             answer:
-              "Absolutely. You can cancel your subscription at any time with no penalties or hidden fees. Your access will continue until the end of your current billing period. We also offer a 14-day free trial on all paid plans so you can try before you buy.",
+              'Absolutely. You can cancel your subscription at any time with no penalties or hidden fees. Your access will continue until the end of your current billing period. We also offer a 14-day free trial on all paid plans so you can try before you buy.',
           },
           {
-            question: "What languages does WriteFlow support?",
+            question: 'What languages does WriteFlow support?',
             answer:
               "WriteFlow supports over 30 languages including English, Spanish, French, German, Italian, Portuguese, Dutch, Russian, Chinese (Simplified and Traditional), Japanese, Korean, Arabic, Hindi, and more. We're constantly adding new languages based on user demand.",
           },
           {
-            question: "Is there a word limit on the Professional plan?",
+            question: 'Is there a word limit on the Professional plan?',
             answer:
-              "No. The Professional plan includes unlimited word generation. Write as much as you need without worrying about hitting caps or overage charges. Enterprise plans also include unlimited words with additional features like SSO and custom AI training.",
+              'No. The Professional plan includes unlimited word generation. Write as much as you need without worrying about hitting caps or overage charges. Enterprise plans also include unlimited words with additional features like SSO and custom AI training.',
           },
           {
-            question: "Can I train WriteFlow on my brand voice?",
+            question: 'Can I train WriteFlow on my brand voice?',
             answer:
-              "Yes! Professional and Enterprise plans include brand voice training. Upload samples of your existing content, define your tone guidelines (professional, casual, witty, etc.), and WriteFlow will adapt its output to match your unique style consistently.",
+              'Yes! Professional and Enterprise plans include brand voice training. Upload samples of your existing content, define your tone guidelines (professional, casual, witty, etc.), and WriteFlow will adapt its output to match your unique style consistently.',
           },
           {
-            question: "Do you offer API access?",
+            question: 'Do you offer API access?',
             answer:
               "Yes, API access is available on Professional and Enterprise plans. Our REST API lets you integrate WriteFlow's content generation into your own applications, workflows, and products. Comprehensive documentation and SDKs for Python, JavaScript, and Ruby are provided.",
           },
         ]
 
     const finalHeading =
-      props.finalCta?.heading ?? "Ready to 10x your content output?"
+      props.finalCta?.heading ?? 'Ready to 10x your content output?'
     const finalDesc =
       props.finalCta?.description ??
-      "Join 50,000+ writers, marketers, and teams who are creating better content faster with WriteFlow AI."
+      'Join 50,000+ writers, marketers, and teams who are creating better content faster with WriteFlow AI.'
     const finalPrimary =
-      props.finalCta?.primaryCta ?? "Start your free 14-day trial"
-    const finalSecondary = props.finalCta?.secondaryCta ?? "Book a demo"
+      props.finalCta?.primaryCta ?? 'Start your free 14-day trial'
+    const finalSecondary = props.finalCta?.secondaryCta ?? 'Book a demo'
     const finalBadges = props.finalCta?.badges?.length
       ? props.finalCta.badges
-      : ["No credit card required", "Cancel anytime", "24/7 support"]
+      : ['No credit card required', 'Cancel anytime', '24/7 support']
 
     const footerTagline =
       props.footer?.tagline ??
-      "The AI writing assistant that helps you create high-quality content 10x faster."
+      'The AI writing assistant that helps you create high-quality content 10x faster.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Product",
-            links: ["Features", "Pricing", "Integrations", "API", "Changelog"],
+            title: 'Product',
+            links: ['Features', 'Pricing', 'Integrations', 'API', 'Changelog'],
           },
           {
-            title: "Resources",
+            title: 'Resources',
             links: [
-              "Documentation",
-              "Blog",
-              "Templates",
-              "Help Center",
-              "Community",
+              'Documentation',
+              'Blog',
+              'Templates',
+              'Help Center',
+              'Community',
             ],
           },
           {
-            title: "Company",
-            links: ["About", "Careers", "Contact", "Privacy", "Terms"],
+            title: 'Company',
+            links: ['About', 'Careers', 'Contact', 'Privacy', 'Terms'],
           },
         ]
     const footerCopyright =
@@ -641,13 +643,13 @@ export const AiProductKimiPage2 = defineCapsule({
       `© ${new Date().getFullYear()} ${brand}. All rights reserved.`
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Settings"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
 
     // Brand mark — gradient tile with a pen/edit glyph (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground",
+          'grid place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -779,7 +781,7 @@ export const AiProductKimiPage2 = defineCapsule({
       </svg>,
     ]
 
-    const trafficLights = ["bg-destructive", "bg-chart-4", "bg-primary"]
+    const trafficLights = ['bg-destructive', 'bg-chart-4', 'bg-primary']
 
     const ChevronDown = () => (
       <svg
@@ -833,7 +835,7 @@ export const AiProductKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased selection:bg-primary/20",
+          'min-h-svh bg-background text-foreground antialiased selection:bg-primary/20',
           props.className,
         )}
       >
@@ -920,7 +922,9 @@ export const AiProductKimiPage2 = defineCapsule({
                                   {draft.title}
                                 </p>
                                 <p className="mt-1 text-xs text-muted-foreground">
-                                  {new Date(draft.createdAt).toLocaleDateString()}
+                                  {new Date(
+                                    draft.createdAt,
+                                  ).toLocaleDateString()}
                                 </p>
                                 <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
                                   {draft.body}
@@ -1176,7 +1180,10 @@ export const AiProductKimiPage2 = defineCapsule({
               aria-hidden="true"
               className="absolute inset-0 bg-gradient-to-br from-primary/30 via-foreground to-foreground"
             />
-            <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 overflow-hidden"
+            >
               <div className="absolute left-10 top-20 size-72 rounded-full bg-primary/20 blur-3xl" />
               <div className="absolute bottom-20 right-10 size-96 rounded-full bg-accent/20 blur-3xl" />
             </div>
@@ -1244,7 +1251,10 @@ export const AiProductKimiPage2 = defineCapsule({
                     <div className="flex items-center gap-2 border-b border-border bg-muted px-4 py-3">
                       <div className="flex gap-1.5">
                         {trafficLights.map((c) => (
-                          <span key={c} className={cn("size-3 rounded-full", c)} />
+                          <span
+                            key={c}
+                            className={cn('size-3 rounded-full', c)}
+                          />
                         ))}
                       </div>
                       <span className="ml-2 font-mono text-xs text-muted-foreground">
@@ -1253,7 +1263,7 @@ export const AiProductKimiPage2 = defineCapsule({
                     </div>
                     <div className="space-y-4 p-6">
                       {chat.map((turn, i) =>
-                        turn.role === "ai" ? (
+                        turn.role === 'ai' ? (
                           <div key={i} className="flex items-start gap-3">
                             <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                               AI
@@ -1299,10 +1309,10 @@ export const AiProductKimiPage2 = defineCapsule({
                                   }
                                 }}
                                 className={cn(
-                                  "rounded px-3 py-1 text-xs font-medium transition-colors",
+                                  'rounded px-3 py-1 text-xs font-medium transition-colors',
                                   i === 0
-                                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                                    : "bg-secondary text-secondary-foreground hover:bg-accent",
+                                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                                    : 'bg-secondary text-secondary-foreground hover:bg-accent',
                                 )}
                               >
                                 {action}
@@ -1384,7 +1394,9 @@ export const AiProductKimiPage2 = defineCapsule({
                       <h3 className="mb-3 text-xl font-bold text-foreground">
                         {item.title}
                       </h3>
-                      <p className="text-muted-foreground">{item.description}</p>
+                      <p className="text-muted-foreground">
+                        {item.description}
+                      </p>
                     </article>
                   )
                 })}
@@ -1484,10 +1496,10 @@ export const AiProductKimiPage2 = defineCapsule({
                   <article
                     key={plan.name}
                     className={cn(
-                      "relative rounded-2xl p-8",
+                      'relative rounded-2xl p-8',
                       plan.featured
-                        ? "border-2 border-primary bg-foreground md:-translate-y-4"
-                        : "border border-border bg-card",
+                        ? 'border-2 border-primary bg-foreground md:-translate-y-4'
+                        : 'border border-border bg-card',
                     )}
                   >
                     {plan.featured && (
@@ -1499,18 +1511,20 @@ export const AiProductKimiPage2 = defineCapsule({
                     )}
                     <h3
                       className={cn(
-                        "mb-2 text-lg font-semibold",
-                        plan.featured ? "text-background" : "text-card-foreground",
+                        'mb-2 text-lg font-semibold',
+                        plan.featured
+                          ? 'text-background'
+                          : 'text-card-foreground',
                       )}
                     >
                       {plan.name}
                     </h3>
                     <p
                       className={cn(
-                        "mb-6 text-sm",
+                        'mb-6 text-sm',
                         plan.featured
-                          ? "text-background/60"
-                          : "text-muted-foreground",
+                          ? 'text-background/60'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {plan.tagline}
@@ -1518,10 +1532,10 @@ export const AiProductKimiPage2 = defineCapsule({
                     <div className="mb-6 flex items-baseline gap-1">
                       <span
                         className={cn(
-                          "text-4xl font-bold",
+                          'text-4xl font-bold',
                           plan.featured
-                            ? "text-background"
-                            : "text-card-foreground",
+                            ? 'text-background'
+                            : 'text-card-foreground',
                         )}
                       >
                         {plan.price}
@@ -1529,8 +1543,8 @@ export const AiProductKimiPage2 = defineCapsule({
                       <span
                         className={cn(
                           plan.featured
-                            ? "text-background/60"
-                            : "text-muted-foreground",
+                            ? 'text-background/60'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {plan.period}
@@ -1538,18 +1552,18 @@ export const AiProductKimiPage2 = defineCapsule({
                     </div>
                     <ul
                       className={cn(
-                        "mb-8 space-y-3",
+                        'mb-8 space-y-3',
                         plan.featured
-                          ? "text-background/80"
-                          : "text-muted-foreground",
+                          ? 'text-background/80'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {plan.features.map((feat) => (
                         <li key={feat} className="flex items-center gap-3">
                           <Check
                             className={cn(
-                              "size-5 shrink-0",
-                              plan.featured ? "text-primary" : "text-primary",
+                              'size-5 shrink-0',
+                              plan.featured ? 'text-primary' : 'text-primary',
                             )}
                           />
                           <span>{feat}</span>
@@ -1560,10 +1574,10 @@ export const AiProductKimiPage2 = defineCapsule({
                       type="button"
                       onClick={() => go(plan.cta)}
                       className={cn(
-                        "w-full rounded-lg px-4 py-3 text-center font-semibold transition-colors",
+                        'w-full rounded-lg px-4 py-3 text-center font-semibold transition-colors',
                         plan.featured
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                          : "bg-secondary text-secondary-foreground hover:bg-accent",
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'bg-secondary text-secondary-foreground hover:bg-accent',
                       )}
                     >
                       {plan.cta}
@@ -1750,17 +1764,19 @@ export const AiProductKimiPage2 = defineCapsule({
                   {footerTagline}
                 </p>
                 <div className="flex gap-4">
-                  {(["Twitter", "LinkedIn", "GitHub"] as const).map((social) => (
-                    <button
-                      key={social}
-                      type="button"
-                      aria-label={social}
-                      onClick={() => go(social)}
-                      className="grid size-10 place-items-center rounded-lg bg-background/10 text-sm font-medium text-background/70 transition-colors hover:bg-background/20 hover:text-background"
-                    >
-                      {social.slice(0, 2)}
-                    </button>
-                  ))}
+                  {(['Twitter', 'LinkedIn', 'GitHub'] as const).map(
+                    (social) => (
+                      <button
+                        key={social}
+                        type="button"
+                        aria-label={social}
+                        onClick={() => go(social)}
+                        className="grid size-10 place-items-center rounded-lg bg-background/10 text-sm font-medium text-background/70 transition-colors hover:bg-background/20 hover:text-background"
+                      >
+                        {social.slice(0, 2)}
+                      </button>
+                    ),
+                  )}
                 </div>
               </div>
 

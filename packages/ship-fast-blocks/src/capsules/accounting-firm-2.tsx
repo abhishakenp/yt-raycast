@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -52,9 +52,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
  * Callers supply ONLY content; rich defaults make it render great with no props.
  */
 export const AccountingFirmKimiPage2 = defineCapsule({
-  name: "AccountingFirmKimiPage2",
+  name: 'AccountingFirmKimiPage2',
   description:
-    "Second, alternative accounting-firm / CPA / chartered-accountant marketing page — a bold, high-contrast sibling style to AccountingFirmKimiPage, built so repeat accounting-firm requests render a distinct look. Mood: a dramatic DARK split hero (deep foreground surface lit by a single vivid brand accent) with an animated trusted-by status pill, a two-line headline, dual CTAs, a reviewer avatar stack with a star rating, and a glowing hero photo carrying a floating tax-savings stat card; then alternating light and muted bands. Includes a sticky translucent navbar with a Book-Consultation CTA, a trusted-by client logo strip, a 6-up services grid (tax planning & compliance, audit & assurance, payroll & bookkeeping, business advisory, property & construction, personal tax & wealth) with icon tiles and feature checklists, a dark 4-up stats band (tax saved, active clients, years, retention), a split how-we-work 3-step process with a floating average-savings card, a 4-up leadership team grid with headshots and LinkedIn/email links, a 3-up star-rated testimonials grid, a 3-tier transparent pricing table with a dark highlighted Most-Popular plan, a 5-item FAQ accordion, a vivid primary CTA band with a phone button, and a contact section pairing office/phone/email/hours details with a real inquiry form, plus a dark multi-column footer with social icons and an ICAEW-registration legal line. Use as the ROOT/home page for accounting firms, chartered accountants, CPA practices, tax-planning & compliance services, audit & assurance firms, payroll & bookkeeping providers, business advisory, property/construction accounting, or personal tax & wealth practices when a credible, conversion-focused services site with a striking dark hero, pricing, team and FAQ is wanted — pick this when a punchier, higher-contrast alternative to the calmer AccountingFirmKimiPage is desired. Supply content only; the block owns all layout and styling.",
+    'Second, alternative accounting-firm / CPA / chartered-accountant marketing page — a bold, high-contrast sibling style to AccountingFirmKimiPage, built so repeat accounting-firm requests render a distinct look. Mood: a dramatic DARK split hero (deep foreground surface lit by a single vivid brand accent) with an animated trusted-by status pill, a two-line headline, dual CTAs, a reviewer avatar stack with a star rating, and a glowing hero photo carrying a floating tax-savings stat card; then alternating light and muted bands. Includes a sticky translucent navbar with a Book-Consultation CTA, a trusted-by client logo strip, a 6-up services grid (tax planning & compliance, audit & assurance, payroll & bookkeeping, business advisory, property & construction, personal tax & wealth) with icon tiles and feature checklists, a dark 4-up stats band (tax saved, active clients, years, retention), a split how-we-work 3-step process with a floating average-savings card, a 4-up leadership team grid with headshots and LinkedIn/email links, a 3-up star-rated testimonials grid, a 3-tier transparent pricing table with a dark highlighted Most-Popular plan, a 5-item FAQ accordion, a vivid primary CTA band with a phone button, and a contact section pairing office/phone/email/hours details with a real inquiry form, plus a dark multi-column footer with social icons and an ICAEW-registration legal line. Use as the ROOT/home page for accounting firms, chartered accountants, CPA practices, tax-planning & compliance services, audit & assurance firms, payroll & bookkeeping providers, business advisory, property/construction accounting, or personal tax & wealth practices when a credible, conversion-focused services site with a striking dark hero, pricing, team and FAQ is wanted — pick this when a punchier, higher-contrast alternative to the calmer AccountingFirmKimiPage is desired. Supply content only; the block owns all layout and styling.',
   props: z.object({
     /** Firm / brand name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -260,11 +260,31 @@ export const AccountingFirmKimiPage2 = defineCapsule({
       bookings: ({ db }) => db.bookings.orderBy('createdAt').all(),
     },
     mutations: {
-      submitInquiry: ({ db }, data: { firstName: string; lastName: string; email: string; phone: string; service: string; message: string }) => {
+      submitInquiry: (
+        { db },
+        data: {
+          firstName: string
+          lastName: string
+          email: string
+          phone: string
+          service: string
+          message: string
+        },
+      ) => {
         db.inquiries.insert(data)
         return db.inquiries.all()
       },
-      createBooking: ({ db }, data: { serviceName: string; tierName: string; firstName: string; lastName: string; email: string; date: string }) => {
+      createBooking: (
+        { db },
+        data: {
+          serviceName: string
+          tierName: string
+          firstName: string
+          lastName: string
+          email: string
+          date: string
+        },
+      ) => {
         db.bookings.insert(data)
         return db.bookings.all()
       },
@@ -274,9 +294,10 @@ export const AccountingFirmKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [bookingOpen, setBookingOpen] = useState(false)
-    const [inquiryOpen, setInquiryOpen] = useState(false)
-    const [selectedTier, setSelectedTier] = useState<{ name: string; tagline: string } | null>(null)
-    const [inquiryForm, setInquiryForm] = useState({
+    const [selectedTier] = useState<{ name: string; tagline: string } | null>(
+      null,
+    )
+    const [inquiryForm] = useState({
       firstName: '',
       lastName: '',
       email: '',
@@ -293,15 +314,25 @@ export const AccountingFirmKimiPage2 = defineCapsule({
 
     const inquiries = lakebed.useQuery('inquiries')
     const bookings = lakebed.useQuery('bookings')
-    const submitInquiry = lakebed.useMutation('submitInquiry')
     const createBooking = lakebed.useMutation('createBooking')
     const auth = lakebed.useAuth()
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
-    const authDisplayName = auth.displayName || auth.user?.displayName || authEmail || 'Account'
-    const authInitials = authDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('') || 'ME'
-    const authLabel = auth.isLoading ? 'Checking...' : isSignedIn ? authDisplayName : 'Sign in'
+    const authDisplayName =
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
+    const authLabel = auth.isLoading
+      ? 'Checking...'
+      : isSignedIn
+        ? authDisplayName
+        : 'Sign in'
 
     const handleSignIn = () => {
       if (auth.isLoading) return
@@ -315,117 +346,116 @@ export const AccountingFirmKimiPage2 = defineCapsule({
     const savedInquiries = inquiries ?? []
     const savedBookings = bookings ?? []
 
-    const brand = props.brand ?? "Stellar Financial"
+    const brand = props.brand ?? 'Stellar Financial'
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "About", "Our Team", "Testimonials"]
-    const brandTagline = props.brandTagline ?? "Chartered Accountants"
-    const navCta = props.navCta ?? "Book Consultation"
+      : ['Services', 'About', 'Our Team', 'Testimonials']
+    const brandTagline = props.brandTagline ?? 'Chartered Accountants'
+    const navCta = props.navCta ?? 'Book Consultation'
 
     const heroPill =
-      props.hero?.pill ?? "Trusted by 500+ Businesses Across the UK"
-    const heroHeadingTop = props.hero?.headingTop ?? "Financial Clarity."
-    const heroHeadingAccent = props.hero?.headingAccent ?? "Business Growth."
+      props.hero?.pill ?? 'Trusted by 500+ Businesses Across the UK'
+    const heroHeadingTop = props.hero?.headingTop ?? 'Financial Clarity.'
+    const heroHeadingAccent = props.hero?.headingAccent ?? 'Business Growth.'
     const heroSub =
       props.hero?.subheading ??
       "Award-winning chartered accountants providing tax planning, audit assurance, and strategic business advisory. We've saved our clients over £12.4 million in tax since 2018."
-    const heroPrimary = props.hero?.primaryCta ?? "Free Consultation"
-    const heroSecondary = props.hero?.secondaryCta ?? "Our Services"
+    const heroPrimary = props.hero?.primaryCta ?? 'Free Consultation'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Our Services'
     const heroAvatarAlts = props.hero?.avatarAlts?.length
       ? props.hero.avatarAlts
       : [
-          "professional headshot of a senior businessman in navy suit",
-          "professional headshot of a businesswoman with confident smile",
-          "professional headshot of a middle-aged man with glasses",
+          'professional headshot of a senior businessman in navy suit',
+          'professional headshot of a businesswoman with confident smile',
+          'professional headshot of a middle-aged man with glasses',
         ]
-    const heroRating = props.hero?.rating ?? "4.9/5 from 312 reviews"
+    const heroRating = props.hero?.rating ?? '4.9/5 from 312 reviews'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "professional accountant reviewing financial documents with calculator and charts on desk"
-    const heroStatValue = props.hero?.statValue ?? "£12.4M"
-    const heroStatLabel = props.hero?.statLabel ?? "Tax Saved for Clients"
+      'professional accountant reviewing financial documents with calculator and charts on desk'
+    const heroStatValue = props.hero?.statValue ?? '£12.4M'
+    const heroStatLabel = props.hero?.statLabel ?? 'Tax Saved for Clients'
 
     const logosHeading =
-      props.logos?.heading ??
-      "Trusted by leading businesses across industries"
+      props.logos?.heading ?? 'Trusted by leading businesses across industries'
     const logoNames = props.logos?.names?.length
       ? props.logos.names
       : [
-          "TechFlow",
-          "Apex Homes",
-          "GreenLeaf",
-          "MedCare+",
-          "BuildRight",
-          "Nexus Retail",
+          'TechFlow',
+          'Apex Homes',
+          'GreenLeaf',
+          'MedCare+',
+          'BuildRight',
+          'Nexus Retail',
         ]
 
-    const servicesEyebrow = props.services?.eyebrow ?? "Our Services"
+    const servicesEyebrow = props.services?.eyebrow ?? 'Our Services'
     const servicesHeading =
-      props.services?.heading ?? "Comprehensive Financial Solutions"
+      props.services?.heading ?? 'Comprehensive Financial Solutions'
     const servicesDesc =
       props.services?.description ??
-      "From day-to-day bookkeeping to complex tax restructuring, we provide end-to-end financial services tailored to your business needs."
+      'From day-to-day bookkeeping to complex tax restructuring, we provide end-to-end financial services tailored to your business needs.'
     const serviceItems = props.services?.items?.length
       ? props.services.items
       : [
           {
-            title: "Tax Planning & Compliance",
+            title: 'Tax Planning & Compliance',
             description:
-              "Strategic tax planning for individuals and businesses. Corporation tax, self-assessment, VAT returns, and HMRC investigations handled expertly.",
+              'Strategic tax planning for individuals and businesses. Corporation tax, self-assessment, VAT returns, and HMRC investigations handled expertly.',
             points: [
-              "Corporate Tax Returns",
-              "Self Assessment",
-              "VAT & MTD Compliance",
+              'Corporate Tax Returns',
+              'Self Assessment',
+              'VAT & MTD Compliance',
             ],
           },
           {
-            title: "Audit & Assurance",
+            title: 'Audit & Assurance',
             description:
-              "Independent statutory audits, internal audits, and assurance services. Registered auditors with the ICAEW and FRC regulated.",
+              'Independent statutory audits, internal audits, and assurance services. Registered auditors with the ICAEW and FRC regulated.',
             points: [
-              "Statutory Audits",
-              "Internal Controls Review",
-              "Due Diligence",
+              'Statutory Audits',
+              'Internal Controls Review',
+              'Due Diligence',
             ],
           },
           {
-            title: "Payroll & Bookkeeping",
+            title: 'Payroll & Bookkeeping',
             description:
-              "Complete payroll management, CIS submissions, and real-time bookkeeping. Integrated with Xero, QuickBooks, and Sage.",
+              'Complete payroll management, CIS submissions, and real-time bookkeeping. Integrated with Xero, QuickBooks, and Sage.',
             points: [
-              "Monthly Payroll Processing",
-              "Auto-Enrolment Pension",
-              "CIS Scheme Management",
+              'Monthly Payroll Processing',
+              'Auto-Enrolment Pension',
+              'CIS Scheme Management',
             ],
           },
           {
-            title: "Business Advisory",
+            title: 'Business Advisory',
             description:
               "Strategic growth planning, cash flow forecasting, and funding support. We've helped 47 businesses secure over £8.2M in growth funding.",
             points: [
-              "Business Plan Development",
-              "Cash Flow Forecasting",
-              "Funding Applications",
+              'Business Plan Development',
+              'Cash Flow Forecasting',
+              'Funding Applications',
             ],
           },
           {
-            title: "Property & Construction",
+            title: 'Property & Construction',
             description:
-              "Specialist services for property developers and construction firms. CIS compliance, SDLT calculations, and capital allowances claims.",
+              'Specialist services for property developers and construction firms. CIS compliance, SDLT calculations, and capital allowances claims.',
             points: [
-              "Capital Allowances",
-              "Stamp Duty Land Tax",
-              "Development Accounting",
+              'Capital Allowances',
+              'Stamp Duty Land Tax',
+              'Development Accounting',
             ],
           },
           {
-            title: "Personal Tax & Wealth",
+            title: 'Personal Tax & Wealth',
             description:
-              "Estate planning, inheritance tax mitigation, and personal wealth structuring. Protect and grow your personal wealth for generations.",
+              'Estate planning, inheritance tax mitigation, and personal wealth structuring. Protect and grow your personal wealth for generations.',
             points: [
-              "Inheritance Tax Planning",
-              "Trust & Estate Admin",
-              "Capital Gains Planning",
+              'Inheritance Tax Planning',
+              'Trust & Estate Admin',
+              'Capital Gains Planning',
             ],
           },
         ]
@@ -433,15 +463,15 @@ export const AccountingFirmKimiPage2 = defineCapsule({
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "£12.4M", label: "Tax Saved for Clients" },
-          { value: "500+", label: "Active Business Clients" },
-          { value: "15", label: "Years of Excellence" },
-          { value: "98%", label: "Client Retention Rate" },
+          { value: '£12.4M', label: 'Tax Saved for Clients' },
+          { value: '500+', label: 'Active Business Clients' },
+          { value: '15', label: 'Years of Excellence' },
+          { value: '98%', label: 'Client Retention Rate' },
         ]
 
-    const processEyebrow = props.process?.eyebrow ?? "How We Work"
+    const processEyebrow = props.process?.eyebrow ?? 'How We Work'
     const processHeading =
-      props.process?.heading ?? "A Proven Process for Financial Success"
+      props.process?.heading ?? 'A Proven Process for Financial Success'
     const processDesc =
       props.process?.description ??
       "We've refined our approach over 15 years to deliver maximum value with minimum disruption to your business operations."
@@ -449,68 +479,69 @@ export const AccountingFirmKimiPage2 = defineCapsule({
       ? props.process.steps
       : [
           {
-            title: "Discovery & Assessment",
+            title: 'Discovery & Assessment',
             description:
-              "We conduct a comprehensive review of your financial position, identifying opportunities and risks within 48 hours of engagement.",
+              'We conduct a comprehensive review of your financial position, identifying opportunities and risks within 48 hours of engagement.',
           },
           {
-            title: "Strategic Planning",
+            title: 'Strategic Planning',
             description:
-              "Our partners develop a tailored roadmap with clear milestones, projected savings, and measurable KPIs for your approval.",
+              'Our partners develop a tailored roadmap with clear milestones, projected savings, and measurable KPIs for your approval.',
           },
           {
-            title: "Implementation & Support",
+            title: 'Implementation & Support',
             description:
-              "We execute the plan with dedicated account managers, monthly reviews, and 24/7 access to your financial dashboard.",
+              'We execute the plan with dedicated account managers, monthly reviews, and 24/7 access to your financial dashboard.',
           },
         ]
     const processImageAlt =
       props.process?.imageAlt ??
-      "business team meeting in modern conference room reviewing financial reports together"
-    const processCardValue = props.process?.cardValue ?? "£2.3M"
-    const processCardLabel = props.process?.cardLabel ?? "Average client savings"
+      'business team meeting in modern conference room reviewing financial reports together'
+    const processCardValue = props.process?.cardValue ?? '£2.3M'
+    const processCardLabel =
+      props.process?.cardLabel ?? 'Average client savings'
 
-    const teamEyebrow = props.team?.eyebrow ?? "Our Team"
-    const teamHeading = props.team?.heading ?? "Meet Your Financial Partners"
+    const teamEyebrow = props.team?.eyebrow ?? 'Our Team'
+    const teamHeading = props.team?.heading ?? 'Meet Your Financial Partners'
     const teamDesc =
       props.team?.description ??
-      "ICAEW chartered accountants and tax specialists with decades of combined experience across Big Four and mid-tier firms."
+      'ICAEW chartered accountants and tax specialists with decades of combined experience across Big Four and mid-tier firms.'
     const teamMembers = props.team?.members?.length
       ? props.team.members
       : [
           {
-            name: "James Whitfield",
-            role: "Managing Partner",
-            bio: "ICAEW Chartered Accountant with 22 years experience. Former KPMG audit partner specializing in mid-market M&A.",
+            name: 'James Whitfield',
+            role: 'Managing Partner',
+            bio: 'ICAEW Chartered Accountant with 22 years experience. Former KPMG audit partner specializing in mid-market M&A.',
             avatarAlt:
-              "professional headshot of James Whitfield senior partner in charcoal suit with warm smile",
+              'professional headshot of James Whitfield senior partner in charcoal suit with warm smile',
           },
           {
-            name: "Sarah Chen",
-            role: "Tax Director",
-            bio: "CTA qualified with 18 years in tax advisory. Ex-Deloitte private client specialist. Saved clients over £4.2M in tax.",
+            name: 'Sarah Chen',
+            role: 'Tax Director',
+            bio: 'CTA qualified with 18 years in tax advisory. Ex-Deloitte private client specialist. Saved clients over £4.2M in tax.',
             avatarAlt:
-              "professional headshot of Sarah Chen tax director with confident expression and navy blazer",
+              'professional headshot of Sarah Chen tax director with confident expression and navy blazer',
           },
           {
-            name: "David Okonkwo",
-            role: "Audit Partner",
-            bio: "ICAEW and ACCA dual-qualified. 15 years audit experience with PwC and BDO. Specialist in FCA-regulated firms.",
+            name: 'David Okonkwo',
+            role: 'Audit Partner',
+            bio: 'ICAEW and ACCA dual-qualified. 15 years audit experience with PwC and BDO. Specialist in FCA-regulated firms.',
             avatarAlt:
-              "professional headshot of David Okonkwo audit partner with glasses and friendly demeanor",
+              'professional headshot of David Okonkwo audit partner with glasses and friendly demeanor',
           },
           {
-            name: "Emma Rodriguez",
-            role: "Advisory Partner",
-            bio: "MBA, ICAEW qualified. Former investment banker turned advisory specialist. Secured £8.2M funding for SME clients.",
+            name: 'Emma Rodriguez',
+            role: 'Advisory Partner',
+            bio: 'MBA, ICAEW qualified. Former investment banker turned advisory specialist. Secured £8.2M funding for SME clients.',
             avatarAlt:
-              "professional headshot of Emma Rodriguez advisory partner with approachable smile",
+              'professional headshot of Emma Rodriguez advisory partner with approachable smile',
           },
         ]
 
-    const testimonialsEyebrow = props.testimonials?.eyebrow ?? "Testimonials"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'Testimonials'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Our Clients Say"
+      props.testimonials?.heading ?? 'What Our Clients Say'
     const testimonialsDesc =
       props.testimonials?.description ??
       "Real feedback from businesses we've helped grow and individuals we've guided to financial security."
@@ -520,124 +551,124 @@ export const AccountingFirmKimiPage2 = defineCapsule({
           {
             quote:
               "Stellar Financial restructured our entire tax approach and saved us £127,000 in the first year alone. Sarah and the team's expertise in R&D tax credits was invaluable for our tech startup.",
-            name: "Michael Foster",
-            role: "CEO, TechFlow Solutions Ltd",
-            avatarAlt: "professional headshot of Michael Foster tech entrepreneur",
+            name: 'Michael Foster',
+            role: 'CEO, TechFlow Solutions Ltd',
+            avatarAlt:
+              'professional headshot of Michael Foster tech entrepreneur',
           },
           {
             quote:
               "As a property developer, I needed specialists who understand construction accounting and CIS. David's team handled our audit flawlessly and identified £45K in unclaimed capital allowances.",
-            name: "Robert Henderson",
-            role: "Director, Apex Homes Ltd",
+            name: 'Robert Henderson',
+            role: 'Director, Apex Homes Ltd',
             avatarAlt:
-              "professional headshot of Robert Henderson property developer",
+              'professional headshot of Robert Henderson property developer',
           },
           {
             quote:
-              "Emma secured £340,000 in growth funding for our expansion. The business plan and financial forecasts she prepared impressed the bank so much they offered preferential rates. Game changer.",
-            name: "Amanda Brooks",
-            role: "Founder, GreenLeaf Organics",
+              'Emma secured £340,000 in growth funding for our expansion. The business plan and financial forecasts she prepared impressed the bank so much they offered preferential rates. Game changer.',
+            name: 'Amanda Brooks',
+            role: 'Founder, GreenLeaf Organics',
             avatarAlt:
-              "professional headshot of Amanda Brooks retail business owner",
+              'professional headshot of Amanda Brooks retail business owner',
           },
         ]
 
-    const pricingEyebrow = props.pricing?.eyebrow ?? "Pricing"
+    const pricingEyebrow = props.pricing?.eyebrow ?? 'Pricing'
     const pricingHeading =
-      props.pricing?.heading ?? "Transparent Pricing, Exceptional Value"
+      props.pricing?.heading ?? 'Transparent Pricing, Exceptional Value'
     const pricingDesc =
       props.pricing?.description ??
-      "Fixed-fee packages with no hidden charges. All plans include unlimited phone and email support."
+      'Fixed-fee packages with no hidden charges. All plans include unlimited phone and email support.'
     const pricingTiers = props.pricing?.tiers?.length
       ? props.pricing.tiers
       : [
           {
-            name: "Starter",
-            tagline: "Perfect for sole traders and freelancers",
-            price: "£149",
-            period: "/month",
+            name: 'Starter',
+            tagline: 'Perfect for sole traders and freelancers',
+            price: '£149',
+            period: '/month',
             features: [
-              "Annual accounts & tax return",
-              "Quarterly VAT returns",
-              "Self-assessment filing",
-              "Unlimited support",
+              'Annual accounts & tax return',
+              'Quarterly VAT returns',
+              'Self-assessment filing',
+              'Unlimited support',
             ],
-            cta: "Get Started",
+            cta: 'Get Started',
           },
           {
-            name: "Business Growth",
-            tagline: "For limited companies ready to scale",
-            price: "£349",
-            period: "/month",
+            name: 'Business Growth',
+            tagline: 'For limited companies ready to scale',
+            price: '£349',
+            period: '/month',
             features: [
-              "Everything in Starter, plus:",
-              "Monthly management accounts",
-              "Payroll for up to 10 employees",
-              "Quarterly tax planning review",
-              "Xero/QuickBooks included",
+              'Everything in Starter, plus:',
+              'Monthly management accounts',
+              'Payroll for up to 10 employees',
+              'Quarterly tax planning review',
+              'Xero/QuickBooks included',
             ],
-            cta: "Get Started",
+            cta: 'Get Started',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Enterprise",
-            tagline: "Bespoke solutions for larger businesses",
-            price: "Custom",
+            name: 'Enterprise',
+            tagline: 'Bespoke solutions for larger businesses',
+            price: 'Custom',
             features: [
-              "Dedicated account manager",
-              "Statutory audit if required",
-              "R&D tax credit claims",
-              "Board-level advisory",
+              'Dedicated account manager',
+              'Statutory audit if required',
+              'R&D tax credit claims',
+              'Board-level advisory',
             ],
-            cta: "Contact Us",
+            cta: 'Contact Us',
           },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Common Questions"
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Common Questions'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know about working with Stellar Financial."
+      'Everything you need to know about working with Stellar Financial.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "How quickly can you start working with my business?",
+            question: 'How quickly can you start working with my business?',
             answer:
               "We can typically onboard new clients within 5-7 business days. For urgent situations (approaching deadlines, HMRC enquiries), we offer expedited onboarding within 48 hours. Your initial consultation is always free and we'll provide a clear timeline during that meeting.",
           },
           {
-            question: "Do you work with businesses outside the UK?",
+            question: 'Do you work with businesses outside the UK?',
             answer:
-              "Yes, we work with international businesses that have UK operations or tax obligations. We have particular expertise in US-UK tax treaties, EU VAT compliance for e-commerce, and non-resident landlord schemes. Our team includes specialists in international tax structuring.",
+              'Yes, we work with international businesses that have UK operations or tax obligations. We have particular expertise in US-UK tax treaties, EU VAT compliance for e-commerce, and non-resident landlord schemes. Our team includes specialists in international tax structuring.',
           },
           {
-            question: "What accounting software do you support?",
+            question: 'What accounting software do you support?',
             answer:
               "We're certified partners with Xero, QuickBooks Online, and Sage Business Cloud. Our Business Growth and Enterprise packages include software subscriptions. We can also work with businesses using FreeAgent, KashFlow, or even Excel-based systems if you're not ready to migrate yet.",
           },
           {
-            question: "How do your fixed fees work?",
+            question: 'How do your fixed fees work?',
             answer:
-              "Our fixed monthly fees cover all routine accounting, tax compliance, and support work. The price you see is the price you pay - no surprise bills for phone calls or emails. Additional services like one-off projects, due diligence, or complex tax restructuring are quoted separately with your approval before work begins.",
+              'Our fixed monthly fees cover all routine accounting, tax compliance, and support work. The price you see is the price you pay - no surprise bills for phone calls or emails. Additional services like one-off projects, due diligence, or complex tax restructuring are quoted separately with your approval before work begins.',
           },
           {
-            question: "What qualifications do your accountants hold?",
+            question: 'What qualifications do your accountants hold?',
             answer:
               "All our client-facing accountants are ICAEW, ACCA, or ATT qualified. Our partners average 18 years of post-qualification experience. We're regulated by the ICAEW, which means we maintain professional indemnity insurance and adhere to strict ethical standards. You can verify our registration on the ICAEW website.",
           },
         ]
 
-    const ctaHeading =
-      props.cta?.heading ?? "Ready to Transform Your Finances?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to Transform Your Finances?'
     const ctaDesc =
       props.cta?.description ??
-      "Join 500+ businesses that have already discovered the Stellar difference. Your first consultation is completely free."
-    const ctaPrimary = props.cta?.primaryButton ?? "Book Free Consultation"
-    const ctaPhone = props.cta?.phoneButton ?? "Call 020 1234 5678"
+      'Join 500+ businesses that have already discovered the Stellar difference. Your first consultation is completely free.'
+    const ctaPrimary = props.cta?.primaryButton ?? 'Book Free Consultation'
+    const ctaPhone = props.cta?.phoneButton ?? 'Call 020 1234 5678'
 
-    const contactEyebrow = props.contact?.eyebrow ?? "Contact"
+    const contactEyebrow = props.contact?.eyebrow ?? 'Contact'
     const contactHeading =
       props.contact?.heading ?? "Let's Start the Conversation"
     const contactDesc =
@@ -645,71 +676,68 @@ export const AccountingFirmKimiPage2 = defineCapsule({
       "Whether you're looking for a full-service accounting partner or need help with a specific challenge, we'd love to hear from you."
     const contactAddress = props.contact?.address?.length
       ? props.contact.address
-      : ["The Shard, Level 24", "32 London Bridge Street", "London SE1 9SG"]
-    const contactPhone = props.contact?.phone ?? "020 1234 5678"
-    const contactEmail = props.contact?.email ?? "hello@stellarfinancial.co.uk"
+      : ['The Shard, Level 24', '32 London Bridge Street', 'London SE1 9SG']
+    const contactPhone = props.contact?.phone ?? '020 1234 5678'
+    const contactEmail = props.contact?.email ?? 'hello@stellarfinancial.co.uk'
     const contactHours = props.contact?.hours?.length
       ? props.contact.hours
-      : [
-          "Monday - Friday: 9:00 AM - 6:00 PM",
-          "Saturday: 10:00 AM - 2:00 PM",
-        ]
+      : ['Monday - Friday: 9:00 AM - 6:00 PM', 'Saturday: 10:00 AM - 2:00 PM']
     const contactServices = props.contact?.services?.length
       ? props.contact.services
       : [
-          "Tax Planning & Compliance",
-          "Audit & Assurance",
-          "Payroll & Bookkeeping",
-          "Business Advisory",
-          "Property & Construction",
-          "Personal Tax & Wealth",
+          'Tax Planning & Compliance',
+          'Audit & Assurance',
+          'Payroll & Bookkeeping',
+          'Business Advisory',
+          'Property & Construction',
+          'Personal Tax & Wealth',
         ]
-    const contactSubmit = props.contact?.submit ?? "Send Message"
+    const contactSubmit = props.contact?.submit ?? 'Send Message'
     const contactDisclaimer =
       props.contact?.disclaimer ??
       "By submitting this form, you agree to our privacy policy. We'll never share your information."
 
     const footerTagline =
       props.footer?.tagline ??
-      "Award-winning chartered accountants providing expert financial services to businesses and individuals across the UK since 2009."
-    const footerServicesHeading = props.footer?.servicesHeading ?? "Services"
+      'Award-winning chartered accountants providing expert financial services to businesses and individuals across the UK since 2009.'
+    const footerServicesHeading = props.footer?.servicesHeading ?? 'Services'
     const footerServicesLinks = props.footer?.servicesLinks?.length
       ? props.footer.servicesLinks
       : [
-          "Tax Planning",
-          "Audit & Assurance",
-          "Payroll Services",
-          "Business Advisory",
-          "Property Accounting",
+          'Tax Planning',
+          'Audit & Assurance',
+          'Payroll Services',
+          'Business Advisory',
+          'Property Accounting',
         ]
-    const footerCompanyHeading = props.footer?.companyHeading ?? "Company"
+    const footerCompanyHeading = props.footer?.companyHeading ?? 'Company'
     const footerCompanyLinks = props.footer?.companyLinks?.length
       ? props.footer.companyLinks
-      : ["About Us", "Our Team", "Careers", "News & Insights", "Contact"]
-    const footerLegalHeading = props.footer?.legalHeading ?? "Legal"
+      : ['About Us', 'Our Team', 'Careers', 'News & Insights', 'Contact']
+    const footerLegalHeading = props.footer?.legalHeading ?? 'Legal'
     const footerLegalLinks = props.footer?.legalLinks?.length
       ? props.footer.legalLinks
       : [
-          "Privacy Policy",
-          "Terms of Service",
-          "Cookie Policy",
-          "ICAEW Registration",
+          'Privacy Policy',
+          'Terms of Service',
+          'Cookie Policy',
+          'ICAEW Registration',
         ]
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["LinkedIn", "Twitter"]
+      : ['LinkedIn', 'Twitter']
     const footerCopyright =
       props.footer?.copyright ??
-      "© 2024 Stellar Financial Partners Ltd. All rights reserved."
+      '© 2024 Stellar Financial Partners Ltd. All rights reserved.'
     const footerRegistration =
       props.footer?.registration ??
-      "ICAEW Registered | FRC Regulated | ICAEW Firm Number: C12345678"
+      'ICAEW Registered | FRC Regulated | ICAEW Firm Number: C12345678'
 
     // Brand logo mark — fixed neutral tile with the firm initials (decorative brand asset).
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg bg-primary font-bold text-primary-foreground",
+          'grid place-items-center rounded-lg bg-primary font-bold text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -747,7 +775,7 @@ export const AccountingFirmKimiPage2 = defineCapsule({
       <svg
         viewBox="0 0 20 20"
         fill="currentColor"
-        className={cn("size-5 text-chart-4", className)}
+        className={cn('size-5 text-chart-4', className)}
         aria-hidden="true"
       >
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -944,7 +972,7 @@ export const AccountingFirmKimiPage2 = defineCapsule({
     ]
 
     const inputCls =
-      "w-full rounded-xl border border-input bg-muted px-4 py-3 text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-transparent focus:ring-2 focus:ring-ring"
+      'w-full rounded-xl border border-input bg-muted px-4 py-3 text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-transparent focus:ring-2 focus:ring-ring'
 
     const ChevronDown = () => (
       <svg
@@ -980,7 +1008,7 @@ export const AccountingFirmKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -1509,8 +1537,12 @@ export const AccountingFirmKimiPage2 = defineCapsule({
                         className="size-12 rounded-full object-cover"
                       />
                       <div>
-                        <p className="font-semibold text-foreground">{t.name}</p>
-                        <p className="text-sm text-muted-foreground">{t.role}</p>
+                        <p className="font-semibold text-foreground">
+                          {t.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {t.role}
+                        </p>
                       </div>
                     </div>
                   </article>
@@ -1537,10 +1569,10 @@ export const AccountingFirmKimiPage2 = defineCapsule({
                   <div
                     key={tier.name}
                     className={cn(
-                      "relative rounded-2xl p-8",
+                      'relative rounded-2xl p-8',
                       tier.featured
-                        ? "border border-border bg-foreground shadow-xl"
-                        : "border border-border bg-card shadow-sm",
+                        ? 'border border-border bg-foreground shadow-xl'
+                        : 'border border-border bg-card shadow-sm',
                     )}
                   >
                     {tier.badge && (
@@ -1553,18 +1585,18 @@ export const AccountingFirmKimiPage2 = defineCapsule({
                     <div className="mb-6">
                       <h3
                         className={cn(
-                          "mb-2 text-xl font-bold",
-                          tier.featured ? "text-background" : "text-foreground",
+                          'mb-2 text-xl font-bold',
+                          tier.featured ? 'text-background' : 'text-foreground',
                         )}
                       >
                         {tier.name}
                       </h3>
                       <p
                         className={cn(
-                          "text-sm",
+                          'text-sm',
                           tier.featured
-                            ? "text-background/60"
-                            : "text-muted-foreground",
+                            ? 'text-background/60'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {tier.tagline}
@@ -1573,8 +1605,8 @@ export const AccountingFirmKimiPage2 = defineCapsule({
                     <div className="mb-6">
                       <span
                         className={cn(
-                          "text-4xl font-black",
-                          tier.featured ? "text-background" : "text-foreground",
+                          'text-4xl font-black',
+                          tier.featured ? 'text-background' : 'text-foreground',
                         )}
                       >
                         {tier.price}
@@ -1583,8 +1615,8 @@ export const AccountingFirmKimiPage2 = defineCapsule({
                         <span
                           className={cn(
                             tier.featured
-                              ? "text-background/60"
-                              : "text-muted-foreground",
+                              ? 'text-background/60'
+                              : 'text-muted-foreground',
                           )}
                         >
                           {tier.period}
@@ -1596,10 +1628,10 @@ export const AccountingFirmKimiPage2 = defineCapsule({
                         <li
                           key={feature}
                           className={cn(
-                            "flex items-start gap-3",
+                            'flex items-start gap-3',
                             tier.featured
-                              ? "text-background/80"
-                              : "text-muted-foreground",
+                              ? 'text-background/80'
+                              : 'text-muted-foreground',
                           )}
                         >
                           <Check className="mt-0.5 size-5 shrink-0 text-primary" />
@@ -1611,10 +1643,10 @@ export const AccountingFirmKimiPage2 = defineCapsule({
                       type="button"
                       onClick={() => go(tier.cta)}
                       className={cn(
-                        "block w-full rounded-xl px-4 py-3 text-center font-semibold transition-colors",
+                        'block w-full rounded-xl px-4 py-3 text-center font-semibold transition-colors',
                         tier.featured
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                          : "bg-muted text-foreground hover:bg-accent",
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'bg-muted text-foreground hover:bg-accent',
                       )}
                     >
                       {tier.cta}
@@ -1867,7 +1899,7 @@ export const AccountingFirmKimiPage2 = defineCapsule({
                       </label>
                       <select
                         id="stellar-service"
-                        className={cn(inputCls, "appearance-none")}
+                        className={cn(inputCls, 'appearance-none')}
                       >
                         <option value="">Select a service</option>
                         {contactServices.map((service) => (
@@ -1889,7 +1921,7 @@ export const AccountingFirmKimiPage2 = defineCapsule({
                         rows={4}
                         required
                         placeholder="Tell us about your business and how we can help..."
-                        className={cn(inputCls, "resize-none")}
+                        className={cn(inputCls, 'resize-none')}
                       />
                     </div>
                     <button
@@ -1935,7 +1967,7 @@ export const AccountingFirmKimiPage2 = defineCapsule({
                       onClick={() => go(social)}
                       className="grid size-10 place-items-center rounded-lg bg-background/10 text-background/60 transition-colors hover:bg-primary hover:text-primary-foreground"
                     >
-                      {social === "Twitter" ? (
+                      {social === 'Twitter' ? (
                         <TwitterIcon className="size-5" />
                       ) : (
                         <LinkedInIcon className="size-5" />
@@ -2033,9 +2065,11 @@ export const AccountingFirmKimiPage2 = defineCapsule({
                 onSubmit={(e) => {
                   e.preventDefault()
                   const tierName =
-                    selectedTier?.name ?? pricingPlans[0]?.name ?? "Consultation"
+                    selectedTier?.name ??
+                    pricingTiers[0]?.name ??
+                    'Consultation'
                   const serviceName =
-                    inquiryForm.service || contactServices[0] || "Advisory"
+                    inquiryForm.service || contactServices[0] || 'Advisory'
                   if (!bookingForm.firstName || !bookingForm.email) return
                   void createBooking({
                     serviceName,
@@ -2043,13 +2077,13 @@ export const AccountingFirmKimiPage2 = defineCapsule({
                     firstName: bookingForm.firstName,
                     lastName: bookingForm.lastName,
                     email: bookingForm.email,
-                    date: bookingForm.date || "Next available",
+                    date: bookingForm.date || 'Next available',
                   })
                   setBookingForm({
-                    firstName: "",
-                    lastName: "",
-                    email: "",
-                    date: "",
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    date: '',
                   })
                 }}
               >

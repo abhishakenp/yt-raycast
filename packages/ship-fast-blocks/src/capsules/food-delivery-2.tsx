@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,7 +12,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "#/components/ui/command.tsx"
+} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetClose,
@@ -22,14 +22,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * FoodDeliveryKimiPage2 — SECOND, visually DISTINCT food-delivery LANDING page
@@ -59,7 +59,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * with no props at all.
  */
 export const FoodDeliveryKimiPage2 = defineCapsule({
-  name: "FoodDeliveryKimiPage2",
+  name: 'FoodDeliveryKimiPage2',
   description:
     "Second, visually DISTINCT food-delivery / restaurant-marketplace LANDING page variant (alternative sibling to FoodDeliveryKimiPage): a warm, energetic, brand-tinted page on a bright canvas instead of the cool inverted look. Includes a soft brand-gradient split hero (big headline, delivery-address search input with a Find Food button, live-cities badge, food photo with floating 'avg delivery time' and '4.9/5 reviews' cards), a press/awards logo strip, a colorful SIX-card features grid with tinted icon tiles (lightning-fast delivery, safety/sealed bags, no hidden fees, live GPS tracking, save favorites, daily rewards points), a restaurant discovery gallery with cuisine-filter pills (All/Italian/Asian/Mexican/Burgers/Healthy/Desserts/Pizza) and eight restaurant cards (food photo, star rating + review count, discount/BOGO/vegan/Feastly+ badge, cuisine, delivery time + distance + delivery fee + Order button) plus a Load More button, a numbered 1-2-3 'how it works' band that ends in an embedded dark app-download promo card with App Store / Google Play buttons, a brand-colored KPI stats strip (partner restaurants, cities served, app rating, avg delivery time), a 3-up star-rated testimonials grid with avatars and order counts, a six-item FAQ accordion, a bold full-bleed brand-colored final CTA with Download App and Order on Web buttons, and a dark multi-column footer with company/customers/restaurants/legal links, social icons and an all-systems-operational status line. Choose this over FoodDeliveryKimiPage when a brighter, more playful, orange/brand-forward food-ordering home page WITH restaurant discovery filters and an FAQ is wanted. Supply content only — brand, nav, hero, logos, features, restaurants, steps, appPromo, stats, testimonials, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -189,9 +189,7 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
         eyebrow: z.string().optional(),
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       })
       .optional(),
     /** Full-bleed brand final CTA. */
@@ -212,9 +210,7 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
         madeWith: z.string().optional(),
         status: z.string().optional(),
         columns: z
-          .array(
-            z.object({ heading: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ heading: z.string(), links: z.array(z.string()) }))
           .optional(),
       })
       .optional(),
@@ -273,10 +269,16 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
 
         return db.cartItems.all()
       },
-      updateCartQuantity: ({ db }, restaurantName: string, quantity: number) => {
+      updateCartQuantity: (
+        { db },
+        restaurantName: string,
+        quantity: number,
+      ) => {
         const nextQuantity = Math.max(0, Math.floor(quantity))
 
-        for (const item of db.cartItems.where('restaurantName', restaurantName).all()) {
+        for (const item of db.cartItems
+          .where('restaurantName', restaurantName)
+          .all()) {
           if (nextQuantity) {
             db.cartItems.update(item.id, { quantity: nextQuantity })
           } else {
@@ -287,7 +289,9 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
         return db.cartItems.all()
       },
       removeFromCart: ({ db }, restaurantName: string) => {
-        for (const item of db.cartItems.where('restaurantName', restaurantName).all()) {
+        for (const item of db.cartItems
+          .where('restaurantName', restaurantName)
+          .all()) {
           db.cartItems.delete(item.id)
         }
 
@@ -320,60 +324,57 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
     const [mobileOpen, setMobileOpen] = useState(false)
     const [searchOpen, setSearchOpen] = useState(false)
     const [cartOpen, setCartOpen] = useState(false)
-    const brand = props.brand ?? "Feastly"
+    const brand = props.brand ?? 'Feastly'
     const nav = props.nav?.length
       ? props.nav
-      : ["Restaurants", "How It Works", "Deals", "FAQ"]
+      : ['Restaurants', 'How It Works', 'Deals', 'FAQ']
 
-    const liveBadge = props.hero?.liveBadge ?? "Live in 847 cities nationwide"
-    const headingLead = props.hero?.headingLead ?? "Craving Something"
-    const headingAccent = props.hero?.headingAccent ?? "Delicious?"
+    const liveBadge = props.hero?.liveBadge ?? 'Live in 847 cities nationwide'
+    const headingLead = props.hero?.headingLead ?? 'Craving Something'
+    const headingAccent = props.hero?.headingAccent ?? 'Delicious?'
     const heroSub =
       props.hero?.subheading ??
-      "Order from 12,000+ local favorites. From tacos to Thai, burgers to boba — delivered in 25 minutes on average."
+      'Order from 12,000+ local favorites. From tacos to Thai, burgers to boba — delivered in 25 minutes on average.'
     const addressPlaceholder =
-      props.hero?.addressPlaceholder ?? "Enter delivery address..."
-    const searchCta = props.hero?.searchCta ?? "Find Food"
+      props.hero?.addressPlaceholder ?? 'Enter delivery address...'
+    const searchCta = props.hero?.searchCta ?? 'Find Food'
     const heroPerks = props.hero?.perks?.length
       ? props.hero.perks
       : [
-          "No delivery fees on first 3 orders",
-          "Real-time GPS tracking",
-          "24/7 customer support",
+          'No delivery fees on first 3 orders',
+          'Real-time GPS tracking',
+          '24/7 customer support',
         ]
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Gourmet burger with fries and fresh vegetables on wooden board"
-    const speedTitle = props.hero?.speedTitle ?? "22 min"
-    const speedSubtitle = props.hero?.speedSubtitle ?? "Avg. delivery"
-    const ratingValue = props.hero?.ratingValue ?? "4.9/5"
-    const ratingCount = props.hero?.ratingCount ?? "2.4M reviews"
+      'Gourmet burger with fries and fresh vegetables on wooden board'
+    const speedTitle = props.hero?.speedTitle ?? '22 min'
+    const speedSubtitle = props.hero?.speedSubtitle ?? 'Avg. delivery'
+    const ratingValue = props.hero?.ratingValue ?? '4.9/5'
+    const ratingCount = props.hero?.ratingCount ?? '2.4M reviews'
     const heroAvatars = props.hero?.avatarAlts?.length
       ? props.hero.avatarAlts
       : [
-          "Customer avatar smiling woman with brown hair",
-          "Customer avatar smiling man casual",
-          "Customer avatar smiling woman blonde",
+          'Customer avatar smiling woman with brown hair',
+          'Customer avatar smiling man casual',
+          'Customer avatar smiling woman blonde',
         ]
-    const signIn = props.hero?.signIn ?? "Sign In"
-    const orderNow = props.hero?.orderNow ?? "Order Now"
-
     const logosHeading =
-      props.logos?.heading ?? "Trusted by 12,000+ restaurants & featured in"
+      props.logos?.heading ?? 'Trusted by 12,000+ restaurants & featured in'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
       : [
-          "FoodWire",
-          "EaterDaily",
-          "TechCrunch",
-          "ForbesEats",
-          "Bloomberg",
-          "WSJ Food",
+          'FoodWire',
+          'EaterDaily',
+          'TechCrunch',
+          'ForbesEats',
+          'Bloomberg',
+          'WSJ Food',
         ]
 
-    const featuresEyebrow = props.features?.eyebrow ?? "Why Choose Feastly"
+    const featuresEyebrow = props.features?.eyebrow ?? 'Why Choose Feastly'
     const featuresHeading =
-      props.features?.heading ?? "The Best Way to Order Food"
+      props.features?.heading ?? 'The Best Way to Order Food'
     const featuresDesc =
       props.features?.description ??
       "We've perfected every step of the food delivery experience so you can focus on enjoying your meal."
@@ -381,148 +382,147 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
       ? props.features.items
       : [
           {
-            title: "Lightning Fast",
+            title: 'Lightning Fast',
             description:
-              "Average delivery time of 22 minutes. Our AI-powered dispatch routes orders to the closest available driver for maximum speed.",
+              'Average delivery time of 22 minutes. Our AI-powered dispatch routes orders to the closest available driver for maximum speed.',
           },
           {
-            title: "Safety First",
+            title: 'Safety First',
             description:
-              "Sealed bags, tamper-proof stickers, and contactless delivery options. Every order tracked from kitchen to your door.",
+              'Sealed bags, tamper-proof stickers, and contactless delivery options. Every order tracked from kitchen to your door.',
           },
           {
-            title: "No Hidden Fees",
+            title: 'No Hidden Fees',
             description:
-              "Transparent pricing with upfront cost breakdown. No surprise charges at checkout. Free delivery on orders over $25.",
+              'Transparent pricing with upfront cost breakdown. No surprise charges at checkout. Free delivery on orders over $25.',
           },
           {
-            title: "Live GPS Tracking",
+            title: 'Live GPS Tracking',
             description:
-              "Watch your order in real-time on the map. Know exactly when your food will arrive with minute-by-minute updates.",
+              'Watch your order in real-time on the map. Know exactly when your food will arrive with minute-by-minute updates.',
           },
           {
-            title: "Save Favorites",
+            title: 'Save Favorites',
             description:
-              "Reorder your go-to meals in one tap. Save restaurants, dishes, and customizations for lightning-fast ordering.",
+              'Reorder your go-to meals in one tap. Save restaurants, dishes, and customizations for lightning-fast ordering.',
           },
           {
-            title: "Daily Rewards",
+            title: 'Daily Rewards',
             description:
-              "Earn Feastly Points on every order. Redeem for free delivery, discounts, and exclusive restaurant perks.",
+              'Earn Feastly Points on every order. Redeem for free delivery, discounts, and exclusive restaurant perks.',
           },
         ]
 
-    const restaurantsEyebrow = props.restaurants?.eyebrow ?? "Popular Near You"
+    const restaurantsEyebrow = props.restaurants?.eyebrow ?? 'Popular Near You'
     const restaurantsHeading =
-      props.restaurants?.heading ?? "Top-Rated Restaurants"
+      props.restaurants?.heading ?? 'Top-Rated Restaurants'
     const restaurantsDesc =
       props.restaurants?.description ??
-      "Hand-picked local favorites with the highest ratings and fastest delivery times."
-    const restaurantsViewAll = props.restaurants?.viewAll ?? "View All 12,000+"
+      'Hand-picked local favorites with the highest ratings and fastest delivery times.'
+    const restaurantsViewAll = props.restaurants?.viewAll ?? 'View All 12,000+'
     const restaurantFilters = props.restaurants?.filters?.length
       ? props.restaurants.filters
       : [
-          "All",
-          "Italian",
-          "Asian",
-          "Mexican",
-          "Burgers",
-          "Healthy",
-          "Desserts",
-          "Pizza",
+          'All',
+          'Italian',
+          'Asian',
+          'Mexican',
+          'Burgers',
+          'Healthy',
+          'Desserts',
+          'Pizza',
         ]
     const restaurantsLoadMore =
-      props.restaurants?.loadMore ?? "Load More Restaurants"
+      props.restaurants?.loadMore ?? 'Load More Restaurants'
     const restaurantItems = props.restaurants?.items?.length
       ? props.restaurants.items
       : [
           {
-            name: "Sakura Sushi",
-            category: "Japanese • Sushi • $$",
-            rating: "4.8",
-            reviews: "(2.3k)",
-            time: "18 min",
-            distance: "0.8 mi",
-            delivery: "$3.99 delivery",
-            badge: "-20%",
+            name: 'Sakura Sushi',
+            category: 'Japanese • Sushi • $$',
+            rating: '4.8',
+            reviews: '(2.3k)',
+            time: '18 min',
+            distance: '0.8 mi',
+            delivery: '$3.99 delivery',
+            badge: '-20%',
             imageAlt:
-              "Fresh salmon sushi rolls with soy sauce and wasabi on black plate",
+              'Fresh salmon sushi rolls with soy sauce and wasabi on black plate',
           },
           {
-            name: "Burger Barn",
-            category: "American • Burgers • $$",
-            rating: "4.9",
-            reviews: "(4.1k)",
-            time: "25 min",
-            distance: "1.2 mi",
-            delivery: "FREE delivery",
+            name: 'Burger Barn',
+            category: 'American • Burgers • $$',
+            rating: '4.9',
+            reviews: '(4.1k)',
+            time: '25 min',
+            distance: '1.2 mi',
+            delivery: 'FREE delivery',
             imageAlt:
-              "Juicy double cheeseburger with melted cheddar and crispy bacon",
+              'Juicy double cheeseburger with melted cheddar and crispy bacon',
           },
           {
-            name: "The Prime Cut",
-            category: "Steakhouse • American • $$$",
-            rating: "4.7",
-            reviews: "(1.8k)",
-            time: "35 min",
-            distance: "2.1 mi",
-            delivery: "$5.99 delivery",
-            badge: "Feastly+",
-            imageAlt:
-              "Grilled ribeye steak with rosemary and garlic butter",
+            name: 'The Prime Cut',
+            category: 'Steakhouse • American • $$$',
+            rating: '4.7',
+            reviews: '(1.8k)',
+            time: '35 min',
+            distance: '2.1 mi',
+            delivery: '$5.99 delivery',
+            badge: 'Feastly+',
+            imageAlt: 'Grilled ribeye steak with rosemary and garlic butter',
           },
           {
-            name: "Napoli Pizza",
-            category: "Italian • Pizza • $$",
-            rating: "4.6",
-            reviews: "(3.2k)",
-            time: "28 min",
-            distance: "1.5 mi",
-            delivery: "FREE delivery",
-            badge: "BOGO",
-            imageAlt: "Wood-fired pepperoni pizza with melted mozzarella",
+            name: 'Napoli Pizza',
+            category: 'Italian • Pizza • $$',
+            rating: '4.6',
+            reviews: '(3.2k)',
+            time: '28 min',
+            distance: '1.5 mi',
+            delivery: 'FREE delivery',
+            badge: 'BOGO',
+            imageAlt: 'Wood-fired pepperoni pizza with melted mozzarella',
           },
           {
-            name: "Poke Paradise",
-            category: "Hawaiian • Healthy • $$",
-            rating: "4.9",
-            reviews: "(892)",
-            time: "15 min",
-            distance: "0.6 mi",
-            delivery: "$2.99 delivery",
-            imageAlt: "Colorful fresh poke bowl with salmon and avocado",
+            name: 'Poke Paradise',
+            category: 'Hawaiian • Healthy • $$',
+            rating: '4.9',
+            reviews: '(892)',
+            time: '15 min',
+            distance: '0.6 mi',
+            delivery: '$2.99 delivery',
+            imageAlt: 'Colorful fresh poke bowl with salmon and avocado',
           },
           {
-            name: "Green Garden",
-            category: "Vegan • Salads • $$",
-            rating: "4.7",
-            reviews: "(1.5k)",
-            time: "20 min",
-            distance: "0.9 mi",
-            delivery: "FREE delivery",
-            badge: "Vegan",
-            imageAlt: "Fresh colorful salad bowl with quinoa and vegetables",
+            name: 'Green Garden',
+            category: 'Vegan • Salads • $$',
+            rating: '4.7',
+            reviews: '(1.5k)',
+            time: '20 min',
+            distance: '0.9 mi',
+            delivery: 'FREE delivery',
+            badge: 'Vegan',
+            imageAlt: 'Fresh colorful salad bowl with quinoa and vegetables',
           },
           {
-            name: "Pasta Palace",
-            category: "Italian • Pasta • $$",
-            rating: "4.8",
-            reviews: "(2.7k)",
-            time: "30 min",
-            distance: "1.8 mi",
-            delivery: "$4.99 delivery",
-            imageAlt: "Creamy shrimp alfredo pasta in white bowl",
+            name: 'Pasta Palace',
+            category: 'Italian • Pasta • $$',
+            rating: '4.8',
+            reviews: '(2.7k)',
+            time: '30 min',
+            distance: '1.8 mi',
+            delivery: '$4.99 delivery',
+            imageAlt: 'Creamy shrimp alfredo pasta in white bowl',
           },
           {
-            name: "Sweet Tooth",
-            category: "Desserts • Donuts • $",
-            rating: "4.9",
-            reviews: "(3.8k)",
-            time: "12 min",
-            distance: "0.4 mi",
-            delivery: "$1.99 delivery",
-            badge: "Open Late",
-            imageAlt: "Assorted gourmet donuts with colorful glazes",
+            name: 'Sweet Tooth',
+            category: 'Desserts • Donuts • $',
+            rating: '4.9',
+            reviews: '(3.8k)',
+            time: '12 min',
+            distance: '0.4 mi',
+            delivery: '$1.99 delivery',
+            badge: 'Open Late',
+            imageAlt: 'Assorted gourmet donuts with colorful glazes',
           },
         ]
 
@@ -582,9 +582,9 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
       0,
     )
 
-    const stepsEyebrow = props.steps?.eyebrow ?? "How It Works"
+    const stepsEyebrow = props.steps?.eyebrow ?? 'How It Works'
     const stepsHeading =
-      props.steps?.heading ?? "From Craving to Crunching in Minutes"
+      props.steps?.heading ?? 'From Craving to Crunching in Minutes'
     const stepsDesc =
       props.steps?.description ??
       "We've streamlined food delivery so you spend less time waiting and more time eating."
@@ -592,46 +592,45 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
       ? props.steps.items
       : [
           {
-            title: "Choose Your Food",
+            title: 'Choose Your Food',
             description:
-              "Browse thousands of local restaurants, filter by cuisine, dietary preferences, or delivery time. Save your favorites for instant reordering.",
-            stat: "12,000+ restaurants",
+              'Browse thousands of local restaurants, filter by cuisine, dietary preferences, or delivery time. Save your favorites for instant reordering.',
+            stat: '12,000+ restaurants',
           },
           {
-            title: "Track in Real-Time",
+            title: 'Track in Real-Time',
             description:
-              "Watch your order from kitchen to door with live GPS tracking. Get minute-by-minute updates and know exactly when your food arrives.",
-            stat: "Avg. 22 min delivery",
+              'Watch your order from kitchen to door with live GPS tracking. Get minute-by-minute updates and know exactly when your food arrives.',
+            stat: 'Avg. 22 min delivery',
           },
           {
-            title: "Enjoy & Earn Rewards",
+            title: 'Enjoy & Earn Rewards',
             description:
-              "Savor your meal and earn Feastly Points with every order. Redeem for free delivery, exclusive discounts, and VIP restaurant perks.",
-            stat: "Earn 10 pts per $1",
+              'Savor your meal and earn Feastly Points with every order. Redeem for free delivery, exclusive discounts, and VIP restaurant perks.',
+            stat: 'Earn 10 pts per $1',
           },
         ]
 
     const appPromoHeading =
-      props.appPromo?.heading ?? "Download the Feastly App"
+      props.appPromo?.heading ?? 'Download the Feastly App'
     const appPromoDesc =
       props.appPromo?.description ??
-      "Get $15 off your first 3 orders when you order from the app."
-    const appStore = props.appPromo?.appStore ?? "App Store"
-    const googlePlay = props.appPromo?.googlePlay ?? "Google Play"
+      'Get $15 off your first 3 orders when you order from the app.'
+    const appStore = props.appPromo?.appStore ?? 'App Store'
+    const googlePlay = props.appPromo?.googlePlay ?? 'Google Play'
 
     const statItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "12K+", label: "Partner Restaurants" },
-          { value: "847", label: "Cities Served" },
-          { value: "4.9★", label: "App Store Rating" },
-          { value: "22m", label: "Avg. Delivery Time" },
+          { value: '12K+', label: 'Partner Restaurants' },
+          { value: '847', label: 'Cities Served' },
+          { value: '4.9★', label: 'App Store Rating' },
+          { value: '22m', label: 'Avg. Delivery Time' },
         ]
 
-    const testimonialsEyebrow =
-      props.testimonials?.eyebrow ?? "What People Say"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'What People Say'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Loved by 5 Million+ Foodies"
+      props.testimonials?.heading ?? 'Loved by 5 Million+ Foodies'
     const testimonialsDesc =
       props.testimonials?.description ??
       "Don't just take our word for it — hear from our community of hungry customers."
@@ -641,47 +640,46 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
           {
             quote:
               "I've tried every food delivery app out there, and Feastly is hands down the fastest. My sushi arrived in 18 minutes — still warm and perfectly presented. The GPS tracking is a game changer!",
-            name: "Sarah Chen",
-            meta: "San Francisco, CA • 142 orders",
+            name: 'Sarah Chen',
+            meta: 'San Francisco, CA • 142 orders',
             avatarAlt:
-              "Professional headshot of a smiling woman with dark hair",
+              'Professional headshot of a smiling woman with dark hair',
           },
           {
             quote:
-              "As a restaurant owner, partnering with Feastly increased our delivery revenue by 340%. Their driver network is reliable and the customer support team actually answers the phone when we need help.",
-            name: "Marcus Rodriguez",
-            meta: "Owner, Burger Barn • Austin, TX",
-            avatarAlt:
-              "Professional headshot of a smiling man in his 40s",
+              'As a restaurant owner, partnering with Feastly increased our delivery revenue by 340%. Their driver network is reliable and the customer support team actually answers the phone when we need help.',
+            name: 'Marcus Rodriguez',
+            meta: 'Owner, Burger Barn • Austin, TX',
+            avatarAlt: 'Professional headshot of a smiling man in his 40s',
           },
           {
             quote:
               "The Feastly Points rewards program is amazing! I've earned enough points for 6 free deliveries in just 3 months. Plus, the app is so easy to use my grandma orders her own lunch now.",
-            name: "Jennifer Park",
-            meta: "Chicago, IL • 89 orders",
+            name: 'Jennifer Park',
+            meta: 'Chicago, IL • 89 orders',
             avatarAlt:
-              "Professional headshot of a smiling woman with blonde hair",
+              'Professional headshot of a smiling woman with blonde hair',
           },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Frequently Asked Questions"
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Frequently Asked Questions'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know about ordering with Feastly."
+      'Everything you need to know about ordering with Feastly.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "How much does delivery cost?",
-            a: "Delivery fees vary by restaurant and distance, typically ranging from $0.99 to $5.99. Many restaurants offer FREE delivery on orders over $25. Plus, Feastly+ members get free delivery on all orders over $15 from participating restaurants. Your first 3 orders have no delivery fees!",
+            q: 'How much does delivery cost?',
+            a: 'Delivery fees vary by restaurant and distance, typically ranging from $0.99 to $5.99. Many restaurants offer FREE delivery on orders over $25. Plus, Feastly+ members get free delivery on all orders over $15 from participating restaurants. Your first 3 orders have no delivery fees!',
           },
           {
-            q: "What is the average delivery time?",
+            q: 'What is the average delivery time?',
             a: "Our average delivery time is 22 minutes from order confirmation to your door. You'll see an estimated delivery time before you order, and real-time tracking keeps you updated every step of the way. During peak hours (11am-2pm, 5pm-8pm), times may extend to 35-40 minutes.",
           },
           {
-            q: "Can I schedule orders in advance?",
+            q: 'Can I schedule orders in advance?',
             a: 'Yes! You can schedule orders up to 7 days in advance. Perfect for planning lunch meetings, dinner parties, or just making sure your food arrives right when you want it. Select "Schedule" at checkout and choose your preferred delivery window.',
           },
           {
@@ -689,11 +687,11 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
             a: "Our 24/7 customer support team is here to help. Use the in-app chat for instant assistance, or call our hotline. If something is wrong with your order, we'll make it right with a refund, redelivery, or account credit — whatever you prefer. Your satisfaction is guaranteed.",
           },
           {
-            q: "How do Feastly Points work?",
-            a: "You earn 10 Feastly Points for every $1 spent. Points can be redeemed for free delivery (500 pts), discounts on orders (1,000 pts = $5 off), or exclusive restaurant perks. Points never expire for active users, and you can start redeeming once you hit 500 points.",
+            q: 'How do Feastly Points work?',
+            a: 'You earn 10 Feastly Points for every $1 spent. Points can be redeemed for free delivery (500 pts), discounts on orders (1,000 pts = $5 off), or exclusive restaurant perks. Points never expire for active users, and you can start redeeming once you hit 500 points.',
           },
           {
-            q: "Is contactless delivery available?",
+            q: 'Is contactless delivery available?',
             a: 'Absolutely. All orders default to contactless delivery — your driver will leave your food at your door and send a photo confirmation. You can also add specific instructions like "Leave on porch table" or "Ring doorbell after drop-off." Your safety and convenience come first.',
           },
         ]
@@ -701,53 +699,53 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
     const ctaHeading = props.cta?.heading ?? "Hungry? Let's Fix That."
     const ctaDesc =
       props.cta?.description ??
-      "Join 5 million+ food lovers. Get $15 off your first 3 orders when you download the Feastly app today."
-    const ctaPrimary = props.cta?.primary ?? "Download App"
-    const ctaSecondary = props.cta?.secondary ?? "Order on Web"
+      'Join 5 million+ food lovers. Get $15 off your first 3 orders when you download the Feastly app today.'
+    const ctaPrimary = props.cta?.primary ?? 'Download App'
+    const ctaSecondary = props.cta?.secondary ?? 'Order on Web'
     const ctaNote =
       props.cta?.note ??
-      "Available on iOS and Android. No credit card required to sign up."
+      'Available on iOS and Android. No credit card required to sign up.'
 
     const footerDesc =
       props.footer?.description ??
-      "The fastest, most reliable food delivery experience. Connecting hungry customers with local favorites since 2019."
-    const footerNote = props.footer?.note ?? "All rights reserved."
+      'The fastest, most reliable food delivery experience. Connecting hungry customers with local favorites since 2019.'
+    const footerNote = props.footer?.note ?? 'All rights reserved.'
     const footerMadeWith =
-      props.footer?.madeWith ?? "Made with ♥ in San Francisco"
-    const footerStatus = props.footer?.status ?? "All systems operational"
+      props.footer?.madeWith ?? 'Made with ♥ in San Francisco'
+    const footerStatus = props.footer?.status ?? 'All systems operational'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            heading: "Company",
-            links: ["About Us", "Careers", "Press", "Blog", "Contact"],
+            heading: 'Company',
+            links: ['About Us', 'Careers', 'Press', 'Blog', 'Contact'],
           },
           {
-            heading: "For Customers",
+            heading: 'For Customers',
             links: [
-              "How It Works",
-              "Restaurants",
-              "Feastly+",
-              "Gift Cards",
-              "Support",
+              'How It Works',
+              'Restaurants',
+              'Feastly+',
+              'Gift Cards',
+              'Support',
             ],
           },
           {
-            heading: "For Restaurants",
+            heading: 'For Restaurants',
             links: [
-              "Partner With Us",
-              "Restaurant Portal",
-              "Marketing Tools",
-              "Success Stories",
+              'Partner With Us',
+              'Restaurant Portal',
+              'Marketing Tools',
+              'Success Stories',
             ],
           },
           {
-            heading: "Legal",
+            heading: 'Legal',
             links: [
-              "Privacy Policy",
-              "Terms of Service",
-              "Cookie Policy",
-              "Accessibility",
+              'Privacy Policy',
+              'Terms of Service',
+              'Cookie Policy',
+              'Accessibility',
             ],
           },
         ]
@@ -845,7 +843,12 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
     )
 
     const StarIcon = ({ className }: { className?: string }) => (
-      <svg className={className} fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+      <svg
+        className={className}
+        fill="currentColor"
+        viewBox="0 0 20 20"
+        aria-hidden="true"
+      >
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
       </svg>
     )
@@ -870,40 +873,100 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
 
     // Six feature icons, each on a token-rotated tinted tile.
     const featureIcons: ReactNode[] = [
-      <svg key="bolt" className="size-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+      <svg
+        key="bolt"
+        className="size-7"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
         <path d="M13 10V3L4 14h7v7l9-11h-7z" />
       </svg>,
-      <svg key="shield" className="size-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+      <svg
+        key="shield"
+        className="size-7"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
         <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
       </svg>,
-      <svg key="dollar" className="size-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+      <svg
+        key="dollar"
+        className="size-7"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
         <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>,
-      <svg key="pin" className="size-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+      <svg
+        key="pin"
+        className="size-7"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
         <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
         <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>,
-      <svg key="heart" className="size-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+      <svg
+        key="heart"
+        className="size-7"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
         <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
       </svg>,
-      <svg key="gift" className="size-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+      <svg
+        key="gift"
+        className="size-7"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
         <path d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
       </svg>,
     ]
     // Token-rotated tinted icon tiles (no raw palette).
     const featureTints = [
-      "bg-primary/10 text-primary",
-      "bg-accent text-accent-foreground",
-      "bg-secondary text-secondary-foreground",
-      "bg-chart-2/15 text-chart-2",
-      "bg-chart-4/15 text-chart-4",
-      "bg-chart-5/15 text-chart-5",
+      'bg-primary/10 text-primary',
+      'bg-accent text-accent-foreground',
+      'bg-secondary text-secondary-foreground',
+      'bg-chart-2/15 text-chart-2',
+      'bg-chart-4/15 text-chart-4',
+      'bg-chart-5/15 text-chart-5',
     ]
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -947,7 +1010,15 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
                   aria-label="Search"
                   className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground sm:flex"
                 >
-                  <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <svg
+                    className="size-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                  >
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                   </svg>
@@ -1059,7 +1130,15 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
                       aria-label="Shopping Cart"
                       className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
                     >
-                      <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <svg
+                        className="size-5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
                         <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
                         <line x1="3" y1="6" x2="21" y2="6" />
                         <path d="M16 10a4 4 0 0 1-8 0" />
@@ -1165,7 +1244,8 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
                             No restaurants in your order
                           </p>
                           <p className="mt-2 text-sm text-muted-foreground">
-                            Add a restaurant from Top-Rated Restaurants to start an order for this session.
+                            Add a restaurant from Top-Rated Restaurants to start
+                            an order for this session.
                           </p>
                         </div>
                       )}
@@ -1178,7 +1258,10 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
                         </div>
                         <div className="flex justify-between pt-2 text-base font-bold text-foreground">
                           <span>Total</span>
-                          <span>{cartItemCount} restaurant{cartItemCount === 1 ? '' : 's'}</span>
+                          <span>
+                            {cartItemCount} restaurant
+                            {cartItemCount === 1 ? '' : 's'}
+                          </span>
                         </div>
                       </div>
                       <Button
@@ -1220,7 +1303,15 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
                   onClick={() => setMobileOpen((v: boolean) => !v)}
                   className="p-2 text-muted-foreground hover:text-foreground lg:hidden"
                 >
-                  <svg className="size-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <svg
+                    className="size-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                  >
                     <line x1="3" y1="12" x2="21" y2="12" />
                     <line x1="3" y1="6" x2="21" y2="6" />
                     <line x1="3" y1="18" x2="21" y2="18" />
@@ -1362,7 +1453,7 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
                     </span>
                   </div>
                   <h1 className="mb-6 text-5xl font-extrabold leading-tight tracking-tight text-foreground sm:text-6xl lg:text-7xl">
-                    {headingLead}{" "}
+                    {headingLead}{' '}
                     <span className="text-primary">{headingAccent}</span>
                   </h1>
                   <p className="mx-auto mb-8 max-w-xl text-xl text-muted-foreground lg:mx-0">
@@ -1496,7 +1587,7 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
                   >
                     <div
                       className={cn(
-                        "mb-6 flex size-14 items-center justify-center rounded-xl transition-transform group-hover:scale-110",
+                        'mb-6 flex size-14 items-center justify-center rounded-xl transition-transform group-hover:scale-110',
                         featureTints[i % featureTints.length],
                       )}
                     >
@@ -1547,10 +1638,10 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
                     type="button"
                     onClick={() => go(filter)}
                     className={cn(
-                      "rounded-full px-5 py-2.5 font-medium transition-colors",
+                      'rounded-full px-5 py-2.5 font-medium transition-colors',
                       i === 0
-                        ? "bg-primary text-primary-foreground"
-                        : "border border-border bg-card text-foreground/80 hover:border-primary/40",
+                        ? 'bg-primary text-primary-foreground'
+                        : 'border border-border bg-card text-foreground/80 hover:border-primary/40',
                     )}
                   >
                     {filter}
@@ -1713,7 +1804,12 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
                     onClick={() => go(appStore)}
                     className="flex items-center gap-3 rounded-xl bg-background px-6 py-3 text-foreground transition-colors hover:bg-muted"
                   >
-                    <svg className="size-8" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <svg
+                      className="size-8"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
                       <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
                     </svg>
                     <div className="text-left">
@@ -1726,7 +1822,12 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
                     onClick={() => go(googlePlay)}
                     className="flex items-center gap-3 rounded-xl bg-background px-6 py-3 text-foreground transition-colors hover:bg-muted"
                   >
-                    <svg className="size-8" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <svg
+                      className="size-8"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
                       <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" />
                     </svg>
                     <div className="text-left">
@@ -1856,7 +1957,16 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
                   onClick={() => go(ctaPrimary)}
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-background px-8 py-4 font-bold text-primary transition-colors hover:bg-muted"
                 >
-                  <svg className="size-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg
+                    className="size-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
                     <path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
                   {ctaPrimary}
@@ -1866,13 +1976,24 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
                   onClick={() => go(ctaSecondary)}
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-primary-foreground/30 bg-primary-foreground/10 px-8 py-4 font-bold text-primary-foreground transition-colors hover:bg-primary-foreground/20"
                 >
-                  <svg className="size-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg
+                    className="size-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
                     <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                   </svg>
                   {ctaSecondary}
                 </button>
               </div>
-              <p className="mt-6 text-sm text-primary-foreground/70">{ctaNote}</p>
+              <p className="mt-6 text-sm text-primary-foreground/70">
+                {ctaNote}
+              </p>
             </div>
           </section>
         </main>
@@ -1899,30 +2020,45 @@ export const FoodDeliveryKimiPage2 = defineCapsule({
                   <button
                     type="button"
                     aria-label="Twitter"
-                    onClick={() => go("Twitter")}
+                    onClick={() => go('Twitter')}
                     className="flex size-10 items-center justify-center rounded-lg bg-background/10 text-background/70 transition-colors hover:bg-background/20"
                   >
-                    <svg className="size-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg
+                      className="size-5"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
                       <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.84 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
                     </svg>
                   </button>
                   <button
                     type="button"
                     aria-label="Instagram"
-                    onClick={() => go("Instagram")}
+                    onClick={() => go('Instagram')}
                     className="flex size-10 items-center justify-center rounded-lg bg-background/10 text-background/70 transition-colors hover:bg-background/20"
                   >
-                    <svg className="size-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg
+                      className="size-5"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
                       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
                     </svg>
                   </button>
                   <button
                     type="button"
                     aria-label="Facebook"
-                    onClick={() => go("Facebook")}
+                    onClick={() => go('Facebook')}
                     className="flex size-10 items-center justify-center rounded-lg bg-background/10 text-background/70 transition-colors hover:bg-background/20"
                   >
-                    <svg className="size-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg
+                      className="size-5"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
                       <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                     </svg>
                   </button>

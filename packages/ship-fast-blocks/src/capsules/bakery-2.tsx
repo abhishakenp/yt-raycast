@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 import { number, string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
@@ -24,9 +24,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const BakeryKimiPage2 = defineCapsule({
-  name: "BakeryKimiPage2",
+  name: 'BakeryKimiPage2',
   description:
-    "Bakery second style sibling to BakeryKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Bakery second style sibling to BakeryKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const BakeryKimiPage2 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -157,97 +159,111 @@ export const BakeryKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [cartOpen, setCartOpen] = useState(false)
-    const brand = props.brand ?? "Little Oven Bakery Warm Breads, Fresh Pastries, Baked Daily"
-    const nav = props.nav?.length ? props.nav : ["Little Oven Bakery", "Our Bakes", "Gallery", "Reviews", "FAQ", "(480) 555-1234"]
+    const brand =
+      props.brand ??
+      'Little Oven Bakery Warm Breads, Fresh Pastries, Baked Daily'
+    const nav = props.nav?.length
+      ? props.nav
+      : [
+          'Little Oven Bakery',
+          'Our Bakes',
+          'Gallery',
+          'Reviews',
+          'FAQ',
+          '(480) 555-1234',
+        ]
     const hero = {
-      eyebrow: "Bakery / Variant 2",
-      title: "Handmade bread. Croissants that flake. Joy in every bite.",
-      description: "Little Oven Bakery Warm Breads, Fresh Pastries, Baked Daily Little Oven Bakery Our Bakes Gallery Menu & Prices Reviews FAQ (480) 555-1234 Order Online Open since 6 AM Baked Fres...",
-      primaryCta: "Little Oven Bakery",
-      secondaryCta: "Our Bakes",
-      imageAlt: "Golden artisan sourdough loaf cooling on a wooden bakery counter",
+      eyebrow: 'Bakery / Variant 2',
+      title: 'Handmade bread. Croissants that flake. Joy in every bite.',
+      description:
+        'Little Oven Bakery Warm Breads, Fresh Pastries, Baked Daily Little Oven Bakery Our Bakes Gallery Menu & Prices Reviews FAQ (480) 555-1234 Order Online Open since 6 AM Baked Fres...',
+      primaryCta: 'Little Oven Bakery',
+      secondaryCta: 'Our Bakes',
+      imageAlt:
+        'Golden artisan sourdough loaf cooling on a wooden bakery counter',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Baked fresh by hand, never by machine",
-    "body": "Little Oven Bakery Warm Breads, Fresh Pastries, Baked Daily Little Oven Bakery Our Bakes Gallery Menu & Prices Reviews FAQ (480) 555-1234 Order Online Open since 6 AM Baked Fres...",
-    "items": [
-      "Order for a crowd or a quiet morning",
-      "What our neighbors say",
-      "Questions we get asked a lot"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "How to get your hands on it",
-    "body": "Bakery page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Come in hungry. Leave with a bag full of joy.",
-      "24-hour fermentation",
-      "Arizona Heritage wheat"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "The display case today",
-    "body": "Bakery page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Zero preservatives",
-      "Browse the menu",
-      "Select & customize"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Order for a crowd or a quiet morning",
-    "body": "Bakery page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Order by noon",
-      "Pickup & enjoy",
-      "Visit Us"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "How to get your hands on it",
-    "alt": "Golden artisan sourdough loaf cooling on a wooden bakery counter",
-    "caption": "Bakery generated page detail"
-  },
-  {
-    "title": "The display case today",
-    "alt": "Rows of flaky butter croissants arranged on a bakery tray",
-    "caption": "Bakery generated page detail"
-  },
-  {
-    "title": "Order for a crowd or a quiet morning",
-    "alt": "Baker shaping fresh bread dough by hand at a wooden work surface",
-    "caption": "Bakery generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'Baked fresh by hand, never by machine',
+            body: 'Little Oven Bakery Warm Breads, Fresh Pastries, Baked Daily Little Oven Bakery Our Bakes Gallery Menu & Prices Reviews FAQ (480) 555-1234 Order Online Open since 6 AM Baked Fres...',
+            items: [
+              'Order for a crowd or a quiet morning',
+              'What our neighbors say',
+              'Questions we get asked a lot',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'How to get your hands on it',
+            body: "Bakery page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Come in hungry. Leave with a bag full of joy.',
+              '24-hour fermentation',
+              'Arizona Heritage wheat',
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'The display case today',
+            body: "Bakery page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Zero preservatives',
+              'Browse the menu',
+              'Select & customize',
+            ],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Order for a crowd or a quiet morning',
+            body: "Bakery page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['Order by noon', 'Pickup & enjoy', 'Visit Us'],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'How to get your hands on it',
+            alt: 'Golden artisan sourdough loaf cooling on a wooden bakery counter',
+            caption: 'Bakery generated page detail',
+          },
+          {
+            title: 'The display case today',
+            alt: 'Rows of flaky butter croissants arranged on a bakery tray',
+            caption: 'Bakery generated page detail',
+          },
+          {
+            title: 'Order for a crowd or a quiet morning',
+            alt: 'Baker shaping fresh bread dough by hand at a wooden work surface',
+            caption: 'Bakery generated page detail',
+          },
+        ]
 
     // Lakebed hooks
-    const menuItems = lakebed.useQuery('menuItems')
     const cartLines = lakebed.useQuery('cartLines')
     const favoriteItemNames = lakebed.useQuery('favoriteItemNames')
     const auth = lakebed.useAuth()
@@ -357,10 +373,19 @@ export const BakeryKimiPage2 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -601,7 +626,8 @@ export const BakeryKimiPage2 = defineCapsule({
                           No items in your order
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Add fresh baked goods from our menu to start an order for this session.
+                          Add fresh baked goods from our menu to start an order
+                          for this session.
                         </p>
                       </div>
                     )}
@@ -791,16 +817,28 @@ export const BakeryKimiPage2 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -808,10 +846,19 @@ export const BakeryKimiPage2 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -836,7 +883,9 @@ export const BakeryKimiPage2 = defineCapsule({
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
                 <p className="text-sm font-medium text-primary">Our Bakes</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Fresh from the oven</h2>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Fresh from the oven
+                </h2>
               </div>
               <button
                 type="button"
@@ -851,9 +900,18 @@ export const BakeryKimiPage2 = defineCapsule({
                 const isFavorite = favoriteItemNames?.has(item.title) ?? false
                 const defaultPrice = '$4.50'
                 return (
-                  <article key={item.title} className="group overflow-hidden rounded-lg border border-border bg-card">
+                  <article
+                    key={item.title}
+                    className="group overflow-hidden rounded-lg border border-border bg-card"
+                  >
                     <div className="relative aspect-[4/3] overflow-hidden">
-                      <Image alt={item.alt} w={900} h={700} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <Image
+                        alt={item.alt}
+                        w={900}
+                        h={700}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
                       <button
                         type="button"
                         onClick={() => void toggleFavorite(item.title)}
@@ -874,10 +932,18 @@ export const BakeryKimiPage2 = defineCapsule({
                       </button>
                     </div>
                     <div className="p-5">
-                      <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                      {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                      <h3 className="text-lg font-semibold text-card-foreground">
+                        {item.title}
+                      </h3>
+                      {item.caption ? (
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                          {item.caption}
+                        </p>
+                      ) : null}
                       <div className="mt-4 flex items-center justify-between">
-                        <span className="text-lg font-bold text-foreground">{defaultPrice}</span>
+                        <span className="text-lg font-bold text-foreground">
+                          {defaultPrice}
+                        </span>
                         <Button
                           type="button"
                           size="sm"
@@ -901,9 +967,15 @@ export const BakeryKimiPage2 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -919,10 +991,17 @@ export const BakeryKimiPage2 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

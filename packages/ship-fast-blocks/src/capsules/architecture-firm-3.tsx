@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * ArchitectureFirmKimiPage3 — a complete, self-contained architecture-studio
@@ -48,9 +48,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * layout, spacing, glow effects and typography.
  */
 export const ArchitectureFirmKimiPage3 = defineCapsule({
-  name: "ArchitectureFirmKimiPage3",
+  name: 'ArchitectureFirmKimiPage3',
   description:
-    "Complete architecture-firm / design-studio LANDING page (variant 3) rendered in a dark cinematic brutalist mood: deep shadowy backgrounds, warm amber accent glows and highlights, monumental serif typography, generous whitespace with heavy contrast, and ambient decorative blur orbs. Includes a sticky navbar with solid dark backdrop, a split hero with eyebrow label and massive serif headline over a full-height brutalist facade photo, a trusted-by minimalist logo strip, a three-card philosophy section with warm-tinted inline icons, a four-step numbered process, a 6-up masonry project gallery with category badges and image-zoom hover, three transparent pricing tiers with a highlighted Most Popular option, an inverted bordered stats ribbon, a 3-up client testimonial grid with portraits, an accordion FAQ list, a centered contact CTA with dual studio address cards, and a four-column footer. Use as the ROOT/home page for architecture firms, architecture studios, design practices, interior-design studios, urban planners, landscape architects, building/construction design or built-environment portfolio sites when a dramatic dark premium editorial aesthetic with warm amber accents is wanted. Third style sibling to ArchitectureFirmKimiPage — richer and moodier than the light Scandinavian-minimal sibling. Supply content only — brand, nav, hero, logos, philosophy, process, gallery, pricing, stats, testimonials, faq, contact, footer; the block owns all layout and styling.",
+    'Complete architecture-firm / design-studio LANDING page (variant 3) rendered in a dark cinematic brutalist mood: deep shadowy backgrounds, warm amber accent glows and highlights, monumental serif typography, generous whitespace with heavy contrast, and ambient decorative blur orbs. Includes a sticky navbar with solid dark backdrop, a split hero with eyebrow label and massive serif headline over a full-height brutalist facade photo, a trusted-by minimalist logo strip, a three-card philosophy section with warm-tinted inline icons, a four-step numbered process, a 6-up masonry project gallery with category badges and image-zoom hover, three transparent pricing tiers with a highlighted Most Popular option, an inverted bordered stats ribbon, a 3-up client testimonial grid with portraits, an accordion FAQ list, a centered contact CTA with dual studio address cards, and a four-column footer. Use as the ROOT/home page for architecture firms, architecture studios, design practices, interior-design studios, urban planners, landscape architects, building/construction design or built-environment portfolio sites when a dramatic dark premium editorial aesthetic with warm amber accents is wanted. Third style sibling to ArchitectureFirmKimiPage — richer and moodier than the light Scandinavian-minimal sibling. Supply content only — brand, nav, hero, logos, philosophy, process, gallery, pricing, stats, testimonials, faq, contact, footer; the block owns all layout and styling.',
   props: z.object({
     /** Studio / firm name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -98,9 +98,7 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
         heading: z.string().optional(),
         subheading: z.string().optional(),
         steps: z
-          .array(
-            z.object({ title: z.string(), description: z.string() }),
-          )
+          .array(z.object({ title: z.string(), description: z.string() }))
           .optional(),
       })
       .optional(),
@@ -175,9 +173,7 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
         eyebrow: z.string().optional(),
         heading: z.string().optional(),
         items: z
-          .array(
-            z.object({ question: z.string(), answer: z.string() }),
-          )
+          .array(z.object({ question: z.string(), answer: z.string() }))
           .optional(),
       })
       .optional(),
@@ -240,7 +236,14 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
         new Set(db.favorites.all().map((favorite) => favorite.projectTitle)),
     },
     mutations: {
-      addInquiry: ({ db }, projectTitle: string, projectCategory: string, name: string, email: string, message: string) => {
+      addInquiry: (
+        { db },
+        projectTitle: string,
+        projectCategory: string,
+        name: string,
+        email: string,
+        message: string,
+      ) => {
         db.inquiries.insert({
           projectTitle,
           projectCategory,
@@ -285,11 +288,11 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
       message: '',
     })
 
-    const brand = props.brand ?? "Monolith"
+    const brand = props.brand ?? 'Monolith'
 
     // Lakebed hooks
     const storedProjects = lakebed.useQuery('projects')
-    const inquiryCount = lakebed.useQuery('inquiryCount')
+    const inquiryCount = lakebed.useQuery('inquiryCount') ?? 0
     const favoriteProjectTitles = lakebed.useQuery('favoriteProjectTitles')
     const auth = lakebed.useAuth()
     const addInquiry = lakebed.useMutation('addInquiry')
@@ -322,143 +325,147 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
     const handleSignOut = () => {
       lakebed.signOut()
     }
-    const nav = props.nav?.length ? props.nav : ["Projects", "Philosophy", "Studio", "Contact"]
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Projects', 'Philosophy', 'Studio', 'Contact']
 
     // HERO
-    const heroEyebrow = props.hero?.eyebrow ?? "Est. 2008 — Brooklyn & Copenhagen"
-    const heroHeading = props.hero?.heading ?? "Architecture in its most honest form."
+    const heroEyebrow =
+      props.hero?.eyebrow ?? 'Est. 2008 — Brooklyn & Copenhagen'
+    const heroHeading =
+      props.hero?.heading ?? 'Architecture in its most honest form.'
     const heroSub =
       props.hero?.subheading ??
-      "We design buildings that listen to their sites. Through material research and spatial precision, Monolith Studio creates structures that feel inevitable—rooted, quiet, and enduring."
-    const heroPrimary = props.hero?.primaryCta ?? "View Projects"
-    const heroSecondary = props.hero?.secondaryCta ?? "Our Philosophy"
+      'We design buildings that listen to their sites. Through material research and spatial precision, Monolith Studio creates structures that feel inevitable—rooted, quiet, and enduring.'
+    const heroPrimary = props.hero?.primaryCta ?? 'View Projects'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Our Philosophy'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Dramatic upward view of a monumental brutalist concrete building with repeating geometric windows against a grey sky"
+      'Dramatic upward view of a monumental brutalist concrete building with repeating geometric windows against a grey sky'
 
     // LOGOS
-    const logosLabel = props.logos?.label ?? "Trusted by visionary clients"
+    const logosLabel = props.logos?.label ?? 'Trusted by visionary clients'
     const logosItems = props.logos?.items?.length
       ? props.logos.items
-      : ["AESIR", "HELIOS", "TERRA GROUP", "NORDISKA", "MET ARTS"]
+      : ['AESIR', 'HELIOS', 'TERRA GROUP', 'NORDISKA', 'MET ARTS']
 
     // PHILOSOPHY
-    const philHeading = props.philosophy?.heading ?? "Our Philosophy"
+    const philHeading = props.philosophy?.heading ?? 'Our Philosophy'
     const philSub =
       props.philosophy?.subheading ??
-      "We believe architecture should arise from obligation—to the client, the site, and the future occupant. Our work is disciplined, restrained, and deeply contextual."
+      'We believe architecture should arise from obligation—to the client, the site, and the future occupant. Our work is disciplined, restrained, and deeply contextual.'
     const philPoints = props.philosophy?.points?.length
       ? props.philosophy.points
       : [
           {
-            title: "Contextual Design",
+            title: 'Contextual Design',
             description:
-              "Every site has a story. We begin by listening to the land, the light, and the legacy of a place before drawing a single line. The result is architecture that belongs exactly where it stands.",
+              'Every site has a story. We begin by listening to the land, the light, and the legacy of a place before drawing a single line. The result is architecture that belongs exactly where it stands.',
             iconPath:
-              "M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z",
+              'M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z',
           },
           {
-            title: "Material Honesty",
+            title: 'Material Honesty',
             description:
-              "Concrete, timber, glass, and stone used as nature intended. We specify finishes that age with dignity—gaining patina, not losing purpose—so buildings grow more beautiful over decades.",
+              'Concrete, timber, glass, and stone used as nature intended. We specify finishes that age with dignity—gaining patina, not losing purpose—so buildings grow more beautiful over decades.',
             iconPath:
-              "m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9",
+              'm21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9',
           },
           {
-            title: "Sustainable Futures",
+            title: 'Sustainable Futures',
             description:
-              "Net-zero ready structures, passive ventilation, and carbon-conscious sourcing are not upgrades—they are baseline. We design buildings that respect the climate they inhabit.",
+              'Net-zero ready structures, passive ventilation, and carbon-conscious sourcing are not upgrades—they are baseline. We design buildings that respect the climate they inhabit.',
             iconPath:
-              "M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z",
+              'M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z',
           },
         ]
 
     // PROCESS
-    const processHeading = props.process?.heading ?? "Our Process"
+    const processHeading = props.process?.heading ?? 'Our Process'
     const processSub =
       props.process?.subheading ??
-      "A clear methodology keeps complex projects on track. From first sketch to final walkthrough, we manage every phase with transparency and rigor."
+      'A clear methodology keeps complex projects on track. From first sketch to final walkthrough, we manage every phase with transparency and rigor.'
     const processSteps = props.process?.steps?.length
       ? props.process.steps
       : [
           {
-            title: "Discover",
+            title: 'Discover',
             description:
-              "Site analysis, zoning review, and client workshops. We map constraints and opportunities before committing to a direction.",
+              'Site analysis, zoning review, and client workshops. We map constraints and opportunities before committing to a direction.',
           },
           {
-            title: "Define",
+            title: 'Define',
             description:
-              "Concept sketches, spatial programming, and budget alignment. We establish a clear vision that guides every subsequent decision.",
+              'Concept sketches, spatial programming, and budget alignment. We establish a clear vision that guides every subsequent decision.',
           },
           {
-            title: "Develop",
+            title: 'Develop',
             description:
-              "Technical drawings, material samples, and three-dimensional visualization. We refine every joint, junction, and surface.",
+              'Technical drawings, material samples, and three-dimensional visualization. We refine every joint, junction, and surface.',
           },
           {
-            title: "Deliver",
+            title: 'Deliver',
             description:
-              "Construction administration, weekly site visits, and final commissioning. We ensure the built reality matches the design intent.",
+              'Construction administration, weekly site visits, and final commissioning. We ensure the built reality matches the design intent.',
           },
         ]
 
     // GALLERY
-    const galleryHeading = props.gallery?.heading ?? "Selected Works"
+    const galleryHeading = props.gallery?.heading ?? 'Selected Works'
     const galleryDesc =
       props.gallery?.description ??
-      "A cross-section of residential, cultural, and commercial projects from the past five years."
-    const galleryCta = props.gallery?.ctaLabel ?? "View Archive"
+      'A cross-section of residential, cultural, and commercial projects from the past five years.'
+    const galleryCta = props.gallery?.ctaLabel ?? 'View Archive'
     const staticGalleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
           {
-            title: "Cairn House",
-            category: "Residential",
-            location: "Portland, Maine",
-            year: "2023",
+            title: 'Cairn House',
+            category: 'Residential',
+            location: 'Portland, Maine',
+            year: '2023',
             imageAlt:
-              "Exterior view of a modern concrete residence with large glass panels surrounded by mature pine trees",
+              'Exterior view of a modern concrete residence with large glass panels surrounded by mature pine trees',
           },
           {
-            title: "Void Gallery",
-            category: "Cultural",
-            location: "Berlin, Germany",
-            year: "2022",
+            title: 'Void Gallery',
+            category: 'Cultural',
+            location: 'Berlin, Germany',
+            year: '2022',
             imageAlt:
-              "Sweeping interior atrium of a contemporary art museum with curved white staircases and dramatic skylights",
+              'Sweeping interior atrium of a contemporary art museum with curved white staircases and dramatic skylights',
           },
           {
-            title: "Harbor Loft",
-            category: "Commercial",
-            location: "Copenhagen, Denmark",
-            year: "2024",
+            title: 'Harbor Loft',
+            category: 'Commercial',
+            location: 'Copenhagen, Denmark',
+            year: '2024',
             imageAlt:
-              "Bright open-plan commercial loft with exposed brick walls, industrial steel beams, and wide factory windows",
+              'Bright open-plan commercial loft with exposed brick walls, industrial steel beams, and wide factory windows',
           },
           {
-            title: "Terra Pavilion",
-            category: "Civic",
-            location: "Scottsdale, Arizona",
-            year: "2021",
+            title: 'Terra Pavilion',
+            category: 'Civic',
+            location: 'Scottsdale, Arizona',
+            year: '2021',
             imageAlt:
-              "Arizona desert modern pavilion with rammed earth walls and deep overhangs blending into the arid landscape",
+              'Arizona desert modern pavilion with rammed earth walls and deep overhangs blending into the arid landscape',
           },
           {
-            title: "Nordic Chapel",
-            category: "Religious",
-            location: "Tromsø, Norway",
-            year: "2023",
+            title: 'Nordic Chapel',
+            category: 'Religious',
+            location: 'Tromsø, Norway',
+            year: '2023',
             imageAlt:
-              "Minimalist wooden chapel interior with warm natural light streaming through tall clerestory windows",
+              'Minimalist wooden chapel interior with warm natural light streaming through tall clerestory windows',
           },
           {
-            title: "Urban Stack",
-            category: "Mixed-Use",
-            location: "Tokyo, Japan",
-            year: "2020",
+            title: 'Urban Stack',
+            category: 'Mixed-Use',
+            location: 'Tokyo, Japan',
+            year: '2020',
             imageAlt:
-              "Night view of a dense cluster of modern illuminated glass high-rise towers in central Tokyo",
+              'Night view of a dense cluster of modern illuminated glass high-rise towers in central Tokyo',
           },
         ]
     const displayGalleryItems =
@@ -467,51 +474,51 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
         : staticGalleryItems
 
     // PRICING
-    const pricingHeading = props.pricing?.heading ?? "Engagement Models"
+    const pricingHeading = props.pricing?.heading ?? 'Engagement Models'
     const pricingSub =
       props.pricing?.subheading ??
-      "Transparent pricing for distinct scopes of work. Every tier includes direct principal involvement and weekly progress reviews."
+      'Transparent pricing for distinct scopes of work. Every tier includes direct principal involvement and weekly progress reviews.'
     const pricingTiers = props.pricing?.tiers?.length
       ? props.pricing.tiers
       : [
           {
-            name: "Design Consultation",
-            price: "$2,500",
-            description: "Flat fee, delivered in 10 business days",
+            name: 'Design Consultation',
+            price: '$2,500',
+            description: 'Flat fee, delivered in 10 business days',
             features: [
-              "Single site visit and measure",
-              "Zoning and feasibility report",
-              "Conceptual massing sketches",
-              "Preliminary budget estimate",
+              'Single site visit and measure',
+              'Zoning and feasibility report',
+              'Conceptual massing sketches',
+              'Preliminary budget estimate',
             ],
-            cta: "Book Consultation",
+            cta: 'Book Consultation',
             highlighted: false,
           },
           {
-            name: "Residential Design",
-            price: "$45,000",
-            description: "Starting price for custom homes",
+            name: 'Residential Design',
+            price: '$45,000',
+            description: 'Starting price for custom homes',
             features: [
-              "Schematic design through CDs",
-              "Interior material palette",
-              "3D visualization & renderings",
-              "Bidding & contractor selection",
-              "Construction administration",
+              'Schematic design through CDs',
+              'Interior material palette',
+              '3D visualization & renderings',
+              'Bidding & contractor selection',
+              'Construction administration',
             ],
-            cta: "Start Your Home",
+            cta: 'Start Your Home',
             highlighted: true,
           },
           {
-            name: "Commercial Masterplan",
-            price: "$120,000",
-            description: "Starting price, scaled to GSF",
+            name: 'Commercial Masterplan',
+            price: '$120,000',
+            description: 'Starting price, scaled to GSF',
             features: [
-              "Full architectural services",
-              "Landscape & site integration",
-              "Sustainability certification support",
-              "Stakeholder presentation deck",
+              'Full architectural services',
+              'Landscape & site integration',
+              'Sustainability certification support',
+              'Stakeholder presentation deck',
             ],
-            cta: "Discuss Project",
+            cta: 'Discuss Project',
             highlighted: false,
           },
         ]
@@ -520,115 +527,117 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "16", label: "Years in Practice" },
-          { value: "140", label: "Completed Projects" },
-          { value: "28", label: "Design Awards" },
-          { value: "4.2M", label: "Sq Ft Delivered" },
+          { value: '16', label: 'Years in Practice' },
+          { value: '140', label: 'Completed Projects' },
+          { value: '28', label: 'Design Awards' },
+          { value: '4.2M', label: 'Sq Ft Delivered' },
         ]
 
     // TESTIMONIALS
-    const testHeading = props.testimonials?.heading ?? "Client Perspectives"
+    const testHeading = props.testimonials?.heading ?? 'Client Perspectives'
     const testItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "Monolith delivered the Nordhavn mixed-use complex two weeks ahead of schedule. Their attention to daylighting strategy transformed the retail experience and cut our projected energy load by thirty percent.",
-            name: "Elena Rostova",
-            role: "Principal, Aesir Developments",
+              'Monolith delivered the Nordhavn mixed-use complex two weeks ahead of schedule. Their attention to daylighting strategy transformed the retail experience and cut our projected energy load by thirty percent.',
+            name: 'Elena Rostova',
+            role: 'Principal, Aesir Developments',
             avatarAlt:
-              "Professional headshot of Elena Rostova, a real estate developer with dark hair and a confident smile",
+              'Professional headshot of Elena Rostova, a real estate developer with dark hair and a confident smile',
           },
           {
             quote:
-              "They turned a narrow nineteenth-century brownstone into a light-filled sanctuary. Every material choice was explained with such care—we felt like genuine collaborators rather than bystanders.",
-            name: "Marcus Chen",
-            role: "Private Client, Brooklyn NY",
+              'They turned a narrow nineteenth-century brownstone into a light-filled sanctuary. Every material choice was explained with such care—we felt like genuine collaborators rather than bystanders.',
+            name: 'Marcus Chen',
+            role: 'Private Client, Brooklyn NY',
             avatarAlt:
-              "Professional headshot of Marcus Chen, a tech executive wearing a navy sweater and smiling warmly",
+              'Professional headshot of Marcus Chen, a tech executive wearing a navy sweater and smiling warmly',
           },
           {
             quote:
               "The pavilion extension respects the original Brutalist structure while adding a warmth we didn't think concrete could possess. Visitor dwell time has doubled since reopening.",
-            name: "Dr. Sarah Okafor",
-            role: "Director, Terra Museum",
+            name: 'Dr. Sarah Okafor',
+            role: 'Director, Terra Museum',
             avatarAlt:
-              "Professional headshot of Dr. Sarah Okafor, a museum director wearing glasses with natural curly hair",
+              'Professional headshot of Dr. Sarah Okafor, a museum director wearing glasses with natural curly hair',
           },
         ]
 
     // FAQ
-    const faqHeading = props.faq?.heading ?? "Common Questions"
+    const faqHeading = props.faq?.heading ?? 'Common Questions'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "What is your typical project timeline?",
+            question: 'What is your typical project timeline?',
             answer:
-              "Residential projects span 12–18 months from concept to completion. Commercial developments typically require 24–36 months depending on scale, zoning complexity, and regulatory approvals.",
+              'Residential projects span 12–18 months from concept to completion. Commercial developments typically require 24–36 months depending on scale, zoning complexity, and regulatory approvals.',
           },
           {
-            question: "Do you work internationally?",
+            question: 'Do you work internationally?',
             answer:
-              "Yes. While our studios are in Brooklyn and Copenhagen, we currently have active projects in Germany, Japan, and the western United States. We partner with local architects of record where licensing requires.",
+              'Yes. While our studios are in Brooklyn and Copenhagen, we currently have active projects in Germany, Japan, and the western United States. We partner with local architects of record where licensing requires.',
           },
           {
-            question: "How do you handle sustainability targets?",
+            question: 'How do you handle sustainability targets?',
             answer:
-              "Every project begins with a climate analysis. We target Passive House certification where feasible and specify low-carbon concrete, FSC timber, and regenerative landscape practices as standard, not upgrades.",
+              'Every project begins with a climate analysis. We target Passive House certification where feasible and specify low-carbon concrete, FSC timber, and regenerative landscape practices as standard, not upgrades.',
           },
           {
-            question: "What does your fee structure include?",
+            question: 'What does your fee structure include?',
             answer:
-              "Our fees cover schematic design, design development, construction documents, bidding support, and construction administration. Interior material palettes and 3D visualization are included in our Residential and Commercial tiers.",
+              'Our fees cover schematic design, design development, construction documents, bidding support, and construction administration. Interior material palettes and 3D visualization are included in our Residential and Commercial tiers.',
           },
           {
-            question: "Can you renovate or extend an existing building?",
+            question: 'Can you renovate or extend an existing building?',
             answer:
-              "Absolutely. Adaptive reuse is a cornerstone of our practice. We specialize in reading the existing fabric and inserting contemporary interventions that honor the history of the original structure.",
+              'Absolutely. Adaptive reuse is a cornerstone of our practice. We specialize in reading the existing fabric and inserting contemporary interventions that honor the history of the original structure.',
           },
         ]
 
     // CONTACT
-    const contactHeading = props.contact?.heading ?? "Begin with a conversation."
+    const contactHeading =
+      props.contact?.heading ?? 'Begin with a conversation.'
     const contactSub =
       props.contact?.subheading ??
-      "Tell us about your site, your timeline, and your ambitions. We review every inquiry personally and respond within two business days."
-    const contactEmail = props.contact?.email ?? "hello@monolith.studio"
-    const contactPrimary = props.contact?.primaryCta ?? "Email Us"
-    const contactSecondary = props.contact?.secondaryCta ?? "Download Portfolio (PDF)"
-    const nyLabel = props.contact?.nyLabel ?? "New York Studio"
-    const nyPhone = props.contact?.nyPhone ?? "+1 (718) 555-0142"
+      'Tell us about your site, your timeline, and your ambitions. We review every inquiry personally and respond within two business days.'
+    const contactEmail = props.contact?.email ?? 'hello@monolith.studio'
+    const contactPrimary = props.contact?.primaryCta ?? 'Email Us'
+    const contactSecondary =
+      props.contact?.secondaryCta ?? 'Download Portfolio (PDF)'
+    const nyLabel = props.contact?.nyLabel ?? 'New York Studio'
+    const nyPhone = props.contact?.nyPhone ?? '+1 (718) 555-0142'
     const nyAddress = props.contact?.nyAddress?.length
       ? props.contact.nyAddress
-      : ["47 North 3rd Street", "Brooklyn, NY 11249"]
-    const cphLabel = props.contact?.cphLabel ?? "Copenhagen Studio"
-    const cphPhone = props.contact?.cphPhone ?? "+45 32 55 89 01"
+      : ['47 North 3rd Street', 'Brooklyn, NY 11249']
+    const cphLabel = props.contact?.cphLabel ?? 'Copenhagen Studio'
+    const cphPhone = props.contact?.cphPhone ?? '+45 32 55 89 01'
     const cphAddress = props.contact?.cphAddress?.length
       ? props.contact.cphAddress
-      : ["Store Strandstræde 21", "1255 København"]
+      : ['Store Strandstræde 21', '1255 København']
 
     // FOOTER
     const footerAbout =
       props.footer?.about ??
-      "Architecture rooted in material honesty and spatial precision. Brooklyn & Copenhagen."
-    const footerStudioLabel = props.footer?.studioLabel ?? "Studio"
+      'Architecture rooted in material honesty and spatial precision. Brooklyn & Copenhagen.'
+    const footerStudioLabel = props.footer?.studioLabel ?? 'Studio'
     const footerStudioLinks = props.footer?.studioLinks?.length
       ? props.footer.studioLinks
-      : ["About", "Team", "Careers", "Press"]
-    const footerServicesLabel = props.footer?.servicesLabel ?? "Services"
+      : ['About', 'Team', 'Careers', 'Press']
+    const footerServicesLabel = props.footer?.servicesLabel ?? 'Services'
     const footerServicesLinks = props.footer?.servicesLinks?.length
       ? props.footer.servicesLinks
-      : ["Residential", "Commercial", "Cultural", "Consultation"]
-    const footerConnectLabel = props.footer?.connectLabel ?? "Connect"
+      : ['Residential', 'Commercial', 'Cultural', 'Consultation']
+    const footerConnectLabel = props.footer?.connectLabel ?? 'Connect'
     const footerConnectLinks = props.footer?.connectLinks?.length
       ? props.footer.connectLinks
-      : ["Instagram", "LinkedIn", "Journal", "Newsletter"]
+      : ['Instagram', 'LinkedIn', 'Journal', 'Newsletter']
     const footerCopyright =
-      props.footer?.copyright ?? "© 2024 Monolith Studio. All rights reserved."
+      props.footer?.copyright ?? '© 2024 Monolith Studio. All rights reserved.'
     const footerLegalLinks = props.footer?.legalLinks?.length
       ? props.footer.legalLinks
-      : ["Privacy Policy", "Terms of Service"]
+      : ['Privacy Policy', 'Terms of Service']
 
     const CheckIcon = () => (
       <svg
@@ -639,20 +648,11 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
         strokeWidth={2}
         aria-hidden="true"
       >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-      </svg>
-    )
-
-    const ChevronIcon = () => (
-      <svg
-        className="h-5 w-5 text-muted-foreground"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={2}
-        aria-hidden="true"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M4.5 12.75l6 6 9-13.5"
+        />
       </svg>
     )
 
@@ -708,7 +708,7 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -867,7 +867,9 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
                     className="w-full gap-0 p-0 sm:max-w-md"
                   >
                     <SheetHeader className="border-b border-border p-6">
-                      <SheetTitle className="text-xl">Project Inquiries</SheetTitle>
+                      <SheetTitle className="text-xl">
+                        Project Inquiries
+                      </SheetTitle>
                       <SheetDescription>
                         {inquiryCount > 0
                           ? `${inquiryCount} inquiry${inquiryCount === 1 ? '' : 'ies'} submitted.`
@@ -878,14 +880,16 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
                       {inquiryCount > 0 ? (
                         <div className="space-y-4">
                           <p className="text-sm text-muted-foreground">
-                            Thank you for your interest. We'll review your inquiry and respond within two business days.
+                            Thank you for your interest. We'll review your
+                            inquiry and respond within two business days.
                           </p>
                           <div className="rounded-lg border border-border bg-muted/40 p-4">
                             <p className="text-sm font-medium text-foreground">
                               Latest Inquiry
                             </p>
                             <p className="mt-2 text-sm text-muted-foreground">
-                              {inquiryForm.message || 'Your message will appear here.'}
+                              {inquiryForm.message ||
+                                'Your message will appear here.'}
                             </p>
                           </div>
                         </div>
@@ -894,7 +898,11 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
                           className="space-y-4"
                           onSubmit={(e) => {
                             e.preventDefault()
-                            if (inquiryForm.name && inquiryForm.email && inquiryForm.message) {
+                            if (
+                              inquiryForm.name &&
+                              inquiryForm.email &&
+                              inquiryForm.message
+                            ) {
                               void addInquiry(
                                 'General Inquiry',
                                 'General',
@@ -902,7 +910,11 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
                                 inquiryForm.email,
                                 inquiryForm.message,
                               )
-                              setInquiryForm({ name: '', email: '', message: '' })
+                              setInquiryForm({
+                                name: '',
+                                email: '',
+                                message: '',
+                              })
                             }
                           }}
                         >
@@ -974,7 +986,11 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
                           <Button
                             type="submit"
                             className="w-full rounded-full"
-                            disabled={!inquiryForm.name || !inquiryForm.email || !inquiryForm.message}
+                            disabled={
+                              !inquiryForm.name ||
+                              !inquiryForm.email ||
+                              !inquiryForm.message
+                            }
                           >
                             Submit Inquiry
                           </Button>
@@ -1006,7 +1022,7 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
                 </Sheet>
                 <button
                   type="button"
-                  onClick={() => go("Start a Project")}
+                  onClick={() => go('Start a Project')}
                   className="rounded-full border border-input bg-card px-5 py-2 text-sm font-medium text-foreground hover:border-primary/50 hover:bg-muted transition-all"
                 >
                   Start a Project
@@ -1208,7 +1224,7 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          d={point.iconPath ?? ""}
+                          d={point.iconPath ?? ''}
                         />
                       </svg>
                     </div>
@@ -1239,7 +1255,7 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
                 {processSteps.map((step, i) => (
                   <div key={step.title}>
                     <span className="font-serif text-5xl font-medium text-muted-foreground/30">
-                      {String(i + 1).padStart(2, "0")}
+                      {String(i + 1).padStart(2, '0')}
                     </span>
                     <h3 className="mt-4 text-lg font-semibold text-foreground">
                       {step.title}
@@ -1356,10 +1372,10 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
                   <div
                     key={tier.name}
                     className={cn(
-                      "relative rounded-2xl border p-8",
+                      'relative rounded-2xl border p-8',
                       tier.highlighted
-                        ? "border-primary/20 bg-card shadow-lg"
-                        : "border-border bg-card/40",
+                        ? 'border-primary/20 bg-card shadow-lg'
+                        : 'border-border bg-card/40',
                     )}
                   >
                     {tier.highlighted && (
@@ -1369,8 +1385,10 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
                     )}
                     <h3
                       className={cn(
-                        "text-sm font-semibold uppercase tracking-widest",
-                        tier.highlighted ? "text-primary" : "text-muted-foreground",
+                        'text-sm font-semibold uppercase tracking-widest',
+                        tier.highlighted
+                          ? 'text-primary'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {tier.name}
@@ -1380,8 +1398,10 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
                     </p>
                     <p
                       className={cn(
-                        "mt-1 text-sm",
-                        tier.highlighted ? "text-muted-foreground" : "text-muted-foreground/60",
+                        'mt-1 text-sm',
+                        tier.highlighted
+                          ? 'text-muted-foreground'
+                          : 'text-muted-foreground/60',
                       )}
                     >
                       {tier.description}
@@ -1398,10 +1418,10 @@ export const ArchitectureFirmKimiPage3 = defineCapsule({
                       type="button"
                       onClick={() => go(tier.cta)}
                       className={cn(
-                        "mt-8 block w-full rounded-full py-3 text-center text-sm font-semibold transition-colors",
+                        'mt-8 block w-full rounded-full py-3 text-center text-sm font-semibold transition-colors',
                         tier.highlighted
-                          ? "bg-primary text-primary-foreground hover:bg-primary/80"
-                          : "border border-input text-foreground hover:border-foreground/40",
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/80'
+                          : 'border border-input text-foreground hover:border-foreground/40',
                       )}
                     >
                       {tier.cta}

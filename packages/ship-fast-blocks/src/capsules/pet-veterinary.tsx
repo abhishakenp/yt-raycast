@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -13,15 +13,14 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * PetVeterinaryKimiPage — a complete, self-contained veterinary-clinic / pet-healthcare
@@ -43,9 +42,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * rich defaults make it render the full page with no props at all.
  */
 export const PetVeterinaryKimiPage = defineCapsule({
-  name: "PetVeterinaryKimiPage",
+  name: 'PetVeterinaryKimiPage',
   description:
-    "Complete veterinary-clinic / pet-healthcare LANDING page with a warm, trustworthy, light clinical aesthetic: soft neutral surfaces, rounded cards, friendly photography, and gentle hover-lift cards. Includes a split hero (now-accepting-patients pill, headline, schedule/explore CTAs, staff-avatar + 4.9-star social proof, clinic photo with floating same-day-appointments and open-7-days info chips), an accreditation trust-badge strip (AAHA, AVMA, Fear Free), a 6-up services grid with per-service pricing (wellness exams, surgery, dental, diagnostic imaging, emergency, exotic pets) plus a why-choose-us checklist beside a facility photo, a 4-step how-it-works journey, a meet-the-team vet/technician gallery and modern-facility photos, a 3-tier wellness-plan pricing block (puppy/kitten, adult, senior) with a highlighted popular plan, a bold metrics stat band, a pet-parent testimonials grid with star ratings and avatars, an accordion FAQ, and a final book-appointment CTA with a clinic photo, plus a 4-column footer with services/company/contact links. Use as the ROOT/home page for veterinary clinics, animal hospitals, pet healthcare practices, vet offices, emergency animal care, exotic-pet vets, or pet wellness/grooming businesses when a caring, conversion-focused page with services, team, pricing plans and strong social proof is wanted. Supply content only — brand, nav, hero, services, steps, team, pricing, stats, testimonials, faq, cta, footer; the block owns all layout and styling.",
+    'Complete veterinary-clinic / pet-healthcare LANDING page with a warm, trustworthy, light clinical aesthetic: soft neutral surfaces, rounded cards, friendly photography, and gentle hover-lift cards. Includes a split hero (now-accepting-patients pill, headline, schedule/explore CTAs, staff-avatar + 4.9-star social proof, clinic photo with floating same-day-appointments and open-7-days info chips), an accreditation trust-badge strip (AAHA, AVMA, Fear Free), a 6-up services grid with per-service pricing (wellness exams, surgery, dental, diagnostic imaging, emergency, exotic pets) plus a why-choose-us checklist beside a facility photo, a 4-step how-it-works journey, a meet-the-team vet/technician gallery and modern-facility photos, a 3-tier wellness-plan pricing block (puppy/kitten, adult, senior) with a highlighted popular plan, a bold metrics stat band, a pet-parent testimonials grid with star ratings and avatars, an accordion FAQ, and a final book-appointment CTA with a clinic photo, plus a 4-column footer with services/company/contact links. Use as the ROOT/home page for veterinary clinics, animal hospitals, pet healthcare practices, vet offices, emergency animal care, exotic-pet vets, or pet wellness/grooming businesses when a caring, conversion-focused page with services, team, pricing plans and strong social proof is wanted. Supply content only — brand, nav, hero, services, steps, team, pricing, stats, testimonials, faq, cta, footer; the block owns all layout and styling.',
   props: z.object({
     /** Clinic / brand name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -193,9 +192,7 @@ export const PetVeterinaryKimiPage = defineCapsule({
         eyebrow: z.string().optional(),
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
         footNote: z.string().optional(),
         footCta: z.string().optional(),
       })
@@ -249,16 +246,19 @@ export const PetVeterinaryKimiPage = defineCapsule({
       services: ({ db }) => db.services.orderBy('createdAt').all(),
     },
     mutations: {
-      bookAppointment: ({ db }, data: {
-        petName: string
-        petType: string
-        service: string
-        date: string
-        time: string
-        ownerName: string
-        ownerEmail: string
-        ownerPhone: string
-      }) => {
+      bookAppointment: (
+        { db },
+        data: {
+          petName: string
+          petType: string
+          service: string
+          date: string
+          time: string
+          ownerName: string
+          ownerEmail: string
+          ownerPhone: string
+        },
+      ) => {
         db.appointments.insert(data)
         return db.appointments.all()
       },
@@ -273,10 +273,10 @@ export const PetVeterinaryKimiPage = defineCapsule({
     const [mobileOpen, setMobileOpen] = useState(false)
     const [bookingOpen, setBookingOpen] = useState(false)
     const [selectedService, setSelectedService] = useState<string | null>(null)
-    const brand = props.brand ?? "Paws & Care"
+    const brand = props.brand ?? 'Paws & Care'
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Our Team", "Pricing", "Reviews", "FAQ"]
+      : ['Services', 'Our Team', 'Pricing', 'Reviews', 'FAQ']
 
     const storedAppointments = lakebed.useQuery('appointments')
     const storedServices = lakebed.useQuery('services')
@@ -309,122 +309,120 @@ export const PetVeterinaryKimiPage = defineCapsule({
       lakebed.signOut()
     }
 
-    const heroBadge = props.hero?.badge ?? "Now accepting new patients"
-    const heroHeadingTop = props.hero?.headingTop ?? "Expert care for your"
-    const heroHighlight = props.hero?.highlight ?? "beloved companions"
+    const heroBadge = props.hero?.badge ?? 'Now accepting new patients'
+    const heroHeadingTop = props.hero?.headingTop ?? 'Expert care for your'
+    const heroHighlight = props.hero?.highlight ?? 'beloved companions'
     const heroSub =
       props.hero?.subheading ??
-      "At Paws & Care Veterinary Clinic, we treat every pet like family. From routine checkups to advanced surgical procedures, our experienced team provides compassionate, comprehensive healthcare for dogs, cats, and exotic pets throughout Portland."
-    const heroPrimary = props.hero?.primaryCta ?? "Schedule a Visit"
-    const heroSecondary = props.hero?.secondaryCta ?? "Explore Services"
+      'At Paws & Care Veterinary Clinic, we treat every pet like family. From routine checkups to advanced surgical procedures, our experienced team provides compassionate, comprehensive healthcare for dogs, cats, and exotic pets throughout Portland.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Schedule a Visit'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Explore Services'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "golden retriever dog receiving gentle examination from a veterinarian in a modern clinic"
+      'golden retriever dog receiving gentle examination from a veterinarian in a modern clinic'
     const heroChips = props.hero?.chips?.length
       ? props.hero.chips
       : [
           {
-            title: "Same-day appointments",
-            subtitle: "Available for urgent care",
+            title: 'Same-day appointments',
+            subtitle: 'Available for urgent care',
           },
-          { title: "Open 7 days", subtitle: "8AM - 8PM daily" },
+          { title: 'Open 7 days', subtitle: '8AM - 8PM daily' },
         ]
 
     const trustHeading =
-      props.trust?.heading ??
-      "Trusted by Portland pet owners for over 15 years"
+      props.trust?.heading ?? 'Trusted by Portland pet owners for over 15 years'
     const trustBadges = props.trust?.badges?.length
       ? props.trust.badges
       : [
-          "AAHA Accredited",
-          "Pet Care Assoc.",
-          "Vet Med Board",
-          "AVMA Member",
-          "Fear Free Cert.",
-          "Oregon Vet Assoc.",
+          'AAHA Accredited',
+          'Pet Care Assoc.',
+          'Vet Med Board',
+          'AVMA Member',
+          'Fear Free Cert.',
+          'Oregon Vet Assoc.',
         ]
 
-    const servicesEyebrow = props.services?.eyebrow ?? "Our Services"
+    const servicesEyebrow = props.services?.eyebrow ?? 'Our Services'
     const servicesHeading =
-      props.services?.heading ??
-      "Comprehensive care for every stage of life"
+      props.services?.heading ?? 'Comprehensive care for every stage of life'
     const servicesDesc =
       props.services?.description ??
-      "From preventive wellness to advanced medical treatments, we offer a full spectrum of veterinary services to keep your pets healthy and happy."
+      'From preventive wellness to advanced medical treatments, we offer a full spectrum of veterinary services to keep your pets healthy and happy.'
     const displayServices =
       storedServices && storedServices.length > 0
         ? storedServices
-        : (props.services?.items?.length
-            ? props.services.items
-            : [
-          {
-            title: "Wellness Exams",
-            description:
-              "Comprehensive physical examinations, vaccinations, parasite prevention, and customized wellness plans for pets of all ages.",
-            price: "Starting at $65",
-          },
-          {
-            title: "Surgery",
-            description:
-              "State-of-the-art surgical suite for spay/neuter procedures, soft tissue surgery, orthopedic procedures, and emergency operations.",
-            price: "Spay/Neuter from $185",
-          },
-          {
-            title: "Dental Care",
-            description:
-              "Complete dental cleanings, digital dental X-rays, extractions, and oral health consultations to prevent periodontal disease.",
-            price: "Cleanings from $295",
-          },
-          {
-            title: "Diagnostic Imaging",
-            description:
-              "Digital X-ray, ultrasound imaging, and in-house laboratory testing for rapid, accurate diagnosis of health conditions.",
-            price: "Digital X-rays from $150",
-          },
-          {
-            title: "Emergency Care",
-            description:
-              "24/7 emergency services for critical situations. Our team is equipped to handle trauma, toxicities, respiratory distress, and more.",
-            price: "Emergency exam $125",
-          },
-          {
-            title: "Exotic Pet Care",
-            description:
-              "Specialized care for rabbits, guinea pigs, reptiles, birds, and small mammals with dedicated exotic veterinary expertise.",
-            price: "Exotic exams from $85",
-          },
-        ])
+        : props.services?.items?.length
+          ? props.services.items
+          : [
+              {
+                title: 'Wellness Exams',
+                description:
+                  'Comprehensive physical examinations, vaccinations, parasite prevention, and customized wellness plans for pets of all ages.',
+                price: 'Starting at $65',
+              },
+              {
+                title: 'Surgery',
+                description:
+                  'State-of-the-art surgical suite for spay/neuter procedures, soft tissue surgery, orthopedic procedures, and emergency operations.',
+                price: 'Spay/Neuter from $185',
+              },
+              {
+                title: 'Dental Care',
+                description:
+                  'Complete dental cleanings, digital dental X-rays, extractions, and oral health consultations to prevent periodontal disease.',
+                price: 'Cleanings from $295',
+              },
+              {
+                title: 'Diagnostic Imaging',
+                description:
+                  'Digital X-ray, ultrasound imaging, and in-house laboratory testing for rapid, accurate diagnosis of health conditions.',
+                price: 'Digital X-rays from $150',
+              },
+              {
+                title: 'Emergency Care',
+                description:
+                  '24/7 emergency services for critical situations. Our team is equipped to handle trauma, toxicities, respiratory distress, and more.',
+                price: 'Emergency exam $125',
+              },
+              {
+                title: 'Exotic Pet Care',
+                description:
+                  'Specialized care for rabbits, guinea pigs, reptiles, birds, and small mammals with dedicated exotic veterinary expertise.',
+                price: 'Exotic exams from $85',
+              },
+            ]
     const serviceItems = displayServices
-    const whyHeading = props.services?.whyHeading ?? "Why choose Paws & Care?"
+    const whyHeading = props.services?.whyHeading ?? 'Why choose Paws & Care?'
     const whyImageAlt =
       props.services?.whyImageAlt ??
-      "modern veterinary examination room with medical equipment and comfortable pet bed"
+      'modern veterinary examination room with medical equipment and comfortable pet bed'
     const whyItems = props.services?.why?.length
       ? props.services.why
       : [
           {
-            title: "AAHA Accredited",
+            title: 'AAHA Accredited',
             description:
-              "We meet the highest standards of veterinary excellence, a distinction earned by only 12% of practices.",
+              'We meet the highest standards of veterinary excellence, a distinction earned by only 12% of practices.',
           },
           {
-            title: "Fear Free Certified",
+            title: 'Fear Free Certified',
             description:
               "Our staff is trained in low-stress handling techniques to ensure your pet's comfort during every visit.",
           },
           {
-            title: "Advanced Technology",
+            title: 'Advanced Technology',
             description:
-              "Digital X-ray, in-house lab, laser therapy, and modern surgical facilities for the best outcomes.",
+              'Digital X-ray, in-house lab, laser therapy, and modern surgical facilities for the best outcomes.',
           },
           {
-            title: "Extended Hours",
+            title: 'Extended Hours',
             description:
-              "Open 7 days a week with evening hours to fit your busy schedule. Emergency care available 24/7.",
+              'Open 7 days a week with evening hours to fit your busy schedule. Emergency care available 24/7.',
           },
         ]
 
-    const stepsEyebrow = props.steps?.eyebrow ?? "How It Works"
+    const stepsEyebrow = props.steps?.eyebrow ?? 'How It Works'
     const stepsHeading = props.steps?.heading ?? "Your pet's health journey"
     const stepsDesc =
       props.steps?.description ??
@@ -433,81 +431,81 @@ export const PetVeterinaryKimiPage = defineCapsule({
       ? props.steps.items
       : [
           {
-            title: "Book Online",
+            title: 'Book Online',
             description:
-              "Schedule your appointment through our easy online booking system or call us at (555) 123-4567.",
+              'Schedule your appointment through our easy online booking system or call us at (555) 123-4567.',
           },
           {
-            title: "Pre-Visit Form",
+            title: 'Pre-Visit Form',
             description:
               "Complete your pet's history and current concerns online before arrival to save time.",
           },
           {
-            title: "Expert Care",
+            title: 'Expert Care',
             description:
-              "Your pet receives a thorough examination and personalized treatment plan from our veterinarians.",
+              'Your pet receives a thorough examination and personalized treatment plan from our veterinarians.',
           },
           {
-            title: "Follow-Up",
+            title: 'Follow-Up',
             description:
-              "Receive detailed discharge instructions, medication guidance, and scheduled follow-up reminders.",
+              'Receive detailed discharge instructions, medication guidance, and scheduled follow-up reminders.',
           },
         ]
-    const stepsCta = props.steps?.cta ?? "Start Your Journey"
+    const stepsCta = props.steps?.cta ?? 'Start Your Journey'
 
-    const teamEyebrow = props.team?.eyebrow ?? "Our Team"
+    const teamEyebrow = props.team?.eyebrow ?? 'Our Team'
     const teamHeading = props.team?.heading ?? "Meet your pet's care team"
     const teamDesc =
       props.team?.description ??
-      "Our dedicated professionals bring decades of combined experience and genuine love for animals to every patient."
+      'Our dedicated professionals bring decades of combined experience and genuine love for animals to every patient.'
     const teamMembers = props.team?.members?.length
       ? props.team.members
       : [
           {
-            name: "Dr. Sarah Mitchell, DVM",
-            role: "Lead Veterinarian & Founder",
-            bio: "Cornell grad with 18 years experience in small animal medicine and surgery.",
+            name: 'Dr. Sarah Mitchell, DVM',
+            role: 'Lead Veterinarian & Founder',
+            bio: 'Cornell grad with 18 years experience in small animal medicine and surgery.',
             imageAlt:
-              "professional headshot of Dr. Sarah Mitchell, lead veterinarian, a woman with warm smile wearing a white coat",
+              'professional headshot of Dr. Sarah Mitchell, lead veterinarian, a woman with warm smile wearing a white coat',
           },
           {
-            name: "Dr. James Chen, DVM",
-            role: "Surgical Specialist",
-            bio: "Board-certified surgeon specializing in orthopedic and soft tissue procedures.",
+            name: 'Dr. James Chen, DVM',
+            role: 'Surgical Specialist',
+            bio: 'Board-certified surgeon specializing in orthopedic and soft tissue procedures.',
             imageAlt:
-              "professional headshot of Dr. James Chen, surgical specialist, a man with confident expression in medical scrubs",
+              'professional headshot of Dr. James Chen, surgical specialist, a man with confident expression in medical scrubs',
           },
           {
-            name: "Dr. Emily Rodriguez, DVM",
-            role: "Exotic Pet Specialist",
-            bio: "Expert in avian, reptile, and small mammal care with 12 years experience.",
+            name: 'Dr. Emily Rodriguez, DVM',
+            role: 'Exotic Pet Specialist',
+            bio: 'Expert in avian, reptile, and small mammal care with 12 years experience.',
             imageAlt:
-              "professional headshot of Dr. Emily Rodriguez, exotic pet specialist, a woman with friendly demeanor",
+              'professional headshot of Dr. Emily Rodriguez, exotic pet specialist, a woman with friendly demeanor',
           },
           {
-            name: "Michael Thompson, CVT",
-            role: "Head Technician",
-            bio: "Certified technician managing our dental and anesthesia programs.",
+            name: 'Michael Thompson, CVT',
+            role: 'Head Technician',
+            bio: 'Certified technician managing our dental and anesthesia programs.',
             imageAlt:
-              "professional headshot of Michael Thompson, certified veterinary technician, a man with approachable smile",
+              'professional headshot of Michael Thompson, certified veterinary technician, a man with approachable smile',
           },
         ]
     const facilitiesHeading =
-      props.team?.facilitiesHeading ?? "Our modern facilities"
+      props.team?.facilitiesHeading ?? 'Our modern facilities'
     const facilitiesDesc =
       props.team?.facilitiesDescription ??
       "Designed with your pet's comfort and safety in mind, featuring state-of-the-art equipment in a calming environment."
     const facilities = props.team?.facilities?.length
       ? props.team.facilities
       : [
-          "bright and welcoming veterinary clinic reception area with comfortable seating and natural light",
-          "modern veterinary surgical suite with advanced medical equipment and monitoring devices",
-          "peaceful pet recovery area with comfortable beds and warm lighting for post-treatment care",
+          'bright and welcoming veterinary clinic reception area with comfortable seating and natural light',
+          'modern veterinary surgical suite with advanced medical equipment and monitoring devices',
+          'peaceful pet recovery area with comfortable beds and warm lighting for post-treatment care',
         ]
 
-    const pricingEyebrow = props.pricing?.eyebrow ?? "Transparent Pricing"
+    const pricingEyebrow = props.pricing?.eyebrow ?? 'Transparent Pricing'
     const pricingHeading =
-      props.pricing?.heading ?? "Wellness plans for every pet"
+      props.pricing?.heading ?? 'Wellness plans for every pet'
     const pricingDesc =
       props.pricing?.description ??
       "Affordable preventive care packages that help you budget for your pet's health needs while saving up to 20% on services."
@@ -515,98 +513,98 @@ export const PetVeterinaryKimiPage = defineCapsule({
       ? props.pricing.plans
       : [
           {
-            name: "Puppy & Kitten Plan",
-            audience: "For pets under 1 year",
-            price: "$65",
-            cadence: "/month",
+            name: 'Puppy & Kitten Plan',
+            audience: 'For pets under 1 year',
+            price: '$65',
+            cadence: '/month',
             features: [
-              "Comprehensive wellness exams",
-              "All core vaccinations included",
-              "Spay/neuter procedure included",
-              "Microchip implantation",
-              "Parasite prevention (12 months)",
-              "10% off additional services",
+              'Comprehensive wellness exams',
+              'All core vaccinations included',
+              'Spay/neuter procedure included',
+              'Microchip implantation',
+              'Parasite prevention (12 months)',
+              '10% off additional services',
             ],
-            cta: "Enroll Now",
+            cta: 'Enroll Now',
           },
           {
-            name: "Adult Wellness Plan",
-            audience: "For pets 1-7 years old",
-            price: "$48",
-            cadence: "/month",
+            name: 'Adult Wellness Plan',
+            audience: 'For pets 1-7 years old',
+            price: '$48',
+            cadence: '/month',
             features: [
-              "2 comprehensive wellness exams/year",
-              "Annual vaccinations included",
-              "Professional dental cleaning",
-              "Annual blood work panel",
-              "Unlimited nail trims",
-              "15% off additional services",
+              '2 comprehensive wellness exams/year',
+              'Annual vaccinations included',
+              'Professional dental cleaning',
+              'Annual blood work panel',
+              'Unlimited nail trims',
+              '15% off additional services',
             ],
-            cta: "Enroll Now",
+            cta: 'Enroll Now',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Senior Care Plan",
-            audience: "For pets 7+ years old",
-            price: "$72",
-            cadence: "/month",
+            name: 'Senior Care Plan',
+            audience: 'For pets 7+ years old',
+            price: '$72',
+            cadence: '/month',
             features: [
-              "4 comprehensive exams/year",
-              "Senior blood panel & urinalysis",
-              "Professional dental cleaning",
-              "Blood pressure monitoring",
-              "X-rays included as needed",
-              "20% off additional services",
+              '4 comprehensive exams/year',
+              'Senior blood panel & urinalysis',
+              'Professional dental cleaning',
+              'Blood pressure monitoring',
+              'X-rays included as needed',
+              '20% off additional services',
             ],
-            cta: "Enroll Now",
+            cta: 'Enroll Now',
           },
         ]
     const pricingNote =
       props.pricing?.note ??
-      "All plans include unlimited office visits and 24/7 emergency phone support."
-    const pricingLink = props.pricing?.link ?? "View complete service pricing"
+      'All plans include unlimited office visits and 24/7 emergency phone support.'
+    const pricingLink = props.pricing?.link ?? 'View complete service pricing'
 
     const statItems = props.stats?.length
       ? props.stats
       : [
-          { value: "15+", label: "Years of Service" },
-          { value: "24K+", label: "Pets Treated" },
-          { value: "4.9", label: "Google Rating" },
-          { value: "15", label: "Expert Staff" },
+          { value: '15+', label: 'Years of Service' },
+          { value: '24K+', label: 'Pets Treated' },
+          { value: '4.9', label: 'Google Rating' },
+          { value: '15', label: 'Expert Staff' },
         ]
 
-    const testEyebrow = props.testimonials?.eyebrow ?? "Testimonials"
-    const testHeading = props.testimonials?.heading ?? "What pet parents say"
+    const testEyebrow = props.testimonials?.eyebrow ?? 'Testimonials'
+    const testHeading = props.testimonials?.heading ?? 'What pet parents say'
     const testDesc =
       props.testimonials?.description ??
-      "Join thousands of satisfied families who trust Paws & Care with their beloved companions."
+      'Join thousands of satisfied families who trust Paws & Care with their beloved companions.'
     const testItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
               "Dr. Mitchell and her team saved my dog Max after a severe allergic reaction. Their quick response and compassionate care literally saved his life. We're forever grateful.",
-            name: "Jennifer Martinez",
-            role: "Golden Retriever owner",
+            name: 'Jennifer Martinez',
+            role: 'Golden Retriever owner',
             avatarAlt:
-              "portrait of Jennifer Martinez, a satisfied pet owner with warm smile",
+              'portrait of Jennifer Martinez, a satisfied pet owner with warm smile',
           },
           {
             quote:
               "I've been bringing my cats here for 8 years. The staff knows us by name and treats Luna and Milo with such gentleness. The Fear Free approach really makes a difference!",
-            name: "David Chen",
-            role: "Cat parent to Luna & Milo",
+            name: 'David Chen',
+            role: 'Cat parent to Luna & Milo',
             avatarAlt:
-              "portrait of David Chen, a long-time client with friendly expression",
+              'portrait of David Chen, a long-time client with friendly expression',
           },
           {
             quote:
-              "Finding a vet who understands exotic pets is hard. Dr. Rodriguez is incredible with our bearded dragon Spike. She diagnosed a calcium deficiency that others missed.",
-            name: "Sarah Thompson",
-            role: "Bearded dragon parent",
+              'Finding a vet who understands exotic pets is hard. Dr. Rodriguez is incredible with our bearded dragon Spike. She diagnosed a calcium deficiency that others missed.',
+            name: 'Sarah Thompson',
+            role: 'Bearded dragon parent',
             avatarAlt:
-              "portrait of Sarah Thompson, exotic pet owner with outdoor backdrop",
+              'portrait of Sarah Thompson, exotic pet owner with outdoor backdrop',
           },
         ]
     const testShort = props.testimonials?.short?.length
@@ -614,133 +612,133 @@ export const PetVeterinaryKimiPage = defineCapsule({
       : [
           {
             quote:
-              "The online booking system is so convenient. I can schedule appointments at midnight when I remember my dog needs shots. Love the text reminders too!",
-            name: "Marcus Johnson",
+              'The online booking system is so convenient. I can schedule appointments at midnight when I remember my dog needs shots. Love the text reminders too!',
+            name: 'Marcus Johnson',
             avatarAlt:
-              "portrait of Marcus Johnson, busy professional and satisfied client",
+              'portrait of Marcus Johnson, busy professional and satisfied client',
           },
           {
             quote:
-              "Fair pricing with no surprises. The wellness plan saved us over $400 last year and our senior dog gets the care he needs without breaking the bank.",
-            name: "Amanda Foster",
+              'Fair pricing with no surprises. The wellness plan saved us over $400 last year and our senior dog gets the care he needs without breaking the bank.',
+            name: 'Amanda Foster',
             avatarAlt:
-              "portrait of Amanda Foster, senior dog owner with grateful expression",
+              'portrait of Amanda Foster, senior dog owner with grateful expression',
           },
           {
             quote:
-              "When our puppy swallowed a toy, they got us in immediately and handled the surgery with such care. Follow-up calls for a week showed real dedication.",
-            name: "Robert Kim",
+              'When our puppy swallowed a toy, they got us in immediately and handled the surgery with such care. Follow-up calls for a week showed real dedication.',
+            name: 'Robert Kim',
             avatarAlt:
-              "portrait of Robert Kim, relieved pet owner after emergency surgery",
+              'portrait of Robert Kim, relieved pet owner after emergency surgery',
           },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Common questions"
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Common questions'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know about our services, policies, and what to expect."
+      'Everything you need to know about our services, policies, and what to expect.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "What should I bring to my first appointment?",
+            q: 'What should I bring to my first appointment?',
             a: "Please bring any previous medical records, vaccination history, a list of current medications, and a fresh stool sample (within 24 hours) for parasite screening. For new puppies and kittens, bring any breeder or shelter paperwork. We also recommend bringing your pet's favorite treat or toy to help them feel comfortable.",
           },
           {
-            q: "Do you offer payment plans or accept pet insurance?",
-            a: "Yes! We accept all major pet insurance providers including Trupanion, Healthy Paws, Nationwide, and ASPCA. We also offer CareCredit financing with 6-12 month interest-free options for qualified applicants. Our wellness plans can be paid monthly to help budget for routine care. Please call us to discuss payment options before your visit.",
+            q: 'Do you offer payment plans or accept pet insurance?',
+            a: 'Yes! We accept all major pet insurance providers including Trupanion, Healthy Paws, Nationwide, and ASPCA. We also offer CareCredit financing with 6-12 month interest-free options for qualified applicants. Our wellness plans can be paid monthly to help budget for routine care. Please call us to discuss payment options before your visit.',
           },
           {
-            q: "What are your emergency care hours?",
+            q: 'What are your emergency care hours?',
             a: "Our clinic is open for emergencies 24/7, 365 days a year. For after-hours emergencies, call our main number (555) 123-4567 and you'll be connected to our on-call veterinarian. For life-threatening emergencies, we recommend calling ahead so our team can prepare for your arrival. Average emergency wait time is under 15 minutes.",
           },
           {
-            q: "How do I prepare my pet for surgery?",
+            q: 'How do I prepare my pet for surgery?',
             a: "Withhold food after 8 PM the night before surgery (water is usually allowed until morning). Give any morning medications only if specifically directed by your veterinarian. Bring your pet's regular food for post-surgery feeding. We'll provide detailed pre- and post-operative instructions specific to your pet's procedure. Most pets go home the same day.",
           },
           {
-            q: "Do I need to make an appointment or do you accept walk-ins?",
+            q: 'Do I need to make an appointment or do you accept walk-ins?',
             a: "Appointments are recommended to minimize wait times and ensure adequate time for your pet's care. However, we do accept same-day sick pet appointments and urgent care walk-ins. For wellness visits, vaccinations, and non-urgent concerns, please book online or call ahead. New clients can often be seen within 24-48 hours.",
           },
           {
-            q: "What COVID-19 safety measures are in place?",
-            a: "We maintain rigorous cleaning protocols with hospital-grade disinfectants. Our HVAC system uses HEPA filtration and UV sanitization. We offer curbside check-in upon request and spacious waiting areas to maintain comfortable distancing. All staff are trained in infection control. Masks are available for clients who prefer to wear them.",
+            q: 'What COVID-19 safety measures are in place?',
+            a: 'We maintain rigorous cleaning protocols with hospital-grade disinfectants. Our HVAC system uses HEPA filtration and UV sanitization. We offer curbside check-in upon request and spacious waiting areas to maintain comfortable distancing. All staff are trained in infection control. Masks are available for clients who prefer to wear them.',
           },
         ]
-    const faqFootNote = props.faq?.footNote ?? "Still have questions?"
-    const faqFootCta = props.faq?.footCta ?? "Call us at (555) 123-4567"
+    const faqFootNote = props.faq?.footNote ?? 'Still have questions?'
+    const faqFootCta = props.faq?.footCta ?? 'Call us at (555) 123-4567'
 
     const ctaHeading =
-      props.cta?.heading ?? "Ready to give your pet the best care?"
+      props.cta?.heading ?? 'Ready to give your pet the best care?'
     const ctaDesc =
       props.cta?.description ??
-      "Schedule your appointment today. New patients receive a complimentary wellness exam with their first vaccination visit."
+      'Schedule your appointment today. New patients receive a complimentary wellness exam with their first vaccination visit.'
     const ctaBullets = props.cta?.bullets?.length
       ? props.cta.bullets
       : [
-          "Same-day appointments available",
-          "Online booking with instant confirmation",
-          "Flexible payment options accepted",
+          'Same-day appointments available',
+          'Online booking with instant confirmation',
+          'Flexible payment options accepted',
         ]
-    const ctaPrimary = props.cta?.primaryCta ?? "Book Online Now"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Call (555) 123-4567"
+    const ctaPrimary = props.cta?.primaryCta ?? 'Book Online Now'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'Call (555) 123-4567'
     const ctaImageAlt =
       props.cta?.imageAlt ??
-      "happy golden retriever being gently held by a veterinarian during examination"
+      'happy golden retriever being gently held by a veterinarian during examination'
 
     const footerTagline =
       props.footer?.tagline ??
-      "Compassionate, comprehensive veterinary care for your beloved pets since 2009."
+      'Compassionate, comprehensive veterinary care for your beloved pets since 2009.'
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Facebook", "Instagram", "Yelp"]
+      : ['Facebook', 'Instagram', 'Yelp']
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Services",
+            title: 'Services',
             links: [
-              "Wellness Exams",
-              "Vaccinations",
-              "Surgery",
-              "Dental Care",
-              "Emergency Care",
-              "Exotic Pets",
+              'Wellness Exams',
+              'Vaccinations',
+              'Surgery',
+              'Dental Care',
+              'Emergency Care',
+              'Exotic Pets',
             ],
           },
           {
-            title: "Company",
+            title: 'Company',
             links: [
-              "About Us",
-              "Our Team",
-              "Careers",
-              "Blog",
-              "Community",
-              "Contact",
+              'About Us',
+              'Our Team',
+              'Careers',
+              'Blog',
+              'Community',
+              'Contact',
             ],
           },
         ]
     const footerContact = props.footer?.contact?.length
       ? props.footer.contact
       : [
-          "1247 Pet Care Lane, Portland, OR 97205",
-          "(555) 123-4567",
-          "hello@pawsandcare.com",
-          "Open 7 days: 8AM - 8PM",
+          '1247 Pet Care Lane, Portland, OR 97205',
+          '(555) 123-4567',
+          'hello@pawsandcare.com',
+          'Open 7 days: 8AM - 8PM',
         ]
     const footerNote =
       props.footer?.note ??
       `© ${new Date().getFullYear()} ${brand} Veterinary Clinic. All rights reserved.`
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Accessibility"]
+      : ['Privacy Policy', 'Terms of Service', 'Accessibility']
 
     // Brand paw mark (decorative brand asset).
     const PawMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-full bg-primary text-primary-foreground",
+          'grid place-items-center rounded-full bg-primary text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -927,7 +925,7 @@ export const PetVeterinaryKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased selection:bg-primary/20 selection:text-foreground",
+          'min-h-svh bg-background text-foreground antialiased selection:bg-primary/20 selection:text-foreground',
           props.className,
         )}
       >
@@ -1188,7 +1186,7 @@ export const PetVeterinaryKimiPage = defineCapsule({
                     </span>
                   </div>
                   <h1 className="mb-6 text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-6xl">
-                    {heroHeadingTop}{" "}
+                    {heroHeadingTop}{' '}
                     <span className="text-primary">{heroHighlight}</span>
                   </h1>
                   <p className="mb-8 text-lg leading-relaxed text-muted-foreground lg:text-xl">
@@ -1553,10 +1551,10 @@ export const PetVeterinaryKimiPage = defineCapsule({
                     <div
                       key={plan.name}
                       className={cn(
-                        "relative rounded-2xl p-8 transition-all duration-300",
+                        'relative rounded-2xl p-8 transition-all duration-300',
                         featured
-                          ? "bg-primary text-primary-foreground shadow-xl"
-                          : "border border-border bg-card hover:border-primary/30 hover:shadow-xl",
+                          ? 'bg-primary text-primary-foreground shadow-xl'
+                          : 'border border-border bg-card hover:border-primary/30 hover:shadow-xl',
                       )}
                     >
                       {plan.badge && (
@@ -1569,20 +1567,20 @@ export const PetVeterinaryKimiPage = defineCapsule({
                       <div className="mb-6">
                         <h3
                           className={cn(
-                            "mb-2 text-xl font-semibold",
+                            'mb-2 text-xl font-semibold',
                             featured
-                              ? "text-primary-foreground"
-                              : "text-card-foreground",
+                              ? 'text-primary-foreground'
+                              : 'text-card-foreground',
                           )}
                         >
                           {plan.name}
                         </h3>
                         <p
                           className={cn(
-                            "text-sm",
+                            'text-sm',
                             featured
-                              ? "text-primary-foreground/80"
-                              : "text-muted-foreground",
+                              ? 'text-primary-foreground/80'
+                              : 'text-muted-foreground',
                           )}
                         >
                           {plan.audience}
@@ -1591,10 +1589,10 @@ export const PetVeterinaryKimiPage = defineCapsule({
                       <div className="mb-6">
                         <span
                           className={cn(
-                            "text-4xl font-bold",
+                            'text-4xl font-bold',
                             featured
-                              ? "text-primary-foreground"
-                              : "text-foreground",
+                              ? 'text-primary-foreground'
+                              : 'text-foreground',
                           )}
                         >
                           {plan.price}
@@ -1602,8 +1600,8 @@ export const PetVeterinaryKimiPage = defineCapsule({
                         <span
                           className={cn(
                             featured
-                              ? "text-primary-foreground/80"
-                              : "text-muted-foreground",
+                              ? 'text-primary-foreground/80'
+                              : 'text-muted-foreground',
                           )}
                         >
                           {plan.cadence}
@@ -1611,24 +1609,21 @@ export const PetVeterinaryKimiPage = defineCapsule({
                       </div>
                       <ul className="mb-8 space-y-3">
                         {plan.features.map((feat) => (
-                          <li
-                            key={feat}
-                            className="flex items-start gap-3"
-                          >
+                          <li key={feat} className="flex items-start gap-3">
                             <Check
                               className={cn(
-                                "mt-0.5 size-5 flex-shrink-0",
+                                'mt-0.5 size-5 flex-shrink-0',
                                 featured
-                                  ? "text-accent-foreground"
-                                  : "text-primary",
+                                  ? 'text-accent-foreground'
+                                  : 'text-primary',
                               )}
                             />
                             <span
                               className={cn(
-                                "text-sm",
+                                'text-sm',
                                 featured
-                                  ? "text-primary-foreground/90"
-                                  : "text-muted-foreground",
+                                  ? 'text-primary-foreground/90'
+                                  : 'text-muted-foreground',
                               )}
                             >
                               {feat}
@@ -1640,10 +1635,10 @@ export const PetVeterinaryKimiPage = defineCapsule({
                         type="button"
                         onClick={() => go(plan.cta)}
                         className={cn(
-                          "block w-full rounded-lg px-4 py-3 text-center font-semibold transition-colors",
+                          'block w-full rounded-lg px-4 py-3 text-center font-semibold transition-colors',
                           featured
-                            ? "bg-background text-primary hover:bg-muted"
-                            : "bg-primary/10 text-primary hover:bg-primary/20",
+                            ? 'bg-background text-primary hover:bg-muted'
+                            : 'bg-primary/10 text-primary hover:bg-primary/20',
                         )}
                       >
                         {plan.cta}
@@ -1698,10 +1693,7 @@ export const PetVeterinaryKimiPage = defineCapsule({
 
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {testItems.map((t) => (
-                  <div
-                    key={t.name}
-                    className="rounded-2xl bg-muted p-8"
-                  >
+                  <div key={t.name} className="rounded-2xl bg-muted p-8">
                     <div className="mb-4 flex gap-1 text-chart-4">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star key={i} className="size-5" />
@@ -1794,7 +1786,7 @@ export const PetVeterinaryKimiPage = defineCapsule({
                 <p className="mb-4 text-muted-foreground">{faqFootNote}</p>
                 <button
                   type="button"
-                  onClick={() => go("Call")}
+                  onClick={() => go('Call')}
                   className="inline-flex items-center gap-2 font-medium text-primary transition-colors hover:text-primary/80"
                 >
                   <svg
@@ -1849,7 +1841,7 @@ export const PetVeterinaryKimiPage = defineCapsule({
                       </button>
                       <button
                         type="button"
-                        onClick={() => go("Call")}
+                        onClick={() => go('Call')}
                         className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-primary-foreground/30 px-8 py-4 text-base font-semibold text-primary-foreground transition-all hover:bg-primary-foreground/10"
                       >
                         <svg
@@ -1975,10 +1967,7 @@ export const PetVeterinaryKimiPage = defineCapsule({
 
         {/* Booking Drawer */}
         <Sheet open={bookingOpen} onOpenChange={setBookingOpen}>
-          <SheetContent
-            side="right"
-            className="w-full gap-0 p-0 sm:max-w-md"
-          >
+          <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
             <SheetHeader className="border-b border-border p-6">
               <SheetTitle className="text-xl">Book Appointment</SheetTitle>
               <SheetDescription>
@@ -2055,10 +2044,14 @@ export const PetVeterinaryKimiPage = defineCapsule({
                         form.elements.namedItem('ownerName') as HTMLInputElement
                       ).value
                       const ownerEmail = (
-                        form.elements.namedItem('ownerEmail') as HTMLInputElement
+                        form.elements.namedItem(
+                          'ownerEmail',
+                        ) as HTMLInputElement
                       ).value
                       const ownerPhone = (
-                        form.elements.namedItem('ownerPhone') as HTMLInputElement
+                        form.elements.namedItem(
+                          'ownerPhone',
+                        ) as HTMLInputElement
                       ).value
 
                       if (

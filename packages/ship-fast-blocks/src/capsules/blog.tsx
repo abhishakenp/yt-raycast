@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,7 +12,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "#/components/ui/command.tsx"
+} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetClose,
@@ -22,14 +22,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * BlogKimiPage — a complete, self-contained editorial BLOG INDEX / homepage.
@@ -54,7 +54,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * no props at all.
  */
 export const BlogKimiPage = defineCapsule({
-  name: "BlogKimiPage",
+  name: 'BlogKimiPage',
   description:
     "Complete editorial BLOG INDEX / homepage with a clean, content-first aesthetic: glassy sticky header with a gradient brand tile + search affordance, a split 'featured post' card (large cover image + serif headline, topic label, author meta and read link), a 'Latest stories' header, and a responsive 3-up article grid of tagged cover cards with title, excerpt and author/date footer, plus a slim multi-link footer. Use as the ROOT/home page for blogs, magazines, publications, newsrooms, design/tech journals, content hubs or company blogs when an editorial article-listing page is wanted. NOTE: this is a blog INDEX — it has NO big marketing hero; it leads with a featured article and a grid of stories. Supply content only — brand, nav, header, featured, posts, footer; the block owns all layout and styling.",
   props: z.object({
@@ -133,10 +133,10 @@ export const BlogKimiPage = defineCapsule({
           const article = db.articles.where('title', item.articleTitle).all()[0]
           return article ? [article] : []
         }),
-      isSubscribed: ({ db }, email: string) =>
-        db.subscribers.where('email', email).all().length > 0,
     },
     mutations: {
+      isSubscribed: ({ db }, email: string) =>
+        db.subscribers.where('email', email).all().length > 0,
       addToReadingList: ({ db }, articleTitle: string) => {
         const existing = db.readingList
           .where('articleTitle', articleTitle)
@@ -149,7 +149,9 @@ export const BlogKimiPage = defineCapsule({
         return db.readingList.all()
       },
       removeFromReadingList: ({ db }, articleTitle: string) => {
-        for (const item of db.readingList.where('articleTitle', articleTitle).all()) {
+        for (const item of db.readingList
+          .where('articleTitle', articleTitle)
+          .all()) {
           db.readingList.delete(item.id)
         }
 
@@ -170,86 +172,86 @@ export const BlogKimiPage = defineCapsule({
     const go = useNavigate()
     const [searchOpen, setSearchOpen] = useState(false)
     const [readingListOpen, setReadingListOpen] = useState(false)
-    const brand = props.brand ?? "Form & Function"
+    const brand = props.brand ?? 'Form & Function'
     const nav = props.nav?.length
       ? props.nav
-      : ["Home", "Design", "Engineering", "Product", "About"]
+      : ['Home', 'Design', 'Engineering', 'Product', 'About']
 
-    const sectionTitle = props.header?.title ?? "Latest stories"
-    const viewAll = props.header?.viewAll ?? "View all"
+    const sectionTitle = props.header?.title ?? 'Latest stories'
+    const viewAll = props.header?.viewAll ?? 'View all'
 
     const featured = {
-      badge: props.featured?.badge ?? "Featured",
-      topic: props.featured?.topic ?? "Systems & Craft",
-      title: props.featured?.title ?? "Design Systems That Survive Change",
+      badge: props.featured?.badge ?? 'Featured',
+      topic: props.featured?.topic ?? 'Systems & Craft',
+      title: props.featured?.title ?? 'Design Systems That Survive Change',
       excerpt:
         props.featured?.excerpt ??
-        "Great design systems aren’t libraries of components — they’re agreements about how teams think, communicate, and ship. Here is how to build one that lasts.",
-      author: props.featured?.author ?? "Miles Chen",
-      readTime: props.featured?.readTime ?? "12 min read",
-      date: props.featured?.date ?? "May 28, 2026",
-      readLabel: props.featured?.readLabel ?? "Read the story",
+        'Great design systems aren’t libraries of components — they’re agreements about how teams think, communicate, and ship. Here is how to build one that lasts.',
+      author: props.featured?.author ?? 'Miles Chen',
+      readTime: props.featured?.readTime ?? '12 min read',
+      date: props.featured?.date ?? 'May 28, 2026',
+      readLabel: props.featured?.readLabel ?? 'Read the story',
       alt:
         props.featured?.alt ??
-        "A tidy desk with a laptop, notebook, and coffee bathed in warm morning light",
+        'A tidy desk with a laptop, notebook, and coffee bathed in warm morning light',
     }
 
     const posts = props.posts?.length
       ? props.posts
       : [
           {
-            tag: "Engineering",
-            title: "Why We Moved to Edge-First Rendering",
+            tag: 'Engineering',
+            title: 'Why We Moved to Edge-First Rendering',
             excerpt:
-              "Latency matters more than raw throughput. Shifting rendering to the edge cut our time-to-interactive in half — and simplified our mental model.",
-            author: "Noah Reeves",
-            date: "May 25",
-            alt: "MacBook on a minimalist desk with a plant",
+              'Latency matters more than raw throughput. Shifting rendering to the edge cut our time-to-interactive in half — and simplified our mental model.',
+            author: 'Noah Reeves',
+            date: 'May 25',
+            alt: 'MacBook on a minimalist desk with a plant',
           },
           {
-            tag: "Product",
-            title: "Running Discovery Without a Brief",
+            tag: 'Product',
+            title: 'Running Discovery Without a Brief',
             excerpt:
-              "Some of the most useful research starts messy. A look at how unstructured conversations with users can reveal problems no survey ever would.",
-            author: "Ava Morales",
-            date: "May 22",
-            alt: "Colorful sticky notes on a glass wall during a workshop",
+              'Some of the most useful research starts messy. A look at how unstructured conversations with users can reveal problems no survey ever would.',
+            author: 'Ava Morales',
+            date: 'May 22',
+            alt: 'Colorful sticky notes on a glass wall during a workshop',
           },
           {
-            tag: "Design",
-            title: "Typography as Interface",
+            tag: 'Design',
+            title: 'Typography as Interface',
             excerpt:
-              "Type is not decoration — it is navigation, tone, and structure. Here is how we use hierarchy to guide attention without adding a single extra pixel.",
-            author: "Liam Park",
-            date: "May 19",
-            alt: "Wireframes on a tablet and printed sheets on a desk",
+              'Type is not decoration — it is navigation, tone, and structure. Here is how we use hierarchy to guide attention without adding a single extra pixel.',
+            author: 'Liam Park',
+            date: 'May 19',
+            alt: 'Wireframes on a tablet and printed sheets on a desk',
           },
           {
-            tag: "Engineering",
-            title: "Refactoring for Deletion",
+            tag: 'Engineering',
+            title: 'Refactoring for Deletion',
             excerpt:
-              "The best code is the code you do not have to maintain. A practical guide to shrinking surface area while keeping systems reliable.",
-            author: "Sofia Andersson",
-            date: "May 15",
-            alt: "Code editor on a dark theme with syntax highlighting",
+              'The best code is the code you do not have to maintain. A practical guide to shrinking surface area while keeping systems reliable.',
+            author: 'Sofia Andersson',
+            date: 'May 15',
+            alt: 'Code editor on a dark theme with syntax highlighting',
           },
           {
-            tag: "Technology",
-            title: "The Infrastructure Behind Real-Time Collaboration",
+            tag: 'Technology',
+            title: 'The Infrastructure Behind Real-Time Collaboration',
             excerpt:
-              "Operational transforms, CRDTs, and WebSockets — a plain-language tour of what keeps multiplayer documents in sync at scale.",
-            author: "Raj Patel",
-            date: "May 12",
-            alt: "Futuristic server room with blue ambient lighting",
+              'Operational transforms, CRDTs, and WebSockets — a plain-language tour of what keeps multiplayer documents in sync at scale.',
+            author: 'Raj Patel',
+            date: 'May 12',
+            alt: 'Futuristic server room with blue ambient lighting',
           },
           {
-            tag: "Design",
-            title: "Color Palettes That Respect Accessibility",
+            tag: 'Design',
+            title: 'Color Palettes That Respect Accessibility',
             excerpt:
-              "Contrast is not enough. Learn how to build flexible color scales that stay accessible across themes, modes, and devices.",
-            author: "Emma Lin",
-            date: "May 08",
-            alt: "Abstract geometric shapes in soft pastel colors",
+              'Contrast is not enough. Learn how to build flexible color scales that stay accessible across themes, modes, and devices.',
+            author: 'Emma Lin',
+            date: 'May 08',
+            alt: 'Abstract geometric shapes in soft pastel colors',
           },
         ]
     const normalizedPosts = posts.map((post) => ({
@@ -261,8 +263,20 @@ export const BlogKimiPage = defineCapsule({
       title: post.title,
     }))
 
-    const storedArticles = lakebed.useQuery('articles')
-    const readingListArticles = lakebed.useQuery('readingListArticles')
+    type BlogArticle = {
+      alt: string
+      author: string
+      date: string
+      excerpt: string
+      tag: string
+      title: string
+    }
+    const storedArticles = lakebed.useQuery('articles') as
+      | BlogArticle[]
+      | undefined
+    const readingListArticles = lakebed.useQuery('readingListArticles') as
+      | BlogArticle[]
+      | undefined
     const auth = lakebed.useAuth()
     const addToReadingList = lakebed.useMutation('addToReadingList')
     const removeFromReadingList = lakebed.useMutation('removeFromReadingList')
@@ -301,7 +315,7 @@ export const BlogKimiPage = defineCapsule({
 
     const footerLinks = props.footer?.links?.length
       ? props.footer.links
-      : ["Privacy", "Terms", "RSS", "Contact"]
+      : ['Privacy', 'Terms', 'RSS', 'Contact']
     const copyright =
       props.footer?.copyright ?? `© ${new Date().getFullYear()} ${brand}`
 
@@ -309,7 +323,7 @@ export const BlogKimiPage = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-sm",
+          'grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-sm',
           className,
         )}
       >
@@ -385,7 +399,7 @@ export const BlogKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "flex min-h-svh flex-col bg-background text-foreground antialiased",
+          'flex min-h-svh flex-col bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -410,10 +424,10 @@ export const BlogKimiPage = defineCapsule({
                   type="button"
                   onClick={() => go(label)}
                   className={cn(
-                    "rounded-md px-3 py-2 text-[0.92rem] font-medium transition-colors",
+                    'rounded-md px-3 py-2 text-[0.92rem] font-medium transition-colors',
                     i === 0
-                      ? "bg-muted text-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      ? 'bg-muted text-foreground'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                   )}
                 >
                   {label}
@@ -708,7 +722,7 @@ export const BlogKimiPage = defineCapsule({
             <article className="grid overflow-hidden rounded-2xl border border-border bg-card shadow-[0_10px_30px_rgba(0,0,0,0.06)] md:grid-cols-[1.15fr_1fr]">
               <button
                 type="button"
-                onClick={() => go("Blog post")}
+                onClick={() => go('Blog post')}
                 className="group relative block min-h-[15rem] w-full overflow-hidden bg-gradient-to-br from-primary/10 to-accent/20 md:min-h-[24rem]"
               >
                 <Image
@@ -743,7 +757,7 @@ export const BlogKimiPage = defineCapsule({
                 </div>
                 <button
                   type="button"
-                  onClick={() => go("Blog post")}
+                  onClick={() => go('Blog post')}
                   className="group mt-6 inline-flex items-center gap-2.5 self-start text-[0.95rem] font-semibold text-primary"
                 >
                   {featured.readLabel}
@@ -846,8 +860,8 @@ export const BlogKimiPage = defineCapsule({
               Stay in the loop
             </h2>
             <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
-              Get the latest articles, insights, and design inspiration delivered
-              straight to your inbox. No spam, just the good stuff.
+              Get the latest articles, insights, and design inspiration
+              delivered straight to your inbox. No spam, just the good stuff.
             </p>
             <form
               className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
@@ -870,10 +884,7 @@ export const BlogKimiPage = defineCapsule({
                 required
                 className="flex-1 rounded-full border border-border bg-background px-6 py-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
-              <Button
-                type="submit"
-                className="rounded-full"
-              >
+              <Button type="submit" className="rounded-full">
                 Subscribe
               </Button>
             </form>

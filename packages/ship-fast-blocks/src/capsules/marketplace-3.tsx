@@ -1,10 +1,14 @@
-import { useState } from "react"
-import { number, string, table } from "@ship-fast/lakebed/server"
-import { z } from "zod/v4"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
-import { Button } from "#/components/ui/button.tsx"
-import { defineCapsule } from "./openui.ts"
-import { Popover, PopoverContent, PopoverTrigger } from "#/components/ui/popover.tsx"
+import { useState } from 'react'
+import { number, string, table } from '@ship-fast/lakebed/server'
+import { z } from 'zod/v4'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
+import { Button } from '#/components/ui/button.tsx'
+import { defineCapsule } from './openui.ts'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover.tsx'
 import {
   Sheet,
   SheetClose,
@@ -14,26 +18,26 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+} from '#/components/ui/sheet.tsx'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 const priceAmount = (price: string) => {
-  const amount = Number.parseFloat(price.replace(/[^0-9.]/g, ""))
+  const amount = Number.parseFloat(price.replace(/[^0-9.]/g, ''))
   return Number.isFinite(amount) ? amount : 0
 }
 
 const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat("en-US", {
-    currency: "USD",
-    style: "currency",
+  new Intl.NumberFormat('en-US', {
+    currency: 'USD',
+    style: 'currency',
   }).format(amount)
 
 export const MarketplaceKimiPage3 = defineCapsule({
-  name: "MarketplaceKimiPage3",
+  name: 'MarketplaceKimiPage3',
   description:
-    "Marketplace third style sibling to MarketplaceKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Marketplace third style sibling to MarketplaceKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -47,7 +51,9 @@ export const MarketplaceKimiPage3 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -97,7 +103,7 @@ export const MarketplaceKimiPage3 = defineCapsule({
       }),
     },
     queries: {
-      items: ({ db }) => db.items.orderBy("createdAt").all(),
+      items: ({ db }) => db.items.orderBy('createdAt').all(),
       cartLines: ({ db }) =>
         db.cartItems.all().flatMap((line) => {
           const item = db.items.get(line.itemId)
@@ -106,10 +112,10 @@ export const MarketplaceKimiPage3 = defineCapsule({
     },
     mutations: {
       addToCart: ({ db }, itemName: string) => {
-        const item = db.items.where("name", itemName).all()[0]
+        const item = db.items.where('name', itemName).all()[0]
         if (!item) return db.cartItems.all()
 
-        const existingLine = db.cartItems.where("itemId", item.id).all()[0]
+        const existingLine = db.cartItems.where('itemId', item.id).all()[0]
 
         if (existingLine) {
           db.cartItems.update(existingLine.id, {
@@ -127,7 +133,7 @@ export const MarketplaceKimiPage3 = defineCapsule({
       updateCartQuantity: ({ db }, itemId: string, quantity: number) => {
         const nextQuantity = Math.max(0, Math.floor(quantity))
 
-        for (const line of db.cartItems.where("itemId", itemId).all()) {
+        for (const line of db.cartItems.where('itemId', itemId).all()) {
           if (nextQuantity) {
             db.cartItems.update(line.id, { quantity: nextQuantity })
           } else {
@@ -138,7 +144,7 @@ export const MarketplaceKimiPage3 = defineCapsule({
         return db.cartItems.all()
       },
       removeFromCart: ({ db }, itemId: string) => {
-        for (const line of db.cartItems.where("itemId", itemId).all()) {
+        for (const line of db.cartItems.where('itemId', itemId).all()) {
           db.cartItems.delete(line.id)
         }
 
@@ -157,144 +163,151 @@ export const MarketplaceKimiPage3 = defineCapsule({
     const go = useNavigate()
     const [cartOpen, setCartOpen] = useState(false)
 
-    const brand = props.brand ?? "Ember Premium Multi"
+    const brand = props.brand ?? 'Ember Premium Multi'
     const nav = props.nav?.length
       ? props.nav
-      : ["Ember", "Categories", "Sellers", "Trending", "Pricing", "FAQ"]
+      : ['Ember', 'Categories', 'Sellers', 'Trending', 'Pricing', 'FAQ']
     const hero = {
-      eyebrow: "Marketplace / Variant 3",
+      eyebrow: 'Marketplace / Variant 3',
       title: "Shop the world's best independent creators",
       description:
         "Discover the world's best independent creators in one premium multi-vendor marketplace. Now live: 12,400+ new arrivals this week across every category.",
-      primaryCta: "Add to cart",
-      secondaryCta: "Ember",
-      imageAlt: "professional headshot of a smiling creative director",
+      primaryCta: 'Add to cart',
+      secondaryCta: 'Ember',
+      imageAlt: 'professional headshot of a smiling creative director',
       ...props.hero,
     }
     const metrics = props.metrics?.length
       ? props.metrics
       : [
           {
-            value: "24/7",
-            label: "Responsive service",
+            value: '24/7',
+            label: 'Responsive service',
           },
           {
-            value: "98%",
-            label: "Positive outcomes",
+            value: '98%',
+            label: 'Positive outcomes',
           },
           {
-            value: "4.9",
-            label: "Average rating",
+            value: '4.9',
+            label: 'Average rating',
           },
           {
-            value: "12+",
-            label: "Core capabilities",
+            value: '12+',
+            label: 'Core capabilities',
           },
         ]
     const sections = props.sections?.length
       ? props.sections
       : [
           {
-            eyebrow: "Overview",
-            title: "Shop by category",
+            eyebrow: 'Overview',
+            title: 'Shop by category',
             body: "Discover the world's best independent creators in one premium multi-vendor marketplace. Now live: 12,400+ new arrivals this week across every category.",
             items: [
-              "Start selling in minutes",
-              "What buyers and sellers say",
-              "Frequently asked questions",
+              'Start selling in minutes',
+              'What buyers and sellers say',
+              'Frequently asked questions',
             ],
           },
           {
-            eyebrow: "Experience",
-            title: "Trending now",
+            eyebrow: 'Experience',
+            title: 'Trending now',
             body: "Marketplace page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
             items: [
-              "Ready to discover your next favorite thing?",
-              "Featured sellers",
-              "Seller plans",
+              'Ready to discover your next favorite thing?',
+              'Featured sellers',
+              'Seller plans',
             ],
           },
           {
-            eyebrow: "Proof",
-            title: "Why buyers choose Ember",
+            eyebrow: 'Proof',
+            title: 'Why buyers choose Ember',
             body: "Marketplace page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-            items: ["Apparel & Accessories", "Watches & Accessories", "Audio & Electronics"],
+            items: [
+              'Apparel & Accessories',
+              'Watches & Accessories',
+              'Audio & Electronics',
+            ],
           },
           {
-            eyebrow: "Next steps",
-            title: "Start selling in minutes",
+            eyebrow: 'Next steps',
+            title: 'Start selling in minutes',
             body: "Marketplace page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-            items: ["Apparel & Fashion", "Home & Living", "Beauty & Wellness"],
+            items: ['Apparel & Fashion', 'Home & Living', 'Beauty & Wellness'],
           },
         ]
     const gallery = props.gallery?.length
       ? props.gallery
       : [
           {
-            title: "Trending now",
-            alt: "professional headshot of a smiling creative director",
-            caption: "Marketplace generated page detail",
+            title: 'Trending now',
+            alt: 'professional headshot of a smiling creative director',
+            caption: 'Marketplace generated page detail',
           },
           {
-            title: "Why buyers choose Ember",
-            alt: "professional headshot of a bearded product designer",
-            caption: "Marketplace generated page detail",
+            title: 'Why buyers choose Ember',
+            alt: 'professional headshot of a bearded product designer',
+            caption: 'Marketplace generated page detail',
           },
           {
-            title: "Start selling in minutes",
-            alt: "professional headshot of a smiling software engineer",
-            caption: "Marketplace generated page detail",
+            title: 'Start selling in minutes',
+            alt: 'professional headshot of a smiling software engineer',
+            caption: 'Marketplace generated page detail',
           },
         ]
     const catalogFallbackItems = [
       {
-        name: "Creative Director Spotlight",
-        seller: "Ember Creators",
-        category: "Trending now",
-        image: "",
-        alt: "Curated product showcase on a neutral background",
-        price: "$129",
+        name: 'Creative Director Spotlight',
+        seller: 'Ember Creators',
+        category: 'Trending now',
+        image: '',
+        alt: 'Curated product showcase on a neutral background',
+        price: '$129',
       },
       {
-        name: "Maker Collaboration Pack",
-        seller: "Maker Collective",
-        category: "Why buyers choose Ember",
-        image: "",
-        alt: "Creative lifestyle pack with premium materials and packaging",
-        price: "$249",
+        name: 'Maker Collaboration Pack',
+        seller: 'Maker Collective',
+        category: 'Why buyers choose Ember',
+        image: '',
+        alt: 'Creative lifestyle pack with premium materials and packaging',
+        price: '$249',
       },
       {
-        name: "Starter Store Bundle",
-        seller: "Independent Makers Guild",
-        category: "Start selling in minutes",
-        image: "",
-        alt: "Designer desk setup with curated product collection",
-        price: "$89",
+        name: 'Starter Store Bundle',
+        seller: 'Independent Makers Guild',
+        category: 'Start selling in minutes',
+        image: '',
+        alt: 'Designer desk setup with curated product collection',
+        price: '$89',
       },
     ]
-    const catalogItems = props.items?.length ? props.items : catalogFallbackItems
+    const catalogItems = props.items?.length
+      ? props.items
+      : catalogFallbackItems
     const normalizedCatalogItems = catalogItems.map((item) => ({
-      category: item.category ?? "",
+      category: item.category ?? '',
       name: item.name,
-      seller: item.seller ?? "Ember Creators",
+      seller: item.seller ?? 'Ember Creators',
       alt: item.alt,
-      image: item.image ?? "",
+      image: item.image ?? '',
       price: item.price,
     }))
 
-    const storedItems = lakebed.useQuery("items")
-    const cartLines = lakebed.useQuery("cartLines")
+    const storedItems = lakebed.useQuery('items')
+    const cartLines = lakebed.useQuery('cartLines')
     const auth = lakebed.useAuth()
-    const addToCart = lakebed.useMutation("addToCart")
-    const updateCartQuantity = lakebed.useMutation("updateCartQuantity")
-    const removeFromCart = lakebed.useMutation("removeFromCart")
-    const clearCart = lakebed.useMutation("clearCart")
+    const addToCart = lakebed.useMutation('addToCart')
+    const updateCartQuantity = lakebed.useMutation('updateCartQuantity')
+    const removeFromCart = lakebed.useMutation('removeFromCart')
+    const clearCart = lakebed.useMutation('clearCart')
 
     const displayItems =
-      storedItems && storedItems.length > 0 ? storedItems : normalizedCatalogItems
-    const cartLinesWithItems = (cartLines ?? []).filter(
-      (line): line is { id: string; itemId: string; quantity: number; item: { name: string; seller: string; alt: string; image: string; price: string } } =>
-        Boolean(line?.item),
+      storedItems && storedItems.length > 0
+        ? storedItems
+        : normalizedCatalogItems
+    const cartLinesWithItems = (cartLines ?? []).filter((line) =>
+      Boolean(line?.item),
     )
     const cartItemCount = cartLinesWithItems.reduce(
       (total, line) => total + line.quantity,
@@ -310,19 +323,19 @@ export const MarketplaceKimiPage3 = defineCapsule({
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
     const authDisplayName =
-      auth.displayName || auth.user?.displayName || authEmail || "Account"
+      auth.displayName || auth.user?.displayName || authEmail || 'Account'
     const authInitials =
       authDisplayName
         .split(/\s+/)
         .filter(Boolean)
         .slice(0, 2)
         .map((part) => part[0]?.toUpperCase())
-        .join("") || "ME"
+        .join('') || 'ME'
     const authLabel = auth.isLoading
-      ? "Checking..."
+      ? 'Checking...'
       : isSignedIn
         ? authDisplayName
-        : "Sign in"
+        : 'Sign in'
     const addFeaturedToCart = () => {
       const featuredItem = displayItems[0]
       if (!featuredItem) return
@@ -338,12 +351,17 @@ export const MarketplaceKimiPage3 = defineCapsule({
     }
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
             <button
               type="button"
-              onClick={() => go("Home")}
+              onClick={() => go('Home')}
               className="text-left text-lg font-semibold tracking-tight"
             >
               {brand}
@@ -375,7 +393,10 @@ export const MarketplaceKimiPage3 = defineCapsule({
                         aria-hidden="true"
                       >
                         {authPicture ? (
-                          <AvatarImage src={authPicture} alt={authDisplayName} />
+                          <AvatarImage
+                            src={authPicture}
+                            alt={authDisplayName}
+                          />
                         ) : null}
                         <AvatarFallback className="bg-foreground text-[0.65rem] font-bold text-background">
                           {authInitials}
@@ -395,7 +416,10 @@ export const MarketplaceKimiPage3 = defineCapsule({
                       <div className="flex items-center gap-3">
                         <Avatar size="lg" className="ring-2 ring-background">
                           {authPicture ? (
-                            <AvatarImage src={authPicture} alt={authDisplayName} />
+                            <AvatarImage
+                              src={authPicture}
+                              alt={authDisplayName}
+                            />
                           ) : null}
                           <AvatarFallback className="bg-foreground text-sm font-bold text-background">
                             {authInitials}
@@ -406,7 +430,7 @@ export const MarketplaceKimiPage3 = defineCapsule({
                             {authDisplayName}
                           </p>
                           <p className="truncate text-xs text-muted-foreground">
-                            {authEmail ?? "Signed in to this session"}
+                            {authEmail ?? 'Signed in to this session'}
                           </p>
                         </div>
                       </div>
@@ -414,14 +438,14 @@ export const MarketplaceKimiPage3 = defineCapsule({
                     <div className="p-2">
                       <button
                         type="button"
-                        onClick={() => go("Account")}
+                        onClick={() => go('Account')}
                         className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         Account
                       </button>
                       <button
                         type="button"
-                        onClick={() => go("Orders")}
+                        onClick={() => go('Orders')}
                         className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         Orders
@@ -480,13 +504,16 @@ export const MarketplaceKimiPage3 = defineCapsule({
                     ) : null}
                   </button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
+                >
                   <SheetHeader className="border-b border-border p-6">
                     <SheetTitle className="text-xl">Shopping cart</SheetTitle>
                     <SheetDescription>
                       {cartItemCount > 0
-                        ? `${cartItemCount} item${cartItemCount === 1 ? "" : "s"} ready for checkout.`
-                        : "Your cart is empty."}
+                        ? `${cartItemCount} item${cartItemCount === 1 ? '' : 's'} ready for checkout.`
+                        : 'Your cart is empty.'}
                     </SheetDescription>
                   </SheetHeader>
                   <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -519,7 +546,8 @@ export const MarketplaceKimiPage3 = defineCapsule({
                                 </div>
                                 <p className="text-sm font-bold text-foreground">
                                   {formatCurrency(
-                                    priceAmount(line.item.price) * line.quantity,
+                                    priceAmount(line.item.price) *
+                                      line.quantity,
                                   )}
                                 </p>
                               </div>
@@ -557,7 +585,9 @@ export const MarketplaceKimiPage3 = defineCapsule({
                                 </div>
                                 <button
                                   type="button"
-                                  onClick={() => void removeFromCart(line.itemId)}
+                                  onClick={() =>
+                                    void removeFromCart(line.itemId)
+                                  }
                                   className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                                 >
                                   Remove
@@ -573,7 +603,8 @@ export const MarketplaceKimiPage3 = defineCapsule({
                           No items in cart
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Add an item from the featured catalog to start checkout.
+                          Add an item from the featured catalog to start
+                          checkout.
                         </p>
                       </div>
                     )}
@@ -586,7 +617,9 @@ export const MarketplaceKimiPage3 = defineCapsule({
                       </div>
                       <div className="flex justify-between text-muted-foreground">
                         <span>Shipping</span>
-                        <span>{shipping ? formatCurrency(shipping) : "Free"}</span>
+                        <span>
+                          {shipping ? formatCurrency(shipping) : 'Free'}
+                        </span>
                       </div>
                       <div className="flex justify-between pt-2 text-base font-bold text-foreground">
                         <span>Total</span>
@@ -597,7 +630,7 @@ export const MarketplaceKimiPage3 = defineCapsule({
                       type="button"
                       className="w-full rounded-full"
                       disabled={!cartLinesWithItems.length}
-                      onClick={() => go("Checkout")}
+                      onClick={() => go('Checkout')}
                     >
                       Checkout
                     </Button>
@@ -612,7 +645,11 @@ export const MarketplaceKimiPage3 = defineCapsule({
                         Clear
                       </Button>
                       <SheetClose asChild>
-                        <Button type="button" variant="secondary" className="rounded-full">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
                           Continue
                         </Button>
                       </SheetClose>
@@ -696,11 +733,15 @@ export const MarketplaceKimiPage3 = defineCapsule({
                   key={section.title}
                   className="rounded-lg border border-border bg-card p-6"
                 >
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
                   <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
                     {section.title}
                   </h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -724,7 +765,9 @@ export const MarketplaceKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
                 <h2 className="mt-2 text-3xl font-semibold tracking-tight">
                   Content-led page moments
                 </h2>

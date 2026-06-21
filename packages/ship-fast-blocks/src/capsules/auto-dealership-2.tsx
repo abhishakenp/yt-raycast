@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,19 +14,19 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const AutoDealershipKimiPage2 = defineCapsule({
-  name: "AutoDealershipKimiPage2",
+  name: 'AutoDealershipKimiPage2',
   description:
-    "Auto Dealership second style sibling to AutoDealershipKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Auto Dealership second style sibling to AutoDealershipKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const AutoDealershipKimiPage2 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -138,96 +140,108 @@ export const AutoDealershipKimiPage2 = defineCapsule({
     const [customerPhone, setCustomerPhone] = useState('')
     const [preferredDate, setPreferredDate] = useState('')
 
-    const brand = props.brand ?? "Velocity Motors"
-    const nav = props.nav?.length ? props.nav : ["VELOCITY MOTORS", "Inventory", "Financing", "How It Works", "Reviews", "FAQ"]
+    const brand = props.brand ?? 'Velocity Motors'
+    const nav = props.nav?.length
+      ? props.nav
+      : [
+          'VELOCITY MOTORS',
+          'Inventory',
+          'Financing',
+          'How It Works',
+          'Reviews',
+          'FAQ',
+        ]
     const hero = {
-      eyebrow: "Auto Dealership / Variant 2",
-      title: "Drive Your Dream Without the Nightmare",
-      description: "Velocity Motors | Premium Pre-Owned Vehicles & Auto Financing VELOCITY MOTORS Inventory Financing How It Works Reviews FAQ (555) 123-4567 Schedule Test Drive Inventory Financing...",
-      primaryCta: "All",
-      secondaryCta: "Sedans",
-      imageAlt: "Sleek black sports sedan parked in a modern showroom with dramatic lighting",
+      eyebrow: 'Auto Dealership / Variant 2',
+      title: 'Drive Your Dream Without the Nightmare',
+      description:
+        'Velocity Motors | Premium Pre-Owned Vehicles & Auto Financing VELOCITY MOTORS Inventory Financing How It Works Reviews FAQ (555) 123-4567 Schedule Test Drive Inventory Financing...',
+      primaryCta: 'All',
+      secondaryCta: 'Sedans',
+      imageAlt:
+        'Sleek black sports sedan parked in a modern showroom with dramatic lighting',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "The Smarter Way to Buy a Car",
-    "body": "Velocity Motors | Premium Pre-Owned Vehicles & Auto Financing VELOCITY MOTORS Inventory Financing How It Works Reviews FAQ (555) 123-4567 Schedule Test Drive Inventory Financing...",
-    "items": [
-      "Get Pre-Approved in Minutes, Not Days",
-      "Don't Take Our Word For It",
-      "Frequently Asked Questions"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "From Browse to Drive in 4 Steps",
-    "body": "Auto Dealership page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Ready to Find Your Next Vehicle?",
-      "90-Day Warranty",
-      "Transparent Pricing"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Featured Vehicles",
-    "body": "Auto Dealership page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Bad Credit? No Problem",
-      "7-Day Exchange",
-      "Browse Online"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Get Pre-Approved in Minutes, Not Days",
-    "body": "Auto Dealership page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Schedule Test Drive",
-      "Get Financed",
-      "Drive Home"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "From Browse to Drive in 4 Steps",
-    "alt": "Sleek black sports sedan parked in a modern showroom with dramatic lighting",
-    "caption": "Auto Dealership generated page detail"
-  },
-  {
-    "title": "Featured Vehicles",
-    "alt": "BMW luxury vehicle brand logo",
-    "caption": "Auto Dealership generated page detail"
-  },
-  {
-    "title": "Get Pre-Approved in Minutes, Not Days",
-    "alt": "Mercedes-Benz premium automotive brand logo",
-    "caption": "Auto Dealership generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'The Smarter Way to Buy a Car',
+            body: 'Velocity Motors | Premium Pre-Owned Vehicles & Auto Financing VELOCITY MOTORS Inventory Financing How It Works Reviews FAQ (555) 123-4567 Schedule Test Drive Inventory Financing...',
+            items: [
+              'Get Pre-Approved in Minutes, Not Days',
+              "Don't Take Our Word For It",
+              'Frequently Asked Questions',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'From Browse to Drive in 4 Steps',
+            body: "Auto Dealership page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Ready to Find Your Next Vehicle?',
+              '90-Day Warranty',
+              'Transparent Pricing',
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Featured Vehicles',
+            body: "Auto Dealership page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Bad Credit? No Problem',
+              '7-Day Exchange',
+              'Browse Online',
+            ],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Get Pre-Approved in Minutes, Not Days',
+            body: "Auto Dealership page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['Schedule Test Drive', 'Get Financed', 'Drive Home'],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'From Browse to Drive in 4 Steps',
+            alt: 'Sleek black sports sedan parked in a modern showroom with dramatic lighting',
+            caption: 'Auto Dealership generated page detail',
+          },
+          {
+            title: 'Featured Vehicles',
+            alt: 'BMW luxury vehicle brand logo',
+            caption: 'Auto Dealership generated page detail',
+          },
+          {
+            title: 'Get Pre-Approved in Minutes, Not Days',
+            alt: 'Mercedes-Benz premium automotive brand logo',
+            caption: 'Auto Dealership generated page detail',
+          },
+        ]
 
-    const storedVehicles = lakebed.useQuery('vehicles')
     const bookings = lakebed.useQuery('bookings')
     const favoriteVehicleNames = lakebed.useQuery('favoriteVehicleNames')
     const auth = lakebed.useAuth()
@@ -263,8 +277,21 @@ export const AutoDealershipKimiPage2 = defineCapsule({
     }
 
     const handleBookTestDrive = () => {
-      if (!selectedVehicle || !customerName || !customerEmail || !customerPhone || !preferredDate) return
-      void bookTestDrive(selectedVehicle, customerName, customerEmail, customerPhone, preferredDate)
+      if (
+        !selectedVehicle ||
+        !customerName ||
+        !customerEmail ||
+        !customerPhone ||
+        !preferredDate
+      )
+        return
+      void bookTestDrive(
+        selectedVehicle,
+        customerName,
+        customerEmail,
+        customerPhone,
+        preferredDate,
+      )
       setBookingOpen(false)
       setSelectedVehicle(null)
       setCustomerName('')
@@ -326,10 +353,19 @@ export const AutoDealershipKimiPage2 = defineCapsule({
     const bookingCount = safeBookings.length
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -475,7 +511,9 @@ export const AutoDealershipKimiPage2 = defineCapsule({
                   className="w-full gap-0 p-0 sm:max-w-md"
                 >
                   <SheetHeader className="border-b border-border p-6">
-                    <SheetTitle className="text-xl">Test Drive Bookings</SheetTitle>
+                    <SheetTitle className="text-xl">
+                      Test Drive Bookings
+                    </SheetTitle>
                     <SheetDescription>
                       {bookingCount > 0
                         ? `${bookingCount} booking${bookingCount === 1 ? '' : 's'} scheduled.`
@@ -505,10 +543,14 @@ export const AutoDealershipKimiPage2 = defineCapsule({
                                     {booking.customerName}
                                   </h3>
                                 </div>
-                                <span className={cn(
-                                  "text-xs font-semibold px-2 py-1 rounded",
-                                  booking.status === 'pending' ? "bg-yellow-100 text-yellow-800" : "bg-green-100 text-green-800"
-                                )}>
+                                <span
+                                  className={cn(
+                                    'text-xs font-semibold px-2 py-1 rounded',
+                                    booking.status === 'pending'
+                                      ? 'bg-yellow-100 text-yellow-800'
+                                      : 'bg-green-100 text-green-800',
+                                  )}
+                                >
                                   {booking.status}
                                 </span>
                               </div>
@@ -542,7 +584,8 @@ export const AutoDealershipKimiPage2 = defineCapsule({
                           No test drives scheduled
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Browse our inventory and schedule your first test drive.
+                          Browse our inventory and schedule your first test
+                          drive.
                         </p>
                       </div>
                     )}
@@ -603,16 +646,28 @@ export const AutoDealershipKimiPage2 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -620,10 +675,19 @@ export const AutoDealershipKimiPage2 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -654,8 +718,12 @@ export const AutoDealershipKimiPage2 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -667,11 +735,21 @@ export const AutoDealershipKimiPage2 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => {
-                const isFavorite = favoriteVehicleNames?.has(item.title) ?? false
+                const isFavorite =
+                  favoriteVehicleNames?.has(item.title) ?? false
                 return (
-                  <article key={item.title} className="group overflow-hidden rounded-lg border border-border bg-card">
+                  <article
+                    key={item.title}
+                    className="group overflow-hidden rounded-lg border border-border bg-card"
+                  >
                     <div className="relative aspect-[4/3] overflow-hidden">
-                      <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <Image
+                        alt={item.alt}
+                        w={900}
+                        h={700}
+                        loading="lazy"
+                        className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
                       <button
                         type="button"
                         onClick={() => void toggleFavorite(item.title)}
@@ -692,8 +770,14 @@ export const AutoDealershipKimiPage2 = defineCapsule({
                       </button>
                     </div>
                     <div className="p-5">
-                      <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                      {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                      <h3 className="text-lg font-semibold text-card-foreground">
+                        {item.title}
+                      </h3>
+                      {item.caption ? (
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                          {item.caption}
+                        </p>
+                      ) : null}
                       <button
                         type="button"
                         onClick={() => {
@@ -715,9 +799,15 @@ export const AutoDealershipKimiPage2 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -732,16 +822,19 @@ export const AutoDealershipKimiPage2 = defineCapsule({
         </main>
 
         {/* Test Drive Booking Form Sheet */}
-        <Sheet open={bookingOpen && selectedVehicle !== null} onOpenChange={(open) => {
-          if (!open) {
-            setSelectedVehicle(null)
-            setCustomerName('')
-            setCustomerEmail('')
-            setCustomerPhone('')
-            setPreferredDate('')
-          }
-          setBookingOpen(open)
-        }}>
+        <Sheet
+          open={bookingOpen && selectedVehicle !== null}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedVehicle(null)
+              setCustomerName('')
+              setCustomerEmail('')
+              setCustomerPhone('')
+              setPreferredDate('')
+            }
+            setBookingOpen(open)
+          }}
+        >
           <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
             <SheetHeader className="border-b border-border p-6">
               <SheetTitle className="text-xl">Schedule Test Drive</SheetTitle>
@@ -750,9 +843,18 @@ export const AutoDealershipKimiPage2 = defineCapsule({
               </SheetDescription>
             </SheetHeader>
             <div className="flex-1 overflow-y-auto px-6 py-5">
-              <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleBookTestDrive(); }}>
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  handleBookTestDrive()
+                }}
+              >
                 <div>
-                  <label htmlFor="customerName" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="customerName"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Full Name
                   </label>
                   <input
@@ -766,7 +868,10 @@ export const AutoDealershipKimiPage2 = defineCapsule({
                   />
                 </div>
                 <div>
-                  <label htmlFor="customerEmail" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="customerEmail"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Email Address
                   </label>
                   <input
@@ -780,7 +885,10 @@ export const AutoDealershipKimiPage2 = defineCapsule({
                   />
                 </div>
                 <div>
-                  <label htmlFor="customerPhone" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="customerPhone"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Phone Number
                   </label>
                   <input
@@ -794,7 +902,10 @@ export const AutoDealershipKimiPage2 = defineCapsule({
                   />
                 </div>
                 <div>
-                  <label htmlFor="preferredDate" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="preferredDate"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Preferred Date
                   </label>
                   <input
@@ -824,7 +935,13 @@ export const AutoDealershipKimiPage2 = defineCapsule({
                   type="button"
                   className="rounded-full"
                   onClick={handleBookTestDrive}
-                  disabled={!selectedVehicle || !customerName || !customerEmail || !customerPhone || !preferredDate}
+                  disabled={
+                    !selectedVehicle ||
+                    !customerName ||
+                    !customerEmail ||
+                    !customerPhone ||
+                    !preferredDate
+                  }
                 >
                   Book Test Drive
                 </Button>
@@ -835,10 +952,17 @@ export const AutoDealershipKimiPage2 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

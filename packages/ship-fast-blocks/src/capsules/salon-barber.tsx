@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * SalonBarberKimiPage — a complete, self-contained barbershop / men's-grooming
@@ -38,7 +38,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * (never a dead "#"), and all imagery uses the alt-driven <Image> component.
  */
 export const SalonBarberKimiPage = defineCapsule({
-  name: "SalonBarberKimiPage",
+  name: 'SalonBarberKimiPage',
   description:
     "Complete barbershop / men's-grooming salon LANDING page with a warm, premium, editorial stone-neutral aesthetic on a light surface. Includes a full-bleed photographic hero (est. badge, bold headline, dual CTAs, rating + open-hours trust strip), a press / 'featured in' logo wall, a 6-up services menu with per-service price and duration (classic cut, hot towel shave, beard sculpting, fade & taper, full experience, kids cut), a 3-step 'how it works' booking flow, a masonry barber-portfolio gallery with hover style captions and barber credits, a 3-column transparent pricing table with a Most-Popular highlighted plan and add-ons, a dark stat band (years, clients, rating, barbers), a testimonial grid with 5-star ratings and client headshots, an accordion FAQ, a dark booking CTA with hours/location/contact info cards, and a multi-column footer with services links, company links, and a newsletter signup. Use as the ROOT/home page for barbershops, hair salons, men's grooming studios, beauty/spa parlors, nail salons, tattoo studios, or any appointment-based local service business wanting a polished, conversion-focused, booking-driven page with services, gallery, pricing, reviews and FAQ. Supply content only — brand, nav, hero, logos, services, steps, gallery, pricing, stats, testimonials, faq, booking, footer; the block owns all layout and styling.",
   props: z.object({
@@ -105,7 +105,11 @@ export const SalonBarberKimiPage = defineCapsule({
         cta: z.string().optional(),
         items: z
           .array(
-            z.object({ title: z.string(), barber: z.string(), alt: z.string() }),
+            z.object({
+              title: z.string(),
+              barber: z.string(),
+              alt: z.string(),
+            }),
           )
           .optional(),
       })
@@ -125,7 +129,9 @@ export const SalonBarberKimiPage = defineCapsule({
               name: z.string(),
               tagline: z.string(),
               popular: z.boolean().optional(),
-              items: z.array(z.object({ label: z.string(), price: z.string() })),
+              items: z.array(
+                z.object({ label: z.string(), price: z.string() }),
+              ),
             }),
           )
           .optional(),
@@ -134,7 +140,9 @@ export const SalonBarberKimiPage = defineCapsule({
     /** Dark stats band. */
     stats: z
       .object({
-        items: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+        items: z
+          .array(z.object({ value: z.string(), label: z.string() }))
+          .optional(),
       })
       .optional(),
     /** Testimonial grid. */
@@ -227,7 +235,14 @@ export const SalonBarberKimiPage = defineCapsule({
         new Set(db.favorites.all().map((favorite) => favorite.serviceTitle)),
     },
     mutations: {
-      addToBookings: ({ db }, serviceTitle: string, servicePrice: string, serviceDuration: string, date: string, time: string) => {
+      addToBookings: (
+        { db },
+        serviceTitle: string,
+        servicePrice: string,
+        serviceDuration: string,
+        date: string,
+        time: string,
+      ) => {
         db.bookings.insert({
           serviceTitle,
           servicePrice,
@@ -266,89 +281,89 @@ export const SalonBarberKimiPage = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [bookingOpen, setBookingOpen] = useState(false)
-    const brand = props.brand ?? "Blade & Fade"
+    const brand = props.brand ?? 'Blade & Fade'
     const nav = props.nav?.length
       ? props.nav
-      : ["Services", "Gallery", "Pricing", "Reviews", "FAQ"]
+      : ['Services', 'Gallery', 'Pricing', 'Reviews', 'FAQ']
 
-    const heroEyebrow = props.hero?.eyebrow ?? "Est. 2015 — Downtown Portland"
+    const heroEyebrow = props.hero?.eyebrow ?? 'Est. 2015 — Downtown Portland'
     const heroHeading =
-      props.hero?.heading ?? "Where Classic Craftsmanship Meets Modern Style"
+      props.hero?.heading ?? 'Where Classic Craftsmanship Meets Modern Style'
     const heroSub =
       props.hero?.subheading ??
-      "Experience precision cuts, hot towel shaves, and beard grooming from master barbers with over 50 years of combined experience. Walk in welcome, appointments preferred."
-    const heroPrimary = props.hero?.primaryCta ?? "Book Appointment"
-    const heroSecondary = props.hero?.secondaryCta ?? "View Services"
-    const heroPhone = props.hero?.phone ?? "(555) 123-4567"
-    const heroRating = props.hero?.rating ?? "4.9/5 from 800+ reviews"
-    const heroOpen = props.hero?.openLine ?? "Open 7 Days"
+      'Experience precision cuts, hot towel shaves, and beard grooming from master barbers with over 50 years of combined experience. Walk in welcome, appointments preferred.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Book Appointment'
+    const heroSecondary = props.hero?.secondaryCta ?? 'View Services'
+    const heroPhone = props.hero?.phone ?? '(555) 123-4567'
+    const heroRating = props.hero?.rating ?? '4.9/5 from 800+ reviews'
+    const heroOpen = props.hero?.openLine ?? 'Open 7 Days'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "interior of a modern upscale barbershop with leather chairs and warm lighting"
-    const bookCtaLabel = "Book Now"
+      'interior of a modern upscale barbershop with leather chairs and warm lighting'
+    const bookCtaLabel = 'Book Now'
 
-    const logosHeading = props.logos?.heading ?? "Featured In & Trusted By"
+    const logosHeading = props.logos?.heading ?? 'Featured In & Trusted By'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
       : [
-          "GQ STYLE",
+          'GQ STYLE',
           "MEN'S JOURNAL",
-          "ESQUIRE",
-          "PORTLAND MONTHLY",
-          "BARBER CON",
-          "YELP ELITE",
+          'ESQUIRE',
+          'PORTLAND MONTHLY',
+          'BARBER CON',
+          'YELP ELITE',
         ]
 
-    const servicesEyebrow = props.services?.eyebrow ?? "Our Services"
+    const servicesEyebrow = props.services?.eyebrow ?? 'Our Services'
     const servicesHeading =
-      props.services?.heading ?? "Precision Grooming for the Modern Gentleman"
+      props.services?.heading ?? 'Precision Grooming for the Modern Gentleman'
     const servicesDesc =
       props.services?.description ??
-      "From classic cuts to contemporary styles, our master barbers deliver exceptional results tailored to your look."
+      'From classic cuts to contemporary styles, our master barbers deliver exceptional results tailored to your look.'
     const serviceItems = props.services?.items?.length
       ? props.services.items
       : [
           {
-            title: "Classic Cut & Style",
+            title: 'Classic Cut & Style',
             description:
-              "A precision haircut tailored to your face shape and lifestyle. Includes shampoo, cut, blow-dry, and styling with premium products.",
-            price: "$45",
-            duration: "45 min",
+              'A precision haircut tailored to your face shape and lifestyle. Includes shampoo, cut, blow-dry, and styling with premium products.',
+            price: '$45',
+            duration: '45 min',
           },
           {
-            title: "Hot Towel Shave",
+            title: 'Hot Towel Shave',
             description:
-              "The ultimate traditional shave. Hot towels, premium oils, straight razor precision, and finishing with aftershave balm for silky smooth skin.",
-            price: "$55",
-            duration: "45 min",
+              'The ultimate traditional shave. Hot towels, premium oils, straight razor precision, and finishing with aftershave balm for silky smooth skin.',
+            price: '$55',
+            duration: '45 min',
           },
           {
-            title: "Beard Sculpting",
+            title: 'Beard Sculpting',
             description:
               "Expert beard trimming, shaping, and conditioning. We'll design the perfect beard shape to complement your facial features.",
-            price: "$35",
-            duration: "30 min",
+            price: '$35',
+            duration: '30 min',
           },
           {
-            title: "Fade & Taper Specialist",
+            title: 'Fade & Taper Specialist',
             description:
-              "Low, mid, high, or skin fades executed with precision. Our specialty—perfectly blended transitions that turn heads.",
-            price: "$50",
-            duration: "50 min",
+              'Low, mid, high, or skin fades executed with precision. Our specialty—perfectly blended transitions that turn heads.',
+            price: '$50',
+            duration: '50 min',
           },
           {
-            title: "The Full Experience",
+            title: 'The Full Experience',
             description:
-              "Haircut, hot towel shave, beard trim, facial treatment, and scalp massage. Two hours of pure relaxation and transformation.",
-            price: "$120",
-            duration: "2 hrs",
+              'Haircut, hot towel shave, beard trim, facial treatment, and scalp massage. Two hours of pure relaxation and transformation.',
+            price: '$120',
+            duration: '2 hrs',
           },
           {
-            title: "Kids Cut (Under 12)",
+            title: 'Kids Cut (Under 12)',
             description:
-              "Gentle, patient service for young gentlemen. Includes cut, style, and a lollipop. Parents welcome to accompany.",
-            price: "$30",
-            duration: "30 min",
+              'Gentle, patient service for young gentlemen. Includes cut, style, and a lollipop. Parents welcome to accompany.',
+            price: '$30',
+            duration: '30 min',
           },
         ]
 
@@ -399,9 +414,9 @@ export const SalonBarberKimiPage = defineCapsule({
     const safeBookingLines = bookingLines ?? []
     const bookingCount = safeBookingLines.length
 
-    const stepsEyebrow = props.steps?.eyebrow ?? "How It Works"
+    const stepsEyebrow = props.steps?.eyebrow ?? 'How It Works'
     const stepsHeading =
-      props.steps?.heading ?? "Book Your Fresh Look in 3 Simple Steps"
+      props.steps?.heading ?? 'Book Your Fresh Look in 3 Simple Steps'
     const stepsDesc =
       props.steps?.description ??
       "We've streamlined the booking process so you can focus on what matters—looking your best."
@@ -409,120 +424,120 @@ export const SalonBarberKimiPage = defineCapsule({
       ? props.steps.items
       : [
           {
-            title: "Choose Your Service",
+            title: 'Choose Your Service',
             description:
-              "Browse our menu of cuts, shaves, and grooming services. Each includes duration and price upfront—no surprises.",
+              'Browse our menu of cuts, shaves, and grooming services. Each includes duration and price upfront—no surprises.',
           },
           {
-            title: "Pick Date & Time",
+            title: 'Pick Date & Time',
             description:
-              "Select your preferred barber and time slot. Same-day appointments often available. Walk-ins welcome for quick trims.",
+              'Select your preferred barber and time slot. Same-day appointments often available. Walk-ins welcome for quick trims.',
           },
           {
-            title: "Arrive & Relax",
+            title: 'Arrive & Relax',
             description:
-              "Show up 5 minutes early, grab a complimentary beverage, and enjoy the experience. Leave looking sharper than ever.",
+              'Show up 5 minutes early, grab a complimentary beverage, and enjoy the experience. Leave looking sharper than ever.',
           },
         ]
 
-    const galleryEyebrow = props.gallery?.eyebrow ?? "Portfolio"
-    const galleryHeading = props.gallery?.heading ?? "Our Recent Work"
+    const galleryEyebrow = props.gallery?.eyebrow ?? 'Portfolio'
+    const galleryHeading = props.gallery?.heading ?? 'Our Recent Work'
     const galleryDesc =
       props.gallery?.description ??
-      "A showcase of cuts, styles, and transformations from our talented team of barbers."
+      'A showcase of cuts, styles, and transformations from our talented team of barbers.'
     const galleryCta =
-      props.gallery?.cta ?? "Follow @bladeandfade on Instagram for more"
+      props.gallery?.cta ?? 'Follow @bladeandfade on Instagram for more'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
           {
-            title: "Mid Skin Fade",
-            barber: "By Marcus Chen",
-            alt: "man with fresh fade haircut and defined lineup in barber chair",
+            title: 'Mid Skin Fade',
+            barber: 'By Marcus Chen',
+            alt: 'man with fresh fade haircut and defined lineup in barber chair',
           },
           {
-            title: "Beard Sculpting",
-            barber: "By James Wilson",
-            alt: "bearded man after professional beard trim and shaping",
+            title: 'Beard Sculpting',
+            barber: 'By James Wilson',
+            alt: 'bearded man after professional beard trim and shaping',
           },
           {
-            title: "Classic Pompadour",
-            barber: "By David Park",
-            alt: "professional barber giving classic pompadour haircut with scissors",
+            title: 'Classic Pompadour',
+            barber: 'By David Park',
+            alt: 'professional barber giving classic pompadour haircut with scissors',
           },
           {
-            title: "Textured Crop",
-            barber: "By Marcus Chen",
-            alt: "man with textured crop haircut and natural styling",
+            title: 'Textured Crop',
+            barber: 'By Marcus Chen',
+            alt: 'man with textured crop haircut and natural styling',
           },
           {
-            title: "Hot Towel Shave",
-            barber: "By James Wilson",
-            alt: "professional hot towel straight razor shave in progress",
+            title: 'Hot Towel Shave',
+            barber: 'By James Wilson',
+            alt: 'professional hot towel straight razor shave in progress',
           },
           {
-            title: "High Fade Slick Back",
-            barber: "By David Park",
-            alt: "man with high fade and slicked back top hairstyle",
+            title: 'High Fade Slick Back',
+            barber: 'By David Park',
+            alt: 'man with high fade and slicked back top hairstyle',
           },
           {
-            title: "Buzz Cut & Lineup",
-            barber: "By Marcus Chen",
-            alt: "young man with buzz cut and clean lineup edge up",
+            title: 'Buzz Cut & Lineup',
+            barber: 'By Marcus Chen',
+            alt: 'young man with buzz cut and clean lineup edge up',
           },
           {
-            title: "Low Fade Curls",
-            barber: "By James Wilson",
-            alt: "man with low fade haircut and curly top texture",
+            title: 'Low Fade Curls',
+            barber: 'By James Wilson',
+            alt: 'man with low fade haircut and curly top texture',
           },
         ]
 
-    const pricingEyebrow = props.pricing?.eyebrow ?? "Pricing"
+    const pricingEyebrow = props.pricing?.eyebrow ?? 'Pricing'
     const pricingHeading =
-      props.pricing?.heading ?? "Transparent Pricing, Premium Service"
+      props.pricing?.heading ?? 'Transparent Pricing, Premium Service'
     const pricingDesc =
       props.pricing?.description ??
-      "No hidden fees. No upsells. Just honest pricing for exceptional grooming."
+      'No hidden fees. No upsells. Just honest pricing for exceptional grooming.'
     const pricingFootnote =
       props.pricing?.footnote ??
-      "Cash and all major credit cards accepted. 20% gratuity added for groups of 3+."
-    const pricingCta = props.pricing?.cta ?? "Book Now"
-    const popularLabel = props.pricing?.popularLabel ?? "Most Popular"
+      'Cash and all major credit cards accepted. 20% gratuity added for groups of 3+.'
+    const pricingCta = props.pricing?.cta ?? 'Book Now'
+    const popularLabel = props.pricing?.popularLabel ?? 'Most Popular'
     const pricingPlans = props.pricing?.plans?.length
       ? props.pricing.plans
       : [
           {
-            name: "Essential Cuts",
-            tagline: "Quality cuts for everyday sharpness",
+            name: 'Essential Cuts',
+            tagline: 'Quality cuts for everyday sharpness',
             items: [
-              { label: "Kids Cut (Under 12)", price: "$30" },
-              { label: "Senior Cut (65+)", price: "$35" },
-              { label: "Classic Cut & Style", price: "$45" },
-              { label: "Fade / Taper Cut", price: "$50" },
-              { label: "Buzz Cut (One Length)", price: "$25" },
+              { label: 'Kids Cut (Under 12)', price: '$30' },
+              { label: 'Senior Cut (65+)', price: '$35' },
+              { label: 'Classic Cut & Style', price: '$45' },
+              { label: 'Fade / Taper Cut', price: '$50' },
+              { label: 'Buzz Cut (One Length)', price: '$25' },
             ],
           },
           {
-            name: "Grooming Services",
-            tagline: "The complete gentleman experience",
+            name: 'Grooming Services',
+            tagline: 'The complete gentleman experience',
             popular: true,
             items: [
-              { label: "Beard Trim & Shape", price: "$35" },
-              { label: "Hot Towel Shave", price: "$55" },
-              { label: "Hair + Beard Combo", price: "$75" },
-              { label: "Haircut + Shave", price: "$95" },
-              { label: "The Full Experience", price: "$120" },
+              { label: 'Beard Trim & Shape', price: '$35' },
+              { label: 'Hot Towel Shave', price: '$55' },
+              { label: 'Hair + Beard Combo', price: '$75' },
+              { label: 'Haircut + Shave', price: '$95' },
+              { label: 'The Full Experience', price: '$120' },
             ],
           },
           {
-            name: "Add-Ons",
-            tagline: "Enhance your service",
+            name: 'Add-Ons',
+            tagline: 'Enhance your service',
             items: [
-              { label: "Shampoo & Condition", price: "+$10" },
-              { label: "Scalp Treatment", price: "+$15" },
-              { label: "Gray Blending", price: "+$25" },
-              { label: "Facial Mask", price: "+$20" },
-              { label: "Eyebrow Cleanup", price: "+$12" },
+              { label: 'Shampoo & Condition', price: '+$10' },
+              { label: 'Scalp Treatment', price: '+$15' },
+              { label: 'Gray Blending', price: '+$25' },
+              { label: 'Facial Mask', price: '+$20' },
+              { label: 'Eyebrow Cleanup', price: '+$12' },
             ],
           },
         ]
@@ -530,156 +545,157 @@ export const SalonBarberKimiPage = defineCapsule({
     const statItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "9+", label: "Years Experience" },
-          { value: "15K+", label: "Happy Clients" },
-          { value: "4.9", label: "Google Rating" },
-          { value: "6", label: "Expert Barbers" },
+          { value: '9+', label: 'Years Experience' },
+          { value: '15K+', label: 'Happy Clients' },
+          { value: '4.9', label: 'Google Rating' },
+          { value: '6', label: 'Expert Barbers' },
         ]
 
-    const testimonialsEyebrow = props.testimonials?.eyebrow ?? "Testimonials"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'Testimonials'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Our Clients Say"
+      props.testimonials?.heading ?? 'What Our Clients Say'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "Real reviews from real customers who keep coming back."
+      'Real reviews from real customers who keep coming back.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
               "I've been coming to Blade & Fade for 3 years now. Marcus always delivers the perfect fade, and the hot towel shave is the most relaxing part of my week. Best barbershop in Portland, hands down.",
-            name: "Michael Torres",
-            role: "Software Engineer · Regular since 2022",
+            name: 'Michael Torres',
+            role: 'Software Engineer · Regular since 2022',
             avatarAlt:
-              "professional headshot of a smiling man with short dark hair",
+              'professional headshot of a smiling man with short dark hair',
           },
           {
             quote:
-              "Finally found a barbershop that understands curly hair! David took his time, explained the process, and gave me a cut that actually works with my texture. The shop vibe is incredible too—great music, cold beer, and zero pretension.",
-            name: "Jason Miller",
-            role: "Architect · First visit became regular",
+              'Finally found a barbershop that understands curly hair! David took his time, explained the process, and gave me a cut that actually works with my texture. The shop vibe is incredible too—great music, cold beer, and zero pretension.',
+            name: 'Jason Miller',
+            role: 'Architect · First visit became regular',
             avatarAlt:
-              "professional headshot of a smiling man with curly brown hair and beard",
+              'professional headshot of a smiling man with curly brown hair and beard',
           },
           {
             quote:
               "I take my two sons here every month. The barbers are amazing with kids—patient, friendly, and somehow manage to get perfect cuts even when my youngest won't sit still. The family atmosphere keeps us coming back.",
-            name: "Robert Chen",
-            role: "Father of two · Family plan subscriber",
+            name: 'Robert Chen',
+            role: 'Father of two · Family plan subscriber',
             avatarAlt:
-              "professional headshot of a smiling man with glasses and salt-and-pepper hair",
+              'professional headshot of a smiling man with glasses and salt-and-pepper hair',
           },
           {
             quote:
               "As someone who's particular about my beard, I've tried dozens of shops. James at Blade & Fade is the only barber I trust now. He sculpts my beard with genuine artistry. Worth every penny and then some.",
-            name: "Alex Thompson",
-            role: "Creative Director · Monthly visitor",
+            name: 'Alex Thompson',
+            role: 'Creative Director · Monthly visitor',
             avatarAlt:
-              "professional headshot of a bearded man in a navy blazer",
+              'professional headshot of a bearded man in a navy blazer',
           },
           {
             quote:
-              "I was nervous about trying a new place for my wedding haircut, but Blade & Fade exceeded all expectations. The attention to detail was incredible—I looked absolutely sharp for the big day. My groomsmen are now all regulars too!",
-            name: "Daniel Park",
-            role: "Newlywed · Wedding party regular",
+              'I was nervous about trying a new place for my wedding haircut, but Blade & Fade exceeded all expectations. The attention to detail was incredible—I looked absolutely sharp for the big day. My groomsmen are now all regulars too!',
+            name: 'Daniel Park',
+            role: 'Newlywed · Wedding party regular',
             avatarAlt:
-              "professional headshot of a smiling groom in formal attire",
+              'professional headshot of a smiling groom in formal attire',
           },
           {
             quote:
-              "Found this gem when I moved to Portland three years ago. The consistency is what impresses me—every single visit, I leave looking sharp. The online booking is seamless and they always run on time. Rare combo in this business!",
-            name: "Marcus Johnson",
-            role: "Tech Consultant · 3-year regular",
+              'Found this gem when I moved to Portland three years ago. The consistency is what impresses me—every single visit, I leave looking sharp. The online booking is seamless and they always run on time. Rare combo in this business!',
+            name: 'Marcus Johnson',
+            role: 'Tech Consultant · 3-year regular',
             avatarAlt:
-              "professional headshot of a smiling man with a clean fade haircut",
+              'professional headshot of a smiling man with a clean fade haircut',
           },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "FAQ"
-    const faqHeading = props.faq?.heading ?? "Common Questions"
+    const faqEyebrow = props.faq?.eyebrow ?? 'FAQ'
+    const faqHeading = props.faq?.heading ?? 'Common Questions'
     const faqDesc =
-      props.faq?.description ?? "Everything you need to know before your first visit."
+      props.faq?.description ??
+      'Everything you need to know before your first visit.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "Do I need an appointment or do you accept walk-ins?",
-            a: "We welcome both! Appointments are recommended, especially for weekends and evenings, but we always reserve slots for walk-ins. Download our app or call ahead to check current wait times.",
+            q: 'Do I need an appointment or do you accept walk-ins?',
+            a: 'We welcome both! Appointments are recommended, especially for weekends and evenings, but we always reserve slots for walk-ins. Download our app or call ahead to check current wait times.',
           },
           {
-            q: "How early should I arrive for my appointment?",
-            a: "Please arrive 5-10 minutes early to check in and grab a complimentary beverage. First-time clients should arrive 10 minutes early to complete a brief profile form that helps us customize your service.",
+            q: 'How early should I arrive for my appointment?',
+            a: 'Please arrive 5-10 minutes early to check in and grab a complimentary beverage. First-time clients should arrive 10 minutes early to complete a brief profile form that helps us customize your service.',
           },
           {
-            q: "What is your cancellation policy?",
-            a: "We ask for 24 hours notice for cancellations or rescheduling. Late cancellations (under 4 hours) may be charged 50% of the service fee. No-shows are charged the full amount. We understand things happen—just give us a call.",
+            q: 'What is your cancellation policy?',
+            a: 'We ask for 24 hours notice for cancellations or rescheduling. Late cancellations (under 4 hours) may be charged 50% of the service fee. No-shows are charged the full amount. We understand things happen—just give us a call.',
           },
           {
-            q: "Do you offer services for women or children?",
+            q: 'Do you offer services for women or children?',
             a: "Yes! While we specialize in men's grooming, we welcome anyone seeking our services. We offer kids' cuts for children under 12 at a discounted rate. Women's short cuts, fades, and undercuts are also available with any of our barbers.",
           },
           {
-            q: "What COVID-19 safety measures are in place?",
-            a: "All tools are sanitized between every client using hospital-grade disinfectant. Capes are laundered after each use. Hand sanitizer is available throughout the shop. Our ventilation system exceeds CDC recommendations. Barbers may wear masks upon request.",
+            q: 'What COVID-19 safety measures are in place?',
+            a: 'All tools are sanitized between every client using hospital-grade disinfectant. Capes are laundered after each use. Hand sanitizer is available throughout the shop. Our ventilation system exceeds CDC recommendations. Barbers may wear masks upon request.',
           },
           {
-            q: "Can I request a specific barber?",
-            a: "Absolutely! When booking online or by phone, you can select your preferred barber. Each barber has their specialties—Marcus is our fade king, James is the beard whisperer, and David specializes in longer styles. View their portfolios on our Instagram.",
+            q: 'Can I request a specific barber?',
+            a: 'Absolutely! When booking online or by phone, you can select your preferred barber. Each barber has their specialties—Marcus is our fade king, James is the beard whisperer, and David specializes in longer styles. View their portfolios on our Instagram.',
           },
         ]
 
-    const bookingHeading = props.booking?.heading ?? "Ready for Your Fresh Cut?"
+    const bookingHeading = props.booking?.heading ?? 'Ready for Your Fresh Cut?'
     const bookingDesc =
       props.booking?.description ??
       "Book your appointment today and experience why Blade & Fade has been Portland's premier barbershop since 2015. Walk-ins welcome, but appointments guarantee your preferred time."
-    const bookingCall = props.booking?.callCta ?? "Call (555) 123-4567"
-    const bookingBook = props.booking?.bookCta ?? "Book Online"
+    const bookingCall = props.booking?.callCta ?? 'Call (555) 123-4567'
+    const bookingBook = props.booking?.bookCta ?? 'Book Online'
     const bookingImageAlt =
       props.booking?.imageAlt ??
-      "barber tools and equipment arranged on a wooden counter"
-    const hoursTitle = props.booking?.hoursTitle ?? "Hours"
+      'barber tools and equipment arranged on a wooden counter'
+    const hoursTitle = props.booking?.hoursTitle ?? 'Hours'
     const hours = props.booking?.hours?.length
       ? props.booking.hours
-      : ["Mon–Fri: 9am – 8pm", "Saturday: 8am – 6pm", "Sunday: 10am – 4pm"]
-    const locationTitle = props.booking?.locationTitle ?? "Location"
+      : ['Mon–Fri: 9am – 8pm', 'Saturday: 8am – 6pm', 'Sunday: 10am – 4pm']
+    const locationTitle = props.booking?.locationTitle ?? 'Location'
     const location = props.booking?.location?.length
       ? props.booking.location
-      : ["245 NW 23rd Avenue", "Portland, OR 97210", "Street parking available"]
-    const contactTitle = props.booking?.contactTitle ?? "Contact"
+      : ['245 NW 23rd Avenue', 'Portland, OR 97210', 'Street parking available']
+    const contactTitle = props.booking?.contactTitle ?? 'Contact'
     const contact = props.booking?.contact?.length
       ? props.booking.contact
-      : ["(555) 123-4567", "hello@bladeandfade.com", "@bladeandfade"]
+      : ['(555) 123-4567', 'hello@bladeandfade.com', '@bladeandfade']
 
     const footerAbout =
       props.footer?.about ??
       "Premium men's grooming in the heart of Portland. Classic craftsmanship meets modern style since 2015."
-    const footerServicesTitle = props.footer?.servicesTitle ?? "Services"
+    const footerServicesTitle = props.footer?.servicesTitle ?? 'Services'
     const footerServiceLinks = props.footer?.serviceLinks?.length
       ? props.footer.serviceLinks
       : [
-          "Classic Cuts",
-          "Fades & Tapers",
-          "Hot Towel Shaves",
-          "Beard Grooming",
-          "Kids Cuts",
+          'Classic Cuts',
+          'Fades & Tapers',
+          'Hot Towel Shaves',
+          'Beard Grooming',
+          'Kids Cuts',
         ]
-    const footerCompanyTitle = props.footer?.companyTitle ?? "Company"
+    const footerCompanyTitle = props.footer?.companyTitle ?? 'Company'
     const footerCompanyLinks = props.footer?.companyLinks?.length
       ? props.footer.companyLinks
-      : ["About Us", "Careers", "Gallery", "Gift Cards", "Franchise"]
-    const newsletterTitle = props.footer?.newsletterTitle ?? "Newsletter"
+      : ['About Us', 'Careers', 'Gallery', 'Gift Cards', 'Franchise']
+    const newsletterTitle = props.footer?.newsletterTitle ?? 'Newsletter'
     const newsletterText =
-      props.footer?.newsletterText ?? "Get style tips and exclusive offers."
-    const newsletterCta = props.footer?.newsletterCta ?? "Join"
+      props.footer?.newsletterText ?? 'Get style tips and exclusive offers.'
+    const newsletterCta = props.footer?.newsletterCta ?? 'Join'
     const copyright =
       props.footer?.copyright ??
-      "© 2025 Blade & Fade Barbershop. All rights reserved."
+      '© 2025 Blade & Fade Barbershop. All rights reserved.'
     const legalLinks = props.footer?.legalLinks?.length
       ? props.footer.legalLinks
-      : ["Privacy Policy", "Terms of Service", "Accessibility"]
+      : ['Privacy Policy', 'Terms of Service', 'Accessibility']
     const socials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Twitter", "Instagram", "YouTube"]
+      : ['Twitter', 'Instagram', 'YouTube']
 
     // Decorative scissors brand mark.
     const Scissors = ({ className }: { className?: string }) => (
@@ -759,7 +775,7 @@ export const SalonBarberKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -997,7 +1013,8 @@ export const SalonBarberKimiPage = defineCapsule({
                           No appointments scheduled
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Book a service from our menu to schedule an appointment.
+                          Book a service from our menu to schedule an
+                          appointment.
                         </p>
                       </div>
                     )}
@@ -1278,7 +1295,7 @@ export const SalonBarberKimiPage = defineCapsule({
                         {item.description}
                       </p>
                       <p className="text-lg font-semibold text-card-foreground">
-                        {item.price}{" "}
+                        {item.price}{' '}
                         <span className="text-sm font-normal text-muted-foreground">
                           · {item.duration}
                         </span>
@@ -1375,7 +1392,9 @@ export const SalonBarberKimiPage = defineCapsule({
                     <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100">
                       <div className="absolute bottom-4 left-4 text-left text-background">
                         <p className="font-medium">{item.title}</p>
-                        <p className="text-sm text-background/70">{item.barber}</p>
+                        <p className="text-sm text-background/70">
+                          {item.barber}
+                        </p>
                       </div>
                     </div>
                   </button>
@@ -1422,10 +1441,10 @@ export const SalonBarberKimiPage = defineCapsule({
                   <div
                     key={plan.name}
                     className={cn(
-                      "relative rounded-xl p-8",
+                      'relative rounded-xl p-8',
                       plan.popular
-                        ? "border-2 border-primary bg-card"
-                        : "border border-border bg-card",
+                        ? 'border-2 border-primary bg-card'
+                        : 'border border-border bg-card',
                     )}
                   >
                     {plan.popular && (
@@ -1476,10 +1495,10 @@ export const SalonBarberKimiPage = defineCapsule({
                         setBookingOpen(true)
                       }}
                       className={cn(
-                        "block w-full rounded-lg px-6 py-3 text-center text-sm font-medium transition-colors",
+                        'block w-full rounded-lg px-6 py-3 text-center text-sm font-medium transition-colors',
                         plan.popular
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                          : "border border-border text-card-foreground hover:bg-muted",
+                          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                          : 'border border-border text-card-foreground hover:bg-muted',
                       )}
                     >
                       {pricingCta}
@@ -1521,7 +1540,9 @@ export const SalonBarberKimiPage = defineCapsule({
                 <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
                   {testimonialsHeading}
                 </h2>
-                <p className="text-lg text-muted-foreground">{testimonialsDesc}</p>
+                <p className="text-lg text-muted-foreground">
+                  {testimonialsDesc}
+                </p>
               </div>
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {testimonialItems.map((t) => (
@@ -1548,7 +1569,9 @@ export const SalonBarberKimiPage = defineCapsule({
                         <p className="font-semibold text-card-foreground">
                           {t.name}
                         </p>
-                        <p className="text-sm text-muted-foreground">{t.role}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {t.role}
+                        </p>
                       </div>
                     </div>
                   </div>

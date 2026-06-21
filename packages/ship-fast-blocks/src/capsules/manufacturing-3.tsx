@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -24,9 +24,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const ManufacturingKimiPage3 = defineCapsule({
-  name: "ManufacturingKimiPage3",
+  name: 'ManufacturingKimiPage3',
   description:
-    "Manufacturing third style sibling to ManufacturingKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Manufacturing third style sibling to ManufacturingKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const ManufacturingKimiPage3 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -75,7 +77,13 @@ export const ManufacturingKimiPage3 = defineCapsule({
       quoteRequests: ({ db }) => db.quoteRequests.orderBy('createdAt').all(),
     },
     mutations: {
-      submitQuote: ({ db }, name: string, email: string, company: string, message: string) => {
+      submitQuote: (
+        { db },
+        name: string,
+        email: string,
+        company: string,
+        message: string,
+      ) => {
         db.quoteRequests.insert({ name, email, company, message })
         return db.quoteRequests.all()
       },
@@ -88,96 +96,105 @@ export const ManufacturingKimiPage3 = defineCapsule({
     const [email, setEmail] = useState('')
     const [company, setCompany] = useState('')
     const [message, setMessage] = useState('')
-    const brand = props.brand ?? "Apex Manufacturing Solutions"
-    const nav = props.nav?.length ? props.nav : ["Capabilities", "Industries", "Process", "Gallery", "Pricing", "About"]
+    const brand = props.brand ?? 'Apex Manufacturing Solutions'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Capabilities', 'Industries', 'Process', 'Gallery', 'Pricing', 'About']
     const hero = {
-      eyebrow: "Manufacturing / Variant 3",
-      title: "Precision Manufacturing at Global Scale",
-      description: "Apex Manufacturing Solutions | Global Precision Manufacturing APEX Manufacturing Capabilities Industries Process Gallery Pricing About Get a Quote ISO 9001, AS9100D, and ISO 134...",
-      primaryCta: "Request a Quote",
-      secondaryCta: "Subscribe",
-      imageAlt: "Close-up of aerospace turbine blades in a precision machining facility",
+      eyebrow: 'Manufacturing / Variant 3',
+      title: 'Precision Manufacturing at Global Scale',
+      description:
+        'Apex Manufacturing Solutions | Global Precision Manufacturing APEX Manufacturing Capabilities Industries Process Gallery Pricing About Get a Quote ISO 9001, AS9100D, and ISO 134...',
+      primaryCta: 'Request a Quote',
+      secondaryCta: 'Subscribe',
+      imageAlt:
+        'Close-up of aerospace turbine blades in a precision machining facility',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "End-to-End Manufacturing Capabilities",
-    "body": "Apex Manufacturing Solutions | Global Precision Manufacturing APEX Manufacturing Capabilities Industries Process Gallery Pricing About Get a Quote ISO 9001, AS9100D, and ISO 134...",
-    "items": [
-      "Inside Our Facilities",
-      "Transparent Pricing Models",
-      "What Our Partners Say"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "Industries We Serve",
-    "body": "Manufacturing page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Frequently Asked Questions",
-      "Ready to Reduce Your Lead Times?",
-      "5-Axis CNC Machining"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Our Production Process",
-    "body": "Manufacturing page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Precision Injection Molding",
-      "Sheet Metal Fabrication",
-      "Metal Additive Manufacturing"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Inside Our Facilities",
-    "body": "Manufacturing page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Advanced Quality Systems",
-      "Integrated Supply Chain",
-      "Aerospace & Defense"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "Industries We Serve",
-    "alt": "Close-up of aerospace turbine blades in a precision machining facility",
-    "caption": "Manufacturing generated page detail"
-  },
-  {
-    "title": "Our Production Process",
-    "alt": "Automotive assembly line with robotic arms welding vehicle chassis components",
-    "caption": "Manufacturing generated page detail"
-  },
-  {
-    "title": "Inside Our Facilities",
-    "alt": "Medical devices and surgical instruments arranged on a sterile white surface",
-    "caption": "Manufacturing generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'End-to-End Manufacturing Capabilities',
+            body: 'Apex Manufacturing Solutions | Global Precision Manufacturing APEX Manufacturing Capabilities Industries Process Gallery Pricing About Get a Quote ISO 9001, AS9100D, and ISO 134...',
+            items: [
+              'Inside Our Facilities',
+              'Transparent Pricing Models',
+              'What Our Partners Say',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'Industries We Serve',
+            body: "Manufacturing page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Frequently Asked Questions',
+              'Ready to Reduce Your Lead Times?',
+              '5-Axis CNC Machining',
+            ],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Our Production Process',
+            body: "Manufacturing page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Precision Injection Molding',
+              'Sheet Metal Fabrication',
+              'Metal Additive Manufacturing',
+            ],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Inside Our Facilities',
+            body: "Manufacturing page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Advanced Quality Systems',
+              'Integrated Supply Chain',
+              'Aerospace & Defense',
+            ],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'Industries We Serve',
+            alt: 'Close-up of aerospace turbine blades in a precision machining facility',
+            caption: 'Manufacturing generated page detail',
+          },
+          {
+            title: 'Our Production Process',
+            alt: 'Automotive assembly line with robotic arms welding vehicle chassis components',
+            caption: 'Manufacturing generated page detail',
+          },
+          {
+            title: 'Inside Our Facilities',
+            alt: 'Medical devices and surgical instruments arranged on a sterile white surface',
+            caption: 'Manufacturing generated page detail',
+          },
+        ]
 
-    const quoteRequests = lakebed.useQuery('quoteRequests')
     const submitQuote = lakebed.useMutation('submitQuote')
     const auth = lakebed.useAuth()
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
@@ -248,10 +265,19 @@ export const ManufacturingKimiPage3 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -384,13 +410,17 @@ export const ManufacturingKimiPage3 = defineCapsule({
                   <SheetHeader className="border-b border-border p-6">
                     <SheetTitle className="text-xl">Request a Quote</SheetTitle>
                     <SheetDescription>
-                      Fill out the form below and we'll get back to you within 24 hours.
+                      Fill out the form below and we'll get back to you within
+                      24 hours.
                     </SheetDescription>
                   </SheetHeader>
                   <div className="flex-1 overflow-y-auto px-6 py-5">
                     <form onSubmit={handleSubmitQuote} className="space-y-4">
                       <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
+                        <label
+                          htmlFor="name"
+                          className="block text-sm font-medium text-foreground mb-2"
+                        >
                           Name
                         </label>
                         <input
@@ -404,7 +434,10 @@ export const ManufacturingKimiPage3 = defineCapsule({
                         />
                       </div>
                       <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+                        <label
+                          htmlFor="email"
+                          className="block text-sm font-medium text-foreground mb-2"
+                        >
                           Email
                         </label>
                         <input
@@ -418,7 +451,10 @@ export const ManufacturingKimiPage3 = defineCapsule({
                         />
                       </div>
                       <div>
-                        <label htmlFor="company" className="block text-sm font-medium text-foreground mb-2">
+                        <label
+                          htmlFor="company"
+                          className="block text-sm font-medium text-foreground mb-2"
+                        >
                           Company
                         </label>
                         <input
@@ -432,7 +468,10 @@ export const ManufacturingKimiPage3 = defineCapsule({
                         />
                       </div>
                       <div>
-                        <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
+                        <label
+                          htmlFor="message"
+                          className="block text-sm font-medium text-foreground mb-2"
+                        >
                           Message
                         </label>
                         <textarea
@@ -504,16 +543,28 @@ export const ManufacturingKimiPage3 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -521,10 +572,19 @@ export const ManufacturingKimiPage3 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -548,8 +608,12 @@ export const ManufacturingKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -561,11 +625,26 @@ export const ManufacturingKimiPage3 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -576,9 +655,15 @@ export const ManufacturingKimiPage3 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -594,10 +679,17 @@ export const ManufacturingKimiPage3 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

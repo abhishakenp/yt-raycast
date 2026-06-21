@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * ResumeCvKimiPage2 — a bold, dark, high-contrast personal resume / CV / portfolio
@@ -45,7 +45,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * it render the full résumé with no props at all.
  */
 export const ResumeCvKimiPage2 = defineCapsule({
-  name: "ResumeCvKimiPage2",
+  name: 'ResumeCvKimiPage2',
   description:
     "Bold, dark, high-contrast personal resume / CV / portfolio / 'hire me' page for an individual professional, with dramatic font-black display headings, a warm amber/primary accent, a glowing floating headshot and an 'available for new projects' status pill. This is the DARK, dramatic ALTERNATIVE / second style sibling to ResumeCvKimiPage (which is the light, minimalist editorial version) — pick this when a punchy, confident, dark-themed personal site is wanted. Includes a split hero (name display headline, tagline, Hire Me / View Work CTAs and inline social links), a 4-up big-number stats band (years experience / projects shipped / awards / client satisfaction), a center-spine work-experience timeline with alternating photos and colored period chips, a skills & expertise section with 6 icon feature cards (UI Design, UX Research, Design Systems, Prototyping, Team Leadership, Strategic Thinking) plus a 'tools I use daily' tag cloud, a 3-up testimonials grid with star ratings and author avatars, and a centered closing call-to-action with email/phone buttons and a location card. Use as the ROOT/home page for a personal resume, CV, online portfolio, about-me page, freelancer or designer/developer profile. Supply content only — brand, nav, hero, stats, experience, skills, testimonials, contact, footer; the block owns all layout and styling.",
   props: z.object({
@@ -162,10 +162,13 @@ export const ResumeCvKimiPage2 = defineCapsule({
       savedProjects: ({ db }) => db.savedProjects.orderBy('createdAt').all(),
     },
     mutations: {
-      saveProject: ({ db }, type: string, title: string, description: string) => {
-        const existing = db.savedProjects
-          .where('title', title)
-          .all()[0]
+      saveProject: (
+        { db },
+        type: string,
+        title: string,
+        description: string,
+      ) => {
+        const existing = db.savedProjects.where('title', title).all()[0]
         if (existing) {
           db.savedProjects.delete(existing.id)
           return false
@@ -189,7 +192,7 @@ export const ResumeCvKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [savedOpen, setSavedOpen] = useState(false)
-    const brand = props.brand ?? "MC."
+    const brand = props.brand ?? 'MC.'
 
     const savedProjects = lakebed.useQuery('savedProjects')
     const saveProject = lakebed.useMutation('saveProject')
@@ -224,190 +227,190 @@ export const ResumeCvKimiPage2 = defineCapsule({
     const savedCount = safeSavedProjects.length
     const nav = props.nav?.length
       ? props.nav
-      : ["About", "Experience", "Skills", "Let's Talk"]
+      : ['About', 'Experience', 'Skills', "Let's Talk"]
 
-    const statusLabel = props.hero?.statusLabel ?? "Available for new projects"
-    const firstName = props.hero?.firstName ?? "Marcus"
-    const lastName = props.hero?.lastName ?? "Chen"
+    const statusLabel = props.hero?.statusLabel ?? 'Available for new projects'
+    const firstName = props.hero?.firstName ?? 'Marcus'
+    const lastName = props.hero?.lastName ?? 'Chen'
     const heroTagline =
       props.hero?.tagline ??
-      "Senior Product Designer with 8+ years crafting digital experiences for Fortune 500 companies and fast-growing startups."
-    const heroPrimary = props.hero?.primaryCta ?? "Hire Me"
-    const heroSecondary = props.hero?.secondaryCta ?? "View Work"
+      'Senior Product Designer with 8+ years crafting digital experiences for Fortune 500 companies and fast-growing startups.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Hire Me'
+    const heroSecondary = props.hero?.secondaryCta ?? 'View Work'
     const heroPhotoAlt =
       props.hero?.photoAlt ??
-      "Professional headshot of a confident Asian male designer with short black hair, wearing a dark blazer, against a neutral studio background"
+      'Professional headshot of a confident Asian male designer with short black hair, wearing a dark blazer, against a neutral studio background'
     const heroSocials = props.hero?.socials?.length
       ? props.hero.socials
-      : ["LinkedIn", "Dribbble", "GitHub"]
+      : ['LinkedIn', 'Dribbble', 'GitHub']
 
     const stats = props.stats?.length
       ? props.stats
       : [
-          { value: "8+", label: "Years Experience" },
-          { value: "47", label: "Projects Shipped" },
-          { value: "12", label: "Awards Won" },
-          { value: "100%", label: "Client Satisfaction" },
+          { value: '8+', label: 'Years Experience' },
+          { value: '47', label: 'Projects Shipped' },
+          { value: '12', label: 'Awards Won' },
+          { value: '100%', label: 'Client Satisfaction' },
         ]
 
-    const expEyebrow = props.experience?.eyebrow ?? "Career Path"
-    const expHeading = props.experience?.heading ?? "Experience"
+    const expEyebrow = props.experience?.eyebrow ?? 'Career Path'
+    const expHeading = props.experience?.heading ?? 'Experience'
     const expItems = props.experience?.items?.length
       ? props.experience.items
       : [
           {
-            period: "2022 - Present",
-            role: "Senior Product Designer",
-            company: "Stripe",
+            period: '2022 - Present',
+            role: 'Senior Product Designer',
+            company: 'Stripe',
             summary:
-              "Leading design for the Payments team, improving checkout conversion by 23% through user research and iterative prototyping. Mentoring 4 junior designers and establishing the design system foundation.",
+              'Leading design for the Payments team, improving checkout conversion by 23% through user research and iterative prototyping. Mentoring 4 junior designers and establishing the design system foundation.',
             imageAlt:
-              "Modern fintech office interior with sleek desk setup showing payment dashboard on large monitors",
+              'Modern fintech office interior with sleek desk setup showing payment dashboard on large monitors',
           },
           {
-            period: "2019 - 2022",
-            role: "Lead UX Designer",
-            company: "Airbnb",
+            period: '2019 - 2022',
+            role: 'Lead UX Designer',
+            company: 'Airbnb',
             summary:
-              "Redesigned the host onboarding flow, reducing time-to-first-listing by 40%. Built and maintained the Experiences design system, used by 200+ designers across 12 product teams.",
+              'Redesigned the host onboarding flow, reducing time-to-first-listing by 40%. Built and maintained the Experiences design system, used by 200+ designers across 12 product teams.',
             imageAlt:
-              "Creative design workspace with multiple screens showing travel booking interface designs",
+              'Creative design workspace with multiple screens showing travel booking interface designs',
           },
           {
-            period: "2017 - 2019",
-            role: "Product Designer",
-            company: "Dropbox",
+            period: '2017 - 2019',
+            role: 'Product Designer',
+            company: 'Dropbox',
             summary:
-              "Shipped the redesigned sharing experience, increasing collaboration metrics by 34%. Collaborated with engineering to implement the first accessible color system company-wide.",
+              'Shipped the redesigned sharing experience, increasing collaboration metrics by 34%. Collaborated with engineering to implement the first accessible color system company-wide.',
             imageAlt:
-              "Collaborative tech office space with cloud storage interface displayed on screens",
+              'Collaborative tech office space with cloud storage interface displayed on screens',
           },
           {
-            period: "2015 - 2017",
-            role: "UI/UX Designer",
-            company: "IDEO",
+            period: '2015 - 2017',
+            role: 'UI/UX Designer',
+            company: 'IDEO',
             summary:
-              "Worked with Fortune 500 clients including Nike, Ford, and Kaiser Permanente. Led user research sessions with 200+ participants and prototyped solutions using Framer and Principle.",
+              'Worked with Fortune 500 clients including Nike, Ford, and Kaiser Permanente. Led user research sessions with 200+ participants and prototyped solutions using Framer and Principle.',
             imageAlt:
-              "Innovative design studio workspace with whiteboards covered in user journey maps and wireframes",
+              'Innovative design studio workspace with whiteboards covered in user journey maps and wireframes',
           },
         ]
 
-    const skillsEyebrow = props.skills?.eyebrow ?? "What I Bring"
-    const skillsHeading = props.skills?.heading ?? "Skills & Expertise"
+    const skillsEyebrow = props.skills?.eyebrow ?? 'What I Bring'
+    const skillsHeading = props.skills?.heading ?? 'Skills & Expertise'
     const skillCards = props.skills?.cards?.length
       ? props.skills.cards
       : [
           {
-            icon: "ui",
-            title: "UI Design",
+            icon: 'ui',
+            title: 'UI Design',
             description:
-              "Figma, Sketch, Adobe Creative Suite. Crafting pixel-perfect interfaces with attention to detail and visual hierarchy.",
+              'Figma, Sketch, Adobe Creative Suite. Crafting pixel-perfect interfaces with attention to detail and visual hierarchy.',
           },
           {
-            icon: "research",
-            title: "UX Research",
+            icon: 'research',
+            title: 'UX Research',
             description:
-              "User interviews, usability testing, journey mapping, A/B testing. Data-driven design decisions backed by research.",
+              'User interviews, usability testing, journey mapping, A/B testing. Data-driven design decisions backed by research.',
           },
           {
-            icon: "systems",
-            title: "Design Systems",
+            icon: 'systems',
+            title: 'Design Systems',
             description:
-              "Component libraries, style guides, tokens management. Built systems serving 500+ components across multiple products.",
+              'Component libraries, style guides, tokens management. Built systems serving 500+ components across multiple products.',
           },
           {
-            icon: "prototype",
-            title: "Prototyping",
+            icon: 'prototype',
+            title: 'Prototyping',
             description:
-              "Framer, Principle, ProtoPie. High-fidelity interactive prototypes for stakeholder presentations and user testing.",
+              'Framer, Principle, ProtoPie. High-fidelity interactive prototypes for stakeholder presentations and user testing.',
           },
           {
-            icon: "team",
-            title: "Team Leadership",
+            icon: 'team',
+            title: 'Team Leadership',
             description:
-              "Mentoring, design critiques, cross-functional collaboration. Led teams of 3-8 designers with focus on growth.",
+              'Mentoring, design critiques, cross-functional collaboration. Led teams of 3-8 designers with focus on growth.',
           },
           {
-            icon: "strategy",
-            title: "Strategic Thinking",
+            icon: 'strategy',
+            title: 'Strategic Thinking',
             description:
-              "Product strategy, OKRs, roadmapping. Aligning design initiatives with business goals and user needs.",
+              'Product strategy, OKRs, roadmapping. Aligning design initiatives with business goals and user needs.',
           },
         ]
-    const toolsHeading = props.skills?.toolsHeading ?? "Tools I Use Daily"
+    const toolsHeading = props.skills?.toolsHeading ?? 'Tools I Use Daily'
     const tools = props.skills?.tools?.length
       ? props.skills.tools
       : [
-          "Figma",
-          "Framer",
-          "Principle",
-          "Sketch",
-          "Adobe XD",
-          "Maze",
-          "Notion",
-          "Linear",
-          "Jira",
-          "GitHub",
-          "Storybook",
-          "Slack",
+          'Figma',
+          'Framer',
+          'Principle',
+          'Sketch',
+          'Adobe XD',
+          'Maze',
+          'Notion',
+          'Linear',
+          'Jira',
+          'GitHub',
+          'Storybook',
+          'Slack',
         ]
 
-    const testimonialsEyebrow = props.testimonials?.eyebrow ?? "Kind Words"
-    const testimonialsHeading =
-      props.testimonials?.heading ?? "What People Say"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'Kind Words'
+    const testimonialsHeading = props.testimonials?.heading ?? 'What People Say'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
               "Marcus transformed our checkout experience completely. His user research uncovered insights we'd missed for years, and the resulting 23% conversion lift speaks for itself. A true strategic partner.",
-            name: "Sarah Mitchell",
-            role: "VP of Product, Stripe",
+            name: 'Sarah Mitchell',
+            role: 'VP of Product, Stripe',
             avatarAlt:
-              "Professional headshot of a female tech executive with shoulder-length blonde hair, smiling warmly",
+              'Professional headshot of a female tech executive with shoulder-length blonde hair, smiling warmly',
           },
           {
             quote:
-              "Working with Marcus was a game-changer for our design team. He built our design system from the ground up and mentored our junior designers with patience and expertise.",
-            name: "David Chen",
-            role: "Design Director, Airbnb",
+              'Working with Marcus was a game-changer for our design team. He built our design system from the ground up and mentored our junior designers with patience and expertise.',
+            name: 'David Chen',
+            role: 'Design Director, Airbnb',
             avatarAlt:
-              "Professional headshot of a male product manager with glasses and short dark hair, friendly expression",
+              'Professional headshot of a male product manager with glasses and short dark hair, friendly expression',
           },
           {
             quote:
-              "Marcus has an exceptional ability to balance user needs with business goals. His accessibility work at Dropbox became the gold standard for our entire product suite.",
-            name: "James Wilson",
-            role: "Engineering Manager, Dropbox",
+              'Marcus has an exceptional ability to balance user needs with business goals. His accessibility work at Dropbox became the gold standard for our entire product suite.',
+            name: 'James Wilson',
+            role: 'Engineering Manager, Dropbox',
             avatarAlt:
-              "Professional headshot of a male engineering manager with short brown hair and a light beard",
+              'Professional headshot of a male engineering manager with short brown hair and a light beard',
           },
         ]
 
     const contactTop = props.contact?.headingTop ?? "Let's Create"
-    const contactAccent = props.contact?.headingAccent ?? "Something Great"
+    const contactAccent = props.contact?.headingAccent ?? 'Something Great'
     const contactDescription =
       props.contact?.description ??
       "I'm currently available for full-time roles, freelance projects, and consulting opportunities. Let's discuss how I can help elevate your product experience."
-    const contactEmail = props.contact?.email ?? "marcus@example.com"
-    const contactPhone = props.contact?.phone ?? "+1 (555) 123-4567"
-    const locationLabel = props.contact?.locationLabel ?? "Based in"
-    const contactLocation = props.contact?.location ?? "San Francisco, CA"
+    const contactEmail = props.contact?.email ?? 'marcus@example.com'
+    const contactPhone = props.contact?.phone ?? '+1 (555) 123-4567'
+    const locationLabel = props.contact?.locationLabel ?? 'Based in'
+    const contactLocation = props.contact?.location ?? 'San Francisco, CA'
     const locationNote =
-      props.contact?.locationNote ?? "Open to remote & relocation opportunities"
+      props.contact?.locationNote ?? 'Open to remote & relocation opportunities'
 
-    const footerNote = props.footer?.note ?? "© 2024 Marcus Chen. All rights reserved."
+    const footerNote =
+      props.footer?.note ?? '© 2024 Marcus Chen. All rights reserved.'
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["LinkedIn", "Dribbble", "GitHub", "Twitter"]
+      : ['LinkedIn', 'Dribbble', 'GitHub', 'Twitter']
 
     // Rotating accent tokens for the timeline period chips / spine dots.
     const chipTokens = [
-      { chip: "bg-primary/10 text-primary", dot: "bg-primary" },
-      { chip: "bg-accent/15 text-accent-foreground", dot: "bg-accent" },
-      { chip: "bg-secondary text-secondary-foreground", dot: "bg-secondary" },
-      { chip: "bg-chart-4/15 text-foreground", dot: "bg-chart-4" },
+      { chip: 'bg-primary/10 text-primary', dot: 'bg-primary' },
+      { chip: 'bg-accent/15 text-accent-foreground', dot: 'bg-accent' },
+      { chip: 'bg-secondary text-secondary-foreground', dot: 'bg-secondary' },
+      { chip: 'bg-chart-4/15 text-foreground', dot: 'bg-chart-4' },
     ]
 
     const Star = () => (
@@ -426,41 +429,41 @@ export const ResumeCvKimiPage2 = defineCapsule({
     // Skill-card icons (decorative, currentColor + token text).
     const skillIcon = (icon: string): ReactNode => {
       const base = {
-        className: "size-6",
-        fill: "none",
-        stroke: "currentColor",
+        className: 'size-6',
+        fill: 'none',
+        stroke: 'currentColor',
         strokeWidth: 2,
-        viewBox: "0 0 24 24",
-        strokeLinecap: "round" as const,
-        strokeLinejoin: "round" as const,
-        "aria-hidden": true as const,
+        viewBox: '0 0 24 24',
+        strokeLinecap: 'round' as const,
+        strokeLinejoin: 'round' as const,
+        'aria-hidden': true as const,
       }
       switch (icon) {
-        case "research":
+        case 'research':
           return (
             <svg {...base}>
               <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
             </svg>
           )
-        case "systems":
+        case 'systems':
           return (
             <svg {...base}>
               <path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
             </svg>
           )
-        case "prototype":
+        case 'prototype':
           return (
             <svg {...base}>
               <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
             </svg>
           )
-        case "team":
+        case 'team':
           return (
             <svg {...base}>
               <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
           )
-        case "strategy":
+        case 'strategy':
           return (
             <svg {...base}>
               <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -478,24 +481,24 @@ export const ResumeCvKimiPage2 = defineCapsule({
     const socialIcon = (kind: string): ReactNode => {
       const k = kind.toLowerCase()
       const base = {
-        className: "size-5",
-        viewBox: "0 0 24 24",
-        fill: "currentColor",
-        "aria-hidden": true as const,
+        className: 'size-5',
+        viewBox: '0 0 24 24',
+        fill: 'currentColor',
+        'aria-hidden': true as const,
       }
-      if (k === "linkedin")
+      if (k === 'linkedin')
         return (
           <svg {...base}>
             <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
           </svg>
         )
-      if (k === "dribbble")
+      if (k === 'dribbble')
         return (
           <svg {...base}>
             <path d="M12 24C5.385 24 0 18.615 0 12S5.385 0 12 0s12 5.385 12 12-5.385 12-12 12zm10.12-10.358c-3.166-1.024-5.86-1.04-8.18-.016-1.085.446-2.103 1.107-3.023 1.974-.77.726-1.415 1.535-1.92 2.418-.513-.883-1.158-1.692-1.927-2.418-.923-.867-1.94-1.528-3.026-1.974-2.32-1.024-5.013-1.008-8.18.016 1.68-3.954 5.562-6.733 10.12-6.733 4.558 0 8.44 2.78 10.12 6.733zm-4.068 2.872c1.515 1.262 2.554 2.89 2.972 4.757 1.642-1.922 2.652-4.396 2.652-7.124 0-.672-.06-1.33-.174-1.97-1.843.93-3.472 2.35-4.45 4.337zm-4.978 3.43c-.705 1.194-1.257 2.53-1.62 3.967-1.406-.404-2.686-1.134-3.73-2.094-1.044.96-2.324 1.69-3.73 2.094-.363-1.437-.915-2.773-1.62-3.967 1.406-1.13 2.686-2.88 3.73-4.82 1.044 1.94 2.324 3.69 3.73 4.82h.24zm-6.35-1.837c-.978-1.986-2.607-3.406-4.45-4.336-.114.64-.174 1.298-.174 1.97 0 2.728 1.01 5.202 2.652 7.124.418-1.867 1.457-3.495 2.972-4.758z" />
           </svg>
         )
-      if (k === "twitter")
+      if (k === 'twitter')
         return (
           <svg {...base}>
             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -544,7 +547,10 @@ export const ResumeCvKimiPage2 = defineCapsule({
 
     const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
       <svg
-        className={cn('size-5', active ? 'text-primary-foreground' : 'text-foreground')}
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
         fill={active ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="2"
@@ -591,7 +597,7 @@ export const ResumeCvKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -673,7 +679,13 @@ export const ResumeCvKimiPage2 = defineCapsule({
                             </div>
                             <button
                               type="button"
-                              onClick={() => void saveProject(item.type, item.title, item.description)}
+                              onClick={() =>
+                                void saveProject(
+                                  item.type,
+                                  item.title,
+                                  item.description,
+                                )
+                              }
                               aria-label={`Remove ${item.title} from saved`}
                               className="text-muted-foreground transition-colors hover:text-foreground"
                             >
@@ -993,7 +1005,9 @@ export const ResumeCvKimiPage2 = defineCapsule({
                 <h2 className="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
                   {expEyebrow}
                 </h2>
-                <h3 className="text-4xl font-black sm:text-5xl">{expHeading}</h3>
+                <h3 className="text-4xl font-black sm:text-5xl">
+                  {expHeading}
+                </h3>
               </div>
               <div className="relative">
                 <div className="absolute bottom-0 left-4 top-0 w-px bg-gradient-to-b from-primary/50 via-primary/30 to-transparent md:left-1/2" />
@@ -1008,14 +1022,14 @@ export const ResumeCvKimiPage2 = defineCapsule({
                       <div
                         className={cn(
                           textFirst
-                            ? "md:pr-12 md:text-right"
-                            : "md:order-2 md:pl-12",
+                            ? 'md:pr-12 md:text-right'
+                            : 'md:order-2 md:pl-12',
                         )}
                       >
                         <div className="mb-3 flex items-center gap-2">
                           <span
                             className={cn(
-                              "inline-block rounded-full px-3 py-1 text-sm font-semibold",
+                              'inline-block rounded-full px-3 py-1 text-sm font-semibold',
                               tone.chip,
                             )}
                           >
@@ -1023,7 +1037,13 @@ export const ResumeCvKimiPage2 = defineCapsule({
                           </span>
                           <button
                             type="button"
-                            onClick={() => void saveProject('Experience', item.role, item.summary)}
+                            onClick={() =>
+                              void saveProject(
+                                'Experience',
+                                item.role,
+                                item.summary,
+                              )
+                            }
                             aria-label={`Save ${item.role} to projects`}
                             className="text-muted-foreground transition-colors hover:text-primary"
                           >
@@ -1045,8 +1065,8 @@ export const ResumeCvKimiPage2 = defineCapsule({
                       <div
                         className={cn(
                           textFirst
-                            ? "md:pl-12"
-                            : "md:order-1 md:pr-12 md:text-right",
+                            ? 'md:pl-12'
+                            : 'md:order-1 md:pr-12 md:text-right',
                         )}
                       >
                         <div className="h-48 w-full overflow-hidden rounded-2xl shadow-xl">
@@ -1067,7 +1087,7 @@ export const ResumeCvKimiPage2 = defineCapsule({
                       >
                         <div
                           className={cn(
-                            "absolute left-4 hidden size-4 -translate-x-1/2 rounded-full border-4 border-background md:left-1/2 md:block",
+                            'absolute left-4 hidden size-4 -translate-x-1/2 rounded-full border-4 border-background md:left-1/2 md:block',
                             tone.dot,
                           )}
                         />
@@ -1108,7 +1128,13 @@ export const ResumeCvKimiPage2 = defineCapsule({
                         </div>
                         <button
                           type="button"
-                          onClick={() => void saveProject('Skill', card.title, card.description)}
+                          onClick={() =>
+                            void saveProject(
+                              'Skill',
+                              card.title,
+                              card.description,
+                            )
+                          }
                           aria-label={`Save ${card.title} to projects`}
                           className="text-muted-foreground transition-colors hover:text-primary"
                         >
@@ -1230,9 +1256,15 @@ export const ResumeCvKimiPage2 = defineCapsule({
                   onSubmit={(e) => {
                     e.preventDefault()
                     const form = e.currentTarget
-                    const name = (form.elements.namedItem('name') as HTMLInputElement).value
-                    const email = (form.elements.namedItem('email') as HTMLInputElement).value
-                    const message = (form.elements.namedItem('message') as HTMLTextAreaElement).value
+                    const name = (
+                      form.elements.namedItem('name') as HTMLInputElement
+                    ).value
+                    const email = (
+                      form.elements.namedItem('email') as HTMLInputElement
+                    ).value
+                    const message = (
+                      form.elements.namedItem('message') as HTMLTextAreaElement
+                    ).value
                     if (name && email && message) {
                       void submitInquiry(name, email, message)
                       form.reset()
@@ -1260,17 +1292,14 @@ export const ResumeCvKimiPage2 = defineCapsule({
                     rows={4}
                     className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
                   />
-                  <Button
-                    type="submit"
-                    className="w-full rounded-full"
-                  >
+                  <Button type="submit" className="w-full rounded-full">
                     Send Message
                   </Button>
                 </form>
               </div>
               <div className="inline-block rounded-2xl border border-border bg-card/50 p-6">
                 <p className="text-sm text-muted-foreground">
-                  {locationLabel}{" "}
+                  {locationLabel}{' '}
                   <span className="font-semibold text-foreground">
                     {contactLocation}
                   </span>

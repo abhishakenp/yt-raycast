@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { number, string, table } from "@ship-fast/lakebed/server"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { defineCapsule } from "./openui.ts"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { number, string, table } from '@ship-fast/lakebed/server'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { defineCapsule } from './openui.ts'
 import {
   Sheet,
   SheetClose,
@@ -14,12 +14,12 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
+} from '#/components/ui/sheet.tsx'
 
 export const ScheduleKimiPage5 = defineCapsule({
-  name: "ScheduleKimiPage5",
+  name: 'ScheduleKimiPage5',
   description:
-    "Schedule fifth style sibling to ScheduleKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.",
+    'Schedule fifth style sibling to ScheduleKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -33,7 +33,9 @@ export const ScheduleKimiPage5 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -64,16 +66,14 @@ export const ScheduleKimiPage5 = defineCapsule({
       }),
     },
     queries: {
-      planItems: ({ db }) => db.planItems.orderBy("createdAt").all(),
+      planItems: ({ db }) => db.planItems.orderBy('createdAt').all(),
     },
     mutations: {
       addPlanItem: ({ db }, name: string) => {
         const normalizedName = name.trim()
         if (!normalizedName) return db.planItems.all()
 
-        const existingItem = db.planItems
-          .where("name", normalizedName)
-          .all()[0]
+        const existingItem = db.planItems.where('name', normalizedName).all()[0]
 
         if (existingItem) {
           db.planItems.update(existingItem.id, {
@@ -84,7 +84,7 @@ export const ScheduleKimiPage5 = defineCapsule({
 
         db.planItems.insert({
           name: normalizedName,
-          note: "Saved language class interest",
+          note: 'Saved language class interest',
           count: 1,
         })
 
@@ -95,16 +95,14 @@ export const ScheduleKimiPage5 = defineCapsule({
         if (!normalizedName) return db.planItems.all()
 
         const nextCount = Math.max(0, Math.floor(count))
-        const existingItem = db.planItems
-          .where("name", normalizedName)
-          .all()[0]
+        const existingItem = db.planItems.where('name', normalizedName).all()[0]
 
         if (!existingItem) {
           if (!nextCount) return db.planItems.all()
 
           db.planItems.insert({
             name: normalizedName,
-            note: "Saved language class interest",
+            note: 'Saved language class interest',
             count: nextCount,
           })
           return db.planItems.all()
@@ -122,7 +120,7 @@ export const ScheduleKimiPage5 = defineCapsule({
         const normalizedName = name.trim()
         if (!normalizedName) return db.planItems.all()
 
-        for (const item of db.planItems.where("name", normalizedName).all()) {
+        for (const item of db.planItems.where('name', normalizedName).all()) {
           db.planItems.delete(item.id)
         }
 
@@ -140,64 +138,64 @@ export const ScheduleKimiPage5 = defineCapsule({
   component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [planOpen, setPlanOpen] = useState(false)
-    const brand = props.brand ?? "Class Schedule"
+    const brand = props.brand ?? 'Class Schedule'
     const nav = props.nav?.length
       ? props.nav
-      : ["Schedule", "Languages", "Teachers", "Pricing"]
+      : ['Schedule', 'Languages', 'Teachers', 'Pricing']
     const hero = {
-      eyebrow: "Schedule / Variant 5",
-      title: "Class Schedule",
+      eyebrow: 'Schedule / Variant 5',
+      title: 'Class Schedule',
       description:
-        "Class Schedule Language School Schedule Languages Teachers Pricing Class Schedule Learn a new language with expert instructors All Languages Spanish French German Japanese Manda...",
-      primaryCta: "All Languages",
-      secondaryCta: "Spanish",
-      imageAlt: "schedule hero scene",
+        'Class Schedule Language School Schedule Languages Teachers Pricing Class Schedule Learn a new language with expert instructors All Languages Spanish French German Japanese Manda...',
+      primaryCta: 'All Languages',
+      secondaryCta: 'Spanish',
+      imageAlt: 'schedule hero scene',
       ...props.hero,
     }
     const metrics = props.metrics?.length
       ? props.metrics
       : [
           {
-            value: "24/7",
-            label: "Responsive service",
+            value: '24/7',
+            label: 'Responsive service',
           },
           {
-            value: "98%",
-            label: "Positive outcomes",
+            value: '98%',
+            label: 'Positive outcomes',
           },
           {
-            value: "4.9",
-            label: "Average rating",
+            value: '4.9',
+            label: 'Average rating',
           },
           {
-            value: "12+",
-            label: "Core capabilities",
+            value: '12+',
+            label: 'Core capabilities',
           },
         ]
     const sections = props.sections?.length
       ? props.sections
       : [
           {
-            eyebrow: "Overview",
-            title: "Schedule strategy",
-            body: "Class Schedule Language School Schedule Languages Teachers Pricing Class Schedule Learn a new language with expert instructors All Languages Spanish French German Japanese Manda...",
+            eyebrow: 'Overview',
+            title: 'Schedule strategy',
+            body: 'Class Schedule Language School Schedule Languages Teachers Pricing Class Schedule Learn a new language with expert instructors All Languages Spanish French German Japanese Manda...',
             items: [],
           },
           {
-            eyebrow: "Experience",
-            title: "Schedule services",
+            eyebrow: 'Experience',
+            title: 'Schedule services',
             body: "Schedule page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
             items: [],
           },
           {
-            eyebrow: "Proof",
-            title: "Schedule results",
+            eyebrow: 'Proof',
+            title: 'Schedule results',
             body: "Schedule page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
             items: [],
           },
           {
-            eyebrow: "Next steps",
-            title: "Schedule support",
+            eyebrow: 'Next steps',
+            title: 'Schedule support',
             body: "Schedule page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
             items: [],
           },
@@ -206,34 +204,28 @@ export const ScheduleKimiPage5 = defineCapsule({
       ? props.gallery
       : [
           {
-            title: "Schedule visual 1",
-            alt: "schedule hero scene",
-            caption: "Schedule generated page detail",
+            title: 'Schedule visual 1',
+            alt: 'schedule hero scene',
+            caption: 'Schedule generated page detail',
           },
           {
-            title: "Schedule visual 2",
-            alt: "schedule customer experience",
-            caption: "Schedule generated page detail",
+            title: 'Schedule visual 2',
+            alt: 'schedule customer experience',
+            caption: 'Schedule generated page detail',
           },
           {
-            title: "Schedule visual 3",
-            alt: "schedule service detail",
-            caption: "Schedule generated page detail",
+            title: 'Schedule visual 3',
+            alt: 'schedule service detail',
+            caption: 'Schedule generated page detail',
           },
         ]
-    const storedPlanItems = lakebed.useQuery("planItems")
-    const addPlanItem = lakebed.useMutation("addPlanItem")
-    const setPlanItemCount = lakebed.useMutation("setPlanItemCount")
-    const removePlanItem = lakebed.useMutation("removePlanItem")
-    const clearPlanItems = lakebed.useMutation("clearPlanItems")
+    const storedPlanItems = lakebed.useQuery('planItems')
+    const addPlanItem = lakebed.useMutation('addPlanItem')
+    const setPlanItemCount = lakebed.useMutation('setPlanItemCount')
+    const removePlanItem = lakebed.useMutation('removePlanItem')
+    const clearPlanItems = lakebed.useMutation('clearPlanItems')
     const auth = lakebed.useAuth()
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
-    const authLabel =
-      auth.displayName ||
-      auth.user?.displayName ||
-      auth.email ||
-      auth.user?.email ||
-      "Account"
     const handleSignIn = () => {
       if (auth.isLoading) return
       void lakebed.signInWithGoogle()
@@ -243,26 +235,28 @@ export const ScheduleKimiPage5 = defineCapsule({
     }
     const fallbackPlanItems = [
       {
-        id: "default-all-languages",
+        id: 'default-all-languages',
         name: hero.primaryCta,
-        note: "Explore all available language courses.",
+        note: 'Explore all available language courses.',
         count: 0,
       },
       {
-        id: "default-secondary",
+        id: 'default-secondary',
         name: hero.secondaryCta,
-        note: "Start with this featured language.",
+        note: 'Start with this featured language.',
         count: 0,
       },
       {
-        id: "default-pricing",
-        name: "Pricing",
-        note: "Review available plans and tuition.",
+        id: 'default-pricing',
+        name: 'Pricing',
+        note: 'Review available plans and tuition.',
         count: 0,
       },
     ]
     const hasStoredPlanItems = Boolean(storedPlanItems?.length)
-    const planItems = (hasStoredPlanItems ? storedPlanItems : fallbackPlanItems) as Array<{
+    const planItems = (
+      hasStoredPlanItems ? storedPlanItems : fallbackPlanItems
+    ) as Array<{
       id: string
       name: string
       note: string
@@ -291,13 +285,16 @@ export const ScheduleKimiPage5 = defineCapsule({
 
     return (
       <div
-        className={cn("min-h-screen bg-background text-foreground", props.className)}
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
       >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
             <button
               type="button"
-              onClick={() => go("Home")}
+              onClick={() => go('Home')}
               className="text-left text-lg font-semibold tracking-tight"
             >
               {brand}
@@ -335,7 +332,7 @@ export const ScheduleKimiPage5 = defineCapsule({
                     <SheetDescription>
                       {planItemCount > 0
                         ? `${planItemCount} item${planItemCount === 1 ? '' : 's'} in your plan`
-                        : "Build your language study plan from anything you like in the page."}
+                        : 'Build your language study plan from anything you like in the page.'}
                     </SheetDescription>
                   </SheetHeader>
 
@@ -351,13 +348,18 @@ export const ScheduleKimiPage5 = defineCapsule({
                               <p className="font-medium text-card-foreground">
                                 {item.name}
                               </p>
-                              <p className="text-sm text-muted-foreground">{item.note}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {item.note}
+                              </p>
                             </div>
                             <div className="mt-3 flex items-center gap-2">
                               <button
                                 type="button"
                                 onClick={() =>
-                                  handleSetPlanItemCount(item.name, item.count - 1)
+                                  handleSetPlanItemCount(
+                                    item.name,
+                                    item.count - 1,
+                                  )
                                 }
                                 className="grid size-8 place-items-center rounded-md border border-border text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
                               >
@@ -369,7 +371,10 @@ export const ScheduleKimiPage5 = defineCapsule({
                               <button
                                 type="button"
                                 onClick={() =>
-                                  handleSetPlanItemCount(item.name, item.count + 1)
+                                  handleSetPlanItemCount(
+                                    item.name,
+                                    item.count + 1,
+                                  )
                                 }
                                 className="grid size-8 place-items-center rounded-md border border-border text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                               >
@@ -388,7 +393,8 @@ export const ScheduleKimiPage5 = defineCapsule({
                       </div>
                     ) : (
                       <div className="rounded-lg border border-dashed border-border bg-muted/40 px-4 py-6 text-sm text-muted-foreground">
-                        No entries yet. Add items from sections to build your plan.
+                        No entries yet. Add items from sections to build your
+                        plan.
                       </div>
                     )}
                   </div>
@@ -425,7 +431,7 @@ export const ScheduleKimiPage5 = defineCapsule({
                             disabled={auth.isLoading}
                             className="rounded-md border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-60"
                           >
-                            {auth.isLoading ? "Checking account..." : "Sign in"}
+                            {auth.isLoading ? 'Checking account...' : 'Sign in'}
                           </button>
                         )}
                       </div>

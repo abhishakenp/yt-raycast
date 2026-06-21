@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,7 +12,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "#/components/ui/command.tsx"
+} from '#/components/ui/command.tsx'
 import {
   Sheet,
   SheetClose,
@@ -22,14 +22,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * EducationKimiPage — a complete, self-contained K–12 private school landing page.
@@ -50,9 +50,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * make it render fully on zero args.
  */
 export const EducationKimiPage = defineCapsule({
-  name: "EducationKimiPage",
+  name: 'EducationKimiPage',
   description:
-    "Complete private K–12 education / school LANDING page with a warm, scholarly aesthetic: glassy sticky navbar with brand mark and Apply CTA, a full-bleed hero photograph with dark overlay and admissions messaging, an accreditations strip, a 4-up feature grid with icon cards (intimate classrooms, research lab, global exchange, whole-student support), a 6-up academic program grid with photo cards (Lower/Middle/Upper School, STEM, Arts, Athletics), a 4-step numbered admissions timeline, a 6-up faculty directory with headshot cards, a 6-up campus life photo gallery with figure captions, a 3-tier tuition table plus a boarding banner and financial-aid sidebar, a 6-stat data band (student-faculty ratio, college acceptance, campus acreage, clubs, aid budget, diversity), a 3-up testimonial grid with parent and student quotes and avatar photos, a native details/summary FAQ accordion, a dark closing CTA banner, and a 4-column footer with social icons. Use as the ROOT/home page for private schools, academies, preparatory schools, boarding schools, charter schools, international schools, or any K–12 educational institution when an admissions-focused, family-trust-building page with academics, faculty credentials, tuition transparency, and campus life photography is wanted. Supply content only — brand, nav, hero, accreditations, features, programs, admissions, faculty, gallery, pricing, stats, testimonials, faq, cta, footer; the block owns all layout and styling.",
+    'Complete private K–12 education / school LANDING page with a warm, scholarly aesthetic: glassy sticky navbar with brand mark and Apply CTA, a full-bleed hero photograph with dark overlay and admissions messaging, an accreditations strip, a 4-up feature grid with icon cards (intimate classrooms, research lab, global exchange, whole-student support), a 6-up academic program grid with photo cards (Lower/Middle/Upper School, STEM, Arts, Athletics), a 4-step numbered admissions timeline, a 6-up faculty directory with headshot cards, a 6-up campus life photo gallery with figure captions, a 3-tier tuition table plus a boarding banner and financial-aid sidebar, a 6-stat data band (student-faculty ratio, college acceptance, campus acreage, clubs, aid budget, diversity), a 3-up testimonial grid with parent and student quotes and avatar photos, a native details/summary FAQ accordion, a dark closing CTA banner, and a 4-column footer with social icons. Use as the ROOT/home page for private schools, academies, preparatory schools, boarding schools, charter schools, international schools, or any K–12 educational institution when an admissions-focused, family-trust-building page with academics, faculty credentials, tuition transparency, and campus life photography is wanted. Supply content only — brand, nav, hero, accreditations, features, programs, admissions, faculty, gallery, pricing, stats, testimonials, faq, cta, footer; the block owns all layout and styling.',
   props: z.object({
     /** School / brand name shown in navbar and footer. */
     brand: z.string().optional(),
@@ -269,7 +269,14 @@ export const EducationKimiPage = defineCapsule({
         new Set(db.savedPrograms.all().map((saved) => saved.programTitle)),
     },
     mutations: {
-      addInquiry: ({ db }, programTitle: string, studentName: string, gradeLevel: string, email: string, phone: string) => {
+      addInquiry: (
+        { db },
+        programTitle: string,
+        studentName: string,
+        gradeLevel: string,
+        email: string,
+        phone: string,
+      ) => {
         const program = db.programs.where('title', programTitle).all()[0]
         if (!program) return db.inquiries.all()
 
@@ -317,10 +324,10 @@ export const EducationKimiPage = defineCapsule({
     const [mobileOpen, setMobileOpen] = useState(false)
     const [searchOpen, setSearchOpen] = useState(false)
     const [inquiriesOpen, setInquiriesOpen] = useState(false)
-    const brand = props.brand ?? "Meridian Academy"
+    const brand = props.brand ?? 'Meridian Academy'
     const nav = props.nav?.length
       ? props.nav
-      : ["Academics", "Admissions", "Campus Life", "Faculty", "FAQ"]
+      : ['Academics', 'Admissions', 'Campus Life', 'Faculty', 'FAQ']
 
     // Lakebed hooks
     const storedPrograms = lakebed.useQuery('programs')
@@ -361,108 +368,114 @@ export const EducationKimiPage = defineCapsule({
     }
 
     // ── Hero defaults ──
-    const heroBadge = props.hero?.badge ?? "Cambridge, Massachusetts — Est. 1892"
+    const heroBadge =
+      props.hero?.badge ?? 'Cambridge, Massachusetts — Est. 1892'
     const heroHeading =
-      props.hero?.heading ?? "An Education That Honors Curiosity"
+      props.hero?.heading ?? 'An Education That Honors Curiosity'
     const heroSub =
       props.hero?.subheading ??
-      "At Meridian Academy, we blend rigorous academics with creative exploration for students from kindergarten through twelfth grade. Discover a community where every student is known, challenged, and supported."
-    const heroPrimary = props.hero?.primaryCta ?? "Explore Programs"
-    const heroSecondary = props.hero?.secondaryCta ?? "Schedule a Tour"
+      'At Meridian Academy, we blend rigorous academics with creative exploration for students from kindergarten through twelfth grade. Discover a community where every student is known, challenged, and supported.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Explore Programs'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Schedule a Tour'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Historic red-brick school campus building with green ivy and blue sky"
+      'Historic red-brick school campus building with green ivy and blue sky'
 
     // ── Accreditations defaults ──
-    const accLabel = props.accreditations?.label ?? "Accredited & Recognized By"
+    const accLabel = props.accreditations?.label ?? 'Accredited & Recognized By'
     const accNames = props.accreditations?.names?.length
       ? props.accreditations.names
-      : ["NAIS", "NEASC", "IB World School", "College Board", "Green Ribbon School"]
+      : [
+          'NAIS',
+          'NEASC',
+          'IB World School',
+          'College Board',
+          'Green Ribbon School',
+        ]
 
     // ── Features defaults ──
     const featuresHeading =
-      props.features?.heading ?? "Designed for Deep Learning"
+      props.features?.heading ?? 'Designed for Deep Learning'
     const featuresDesc =
       props.features?.description ??
-      "We built Meridian around a simple belief: students learn best when they are seen. Our structure ensures every child receives mentorship, challenge, and room to grow."
+      'We built Meridian around a simple belief: students learn best when they are seen. Our structure ensures every child receives mentorship, challenge, and room to grow.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Intimate Classrooms",
+            title: 'Intimate Classrooms',
             description:
-              "Average 12 students per class. Socratic seminars and individualized feedback replace lecture-heavy instruction.",
+              'Average 12 students per class. Socratic seminars and individualized feedback replace lecture-heavy instruction.',
           },
           {
-            title: "Research & Innovation",
+            title: 'Research & Innovation',
             description:
-              "An on-campus AI lab and maker space. Every senior completes a capstone thesis, and many publish before graduation.",
+              'An on-campus AI lab and maker space. Every senior completes a capstone thesis, and many publish before graduation.',
           },
           {
-            title: "Global Perspective",
+            title: 'Global Perspective',
             description:
-              "Exchange programs in 8 countries. Mandarin, Spanish, and Latin instruction begins in Grade 3.",
+              'Exchange programs in 8 countries. Mandarin, Spanish, and Latin instruction begins in Grade 3.',
           },
           {
-            title: "Whole-Student Support",
+            title: 'Whole-Student Support',
             description:
-              "Dedicated advisory program, college counseling from Grade 9, and a full-time wellness curriculum.",
+              'Dedicated advisory program, college counseling from Grade 9, and a full-time wellness curriculum.',
           },
         ]
 
     // ── Programs defaults ──
-    const programsOverline = props.programs?.overline ?? "Academics"
-    const programsHeading =
-      props.programs?.heading ?? "Academic Programs"
+    const programsOverline = props.programs?.overline ?? 'Academics'
+    const programsHeading = props.programs?.heading ?? 'Academic Programs'
     const programsDesc =
       props.programs?.description ??
-      "A continuous path from foundational skills to advanced scholarly research, supported by specialists in STEM, arts, and humanities."
+      'A continuous path from foundational skills to advanced scholarly research, supported by specialists in STEM, arts, and humanities.'
     const programsLinkLabel =
-      props.programs?.linkLabel ?? "View the curriculum catalog"
+      props.programs?.linkLabel ?? 'View the curriculum catalog'
     const staticProgramItems = props.programs?.items?.length
       ? props.programs.items
       : [
           {
-            title: "Lower School",
+            title: 'Lower School',
             description:
-              "Kindergarten through Grade 5. Inquiry-based literacy, Singapore Math, and weekly science labs build confidence and curiosity from day one.",
+              'Kindergarten through Grade 5. Inquiry-based literacy, Singapore Math, and weekly science labs build confidence and curiosity from day one.',
             imageAlt:
-              "Young children sitting together reading picture books in a bright classroom library",
+              'Young children sitting together reading picture books in a bright classroom library',
           },
           {
-            title: "Middle School",
+            title: 'Middle School',
             description:
-              "Grades 6–8. Immersive history cycles, formal debate training, and an introductory coding sequence develop critical thinking.",
+              'Grades 6–8. Immersive history cycles, formal debate training, and an introductory coding sequence develop critical thinking.',
             imageAlt:
-              "Middle school students collaborating around a desk with laptops and notebooks",
+              'Middle school students collaborating around a desk with laptops and notebooks',
           },
           {
-            title: "Upper School",
+            title: 'Upper School',
             description:
-              "Grades 9–12. Twenty-five AP courses, senior thesis, and independent study options prepare graduates for selective colleges.",
+              'Grades 9–12. Twenty-five AP courses, senior thesis, and independent study options prepare graduates for selective colleges.',
             imageAlt:
-              "High school students studying together in a large modern library with tall bookshelves",
+              'High school students studying together in a large modern library with tall bookshelves',
           },
           {
-            title: "STEM Initiative",
+            title: 'STEM Initiative',
             description:
-              "Robotics, computational biology, data science electives, and a university partnership for advanced mathematics research.",
+              'Robotics, computational biology, data science electives, and a university partnership for advanced mathematics research.',
             imageAlt:
-              "A student using a soldering iron on a circuit board in a robotics lab",
+              'A student using a soldering iron on a circuit board in a robotics lab',
           },
           {
-            title: "Arts Conservatory",
+            title: 'Arts Conservatory',
             description:
-              "Theater, chamber music, ceramics, and film production. Private instruction and master classes with visiting artists.",
+              'Theater, chamber music, ceramics, and film production. Private instruction and master classes with visiting artists.',
             imageAlt:
-              "Close-up of paint brushes and watercolor palettes on a wooden art studio table",
+              'Close-up of paint brushes and watercolor palettes on a wooden art studio table',
           },
           {
-            title: "Athletics",
+            title: 'Athletics',
             description:
-              "Twenty-six varsity teams, four gymnasiums, a 50-meter pool, and a dedicated strength and conditioning center.",
+              'Twenty-six varsity teams, four gymnasiums, a 50-meter pool, and a dedicated strength and conditioning center.',
             imageAlt:
-              "Athlete runners sprinting on an outdoor all-weather track during golden hour",
+              'Athlete runners sprinting on an outdoor all-weather track during golden hour',
           },
         ]
 
@@ -476,323 +489,328 @@ export const EducationKimiPage = defineCapsule({
     const inquiryCount = safeInquiryLines.length
 
     // ── Admissions defaults ──
-    const admissionsOverline = props.admissions?.overline ?? "Admissions"
-    const admissionsHeading = props.admissions?.heading ?? "How to Apply"
+    const admissionsOverline = props.admissions?.overline ?? 'Admissions'
+    const admissionsHeading = props.admissions?.heading ?? 'How to Apply'
     const admissionsDesc =
       props.admissions?.description ??
-      "Our admissions process is designed to get to know your child and your family. We welcome applications from all backgrounds."
+      'Our admissions process is designed to get to know your child and your family. We welcome applications from all backgrounds.'
     const admissionSteps = props.admissions?.steps?.length
       ? props.admissions.steps
       : [
           {
-            title: "Inquiry & Tour",
+            title: 'Inquiry & Tour',
             description:
-              "Attend an open house or schedule a private campus visit. Fall open houses are September 12 and October 3, 2026.",
+              'Attend an open house or schedule a private campus visit. Fall open houses are September 12 and October 3, 2026.',
           },
           {
-            title: "Apply Online",
+            title: 'Apply Online',
             description:
-              "Submit the Gateway to Prep Schools application. Deadline: January 15, 2027. Application fee: $75.",
+              'Submit the Gateway to Prep Schools application. Deadline: January 15, 2027. Application fee: $75.',
           },
           {
-            title: "Student Visit",
+            title: 'Student Visit',
             description:
-              "Spend a day attending classes with a student ambassador. Available for applicants to Grades 3–12.",
+              'Spend a day attending classes with a student ambassador. Available for applicants to Grades 3–12.',
           },
           {
-            title: "Decision",
+            title: 'Decision',
             description:
-              "Notification for regular decision: March 10, 2027. Enrollment contracts are due April 10, 2027.",
+              'Notification for regular decision: March 10, 2027. Enrollment contracts are due April 10, 2027.',
           },
         ]
 
     // ── Faculty defaults ──
-    const facultyOverline = props.faculty?.overline ?? "Our People"
-    const facultyHeading = props.faculty?.heading ?? "Meet the Faculty"
+    const facultyOverline = props.faculty?.overline ?? 'Our People'
+    const facultyHeading = props.faculty?.heading ?? 'Meet the Faculty'
     const facultyDesc =
       props.faculty?.description ??
-      "Scholars, mentors, and practitioners who have taught at leading universities and schools before choosing the classroom."
+      'Scholars, mentors, and practitioners who have taught at leading universities and schools before choosing the classroom.'
     const facultyMembers = props.faculty?.members?.length
       ? props.faculty.members
       : [
           {
-            name: "Dr. Eleanor Vance",
-            role: "Head of School",
-            bio: "Ed.D., Harvard University. Fifteen years of independent school leadership and a former policy advisor to the MA Board of Education.",
+            name: 'Dr. Eleanor Vance',
+            role: 'Head of School',
+            bio: 'Ed.D., Harvard University. Fifteen years of independent school leadership and a former policy advisor to the MA Board of Education.',
             imageAlt:
-              "Professional headshot of a woman in her fifties with short gray hair wearing a navy blazer, smiling warmly",
+              'Professional headshot of a woman in her fifties with short gray hair wearing a navy blazer, smiling warmly',
           },
           {
-            name: "Dr. James Okonkwo",
-            role: "Chair of Science",
-            bio: "Ph.D., MIT. Published biophysicist and lead mentor for the varsity robotics team, which placed first at the 2025 New England Regionals.",
+            name: 'Dr. James Okonkwo',
+            role: 'Chair of Science',
+            bio: 'Ph.D., MIT. Published biophysicist and lead mentor for the varsity robotics team, which placed first at the 2025 New England Regionals.',
             imageAlt:
-              "Professional headshot of a Black man in his forties wearing glasses and a light blue oxford shirt",
+              'Professional headshot of a Black man in his forties wearing glasses and a light blue oxford shirt',
           },
           {
-            name: "Sarah Chen",
-            role: "Chair of Humanities",
+            name: 'Sarah Chen',
+            role: 'Chair of Humanities',
             bio: 'M.A., Yale. Published poet and historian who developed the Grade 10 interdisciplinary "Cities & Civilizations" curriculum.',
             imageAlt:
-              "Professional headshot of an Asian woman in her thirties with shoulder-length black hair wearing a cream turtleneck",
+              'Professional headshot of an Asian woman in her thirties with shoulder-length black hair wearing a cream turtleneck',
           },
           {
-            name: "Marcus Bell",
-            role: "Director of Arts",
-            bio: "M.F.A., Rhode Island School of Design. Former Broadway set designer whose student productions have won seven state awards.",
+            name: 'Marcus Bell',
+            role: 'Director of Arts',
+            bio: 'M.F.A., Rhode Island School of Design. Former Broadway set designer whose student productions have won seven state awards.',
             imageAlt:
-              "Professional headshot of a bald man with a trimmed beard wearing a black crewneck sweater",
+              'Professional headshot of a bald man with a trimmed beard wearing a black crewneck sweater',
           },
           {
-            name: "Aisha Patel",
-            role: "College Counseling Director",
-            bio: "M.Ed., Stanford University. Former admissions officer at a selective liberal arts college. Oversees a 100% four-year placement rate.",
+            name: 'Aisha Patel',
+            role: 'College Counseling Director',
+            bio: 'M.Ed., Stanford University. Former admissions officer at a selective liberal arts college. Oversees a 100% four-year placement rate.',
             imageAlt:
-              "Professional headshot of a South Asian woman in her forties wearing a teal silk blouse",
+              'Professional headshot of a South Asian woman in her forties wearing a teal silk blouse',
           },
           {
-            name: "Robert Kim",
-            role: "Dean of Students",
-            bio: "M.S.W., Boston College. Twenty years of student life experience. Architect of the advisory and restorative-justice programs.",
+            name: 'Robert Kim',
+            role: 'Dean of Students',
+            bio: 'M.S.W., Boston College. Twenty years of student life experience. Architect of the advisory and restorative-justice programs.',
             imageAlt:
-              "Professional headshot of a Korean-American man in his fifties with silver-rimmed glasses wearing a charcoal suit",
+              'Professional headshot of a Korean-American man in his fifties with silver-rimmed glasses wearing a charcoal suit',
           },
         ]
 
     // ── Gallery defaults ──
-    const galleryOverline = props.gallery?.overline ?? "Campus Life"
-    const galleryHeading =
-      props.gallery?.heading ?? "Where Community Thrives"
+    const galleryOverline = props.gallery?.overline ?? 'Campus Life'
+    const galleryHeading = props.gallery?.heading ?? 'Where Community Thrives'
     const galleryDesc =
       props.gallery?.description ??
-      "From the lab to the stage, the track to the garden, life at Meridian is built around shared purpose and discovery."
+      'From the lab to the stage, the track to the garden, life at Meridian is built around shared purpose and discovery.'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
           {
-            caption: "Advanced Chemistry Lab",
+            caption: 'Advanced Chemistry Lab',
             imageAlt:
-              "Students conducting a chemistry experiment with beakers and gas burners in a modern science laboratory",
+              'Students conducting a chemistry experiment with beakers and gas burners in a modern science laboratory',
           },
           {
-            caption: "Theater Production — Spring 2026",
+            caption: 'Theater Production — Spring 2026',
             imageAlt:
-              "A student actor receiving flowers on stage under warm amber theater spotlights after a performance",
+              'A student actor receiving flowers on stage under warm amber theater spotlights after a performance',
           },
           {
-            caption: "Varsity Track & Field",
+            caption: 'Varsity Track & Field',
             imageAlt:
-              "Track athletes stretching before a meet on a red all-weather outdoor running track",
+              'Track athletes stretching before a meet on a red all-weather outdoor running track',
           },
           {
-            caption: "Chamber Music Rehearsal",
+            caption: 'Chamber Music Rehearsal',
             imageAlt:
-              "A cellist practicing in a sunlit rehearsal room with hardwood floors and a music stand",
+              'A cellist practicing in a sunlit rehearsal room with hardwood floors and a music stand',
           },
           {
-            caption: "Historic Campus Quad",
+            caption: 'Historic Campus Quad',
             imageAlt:
-              "Aerial view of a historic brick campus quad surrounded by autumn maple trees and stone pathways",
+              'Aerial view of a historic brick campus quad surrounded by autumn maple trees and stone pathways',
           },
           {
-            caption: "Community Service Day",
+            caption: 'Community Service Day',
             imageAlt:
-              "Students and teachers planting seedlings together at a community garden on a sunny Saturday morning",
+              'Students and teachers planting seedlings together at a community garden on a sunny Saturday morning',
           },
         ]
 
     // ── Pricing defaults ──
-    const pricingOverline =
-      props.pricing?.overline ?? "Tuition & Financial Aid"
+    const pricingOverline = props.pricing?.overline ?? 'Tuition & Financial Aid'
     const pricingHeading =
-      props.pricing?.heading ?? "Transparent Costs. Robust Support."
+      props.pricing?.heading ?? 'Transparent Costs. Robust Support.'
     const pricingDesc =
       props.pricing?.description ??
-      "We believe cost should never be a barrier to excellence. Thirty-eight percent of families receive need-based grants."
+      'We believe cost should never be a barrier to excellence. Thirty-eight percent of families receive need-based grants.'
     const pricingTiers = props.pricing?.tiers?.length
       ? props.pricing.tiers
       : [
           {
-            name: "Lower School",
-            price: "$38,500",
-            period: "per year — Kindergarten through Grade 5",
-            description: "",
+            name: 'Lower School',
+            price: '$38,500',
+            period: 'per year — Kindergarten through Grade 5',
+            description: '',
             features: [
-              "All instructional materials",
-              "Daily snack and lunch program",
-              "After-school care until 6:00 PM",
+              'All instructional materials',
+              'Daily snack and lunch program',
+              'After-school care until 6:00 PM',
             ],
           },
           {
-            name: "Middle School",
-            price: "$41,200",
-            period: "per year — Grades 6 through 8",
-            description: "",
+            name: 'Middle School',
+            price: '$41,200',
+            period: 'per year — Grades 6 through 8',
+            description: '',
             features: [
-              "Laptop lease and tech support",
-              "Athletics and theater fees",
-              "Local field trips and labs",
+              'Laptop lease and tech support',
+              'Athletics and theater fees',
+              'Local field trips and labs',
             ],
           },
           {
-            name: "Upper School",
-            price: "$44,000",
-            period: "per year — Grades 9 through 12",
-            description: "",
+            name: 'Upper School',
+            price: '$44,000',
+            period: 'per year — Grades 9 through 12',
+            description: '',
             features: [
-              "College counseling and testing",
-              "AP exam registration",
-              "Senior thesis advising",
+              'College counseling and testing',
+              'AP exam registration',
+              'Senior thesis advising',
             ],
           },
         ]
     const boardingHeading =
-      props.pricing?.boarding?.heading ??
-      "Boarding Program — Grades 9–12"
+      props.pricing?.boarding?.heading ?? 'Boarding Program — Grades 9–12'
     const boardingDesc =
       props.pricing?.boarding?.description ??
-      "Includes furnished dormitory room, all meals, weekend activities, and supervised study hall. Limited to 60 students."
-    const boardingPrice = props.pricing?.boarding?.price ?? "$68,500"
+      'Includes furnished dormitory room, all meals, weekend activities, and supervised study hall. Limited to 60 students.'
+    const boardingPrice = props.pricing?.boarding?.price ?? '$68,500'
     const boardingPeriod =
-      props.pricing?.boarding?.period ?? "all-inclusive / year"
-    const aidHeading = props.pricing?.aidHeading ?? "Financial Aid"
+      props.pricing?.boarding?.period ?? 'all-inclusive / year'
+    const aidHeading = props.pricing?.aidHeading ?? 'Financial Aid'
     const aidDesc =
       props.pricing?.aidDescription ??
-      "Meridian awarded $4.2 million in need-based aid last year. The average grant for aided families was $28,500. Merit scholarships are available for exceptional achievement in STEM and the arts."
-    const aidCta = props.pricing?.aidCta ?? "Calculate your estimated aid"
-    const feesHeading = props.pricing?.feesHeading ?? "Additional Fees"
+      'Meridian awarded $4.2 million in need-based aid last year. The average grant for aided families was $28,500. Merit scholarships are available for exceptional achievement in STEM and the arts.'
+    const aidCta = props.pricing?.aidCta ?? 'Calculate your estimated aid'
+    const feesHeading = props.pricing?.feesHeading ?? 'Additional Fees'
     const feesItems = props.pricing?.fees?.length
       ? props.pricing.fees
       : [
-          { label: "Books & Supplies:", value: "$800 – $1,200 / year" },
-          { label: "Technology Fee:", value: "$500 / year" },
-          { label: "Bus Transportation:", value: "$2,400 / year (optional)" },
-          { label: "Athletic Fee:", value: "$300 / sport (optional)" },
+          { label: 'Books & Supplies:', value: '$800 – $1,200 / year' },
+          { label: 'Technology Fee:', value: '$500 / year' },
+          { label: 'Bus Transportation:', value: '$2,400 / year (optional)' },
+          { label: 'Athletic Fee:', value: '$300 / sport (optional)' },
         ]
 
     // ── Stats defaults ──
     const statItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "12:1", label: "Student-Faculty Ratio" },
-          { value: "100%", label: "4-Year College Acceptance" },
-          { value: "85", label: "Acre Campus" },
-          { value: "40+", label: "Student-Led Clubs" },
-          { value: "$4.2M", label: "Financial Aid Budget" },
-          { value: "45%", label: "Students of Color" },
+          { value: '12:1', label: 'Student-Faculty Ratio' },
+          { value: '100%', label: '4-Year College Acceptance' },
+          { value: '85', label: 'Acre Campus' },
+          { value: '40+', label: 'Student-Led Clubs' },
+          { value: '$4.2M', label: 'Financial Aid Budget' },
+          { value: '45%', label: 'Students of Color' },
         ]
 
     // ── Testimonials defaults ──
     const testimonialsOverline =
-      props.testimonials?.overline ?? "Community Voices"
+      props.testimonials?.overline ?? 'Community Voices'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Families Say"
+      props.testimonials?.heading ?? 'What Families Say'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
-            name: "Priya & David R.",
-            role: "Parents of Grade 11 student",
+            name: 'Priya & David R.',
+            role: 'Parents of Grade 11 student',
             quote:
               '"Meridian gave our daughter the confidence to pursue aerospace engineering. The faculty mentorship is unlike anything we have seen. She emails her physics teacher at 9 PM and gets thoughtful feedback by morning."',
             imageAlt:
-              "Casual outdoor portrait of a smiling Indian-American couple standing in a leafy backyard garden",
+              'Casual outdoor portrait of a smiling Indian-American couple standing in a leafy backyard garden',
           },
           {
-            name: "Thomas Wright",
-            role: "Class of 2026",
+            name: 'Thomas Wright',
+            role: 'Class of 2026',
             quote:
               '"The teachers here actually know you. They are mentors, not just lecturers. My thesis advisor helped me publish a paper in a regional journal before I even applied to college."',
             imageAlt:
-              "Headshot of a teenage boy with curly brown hair wearing a Meridian Academy hoodie",
+              'Headshot of a teenage boy with curly brown hair wearing a Meridian Academy hoodie',
           },
           {
-            name: "Leah Park",
-            role: "Class of 2025, Dartmouth College",
+            name: 'Leah Park',
+            role: 'Class of 2025, Dartmouth College',
             quote:
               '"I never thought I would love field research until my junior-year independent study in ecology. Meridian made that possible. The lab skills I learned here put me two years ahead of my college classmates."',
             imageAlt:
-              "Headshot of a young Korean-American woman with a broad smile wearing a denim jacket",
+              'Headshot of a young Korean-American woman with a broad smile wearing a denim jacket',
           },
         ]
 
     // ── FAQ defaults ──
-    const faqOverline = props.faq?.overline ?? "Admissions FAQ"
-    const faqHeading = props.faq?.heading ?? "Frequently Asked Questions"
+    const faqOverline = props.faq?.overline ?? 'Admissions FAQ'
+    const faqHeading = props.faq?.heading ?? 'Frequently Asked Questions'
     const faqDesc =
       props.faq?.description ??
-      "If you do not see your question here, please contact the Admissions Office."
-    const faqContactEmail = props.faq?.contactEmail ?? "admissions@meridianacademy.edu"
-    const faqContactPhone = props.faq?.contactPhone ?? "(617) 555-0140"
+      'If you do not see your question here, please contact the Admissions Office.'
+    const faqContactEmail =
+      props.faq?.contactEmail ?? 'admissions@meridianacademy.edu'
+    const faqContactPhone = props.faq?.contactPhone ?? '(617) 555-0140'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            question: "What is the application deadline for Fall 2027?",
+            question: 'What is the application deadline for Fall 2027?',
             answer:
-              "For all grades, the regular application deadline is January 15, 2027. Early decision applicants must submit materials by November 1, 2026. Late applications are accepted on a rolling basis if space remains available.",
+              'For all grades, the regular application deadline is January 15, 2027. Early decision applicants must submit materials by November 1, 2026. Late applications are accepted on a rolling basis if space remains available.',
           },
           {
-            question: "Do you require standardized testing?",
+            question: 'Do you require standardized testing?',
             answer:
-              "Applicants to grades 6–12 must submit either the ISEE or SSAT. We also accept the Character Skills Snapshot. We are test-optional for the 2026–27 admissions cycle due to ongoing regional access issues, though we recommend submitting scores if available.",
+              'Applicants to grades 6–12 must submit either the ISEE or SSAT. We also accept the Character Skills Snapshot. We are test-optional for the 2026–27 admissions cycle due to ongoing regional access issues, though we recommend submitting scores if available.',
           },
           {
-            question: "Is there school bus transportation?",
+            question: 'Is there school bus transportation?',
             answer:
-              "Yes. We operate morning and afternoon bus routes covering Cambridge, Somerville, Brookline, and Newton. The annual bus fee is $2,400. Morning shuttles also connect to the Harvard Square and Kendall MBTA stations.",
+              'Yes. We operate morning and afternoon bus routes covering Cambridge, Somerville, Brookline, and Newton. The annual bus fee is $2,400. Morning shuttles also connect to the Harvard Square and Kendall MBTA stations.',
           },
           {
-            question: "How does financial aid work?",
+            question: 'How does financial aid work?',
             answer:
-              "All families apply through the School and Student Services (SSS) portal by February 1. Aid is entirely need-based. Last year, 38 percent of students received grants averaging $28,500. Merit scholarships for arts and STEM are separate and require a portfolio or exam.",
+              'All families apply through the School and Student Services (SSS) portal by February 1. Aid is entirely need-based. Last year, 38 percent of students received grants averaging $28,500. Merit scholarships for arts and STEM are separate and require a portfolio or exam.',
           },
           {
-            question: "Are there summer programs?",
+            question: 'Are there summer programs?',
             answer:
-              "Yes. We offer a six-week academic enrichment and arts program open to all rising 1st–9th graders, including non-Meridian students. Courses include creative writing, introductory Python, ceramics, and outdoor ecology. Registration opens in February.",
+              'Yes. We offer a six-week academic enrichment and arts program open to all rising 1st–9th graders, including non-Meridian students. Courses include creative writing, introductory Python, ceramics, and outdoor ecology. Registration opens in February.',
           },
           {
-            question: "Can I visit campus before applying?",
+            question: 'Can I visit campus before applying?',
             answer:
-              "Absolutely. We encourage all families to attend an open house or schedule a private tour through the admissions calendar. Tours are offered Monday through Friday at 9:00 AM and 1:30 PM, and select Saturday mornings.",
+              'Absolutely. We encourage all families to attend an open house or schedule a private tour through the admissions calendar. Tours are offered Monday through Friday at 9:00 AM and 1:30 PM, and select Saturday mornings.',
           },
         ]
 
     // ── CTA defaults ──
-    const ctaHeading = props.cta?.heading ?? "Begin Your Journey"
+    const ctaHeading = props.cta?.heading ?? 'Begin Your Journey'
     const ctaSub =
       props.cta?.subheading ??
-      "Applications for the 2027–2028 academic year are now open. Join 420 students who call Meridian home. Financial aid grants and merit scholarships are available."
-    const ctaPrimary = props.cta?.primaryCta ?? "Start Your Application"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Email Admissions"
+      'Applications for the 2027–2028 academic year are now open. Join 420 students who call Meridian home. Financial aid grants and merit scholarships are available.'
+    const ctaPrimary = props.cta?.primaryCta ?? 'Start Your Application'
+    const ctaSecondary = props.cta?.secondaryCta ?? 'Email Admissions'
     const ctaNote =
-      props.cta?.note ?? "Next open house: September 12, 2026 at 10:00 AM"
+      props.cta?.note ?? 'Next open house: September 12, 2026 at 10:00 AM'
 
     // ── Footer defaults ──
     const footerTagline =
       props.footer?.tagline ??
-      "Independent K–12 day and boarding school in Cambridge, Massachusetts. Committed to academic excellence, ethical leadership, and creative thinking since 1892."
+      'Independent K–12 day and boarding school in Cambridge, Massachusetts. Committed to academic excellence, ethical leadership, and creative thinking since 1892.'
     const footerLinks = props.footer?.quickLinks?.length
       ? props.footer.quickLinks
-      : ["About", "Academics", "Admissions", "Campus Life", "Calendar", "Employment"]
+      : [
+          'About',
+          'Academics',
+          'Admissions',
+          'Campus Life',
+          'Calendar',
+          'Employment',
+        ]
     const footerAddress = props.footer?.address?.length
       ? props.footer.address
-      : ["100 Meridian Way", "Cambridge, MA 02138"]
-    const footerPhone = props.footer?.phone ?? "(617) 555-0140"
-    const footerEmail =
-      props.footer?.email ?? "admissions@meridianacademy.edu"
+      : ['100 Meridian Way', 'Cambridge, MA 02138']
+    const footerPhone = props.footer?.phone ?? '(617) 555-0140'
+    const footerEmail = props.footer?.email ?? 'admissions@meridianacademy.edu'
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Non-Discrimination Policy", "Accessibility"]
+      : ['Privacy Policy', 'Non-Discrimination Policy', 'Accessibility']
     const footerCopyright =
-      props.footer?.copyright ?? `© ${new Date().getFullYear()} ${brand}. All rights reserved.`
+      props.footer?.copyright ??
+      `© ${new Date().getFullYear()} ${brand}. All rights reserved.`
 
     // ── Shared helpers ──
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid size-8 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground",
+          'grid size-8 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground',
           className,
         )}
       >
@@ -933,7 +951,7 @@ export const EducationKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "flex min-h-svh flex-col bg-background text-foreground antialiased",
+          'flex min-h-svh flex-col bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -1114,7 +1132,9 @@ export const EducationKimiPage = defineCapsule({
                   className="w-full gap-0 p-0 sm:max-w-md"
                 >
                   <SheetHeader className="border-b border-border p-6">
-                    <SheetTitle className="text-xl">Application Inquiries</SheetTitle>
+                    <SheetTitle className="text-xl">
+                      Application Inquiries
+                    </SheetTitle>
                     <SheetDescription>
                       {inquiryCount > 0
                         ? `${inquiryCount} inquiry${inquiryCount === 1 ? '' : 'ies'} ready for submission.`
@@ -1154,9 +1174,7 @@ export const EducationKimiPage = defineCapsule({
                               <div className="mt-4 flex items-center justify-between">
                                 <button
                                   type="button"
-                                  onClick={() =>
-                                    void removeInquiry(item.id)
-                                  }
+                                  onClick={() => void removeInquiry(item.id)}
                                   className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                                 >
                                   Remove
@@ -1172,7 +1190,8 @@ export const EducationKimiPage = defineCapsule({
                           No inquiries yet
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Explore our academic programs and submit an inquiry to start your application journey.
+                          Explore our academic programs and submit an inquiry to
+                          start your application journey.
                         </p>
                       </div>
                     )}
@@ -1361,7 +1380,10 @@ export const EducationKimiPage = defineCapsule({
               h={1080}
               className="absolute inset-0 h-full w-full object-cover"
             />
-            <div className="absolute inset-0 bg-foreground/50" aria-hidden="true" />
+            <div
+              className="absolute inset-0 bg-foreground/50"
+              aria-hidden="true"
+            />
             <div className="relative z-10 mx-auto w-full max-w-7xl px-6 py-24 lg:px-8">
               <div className="max-w-3xl">
                 <p className="mb-4 text-sm font-medium uppercase tracking-wide text-background/90">
@@ -1517,7 +1539,13 @@ export const EducationKimiPage = defineCapsule({
                           size="sm"
                           className="mt-4 w-full rounded-full"
                           onClick={() => {
-                            void addInquiry(item.title, 'Prospective Student', 'Grade Level', 'parent@example.com', '(555) 123-4567')
+                            void addInquiry(
+                              item.title,
+                              'Prospective Student',
+                              'Grade Level',
+                              'parent@example.com',
+                              '(555) 123-4567',
+                            )
                             setInquiriesOpen(true)
                           }}
                         >
@@ -1595,9 +1623,7 @@ export const EducationKimiPage = defineCapsule({
                       />
                     </div>
                     <div className="p-5">
-                      <h3 className="text-base font-semibold">
-                        {member.name}
-                      </h3>
+                      <h3 className="text-base font-semibold">{member.name}</h3>
                       <p className="mb-2 text-sm font-medium text-primary">
                         {member.role}
                       </p>
@@ -1677,10 +1703,7 @@ export const EducationKimiPage = defineCapsule({
                     </p>
                     <ul className="space-y-2 text-sm text-muted-foreground">
                       {tier.features.map((feat) => (
-                        <li
-                          key={feat}
-                          className="flex items-start gap-2"
-                        >
+                        <li key={feat} className="flex items-start gap-2">
                           <Check />
                           {feat}
                         </li>
@@ -1730,7 +1753,7 @@ export const EducationKimiPage = defineCapsule({
                       <li key={fee.label}>
                         <span className="font-medium text-foreground">
                           {fee.label}
-                        </span>{" "}
+                        </span>{' '}
                         {fee.value}
                       </li>
                     ))}
@@ -1809,15 +1832,15 @@ export const EducationKimiPage = defineCapsule({
                   {faqHeading}
                 </h2>
                 <p className="text-lg leading-relaxed text-muted-foreground">
-                  {faqDesc}{" "}
+                  {faqDesc}{' '}
                   <button
                     type="button"
                     onClick={() => go(faqContactEmail)}
                     className="font-medium text-primary underline transition-colors hover:text-primary/80"
                   >
                     {faqContactEmail}
-                  </button>{" "}
-                  or call{" "}
+                  </button>{' '}
+                  or call{' '}
                   <button
                     type="button"
                     onClick={() => go(faqContactPhone)}
@@ -1968,7 +1991,7 @@ export const EducationKimiPage = defineCapsule({
                 <button
                   type="button"
                   aria-label="Facebook"
-                  onClick={() => go("Facebook")}
+                  onClick={() => go('Facebook')}
                   className="transition-colors hover:text-background"
                 >
                   <svg
@@ -1987,7 +2010,7 @@ export const EducationKimiPage = defineCapsule({
                 <button
                   type="button"
                   aria-label="Instagram"
-                  onClick={() => go("Instagram")}
+                  onClick={() => go('Instagram')}
                   className="transition-colors hover:text-background"
                 >
                   <svg
@@ -2008,7 +2031,7 @@ export const EducationKimiPage = defineCapsule({
                 <button
                   type="button"
                   aria-label="LinkedIn"
-                  onClick={() => go("LinkedIn")}
+                  onClick={() => go('LinkedIn')}
                   className="transition-colors hover:text-background"
                 >
                   <svg
@@ -2029,7 +2052,7 @@ export const EducationKimiPage = defineCapsule({
                 <button
                   type="button"
                   aria-label="YouTube"
-                  onClick={() => go("YouTube")}
+                  onClick={() => go('YouTube')}
                   className="transition-colors hover:text-background"
                 >
                   <svg

@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,19 +14,19 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 export const FitnessKimiPage3 = defineCapsule({
-  name: "FitnessKimiPage3",
+  name: 'FitnessKimiPage3',
   description:
-    "Fitness third style sibling to FitnessKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions. Now full-stack with Lakebed: class booking system, contact inquiry form, Google authentication, and a bookings drawer for managing scheduled classes.",
+    'Fitness third style sibling to FitnessKimiPage, converted from generated Kimi HTML into a responsive token-compliant page block with hero storytelling, metrics, content sections, image-led cards, and conversion actions. Now full-stack with Lakebed: class booking system, contact inquiry form, Google authentication, and a bookings drawer for managing scheduled classes.',
   props: z.object({
     brand: z.string().optional(),
     nav: z.array(z.string()).optional(),
@@ -40,7 +40,9 @@ export const FitnessKimiPage3 = defineCapsule({
         imageAlt: z.string().optional(),
       })
       .optional(),
-    metrics: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    metrics: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
     sections: z
       .array(
         z.object({
@@ -114,104 +116,104 @@ export const FitnessKimiPage3 = defineCapsule({
     const [inquiryName, setInquiryName] = useState('')
     const [inquiryEmail, setInquiryEmail] = useState('')
     const [inquiryMessage, setInquiryMessage] = useState('')
-    
-    const brand = props.brand ?? "Apex Fitness Studio Train Without Limits"
-    const nav = props.nav?.length ? props.nav : ["Schedule", "Trainers", "Amenities", "Membership", "FAQ", "Join Now"]
+
+    const brand = props.brand ?? 'Apex Fitness Studio Train Without Limits'
+    const nav = props.nav?.length
+      ? props.nav
+      : ['Schedule', 'Trainers', 'Amenities', 'Membership', 'FAQ', 'Join Now']
     const hero = {
-      eyebrow: "Fitness / Variant 3",
-      title: "Forge Your Legacy",
-      description: "Apex Fitness Studio Train Without Limits APEX Schedule Trainers Amenities Membership FAQ Join Now Now enrolling June 2026 Forge Your Legacy Apex is a 12,500 sq ft training sanct...",
-      primaryCta: "Join",
-      secondaryCta: "APEX",
-      imageAlt: "member headshot portrait: smiling man with short beard",
+      eyebrow: 'Fitness / Variant 3',
+      title: 'Forge Your Legacy',
+      description:
+        'Apex Fitness Studio Train Without Limits APEX Schedule Trainers Amenities Membership FAQ Join Now Now enrolling June 2026 Forge Your Legacy Apex is a 12,500 sq ft training sanct...',
+      primaryCta: 'Join',
+      secondaryCta: 'APEX',
+      imageAlt: 'member headshot portrait: smiling man with short beard',
       ...props.hero,
     }
-    const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
-    const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Engineered for Excellence",
-    "body": "Apex Fitness Studio Train Without Limits APEX Schedule Trainers Amenities Membership FAQ Join Now Now enrolling June 2026 Forge Your Legacy Apex is a 12,500 sq ft training sanct...",
-    "items": [
-      "Inside the Facility",
-      "Memberships",
-      "Start Training in 3 Moves"
-    ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "Weekly Class Schedule",
-    "body": "Fitness page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "What Athletes Say",
-      "Common Questions",
-      "Ready to Train?"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Meet the Architects",
-    "body": "Fitness page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "24/7 Access",
-      "Olympic Lifting Zone",
-      "Recovery Suite"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Inside the Facility",
-    "body": "Fitness page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Climate Controlled",
-      "Advanced Air Filtration",
-      "Smart Lockers"
-    ]
-  }
-]
-    const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "Weekly Class Schedule",
-    "alt": "member headshot portrait: smiling man with short beard",
-    "caption": "Fitness generated page detail"
-  },
-  {
-    "title": "Meet the Architects",
-    "alt": "member headshot portrait: woman with dark wavy hair",
-    "caption": "Fitness generated page detail"
-  },
-  {
-    "title": "Inside the Facility",
-    "alt": "member headshot portrait: young man wearing glasses",
-    "caption": "Fitness generated page detail"
-  }
-]
+    const metrics = props.metrics?.length
+      ? props.metrics
+      : [
+          {
+            value: '24/7',
+            label: 'Responsive service',
+          },
+          {
+            value: '98%',
+            label: 'Positive outcomes',
+          },
+          {
+            value: '4.9',
+            label: 'Average rating',
+          },
+          {
+            value: '12+',
+            label: 'Core capabilities',
+          },
+        ]
+    const sections = props.sections?.length
+      ? props.sections
+      : [
+          {
+            eyebrow: 'Overview',
+            title: 'Engineered for Excellence',
+            body: 'Apex Fitness Studio Train Without Limits APEX Schedule Trainers Amenities Membership FAQ Join Now Now enrolling June 2026 Forge Your Legacy Apex is a 12,500 sq ft training sanct...',
+            items: [
+              'Inside the Facility',
+              'Memberships',
+              'Start Training in 3 Moves',
+            ],
+          },
+          {
+            eyebrow: 'Experience',
+            title: 'Weekly Class Schedule',
+            body: "Fitness page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['What Athletes Say', 'Common Questions', 'Ready to Train?'],
+          },
+          {
+            eyebrow: 'Proof',
+            title: 'Meet the Architects',
+            body: "Fitness page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: ['24/7 Access', 'Olympic Lifting Zone', 'Recovery Suite'],
+          },
+          {
+            eyebrow: 'Next steps',
+            title: 'Inside the Facility',
+            body: "Fitness page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+            items: [
+              'Climate Controlled',
+              'Advanced Air Filtration',
+              'Smart Lockers',
+            ],
+          },
+        ]
+    const gallery = props.gallery?.length
+      ? props.gallery
+      : [
+          {
+            title: 'Weekly Class Schedule',
+            alt: 'member headshot portrait: smiling man with short beard',
+            caption: 'Fitness generated page detail',
+          },
+          {
+            title: 'Meet the Architects',
+            alt: 'member headshot portrait: woman with dark wavy hair',
+            caption: 'Fitness generated page detail',
+          },
+          {
+            title: 'Inside the Facility',
+            alt: 'member headshot portrait: young man wearing glasses',
+            caption: 'Fitness generated page detail',
+          },
+        ]
 
     // Lakebed hooks
     const bookings = lakebed.useQuery('bookings')
-    const inquiries = lakebed.useQuery('inquiries')
     const addBooking = lakebed.useMutation('addBooking')
     const cancelBooking = lakebed.useMutation('cancelBooking')
     const submitInquiry = lakebed.useMutation('submitInquiry')
     const auth = lakebed.useAuth()
-    
+
     const isSignedIn = auth.isAuthenticated && !auth.isGuest
     const authEmail = auth.email || auth.user?.email
     const authPicture = auth.picture || auth.user?.picture
@@ -229,25 +231,29 @@ export const FitnessKimiPage3 = defineCapsule({
       : isSignedIn
         ? authDisplayName
         : 'Sign in'
-    
+
     const handleSignIn = () => {
       if (auth.isLoading) return
       void lakebed.signInWithGoogle()
     }
-    
+
     const handleSignOut = () => {
       lakebed.signOut()
     }
-    
+
     const handleBookClass = (className: string) => {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
-      const date = tomorrow.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+      const date = tomorrow.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
+      })
       const time = '9:00 AM'
       void addBooking(className, date, time)
       setBookingsOpen(true)
     }
-    
+
     const handleSubmitInquiry = (e: React.FormEvent) => {
       e.preventDefault()
       if (!inquiryName || !inquiryEmail || !inquiryMessage) return
@@ -257,7 +263,7 @@ export const FitnessKimiPage3 = defineCapsule({
       setInquiryMessage('')
       setInquiryOpen(false)
     }
-    
+
     const safeBookings = bookings ?? []
     const bookingCount = safeBookings.length
 
@@ -294,10 +300,19 @@ export const FitnessKimiPage3 = defineCapsule({
     )
 
     return (
-      <div className={cn("min-h-screen bg-background text-foreground", props.className)}>
+      <div
+        className={cn(
+          'min-h-screen bg-background text-foreground',
+          props.className,
+        )}
+      >
         <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
-            <button type="button" onClick={() => go("Home")} className="text-left text-lg font-semibold tracking-tight">
+            <button
+              type="button"
+              onClick={() => go('Home')}
+              className="text-left text-lg font-semibold tracking-tight"
+            >
               {brand}
             </button>
             <nav className="hidden items-center gap-1 md:flex">
@@ -535,13 +550,17 @@ export const FitnessKimiPage3 = defineCapsule({
                   <SheetHeader className="border-b border-border p-6">
                     <SheetTitle className="text-xl">Contact Us</SheetTitle>
                     <SheetDescription>
-                      Send us a message and we'll get back to you within 24 hours.
+                      Send us a message and we'll get back to you within 24
+                      hours.
                     </SheetDescription>
                   </SheetHeader>
                   <div className="flex-1 overflow-y-auto px-6 py-5">
                     <form onSubmit={handleSubmitInquiry} className="space-y-4">
                       <div className="space-y-2">
-                        <label htmlFor="inquiry-name" className="text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="inquiry-name"
+                          className="text-sm font-medium text-foreground"
+                        >
                           Name
                         </label>
                         <input
@@ -555,7 +574,10 @@ export const FitnessKimiPage3 = defineCapsule({
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="inquiry-email" className="text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="inquiry-email"
+                          className="text-sm font-medium text-foreground"
+                        >
                           Email
                         </label>
                         <input
@@ -569,7 +591,10 @@ export const FitnessKimiPage3 = defineCapsule({
                         />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="inquiry-message" className="text-sm font-medium text-foreground">
+                        <label
+                          htmlFor="inquiry-message"
+                          className="text-sm font-medium text-foreground"
+                        >
                           Message
                         </label>
                         <textarea
@@ -597,7 +622,9 @@ export const FitnessKimiPage3 = defineCapsule({
                       type="button"
                       className="w-full"
                       onClick={handleSubmitInquiry}
-                      disabled={!inquiryName || !inquiryEmail || !inquiryMessage}
+                      disabled={
+                        !inquiryName || !inquiryEmail || !inquiryMessage
+                      }
                     >
                       Send Message
                     </Button>
@@ -754,16 +781,28 @@ export const FitnessKimiPage3 = defineCapsule({
                 </div>
               </div>
               <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <Image alt={hero.imageAlt} w={1200} h={900} className="aspect-[4/3] w-full object-cover" />
+                <Image
+                  alt={hero.imageAlt}
+                  w={1200}
+                  h={900}
+                  className="aspect-[4/3] w-full object-cover"
+                />
               </div>
             </div>
           </section>
 
           <section className="mx-auto grid max-w-7xl gap-4 px-5 py-10 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border bg-card p-5">
-                <p className="text-3xl font-semibold text-card-foreground">{metric.value}</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{metric.label}</p>
+              <div
+                key={metric.label}
+                className="rounded-lg border border-border bg-card p-5"
+              >
+                <p className="text-3xl font-semibold text-card-foreground">
+                  {metric.value}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {metric.label}
+                </p>
               </div>
             ))}
           </section>
@@ -771,10 +810,19 @@ export const FitnessKimiPage3 = defineCapsule({
           <section className="border-y border-border bg-muted/40">
             <div className="mx-auto grid max-w-7xl gap-5 px-5 py-14 md:grid-cols-2">
               {sections.map((section, index) => (
-                <article key={section.title} className="rounded-lg border border-border bg-card p-6">
-                  <p className="text-sm font-medium text-primary">{section.eyebrow}</p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">{section.title}</h2>
-                  <p className="mt-3 leading-7 text-muted-foreground">{section.body}</p>
+                <article
+                  key={section.title}
+                  className="rounded-lg border border-border bg-card p-6"
+                >
+                  <p className="text-sm font-medium text-primary">
+                    {section.eyebrow}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-card-foreground">
+                    {section.title}
+                  </h2>
+                  <p className="mt-3 leading-7 text-muted-foreground">
+                    {section.body}
+                  </p>
                   {section.items?.length ? (
                     <div className="mt-5 grid gap-2">
                       {section.items.map((item) => (
@@ -783,7 +831,10 @@ export const FitnessKimiPage3 = defineCapsule({
                           type="button"
                           onClick={() => {
                             // Class/schedule-related sections trigger booking
-                            if (section.eyebrow === 'Experience' || section.eyebrow === 'Proof') {
+                            if (
+                              section.eyebrow === 'Experience' ||
+                              section.eyebrow === 'Proof'
+                            ) {
                               handleBookClass(item)
                             } else {
                               go(item)
@@ -805,8 +856,12 @@ export const FitnessKimiPage3 = defineCapsule({
           <section className="mx-auto max-w-7xl px-5 py-16">
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="text-sm font-medium text-primary">Generated visuals</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Content-led page moments</h2>
+                <p className="text-sm font-medium text-primary">
+                  Generated visuals
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                  Content-led page moments
+                </h2>
               </div>
               <button
                 type="button"
@@ -818,11 +873,26 @@ export const FitnessKimiPage3 = defineCapsule({
             </div>
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
-                <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <article
+                  key={item.title}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <Image
+                    alt={item.alt}
+                    w={900}
+                    h={700}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
-                    {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {item.title}
+                    </h3>
+                    {item.caption ? (
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {item.caption}
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -833,9 +903,15 @@ export const FitnessKimiPage3 = defineCapsule({
             <div className="rounded-lg border border-border bg-primary p-8 text-primary-foreground md:p-10">
               <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm font-medium text-primary-foreground/70">{brand}</p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Ready for the next step?</h2>
-                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">{hero.description}</p>
+                  <p className="text-sm font-medium text-primary-foreground/70">
+                    {brand}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Ready for the next step?
+                  </h2>
+                  <p className="mt-3 max-w-2xl leading-7 text-primary-foreground/80">
+                    {hero.description}
+                  </p>
                 </div>
                 <div className="flex flex-col gap-3">
                   <button
@@ -860,10 +936,17 @@ export const FitnessKimiPage3 = defineCapsule({
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">(c) {new Date().getFullYear()} {brand}. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              (c) {new Date().getFullYear()} {brand}. All rights reserved.
+            </p>
             <div className="flex flex-wrap gap-3">
               {nav.slice(0, 4).map((item) => (
-                <button key={item} type="button" onClick={() => go(item)} className="text-sm text-muted-foreground hover:text-foreground">
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => go(item)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
                   {item}
                 </button>
               ))}

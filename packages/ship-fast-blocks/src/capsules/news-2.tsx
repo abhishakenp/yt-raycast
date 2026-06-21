@@ -1,10 +1,10 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from "@ship-fast/lakebed/server"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
   SheetClose,
@@ -14,14 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "#/components/ui/sheet.tsx"
-import { Button } from "#/components/ui/button.tsx"
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "#/components/ui/popover.tsx"
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
+} from '#/components/ui/popover.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 /**
  * NewsKimiPage2 — a complete, self-contained NEWS / EDITORIAL homepage in a
@@ -47,7 +47,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar.tsx"
  * great full page with no props.
  */
 export const NewsKimiPage2 = defineCapsule({
-  name: "NewsKimiPage2",
+  name: 'NewsKimiPage2',
   description:
     "Complete NEWS / EDITORIAL / journalism HOMEPAGE (newspaper, magazine, online publication, media brand, blog index) in a BOLD DARK high-contrast magazine aesthetic — the visually DISTINCT second-style alternative / sibling to NewsKimiPage (which is a clean LIGHT broadsheet). Dark sticky navbar with a vivid breaking-news bar, then a dark featured-story block (one large lead article with photo, category pill + timestamp, plus a stacked rail of secondary headlines with thumbnails — NOT a tall marketing hero band), a 'Trending Topics' four-up category card grid with images and excerpts, a two-column layout (a 'Latest Stories' feed of horizontal image+headline article cards with category pills, dates and author bylines/avatars, plus a filter row and Load More, beside a content sidebar: a numbered Trending Now most-read list with read counts, a dark newsletter / Daily Pulse email signup, a Popular Topics tag cloud, and a Podcast promo card), a dark 'Premium Journalism' subscribe CTA with primary + student plan buttons, and a five-column dark footer with sections, company, support links, social icons and legal links. Use as the ROOT/home or index page for news sites, newspapers, magazines, editorial publications, media brands, content portals or article-heavy blogs that want a punchy dark look with dense multi-section content discovery. Supply content only — brand, nav, breaking, featured + secondary stories, category grid, latest feed, sidebar, CTA, footer; the block owns all layout and styling.",
   props: z.object({
@@ -192,8 +192,18 @@ export const NewsKimiPage2 = defineCapsule({
         new Set(db.readArticles.all().map((read) => read.articleTitle)),
     },
     mutations: {
-      saveArticle: ({ db }, articleTitle: string, articleCategory: string, articleImageAlt: string, articleExcerpt: string, articleAuthor: string, articleDate: string) => {
-        const existing = db.savedArticles.where('articleTitle', articleTitle).all()[0]
+      saveArticle: (
+        { db },
+        articleTitle: string,
+        articleCategory: string,
+        articleImageAlt: string,
+        articleExcerpt: string,
+        articleAuthor: string,
+        articleDate: string,
+      ) => {
+        const existing = db.savedArticles
+          .where('articleTitle', articleTitle)
+          .all()[0]
         if (existing) {
           db.savedArticles.delete(existing.id)
           return false
@@ -209,7 +219,9 @@ export const NewsKimiPage2 = defineCapsule({
         return true
       },
       removeSavedArticle: ({ db }, articleTitle: string) => {
-        for (const item of db.savedArticles.where('articleTitle', articleTitle).all()) {
+        for (const item of db.savedArticles
+          .where('articleTitle', articleTitle)
+          .all()) {
           db.savedArticles.delete(item.id)
         }
         return db.savedArticles.all()
@@ -221,7 +233,9 @@ export const NewsKimiPage2 = defineCapsule({
         return true
       },
       markAsRead: ({ db }, articleTitle: string) => {
-        const existing = db.readArticles.where('articleTitle', articleTitle).all()[0]
+        const existing = db.readArticles
+          .where('articleTitle', articleTitle)
+          .all()[0]
         if (existing) return false
         db.readArticles.insert({ articleTitle })
         return true
@@ -232,7 +246,7 @@ export const NewsKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [readingListOpen, setReadingListOpen] = useState(false)
-    const brand = props.brand ?? "PULSE"
+    const brand = props.brand ?? 'PULSE'
 
     const savedArticles = lakebed.useQuery('savedArticles')
     const savedArticleTitles = lakebed.useQuery('savedArticleTitles')
@@ -270,285 +284,308 @@ export const NewsKimiPage2 = defineCapsule({
     const savedCount = safeSavedArticles.length
     const nav = props.nav?.length
       ? props.nav
-      : ["World", "Politics", "Business", "Tech", "Science", "Culture", "Sports"]
+      : [
+          'World',
+          'Politics',
+          'Business',
+          'Tech',
+          'Science',
+          'Culture',
+          'Sports',
+        ]
 
-    const breakingBadge = props.breaking?.badge ?? "Breaking"
+    const breakingBadge = props.breaking?.badge ?? 'Breaking'
     const breakingHeadline =
       props.breaking?.headline ??
-      "Global climate summit reaches historic agreement on carbon reduction targets • Markets react to Federal Reserve announcement"
+      'Global climate summit reaches historic agreement on carbon reduction targets • Markets react to Federal Reserve announcement'
 
-    const featCategory = props.featured?.category ?? "Technology"
-    const featDate = props.featured?.date ?? "May 31, 2026"
-    const featReadTime = props.featured?.readTime ?? "8 min read"
+    const featCategory = props.featured?.category ?? 'Technology'
+    const featDate = props.featured?.date ?? 'May 31, 2026'
+    const featReadTime = props.featured?.readTime ?? '8 min read'
     const featTitle =
       props.featured?.title ??
-      "The AI Revolution Reshapes Silicon Valley: Inside the Race for Artificial General Intelligence"
+      'The AI Revolution Reshapes Silicon Valley: Inside the Race for Artificial General Intelligence'
     const featExcerpt =
       props.featured?.excerpt ??
-      "Leading tech companies are investing billions in the quest for AGI. We go inside the labs where the future of humanity is being coded, line by line."
+      'Leading tech companies are investing billions in the quest for AGI. We go inside the labs where the future of humanity is being coded, line by line.'
     const featImageAlt =
       props.featured?.imageAlt ??
-      "Aerial view of a massive tech convention with thousands of attendees and bright stage lighting"
+      'Aerial view of a massive tech convention with thousands of attendees and bright stage lighting'
     const secondary = props.featured?.secondary?.length
       ? props.featured.secondary
       : [
           {
-            category: "Politics",
+            category: 'Politics',
             title:
-              "Senate Passes Historic Infrastructure Bill After Marathon 14-Hour Session",
-            time: "2 hours ago",
-            imageAlt: "US Capitol building dome against a dramatic sunset sky",
+              'Senate Passes Historic Infrastructure Bill After Marathon 14-Hour Session',
+            time: '2 hours ago',
+            imageAlt: 'US Capitol building dome against a dramatic sunset sky',
           },
           {
-            category: "Business",
+            category: 'Business',
             title:
-              "Nasdaq Hits Record High as Tech Stocks Rally for Third Consecutive Week",
-            time: "4 hours ago",
+              'Nasdaq Hits Record High as Tech Stocks Rally for Third Consecutive Week',
+            time: '4 hours ago',
             imageAlt:
-              "Stock market trading floor with multiple screens showing financial charts",
+              'Stock market trading floor with multiple screens showing financial charts',
           },
           {
-            category: "Science",
+            category: 'Science',
             title:
-              "Breakthrough Quantum Computing Experiment Opens New Frontiers in Medicine",
-            time: "Yesterday",
+              'Breakthrough Quantum Computing Experiment Opens New Frontiers in Medicine',
+            time: 'Yesterday',
             imageAlt:
-              "Data visualization dashboard with colorful charts and graphs on dark background",
+              'Data visualization dashboard with colorful charts and graphs on dark background',
           },
           {
-            category: "Culture",
+            category: 'Culture',
             title:
-              "“Echoes of Silence”: The Documentary That Won Sundance and Broke Records",
-            time: "Yesterday",
+              '“Echoes of Silence”: The Documentary That Won Sundance and Broke Records',
+            time: 'Yesterday',
             imageAlt:
-              "Dramatic mountain landscape with snow-capped peaks and alpine lake",
+              'Dramatic mountain landscape with snow-capped peaks and alpine lake',
           },
         ]
 
-    const topicsHeading = props.topics?.heading ?? "Trending Topics"
-    const topicsViewAll = props.topics?.viewAll ?? "View All"
+    const topicsHeading = props.topics?.heading ?? 'Trending Topics'
+    const topicsViewAll = props.topics?.viewAll ?? 'View All'
     const topicItems = props.topics?.items?.length
       ? props.topics.items
       : [
           {
-            category: "World",
+            category: 'World',
             title:
-              "Global Leaders Convene Emergency Summit on Food Security Crisis",
+              'Global Leaders Convene Emergency Summit on Food Security Crisis',
             excerpt:
-              "Representatives from 47 nations gather in Brussels to address mounting concerns over supply chain disruptions and agricultural sustainability.",
-            time: "3 hours ago",
+              'Representatives from 47 nations gather in Brussels to address mounting concerns over supply chain disruptions and agricultural sustainability.',
+            time: '3 hours ago',
             imageAlt:
-              "International flags waving at United Nations headquarters in Geneva",
+              'International flags waving at United Nations headquarters in Geneva',
           },
           {
-            category: "Technology",
+            category: 'Technology',
             title:
-              "OpenAI Announces GPT-5 with Revolutionary Multimodal Capabilities",
+              'OpenAI Announces GPT-5 with Revolutionary Multimodal Capabilities',
             excerpt:
-              "The latest model demonstrates unprecedented reasoning abilities across text, images, audio, and video in real-time demonstrations.",
-            time: "5 hours ago",
+              'The latest model demonstrates unprecedented reasoning abilities across text, images, audio, and video in real-time demonstrations.',
+            time: '5 hours ago',
             imageAlt:
-              "Futuristic AI robot interface with holographic neural network visualization",
+              'Futuristic AI robot interface with holographic neural network visualization',
           },
           {
-            category: "Health",
-            title: "Cancer Vaccine Trial Shows 78% Efficacy in Phase III Results",
+            category: 'Health',
+            title:
+              'Cancer Vaccine Trial Shows 78% Efficacy in Phase III Results',
             excerpt:
-              "Revolutionary mRNA-based treatment demonstrates remarkable success in preventing recurrence among high-risk patient populations.",
-            time: "Yesterday",
+              'Revolutionary mRNA-based treatment demonstrates remarkable success in preventing recurrence among high-risk patient populations.',
+            time: 'Yesterday',
             imageAlt:
-              "Modern medical laboratory with scientists working with microscopes",
+              'Modern medical laboratory with scientists working with microscopes',
           },
           {
-            category: "Environment",
+            category: 'Environment',
             title:
-              "Record-Breaking Reforestation: 50 Million Trees Planted in Single Day",
+              'Record-Breaking Reforestation: 50 Million Trees Planted in Single Day',
             excerpt:
-              "Global initiative involving 2.3 million volunteers sets new Guinness World Record across 67 countries.",
-            time: "Yesterday",
+              'Global initiative involving 2.3 million volunteers sets new Guinness World Record across 67 countries.',
+            time: 'Yesterday',
             imageAlt:
-              "Dramatic mountain peaks emerging through sea of clouds at sunrise",
+              'Dramatic mountain peaks emerging through sea of clouds at sunrise',
           },
         ]
 
-    const latestHeading = props.latest?.heading ?? "Latest Stories"
+    const latestHeading = props.latest?.heading ?? 'Latest Stories'
     const latestFilters = props.latest?.filters?.length
       ? props.latest.filters
-      : ["All", "Politics", "Business"]
-    const latestLoadMore = props.latest?.loadMore ?? "Load More Stories"
+      : ['All', 'Politics', 'Business']
+    const latestLoadMore = props.latest?.loadMore ?? 'Load More Stories'
     const latestStories = props.latest?.stories?.length
       ? props.latest.stories
       : [
           {
-            category: "Tech",
-            date: "May 31, 2026",
+            category: 'Tech',
+            date: 'May 31, 2026',
             title:
-              "The Foldable Phone Wars Heat Up: Samsung vs. Apple vs. Google",
+              'The Foldable Phone Wars Heat Up: Samsung vs. Apple vs. Google',
             excerpt:
-              "With three major players launching foldable devices this quarter, we break down the specs, prices, and real-world durability tests that matter most to consumers.",
-            author: "Marcus Chen",
-            authorRole: "Senior Tech Correspondent",
+              'With three major players launching foldable devices this quarter, we break down the specs, prices, and real-world durability tests that matter most to consumers.',
+            author: 'Marcus Chen',
+            authorRole: 'Senior Tech Correspondent',
             imageAlt:
-              "Modern smartphone displaying a futuristic mobile application interface",
+              'Modern smartphone displaying a futuristic mobile application interface',
             avatarAlt:
-              "Professional headshot of technology journalist Marcus Chen",
+              'Professional headshot of technology journalist Marcus Chen',
           },
           {
-            category: "Urban",
-            date: "May 31, 2026",
-            title: "15-Minute Cities: Utopian Vision or Privacy Nightmare?",
+            category: 'Urban',
+            date: 'May 31, 2026',
+            title: '15-Minute Cities: Utopian Vision or Privacy Nightmare?',
             excerpt:
-              "As Barcelona and Melbourne expand their superblock programs, residents debate the trade-offs between convenience and surveillance in the age of smart cities.",
-            author: "Sarah Williams",
-            authorRole: "Urban Affairs Editor",
+              'As Barcelona and Melbourne expand their superblock programs, residents debate the trade-offs between convenience and surveillance in the age of smart cities.',
+            author: 'Sarah Williams',
+            authorRole: 'Urban Affairs Editor',
             imageAlt:
-              "Urban cityscape with modern architecture and bustling streets",
+              'Urban cityscape with modern architecture and bustling streets',
             avatarAlt:
-              "Professional headshot of urban planning reporter Sarah Williams",
+              'Professional headshot of urban planning reporter Sarah Williams',
           },
           {
-            category: "Wellness",
-            date: "May 30, 2026",
+            category: 'Wellness',
+            date: 'May 30, 2026',
             title:
               "The $47 Billion Wellness Industry's Latest Obsession: Sleep Tourism",
             excerpt:
-              "From Icelandic sleep pods to Japanese forest bathing retreats, travelers are paying premium prices for the promise of perfect rest.",
-            author: "James Park",
-            authorRole: "Lifestyle Contributor",
+              'From Icelandic sleep pods to Japanese forest bathing retreats, travelers are paying premium prices for the promise of perfect rest.',
+            author: 'James Park',
+            authorRole: 'Lifestyle Contributor',
             imageAlt:
-              "Group of people practicing yoga together in a bright wellness studio",
+              'Group of people practicing yoga together in a bright wellness studio',
             avatarAlt:
-              "Professional headshot of travel and lifestyle writer James Park",
+              'Professional headshot of travel and lifestyle writer James Park',
           },
           {
-            category: "Sports",
-            date: "May 30, 2026",
+            category: 'Sports',
+            date: 'May 30, 2026',
             title:
-              "Esports Overtake Traditional Sports in Global Viewership for First Time",
+              'Esports Overtake Traditional Sports in Global Viewership for First Time',
             excerpt:
               "The League of Legends World Championship Finals drew 142 million concurrent viewers, surpassing the Super Bowl's record audience.",
-            author: "Aisha Johnson",
-            authorRole: "Esports Lead",
+            author: 'Aisha Johnson',
+            authorRole: 'Esports Lead',
             imageAlt:
-              "Professional esports gaming arena with massive screens and crowd",
-            avatarAlt: "Professional headshot of esports reporter Aisha Johnson",
+              'Professional esports gaming arena with massive screens and crowd',
+            avatarAlt:
+              'Professional headshot of esports reporter Aisha Johnson',
           },
         ]
 
-    const trendingHeading = props.sidebar?.trendingHeading ?? "Trending Now"
+    const trendingHeading = props.sidebar?.trendingHeading ?? 'Trending Now'
     const trending = props.sidebar?.trending?.length
       ? props.sidebar.trending
       : [
           {
             title:
-              "SpaceX Successfully Launches First Crewed Mission to Mars Orbit",
-            reads: "284K reads",
+              'SpaceX Successfully Launches First Crewed Mission to Mars Orbit',
+            reads: '284K reads',
           },
           {
             title:
-              "Taylor Swift Announces Surprise Album Drop After Vienna Concert",
-            reads: "192K reads",
+              'Taylor Swift Announces Surprise Album Drop After Vienna Concert',
+            reads: '192K reads',
           },
           {
             title:
-              "Bitcoin Breaks $150,000 Barrier as Institutional Adoption Accelerates",
-            reads: "156K reads",
+              'Bitcoin Breaks $150,000 Barrier as Institutional Adoption Accelerates',
+            reads: '156K reads',
           },
           {
             title:
-              "Netflix Password Sharing Crackdown Adds 12 Million New Subscribers",
-            reads: "134K reads",
+              'Netflix Password Sharing Crackdown Adds 12 Million New Subscribers',
+            reads: '134K reads',
           },
           {
-            title: "Lab-Grown Meat Receives FDA Approval for Commercial Sale in US",
-            reads: "98K reads",
+            title:
+              'Lab-Grown Meat Receives FDA Approval for Commercial Sale in US',
+            reads: '98K reads',
           },
         ]
 
-    const newsletterTitle = props.sidebar?.newsletterTitle ?? "The Daily Pulse"
+    const newsletterTitle = props.sidebar?.newsletterTitle ?? 'The Daily Pulse'
     const newsletterDesc =
       props.sidebar?.newsletterDesc ??
-      "Get the most important stories delivered to your inbox every morning."
-    const newsletterCta = props.sidebar?.newsletterCta ?? "Subscribe Free"
+      'Get the most important stories delivered to your inbox every morning.'
+    const newsletterCta = props.sidebar?.newsletterCta ?? 'Subscribe Free'
     const newsletterNote =
       props.sidebar?.newsletterNote ??
-      "Join 2.4 million subscribers. Unsubscribe anytime."
+      'Join 2.4 million subscribers. Unsubscribe anytime.'
 
-    const topicTagsHeading = props.sidebar?.topicsHeading ?? "Popular Topics"
+    const topicTagsHeading = props.sidebar?.topicsHeading ?? 'Popular Topics'
     const topicTags = props.sidebar?.topicTags?.length
       ? props.sidebar.topicTags
       : [
-          "Artificial Intelligence",
-          "Climate Change",
-          "Cryptocurrency",
-          "Mental Health",
-          "Space Exploration",
-          "Electric Vehicles",
-          "Remote Work",
-          "Sustainable Living",
+          'Artificial Intelligence',
+          'Climate Change',
+          'Cryptocurrency',
+          'Mental Health',
+          'Space Exploration',
+          'Electric Vehicles',
+          'Remote Work',
+          'Sustainable Living',
         ]
 
-    const podcastLabel = props.sidebar?.podcastLabel ?? "Podcast"
-    const podcastTitle = props.sidebar?.podcastTitle ?? "The Weekly Briefing"
+    const podcastLabel = props.sidebar?.podcastLabel ?? 'Podcast'
+    const podcastTitle = props.sidebar?.podcastTitle ?? 'The Weekly Briefing'
     const podcastDesc =
       props.sidebar?.podcastDesc ??
-      "Deep dives into the stories that shape our world. New episodes every Tuesday."
-    const podcastCta = props.sidebar?.podcastCta ?? "Listen Now"
+      'Deep dives into the stories that shape our world. New episodes every Tuesday.'
+    const podcastCta = props.sidebar?.podcastCta ?? 'Listen Now'
 
-    const ctaHeadingLead = props.cta?.headingLead ?? "Get Unlimited Access to"
-    const ctaHeadingAccent = props.cta?.headingAccent ?? "Premium Journalism"
+    const ctaHeadingLead = props.cta?.headingLead ?? 'Get Unlimited Access to'
+    const ctaHeadingAccent = props.cta?.headingAccent ?? 'Premium Journalism'
     const ctaDesc =
       props.cta?.description ??
-      "Support independent reporting. Subscribe to Pulse for exclusive investigative pieces, early access to features, and an ad-free reading experience."
-    const ctaPrimary = props.cta?.primary ?? "Subscribe Now — $12/month"
-    const ctaSecondary = props.cta?.secondary ?? "Student Plan — $4/month"
+      'Support independent reporting. Subscribe to Pulse for exclusive investigative pieces, early access to features, and an ad-free reading experience.'
+    const ctaPrimary = props.cta?.primary ?? 'Subscribe Now — $12/month'
+    const ctaSecondary = props.cta?.secondary ?? 'Student Plan — $4/month'
     const ctaNote =
-      props.cta?.note ?? "Cancel anytime. First month free for new subscribers."
+      props.cta?.note ?? 'Cancel anytime. First month free for new subscribers.'
 
     const footerTagline =
       props.footer?.tagline ??
-      "Independent journalism for the curious mind. Covering the stories that matter since 2018."
+      'Independent journalism for the curious mind. Covering the stories that matter since 2018.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            heading: "Sections",
+            heading: 'Sections',
             links: [
-              "World",
-              "Politics",
-              "Business",
-              "Technology",
-              "Science",
-              "Health",
+              'World',
+              'Politics',
+              'Business',
+              'Technology',
+              'Science',
+              'Health',
             ],
           },
           {
-            heading: "Company",
-            links: ["About Us", "Careers", "Code of Ethics", "Contact", "Advertise"],
+            heading: 'Company',
+            links: [
+              'About Us',
+              'Careers',
+              'Code of Ethics',
+              'Contact',
+              'Advertise',
+            ],
           },
           {
-            heading: "Support",
-            links: ["Help Center", "Subscription", "Newsletters", "Apps", "Sitemap"],
+            heading: 'Support',
+            links: [
+              'Help Center',
+              'Subscription',
+              'Newsletters',
+              'Apps',
+              'Sitemap',
+            ],
           },
         ]
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Twitter", "Facebook", "Instagram"]
+      : ['Twitter', 'Facebook', 'Instagram']
     const footerCopyright =
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} Pulse Media Group. All rights reserved.`
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Settings"]
+      : ['Privacy Policy', 'Terms of Service', 'Cookie Settings']
 
     // Rotate category labels through theme accent tokens (no raw palette).
     const catTones = [
-      "text-primary",
-      "text-chart-1",
-      "text-chart-2",
-      "text-chart-3",
-      "text-chart-4",
-      "text-chart-5",
+      'text-primary',
+      'text-chart-1',
+      'text-chart-2',
+      'text-chart-3',
+      'text-chart-4',
+      'text-chart-5',
     ]
     const toneFor = (key: string) => {
       let h = 0
@@ -609,10 +646,16 @@ export const NewsKimiPage2 = defineCapsule({
       </svg>
     )
 
-    const BookmarkIcon = ({ className, active = false }: { className?: string; active?: boolean }) => (
+    const BookmarkIcon = ({
+      className,
+      active = false,
+    }: {
+      className?: string
+      active?: boolean
+    }) => (
       <svg
         viewBox="0 0 20 20"
-        fill={active ? "currentColor" : "none"}
+        fill={active ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -658,7 +701,7 @@ export const NewsKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -696,7 +739,7 @@ export const NewsKimiPage2 = defineCapsule({
                 <button
                   type="button"
                   aria-label="Search"
-                  onClick={() => go("Search")}
+                  onClick={() => go('Search')}
                   className="hidden text-background/60 transition-colors hover:text-background sm:block"
                 >
                   <svg
@@ -790,7 +833,9 @@ export const NewsKimiPage2 = defineCapsule({
                                   </button>
                                   <button
                                     type="button"
-                                    onClick={() => void removeSavedArticle(item.articleTitle)}
+                                    onClick={() =>
+                                      void removeSavedArticle(item.articleTitle)
+                                    }
                                     className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                                   >
                                     Remove
@@ -926,7 +971,7 @@ export const NewsKimiPage2 = defineCapsule({
                 )}
                 <button
                   type="button"
-                  onClick={() => go("Subscribe")}
+                  onClick={() => go('Subscribe')}
                   className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   Subscribe
@@ -1096,17 +1141,29 @@ export const NewsKimiPage2 = defineCapsule({
                     </button>
                     <button
                       type="button"
-                      onClick={() => void saveArticle(featTitle, featCategory, featImageAlt, featExcerpt, 'Pulse Staff', featDate)}
+                      onClick={() =>
+                        void saveArticle(
+                          featTitle,
+                          featCategory,
+                          featImageAlt,
+                          featExcerpt,
+                          'Pulse Staff',
+                          featDate,
+                        )
+                      }
                       aria-pressed={savedArticleTitles?.has(featTitle) ?? false}
                       aria-label="Save article to reading list"
                       className={cn(
-                        "absolute top-4 right-4 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105",
+                        'absolute top-4 right-4 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105',
                         savedArticleTitles?.has(featTitle)
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-background/90 text-background hover:bg-background",
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-background/90 text-background hover:bg-background',
                       )}
                     >
-                      <BookmarkIcon active={savedArticleTitles?.has(featTitle) ?? false} className="size-5" />
+                      <BookmarkIcon
+                        active={savedArticleTitles?.has(featTitle) ?? false}
+                        className="size-5"
+                      />
                     </button>
                   </div>
                 </article>
@@ -1135,7 +1192,7 @@ export const NewsKimiPage2 = defineCapsule({
                         <div className="flex-1">
                           <span
                             className={cn(
-                              "text-xs font-black uppercase tracking-wider",
+                              'text-xs font-black uppercase tracking-wider',
                               toneFor(story.category),
                             )}
                           >
@@ -1156,17 +1213,31 @@ export const NewsKimiPage2 = defineCapsule({
                       </button>
                       <button
                         type="button"
-                        onClick={() => void saveArticle(story.title, story.category, story.imageAlt, '', 'Pulse Staff', story.time)}
-                        aria-pressed={savedArticleTitles?.has(story.title) ?? false}
+                        onClick={() =>
+                          void saveArticle(
+                            story.title,
+                            story.category,
+                            story.imageAlt,
+                            '',
+                            'Pulse Staff',
+                            story.time,
+                          )
+                        }
+                        aria-pressed={
+                          savedArticleTitles?.has(story.title) ?? false
+                        }
                         aria-label="Save article to reading list"
                         className={cn(
-                          "absolute top-0 right-0 grid size-8 place-items-center rounded-full shadow-md transition-all hover:scale-105",
+                          'absolute top-0 right-0 grid size-8 place-items-center rounded-full shadow-md transition-all hover:scale-105',
                           savedArticleTitles?.has(story.title)
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-background/90 text-background hover:bg-background",
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-background/90 text-background hover:bg-background',
                         )}
                       >
-                        <BookmarkIcon active={savedArticleTitles?.has(story.title) ?? false} className="size-4" />
+                        <BookmarkIcon
+                          active={savedArticleTitles?.has(story.title) ?? false}
+                          className="size-4"
+                        />
                       </button>
                     </article>
                   ))}
@@ -1214,7 +1285,7 @@ export const NewsKimiPage2 = defineCapsule({
                       </div>
                       <span
                         className={cn(
-                          "text-xs font-black uppercase tracking-wider",
+                          'text-xs font-black uppercase tracking-wider',
                           toneFor(item.category),
                         )}
                       >
@@ -1237,17 +1308,31 @@ export const NewsKimiPage2 = defineCapsule({
                     </button>
                     <button
                       type="button"
-                      onClick={() => void saveArticle(item.title, item.category, item.imageAlt, item.excerpt, 'Pulse Staff', item.time)}
-                      aria-pressed={savedArticleTitles?.has(item.title) ?? false}
+                      onClick={() =>
+                        void saveArticle(
+                          item.title,
+                          item.category,
+                          item.imageAlt,
+                          item.excerpt,
+                          'Pulse Staff',
+                          item.time,
+                        )
+                      }
+                      aria-pressed={
+                        savedArticleTitles?.has(item.title) ?? false
+                      }
                       aria-label="Save article to reading list"
                       className={cn(
-                        "absolute top-4 right-4 grid size-8 place-items-center rounded-full shadow-md transition-all hover:scale-105",
+                        'absolute top-4 right-4 grid size-8 place-items-center rounded-full shadow-md transition-all hover:scale-105',
                         savedArticleTitles?.has(item.title)
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-background/90 text-background hover:bg-background",
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-background/90 text-background hover:bg-background',
                       )}
                     >
-                      <BookmarkIcon active={savedArticleTitles?.has(item.title) ?? false} className="size-4" />
+                      <BookmarkIcon
+                        active={savedArticleTitles?.has(item.title) ?? false}
+                        className="size-4"
+                      />
                     </button>
                   </div>
                 ))}
@@ -1272,11 +1357,11 @@ export const NewsKimiPage2 = defineCapsule({
                           type="button"
                           onClick={() => go(f)}
                           className={cn(
-                            "rounded-full px-4 py-2 text-sm font-semibold transition-colors",
+                            'rounded-full px-4 py-2 text-sm font-semibold transition-colors',
                             i === 0
-                              ? "bg-foreground text-background"
-                              : "bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground",
-                            i === 2 && "hidden sm:block",
+                              ? 'bg-foreground text-background'
+                              : 'bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground',
+                            i === 2 && 'hidden sm:block',
                           )}
                         >
                           {f}
@@ -1309,7 +1394,7 @@ export const NewsKimiPage2 = defineCapsule({
                             <div className="mb-3 flex items-center gap-3">
                               <span
                                 className={cn(
-                                  "rounded bg-accent px-2 py-1 text-xs font-bold uppercase",
+                                  'rounded bg-accent px-2 py-1 text-xs font-bold uppercase',
                                   toneFor(story.category),
                                 )}
                               >
@@ -1359,17 +1444,33 @@ export const NewsKimiPage2 = defineCapsule({
                         </div>
                         <button
                           type="button"
-                          onClick={() => void saveArticle(story.title, story.category, story.imageAlt, story.excerpt, story.author, story.date)}
-                          aria-pressed={savedArticleTitles?.has(story.title) ?? false}
+                          onClick={() =>
+                            void saveArticle(
+                              story.title,
+                              story.category,
+                              story.imageAlt,
+                              story.excerpt,
+                              story.author,
+                              story.date,
+                            )
+                          }
+                          aria-pressed={
+                            savedArticleTitles?.has(story.title) ?? false
+                          }
                           aria-label="Save article to reading list"
                           className={cn(
-                            "absolute top-4 right-4 grid size-8 place-items-center rounded-full shadow-md transition-all hover:scale-105",
+                            'absolute top-4 right-4 grid size-8 place-items-center rounded-full shadow-md transition-all hover:scale-105',
                             savedArticleTitles?.has(story.title)
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-background/90 text-background hover:bg-background",
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-background/90 text-background hover:bg-background',
                           )}
                         >
-                          <BookmarkIcon active={savedArticleTitles?.has(story.title) ?? false} className="size-4" />
+                          <BookmarkIcon
+                            active={
+                              savedArticleTitles?.has(story.title) ?? false
+                            }
+                            className="size-4"
+                          />
                         </button>
                       </article>
                     ))}
@@ -1406,7 +1507,7 @@ export const NewsKimiPage2 = defineCapsule({
                           className="group flex w-full gap-4 text-left"
                         >
                           <span className="text-3xl font-black text-muted-foreground/40 transition-colors group-hover:text-primary/60">
-                            {String(i + 1).padStart(2, "0")}
+                            {String(i + 1).padStart(2, '0')}
                           </span>
                           <div>
                             <h4 className="font-bold leading-snug transition-colors group-hover:text-primary">
@@ -1428,7 +1529,9 @@ export const NewsKimiPage2 = defineCapsule({
 
                   {/* Newsletter */}
                   <div className="rounded-2xl bg-foreground p-6 text-background">
-                    <h3 className="mb-2 text-xl font-black">{newsletterTitle}</h3>
+                    <h3 className="mb-2 text-xl font-black">
+                      {newsletterTitle}
+                    </h3>
                     <p className="mb-4 text-sm text-background/60">
                       {newsletterDesc}
                     </p>
@@ -1437,7 +1540,9 @@ export const NewsKimiPage2 = defineCapsule({
                       onSubmit={(e) => {
                         e.preventDefault()
                         const form = e.currentTarget
-                        const email = form.querySelector('input[type="email"]') as HTMLInputElement
+                        const email = form.querySelector(
+                          'input[type="email"]',
+                        ) as HTMLInputElement
                         if (email?.value) {
                           void subscribeNewsletter(email.value)
                           email.value = ''
@@ -1465,7 +1570,9 @@ export const NewsKimiPage2 = defineCapsule({
 
                   {/* Popular topics */}
                   <div className="rounded-2xl bg-card p-6 text-card-foreground shadow-sm">
-                    <h3 className="mb-4 text-xl font-black">{topicTagsHeading}</h3>
+                    <h3 className="mb-4 text-xl font-black">
+                      {topicTagsHeading}
+                    </h3>
                     <div className="flex flex-wrap gap-2">
                       {topicTags.map((tag) => (
                         <button
@@ -1490,7 +1597,9 @@ export const NewsKimiPage2 = defineCapsule({
                         <p className="text-xs font-bold uppercase tracking-wider text-primary">
                           {podcastLabel}
                         </p>
-                        <p className="font-bold text-foreground">{podcastTitle}</p>
+                        <p className="font-bold text-foreground">
+                          {podcastTitle}
+                        </p>
                       </div>
                     </div>
                     <p className="mb-4 text-sm text-muted-foreground">
@@ -1513,7 +1622,8 @@ export const NewsKimiPage2 = defineCapsule({
           <section className="bg-foreground py-16 text-background sm:py-20">
             <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
               <h2 className="mb-6 text-3xl font-black sm:text-4xl lg:text-5xl">
-                {ctaHeadingLead} <span className="text-primary">{ctaHeadingAccent}</span>
+                {ctaHeadingLead}{' '}
+                <span className="text-primary">{ctaHeadingAccent}</span>
               </h2>
               <p className="mx-auto mb-8 max-w-2xl text-lg text-background/60">
                 {ctaDesc}
@@ -1576,7 +1686,9 @@ export const NewsKimiPage2 = defineCapsule({
               {/* Link columns */}
               {footerColumns.map((col) => (
                 <div key={col.heading}>
-                  <h4 className="mb-4 font-bold text-foreground">{col.heading}</h4>
+                  <h4 className="mb-4 font-bold text-foreground">
+                    {col.heading}
+                  </h4>
                   <ul className="space-y-2 text-sm">
                     {col.links.map((link) => (
                       <li key={link}>

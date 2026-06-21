@@ -1,13 +1,12 @@
 import { useState } from 'react'
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { number, string, table } from '@ship-fast/lakebed/server'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { string, table } from '@ship-fast/lakebed/server'
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
@@ -41,7 +40,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
  * is alt-driven <Image>, and rich defaults render the full page with no props.
  */
 export const BlogKimiPage2 = defineCapsule({
-  name: "BlogKimiPage2",
+  name: 'BlogKimiPage2',
   description:
     "Complete MAGAZINE-style BLOG INDEX / homepage — a bolder, denser ALTERNATIVE (second style, sibling to BlogKimiPage) with a punchy news-publication aesthetic: sticky blurred navbar with a square brand tile + Subscribe CTA, a scrolling NEWS-TICKER marquee of headlines, a large split 'Featured Story' hero (cover + author meta), a horizontal topic-chip filter row, a dense 3-up author-bylined article grid, an 'Editor's Picks' band of wide cards, a centered newsletter email sign-up, an inverted dark 'Free Resources' download grid, and a four-column dark footer with social icons. Use as the ROOT/home page for blogs, magazines, publications, newsrooms, design/tech journals, tech news sites, content hubs or company blogs when a vibrant, content-dense editorial listing page is wanted (pick this over BlogKimiPage for a louder, magazine feel). NOTE: this is a blog INDEX — no big marketing hero; it leads with a featured article, ticker and a grid of stories. Supply content only — brand, nav, ticker, featured, topics, posts, editorPicks, newsletter, resources, footer; the block owns all layout and styling.",
   props: z.object({
@@ -202,9 +201,7 @@ export const BlogKimiPage2 = defineCapsule({
         return db.readingList.all()
       },
       subscribe: ({ db }, email: string) => {
-        const existingSubscriber = db.subscribers
-          .where('email', email)
-          .all()[0]
+        const existingSubscriber = db.subscribers.where('email', email).all()[0]
 
         if (existingSubscriber) {
           return db.subscribers.all()
@@ -219,57 +216,57 @@ export const BlogKimiPage2 = defineCapsule({
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [readingListOpen, setReadingListOpen] = useState(false)
-    const brand = props.brand ?? "Form & Flow"
+    const brand = props.brand ?? 'Form & Flow'
     const nav = props.nav?.length
       ? props.nav
-      : ["Design", "Technology", "Workflows", "Resources"]
+      : ['Design', 'Technology', 'Workflows', 'Resources']
 
     const ticker = props.ticker?.length
       ? props.ticker
       : [
-          "Figma announces AI-powered auto-layout v2",
-          "React 19 beta released with new compiler",
-          "Apple Vision Pro: 6 months later",
-          "Tailwind CSS v4 roadmap revealed",
-          "Notion launches native databases API",
-          "Linear introduces cycles for sprint planning",
+          'Figma announces AI-powered auto-layout v2',
+          'React 19 beta released with new compiler',
+          'Apple Vision Pro: 6 months later',
+          'Tailwind CSS v4 roadmap revealed',
+          'Notion launches native databases API',
+          'Linear introduces cycles for sprint planning',
         ]
 
     const featured = {
-      badge: props.featured?.badge ?? "Featured Story",
-      topic: props.featured?.topic ?? "Design Systems",
-      date: props.featured?.date ?? "May 28, 2026",
-      readTime: props.featured?.readTime ?? "12 min read",
+      badge: props.featured?.badge ?? 'Featured Story',
+      topic: props.featured?.topic ?? 'Design Systems',
+      date: props.featured?.date ?? 'May 28, 2026',
+      readTime: props.featured?.readTime ?? '12 min read',
       title:
         props.featured?.title ??
-        "The Death of the Design System: Why Teams Are Starting Over in 2026",
+        'The Death of the Design System: Why Teams Are Starting Over in 2026',
       excerpt:
         props.featured?.excerpt ??
         "After years of bloated component libraries and rigid token systems, forward-thinking teams are ditching their legacy design systems for something lighter. We spoke with design leaders at Figma, Linear, and Vercel about the shift toward adaptive, AI-assisted design infrastructure that's actually usable.",
-      author: props.featured?.author ?? "Sarah Chen",
-      authorRole: props.featured?.authorRole ?? "Design Systems Lead, Linear",
+      author: props.featured?.author ?? 'Sarah Chen',
+      authorRole: props.featured?.authorRole ?? 'Design Systems Lead, Linear',
       alt:
         props.featured?.alt ??
-        "Bold geometric product packaging design with vibrant red and black shapes on retail shelf",
+        'Bold geometric product packaging design with vibrant red and black shapes on retail shelf',
       authorAlt:
         props.featured?.authorAlt ??
-        "Professional headshot of Sarah Chen, senior design systems architect",
+        'Professional headshot of Sarah Chen, senior design systems architect',
     }
 
     const topics = {
-      title: props.topics?.title ?? "Browse Topics",
-      viewAll: props.topics?.viewAll ?? "View all",
+      title: props.topics?.title ?? 'Browse Topics',
+      viewAll: props.topics?.viewAll ?? 'View all',
       chips: props.topics?.chips?.length
         ? props.topics.chips
         : [
-            "All",
-            "Design Systems",
-            "Frontend",
-            "AI & ML",
-            "Productivity",
-            "Career",
-            "Tools",
-            "Accessibility",
+            'All',
+            'Design Systems',
+            'Frontend',
+            'AI & ML',
+            'Productivity',
+            'Career',
+            'Tools',
+            'Accessibility',
           ],
     }
 
@@ -277,69 +274,69 @@ export const BlogKimiPage2 = defineCapsule({
       ? props.posts
       : [
           {
-            tag: "Frontend",
-            date: "May 26, 2026",
-            title: "Why We Migrated 2 Million Lines to TypeScript in 90 Days",
+            tag: 'Frontend',
+            date: 'May 26, 2026',
+            title: 'Why We Migrated 2 Million Lines to TypeScript in 90 Days',
             excerpt:
               "A deep dive into Stripe's massive codebase migration, the tooling that made it possible, and the unexpected benefits that emerged.",
-            author: "Marcus Williams",
-            alt: "Modern minimalist workspace with large ultrawide monitor displaying code editor",
+            author: 'Marcus Williams',
+            alt: 'Modern minimalist workspace with large ultrawide monitor displaying code editor',
             authorAlt:
-              "Professional headshot of Marcus Williams, senior software engineer",
+              'Professional headshot of Marcus Williams, senior software engineer',
           },
           {
-            tag: "AI & ML",
-            date: "May 24, 2026",
-            title: "The Designer-AI Partnership: 6 Months of Real Workflow Data",
+            tag: 'AI & ML',
+            date: 'May 24, 2026',
+            title:
+              'The Designer-AI Partnership: 6 Months of Real Workflow Data',
             excerpt:
-              "We analyzed time-tracking data from 47 design teams using AI tools daily. The productivity gains are real—but so are the new bottlenecks.",
-            author: "Elena Rodriguez",
-            alt: "Abstract visualization of neural network nodes with glowing connections",
+              'We analyzed time-tracking data from 47 design teams using AI tools daily. The productivity gains are real—but so are the new bottlenecks.',
+            author: 'Elena Rodriguez',
+            alt: 'Abstract visualization of neural network nodes with glowing connections',
             authorAlt:
-              "Professional headshot of Elena Rodriguez, design researcher",
+              'Professional headshot of Elena Rodriguez, design researcher',
           },
           {
-            tag: "Design Systems",
-            date: "May 22, 2026",
-            title: "Tokens, Variables, and the Figma Config Reset",
+            tag: 'Design Systems',
+            date: 'May 22, 2026',
+            title: 'Tokens, Variables, and the Figma Config Reset',
             excerpt:
               "Figma's latest update broke more workflows than it fixed. Here's what actually works for design token management in 2026.",
-            author: "James Park",
-            alt: "Designer drawing wireframes on tablet with stylus in bright studio",
-            authorAlt:
-              "Professional headshot of James Park, product designer",
+            author: 'James Park',
+            alt: 'Designer drawing wireframes on tablet with stylus in bright studio',
+            authorAlt: 'Professional headshot of James Park, product designer',
           },
           {
-            tag: "Productivity",
-            date: "May 20, 2026",
-            title: "The 4-Hour Deep Work Day: A Field Guide",
+            tag: 'Productivity',
+            date: 'May 20, 2026',
+            title: 'The 4-Hour Deep Work Day: A Field Guide',
             excerpt:
               "After testing Cal Newport's methodology with 12 engineering teams at Shopify, we have the data on what actually moves the needle.",
-            author: "Amara Johnson",
-            alt: "Developer working on laptop with multiple terminal windows showing code",
+            author: 'Amara Johnson',
+            alt: 'Developer working on laptop with multiple terminal windows showing code',
             authorAlt:
-              "Professional headshot of Amara Johnson, engineering manager",
+              'Professional headshot of Amara Johnson, engineering manager',
           },
           {
-            tag: "Tools",
-            date: "May 18, 2026",
-            title: "After Effects Is Dead: Motion Design in 2026",
+            tag: 'Tools',
+            date: 'May 18, 2026',
+            title: 'After Effects Is Dead: Motion Design in 2026',
             excerpt:
               "Rive, Spline, and a new wave of web-native motion tools are reshaping how designers think about animation. Here's the complete tool audit.",
-            author: "David Kim",
-            alt: "Abstract colorful geometric shapes flowing in liquid motion",
-            authorAlt: "Professional headshot of David Kim, motion designer",
+            author: 'David Kim',
+            alt: 'Abstract colorful geometric shapes flowing in liquid motion',
+            authorAlt: 'Professional headshot of David Kim, motion designer',
           },
           {
-            tag: "Career",
-            date: "May 15, 2026",
-            title: "The $400K Design Career Path Nobody Talks About",
+            tag: 'Career',
+            date: 'May 15, 2026',
+            title: 'The $400K Design Career Path Nobody Talks About',
             excerpt:
-              "Staff+ designer compensation at tech companies has quietly exploded. We break down the levels, the interview loops, and the skills that matter.",
-            author: "Priya Sharma",
-            alt: "Team collaboration session with sticky notes on whiteboard in modern office",
+              'Staff+ designer compensation at tech companies has quietly exploded. We break down the levels, the interview loops, and the skills that matter.',
+            author: 'Priya Sharma',
+            alt: 'Team collaboration session with sticky notes on whiteboard in modern office',
             authorAlt:
-              "Professional headshot of Priya Sharma, staff product designer",
+              'Professional headshot of Priya Sharma, staff product designer',
           },
         ]
     const normalizedPostItems = posts.map((post) => ({
@@ -384,9 +381,7 @@ export const BlogKimiPage2 = defineCapsule({
       lakebed.signOut()
     }
     const displayPosts =
-      storedPosts && storedPosts.length > 0
-        ? storedPosts
-        : normalizedPostItems
+      storedPosts && storedPosts.length > 0 ? storedPosts : normalizedPostItems
     const safeReadingListPosts = readingListPosts ?? []
     const readingListCount = safeReadingListPosts.length
 
@@ -396,58 +391,57 @@ export const BlogKimiPage2 = defineCapsule({
         ? props.editorPicks.items
         : [
             {
-              badge: "Long Read",
-              readTime: "18 min",
+              badge: 'Long Read',
+              readTime: '18 min',
               title: "Spatial Computing's False Promise: A 6-Month Study",
               excerpt:
-                "We gave 50 designers and developers Vision Pros. The productivity results surprised everyone.",
-              alt: "Futuristic VR headset floating against gradient background",
+                'We gave 50 designers and developers Vision Pros. The productivity results surprised everyone.',
+              alt: 'Futuristic VR headset floating against gradient background',
             },
             {
-              badge: "Data",
-              readTime: "12 min",
-              title: "The 2026 Design Tool Market Report",
+              badge: 'Data',
+              readTime: '12 min',
+              title: 'The 2026 Design Tool Market Report',
               excerpt:
-                "Complete market share analysis, pricing trends, and where the $4.2B industry is heading.",
-              alt: "Analytics dashboard on laptop showing colorful charts and graphs",
+                'Complete market share analysis, pricing trends, and where the $4.2B industry is heading.',
+              alt: 'Analytics dashboard on laptop showing colorful charts and graphs',
             },
           ],
     }
 
     const newsletter = {
-      title:
-        props.newsletter?.title ?? "Join 47,000+ designers and developers",
+      title: props.newsletter?.title ?? 'Join 47,000+ designers and developers',
       subtitle:
         props.newsletter?.subtitle ??
         "Get our weekly digest with the best design and technology insights, hand-picked tools, and exclusive content you won't find on the site.",
-      placeholder: props.newsletter?.placeholder ?? "sarah@company.com",
-      cta: props.newsletter?.cta ?? "Subscribe Free",
+      placeholder: props.newsletter?.placeholder ?? 'sarah@company.com',
+      cta: props.newsletter?.cta ?? 'Subscribe Free',
       perks: props.newsletter?.perks?.length
         ? props.newsletter.perks
-        : ["No spam, ever", "Unsubscribe anytime"],
+        : ['No spam, ever', 'Unsubscribe anytime'],
     }
 
     const resources = {
-      title: props.resources?.title ?? "Free Resources",
-      viewAll: props.resources?.viewAll ?? "Browse library",
+      title: props.resources?.title ?? 'Free Resources',
+      viewAll: props.resources?.viewAll ?? 'Browse library',
       items: props.resources?.items?.length
         ? props.resources.items
         : [
             {
-              title: "Color System Toolkit",
-              description: "Figma variables & tokens for accessible palettes",
+              title: 'Color System Toolkit',
+              description: 'Figma variables & tokens for accessible palettes',
             },
             {
-              title: "Component Audit Template",
-              description: "Notion database for design system reviews",
+              title: 'Component Audit Template',
+              description: 'Notion database for design system reviews',
             },
             {
-              title: "React Starter Kit",
-              description: "Opinionated Next.js setup with Tailwind",
+              title: 'React Starter Kit',
+              description: 'Opinionated Next.js setup with Tailwind',
             },
             {
-              title: "Design Sprint Guide",
-              description: "5-day facilitation deck and templates",
+              title: 'Design Sprint Guide',
+              description: '5-day facilitation deck and templates',
             },
           ],
     }
@@ -455,44 +449,44 @@ export const BlogKimiPage2 = defineCapsule({
     const footer = {
       about:
         props.footer?.about ??
-        "Design and technology insights for the modern product team. Published weekly since 2022.",
+        'Design and technology insights for the modern product team. Published weekly since 2022.',
       columns: props.footer?.columns?.length
         ? props.footer.columns
         : [
             {
-              title: "Content",
+              title: 'Content',
               links: [
-                "Design Systems",
-                "Frontend",
-                "AI & ML",
-                "Productivity",
-                "Career",
+                'Design Systems',
+                'Frontend',
+                'AI & ML',
+                'Productivity',
+                'Career',
               ],
             },
             {
-              title: "Resources",
+              title: 'Resources',
               links: [
-                "Newsletter Archive",
-                "Free Templates",
-                "Tool Database",
-                "RSS Feed",
-                "Podcast",
+                'Newsletter Archive',
+                'Free Templates',
+                'Tool Database',
+                'RSS Feed',
+                'Podcast',
               ],
             },
             {
-              title: "Company",
+              title: 'Company',
               links: [
-                "About",
-                "Advertise",
-                "Contact",
-                "Privacy Policy",
-                "Terms of Use",
+                'About',
+                'Advertise',
+                'Contact',
+                'Privacy Policy',
+                'Terms of Use',
               ],
             },
           ],
       socials: props.footer?.socials?.length
         ? props.footer.socials
-        : ["Twitter", "LinkedIn", "YouTube"],
+        : ['Twitter', 'LinkedIn', 'YouTube'],
       copyright:
         props.footer?.copyright ??
         `© ${new Date().getFullYear()} ${brand} Media. All rights reserved.`,
@@ -509,10 +503,7 @@ export const BlogKimiPage2 = defineCapsule({
         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
       />,
       <path key="code" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />,
-      <path
-        key="clock"
-        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-      />,
+      <path key="clock" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />,
     ]
 
     const BookmarkIcon = ({ active = false }: { active?: boolean }) => (
@@ -550,7 +541,7 @@ export const BlogKimiPage2 = defineCapsule({
 
     const SocialIcon = ({ name }: { name: string }) => {
       const key = name.toLowerCase()
-      if (key.includes("linkedin")) {
+      if (key.includes('linkedin')) {
         return (
           <svg
             className="size-5"
@@ -562,7 +553,7 @@ export const BlogKimiPage2 = defineCapsule({
           </svg>
         )
       }
-      if (key.includes("youtube")) {
+      if (key.includes('youtube')) {
         return (
           <svg
             className="size-5"
@@ -589,7 +580,7 @@ export const BlogKimiPage2 = defineCapsule({
     const BrandTile = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid size-8 place-items-center rounded-lg bg-primary text-lg font-bold text-primary-foreground",
+          'grid size-8 place-items-center rounded-lg bg-primary text-lg font-bold text-primary-foreground',
           className,
         )}
         aria-hidden="true"
@@ -604,7 +595,7 @@ export const BlogKimiPage2 = defineCapsule({
     return (
       <div
         className={cn(
-          "flex min-h-svh flex-col bg-background font-sans text-foreground antialiased",
+          'flex min-h-svh flex-col bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -642,7 +633,7 @@ export const BlogKimiPage2 = defineCapsule({
                 <button
                   type="button"
                   aria-label="Search"
-                  onClick={() => go("Search")}
+                  onClick={() => go('Search')}
                   className="hidden text-muted-foreground transition-colors hover:text-foreground sm:block"
                 >
                   <svg
@@ -988,7 +979,7 @@ export const BlogKimiPage2 = defineCapsule({
             <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
               <button
                 type="button"
-                onClick={() => go("Blog post")}
+                onClick={() => go('Blog post')}
                 className="group block overflow-hidden rounded-2xl"
               >
                 <Image
@@ -1016,7 +1007,7 @@ export const BlogKimiPage2 = defineCapsule({
                 </p>
                 <button
                   type="button"
-                  onClick={() => go("Blog post")}
+                  onClick={() => go('Blog post')}
                   className="flex items-center gap-4 text-left"
                 >
                   <Image
@@ -1058,10 +1049,10 @@ export const BlogKimiPage2 = defineCapsule({
                     type="button"
                     onClick={() => go(chip)}
                     className={cn(
-                      "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                      'rounded-full px-4 py-2 text-sm font-medium transition-colors',
                       i === 1
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-foreground hover:bg-primary hover:text-primary-foreground",
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-foreground hover:bg-primary hover:text-primary-foreground',
                     )}
                   >
                     {chip}
@@ -1083,7 +1074,7 @@ export const BlogKimiPage2 = defineCapsule({
                     <div className="relative mb-4">
                       <button
                         type="button"
-                        onClick={() => go("Blog post")}
+                        onClick={() => go('Blog post')}
                         className="block overflow-hidden rounded-xl"
                       >
                         <Image
@@ -1123,7 +1114,7 @@ export const BlogKimiPage2 = defineCapsule({
                     <h3 className="mb-2 text-xl font-bold transition-colors group-hover:text-primary">
                       <button
                         type="button"
-                        onClick={() => go("Blog post")}
+                        onClick={() => go('Blog post')}
                         className="text-left"
                       >
                         {post.title}
@@ -1168,7 +1159,7 @@ export const BlogKimiPage2 = defineCapsule({
                   <button
                     key={item.title}
                     type="button"
-                    onClick={() => go("Blog post")}
+                    onClick={() => go('Blog post')}
                     className="rounded-2xl bg-card p-6 text-left shadow-sm transition-shadow hover:shadow-md"
                   >
                     <div className="flex items-start gap-4">
@@ -1232,7 +1223,9 @@ export const BlogKimiPage2 = defineCapsule({
                 onSubmit={(e) => {
                   e.preventDefault()
                   const form = e.currentTarget
-                  const email = form.querySelector('input[type="email"]')?.value
+                  const email = form.querySelector<HTMLInputElement>(
+                    'input[type="email"]',
+                  )?.value
                   if (email) {
                     void subscribe(email)
                   }
