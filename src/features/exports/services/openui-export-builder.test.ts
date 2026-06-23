@@ -39,32 +39,6 @@ const unzipBuiltExportTextFiles = (body: string | Uint8Array) => {
   return unzipTextFiles(body)
 }
 
-const parseJson = (text: string): unknown => JSON.parse(text)
-
-const isStringRecord = (value: unknown): value is Record<string, string> => {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
-    return false
-  }
-  return Object.keys(value).every(
-    (key) =>
-      typeof Object.getOwnPropertyDescriptor(value, key)?.value === 'string',
-  )
-}
-
-const readPackageDependencies = (files: Record<string, string>) => {
-  const packageJson = parseJson(files['package.json'] ?? '{}')
-  if (!packageJson || typeof packageJson !== 'object') {
-    throw new Error('Expected package.json object')
-  }
-  const dependencies = Object.entries(packageJson).find(
-    ([key]) => key === 'dependencies',
-  )?.[1]
-  if (!isStringRecord(dependencies)) {
-    throw new Error('Expected package.json dependencies')
-  }
-  return dependencies
-}
-
 describe('openui-export-builder', () => {
   it('parses OpenUI source into export metadata', () => {
     const parsed = parseOpenUIForExport(source, siteSpecJson)
@@ -102,9 +76,7 @@ describe('openui-export-builder', () => {
     expect(parsed.projectName).toBe('Export Demo')
     expect(parsed.routes).toEqual(['Home'])
     expect(parsed.root.typeName).toBe('SaasHero')
-    expect(JSON.stringify(parsed.library.toJSONSchema())).toContain(
-      'SaasHero',
-    )
+    expect(JSON.stringify(parsed.library.toJSONSchema())).toContain('SaasHero')
   })
 
   it('builds standalone HTML without exposing OpenUI source', async () => {

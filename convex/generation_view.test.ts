@@ -362,9 +362,7 @@ test('inline preview edits and history restore keep canonical dashboard source a
   expect(editedView?.siteSpec?.specJson).not.toContain(
     'Edited dashboard artifact headline',
   )
-  await expect(
-    t.query(api.sessions.listEdits, { sessionId }),
-  ).resolves.toEqual(
+  await expect(t.query(api.sessions.listEdits, { sessionId })).resolves.toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         editType: 'text',
@@ -454,9 +452,7 @@ test('inline preview edits preserve canonical artifacts when rendered text norma
   expect(editedView?.homeModule?.source).not.toContain('Premium Fleet Rentals')
   expect(editedView?.siteSpec?.specJson).toContain('Luxury   Car Rental')
   expect(editedView?.siteSpec?.specJson).not.toContain('Premium Fleet Rentals')
-  await expect(
-    t.query(api.sessions.listEdits, { sessionId }),
-  ).resolves.toEqual(
+  await expect(t.query(api.sessions.listEdits, { sessionId })).resolves.toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         editType: 'text',

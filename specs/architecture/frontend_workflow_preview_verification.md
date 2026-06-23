@@ -94,8 +94,8 @@ OpenUI/Convex completion tests:
 ```bash
 bun vitest run --config vitest.config.ts \
   convex/lib/session_generation_action_helpers.test.ts \
-  convex/generation-view.test.ts \
-  convex/usage-metrics.test.ts \
+  convex/generation_view.test.ts \
+  convex/usage_metrics.test.ts \
   packages/ship-fast-engine/src/openui-ssr.test.js \
   packages/ship-fast-engine/src/openui-ssr-runtime.test.js
 ```

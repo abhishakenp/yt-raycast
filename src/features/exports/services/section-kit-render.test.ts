@@ -8,7 +8,12 @@ vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 })
 const siteSpecJson = JSON.stringify({ projectName: 'Kit Render' })
 
 const renderSource = async (source: string) => {
-  const result = await buildOpenUIHtmlExport({ source, siteSpecJson })
+  const result = await buildOpenUIHtmlExport({
+    source,
+    siteSpecJson,
+    sessionId: 'test-session',
+    target: 'html',
+  })
   return typeof result.body === 'string'
     ? result.body
     : new TextDecoder().decode(result.body)
@@ -65,13 +70,30 @@ describe('section-kit renders through the OpenUI runtime', () => {
 describe('kit-refactored families render through the runtime', () => {
   const sections = [
     // SiteNav (real Sheet drawer) + SiteFooter across all 7 families
-    'SaasNavbar', 'SaasFooter', 'EcommerceNavbar', 'EcommerceFooter',
-    'SpaWellnessNavbar', 'SpaWellnessFooter', 'YogaStudioNavbar', 'YogaStudioFooter',
-    'RealEstateNavbar', 'RealEstateFooter', 'PropertyListingNavbar', 'PropertyListingFooter',
+    'SaasNavbar',
+    'SaasFooter',
+    'EcommerceNavbar',
+    'EcommerceFooter',
+    'SpaWellnessNavbar',
+    'SpaWellnessFooter',
+    'YogaStudioNavbar',
+    'YogaStudioFooter',
+    'RealEstateNavbar',
+    'RealEstateFooter',
+    'PropertyListingNavbar',
+    'PropertyListingFooter',
     // each remaining kit composite, exercised via a real family section
-    'SaasFeatures', 'SaasPricing', 'SaasTestimonials', 'SaasCta',
-    'EcommerceFeatures', 'EcommerceTestimonials', 'EcommerceCta',
-    'SpaWellnessPricing', 'SpaWellnessGallery', 'RealEstateStats', 'RealEstateServices',
+    'SaasFeatures',
+    'SaasPricing',
+    'SaasTestimonials',
+    'SaasCta',
+    'EcommerceFeatures',
+    'EcommerceTestimonials',
+    'EcommerceCta',
+    'SpaWellnessPricing',
+    'SpaWellnessGallery',
+    'RealEstateStats',
+    'RealEstateServices',
   ]
   for (const section of sections) {
     it(`${section} renders with no props`, async () => {
