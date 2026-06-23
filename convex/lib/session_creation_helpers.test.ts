@@ -99,7 +99,12 @@ const ctxFor = (rows: Partial<QueryRows>) =>
     },
   }) as unknown as Pick<MutationCtx, 'db'>
 
-const createMutationCtxFor = (initialRows: Partial<QueryRows> = {}) => {
+type TestIdentity = Awaited<ReturnType<MutationCtx['auth']['getUserIdentity']>>
+
+const createMutationCtxFor = (
+  initialRows: Partial<QueryRows> = {},
+  identity: TestIdentity = null,
+) => {
   const rows: QueryRows = {
     sessions: [...(initialRows.sessions ?? [])],
     subscriptions: [...(initialRows.subscriptions ?? [])],
@@ -115,7 +120,7 @@ const createMutationCtxFor = (initialRows: Partial<QueryRows> = {}) => {
 
   const ctx = {
     auth: {
-      getUserIdentity: async () => null,
+      getUserIdentity: async () => identity,
     },
     db: {
       query: (table: QueryTable) => chainFor(rows[table] ?? []),
@@ -510,6 +515,37 @@ describe('session creation helpers', () => {
       sessionId: session?.id,
       anonymousOwnerSecret: 'owner-secret',
     })
+  })
+
+  it('stores the authenticated owner email for generated admin policy baking', async () => {
+    vi.stubEnv('OPENUI_HOME_MODEL', 'gemini-2.5-flash')
+    vi.stubEnv('GEMINI_API_KEY', 'test-gemini-key')
+    vi.stubEnv('DISABLE_LIMIT', 'true')
+    const references = createReferences()
+    const { ctx, inserted } = createMutationCtxFor({}, {
+      subject: 'user_1',
+      tokenIdentifier: 'clerk|user_1',
+      email: 'Founder@Example.COM ',
+    } as TestIdentity)
+
+    await createGenerationSession(
+      ctx,
+      {
+        prompt: 'Build a publication',
+        preferredLanguage: 'en',
+        preferredExportTarget: 'html',
+        isPrivate: false,
+        workspace: 'workspace-owner-email',
+      },
+      references,
+    )
+
+    const session = inserted.find((row) => row.table === 'sessions')
+    expect(session?.value).toMatchObject({
+      userId: 'clerk|user_1',
+      ownerEmail: 'founder@example.com',
+    })
+    expect(session?.value.anonOwnerSecretHash).toBeUndefined()
   })
 
   it('marks the new session failed when model configuration is missing', async () => {

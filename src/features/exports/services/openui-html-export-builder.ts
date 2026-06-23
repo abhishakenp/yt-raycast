@@ -88,10 +88,10 @@ const isUsablePreviewHtml = (html: string | undefined): html is string => {
   const trimmed = html?.trim()
   return Boolean(
     trimmed &&
-      !/\bopenui-error\b/i.test(trimmed) &&
-      !/failed to render/i.test(trimmed) &&
-      !/\bship-fast-openui-source\b/i.test(trimmed) &&
-      !/generated openui source is ready/i.test(trimmed),
+    !/\bopenui-error\b/i.test(trimmed) &&
+    !/failed to render/i.test(trimmed) &&
+    !/\bship-fast-openui-source\b/i.test(trimmed) &&
+    !/generated openui source is ready/i.test(trimmed),
   )
 }
 
@@ -149,6 +149,72 @@ const readThemeName = (
   if (requestedThemeName) return requestedThemeName
   const theme = siteSpec.themeName ?? siteSpec.genuiTheme ?? siteSpec.theme
   return typeof theme === 'string' ? theme : undefined
+}
+
+const readGenUIExportMetadata = (
+  siteSpec: Record<string, unknown>,
+): Record<string, unknown> | null => {
+  const genui = siteSpec.genui
+  return genui !== null && typeof genui === 'object' && !Array.isArray(genui)
+    ? (genui as Record<string, unknown>)
+    : null
+}
+
+const readGenUIAdminPolicy = (
+  genui: Record<string, unknown> | null,
+): Record<string, unknown> => {
+  const policy = genui?.adminPolicy
+  return policy !== null && typeof policy === 'object' && !Array.isArray(policy)
+    ? (policy as Record<string, unknown>)
+    : {}
+}
+
+const readGenUIAdminEmails = (
+  genui: Record<string, unknown> | null,
+): string[] => {
+  const policy = readGenUIAdminPolicy(genui)
+  const values = Array.isArray(policy.adminEmails)
+    ? policy.adminEmails
+    : typeof policy.ownerEmail === 'string'
+      ? [policy.ownerEmail]
+      : typeof genui?.ownerEmail === 'string'
+        ? [genui.ownerEmail]
+        : []
+  return [
+    ...new Set(
+      values
+        .filter((value): value is string => typeof value === 'string')
+        .map((value) => value.trim().toLowerCase())
+        .filter((value) => value.includes('@')),
+    ),
+  ]
+}
+
+const buildInlineAdminBootstrap = (
+  genui: Record<string, unknown> | null,
+  target: string,
+): string => {
+  if (genui === null) return ''
+  const adminPolicy = readGenUIAdminPolicy(genui)
+  return `
+    window.__SHIP_FAST_ADMIN__ = ${stringifyJs({
+      version: 1,
+      target,
+      authProvider:
+        typeof adminPolicy.authProvider === 'string'
+          ? adminPolicy.authProvider
+          : 'shoo',
+      adminEmails: readGenUIAdminEmails(genui),
+      policy: adminPolicy,
+    })};
+    window.assertShipFastAdminAccess = function assertShipFastAdminAccess(email) {
+      var normalized = String(email || '').trim().toLowerCase();
+      var allowed = (window.__SHIP_FAST_ADMIN__.adminEmails || []);
+      if (!normalized || allowed.indexOf(normalized) === -1) {
+        throw new Error('Ship Fast admin access denied for this email.');
+      }
+      return { email: normalized, role: normalized === allowed[0] ? 'owner' : 'editor' };
+    };`
 }
 
 const buildThemeStyle = (
@@ -364,6 +430,7 @@ const buildStandaloneHtmlDocument = async (
   const bodyMarkup = isUsablePreviewHtml(input.previewHtml)
     ? extractBodyMarkup(input.previewHtml)
     : pagesMarkup
+  const genui = readGenUIExportMetadata(siteSpec)
 
   return buildHtmlExport(
     `<!doctype html>
@@ -383,7 +450,8 @@ ${css}
 <body class="min-h-screen bg-background text-foreground">
   <div id="openui-root" class="genui-preview size-full bg-background${isDark ? ' dark' : ''}" style="${escapeAttribute(`${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}`)}">${bodyMarkup}</div>
   <script>
-    window.__SHIP_FAST_EXPORT__ = ${stringifyJs({ routes: parsed.routes, projectName: parsed.projectName, themeName, mode: isDark ? 'dark' : 'light' })};
+    window.__SHIP_FAST_EXPORT__ = ${stringifyJs({ routes: parsed.routes, projectName: parsed.projectName, themeName, mode: isDark ? 'dark' : 'light', genui })};
+    ${buildInlineAdminBootstrap(genui, input.target)}
     ${buildRouteScript(parsed.routes)}
   </script>
 </body>

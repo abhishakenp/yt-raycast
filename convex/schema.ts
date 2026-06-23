@@ -46,6 +46,7 @@ const integrationStatus = v.union(
 export default defineSchema({
   sessions: defineTable({
     userId: v.optional(v.string()),
+    ownerEmail: v.optional(v.string()),
     legacySessionId: v.optional(v.string()),
     anonOwnerSecret: v.optional(v.string()),
     anonOwnerSecretHash: v.optional(v.string()),
@@ -85,6 +86,7 @@ export default defineSchema({
     engineVersion: v.optional(v.string()),
     isPrivate: v.boolean(),
     previewVersion: v.optional(v.number()),
+    cloneMode: v.optional(v.boolean()),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
     errorCode: v.optional(v.string()),
@@ -152,6 +154,22 @@ export default defineSchema({
     updatedAt: v.number(),
     errorMessage: v.optional(v.string()),
   }).index('by_sessionId_moduleKey', ['sessionId', 'moduleKey']),
+
+  clonePages: defineTable({
+    sessionId: v.id('sessions'),
+    pathname: v.string(),
+    title: v.optional(v.string()),
+    html: v.string(),
+    isHome: v.boolean(),
+    failed: v.boolean(),
+    order: v.number(),
+    byteLength: v.number(),
+    truncated: v.optional(v.boolean()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_sessionId', ['sessionId'])
+    .index('by_sessionId_pathname', ['sessionId', 'pathname']),
 
   siteSpecs: defineTable({
     sessionId: v.id('sessions'),
@@ -318,6 +336,17 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index('by_sessionId', ['sessionId']),
+
+  // Cache of the AI-authored composition content (family + per-page section
+  // props) keyed by the normalized prompt. Sessions reuse this content and a
+  // per-session seed re-randomizes the COMPOSITION (which sections/order/theme/
+  // pages), so the same prompt yields a different layout every time at zero
+  // extra model cost. Replaces cloning a finished session verbatim.
+  sectionContentCache: defineTable({
+    promptCacheKey: v.string(),
+    contentJson: v.string(),
+    createdAt: v.number(),
+  }).index('by_promptCacheKey', ['promptCacheKey']),
 
   cmsBindings: defineTable({
     sessionId: v.id('sessions'),
@@ -524,4 +553,5 @@ export default defineSchema({
     discountSubscriptionId: v.optional(v.string()),
     updatedAt: v.number(),
   }).index('by_userId', ['userId']),
+
 })

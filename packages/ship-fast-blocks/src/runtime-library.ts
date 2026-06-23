@@ -1,9 +1,14 @@
 import type { Library } from '@openuidev/react-lang'
+import {
+  withSectionRealtime,
+  type SectionRenderer,
+} from '@ship-fast/lakebed/react'
 import { createLibrary, type ShipFastCapsule } from './capsules/openui.ts'
 import {
   runtimeComponentLoaders,
   type RuntimeComponentName,
 } from './generated/runtime-component-loaders.ts'
+import { runtimeSectionComponentNameSet } from './generated/runtime-section-component-names.ts'
 
 const rootComponentName = 'Stack' satisfies RuntimeComponentName
 const componentCallPattern = /\b([A-Z][A-Za-z0-9_]*)\s*\(/g
@@ -35,12 +40,40 @@ export function getOpenUIRuntimeLibraryCacheKey(
   return extractOpenUIRuntimeComponentNames(response).join('\0')
 }
 
+/**
+ * Wrap a STATIC section capsule's client component with the realtime + admin
+ * editable HOC. Only applied to capsules under `registry/sections/**` (listed in
+ * `runtimeSectionComponentNameSet`); page capsules already carry their own
+ * lakebed wiring and primitives must stay structural, so neither is wrapped. The
+ * 751 section components themselves are never modified — interception happens
+ * here, at name→component resolution, the single seam react-lang exposes.
+ */
+function withRealtimeSection(
+  name: string,
+  capsule: ShipFastCapsule,
+): ShipFastCapsule {
+  if (!runtimeSectionComponentNameSet.has(name)) return capsule
+  const { client } = capsule
+  return {
+    ...capsule,
+    client: {
+      ...client,
+      component: withSectionRealtime(
+        client.component as unknown as SectionRenderer,
+        name,
+      ) as unknown as typeof client.component,
+    },
+  }
+}
+
 export function loadOpenUIRuntimeComponent(
   name: RuntimeComponentName,
 ): Promise<ShipFastCapsule> {
   let cached = capsuleCache.get(name)
   if (!cached) {
-    cached = runtimeComponentLoaders[name]()
+    cached = runtimeComponentLoaders[name]().then((capsule) =>
+      withRealtimeSection(name, capsule),
+    )
     capsuleCache.set(name, cached)
   }
   return cached

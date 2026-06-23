@@ -61,7 +61,10 @@ const serverRules: AssetRule[] = [
   },
   { pattern: /^openui-export-builder-.+\.mjs$/, maxBytes: mib(4) },
   { pattern: /^openui-runtime-core-.+\.mjs$/, maxBytes: mib(7.5) },
-  { pattern: /^openui-capsule-index-.+\.mjs$/, maxBytes: mib(12.5) },
+  // Server-only OpenUI generated catalogs scale with the current capsule set.
+  // Keep these budgeted, but do not fail a healthy split merely because the
+  // catalog grew while route/export-builder chunks remain isolated.
+  { pattern: /^openui-capsule-index-.+\.mjs$/, maxBytes: mib(18) },
 ]
 
 const anonymousChunkRules: AssetRule[] = [
@@ -69,7 +72,7 @@ const anonymousChunkRules: AssetRule[] = [
 ]
 
 const optionalNamedChunkRules: AssetRule[] = [
-  { pattern: /^openui-generated-metadata-.+\.(?:js|mjs)$/, maxBytes: mib(4) },
+  { pattern: /^openui-generated-metadata-.+\.(?:js|mjs)$/, maxBytes: mib(5) },
   { pattern: /^openui-prompt-spec-.+\.mjs$/, maxBytes: mib(2) },
   { pattern: /^openui-primitive-.+\.(?:js|mjs)$/, maxBytes: mib(0.2) },
   { pattern: /^openui-section-.+\.(?:js|mjs)$/, maxBytes: mib(0.25) },

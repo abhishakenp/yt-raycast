@@ -49,6 +49,7 @@ describe('generated OpenUI artifact provenance', () => {
       'src/generated/vendor-source-files.compressed.ts',
       'src/generated/runtime-component-loaders.ts',
       'src/generated/runtime-component-names.ts',
+      'src/generated/runtime-section-component-names.ts',
       'src/generated/react-export-sources.provenance.json',
     ])
     expect(provenance.componentCount).toBe(provenance.components.length)
@@ -78,6 +79,7 @@ describe('generated OpenUI artifact provenance', () => {
       'src/generated/vendor-source-files.compressed.ts',
       'src/generated/runtime-component-loaders.ts',
       'src/generated/runtime-component-names.ts',
+      'src/generated/runtime-section-component-names.ts',
     ]) {
       const source = readFileSync(join(blocksRoot, output), 'utf8')
       expect(source.startsWith(generatedHeader)).toBe(true)

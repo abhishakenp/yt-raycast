@@ -482,7 +482,7 @@ describe('createGitHubPushResponse', () => {
     const lakebedExport = {
       ...exportData,
       target: 'lakebed',
-      source: 'root = SaasKimiPage("Atlas Notes")',
+      source: 'root = SaasHero()',
       siteSpecJson: '{"projectName":"Atlas Notes"}',
       previewHtml: '<main>Atlas Notes</main>',
       themeName: 'graphite',

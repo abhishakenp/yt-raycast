@@ -1,5 +1,5 @@
 import { chat } from "@tanstack/ai"
-import { getProvider } from "./model-list.ts"
+import { getProvider, supportsReasoningEffort } from "./model-list.ts"
 import { getAdapter } from "./model.ts"
 import { talaasChat } from "./talaas.ts"
 
@@ -56,8 +56,9 @@ async function once(
           systemPrompts: [system],
           messages: [{ role: "user", content: user }],
           modelOptions: {
-            reasoning_effort: 'low',
-            include_reasoning: false,
+            ...(supportsReasoningEffort(modelId)
+              ? { reasoning_effort: 'low', include_reasoning: false }
+              : {}),
             citation_options: 'disabled',
             top_p: 1,
           },

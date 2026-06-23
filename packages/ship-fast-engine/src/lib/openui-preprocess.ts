@@ -122,12 +122,21 @@ function repairMalformedQuotedObjectKeys(code: string): string {
   let inString = false
   let quote = ''
   let escaped = false
+  // Last non-whitespace char emitted — used to tell a KEY position (`{`/`,`
+  // before the quote) from a VALUE position (`:` before the quote). Without this
+  // a string VALUE like "https://x" or "time:3pm" gets its opening quote stripped
+  // because `https:` / `time:` look like a quoted key.
+  let prevSig = ''
+  const emit = (ch: string): void => {
+    result += ch
+    if (!/\s/.test(ch)) prevSig = ch
+  }
 
   for (let index = 0; index < code.length; index++) {
     const char = code[index]
 
     if (inString) {
-      result += char
+      emit(char)
       if (escaped) {
         escaped = false
       } else if (char === '\\') {
@@ -139,17 +148,22 @@ function repairMalformedQuotedObjectKeys(code: string): string {
       continue
     }
 
-    if (char === '"' && stack[stack.length - 1] === '{') {
+    if (
+      char === '"' &&
+      stack[stack.length - 1] === '{' &&
+      (prevSig === '{' || prevSig === ',')
+    ) {
       const rest = code.slice(index + 1)
       const malformedKey = rest.match(/^([A-Za-z_$][\w$]*):/)
       if (malformedKey) {
         result += `${malformedKey[1]}:`
+        prevSig = ':'
         index += malformedKey[0].length
         continue
       }
     }
 
-    result += char
+    emit(char)
 
     if (char === '"' || char === "'") {
       inString = true

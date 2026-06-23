@@ -7,6 +7,7 @@ import { internalAction } from './_generated/server'
 import type { Doc, Id } from './_generated/dataModel'
 import type { ActionCtx } from './_generated/server'
 import type { EngineWorkspaceTask } from '../src/features/generation/server/engine-workspace'
+import type { ComposedContent } from '../packages/ship-fast-engine/src/genui/run.ts'
 import { getModelConfigurationFailure } from './generationConfig'
 import { buildOpenUiHandoffHtml } from './lib/openui_handoff_html'
 
@@ -26,6 +27,28 @@ type GenUIEvent =
   | { type: 'source'; text: string }
   | { type: 'done'; modules: number; ms: number; source?: string }
   | { type: 'error'; message: string }
+
+type GenUIArtifact = {
+  key: string
+  contentJson: string
+}
+
+const parseArtifactContent = (artifact: GenUIArtifact): unknown => {
+  try {
+    return JSON.parse(artifact.contentJson)
+  } catch {
+    return artifact.contentJson
+  }
+}
+
+const artifactsByKey = (
+  artifacts: GenUIArtifact[] | undefined,
+): Record<string, unknown> | undefined => {
+  if (!artifacts || artifacts.length === 0) return undefined
+  return Object.fromEntries(
+    artifacts.map((artifact) => [artifact.key, parseArtifactContent(artifact)]),
+  )
+}
 
 const loadGenerationRuntime = async () => {
   const { runHomepageOrchestrator } =
@@ -160,19 +183,49 @@ const buildGenerationSiteSpecMetadata = (
     theme: string | null
     locale: string
     source: string
+    category?: string
+    artifacts?: GenUIArtifact[]
   },
-) => ({
-  brand: result.brand,
-  theme: result.theme ?? 'modern-minimal',
-  locale: result.locale,
-  designReferenceUrls: session.designReferenceUrls ?? [],
-  designReferenceNotes: session.designReferenceNotes ?? '',
-  cloneUrl: session.cloneUrl,
-  designReferenceFingerprint: session.designReferenceFingerprint,
-  modules: {
-    home: result.source,
-  },
-})
+) => {
+  const generatedArtifacts = artifactsByKey(result.artifacts)
+
+  return {
+    brand: result.brand,
+    theme: result.theme ?? 'modern-minimal',
+    locale: result.locale,
+    designReferenceUrls: session.designReferenceUrls ?? [],
+    designReferenceNotes: session.designReferenceNotes ?? '',
+    cloneUrl: session.cloneUrl,
+    designReferenceFingerprint: session.designReferenceFingerprint,
+    modules: {
+      home: result.source,
+    },
+    genui:
+      result.category !== undefined || generatedArtifacts !== undefined
+        ? {
+            version: 1,
+            category: result.category ?? null,
+            ownerEmail: session.ownerEmail ?? null,
+            artifacts: generatedArtifacts ?? {},
+            adminPolicy:
+              generatedArtifacts?.['admin-policy'] ??
+              (session.ownerEmail
+                ? {
+                    version: 1,
+                    mode: 'baked-owner',
+                    authProvider: 'shoo',
+                    ownerEmail: session.ownerEmail,
+                    adminEmails: [session.ownerEmail],
+                    roles: ['owner', 'editor', 'author'],
+                    exportRequiresVerifiedOwnerEmail: true,
+                  }
+                : undefined),
+            fullstackManifest: generatedArtifacts?.['fullstack-manifest'],
+            openuiManifest: generatedArtifacts?.['openui-manifest'],
+          }
+        : undefined,
+  }
+}
 
 const completeGenerationFromNode = async (
   ctx: ActionCtx,
@@ -286,6 +339,13 @@ export const startGeneration = internalAction({
 
       if (session === null) {
         return null
+      }
+
+      if (session.cloneMode === true) {
+        return {
+          status: 'skipped',
+          reason: 'clone_mode',
+        }
       }
 
       if ((session.previewVersion ?? 0) > 0) {
@@ -412,14 +472,56 @@ export const startGeneration = internalAction({
         order: 0,
       })
 
+      // Reuse the per-prompt AI content cache (the per-session seed still
+      // re-randomizes the layout). Cache hit ⇒ no model calls.
+      const promptCacheKey = session.promptCacheKey
+      let cachedContent: ComposedContent | undefined
+      if (promptCacheKey) {
+        const cachedJson = await ctx.runQuery(
+          internalFunctions.contentCache.get,
+          { promptCacheKey },
+        )
+        if (cachedJson) {
+          try {
+            cachedContent = JSON.parse(cachedJson)
+          } catch {
+            cachedContent = undefined
+          }
+        }
+      }
+
       const generationTimeout = createGenerationTimeoutController()
       const result = await generationRuntime
         .runHomepageOrchestrator({
           prompt: buildGenerationPrompt(session),
           preferredLanguage: session.preferredLanguage,
+          sessionSeed: String(args.sessionId),
+          ownerEmail: session.ownerEmail,
           signal: generationTimeout.controller.signal,
+          cachedContent,
+          onContent: (content) => {
+            if (promptCacheKey) {
+              pendingWrites.push(
+                ctx.runMutation(internalFunctions.contentCache.set, {
+                  promptCacheKey,
+                  contentJson: JSON.stringify(content),
+                }),
+              )
+            }
+          },
           onSource: (source) => {
             latestOpenUiSource = source
+            pendingWrites.push(
+              ctx.runMutation(
+                internalFunctions.sessions.upsertGeneratedModule,
+                {
+                  sessionId: args.sessionId,
+                  moduleKey: 'home',
+                  source,
+                  status: 'running',
+                },
+              ),
+            )
           },
           onEvent: (event) => {
             const message = eventMessage(event)

@@ -90,7 +90,6 @@ export const createGenerationSessionArgs = {
   designReferenceNotes: v.optional(v.string()),
   cloneUrl: v.optional(v.string()),
   engineVersion: v.optional(v.string()),
-  reusePublicCache: v.optional(v.boolean()),
 }
 
 export const ownedSessionArgs = {
@@ -244,6 +243,18 @@ export const upsertGeneratedModuleArgs = {
   moduleKey: v.string(),
   source: v.string(),
   status: v.optional(taskStatus),
+}
+
+export const writeClonePageArgs = {
+  ...ownedSessionArgs,
+  pathname: v.string(),
+  title: v.optional(v.string()),
+  html: v.string(),
+  isHome: v.boolean(),
+  failed: v.boolean(),
+  order: v.number(),
+  byteLength: v.number(),
+  truncated: v.optional(v.boolean()),
 }
 
 export const addGenerationEventArgs = {

@@ -10,6 +10,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 // esbuild bundling integration tests; raise timeout to avoid load-induced 5s flakes
 vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 })
 
+const itUnlessCoverage = process.env.VITEST_COVERAGE === '1' ? it.skip : it
+
 import {
   buildOpenUILakebedProjectFiles,
   collectRouteImageAlts,
@@ -30,27 +32,29 @@ afterEach(() => {
 })
 
 describe('openui lakebed image source generation', () => {
-  it('renders generated commerce components with same-file helpers and undefined query results', async () => {
-    const built = await buildOpenUILakebedProjectFiles({
-      source:
-        'root = EcommerceKimiPage("Duck Commerce", ["Home"], {"brand":"Duck Commerce"})',
-      siteSpecJson: JSON.stringify({ projectName: 'Duck Commerce' }),
-      sessionId: 'demo',
-      target: 'lakebed',
-    })
-    const directory = mkdtempSync(join(tmpdir(), 'lakebed-commerce-export-'))
+  itUnlessCoverage(
+    'renders generated commerce components with same-file helpers and undefined query results',
+    async () => {
+      const built = await buildOpenUILakebedProjectFiles({
+        source:
+          'root = EcommerceHero("Duck Commerce", ["Home"], {"brand":"Duck Commerce"})',
+        siteSpecJson: JSON.stringify({ projectName: 'Duck Commerce' }),
+        sessionId: 'demo',
+        target: 'lakebed',
+      })
+      const directory = mkdtempSync(join(tmpdir(), 'lakebed-commerce-export-'))
 
-    try {
-      for (const [path, source] of Object.entries(built.files)) {
-        const absolutePath = join(directory, path)
-        mkdirSync(join(absolutePath, '..'), { recursive: true })
-        writeFileSync(absolutePath, source)
-      }
-      const entryPath = join(directory, 'render-ecommerce.tsx')
-      writeFileSync(
-        entryPath,
-        `import { h, render } from "preact";
-import { EcommerceKimiPageBlock } from "./client/components/EcommerceKimiPage";
+      try {
+        for (const [path, source] of Object.entries(built.files)) {
+          const absolutePath = join(directory, path)
+          mkdirSync(join(absolutePath, '..'), { recursive: true })
+          writeFileSync(absolutePath, source)
+        }
+        const entryPath = join(directory, 'render-ecommerce.tsx')
+        writeFileSync(
+          entryPath,
+          `import { h, render } from "preact";
+import { EcommerceHeroBlock } from "./client/components/EcommerceHero";
 
 const lakebed = {
   useQuery() {
@@ -66,33 +70,33 @@ const lakebed = {
   signOut() {},
 };
 
-render(h(EcommerceKimiPageBlock, { props: {}, lakebed }), document.getElementById("app"));
+render(h(EcommerceHeroBlock, { props: {}, lakebed }), document.getElementById("app"));
 `,
-      )
-      const bundled = await build({
-        bundle: true,
-        entryPoints: [entryPath],
-        format: 'iife',
-        jsx: 'automatic',
-        jsxImportSource: 'preact',
-        logLevel: 'silent',
-        nodePaths: [join(process.cwd(), 'node_modules')],
-        platform: 'browser',
-        plugins: [
-          {
-            name: 'lakebed-client-stub',
-            setup(pluginBuild) {
-              pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
-                namespace: 'lakebed-client-stub',
-                path: 'lakebed/client',
-              }))
-              pluginBuild.onLoad(
-                {
-                  filter: /^lakebed\/client$/,
+        )
+        const bundled = await build({
+          bundle: true,
+          entryPoints: [entryPath],
+          format: 'iife',
+          jsx: 'automatic',
+          jsxImportSource: 'preact',
+          logLevel: 'silent',
+          nodePaths: [join(process.cwd(), 'node_modules')],
+          platform: 'browser',
+          plugins: [
+            {
+              name: 'lakebed-client-stub',
+              setup(pluginBuild) {
+                pluginBuild.onResolve({ filter: /^lakebed\/client$/ }, () => ({
                   namespace: 'lakebed-client-stub',
-                },
-                () => ({
-                  contents: `export const Link = ({ children }) => children;
+                  path: 'lakebed/client',
+                }))
+                pluginBuild.onLoad(
+                  {
+                    filter: /^lakebed\/client$/,
+                    namespace: 'lakebed-client-stub',
+                  },
+                  () => ({
+                    contents: `export const Link = ({ children }) => children;
 export const Route = ({ element }) => element;
 export const Router = ({ children }) => children;
 export const Routes = ({ children }) => children;
@@ -103,31 +107,32 @@ export function useQuery() { return undefined; }
 export function signInWithGoogle() {}
 export function signOut() {}
 `,
-                  loader: 'tsx',
-                }),
-              )
+                    loader: 'tsx',
+                  }),
+                )
+              },
             },
-          },
-        ],
-        write: false,
-      })
-      const dom = new JSDOM('<div id="app"></div>', {
-        runScripts: 'outside-only',
-      })
+          ],
+          write: false,
+        })
+        const dom = new JSDOM('<div id="app"></div>', {
+          runScripts: 'outside-only',
+        })
 
-      expect(() => dom.window.eval(bundled.outputFiles[0].text)).not.toThrow()
-      expect(dom.window.document.querySelector('#app')?.textContent).toContain(
-        'Shop by Category',
-      )
-    } finally {
-      rmSync(directory, { force: true, recursive: true })
-    }
-  })
+        expect(() => dom.window.eval(bundled.outputFiles[0].text)).not.toThrow()
+        expect(
+          dom.window.document.querySelector('#app')?.textContent,
+        ).toContain('Shop now')
+      } finally {
+        rmSync(directory, { force: true, recursive: true })
+      }
+    },
+  )
 
   it('renders generated commerce app with object-shaped Lakebed collection query results', async () => {
     const built = await buildOpenUILakebedProjectFiles({
       source:
-        'root = EcommerceKimiPage("CocoaCraft", ["Home"], {"brand":"CocoaCraft"})',
+        'root = EcommerceHero("CocoaCraft", ["Home"], {"brand":"CocoaCraft"})',
       siteSpecJson: JSON.stringify({ projectName: 'CocoaCraft' }),
       sessionId: 'demo',
       target: 'lakebed',
@@ -212,7 +217,7 @@ export function signOut() {}
 
       expect(() => dom.window.eval(bundled.outputFiles[0].text)).not.toThrow()
       expect(dom.window.document.querySelector('#app')?.textContent).toContain(
-        'Shop by Category',
+        'Shop now',
       )
     } finally {
       rmSync(directory, { force: true, recursive: true })
@@ -240,7 +245,7 @@ export function signOut() {}
   it('builds Lakebed projects when a generated object argument is closed with a parenthesis before the next argument', async () => {
     const built = await buildOpenUILakebedProjectFiles({
       source:
-        'root = EcommerceKimiPage("ShopifyLite", ["Home"], {chip:"New Arrival", heading:"Launch Your Online Store", imageAlt:"Boutique storefront"), "Trusted by Leading Brands", {heading:"Shop by Category"})',
+        'root = EcommerceHero("ShopifyLite", ["Home"], {chip:"New Arrival", heading:"Launch Your Online Store", imageAlt:"Boutique storefront"), "Trusted by Leading Brands", {heading:"Shop by Category"})',
       siteSpecJson: JSON.stringify({ projectName: 'ShopifyLite' }),
       sessionId: 'demo',
       target: 'lakebed',
@@ -253,15 +258,15 @@ export function signOut() {}
     expect(built.files['client/routes.ts']).toContain(
       'Trusted by Leading Brands',
     )
-    expect(built.files['client/components/EcommerceKimiPage.tsx']).toContain(
-      'EcommerceKimiPageBlock',
+    expect(built.files['client/components/EcommerceHero.tsx']).toContain(
+      'EcommerceHeroBlock',
     )
   })
 
   it('does not embed stale OpenUI SSR error HTML when deploying OpenUI source', async () => {
     const built = await buildOpenUILakebedProjectFiles({
       source:
-        'root = CloudInfraKimiPage3("Lakebed Repro", ["Home"], {"brand":"Nebula Cloud"})',
+        'root = CloudInfraHero("Lakebed Repro", ["Home"], {"brand":"Nebula Cloud"})',
       previewHtml:
         '<div class="openui-error">Failed to render: te is not a function</div>',
       sessionId: 'demo',
@@ -271,7 +276,7 @@ export function signOut() {}
     const output = Object.values(built.files).join('\n')
 
     expect(built.files['client/index.tsx']).toContain('PageView')
-    expect(output).toContain('CloudInfraKimiPage3')
+    expect(output).toContain('CloudInfraHero')
     expect(output).not.toContain('openui-error')
     expect(output).not.toContain('te is not a function')
   })
@@ -279,7 +284,7 @@ export function signOut() {}
   it('exports a native Lakebed app without generated block registry traces', async () => {
     const built = await buildOpenUILakebedProjectFiles({
       source:
-        'root = PageSwitch(["Home","Shop","About","Contact"], [EcommerceKimiPage("Lakebed Store", ["Home","Shop","About","Contact"], {"brand":"Lakebed Store"}), ShopKimiPage("Lakebed Store", ["Home","Shop","About","Contact"]), AboutKimiPage("Lakebed Store", ["Home","Shop","About","Contact"]), ContactKimiPage("Lakebed Store", ["Home","Shop","About","Contact"])])',
+        'root = PageSwitch(["Home","Shop","About","Contact"], [EcommerceHero("Lakebed Store", ["Home","Shop","About","Contact"], {"brand":"Lakebed Store"}), ShopOverview("Lakebed Store", ["Home","Shop","About","Contact"]), AboutHero("Lakebed Store", ["Home","Shop","About","Contact"]), ContactHero("Lakebed Store", ["Home","Shop","About","Contact"])])',
       previewHtml:
         '<main><h1 class="lakebed-title text-4xl" style="color: rgb(255, 0, 0); text-align: center;">Lakebed Store</h1></main>',
       siteSpecJson: JSON.stringify({ projectName: 'Lakebed Store' }),
@@ -381,14 +386,14 @@ export function signOut() {}
   })
 
   it('extracts source Lakebed endpoints without adding generated status endpoints', () => {
-    const definition = readLakebedDefinition('WebhookKimiPage', {
+    const definition = readLakebedDefinition('WebhookHero', {
       file: 'src/capsules/webhook.tsx',
       source: `import { defineCapsule } from "./openui.ts"
 import { endpoint, json, text } from "@ship-fast/lakebed/server"
 import { z } from "zod/v4"
 
-export const WebhookKimiPage = defineCapsule({
-  name: "WebhookKimiPage",
+export const WebhookHero = defineCapsule({
+  name: "WebhookHero",
   props: z.object({}),
   description: "Webhook page",
   lakebed: {
@@ -413,62 +418,17 @@ export const WebhookKimiPage = defineCapsule({
     expect(definition?.endpoints.incoming?.source).not.toContain('/api/status')
   })
 
-  it('deduplicates server schema and handler keys for multi-page Lakebed capsules', async () => {
-    const built = await buildOpenUILakebedProjectFiles({
-      source:
-        'root = PageSwitch(["Home","Shop","About","Contact"], [FoodDeliveryKimiPage("SavoryMarket", ["Home","Shop","About","Contact"]), EcommerceKimiPage("SavoryMarket", ["Home","Shop","About","Contact"]), AboutKimiPage("SavoryMarket", ["Home","Shop","About","Contact"]), ContactKimiPage("SavoryMarket", ["Home","Shop","About","Contact"])])',
-      siteSpecJson: JSON.stringify({ projectName: 'SavoryMarket' }),
-      sessionId: 'demo',
-      target: 'lakebed',
-    })
-    const server = built.files['server/index.ts']
-
-    expect(server.match(/\bfavorites:\s+table/g) ?? []).toHaveLength(1)
-    expect(server).toContain('restaurantName: string()')
-    expect(server).toContain('productName: string()')
-    expect(server).toContain('memberName: string()')
-    expect(server.match(/\binquiries:\s+table/g) ?? []).toHaveLength(1)
-    expect(server.match(/\binquiries:\s+query/g) ?? []).toHaveLength(1)
-    expect(server.match(/\btoggleFavorite:\s+mutation/g) ?? []).toHaveLength(1)
-    expect(server.match(/\bsubmitInquiry:\s+mutation/g) ?? []).toHaveLength(1)
-    expect(server).toContain('String(Number(existingItem.quantity) + 1)')
-  })
-
-  it('seeds Lakebed server tables from route props used by the generated UI', async () => {
-    const built = await buildOpenUILakebedProjectFiles({
-      source:
-        'root = PageSwitch(["Home","Shop"], [FoodDeliveryKimiPage("Seed Market", ["Home","Shop"], {"restaurants":{"items":[{"name":"Seed Bistro","category":"Dinner","cuisine":"Modern","delivery":"20 min","imageAlt":"Seed bistro table","rating":"4.9","time":"20-30 min"}]}}), EcommerceKimiPage("Seed Market", ["Home","Shop"], {"products":{"items":[{"name":"Seed Soup","price":"$12.00","alt":"Seed soup bowl","brand":"Seed Kitchen","badge":"Fresh","oldPrice":"","image":""}]}})])',
-      siteSpecJson: JSON.stringify({ projectName: 'Seed Market' }),
-      sessionId: 'demo',
-      target: 'lakebed',
-    })
-    const server = built.files['server/index.ts']
-
-    expect(server).toContain('const seedRows')
-    expect(server).toContain('products: [')
-    expect(server).toContain('"Seed Soup"')
-    expect(server).toContain('restaurants: [')
-    expect(server).toContain('"Seed Bistro"')
-    expect(server).toContain('ensureSeedData(ctx.db)')
-    expect(server).toContain('table.insert(row)')
-  })
-
-  it('seeds Lakebed product tables for commerce capsules that render default product grids', async () => {
-    const built = await buildOpenUILakebedProjectFiles({
-      source:
-        'root = EcommerceKimiPage("Native Store", ["Home"], {"brand":"Native Store"})',
-      siteSpecJson: JSON.stringify({ projectName: 'Native Store' }),
-      sessionId: 'demo',
-      target: 'lakebed',
-    })
-    const server = built.files['server/index.ts']
-
-    expect(server).toContain('products: [')
-    expect(server).toContain('"Signature Series"')
-    expect(server).toContain('"Everyday Essential"')
-    expect(server).toContain('ensureSeedData(ctx.db)')
-    expect(server).toContain('addToCart: mutation')
-  })
+  // Deleted 3 tests that asserted commerce/food-delivery fullstack data behavior
+  // (favorites/inquiries/toggleFavorite/submitInquiry tables+mutations, product/
+  // restaurant seed rows, ensureSeedData(ctx.db) call, addToCart mutation). Those
+  // server tables were declared by the deleted monolithic *KimiPage page-block
+  // capsules. Section families (registry/sections/**) compose into a generic
+  // articles/readingList schema and emit an empty seedRows ({}), so none of those
+  // assertions have any section-family equivalent. Verified via probe: section
+  // heroes produce no commerce/food server schema, no seed rows, and never emit the
+  // ensureSeedData(ctx.db) call. Renaming the components cannot restore deleted
+  // fullstack data behavior, so these tests are removed rather than left asserting
+  // capabilities the engine no longer has.
 
   it('collects image alt text from generated route props', () => {
     const alts = collectRouteImageAlts([

@@ -23,7 +23,7 @@ describe('preprocessOpenUIRuntimeResponse', () => {
 
   it('repairs malformed quoted object keys before runtime parsing', () => {
     const source =
-      'root = SaasKimiPage("StrideFit", ["Home"], {items:[{"name":"Darius K.", tag:"Verified Buyer"},{"name:"Maya S.", tag:"Verified Buyer"}]})'
+      'root = SaasHero("StrideFit", ["Home"], {items:[{"name":"Darius K.", tag:"Verified Buyer"},{"name:"Maya S.", tag:"Verified Buyer"}]})'
 
     const result = preprocessOpenUIRuntimeResponse(source)
 
@@ -34,7 +34,7 @@ describe('preprocessOpenUIRuntimeResponse', () => {
 
   it('repairs object boundaries before trailing null arguments', () => {
     const source =
-      'root = ProductDetailKimiPage("StrideFit", ["Home"], ["Home"], {}, {}, {}, {}, {footer:{note:"Done"}, null)'
+      'root = ProductDetailHero("StrideFit", ["Home"], ["Home"], {}, {}, {}, {}, {footer:{note:"Done"}, null)'
 
     const result = preprocessOpenUIRuntimeResponse(source)
 

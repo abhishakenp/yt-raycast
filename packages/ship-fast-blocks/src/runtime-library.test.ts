@@ -8,17 +8,18 @@ import {
   loadOpenUIRuntimeComponent,
   loadOpenUIRuntimeLibrary,
 } from './runtime-library'
+import { runtimeSectionComponentNameSet } from './generated/runtime-section-component-names'
 
 describe('OpenUI runtime library loading', () => {
   it('extracts only known component calls and always includes the Stack root', () => {
     const names = extractOpenUIRuntimeComponentNames(`
       root = PageSwitch(routes=["Home"], pages=[home])
-      home = SaasKimiPage(title="Launch")
+      home = SaasHero(title="Launch")
       body = Text("Ignore UnknownWidget(")
       missing = UnknownWidget()
     `)
 
-    expect(names).toEqual(['PageSwitch', 'SaasKimiPage', 'Stack', 'Text'])
+    expect(names).toEqual(['PageSwitch', 'SaasHero', 'Stack', 'Text'])
   })
 
   it('uses a stable cache key for equivalent component sets', () => {
@@ -80,5 +81,36 @@ describe('OpenUI runtime library loading', () => {
       /(?:from|import\()\s*['"][^'"]*react-export-sources/,
     )
     expect(runtimeLoadersSource).not.toContain('component-spec')
+  })
+
+  it('wraps static section capsules with the realtime + editable HOC', async () => {
+    // CafeHero is a static section capsule (registry/sections/**).
+    expect(runtimeSectionComponentNameSet.has('CafeHero')).toBe(true)
+
+    const capsule = await loadOpenUIRuntimeComponent(
+      'CafeHero' as Parameters<typeof loadOpenUIRuntimeComponent>[0],
+    )
+    const component = capsule.client.component as { displayName?: string }
+    expect(component.displayName).toBe('SectionRealtime(CafeHero)')
+  })
+
+  it('does NOT wrap structural primitives or page capsules', async () => {
+    // Stack is a primitive; it must stay structural (wrapping would break layout).
+    expect(runtimeSectionComponentNameSet.has('Stack')).toBe(false)
+
+    const stack = await loadOpenUIRuntimeComponent(
+      'Stack' as Parameters<typeof loadOpenUIRuntimeComponent>[0],
+    )
+    const component = stack.client.component as { displayName?: string }
+    expect(component.displayName).not.toBe('SectionRealtime(Stack)')
+  })
+
+  it('keeps the runtime library wired through the section realtime wrapper', () => {
+    const runtimeLibrarySource = readFileSync(
+      join(process.cwd(), 'packages/ship-fast-blocks/src/runtime-library.ts'),
+      'utf8',
+    )
+    expect(runtimeLibrarySource).toContain('withSectionRealtime')
+    expect(runtimeLibrarySource).toContain('runtimeSectionComponentNameSet')
   })
 })

@@ -5,7 +5,7 @@ import { validateOpenUISource } from '../../../../packages/ship-fast-engine/src/
 describe('validateOpenUISource', () => {
   it('rejects component calls that start with object literal arguments', () => {
     const result = validateOpenUISource(`root = Stack([home])
-home = FaqKimiPage({"SkillSetu", ["Home"], {"heading":"Bad"}})`)
+home = FaqHero({"SkillSetu", ["Home"], {"heading":"Bad"}})`)
 
     expect(result.ok).toBe(false)
     expect(result.errors.map((error) => error.message)).toContain(
@@ -15,7 +15,7 @@ home = FaqKimiPage({"SkillSetu", ["Home"], {"heading":"Bad"}})`)
 
   it('allows normal component calls with string first arguments', () => {
     const result = validateOpenUISource(`root = Stack([home])
-home = FaqKimiPage("SkillSetu", ["Home"], {"heading":"Good"})`)
+home = FaqHero("SkillSetu", ["Home"], {"heading":"Good"})`)
 
     expect(result.ok).toBe(true)
   })
