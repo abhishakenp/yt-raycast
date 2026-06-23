@@ -53,8 +53,11 @@ import {
 } from './lib/session_commerce_helpers'
 import { sendSessionChatMessage } from './lib/session_chat_helpers'
 import {
+  applyCloneBriefAndGenerate as applyCloneBriefAndGenerateHelper,
   finalizeSessionClonePreview,
+  generateCloneUploadUrl as generateCloneUploadUrlHelper,
   listSessionClonePages,
+  loadCloneHomePreview,
   writeSessionClonePage,
 } from './lib/session_clone_helpers'
 import {
@@ -127,6 +130,7 @@ import {
 import {
   agentationSyncAnnotationArgs,
   annotationIdArgs,
+  applyCloneBriefArgs,
   addGenerationEventArgs,
   claimAnonymousArgs,
   completeGenerationArgs,
@@ -622,6 +626,26 @@ export const restorePreviewVersion = mutation({
 export const writeClonePageDoc = mutation({
   args: writeClonePageArgs,
   handler: (ctx, args) => writeSessionClonePage(ctx, args),
+})
+
+// Large verbatim clone docs exceed Convex's 1 MiB per-document limit, so the
+// clone job uploads them to file storage. This hands the job a signed upload url
+// after the same owned-session check writeClonePageDoc enforces.
+export const generateCloneUploadUrl = mutation({
+  args: ownedSessionArgs,
+  handler: (ctx, args) => generateCloneUploadUrlHelper(ctx, args),
+})
+
+// Renderable home clone content: `url` (file-storage iframe src) when the doc is
+// large, else `html` (inline iframe srcDoc). The client chooses url-over-html.
+export const getCloneHomePreview = query({
+  args: lookupArgs,
+  handler: (ctx, args) => loadCloneHomePreview(ctx, args.lookup),
+})
+
+export const applyCloneBriefAndGenerate = mutation({
+  args: applyCloneBriefArgs,
+  handler: (ctx, args) => applyCloneBriefAndGenerateHelper(ctx, args),
 })
 
 export const finalizeClonePreview = mutation({

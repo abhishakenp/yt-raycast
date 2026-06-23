@@ -89,7 +89,8 @@ export async function runCloneJob(input: {
   const writePage = (args: {
     pathname: string
     title?: string
-    html: string
+    html?: string
+    storageId?: Id<'_storage'>
     isHome: boolean
     failed: boolean
     order: number
@@ -101,6 +102,41 @@ export async function runCloneJob(input: {
       anonymousOwnerSecret,
       ...args,
     })
+
+  // A self-contained verbatim clone doc can exceed Convex's 1 MiB per-document
+  // limit. Above this threshold we upload the html to Convex file storage and
+  // store only a storageId on the row; at/under it we keep the inline html field
+  // + iframe srcDoc path so the common case is unchanged.
+  const STORAGE_THRESHOLD_BYTES = 900_000
+
+  // Persist one self-contained page: inline html when small, else file storage.
+  const persistPage = async (page: {
+    pathname: string
+    title?: string
+    html: string
+    isHome: boolean
+    failed: boolean
+    order: number
+    byteLength: number
+    truncated?: boolean
+  }): Promise<void> => {
+    if (page.byteLength > STORAGE_THRESHOLD_BYTES) {
+      const uploadUrl = await client.mutation(
+        api.sessions.generateCloneUploadUrl,
+        { sessionId: sid, anonymousOwnerSecret },
+      )
+      const res = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/html' },
+        body: page.html,
+      })
+      const { storageId } = (await res.json()) as { storageId: Id<'_storage'> }
+      const { html: _omit, ...rest } = page
+      await writePage({ ...rest, storageId })
+      return
+    }
+    await writePage(page)
+  }
 
   const controller = new AbortController()
   const jobTimer = setTimeout(() => controller.abort(), JOB_TIMEOUT_MS)
@@ -146,7 +182,7 @@ export async function runCloneJob(input: {
           finalUrl: captured.url,
         })
         homeHtml = contained.html
-        await writePage({
+        await persistPage({
           pathname: contained.pathname,
           title: contained.title,
           html: contained.html,
@@ -216,7 +252,7 @@ export async function runCloneJob(input: {
             const contained = await engine.selfContainPage(captured, {
               finalUrl: captured.url,
             })
-            await writePage({
+            await persistPage({
               pathname: contained.pathname,
               title: contained.title,
               html: contained.html,

@@ -3957,6 +3957,10 @@
       "signature": "ShopOverview(brand?: string, eyebrow?: string, heading?: string, subheading?: string, primaryCta?: string, secondaryCta?: string, imageAlt?: string, features?: string[], stats?: {value: string, label: string}[], className?: string)",
       "description": "Reusable overview / hero section for the Shop page family. Derived from the section template catalog to provide section-level coverage without new HTML generation: eyebrow, large heading, supporting copy, dual CTAs, feature pills, KPI strip, and an image panel rendered through the alt-driven Image component. Use when composing a shop page or adding a focused shop band to a larger generated site."
     },
+    "SignIn": {
+      "signature": "SignIn(label?: string, variant?: \"primary\" | \"outline\" | \"ghost\", className?: string)",
+      "description": "A REAL working sign-in button wired to the site's Shoo/lakebed auth — shows 'Sign in' for guests and an account menu with Sign out when authenticated. Use anywhere a site needs real login (nav CTA, hero, account area). NOT a dummy/page-switch button."
+    },
     "Skeleton": {
       "signature": "Skeleton(className?: string)",
       "description": "Pulsing loading placeholder block. Size/shape it with className, e.g. 'h-4 w-32' or 'size-12 rounded-full'."
@@ -4012,6 +4016,18 @@
     "Stack": {
       "signature": "Stack(children?: any[], direction?: \"col\" | \"row\", gap?: \"none\" | \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\", align?: \"start\" | \"center\" | \"end\" | \"stretch\", justify?: \"start\" | \"center\" | \"end\" | \"between\" | \"around\", wrap?: boolean, className?: string)",
       "description": "Flex container. The required root of every UI. direction 'col' (default) stacks vertically, 'row' horizontally."
+    },
+    "StateButton": {
+      "signature": "StateButton(label: string, field: string, op?: \"increment\" | \"decrement\" | \"set\" | \"toggle\" | \"reset\", amount?: number, value?: number | string | boolean, initial?: number | string | boolean, variant?: \"default\" | \"outline\" | \"secondary\" | \"ghost\" | \"destructive\", className?: string)",
+      "description": "A button that MUTATES a named shared state field on click — op is increment | decrement | set | toggle | reset. This is REAL interactivity (not a navigation link): use it with StateText to build counters, steppers, toggles and any click-driven state. `field` is the state key; `amount` is the step for increment/decrement (default 1); `value` is the target for set; `initial` seeds/resets the field."
+    },
+    "StateInput": {
+      "signature": "StateInput(field: string, placeholder?: string, initial?: string, className?: string)",
+      "description": "A text input two-way bound to a named shared state field — typing updates the field live and any StateText reading the same field reflects it. Use `field` as the state key. Composes into forms, search boxes, todo entry, any input-driven state."
+    },
+    "StateText": {
+      "signature": "StateText(field: string, initial?: number | string | boolean, prefix?: string, suffix?: string, className?: string)",
+      "description": "Live text bound to a named shared state field — displays the CURRENT value of that field and updates instantly when it changes. Use the `field` string as the state key and `initial` to seed it. Pair with StateButton/StateInput to build any stateful UI (counter readouts, running totals, toggle labels). NOT a static label."
     },
     "SubscriptionBoxCta": {
       "signature": "SubscriptionBoxCta(eyebrow?: string, title?: string, subtitle?: string, primaryCta?: string, secondaryCta?: string, className?: string)",

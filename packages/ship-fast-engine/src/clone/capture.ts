@@ -160,7 +160,43 @@ export async function capturePage(
     // Wait for dynamic content
     await page.waitForTimeout(1000)
 
-    // Capture HTML
+    // Inline the ALREADY-RENDERED CSS from the browser's loaded EXTERNAL
+    // stylesheets (the `<link>`s). The browser fetched them correctly (real UA,
+    // cookies, redirects), so `cssRules` is the full applied CSS as text — far
+    // more faithful than re-fetching server-side (blocked/slow on many sites,
+    // which is why the layout CSS goes missing). We only take <link> sheets
+    // (skip <style> — already inline in the HTML, no duplication) and minify to
+    // stay under the ~1 MiB per-page storage limit. Cross-origin sheets throw on
+    // cssRules and are skipped (browser still loads their fonts via absolute url).
+    await page.evaluate(() => {
+      const minify = (css: string): string =>
+        css
+          .replace(/\/\*[\s\S]*?\*\//g, "")
+          .replace(/\s+/g, " ")
+          .replace(/\s*([{}:;,>~+])\s*/g, "$1")
+          .trim()
+      const blocks: string[] = []
+      for (const sheet of Array.from(document.styleSheets)) {
+        const owner = sheet.ownerNode as Element | null
+        if (!owner || owner.tagName !== "LINK") continue // <style> already inline
+        try {
+          const text = Array.from(sheet.cssRules)
+            .map((rule) => rule.cssText)
+            .join("")
+          const min = minify(text)
+          if (min.length > 0) blocks.push(min)
+        } catch {
+          // cross-origin stylesheet — cssRules access is blocked; skip it.
+        }
+      }
+      if (blocks.length === 0) return
+      const style = document.createElement("style")
+      style.setAttribute("data-clone-inlined-css", "")
+      style.textContent = blocks.join("")
+      document.head.appendChild(style)
+    })
+
+    // Capture HTML (now carries the inlined external CSS as a single <style>)
     const html = await page.content()
 
     // Capture whitelisted computed styles for key elements (serializable format)

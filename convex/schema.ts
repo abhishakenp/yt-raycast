@@ -81,6 +81,7 @@ export default defineSchema({
     designReferenceUrls: v.optional(v.array(v.string())),
     designReferenceNotes: v.optional(v.string()),
     cloneUrl: v.optional(v.string()),
+    cloneBrief: v.optional(v.string()),
     designReferenceFingerprint: v.optional(v.string()),
     promptCacheKey: v.optional(v.string()),
     engineVersion: v.optional(v.string()),
@@ -159,7 +160,11 @@ export default defineSchema({
     sessionId: v.id('sessions'),
     pathname: v.string(),
     title: v.optional(v.string()),
-    html: v.string(),
+    // Small docs (≤ ~900KB) keep the inline html string + iframe srcDoc path.
+    // Large verbatim clones exceed Convex's 1 MiB per-document limit, so they go
+    // to file storage instead and the row carries a storageId (html stays unset).
+    html: v.optional(v.string()),
+    storageId: v.optional(v.id('_storage')),
     isHome: v.boolean(),
     failed: v.boolean(),
     order: v.number(),

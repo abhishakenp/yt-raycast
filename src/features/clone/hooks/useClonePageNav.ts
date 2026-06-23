@@ -9,10 +9,16 @@ export interface ClonePageNavItem {
   title: string | undefined
   isHome: boolean
   failed: boolean
+  storageId?: Id<'_storage'> | null
+  byteLength?: number
+  truncated?: boolean
 }
 
 export interface ClonePageNavState {
   currentHtml: string | null
+  /** File-storage url for the home doc when it's too large for the inline html
+   *  field; render the iframe with `src={currentUrl}` instead of `srcDoc`. */
+  currentUrl: string | null
   currentPath: string
   pages: ClonePageNavItem[]
   isClone: boolean
@@ -74,12 +80,16 @@ export function useClonePageNav(
 
   return {
     currentHtml: currentRow?.html ?? null,
+    currentUrl: null, // File-storage URL support to be added when needed
     currentPath: activePath,
     pages: rows.map((row) => ({
       pathname: row.pathname,
       title: row.title,
       isHome: row.isHome,
       failed: row.failed,
+      storageId: row.storageId,
+      byteLength: row.byteLength,
+      truncated: row.truncated,
     })),
     isClone: rows.length > 0,
   }

@@ -128,7 +128,12 @@ export function pickRandomTheme(rng: () => number): string {
   return THEME_NAMES[i]
 }
 
-export function resolveThemeStyles(name: string | null | undefined): ThemeStyles | null {
+export function resolveThemeStyles(
+  name: string | { styles?: ThemeStyles } | null | undefined,
+): ThemeStyles | null {
+  // An on-the-fly cloned theme is passed as a preset OBJECT (extracted from the
+  // scraped site) rather than a catalog name — use its styles directly.
+  if (name && typeof name === 'object') return name.styles ?? null
   if (!name || !(name in defaultPresets)) return null
   return defaultPresets[name].styles
 }

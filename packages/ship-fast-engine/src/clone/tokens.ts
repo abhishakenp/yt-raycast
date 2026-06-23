@@ -392,3 +392,104 @@ export function tokensToThemeVars(tokens: ExtractedTokens): Partial<Record<strin
     "--spacing": tokens.spacing,
   }
 }
+
+// A valid #rrggbb hex, else the supplied fallback. Guards against empty/invalid
+// tokens (e.g. a scrape that surfaced "transparent" or a font name in a color slot)
+// so a derived theme never ships a broken CSS var.
+function safeHex(value: string | undefined, fallback: string): string {
+  const v = (value || "").trim()
+  return /^#[0-9a-f]{6}$/i.test(v) ? v.toLowerCase() : fallback
+}
+
+// Readable text color to lay on top of `bg`: near-black on light surfaces,
+// near-white on dark ones. Uses the same luminance model as the rest of the file.
+function readableOn(bg: string): string {
+  return luminance(bg) > 0.5 ? "#0a0a0a" : "#fafafa"
+}
+
+// Build full light + dark theme maps from extracted tokens so a cloned site's
+// DEFAULT theme matches the source's look (palette/fonts/radius). Keys are the
+// kebab-case, unprefixed names the theme system applies (see THEME_VAR_KEYS in
+// ship-fast-blocks/theme-apply.ts) — exactly what a preset's styles.light/.dark
+// must contain. Generic engine rule: derived structurally from tokens, never
+// hardcoded per site.
+export function tokensToThemePreset(
+  tokens: ExtractedTokens,
+): { light: Record<string, string>; dark: Record<string, string> } {
+  // Defensive defaults — an empty/invalid token must never collapse the theme.
+  const background = safeHex(tokens.background, "#ffffff")
+  const foreground = safeHex(tokens.foreground, "#0a0a0a")
+  const primary = safeHex(tokens.primary, "#3b82f6")
+  const accent = safeHex(tokens.accent, primary)
+  const secondary = safeHex(tokens.secondary, mix(background, foreground, 0.06))
+  const muted = safeHex(tokens.muted, mix(background, foreground, 0.08))
+  const border = safeHex(tokens.border, mix(background, foreground, 0.16))
+  const radius = (tokens.radius || "").trim() || "0.5rem"
+  const fontSans = (tokens.fontFamily || "").trim() || "sans-serif"
+
+  // Foreground sitting on top of muted surfaces: a mid blend reads as a softened
+  // body/secondary text color on either light or dark surfaces.
+  const mutedForeground = mix(foreground, background, 0.45)
+  const primaryForeground = readableOn(primary)
+  const accentForeground = readableOn(accent)
+  const secondaryForeground = readableOn(secondary)
+
+  const light: Record<string, string> = {
+    background,
+    foreground,
+    card: background,
+    "card-foreground": foreground,
+    popover: background,
+    "popover-foreground": foreground,
+    primary,
+    "primary-foreground": primaryForeground,
+    secondary,
+    "secondary-foreground": secondaryForeground,
+    muted,
+    "muted-foreground": mutedForeground,
+    accent,
+    "accent-foreground": accentForeground,
+    border,
+    input: border,
+    ring: primary,
+    radius,
+    "font-sans": fontSans,
+  }
+
+  // Dark variant: swap the canvas to a dark ground with a light foreground while
+  // keeping the brand primary/accent/radius/font intact. Surfaces (card/muted/
+  // border) are derived as tonal lifts off the dark background so the dark theme
+  // is internally consistent rather than a flat fill. If the source is already
+  // dark we keep its colors and only ensure a contrasting foreground.
+  const sourceIsDark = luminance(background) <= 0.5
+  const darkBg = sourceIsDark ? background : "#0a0a0a"
+  const darkFg = sourceIsDark ? foreground : "#fafafa"
+  const darkCard = mix(darkBg, "#ffffff", 0.06)
+  const darkMuted = mix(darkBg, "#ffffff", 0.1)
+  const darkBorder = mix(darkBg, "#ffffff", 0.16)
+  const darkSecondary = mix(darkBg, "#ffffff", 0.12)
+
+  const dark: Record<string, string> = {
+    background: darkBg,
+    foreground: darkFg,
+    card: darkCard,
+    "card-foreground": darkFg,
+    popover: darkCard,
+    "popover-foreground": darkFg,
+    primary,
+    "primary-foreground": primaryForeground,
+    secondary: darkSecondary,
+    "secondary-foreground": darkFg,
+    muted: darkMuted,
+    "muted-foreground": mix(darkFg, darkBg, 0.4),
+    accent,
+    "accent-foreground": accentForeground,
+    border: darkBorder,
+    input: darkBorder,
+    ring: primary,
+    radius,
+    "font-sans": fontSans,
+  }
+
+  return { light, dark }
+}
