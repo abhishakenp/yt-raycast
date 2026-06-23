@@ -7,6 +7,9 @@ export default defineConfig({
     hookTimeout: 120_000,
     maxWorkers: 2,
     testTimeout: 120_000,
+    // Installs an in-memory Web Storage polyfill for jsdom test files (jsdom here
+    // does not expose window.localStorage/sessionStorage). No-op in node env.
+    setupFiles: ['./vitest.setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text-summary', 'json-summary'],
