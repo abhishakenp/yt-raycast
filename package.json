@@ -23,7 +23,7 @@
     "verify:homepage-quality": "node scripts/homepage-quality-gate.mjs",
     "verify:gallery": "node scripts/verify-gallery.mjs",
     "verify:admission": "node scripts/verify-admission.mjs",
-    "verify:authenticated-admission": "bun run test -- convex/authenticated-admission.test.ts",
+    "verify:authenticated-admission": "bun run test -- convex/authenticated_admission.test.ts",
     "verify:restored-routes": "node scripts/verify-restored-routes.mjs",
     "verify:deployment-preview": "node scripts/verify-deployment-preview.mjs",
     "verify:seo-aeo": "node scripts/verify-seo-aeo.mjs",

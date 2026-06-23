@@ -60,6 +60,8 @@ import { Route as ApiSessionsSessionIdHistoryRouteImport } from './routes/api/se
 import { Route as ApiSessionsSessionIdGalleryThumbRouteImport } from './routes/api/sessions.$sessionId.gallery-thumb'
 import { Route as ApiSessionsSessionIdExportRouteImport } from './routes/api/sessions.$sessionId.export'
 import { Route as ApiSessionsSessionIdChatRouteImport } from './routes/api/sessions.$sessionId.chat'
+import { Route as ApiPaymentsStripeWebhookRouteImport } from './routes/api/payments.stripe.webhook'
+import { Route as ApiPaymentsRazorpayWebhookRouteImport } from './routes/api/payments.razorpay.webhook'
 import { Route as ApiMedusaStoreCartLineItemsRouteImport } from './routes/api/medusa-store.cart.line-items'
 import { Route as ApiMedusaStoreCartIdRouteImport } from './routes/api/medusa-store.cart.$id'
 import { Route as ApiGithubConnectStartRouteImport } from './routes/api/github.connect.start'
@@ -342,6 +344,18 @@ const ApiSessionsSessionIdChatRoute =
     path: '/chat',
     getParentRoute: () => ApiSessionsSessionIdRoute,
   } as any)
+const ApiPaymentsStripeWebhookRoute =
+  ApiPaymentsStripeWebhookRouteImport.update({
+    id: '/api/payments/stripe/webhook',
+    path: '/api/payments/stripe/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPaymentsRazorpayWebhookRoute =
+  ApiPaymentsRazorpayWebhookRouteImport.update({
+    id: '/api/payments/razorpay/webhook',
+    path: '/api/payments/razorpay/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiMedusaStoreCartLineItemsRoute =
   ApiMedusaStoreCartLineItemsRouteImport.update({
     id: '/line-items',
@@ -466,6 +480,8 @@ export interface FileRoutesByFullPath {
   '/api/github/connect/start': typeof ApiGithubConnectStartRoute
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
+  '/api/payments/razorpay/webhook': typeof ApiPaymentsRazorpayWebhookRoute
+  '/api/payments/stripe/webhook': typeof ApiPaymentsStripeWebhookRoute
   '/api/sessions/$sessionId/chat': typeof ApiSessionsSessionIdChatRoute
   '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
   '/api/sessions/$sessionId/gallery-thumb': typeof ApiSessionsSessionIdGalleryThumbRoute
@@ -532,6 +548,8 @@ export interface FileRoutesByTo {
   '/api/github/connect/start': typeof ApiGithubConnectStartRoute
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
+  '/api/payments/razorpay/webhook': typeof ApiPaymentsRazorpayWebhookRoute
+  '/api/payments/stripe/webhook': typeof ApiPaymentsStripeWebhookRoute
   '/api/sessions/$sessionId/chat': typeof ApiSessionsSessionIdChatRoute
   '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
   '/api/sessions/$sessionId/gallery-thumb': typeof ApiSessionsSessionIdGalleryThumbRoute
@@ -599,6 +617,8 @@ export interface FileRoutesById {
   '/api/github/connect/start': typeof ApiGithubConnectStartRoute
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
+  '/api/payments/razorpay/webhook': typeof ApiPaymentsRazorpayWebhookRoute
+  '/api/payments/stripe/webhook': typeof ApiPaymentsStripeWebhookRoute
   '/api/sessions/$sessionId/chat': typeof ApiSessionsSessionIdChatRoute
   '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
   '/api/sessions/$sessionId/gallery-thumb': typeof ApiSessionsSessionIdGalleryThumbRoute
@@ -667,6 +687,8 @@ export interface FileRouteTypes {
     | '/api/github/connect/start'
     | '/api/medusa-store/cart/$id'
     | '/api/medusa-store/cart/line-items'
+    | '/api/payments/razorpay/webhook'
+    | '/api/payments/stripe/webhook'
     | '/api/sessions/$sessionId/chat'
     | '/api/sessions/$sessionId/export'
     | '/api/sessions/$sessionId/gallery-thumb'
@@ -733,6 +755,8 @@ export interface FileRouteTypes {
     | '/api/github/connect/start'
     | '/api/medusa-store/cart/$id'
     | '/api/medusa-store/cart/line-items'
+    | '/api/payments/razorpay/webhook'
+    | '/api/payments/stripe/webhook'
     | '/api/sessions/$sessionId/chat'
     | '/api/sessions/$sessionId/export'
     | '/api/sessions/$sessionId/gallery-thumb'
@@ -799,6 +823,8 @@ export interface FileRouteTypes {
     | '/api/github/connect/start'
     | '/api/medusa-store/cart/$id'
     | '/api/medusa-store/cart/line-items'
+    | '/api/payments/razorpay/webhook'
+    | '/api/payments/stripe/webhook'
     | '/api/sessions/$sessionId/chat'
     | '/api/sessions/$sessionId/export'
     | '/api/sessions/$sessionId/gallery-thumb'
@@ -859,6 +885,8 @@ export interface RootRouteChildren {
   ApiAgentationSyncAnnotationsAnnotationIdRoute: typeof ApiAgentationSyncAnnotationsAnnotationIdRoute
   ApiGithubConnectCallbackRoute: typeof ApiGithubConnectCallbackRoute
   ApiGithubConnectStartRoute: typeof ApiGithubConnectStartRoute
+  ApiPaymentsRazorpayWebhookRoute: typeof ApiPaymentsRazorpayWebhookRoute
+  ApiPaymentsStripeWebhookRoute: typeof ApiPaymentsStripeWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1220,6 +1248,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSessionsSessionIdChatRouteImport
       parentRoute: typeof ApiSessionsSessionIdRoute
     }
+    '/api/payments/stripe/webhook': {
+      id: '/api/payments/stripe/webhook'
+      path: '/api/payments/stripe/webhook'
+      fullPath: '/api/payments/stripe/webhook'
+      preLoaderRoute: typeof ApiPaymentsStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payments/razorpay/webhook': {
+      id: '/api/payments/razorpay/webhook'
+      path: '/api/payments/razorpay/webhook'
+      fullPath: '/api/payments/razorpay/webhook'
+      preLoaderRoute: typeof ApiPaymentsRazorpayWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/medusa-store/cart/line-items': {
       id: '/api/medusa-store/cart/line-items'
       path: '/line-items'
@@ -1490,6 +1532,8 @@ const rootRouteChildren: RootRouteChildren = {
     ApiAgentationSyncAnnotationsAnnotationIdRoute,
   ApiGithubConnectCallbackRoute: ApiGithubConnectCallbackRoute,
   ApiGithubConnectStartRoute: ApiGithubConnectStartRoute,
+  ApiPaymentsRazorpayWebhookRoute: ApiPaymentsRazorpayWebhookRoute,
+  ApiPaymentsStripeWebhookRoute: ApiPaymentsStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
