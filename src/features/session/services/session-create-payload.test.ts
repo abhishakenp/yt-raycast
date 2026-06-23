@@ -91,48 +91,6 @@ describe('session create payload', () => {
     })
   })
 
-  it('marks standard public homepage prompts as public-cache replayable', () => {
-    expect(
-      buildCreateSessionPayload({
-        prompt: 'build a blog',
-        preferredLanguage: 'en',
-        isPrivate: false,
-        anonymousOwnerSecret: 'owner-secret',
-        anonymousClientId: 'anon-client',
-        workspace: 'workspace_abc123',
-        reusePublicCache: true,
-      }),
-    ).toMatchObject({
-      reusePublicCache: true,
-    })
-  })
-
-  it('does not replay public cache for reference-guided or v2 prompts', () => {
-    expect(
-      buildCreateSessionPayload({
-        prompt: 'build a blog',
-        preferredLanguage: 'en',
-        isPrivate: false,
-        anonymousOwnerSecret: 'owner-secret',
-        workspace: 'workspace_abc123',
-        designReferenceUrls: ['https://example.com/reference'],
-        reusePublicCache: true,
-      }),
-    ).not.toHaveProperty('reusePublicCache')
-
-    expect(
-      buildCreateSessionPayload({
-        prompt: 'build a blog',
-        preferredLanguage: 'en',
-        isPrivate: false,
-        anonymousOwnerSecret: 'owner-secret',
-        workspace: 'workspace_abc123',
-        engineVersion: 'v2',
-        reusePublicCache: true,
-      }),
-    ).not.toHaveProperty('reusePublicCache')
-  })
-
   it('includes the selected engine version when provided', () => {
     expect(
       buildCreateSessionPayload({

@@ -23,14 +23,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/about/AboutHero.tsx').then((module) =>
       toCapsule(module, 'AboutHero'),
     )) satisfies RuntimeComponentLoader,
-  AboutKimiPage: (() =>
-    import('../capsules/about.tsx').then((module) =>
-      toCapsule(module, 'AboutKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  AboutKimiPage2: (() =>
-    import('../capsules/about-2.tsx').then((module) =>
-      toCapsule(module, 'AboutKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
   AboutNavbar: (() =>
     import('../registry/sections/about/AboutNavbar.tsx').then((module) =>
       toCapsule(module, 'AboutNavbar'),
@@ -50,18 +42,6 @@ export const runtimeComponentLoaders = {
   AccountingFirmHero: (() =>
     import('../registry/sections/accounting-firm/AccountingFirmHero.tsx').then(
       (module) => toCapsule(module, 'AccountingFirmHero'),
-    )) satisfies RuntimeComponentLoader,
-  AccountingFirmKimiPage: (() =>
-    import('../capsules/accounting-firm.tsx').then((module) =>
-      toCapsule(module, 'AccountingFirmKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  AccountingFirmKimiPage2: (() =>
-    import('../capsules/accounting-firm-2.tsx').then((module) =>
-      toCapsule(module, 'AccountingFirmKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  AccountingFirmKimiPage3: (() =>
-    import('../capsules/accounting-firm-3.tsx').then((module) =>
-      toCapsule(module, 'AccountingFirmKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   AccountingFirmLogos: (() =>
     import('../registry/sections/accounting-firm/AccountingFirmLogos.tsx').then(
@@ -83,13 +63,53 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/accounting-firm/AccountingFirmTeam.tsx').then(
       (module) => toCapsule(module, 'AccountingFirmTeam'),
     )) satisfies RuntimeComponentLoader,
+  AeoCta: (() =>
+    import('../registry/sections/aeo/AeoCta.tsx').then((module) =>
+      toCapsule(module, 'AeoCta'),
+    )) satisfies RuntimeComponentLoader,
   AeoDirectAnswer: (() =>
     import('../registry/sections/aeo/AeoDirectAnswer.tsx').then((module) =>
       toCapsule(module, 'AeoDirectAnswer'),
     )) satisfies RuntimeComponentLoader,
+  AeoFaq: (() =>
+    import('../registry/sections/aeo/AeoFaq.tsx').then((module) =>
+      toCapsule(module, 'AeoFaq'),
+    )) satisfies RuntimeComponentLoader,
   AeoFaqSection: (() =>
     import('../registry/sections/aeo/AeoFaqSection.tsx').then((module) =>
       toCapsule(module, 'AeoFaqSection'),
+    )) satisfies RuntimeComponentLoader,
+  AeoFeatures: (() =>
+    import('../registry/sections/aeo/AeoFeatures.tsx').then((module) =>
+      toCapsule(module, 'AeoFeatures'),
+    )) satisfies RuntimeComponentLoader,
+  AeoFooter: (() =>
+    import('../registry/sections/aeo/AeoFooter.tsx').then((module) =>
+      toCapsule(module, 'AeoFooter'),
+    )) satisfies RuntimeComponentLoader,
+  AeoHero: (() =>
+    import('../registry/sections/aeo/AeoHero.tsx').then((module) =>
+      toCapsule(module, 'AeoHero'),
+    )) satisfies RuntimeComponentLoader,
+  AeoNavbar: (() =>
+    import('../registry/sections/aeo/AeoNavbar.tsx').then((module) =>
+      toCapsule(module, 'AeoNavbar'),
+    )) satisfies RuntimeComponentLoader,
+  AeoPricing: (() =>
+    import('../registry/sections/aeo/AeoPricing.tsx').then((module) =>
+      toCapsule(module, 'AeoPricing'),
+    )) satisfies RuntimeComponentLoader,
+  AeoStats: (() =>
+    import('../registry/sections/aeo/AeoStats.tsx').then((module) =>
+      toCapsule(module, 'AeoStats'),
+    )) satisfies RuntimeComponentLoader,
+  AeoSteps: (() =>
+    import('../registry/sections/aeo/AeoSteps.tsx').then((module) =>
+      toCapsule(module, 'AeoSteps'),
+    )) satisfies RuntimeComponentLoader,
+  AeoTestimonials: (() =>
+    import('../registry/sections/aeo/AeoTestimonials.tsx').then((module) =>
+      toCapsule(module, 'AeoTestimonials'),
     )) satisfies RuntimeComponentLoader,
   AeoUseCases: (() =>
     import('../registry/sections/aeo/AeoUseCases.tsx').then((module) =>
@@ -106,26 +126,6 @@ export const runtimeComponentLoaders = {
   AgencyHero: (() =>
     import('../registry/sections/agency/AgencyHero.tsx').then((module) =>
       toCapsule(module, 'AgencyHero'),
-    )) satisfies RuntimeComponentLoader,
-  AgencyKimiPage: (() =>
-    import('../capsules/agency.tsx').then((module) =>
-      toCapsule(module, 'AgencyKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  AgencyKimiPage2: (() =>
-    import('../capsules/agency-2.tsx').then((module) =>
-      toCapsule(module, 'AgencyKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  AgencyKimiPage3: (() =>
-    import('../capsules/agency-3.tsx').then((module) =>
-      toCapsule(module, 'AgencyKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
-  AgencyKimiPage4: (() =>
-    import('../capsules/agency-4.tsx').then((module) =>
-      toCapsule(module, 'AgencyKimiPage4'),
-    )) satisfies RuntimeComponentLoader,
-  AgencyKimiPage5: (() =>
-    import('../capsules/agency-5.tsx').then((module) =>
-      toCapsule(module, 'AgencyKimiPage5'),
     )) satisfies RuntimeComponentLoader,
   AgencyNavbar: (() =>
     import('../registry/sections/agency/AgencyNavbar.tsx').then((module) =>
@@ -159,46 +159,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/ai-product/AiProductHero.tsx').then((module) =>
       toCapsule(module, 'AiProductHero'),
     )) satisfies RuntimeComponentLoader,
-  AiProductKimiPage: (() =>
-    import('../capsules/ai-product.tsx').then((module) =>
-      toCapsule(module, 'AiProductKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  AiProductKimiPage10: (() =>
-    import('../capsules/ai-product-10.tsx').then((module) =>
-      toCapsule(module, 'AiProductKimiPage10'),
-    )) satisfies RuntimeComponentLoader,
-  AiProductKimiPage2: (() =>
-    import('../capsules/ai-product-2.tsx').then((module) =>
-      toCapsule(module, 'AiProductKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  AiProductKimiPage3: (() =>
-    import('../capsules/ai-product-3.tsx').then((module) =>
-      toCapsule(module, 'AiProductKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
-  AiProductKimiPage4: (() =>
-    import('../capsules/ai-product-4.tsx').then((module) =>
-      toCapsule(module, 'AiProductKimiPage4'),
-    )) satisfies RuntimeComponentLoader,
-  AiProductKimiPage5: (() =>
-    import('../capsules/ai-product-5.tsx').then((module) =>
-      toCapsule(module, 'AiProductKimiPage5'),
-    )) satisfies RuntimeComponentLoader,
-  AiProductKimiPage6: (() =>
-    import('../capsules/ai-product-6.tsx').then((module) =>
-      toCapsule(module, 'AiProductKimiPage6'),
-    )) satisfies RuntimeComponentLoader,
-  AiProductKimiPage7: (() =>
-    import('../capsules/ai-product-7.tsx').then((module) =>
-      toCapsule(module, 'AiProductKimiPage7'),
-    )) satisfies RuntimeComponentLoader,
-  AiProductKimiPage8: (() =>
-    import('../capsules/ai-product-8.tsx').then((module) =>
-      toCapsule(module, 'AiProductKimiPage8'),
-    )) satisfies RuntimeComponentLoader,
-  AiProductKimiPage9: (() =>
-    import('../capsules/ai-product-9.tsx').then((module) =>
-      toCapsule(module, 'AiProductKimiPage9'),
-    )) satisfies RuntimeComponentLoader,
   AiProductLogos: (() =>
     import('../registry/sections/ai-product/AiProductLogos.tsx').then(
       (module) => toCapsule(module, 'AiProductLogos'),
@@ -219,45 +179,61 @@ export const runtimeComponentLoaders = {
     import('../registry/primitives/alert-dialog.tsx').then((module) =>
       toCapsule(module, 'AlertDialog'),
     )) satisfies RuntimeComponentLoader,
+  AnalyticsBento: (() =>
+    import('../registry/sections/analytics/AnalyticsBento.tsx').then((module) =>
+      toCapsule(module, 'AnalyticsBento'),
+    )) satisfies RuntimeComponentLoader,
+  AnalyticsCta: (() =>
+    import('../registry/sections/analytics/AnalyticsCta.tsx').then((module) =>
+      toCapsule(module, 'AnalyticsCta'),
+    )) satisfies RuntimeComponentLoader,
+  AnalyticsFeatures: (() =>
+    import('../registry/sections/analytics/AnalyticsFeatures.tsx').then(
+      (module) => toCapsule(module, 'AnalyticsFeatures'),
+    )) satisfies RuntimeComponentLoader,
+  AnalyticsFooter: (() =>
+    import('../registry/sections/analytics/AnalyticsFooter.tsx').then(
+      (module) => toCapsule(module, 'AnalyticsFooter'),
+    )) satisfies RuntimeComponentLoader,
   AnalyticsHeader: (() =>
     import('../registry/sections/analytics/AnalyticsHeader.tsx').then(
       (module) => toCapsule(module, 'AnalyticsHeader'),
     )) satisfies RuntimeComponentLoader,
-  AnalyticsKimiPage: (() =>
-    import('../capsules/analytics.tsx').then((module) =>
-      toCapsule(module, 'AnalyticsKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  AnalyticsKimiPage2: (() =>
-    import('../capsules/analytics-2.tsx').then((module) =>
-      toCapsule(module, 'AnalyticsKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  AnalyticsKimiPage3: (() =>
-    import('../capsules/analytics-3.tsx').then((module) =>
-      toCapsule(module, 'AnalyticsKimiPage3'),
+  AnalyticsHero: (() =>
+    import('../registry/sections/analytics/AnalyticsHero.tsx').then((module) =>
+      toCapsule(module, 'AnalyticsHero'),
     )) satisfies RuntimeComponentLoader,
   AnalyticsKpis: (() =>
     import('../registry/sections/analytics/AnalyticsKpis.tsx').then((module) =>
       toCapsule(module, 'AnalyticsKpis'),
     )) satisfies RuntimeComponentLoader,
+  AnalyticsLogos: (() =>
+    import('../registry/sections/analytics/AnalyticsLogos.tsx').then((module) =>
+      toCapsule(module, 'AnalyticsLogos'),
+    )) satisfies RuntimeComponentLoader,
+  AnalyticsNavbar: (() =>
+    import('../registry/sections/analytics/AnalyticsNavbar.tsx').then(
+      (module) => toCapsule(module, 'AnalyticsNavbar'),
+    )) satisfies RuntimeComponentLoader,
+  AnalyticsPricing: (() =>
+    import('../registry/sections/analytics/AnalyticsPricing.tsx').then(
+      (module) => toCapsule(module, 'AnalyticsPricing'),
+    )) satisfies RuntimeComponentLoader,
   AnalyticsSidebar: (() =>
     import('../registry/sections/analytics/AnalyticsSidebar.tsx').then(
       (module) => toCapsule(module, 'AnalyticsSidebar'),
     )) satisfies RuntimeComponentLoader,
+  AnalyticsStats: (() =>
+    import('../registry/sections/analytics/AnalyticsStats.tsx').then((module) =>
+      toCapsule(module, 'AnalyticsStats'),
+    )) satisfies RuntimeComponentLoader,
+  AnalyticsTestimonials: (() =>
+    import('../registry/sections/analytics/AnalyticsTestimonials.tsx').then(
+      (module) => toCapsule(module, 'AnalyticsTestimonials'),
+    )) satisfies RuntimeComponentLoader,
   ArchitectureFirmHero: (() =>
     import('../registry/sections/architecture-firm/ArchitectureFirmHero.tsx').then(
       (module) => toCapsule(module, 'ArchitectureFirmHero'),
-    )) satisfies RuntimeComponentLoader,
-  ArchitectureFirmKimiPage: (() =>
-    import('../capsules/architecture-firm.tsx').then((module) =>
-      toCapsule(module, 'ArchitectureFirmKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  ArchitectureFirmKimiPage2: (() =>
-    import('../capsules/architecture-firm-2.tsx').then((module) =>
-      toCapsule(module, 'ArchitectureFirmKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  ArchitectureFirmKimiPage3: (() =>
-    import('../capsules/architecture-firm-3.tsx').then((module) =>
-      toCapsule(module, 'ArchitectureFirmKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   ArchitectureFirmLogos: (() =>
     import('../registry/sections/architecture-firm/ArchitectureFirmLogos.tsx').then(
@@ -291,25 +267,45 @@ export const runtimeComponentLoaders = {
     import('../registry/primitives/aspect-ratio.tsx').then((module) =>
       toCapsule(module, 'AspectRatio'),
     )) satisfies RuntimeComponentLoader,
-  AuthKimiPage: (() =>
-    import('../capsules/auth.tsx').then((module) =>
-      toCapsule(module, 'AuthKimiPage'),
+  AuthCta: (() =>
+    import('../registry/sections/auth/AuthCta.tsx').then((module) =>
+      toCapsule(module, 'AuthCta'),
     )) satisfies RuntimeComponentLoader,
-  AuthKimiPage2: (() =>
-    import('../capsules/auth-2.tsx').then((module) =>
-      toCapsule(module, 'AuthKimiPage2'),
+  AuthFeatures: (() =>
+    import('../registry/sections/auth/AuthFeatures.tsx').then((module) =>
+      toCapsule(module, 'AuthFeatures'),
     )) satisfies RuntimeComponentLoader,
-  AuthKimiPage3: (() =>
-    import('../capsules/auth-3.tsx').then((module) =>
-      toCapsule(module, 'AuthKimiPage3'),
+  AuthFooter: (() =>
+    import('../registry/sections/auth/AuthFooter.tsx').then((module) =>
+      toCapsule(module, 'AuthFooter'),
     )) satisfies RuntimeComponentLoader,
-  AuthKimiPage4: (() =>
-    import('../capsules/auth-4.tsx').then((module) =>
-      toCapsule(module, 'AuthKimiPage4'),
+  AuthHero: (() =>
+    import('../registry/sections/auth/AuthHero.tsx').then((module) =>
+      toCapsule(module, 'AuthHero'),
     )) satisfies RuntimeComponentLoader,
-  AuthKimiPage5: (() =>
-    import('../capsules/auth-5.tsx').then((module) =>
-      toCapsule(module, 'AuthKimiPage5'),
+  AuthLogos: (() =>
+    import('../registry/sections/auth/AuthLogos.tsx').then((module) =>
+      toCapsule(module, 'AuthLogos'),
+    )) satisfies RuntimeComponentLoader,
+  AuthNavbar: (() =>
+    import('../registry/sections/auth/AuthNavbar.tsx').then((module) =>
+      toCapsule(module, 'AuthNavbar'),
+    )) satisfies RuntimeComponentLoader,
+  AuthPricing: (() =>
+    import('../registry/sections/auth/AuthPricing.tsx').then((module) =>
+      toCapsule(module, 'AuthPricing'),
+    )) satisfies RuntimeComponentLoader,
+  AuthStats: (() =>
+    import('../registry/sections/auth/AuthStats.tsx').then((module) =>
+      toCapsule(module, 'AuthStats'),
+    )) satisfies RuntimeComponentLoader,
+  AuthSteps: (() =>
+    import('../registry/sections/auth/AuthSteps.tsx').then((module) =>
+      toCapsule(module, 'AuthSteps'),
+    )) satisfies RuntimeComponentLoader,
+  AuthTestimonials: (() =>
+    import('../registry/sections/auth/AuthTestimonials.tsx').then((module) =>
+      toCapsule(module, 'AuthTestimonials'),
     )) satisfies RuntimeComponentLoader,
   AutoDealershipFeatures: (() =>
     import('../registry/sections/auto-dealership/AutoDealershipFeatures.tsx').then(
@@ -326,18 +322,6 @@ export const runtimeComponentLoaders = {
   AutoDealershipInventory: (() =>
     import('../registry/sections/auto-dealership/AutoDealershipInventory.tsx').then(
       (module) => toCapsule(module, 'AutoDealershipInventory'),
-    )) satisfies RuntimeComponentLoader,
-  AutoDealershipKimiPage: (() =>
-    import('../capsules/auto-dealership.tsx').then((module) =>
-      toCapsule(module, 'AutoDealershipKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  AutoDealershipKimiPage2: (() =>
-    import('../capsules/auto-dealership-2.tsx').then((module) =>
-      toCapsule(module, 'AutoDealershipKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  AutoDealershipKimiPage3: (() =>
-    import('../capsules/auto-dealership-3.tsx').then((module) =>
-      toCapsule(module, 'AutoDealershipKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   AutoDealershipLogos: (() =>
     import('../registry/sections/auto-dealership/AutoDealershipLogos.tsx').then(
@@ -375,18 +359,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/bakery/BakeryHero.tsx').then((module) =>
       toCapsule(module, 'BakeryHero'),
     )) satisfies RuntimeComponentLoader,
-  BakeryKimiPage: (() =>
-    import('../capsules/bakery.tsx').then((module) =>
-      toCapsule(module, 'BakeryKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  BakeryKimiPage2: (() =>
-    import('../capsules/bakery-2.tsx').then((module) =>
-      toCapsule(module, 'BakeryKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  BakeryKimiPage3: (() =>
-    import('../capsules/bakery-3.tsx').then((module) =>
-      toCapsule(module, 'BakeryKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   BakeryLogos: (() =>
     import('../registry/sections/bakery/BakeryLogos.tsx').then((module) =>
       toCapsule(module, 'BakeryLogos'),
@@ -419,18 +391,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/bar-nightclub/BarNightclubHero.tsx').then(
       (module) => toCapsule(module, 'BarNightclubHero'),
     )) satisfies RuntimeComponentLoader,
-  BarNightclubKimiPage: (() =>
-    import('../capsules/bar-nightclub.tsx').then((module) =>
-      toCapsule(module, 'BarNightclubKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  BarNightclubKimiPage2: (() =>
-    import('../capsules/bar-nightclub-2.tsx').then((module) =>
-      toCapsule(module, 'BarNightclubKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  BarNightclubKimiPage3: (() =>
-    import('../capsules/bar-nightclub-3.tsx').then((module) =>
-      toCapsule(module, 'BarNightclubKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   BarNightclubMenu: (() =>
     import('../registry/sections/bar-nightclub/BarNightclubMenu.tsx').then(
       (module) => toCapsule(module, 'BarNightclubMenu'),
@@ -459,18 +419,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/beauty-store/BeautyStoreHero.tsx').then(
       (module) => toCapsule(module, 'BeautyStoreHero'),
     )) satisfies RuntimeComponentLoader,
-  BeautyStoreKimiPage: (() =>
-    import('../capsules/beauty-store.tsx').then((module) =>
-      toCapsule(module, 'BeautyStoreKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  BeautyStoreKimiPage2: (() =>
-    import('../capsules/beauty-store-2.tsx').then((module) =>
-      toCapsule(module, 'BeautyStoreKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  BeautyStoreKimiPage3: (() =>
-    import('../capsules/beauty-store-3.tsx').then((module) =>
-      toCapsule(module, 'BeautyStoreKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   BeautyStoreLogos: (() =>
     import('../registry/sections/beauty-store/BeautyStoreLogos.tsx').then(
       (module) => toCapsule(module, 'BeautyStoreLogos'),
@@ -491,77 +439,61 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/beauty-store/BeautyStoreTestimonials.tsx').then(
       (module) => toCapsule(module, 'BeautyStoreTestimonials'),
     )) satisfies RuntimeComponentLoader,
+  BlogAuthors: (() =>
+    import('../registry/sections/blog/BlogAuthors.tsx').then((module) =>
+      toCapsule(module, 'BlogAuthors'),
+    )) satisfies RuntimeComponentLoader,
   BlogFooter: (() =>
     import('../registry/sections/blog/BlogFooter.tsx').then((module) =>
       toCapsule(module, 'BlogFooter'),
-    )) satisfies RuntimeComponentLoader,
-  BlogHeader: (() =>
-    import('../registry/sections/blog/BlogHeader.tsx').then((module) =>
-      toCapsule(module, 'BlogHeader'),
     )) satisfies RuntimeComponentLoader,
   BlogHero: (() =>
     import('../registry/sections/blog/BlogHero.tsx').then((module) =>
       toCapsule(module, 'BlogHero'),
     )) satisfies RuntimeComponentLoader,
-  BlogKimiPage: (() =>
-    import('../capsules/blog.tsx').then((module) =>
-      toCapsule(module, 'BlogKimiPage'),
+  BlogNavbar: (() =>
+    import('../registry/sections/blog/BlogNavbar.tsx').then((module) =>
+      toCapsule(module, 'BlogNavbar'),
     )) satisfies RuntimeComponentLoader,
-  BlogKimiPage2: (() =>
-    import('../capsules/blog-2.tsx').then((module) =>
-      toCapsule(module, 'BlogKimiPage2'),
+  BlogPostAbout: (() =>
+    import('../registry/sections/blog-post/BlogPostAbout.tsx').then((module) =>
+      toCapsule(module, 'BlogPostAbout'),
     )) satisfies RuntimeComponentLoader,
-  BlogKimiPage3: (() =>
-    import('../capsules/blog-3.tsx').then((module) =>
-      toCapsule(module, 'BlogKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
-  BlogLatestStories: (() =>
-    import('../registry/sections/blog/BlogLatestStories.tsx').then((module) =>
-      toCapsule(module, 'BlogLatestStories'),
-    )) satisfies RuntimeComponentLoader,
-  BlogPostBody: (() =>
-    import('../registry/sections/blog-post/BlogPostBody.tsx').then((module) =>
-      toCapsule(module, 'BlogPostBody'),
-    )) satisfies RuntimeComponentLoader,
-  BlogPostCoverImage: (() =>
-    import('../registry/sections/blog-post/BlogPostCoverImage.tsx').then(
-      (module) => toCapsule(module, 'BlogPostCoverImage'),
+  BlogPostAuthors: (() =>
+    import('../registry/sections/blog-post/BlogPostAuthors.tsx').then(
+      (module) => toCapsule(module, 'BlogPostAuthors'),
     )) satisfies RuntimeComponentLoader,
   BlogPostFooter: (() =>
     import('../registry/sections/blog-post/BlogPostFooter.tsx').then((module) =>
       toCapsule(module, 'BlogPostFooter'),
     )) satisfies RuntimeComponentLoader,
-  BlogPostHeader: (() =>
-    import('../registry/sections/blog-post/BlogPostHeader.tsx').then((module) =>
-      toCapsule(module, 'BlogPostHeader'),
-    )) satisfies RuntimeComponentLoader,
-  BlogPostKimiPage: (() =>
-    import('../capsules/blog-post.tsx').then((module) =>
-      toCapsule(module, 'BlogPostKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  BlogPostKimiPage2: (() =>
-    import('../capsules/blog-post-2.tsx').then((module) =>
-      toCapsule(module, 'BlogPostKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  BlogPostKimiPage3: (() =>
-    import('../capsules/blog-post-3.tsx').then((module) =>
-      toCapsule(module, 'BlogPostKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
-  BlogPostKimiPage4: (() =>
-    import('../capsules/blog-post-4.tsx').then((module) =>
-      toCapsule(module, 'BlogPostKimiPage4'),
+  BlogPostHero: (() =>
+    import('../registry/sections/blog-post/BlogPostHero.tsx').then((module) =>
+      toCapsule(module, 'BlogPostHero'),
     )) satisfies RuntimeComponentLoader,
   BlogPostNavbar: (() =>
     import('../registry/sections/blog-post/BlogPostNavbar.tsx').then((module) =>
       toCapsule(module, 'BlogPostNavbar'),
     )) satisfies RuntimeComponentLoader,
-  BlogPostNewsletter: (() =>
-    import('../registry/sections/blog-post/BlogPostNewsletter.tsx').then(
-      (module) => toCapsule(module, 'BlogPostNewsletter'),
+  BlogPostStoryGrid: (() =>
+    import('../registry/sections/blog-post/BlogPostStoryGrid.tsx').then(
+      (module) => toCapsule(module, 'BlogPostStoryGrid'),
     )) satisfies RuntimeComponentLoader,
-  BlogPostRelated: (() =>
-    import('../registry/sections/blog-post/BlogPostRelated.tsx').then(
-      (module) => toCapsule(module, 'BlogPostRelated'),
+  BlogPostSubscribe: (() =>
+    import('../registry/sections/blog-post/BlogPostSubscribe.tsx').then(
+      (module) => toCapsule(module, 'BlogPostSubscribe'),
+    )) satisfies RuntimeComponentLoader,
+  BlogStoryGrid: (() =>
+    import('../registry/sections/blog/BlogStoryGrid.tsx').then((module) =>
+      toCapsule(module, 'BlogStoryGrid'),
+    )) satisfies RuntimeComponentLoader,
+  BlogSubscribe: (() =>
+    import('../registry/sections/blog/BlogSubscribe.tsx').then((module) =>
+      toCapsule(module, 'BlogSubscribe'),
+    )) satisfies RuntimeComponentLoader,
+  BlogTopics: (() =>
+    import('../registry/sections/blog/BlogTopics.tsx').then((module) =>
+      toCapsule(module, 'BlogTopics'),
     )) satisfies RuntimeComponentLoader,
   BootcampApplyCta: (() =>
     import('../registry/sections/bootcamp/BootcampApplyCta.tsx').then(
@@ -582,18 +514,6 @@ export const runtimeComponentLoaders = {
   BootcampHero: (() =>
     import('../registry/sections/bootcamp/BootcampHero.tsx').then((module) =>
       toCapsule(module, 'BootcampHero'),
-    )) satisfies RuntimeComponentLoader,
-  BootcampKimiPage: (() =>
-    import('../capsules/bootcamp.tsx').then((module) =>
-      toCapsule(module, 'BootcampKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  BootcampKimiPage2: (() =>
-    import('../capsules/bootcamp-2.tsx').then((module) =>
-      toCapsule(module, 'BootcampKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  BootcampKimiPage3: (() =>
-    import('../capsules/bootcamp-3.tsx').then((module) =>
-      toCapsule(module, 'BootcampKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   BootcampLogos: (() =>
     import('../registry/sections/bootcamp/BootcampLogos.tsx').then((module) =>
@@ -654,18 +574,6 @@ export const runtimeComponentLoaders = {
   CafeHero: (() =>
     import('../registry/sections/cafe/CafeHero.tsx').then((module) =>
       toCapsule(module, 'CafeHero'),
-    )) satisfies RuntimeComponentLoader,
-  CafeKimiPage: (() =>
-    import('../capsules/cafe.tsx').then((module) =>
-      toCapsule(module, 'CafeKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  CafeKimiPage2: (() =>
-    import('../capsules/cafe-2.tsx').then((module) =>
-      toCapsule(module, 'CafeKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  CafeKimiPage3: (() =>
-    import('../capsules/cafe-3.tsx').then((module) =>
-      toCapsule(module, 'CafeKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   CafeLocation: (() =>
     import('../registry/sections/cafe/CafeLocation.tsx').then((module) =>
@@ -739,18 +647,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/church/ChurchHero.tsx').then((module) =>
       toCapsule(module, 'ChurchHero'),
     )) satisfies RuntimeComponentLoader,
-  ChurchKimiPage: (() =>
-    import('../capsules/church.tsx').then((module) =>
-      toCapsule(module, 'ChurchKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  ChurchKimiPage2: (() =>
-    import('../capsules/church-2.tsx').then((module) =>
-      toCapsule(module, 'ChurchKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  ChurchKimiPage3: (() =>
-    import('../capsules/church-3.tsx').then((module) =>
-      toCapsule(module, 'ChurchKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   ChurchNavbar: (() =>
     import('../registry/sections/church/ChurchNavbar.tsx').then((module) =>
       toCapsule(module, 'ChurchNavbar'),
@@ -794,18 +690,6 @@ export const runtimeComponentLoaders = {
   CleaningServiceHero: (() =>
     import('../registry/sections/cleaning-service/CleaningServiceHero.tsx').then(
       (module) => toCapsule(module, 'CleaningServiceHero'),
-    )) satisfies RuntimeComponentLoader,
-  CleaningServiceKimiPage: (() =>
-    import('../capsules/cleaning-service.tsx').then((module) =>
-      toCapsule(module, 'CleaningServiceKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  CleaningServiceKimiPage2: (() =>
-    import('../capsules/cleaning-service-2.tsx').then((module) =>
-      toCapsule(module, 'CleaningServiceKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  CleaningServiceKimiPage3: (() =>
-    import('../capsules/cleaning-service-3.tsx').then((module) =>
-      toCapsule(module, 'CleaningServiceKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   CleaningServiceLogos: (() =>
     import('../registry/sections/cleaning-service/CleaningServiceLogos.tsx').then(
@@ -859,18 +743,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/cloud-infra/CloudInfraHero.tsx').then(
       (module) => toCapsule(module, 'CloudInfraHero'),
     )) satisfies RuntimeComponentLoader,
-  CloudInfraKimiPage: (() =>
-    import('../capsules/cloud-infra.tsx').then((module) =>
-      toCapsule(module, 'CloudInfraKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  CloudInfraKimiPage2: (() =>
-    import('../capsules/cloud-infra-2.tsx').then((module) =>
-      toCapsule(module, 'CloudInfraKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  CloudInfraKimiPage3: (() =>
-    import('../capsules/cloud-infra-3.tsx').then((module) =>
-      toCapsule(module, 'CloudInfraKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   CloudInfraLogos: (() =>
     import('../registry/sections/cloud-infra/CloudInfraLogos.tsx').then(
       (module) => toCapsule(module, 'CloudInfraLogos'),
@@ -923,18 +795,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/coming-soon/ComingSoonHero.tsx').then(
       (module) => toCapsule(module, 'ComingSoonHero'),
     )) satisfies RuntimeComponentLoader,
-  ComingSoonKimiPage: (() =>
-    import('../capsules/coming-soon.tsx').then((module) =>
-      toCapsule(module, 'ComingSoonKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  ComingSoonKimiPage2: (() =>
-    import('../capsules/coming-soon-2.tsx').then((module) =>
-      toCapsule(module, 'ComingSoonKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  ComingSoonKimiPage3: (() =>
-    import('../capsules/coming-soon-3.tsx').then((module) =>
-      toCapsule(module, 'ComingSoonKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   ComingSoonLogos: (() =>
     import('../registry/sections/coming-soon/ComingSoonLogos.tsx').then(
       (module) => toCapsule(module, 'ComingSoonLogos'),
@@ -975,18 +835,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/community-forum/CommunityForumHero.tsx').then(
       (module) => toCapsule(module, 'CommunityForumHero'),
     )) satisfies RuntimeComponentLoader,
-  CommunityForumKimiPage: (() =>
-    import('../capsules/community-forum.tsx').then((module) =>
-      toCapsule(module, 'CommunityForumKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  CommunityForumKimiPage2: (() =>
-    import('../capsules/community-forum-2.tsx').then((module) =>
-      toCapsule(module, 'CommunityForumKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  CommunityForumKimiPage3: (() =>
-    import('../capsules/community-forum-3.tsx').then((module) =>
-      toCapsule(module, 'CommunityForumKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   CommunityForumLogos: (() =>
     import('../registry/sections/community-forum/CommunityForumLogos.tsx').then(
       (module) => toCapsule(module, 'CommunityForumLogos'),
@@ -1026,18 +874,6 @@ export const runtimeComponentLoaders = {
   ConstructionHero: (() =>
     import('../registry/sections/construction/ConstructionHero.tsx').then(
       (module) => toCapsule(module, 'ConstructionHero'),
-    )) satisfies RuntimeComponentLoader,
-  ConstructionKimiPage: (() =>
-    import('../capsules/construction.tsx').then((module) =>
-      toCapsule(module, 'ConstructionKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  ConstructionKimiPage2: (() =>
-    import('../capsules/construction-2.tsx').then((module) =>
-      toCapsule(module, 'ConstructionKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  ConstructionKimiPage3: (() =>
-    import('../capsules/construction-3.tsx').then((module) =>
-      toCapsule(module, 'ConstructionKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   ConstructionLogos: (() =>
     import('../registry/sections/construction/ConstructionLogos.tsx').then(
@@ -1083,22 +919,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/consulting/ConsultingHero.tsx').then(
       (module) => toCapsule(module, 'ConsultingHero'),
     )) satisfies RuntimeComponentLoader,
-  ConsultingKimiPage: (() =>
-    import('../capsules/consulting.tsx').then((module) =>
-      toCapsule(module, 'ConsultingKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  ConsultingKimiPage2: (() =>
-    import('../capsules/consulting-2.tsx').then((module) =>
-      toCapsule(module, 'ConsultingKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  ConsultingKimiPage3: (() =>
-    import('../capsules/consulting-3.tsx').then((module) =>
-      toCapsule(module, 'ConsultingKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
-  ConsultingKimiPage4: (() =>
-    import('../capsules/consulting-4.tsx').then((module) =>
-      toCapsule(module, 'ConsultingKimiPage4'),
-    )) satisfies RuntimeComponentLoader,
   ConsultingLogos: (() =>
     import('../registry/sections/consulting/ConsultingLogos.tsx').then(
       (module) => toCapsule(module, 'ConsultingLogos'),
@@ -1135,14 +955,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/contact/ContactHero.tsx').then((module) =>
       toCapsule(module, 'ContactHero'),
     )) satisfies RuntimeComponentLoader,
-  ContactKimiPage: (() =>
-    import('../capsules/contact.tsx').then((module) =>
-      toCapsule(module, 'ContactKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  ContactKimiPage2: (() =>
-    import('../capsules/contact-2.tsx').then((module) =>
-      toCapsule(module, 'ContactKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
   ContactNavbar: (() =>
     import('../registry/sections/contact/ContactNavbar.tsx').then((module) =>
       toCapsule(module, 'ContactNavbar'),
@@ -1175,18 +987,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/corporate/CorporateHero.tsx').then((module) =>
       toCapsule(module, 'CorporateHero'),
     )) satisfies RuntimeComponentLoader,
-  CorporateKimiPage: (() =>
-    import('../capsules/corporate.tsx').then((module) =>
-      toCapsule(module, 'CorporateKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  CorporateKimiPage2: (() =>
-    import('../capsules/corporate-2.tsx').then((module) =>
-      toCapsule(module, 'CorporateKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  CorporateKimiPage3: (() =>
-    import('../capsules/corporate-3.tsx').then((module) =>
-      toCapsule(module, 'CorporateKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   CorporateLogos: (() =>
     import('../registry/sections/corporate/CorporateLogos.tsx').then((module) =>
       toCapsule(module, 'CorporateLogos'),
@@ -1215,25 +1015,37 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/corporate/CorporateTestimonials.tsx').then(
       (module) => toCapsule(module, 'CorporateTestimonials'),
     )) satisfies RuntimeComponentLoader,
+  CoworkingCta: (() =>
+    import('../registry/sections/coworking/CoworkingCta.tsx').then((module) =>
+      toCapsule(module, 'CoworkingCta'),
+    )) satisfies RuntimeComponentLoader,
+  CoworkingFeatures: (() =>
+    import('../registry/sections/coworking/CoworkingFeatures.tsx').then(
+      (module) => toCapsule(module, 'CoworkingFeatures'),
+    )) satisfies RuntimeComponentLoader,
+  CoworkingFooter: (() =>
+    import('../registry/sections/coworking/CoworkingFooter.tsx').then(
+      (module) => toCapsule(module, 'CoworkingFooter'),
+    )) satisfies RuntimeComponentLoader,
+  CoworkingGallery: (() =>
+    import('../registry/sections/coworking/CoworkingGallery.tsx').then(
+      (module) => toCapsule(module, 'CoworkingGallery'),
+    )) satisfies RuntimeComponentLoader,
   CoworkingHero: (() =>
     import('../registry/sections/coworking/CoworkingHero.tsx').then((module) =>
       toCapsule(module, 'CoworkingHero'),
     )) satisfies RuntimeComponentLoader,
-  CoworkingKimiPage: (() =>
-    import('../capsules/coworking.tsx').then((module) =>
-      toCapsule(module, 'CoworkingKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  CoworkingKimiPage2: (() =>
-    import('../capsules/coworking-2.tsx').then((module) =>
-      toCapsule(module, 'CoworkingKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  CoworkingKimiPage3: (() =>
-    import('../capsules/coworking-3.tsx').then((module) =>
-      toCapsule(module, 'CoworkingKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   CoworkingNavbar: (() =>
     import('../registry/sections/coworking/CoworkingNavbar.tsx').then(
       (module) => toCapsule(module, 'CoworkingNavbar'),
+    )) satisfies RuntimeComponentLoader,
+  CoworkingPricing: (() =>
+    import('../registry/sections/coworking/CoworkingPricing.tsx').then(
+      (module) => toCapsule(module, 'CoworkingPricing'),
+    )) satisfies RuntimeComponentLoader,
+  CoworkingTestimonials: (() =>
+    import('../registry/sections/coworking/CoworkingTestimonials.tsx').then(
+      (module) => toCapsule(module, 'CoworkingTestimonials'),
     )) satisfies RuntimeComponentLoader,
   CrmCta: (() =>
     import('../registry/sections/crm/CrmCta.tsx').then((module) =>
@@ -1258,18 +1070,6 @@ export const runtimeComponentLoaders = {
   CrmIntegrations: (() =>
     import('../registry/sections/crm/CrmIntegrations.tsx').then((module) =>
       toCapsule(module, 'CrmIntegrations'),
-    )) satisfies RuntimeComponentLoader,
-  CrmKimiPage: (() =>
-    import('../capsules/crm.tsx').then((module) =>
-      toCapsule(module, 'CrmKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  CrmKimiPage2: (() =>
-    import('../capsules/crm-2.tsx').then((module) =>
-      toCapsule(module, 'CrmKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  CrmKimiPage3: (() =>
-    import('../capsules/crm-3.tsx').then((module) =>
-      toCapsule(module, 'CrmKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   CrmLogos: (() =>
     import('../registry/sections/crm/CrmLogos.tsx').then((module) =>
@@ -1319,18 +1119,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/crowdfunding/CrowdfundingHero.tsx').then(
       (module) => toCapsule(module, 'CrowdfundingHero'),
     )) satisfies RuntimeComponentLoader,
-  CrowdfundingKimiPage: (() =>
-    import('../capsules/crowdfunding.tsx').then((module) =>
-      toCapsule(module, 'CrowdfundingKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  CrowdfundingKimiPage2: (() =>
-    import('../capsules/crowdfunding-2.tsx').then((module) =>
-      toCapsule(module, 'CrowdfundingKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  CrowdfundingKimiPage3: (() =>
-    import('../capsules/crowdfunding-3.tsx').then((module) =>
-      toCapsule(module, 'CrowdfundingKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   CrowdfundingNavbar: (() =>
     import('../registry/sections/crowdfunding/CrowdfundingNavbar.tsx').then(
       (module) => toCapsule(module, 'CrowdfundingNavbar'),
@@ -1370,18 +1158,6 @@ export const runtimeComponentLoaders = {
   CryptoHero: (() =>
     import('../registry/sections/crypto/CryptoHero.tsx').then((module) =>
       toCapsule(module, 'CryptoHero'),
-    )) satisfies RuntimeComponentLoader,
-  CryptoKimiPage: (() =>
-    import('../capsules/crypto.tsx').then((module) =>
-      toCapsule(module, 'CryptoKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  CryptoKimiPage2: (() =>
-    import('../capsules/crypto-2.tsx').then((module) =>
-      toCapsule(module, 'CryptoKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  CryptoKimiPage3: (() =>
-    import('../capsules/crypto-3.tsx').then((module) =>
-      toCapsule(module, 'CryptoKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   CryptoLogos: (() =>
     import('../registry/sections/crypto/CryptoLogos.tsx').then((module) =>
@@ -1431,18 +1207,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/cybersecurity/CybersecurityHero.tsx').then(
       (module) => toCapsule(module, 'CybersecurityHero'),
     )) satisfies RuntimeComponentLoader,
-  CybersecurityKimiPage: (() =>
-    import('../capsules/cybersecurity.tsx').then((module) =>
-      toCapsule(module, 'CybersecurityKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  CybersecurityKimiPage2: (() =>
-    import('../capsules/cybersecurity-2.tsx').then((module) =>
-      toCapsule(module, 'CybersecurityKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  CybersecurityKimiPage3: (() =>
-    import('../capsules/cybersecurity-3.tsx').then((module) =>
-      toCapsule(module, 'CybersecurityKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   CybersecurityLogos: (() =>
     import('../registry/sections/cybersecurity/CybersecurityLogos.tsx').then(
       (module) => toCapsule(module, 'CybersecurityLogos'),
@@ -1474,10 +1238,6 @@ export const runtimeComponentLoaders = {
   DashboardHeader: (() =>
     import('../registry/sections/dashboard/DashboardHeader.tsx').then(
       (module) => toCapsule(module, 'DashboardHeader'),
-    )) satisfies RuntimeComponentLoader,
-  DashboardKimiPage: (() =>
-    import('../capsules/dashboard.tsx').then((module) =>
-      toCapsule(module, 'DashboardKimiPage'),
     )) satisfies RuntimeComponentLoader,
   DashboardKpis: (() =>
     import('../registry/sections/dashboard/DashboardKpis.tsx').then((module) =>
@@ -1514,14 +1274,6 @@ export const runtimeComponentLoaders = {
   DatingAppHero: (() =>
     import('../registry/sections/dating-app/DatingAppHero.tsx').then((module) =>
       toCapsule(module, 'DatingAppHero'),
-    )) satisfies RuntimeComponentLoader,
-  DatingAppKimiPage: (() =>
-    import('../capsules/dating-app.tsx').then((module) =>
-      toCapsule(module, 'DatingAppKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  DatingAppKimiPage2: (() =>
-    import('../capsules/dating-app-2.tsx').then((module) =>
-      toCapsule(module, 'DatingAppKimiPage2'),
     )) satisfies RuntimeComponentLoader,
   DatingAppLogos: (() =>
     import('../registry/sections/dating-app/DatingAppLogos.tsx').then(
@@ -1566,18 +1318,6 @@ export const runtimeComponentLoaders = {
   DentalHero: (() =>
     import('../registry/sections/dental/DentalHero.tsx').then((module) =>
       toCapsule(module, 'DentalHero'),
-    )) satisfies RuntimeComponentLoader,
-  DentalKimiPage: (() =>
-    import('../capsules/dental.tsx').then((module) =>
-      toCapsule(module, 'DentalKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  DentalKimiPage2: (() =>
-    import('../capsules/dental-2.tsx').then((module) =>
-      toCapsule(module, 'DentalKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  DentalKimiPage3: (() =>
-    import('../capsules/dental-3.tsx').then((module) =>
-      toCapsule(module, 'DentalKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   DentalLogos: (() =>
     import('../registry/sections/dental/DentalLogos.tsx').then((module) =>
@@ -1635,46 +1375,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/dev-tool/DevToolHero.tsx').then((module) =>
       toCapsule(module, 'DevToolHero'),
     )) satisfies RuntimeComponentLoader,
-  DevToolKimiPage: (() =>
-    import('../capsules/dev-tool.tsx').then((module) =>
-      toCapsule(module, 'DevToolKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  DevToolKimiPage10: (() =>
-    import('../capsules/dev-tool-10.tsx').then((module) =>
-      toCapsule(module, 'DevToolKimiPage10'),
-    )) satisfies RuntimeComponentLoader,
-  DevToolKimiPage2: (() =>
-    import('../capsules/dev-tool-2.tsx').then((module) =>
-      toCapsule(module, 'DevToolKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  DevToolKimiPage3: (() =>
-    import('../capsules/dev-tool-3.tsx').then((module) =>
-      toCapsule(module, 'DevToolKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
-  DevToolKimiPage4: (() =>
-    import('../capsules/dev-tool-4.tsx').then((module) =>
-      toCapsule(module, 'DevToolKimiPage4'),
-    )) satisfies RuntimeComponentLoader,
-  DevToolKimiPage5: (() =>
-    import('../capsules/dev-tool-5.tsx').then((module) =>
-      toCapsule(module, 'DevToolKimiPage5'),
-    )) satisfies RuntimeComponentLoader,
-  DevToolKimiPage6: (() =>
-    import('../capsules/dev-tool-6.tsx').then((module) =>
-      toCapsule(module, 'DevToolKimiPage6'),
-    )) satisfies RuntimeComponentLoader,
-  DevToolKimiPage7: (() =>
-    import('../capsules/dev-tool-7.tsx').then((module) =>
-      toCapsule(module, 'DevToolKimiPage7'),
-    )) satisfies RuntimeComponentLoader,
-  DevToolKimiPage8: (() =>
-    import('../capsules/dev-tool-8.tsx').then((module) =>
-      toCapsule(module, 'DevToolKimiPage8'),
-    )) satisfies RuntimeComponentLoader,
-  DevToolKimiPage9: (() =>
-    import('../capsules/dev-tool-9.tsx').then((module) =>
-      toCapsule(module, 'DevToolKimiPage9'),
-    )) satisfies RuntimeComponentLoader,
   DevToolLogos: (() =>
     import('../registry/sections/dev-tool/DevToolLogos.tsx').then((module) =>
       toCapsule(module, 'DevToolLogos'),
@@ -1727,14 +1427,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/directory/DirectoryHero.tsx').then((module) =>
       toCapsule(module, 'DirectoryHero'),
     )) satisfies RuntimeComponentLoader,
-  DirectoryKimiPage: (() =>
-    import('../capsules/directory.tsx').then((module) =>
-      toCapsule(module, 'DirectoryKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  DirectoryKimiPage2: (() =>
-    import('../capsules/directory-2.tsx').then((module) =>
-      toCapsule(module, 'DirectoryKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
   DirectoryNavbar: (() =>
     import('../registry/sections/directory/DirectoryNavbar.tsx').then(
       (module) => toCapsule(module, 'DirectoryNavbar'),
@@ -1755,45 +1447,21 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/directory/DirectoryTestimonials.tsx').then(
       (module) => toCapsule(module, 'DirectoryTestimonials'),
     )) satisfies RuntimeComponentLoader,
-  DocsKimiPage: (() =>
-    import('../capsules/docs.tsx').then((module) =>
-      toCapsule(module, 'DocsKimiPage'),
+  DocsCta: (() =>
+    import('../registry/sections/docs/DocsCta.tsx').then((module) =>
+      toCapsule(module, 'DocsCta'),
     )) satisfies RuntimeComponentLoader,
-  DocsKimiPage10: (() =>
-    import('../capsules/docs-10.tsx').then((module) =>
-      toCapsule(module, 'DocsKimiPage10'),
+  DocsFaq: (() =>
+    import('../registry/sections/docs/DocsFaq.tsx').then((module) =>
+      toCapsule(module, 'DocsFaq'),
     )) satisfies RuntimeComponentLoader,
-  DocsKimiPage2: (() =>
-    import('../capsules/docs-2.tsx').then((module) =>
-      toCapsule(module, 'DocsKimiPage2'),
+  DocsFooter: (() =>
+    import('../registry/sections/docs/DocsFooter.tsx').then((module) =>
+      toCapsule(module, 'DocsFooter'),
     )) satisfies RuntimeComponentLoader,
-  DocsKimiPage3: (() =>
-    import('../capsules/docs-3.tsx').then((module) =>
-      toCapsule(module, 'DocsKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
-  DocsKimiPage4: (() =>
-    import('../capsules/docs-4.tsx').then((module) =>
-      toCapsule(module, 'DocsKimiPage4'),
-    )) satisfies RuntimeComponentLoader,
-  DocsKimiPage5: (() =>
-    import('../capsules/docs-5.tsx').then((module) =>
-      toCapsule(module, 'DocsKimiPage5'),
-    )) satisfies RuntimeComponentLoader,
-  DocsKimiPage6: (() =>
-    import('../capsules/docs-6.tsx').then((module) =>
-      toCapsule(module, 'DocsKimiPage6'),
-    )) satisfies RuntimeComponentLoader,
-  DocsKimiPage7: (() =>
-    import('../capsules/docs-7.tsx').then((module) =>
-      toCapsule(module, 'DocsKimiPage7'),
-    )) satisfies RuntimeComponentLoader,
-  DocsKimiPage8: (() =>
-    import('../capsules/docs-8.tsx').then((module) =>
-      toCapsule(module, 'DocsKimiPage8'),
-    )) satisfies RuntimeComponentLoader,
-  DocsKimiPage9: (() =>
-    import('../capsules/docs-9.tsx').then((module) =>
-      toCapsule(module, 'DocsKimiPage9'),
+  DocsHero: (() =>
+    import('../registry/sections/docs/DocsHero.tsx').then((module) =>
+      toCapsule(module, 'DocsHero'),
     )) satisfies RuntimeComponentLoader,
   DocsNavbar: (() =>
     import('../registry/sections/docs/DocsNavbar.tsx').then((module) =>
@@ -1803,6 +1471,14 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/docs/DocsSidebar.tsx').then((module) =>
       toCapsule(module, 'DocsSidebar'),
     )) satisfies RuntimeComponentLoader,
+  DocsStoryGrid: (() =>
+    import('../registry/sections/docs/DocsStoryGrid.tsx').then((module) =>
+      toCapsule(module, 'DocsStoryGrid'),
+    )) satisfies RuntimeComponentLoader,
+  DocsTopics: (() =>
+    import('../registry/sections/docs/DocsTopics.tsx').then((module) =>
+      toCapsule(module, 'DocsTopics'),
+    )) satisfies RuntimeComponentLoader,
   Drawer: (() =>
     import('../registry/primitives/drawer.tsx').then((module) =>
       toCapsule(module, 'Drawer'),
@@ -1811,49 +1487,41 @@ export const runtimeComponentLoaders = {
     import('../registry/primitives/dropdown-menu.tsx').then((module) =>
       toCapsule(module, 'DropdownMenu'),
     )) satisfies RuntimeComponentLoader,
-  EcommerceKimiPage: (() =>
-    import('../capsules/ecommerce.tsx').then((module) =>
-      toCapsule(module, 'EcommerceKimiPage'),
+  EcommerceCta: (() =>
+    import('../registry/sections/ecommerce/EcommerceCta.tsx').then((module) =>
+      toCapsule(module, 'EcommerceCta'),
     )) satisfies RuntimeComponentLoader,
-  EcommerceKimiPage2: (() =>
-    import('../capsules/ecommerce-2.tsx').then((module) =>
-      toCapsule(module, 'EcommerceKimiPage2'),
+  EcommerceFeatures: (() =>
+    import('../registry/sections/ecommerce/EcommerceFeatures.tsx').then(
+      (module) => toCapsule(module, 'EcommerceFeatures'),
     )) satisfies RuntimeComponentLoader,
-  EcommerceKimiPage3: (() =>
-    import('../capsules/ecommerce-3.tsx').then((module) =>
-      toCapsule(module, 'EcommerceKimiPage3'),
+  EcommerceFooter: (() =>
+    import('../registry/sections/ecommerce/EcommerceFooter.tsx').then(
+      (module) => toCapsule(module, 'EcommerceFooter'),
     )) satisfies RuntimeComponentLoader,
-  EcommerceKimiPage4: (() =>
-    import('../capsules/ecommerce-4.tsx').then((module) =>
-      toCapsule(module, 'EcommerceKimiPage4'),
+  EcommerceGallery: (() =>
+    import('../registry/sections/ecommerce/EcommerceGallery.tsx').then(
+      (module) => toCapsule(module, 'EcommerceGallery'),
     )) satisfies RuntimeComponentLoader,
-  EcommerceKimiPage5: (() =>
-    import('../capsules/ecommerce-5.tsx').then((module) =>
-      toCapsule(module, 'EcommerceKimiPage5'),
+  EcommerceHero: (() =>
+    import('../registry/sections/ecommerce/EcommerceHero.tsx').then((module) =>
+      toCapsule(module, 'EcommerceHero'),
+    )) satisfies RuntimeComponentLoader,
+  EcommerceLogos: (() =>
+    import('../registry/sections/ecommerce/EcommerceLogos.tsx').then((module) =>
+      toCapsule(module, 'EcommerceLogos'),
+    )) satisfies RuntimeComponentLoader,
+  EcommerceNavbar: (() =>
+    import('../registry/sections/ecommerce/EcommerceNavbar.tsx').then(
+      (module) => toCapsule(module, 'EcommerceNavbar'),
     )) satisfies RuntimeComponentLoader,
   EcommerceOverview: (() =>
     import('../registry/sections/ecommerce/EcommerceOverview.tsx').then(
       (module) => toCapsule(module, 'EcommerceOverview'),
     )) satisfies RuntimeComponentLoader,
-  EducationKimiPage: (() =>
-    import('../capsules/education.tsx').then((module) =>
-      toCapsule(module, 'EducationKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  EducationKimiPage2: (() =>
-    import('../capsules/education-2.tsx').then((module) =>
-      toCapsule(module, 'EducationKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  EducationKimiPage3: (() =>
-    import('../capsules/education-3.tsx').then((module) =>
-      toCapsule(module, 'EducationKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
-  EducationKimiPage4: (() =>
-    import('../capsules/education-4.tsx').then((module) =>
-      toCapsule(module, 'EducationKimiPage4'),
-    )) satisfies RuntimeComponentLoader,
-  EducationKimiPage5: (() =>
-    import('../capsules/education-5.tsx').then((module) =>
-      toCapsule(module, 'EducationKimiPage5'),
+  EcommerceTestimonials: (() =>
+    import('../registry/sections/ecommerce/EcommerceTestimonials.tsx').then(
+      (module) => toCapsule(module, 'EcommerceTestimonials'),
     )) satisfies RuntimeComponentLoader,
   ElectronicsStoreCategories: (() =>
     import('../registry/sections/electronics-store/ElectronicsStoreCategories.tsx').then(
@@ -1882,18 +1550,6 @@ export const runtimeComponentLoaders = {
   ElectronicsStoreHero: (() =>
     import('../registry/sections/electronics-store/ElectronicsStoreHero.tsx').then(
       (module) => toCapsule(module, 'ElectronicsStoreHero'),
-    )) satisfies RuntimeComponentLoader,
-  ElectronicsStoreKimiPage: (() =>
-    import('../capsules/electronics-store.tsx').then((module) =>
-      toCapsule(module, 'ElectronicsStoreKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  ElectronicsStoreKimiPage2: (() =>
-    import('../capsules/electronics-store-2.tsx').then((module) =>
-      toCapsule(module, 'ElectronicsStoreKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  ElectronicsStoreKimiPage3: (() =>
-    import('../capsules/electronics-store-3.tsx').then((module) =>
-      toCapsule(module, 'ElectronicsStoreKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   ElectronicsStoreLogos: (() =>
     import('../registry/sections/electronics-store/ElectronicsStoreLogos.tsx').then(
@@ -1951,18 +1607,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/event/EventHero.tsx').then((module) =>
       toCapsule(module, 'EventHero'),
     )) satisfies RuntimeComponentLoader,
-  EventKimiPage: (() =>
-    import('../capsules/event.tsx').then((module) =>
-      toCapsule(module, 'EventKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  EventKimiPage2: (() =>
-    import('../capsules/event-2.tsx').then((module) =>
-      toCapsule(module, 'EventKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  EventKimiPage3: (() =>
-    import('../capsules/event-3.tsx').then((module) =>
-      toCapsule(module, 'EventKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   EventLogos: (() =>
     import('../registry/sections/event/EventLogos.tsx').then((module) =>
       toCapsule(module, 'EventLogos'),
@@ -1990,14 +1634,6 @@ export const runtimeComponentLoaders = {
   EventPlannerHero: (() =>
     import('../registry/sections/event-planner/EventPlannerHero.tsx').then(
       (module) => toCapsule(module, 'EventPlannerHero'),
-    )) satisfies RuntimeComponentLoader,
-  EventPlannerKimiPage: (() =>
-    import('../capsules/event-planner.tsx').then((module) =>
-      toCapsule(module, 'EventPlannerKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  EventPlannerKimiPage2: (() =>
-    import('../capsules/event-planner-2.tsx').then((module) =>
-      toCapsule(module, 'EventPlannerKimiPage2'),
     )) satisfies RuntimeComponentLoader,
   EventPlannerLogos: (() =>
     import('../registry/sections/event-planner/EventPlannerLogos.tsx').then(
@@ -2059,14 +1695,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/faq/FaqHero.tsx').then((module) =>
       toCapsule(module, 'FaqHero'),
     )) satisfies RuntimeComponentLoader,
-  FaqKimiPage: (() =>
-    import('../capsules/faq.tsx').then((module) =>
-      toCapsule(module, 'FaqKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  FaqKimiPage2: (() =>
-    import('../capsules/faq-2.tsx').then((module) =>
-      toCapsule(module, 'FaqKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
   FaqNavbar: (() =>
     import('../registry/sections/faq/FaqNavbar.tsx').then((module) =>
       toCapsule(module, 'FaqNavbar'),
@@ -2094,18 +1722,6 @@ export const runtimeComponentLoaders = {
   FashionStoreHero: (() =>
     import('../registry/sections/fashion-store/FashionStoreHero.tsx').then(
       (module) => toCapsule(module, 'FashionStoreHero'),
-    )) satisfies RuntimeComponentLoader,
-  FashionStoreKimiPage: (() =>
-    import('../capsules/fashion-store.tsx').then((module) =>
-      toCapsule(module, 'FashionStoreKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  FashionStoreKimiPage2: (() =>
-    import('../capsules/fashion-store-2.tsx').then((module) =>
-      toCapsule(module, 'FashionStoreKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  FashionStoreKimiPage3: (() =>
-    import('../capsules/fashion-store-3.tsx').then((module) =>
-      toCapsule(module, 'FashionStoreKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   FashionStoreLogos: (() =>
     import('../registry/sections/fashion-store/FashionStoreLogos.tsx').then(
@@ -2135,26 +1751,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/fashion-store/FashionStoreTestimonials.tsx').then(
       (module) => toCapsule(module, 'FashionStoreTestimonials'),
     )) satisfies RuntimeComponentLoader,
-  FeaturesKimiPage: (() =>
-    import('../capsules/features.tsx').then((module) =>
-      toCapsule(module, 'FeaturesKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  FeaturesKimiPage2: (() =>
-    import('../capsules/features-2.tsx').then((module) =>
-      toCapsule(module, 'FeaturesKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  FeaturesKimiPage3: (() =>
-    import('../capsules/features-3.tsx').then((module) =>
-      toCapsule(module, 'FeaturesKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
-  FeaturesKimiPage4: (() =>
-    import('../capsules/features-4.tsx').then((module) =>
-      toCapsule(module, 'FeaturesKimiPage4'),
-    )) satisfies RuntimeComponentLoader,
-  FeaturesKimiPage5: (() =>
-    import('../capsules/features-5.tsx').then((module) =>
-      toCapsule(module, 'FeaturesKimiPage5'),
-    )) satisfies RuntimeComponentLoader,
   Field: (() =>
     import('../registry/primitives/field.tsx').then((module) =>
       toCapsule(module, 'Field'),
@@ -2182,18 +1778,6 @@ export const runtimeComponentLoaders = {
   FilmDirectorHero: (() =>
     import('../registry/sections/film-director/FilmDirectorHero.tsx').then(
       (module) => toCapsule(module, 'FilmDirectorHero'),
-    )) satisfies RuntimeComponentLoader,
-  FilmDirectorKimiPage: (() =>
-    import('../capsules/film-director.tsx').then((module) =>
-      toCapsule(module, 'FilmDirectorKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  FilmDirectorKimiPage2: (() =>
-    import('../capsules/film-director-2.tsx').then((module) =>
-      toCapsule(module, 'FilmDirectorKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  FilmDirectorKimiPage3: (() =>
-    import('../capsules/film-director-3.tsx').then((module) =>
-      toCapsule(module, 'FilmDirectorKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   FilmDirectorLogos: (() =>
     import('../registry/sections/film-director/FilmDirectorLogos.tsx').then(
@@ -2227,21 +1811,21 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/film-director/FilmDirectorWork.tsx').then(
       (module) => toCapsule(module, 'FilmDirectorWork'),
     )) satisfies RuntimeComponentLoader,
+  FintechCta: (() =>
+    import('../registry/sections/fintech/FintechCta.tsx').then((module) =>
+      toCapsule(module, 'FintechCta'),
+    )) satisfies RuntimeComponentLoader,
   FintechFeatures: (() =>
     import('../registry/sections/fintech/FintechFeatures.tsx').then((module) =>
       toCapsule(module, 'FintechFeatures'),
     )) satisfies RuntimeComponentLoader,
-  FintechKimiPage: (() =>
-    import('../capsules/fintech.tsx').then((module) =>
-      toCapsule(module, 'FintechKimiPage'),
+  FintechFooter: (() =>
+    import('../registry/sections/fintech/FintechFooter.tsx').then((module) =>
+      toCapsule(module, 'FintechFooter'),
     )) satisfies RuntimeComponentLoader,
-  FintechKimiPage2: (() =>
-    import('../capsules/fintech-2.tsx').then((module) =>
-      toCapsule(module, 'FintechKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  FintechKimiPage3: (() =>
-    import('../capsules/fintech-3.tsx').then((module) =>
-      toCapsule(module, 'FintechKimiPage3'),
+  FintechHero: (() =>
+    import('../registry/sections/fintech/FintechHero.tsx').then((module) =>
+      toCapsule(module, 'FintechHero'),
     )) satisfies RuntimeComponentLoader,
   FintechLogos: (() =>
     import('../registry/sections/fintech/FintechLogos.tsx').then((module) =>
@@ -2250,6 +1834,18 @@ export const runtimeComponentLoaders = {
   FintechNavbar: (() =>
     import('../registry/sections/fintech/FintechNavbar.tsx').then((module) =>
       toCapsule(module, 'FintechNavbar'),
+    )) satisfies RuntimeComponentLoader,
+  FintechPricing: (() =>
+    import('../registry/sections/fintech/FintechPricing.tsx').then((module) =>
+      toCapsule(module, 'FintechPricing'),
+    )) satisfies RuntimeComponentLoader,
+  FintechStats: (() =>
+    import('../registry/sections/fintech/FintechStats.tsx').then((module) =>
+      toCapsule(module, 'FintechStats'),
+    )) satisfies RuntimeComponentLoader,
+  FintechTestimonials: (() =>
+    import('../registry/sections/fintech/FintechTestimonials.tsx').then(
+      (module) => toCapsule(module, 'FintechTestimonials'),
     )) satisfies RuntimeComponentLoader,
   FitnessClasses: (() =>
     import('../registry/sections/fitness/FitnessClasses.tsx').then((module) =>
@@ -2274,18 +1870,6 @@ export const runtimeComponentLoaders = {
   FitnessHero: (() =>
     import('../registry/sections/fitness/FitnessHero.tsx').then((module) =>
       toCapsule(module, 'FitnessHero'),
-    )) satisfies RuntimeComponentLoader,
-  FitnessKimiPage: (() =>
-    import('../capsules/fitness.tsx').then((module) =>
-      toCapsule(module, 'FitnessKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  FitnessKimiPage2: (() =>
-    import('../capsules/fitness-2.tsx').then((module) =>
-      toCapsule(module, 'FitnessKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  FitnessKimiPage3: (() =>
-    import('../capsules/fitness-3.tsx').then((module) =>
-      toCapsule(module, 'FitnessKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   FitnessLogos: (() =>
     import('../registry/sections/fitness/FitnessLogos.tsx').then((module) =>
@@ -2315,9 +1899,37 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/fitness/FitnessTrainers.tsx').then((module) =>
       toCapsule(module, 'FitnessTrainers'),
     )) satisfies RuntimeComponentLoader,
-  FlightSimulatorKimiPage: (() =>
-    import('../capsules/flight-simulator.tsx').then((module) =>
-      toCapsule(module, 'FlightSimulatorKimiPage'),
+  FlightSimulatorFeatures: (() =>
+    import('../registry/sections/flight-simulator/FlightSimulatorFeatures.tsx').then(
+      (module) => toCapsule(module, 'FlightSimulatorFeatures'),
+    )) satisfies RuntimeComponentLoader,
+  FlightSimulatorFooter: (() =>
+    import('../registry/sections/flight-simulator/FlightSimulatorFooter.tsx').then(
+      (module) => toCapsule(module, 'FlightSimulatorFooter'),
+    )) satisfies RuntimeComponentLoader,
+  FlightSimulatorGallery: (() =>
+    import('../registry/sections/flight-simulator/FlightSimulatorGallery.tsx').then(
+      (module) => toCapsule(module, 'FlightSimulatorGallery'),
+    )) satisfies RuntimeComponentLoader,
+  FlightSimulatorHero: (() =>
+    import('../registry/sections/flight-simulator/FlightSimulatorHero.tsx').then(
+      (module) => toCapsule(module, 'FlightSimulatorHero'),
+    )) satisfies RuntimeComponentLoader,
+  FlightSimulatorNavbar: (() =>
+    import('../registry/sections/flight-simulator/FlightSimulatorNavbar.tsx').then(
+      (module) => toCapsule(module, 'FlightSimulatorNavbar'),
+    )) satisfies RuntimeComponentLoader,
+  FlightSimulatorPricing: (() =>
+    import('../registry/sections/flight-simulator/FlightSimulatorPricing.tsx').then(
+      (module) => toCapsule(module, 'FlightSimulatorPricing'),
+    )) satisfies RuntimeComponentLoader,
+  FlightSimulatorStats: (() =>
+    import('../registry/sections/flight-simulator/FlightSimulatorStats.tsx').then(
+      (module) => toCapsule(module, 'FlightSimulatorStats'),
+    )) satisfies RuntimeComponentLoader,
+  FlightSimulatorTestimonials: (() =>
+    import('../registry/sections/flight-simulator/FlightSimulatorTestimonials.tsx').then(
+      (module) => toCapsule(module, 'FlightSimulatorTestimonials'),
     )) satisfies RuntimeComponentLoader,
   FoodDeliveryCta: (() =>
     import('../registry/sections/food-delivery/FoodDeliveryCta.tsx').then(
@@ -2334,18 +1946,6 @@ export const runtimeComponentLoaders = {
   FoodDeliveryHero: (() =>
     import('../registry/sections/food-delivery/FoodDeliveryHero.tsx').then(
       (module) => toCapsule(module, 'FoodDeliveryHero'),
-    )) satisfies RuntimeComponentLoader,
-  FoodDeliveryKimiPage: (() =>
-    import('../capsules/food-delivery.tsx').then((module) =>
-      toCapsule(module, 'FoodDeliveryKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  FoodDeliveryKimiPage2: (() =>
-    import('../capsules/food-delivery-2.tsx').then((module) =>
-      toCapsule(module, 'FoodDeliveryKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  FoodDeliveryKimiPage3: (() =>
-    import('../capsules/food-delivery-3.tsx').then((module) =>
-      toCapsule(module, 'FoodDeliveryKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   FoodDeliveryLogos: (() =>
     import('../registry/sections/food-delivery/FoodDeliveryLogos.tsx').then(
@@ -2399,18 +1999,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/food-truck/FoodTruckHero.tsx').then((module) =>
       toCapsule(module, 'FoodTruckHero'),
     )) satisfies RuntimeComponentLoader,
-  FoodTruckKimiPage: (() =>
-    import('../capsules/food-truck.tsx').then((module) =>
-      toCapsule(module, 'FoodTruckKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  FoodTruckKimiPage2: (() =>
-    import('../capsules/food-truck-2.tsx').then((module) =>
-      toCapsule(module, 'FoodTruckKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  FoodTruckKimiPage3: (() =>
-    import('../capsules/food-truck-3.tsx').then((module) =>
-      toCapsule(module, 'FoodTruckKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   FoodTruckLocations: (() =>
     import('../registry/sections/food-truck/FoodTruckLocations.tsx').then(
       (module) => toCapsule(module, 'FoodTruckLocations'),
@@ -2447,18 +2035,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/furniture-store/FurnitureStoreHero.tsx').then(
       (module) => toCapsule(module, 'FurnitureStoreHero'),
     )) satisfies RuntimeComponentLoader,
-  FurnitureStoreKimiPage: (() =>
-    import('../capsules/furniture-store.tsx').then((module) =>
-      toCapsule(module, 'FurnitureStoreKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  FurnitureStoreKimiPage2: (() =>
-    import('../capsules/furniture-store-2.tsx').then((module) =>
-      toCapsule(module, 'FurnitureStoreKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  FurnitureStoreKimiPage3: (() =>
-    import('../capsules/furniture-store-3.tsx').then((module) =>
-      toCapsule(module, 'FurnitureStoreKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   FurnitureStoreNavbar: (() =>
     import('../registry/sections/furniture-store/FurnitureStoreNavbar.tsx').then(
       (module) => toCapsule(module, 'FurnitureStoreNavbar'),
@@ -2482,6 +2058,42 @@ export const runtimeComponentLoaders = {
   FurnitureStoreTestimonials: (() =>
     import('../registry/sections/furniture-store/FurnitureStoreTestimonials.tsx').then(
       (module) => toCapsule(module, 'FurnitureStoreTestimonials'),
+    )) satisfies RuntimeComponentLoader,
+  GovernmentPortalAbout: (() =>
+    import('../registry/sections/government-portal/GovernmentPortalAbout.tsx').then(
+      (module) => toCapsule(module, 'GovernmentPortalAbout'),
+    )) satisfies RuntimeComponentLoader,
+  GovernmentPortalContact: (() =>
+    import('../registry/sections/government-portal/GovernmentPortalContact.tsx').then(
+      (module) => toCapsule(module, 'GovernmentPortalContact'),
+    )) satisfies RuntimeComponentLoader,
+  GovernmentPortalEvents: (() =>
+    import('../registry/sections/government-portal/GovernmentPortalEvents.tsx').then(
+      (module) => toCapsule(module, 'GovernmentPortalEvents'),
+    )) satisfies RuntimeComponentLoader,
+  GovernmentPortalFaq: (() =>
+    import('../registry/sections/government-portal/GovernmentPortalFaq.tsx').then(
+      (module) => toCapsule(module, 'GovernmentPortalFaq'),
+    )) satisfies RuntimeComponentLoader,
+  GovernmentPortalFooter: (() =>
+    import('../registry/sections/government-portal/GovernmentPortalFooter.tsx').then(
+      (module) => toCapsule(module, 'GovernmentPortalFooter'),
+    )) satisfies RuntimeComponentLoader,
+  GovernmentPortalHero: (() =>
+    import('../registry/sections/government-portal/GovernmentPortalHero.tsx').then(
+      (module) => toCapsule(module, 'GovernmentPortalHero'),
+    )) satisfies RuntimeComponentLoader,
+  GovernmentPortalNavbar: (() =>
+    import('../registry/sections/government-portal/GovernmentPortalNavbar.tsx').then(
+      (module) => toCapsule(module, 'GovernmentPortalNavbar'),
+    )) satisfies RuntimeComponentLoader,
+  GovernmentPortalServices: (() =>
+    import('../registry/sections/government-portal/GovernmentPortalServices.tsx').then(
+      (module) => toCapsule(module, 'GovernmentPortalServices'),
+    )) satisfies RuntimeComponentLoader,
+  GovernmentPortalStats: (() =>
+    import('../registry/sections/government-portal/GovernmentPortalStats.tsx').then(
+      (module) => toCapsule(module, 'GovernmentPortalStats'),
     )) satisfies RuntimeComponentLoader,
   Grid: (() =>
     import('../registry/primitives/layout.tsx').then((module) =>
@@ -2514,18 +2126,6 @@ export const runtimeComponentLoaders = {
   HealthcareInsurers: (() =>
     import('../registry/sections/healthcare/HealthcareInsurers.tsx').then(
       (module) => toCapsule(module, 'HealthcareInsurers'),
-    )) satisfies RuntimeComponentLoader,
-  HealthcareKimiPage: (() =>
-    import('../capsules/healthcare.tsx').then((module) =>
-      toCapsule(module, 'HealthcareKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  HealthcareKimiPage2: (() =>
-    import('../capsules/healthcare-2.tsx').then((module) =>
-      toCapsule(module, 'HealthcareKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  HealthcareKimiPage3: (() =>
-    import('../capsules/healthcare-3.tsx').then((module) =>
-      toCapsule(module, 'HealthcareKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   HealthcareNavbar: (() =>
     import('../registry/sections/healthcare/HealthcareNavbar.tsx').then(
@@ -2579,18 +2179,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/hotel-resort/HotelResortHero.tsx').then(
       (module) => toCapsule(module, 'HotelResortHero'),
     )) satisfies RuntimeComponentLoader,
-  HotelResortKimiPage: (() =>
-    import('../capsules/hotel-resort.tsx').then((module) =>
-      toCapsule(module, 'HotelResortKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  HotelResortKimiPage2: (() =>
-    import('../capsules/hotel-resort-2.tsx').then((module) =>
-      toCapsule(module, 'HotelResortKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  HotelResortKimiPage3: (() =>
-    import('../capsules/hotel-resort-3.tsx').then((module) =>
-      toCapsule(module, 'HotelResortKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   HotelResortNavbar: (() =>
     import('../registry/sections/hotel-resort/HotelResortNavbar.tsx').then(
       (module) => toCapsule(module, 'HotelResortNavbar'),
@@ -2630,18 +2218,6 @@ export const runtimeComponentLoaders = {
   IllustratorHero: (() =>
     import('../registry/sections/illustrator/IllustratorHero.tsx').then(
       (module) => toCapsule(module, 'IllustratorHero'),
-    )) satisfies RuntimeComponentLoader,
-  IllustratorKimiPage: (() =>
-    import('../capsules/illustrator.tsx').then((module) =>
-      toCapsule(module, 'IllustratorKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  IllustratorKimiPage2: (() =>
-    import('../capsules/illustrator-2.tsx').then((module) =>
-      toCapsule(module, 'IllustratorKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  IllustratorKimiPage3: (() =>
-    import('../capsules/illustrator-3.tsx').then((module) =>
-      toCapsule(module, 'IllustratorKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   IllustratorLogos: (() =>
     import('../registry/sections/illustrator/IllustratorLogos.tsx').then(
@@ -2703,18 +2279,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/insurance/InsuranceHero.tsx').then((module) =>
       toCapsule(module, 'InsuranceHero'),
     )) satisfies RuntimeComponentLoader,
-  InsuranceKimiPage: (() =>
-    import('../capsules/insurance.tsx').then((module) =>
-      toCapsule(module, 'InsuranceKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  InsuranceKimiPage2: (() =>
-    import('../capsules/insurance-2.tsx').then((module) =>
-      toCapsule(module, 'InsuranceKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  InsuranceKimiPage3: (() =>
-    import('../capsules/insurance-3.tsx').then((module) =>
-      toCapsule(module, 'InsuranceKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   InsuranceLogos: (() =>
     import('../registry/sections/insurance/InsuranceLogos.tsx').then((module) =>
       toCapsule(module, 'InsuranceLogos'),
@@ -2754,18 +2318,6 @@ export const runtimeComponentLoaders = {
   InteriorDesignHero: (() =>
     import('../registry/sections/interior-design/InteriorDesignHero.tsx').then(
       (module) => toCapsule(module, 'InteriorDesignHero'),
-    )) satisfies RuntimeComponentLoader,
-  InteriorDesignKimiPage: (() =>
-    import('../capsules/interior-design.tsx').then((module) =>
-      toCapsule(module, 'InteriorDesignKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  InteriorDesignKimiPage2: (() =>
-    import('../capsules/interior-design-2.tsx').then((module) =>
-      toCapsule(module, 'InteriorDesignKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  InteriorDesignKimiPage3: (() =>
-    import('../capsules/interior-design-3.tsx').then((module) =>
-      toCapsule(module, 'InteriorDesignKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   InteriorDesignLogos: (() =>
     import('../registry/sections/interior-design/InteriorDesignLogos.tsx').then(
@@ -2822,18 +2374,6 @@ export const runtimeComponentLoaders = {
   InvestingHero: (() =>
     import('../registry/sections/investing/InvestingHero.tsx').then((module) =>
       toCapsule(module, 'InvestingHero'),
-    )) satisfies RuntimeComponentLoader,
-  InvestingKimiPage: (() =>
-    import('../capsules/investing.tsx').then((module) =>
-      toCapsule(module, 'InvestingKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  InvestingKimiPage2: (() =>
-    import('../capsules/investing-2.tsx').then((module) =>
-      toCapsule(module, 'InvestingKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  InvestingKimiPage3: (() =>
-    import('../capsules/investing-3.tsx').then((module) =>
-      toCapsule(module, 'InvestingKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   InvestingLogos: (() =>
     import('../registry/sections/investing/InvestingLogos.tsx').then((module) =>
@@ -2899,18 +2439,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/jewelry-store/JewelryStoreHero.tsx').then(
       (module) => toCapsule(module, 'JewelryStoreHero'),
     )) satisfies RuntimeComponentLoader,
-  JewelryStoreKimiPage: (() =>
-    import('../capsules/jewelry-store.tsx').then((module) =>
-      toCapsule(module, 'JewelryStoreKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  JewelryStoreKimiPage2: (() =>
-    import('../capsules/jewelry-store-2.tsx').then((module) =>
-      toCapsule(module, 'JewelryStoreKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  JewelryStoreKimiPage3: (() =>
-    import('../capsules/jewelry-store-3.tsx').then((module) =>
-      toCapsule(module, 'JewelryStoreKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   JewelryStoreLogos: (() =>
     import('../registry/sections/jewelry-store/JewelryStoreLogos.tsx').then(
       (module) => toCapsule(module, 'JewelryStoreLogos'),
@@ -2954,18 +2482,6 @@ export const runtimeComponentLoaders = {
   JobBoardJobs: (() =>
     import('../registry/sections/job-board/JobBoardJobs.tsx').then((module) =>
       toCapsule(module, 'JobBoardJobs'),
-    )) satisfies RuntimeComponentLoader,
-  JobBoardKimiPage: (() =>
-    import('../capsules/job-board.tsx').then((module) =>
-      toCapsule(module, 'JobBoardKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  JobBoardKimiPage2: (() =>
-    import('../capsules/job-board-2.tsx').then((module) =>
-      toCapsule(module, 'JobBoardKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  JobBoardKimiPage3: (() =>
-    import('../capsules/job-board-3.tsx').then((module) =>
-      toCapsule(module, 'JobBoardKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   JobBoardLogos: (() =>
     import('../registry/sections/job-board/JobBoardLogos.tsx').then((module) =>
@@ -3019,18 +2535,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/kids-education/KidsEducationHero.tsx').then(
       (module) => toCapsule(module, 'KidsEducationHero'),
     )) satisfies RuntimeComponentLoader,
-  KidsEducationKimiPage: (() =>
-    import('../capsules/kids-education.tsx').then((module) =>
-      toCapsule(module, 'KidsEducationKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  KidsEducationKimiPage2: (() =>
-    import('../capsules/kids-education-2.tsx').then((module) =>
-      toCapsule(module, 'KidsEducationKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  KidsEducationKimiPage3: (() =>
-    import('../capsules/kids-education-3.tsx').then((module) =>
-      toCapsule(module, 'KidsEducationKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   KidsEducationLogos: (() =>
     import('../registry/sections/kids-education/KidsEducationLogos.tsx').then(
       (module) => toCapsule(module, 'KidsEducationLogos'),
@@ -3075,18 +2579,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/knowledge-base/KnowledgeBaseHero.tsx').then(
       (module) => toCapsule(module, 'KnowledgeBaseHero'),
     )) satisfies RuntimeComponentLoader,
-  KnowledgeBaseKimiPage: (() =>
-    import('../capsules/knowledge-base.tsx').then((module) =>
-      toCapsule(module, 'KnowledgeBaseKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  KnowledgeBaseKimiPage2: (() =>
-    import('../capsules/knowledge-base-2.tsx').then((module) =>
-      toCapsule(module, 'KnowledgeBaseKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  KnowledgeBaseKimiPage3: (() =>
-    import('../capsules/knowledge-base-3.tsx').then((module) =>
-      toCapsule(module, 'KnowledgeBaseKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   KnowledgeBaseNavbar: (() =>
     import('../registry/sections/knowledge-base/KnowledgeBaseNavbar.tsx').then(
       (module) => toCapsule(module, 'KnowledgeBaseNavbar'),
@@ -3118,18 +2610,6 @@ export const runtimeComponentLoaders = {
   LandscapingHero: (() =>
     import('../registry/sections/landscaping/LandscapingHero.tsx').then(
       (module) => toCapsule(module, 'LandscapingHero'),
-    )) satisfies RuntimeComponentLoader,
-  LandscapingKimiPage: (() =>
-    import('../capsules/landscaping.tsx').then((module) =>
-      toCapsule(module, 'LandscapingKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  LandscapingKimiPage2: (() =>
-    import('../capsules/landscaping-2.tsx').then((module) =>
-      toCapsule(module, 'LandscapingKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  LandscapingKimiPage3: (() =>
-    import('../capsules/landscaping-3.tsx').then((module) =>
-      toCapsule(module, 'LandscapingKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   LandscapingLogos: (() =>
     import('../registry/sections/landscaping/LandscapingLogos.tsx').then(
@@ -3170,18 +2650,6 @@ export const runtimeComponentLoaders = {
   LawFirmHero: (() =>
     import('../registry/sections/law-firm/LawFirmHero.tsx').then((module) =>
       toCapsule(module, 'LawFirmHero'),
-    )) satisfies RuntimeComponentLoader,
-  LawFirmKimiPage: (() =>
-    import('../capsules/law-firm.tsx').then((module) =>
-      toCapsule(module, 'LawFirmKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  LawFirmKimiPage2: (() =>
-    import('../capsules/law-firm-2.tsx').then((module) =>
-      toCapsule(module, 'LawFirmKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  LawFirmKimiPage3: (() =>
-    import('../capsules/law-firm-3.tsx').then((module) =>
-      toCapsule(module, 'LawFirmKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   LawFirmLogos: (() =>
     import('../registry/sections/law-firm/LawFirmLogos.tsx').then((module) =>
@@ -3231,18 +2699,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/lending/LendingHero.tsx').then((module) =>
       toCapsule(module, 'LendingHero'),
     )) satisfies RuntimeComponentLoader,
-  LendingKimiPage: (() =>
-    import('../capsules/lending.tsx').then((module) =>
-      toCapsule(module, 'LendingKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  LendingKimiPage2: (() =>
-    import('../capsules/lending-2.tsx').then((module) =>
-      toCapsule(module, 'LendingKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  LendingKimiPage3: (() =>
-    import('../capsules/lending-3.tsx').then((module) =>
-      toCapsule(module, 'LendingKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   LendingLogos: (() =>
     import('../registry/sections/lending/LendingLogos.tsx').then((module) =>
       toCapsule(module, 'LendingLogos'),
@@ -3267,25 +2723,29 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/lending/LendingTestimonials.tsx').then(
       (module) => toCapsule(module, 'LendingTestimonials'),
     )) satisfies RuntimeComponentLoader,
+  LinkInBioFeatures: (() =>
+    import('../registry/sections/link-in-bio/LinkInBioFeatures.tsx').then(
+      (module) => toCapsule(module, 'LinkInBioFeatures'),
+    )) satisfies RuntimeComponentLoader,
   LinkInBioFooter: (() =>
     import('../registry/sections/link-in-bio/LinkInBioFooter.tsx').then(
       (module) => toCapsule(module, 'LinkInBioFooter'),
     )) satisfies RuntimeComponentLoader,
-  LinkInBioKimiPage: (() =>
-    import('../capsules/link-in-bio.tsx').then((module) =>
-      toCapsule(module, 'LinkInBioKimiPage'),
+  LinkInBioGallery: (() =>
+    import('../registry/sections/link-in-bio/LinkInBioGallery.tsx').then(
+      (module) => toCapsule(module, 'LinkInBioGallery'),
     )) satisfies RuntimeComponentLoader,
-  LinkInBioKimiPage2: (() =>
-    import('../capsules/link-in-bio-2.tsx').then((module) =>
-      toCapsule(module, 'LinkInBioKimiPage2'),
+  LinkInBioHero: (() =>
+    import('../registry/sections/link-in-bio/LinkInBioHero.tsx').then(
+      (module) => toCapsule(module, 'LinkInBioHero'),
     )) satisfies RuntimeComponentLoader,
-  LinkInBioKimiPage3: (() =>
-    import('../capsules/link-in-bio-3.tsx').then((module) =>
-      toCapsule(module, 'LinkInBioKimiPage3'),
+  LinkInBioNavbar: (() =>
+    import('../registry/sections/link-in-bio/LinkInBioNavbar.tsx').then(
+      (module) => toCapsule(module, 'LinkInBioNavbar'),
     )) satisfies RuntimeComponentLoader,
-  LinkInBioProfile: (() =>
-    import('../registry/sections/link-in-bio/LinkInBioProfile.tsx').then(
-      (module) => toCapsule(module, 'LinkInBioProfile'),
+  LinkInBioSubscribe: (() =>
+    import('../registry/sections/link-in-bio/LinkInBioSubscribe.tsx').then(
+      (module) => toCapsule(module, 'LinkInBioSubscribe'),
     )) satisfies RuntimeComponentLoader,
   LogisticsCta: (() =>
     import('../registry/sections/logistics/LogisticsCta.tsx').then((module) =>
@@ -3306,18 +2766,6 @@ export const runtimeComponentLoaders = {
   LogisticsHero: (() =>
     import('../registry/sections/logistics/LogisticsHero.tsx').then((module) =>
       toCapsule(module, 'LogisticsHero'),
-    )) satisfies RuntimeComponentLoader,
-  LogisticsKimiPage: (() =>
-    import('../capsules/logistics.tsx').then((module) =>
-      toCapsule(module, 'LogisticsKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  LogisticsKimiPage2: (() =>
-    import('../capsules/logistics-2.tsx').then((module) =>
-      toCapsule(module, 'LogisticsKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  LogisticsKimiPage3: (() =>
-    import('../capsules/logistics-3.tsx').then((module) =>
-      toCapsule(module, 'LogisticsKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   LogisticsLogos: (() =>
     import('../registry/sections/logistics/LogisticsLogos.tsx').then((module) =>
@@ -3375,18 +2823,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/manufacturing/ManufacturingIndustries.tsx').then(
       (module) => toCapsule(module, 'ManufacturingIndustries'),
     )) satisfies RuntimeComponentLoader,
-  ManufacturingKimiPage: (() =>
-    import('../capsules/manufacturing.tsx').then((module) =>
-      toCapsule(module, 'ManufacturingKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  ManufacturingKimiPage2: (() =>
-    import('../capsules/manufacturing-2.tsx').then((module) =>
-      toCapsule(module, 'ManufacturingKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  ManufacturingKimiPage3: (() =>
-    import('../capsules/manufacturing-3.tsx').then((module) =>
-      toCapsule(module, 'ManufacturingKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   ManufacturingLogos: (() =>
     import('../registry/sections/manufacturing/ManufacturingLogos.tsx').then(
       (module) => toCapsule(module, 'ManufacturingLogos'),
@@ -3430,18 +2866,6 @@ export const runtimeComponentLoaders = {
   MarketingAgencyHero: (() =>
     import('../registry/sections/marketing-agency/MarketingAgencyHero.tsx').then(
       (module) => toCapsule(module, 'MarketingAgencyHero'),
-    )) satisfies RuntimeComponentLoader,
-  MarketingAgencyKimiPage: (() =>
-    import('../capsules/marketing-agency.tsx').then((module) =>
-      toCapsule(module, 'MarketingAgencyKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  MarketingAgencyKimiPage2: (() =>
-    import('../capsules/marketing-agency-2.tsx').then((module) =>
-      toCapsule(module, 'MarketingAgencyKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  MarketingAgencyKimiPage3: (() =>
-    import('../capsules/marketing-agency-3.tsx').then((module) =>
-      toCapsule(module, 'MarketingAgencyKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   MarketingAgencyLogos: (() =>
     import('../registry/sections/marketing-agency/MarketingAgencyLogos.tsx').then(
@@ -3487,14 +2911,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/marketing/MarketingHero.tsx').then((module) =>
       toCapsule(module, 'MarketingHero'),
     )) satisfies RuntimeComponentLoader,
-  MarketingKimiPage: (() =>
-    import('../capsules/marketing.tsx').then((module) =>
-      toCapsule(module, 'MarketingKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  MarketingKimiPage2: (() =>
-    import('../capsules/marketing-2.tsx').then((module) =>
-      toCapsule(module, 'MarketingKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
   MarketingLogos: (() =>
     import('../registry/sections/marketing/MarketingLogos.tsx').then((module) =>
       toCapsule(module, 'MarketingLogos'),
@@ -3511,9 +2927,17 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/marketing/MarketingTestimonial.tsx').then(
       (module) => toCapsule(module, 'MarketingTestimonial'),
     )) satisfies RuntimeComponentLoader,
-  MarketplaceCategories: (() =>
-    import('../registry/sections/marketplace/MarketplaceCategories.tsx').then(
-      (module) => toCapsule(module, 'MarketplaceCategories'),
+  MarketplaceAuthors: (() =>
+    import('../registry/sections/marketplace/MarketplaceAuthors.tsx').then(
+      (module) => toCapsule(module, 'MarketplaceAuthors'),
+    )) satisfies RuntimeComponentLoader,
+  MarketplaceCta: (() =>
+    import('../registry/sections/marketplace/MarketplaceCta.tsx').then(
+      (module) => toCapsule(module, 'MarketplaceCta'),
+    )) satisfies RuntimeComponentLoader,
+  MarketplaceFeatures: (() =>
+    import('../registry/sections/marketplace/MarketplaceFeatures.tsx').then(
+      (module) => toCapsule(module, 'MarketplaceFeatures'),
     )) satisfies RuntimeComponentLoader,
   MarketplaceFooter: (() =>
     import('../registry/sections/marketplace/MarketplaceFooter.tsx').then(
@@ -3523,25 +2947,17 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/marketplace/MarketplaceHero.tsx').then(
       (module) => toCapsule(module, 'MarketplaceHero'),
     )) satisfies RuntimeComponentLoader,
-  MarketplaceKimiPage: (() =>
-    import('../capsules/marketplace.tsx').then((module) =>
-      toCapsule(module, 'MarketplaceKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  MarketplaceKimiPage2: (() =>
-    import('../capsules/marketplace-2.tsx').then((module) =>
-      toCapsule(module, 'MarketplaceKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  MarketplaceKimiPage3: (() =>
-    import('../capsules/marketplace-3.tsx').then((module) =>
-      toCapsule(module, 'MarketplaceKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   MarketplaceNavbar: (() =>
     import('../registry/sections/marketplace/MarketplaceNavbar.tsx').then(
       (module) => toCapsule(module, 'MarketplaceNavbar'),
     )) satisfies RuntimeComponentLoader,
-  MarketplaceSellers: (() =>
-    import('../registry/sections/marketplace/MarketplaceSellers.tsx').then(
-      (module) => toCapsule(module, 'MarketplaceSellers'),
+  MarketplaceStats: (() =>
+    import('../registry/sections/marketplace/MarketplaceStats.tsx').then(
+      (module) => toCapsule(module, 'MarketplaceStats'),
+    )) satisfies RuntimeComponentLoader,
+  MarketplaceTestimonials: (() =>
+    import('../registry/sections/marketplace/MarketplaceTestimonials.tsx').then(
+      (module) => toCapsule(module, 'MarketplaceTestimonials'),
     )) satisfies RuntimeComponentLoader,
   MembershipClubBenefits: (() =>
     import('../registry/sections/membership-club/MembershipClubBenefits.tsx').then(
@@ -3566,18 +2982,6 @@ export const runtimeComponentLoaders = {
   MembershipClubHero: (() =>
     import('../registry/sections/membership-club/MembershipClubHero.tsx').then(
       (module) => toCapsule(module, 'MembershipClubHero'),
-    )) satisfies RuntimeComponentLoader,
-  MembershipClubKimiPage: (() =>
-    import('../capsules/membership-club.tsx').then((module) =>
-      toCapsule(module, 'MembershipClubKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  MembershipClubKimiPage2: (() =>
-    import('../capsules/membership-club-2.tsx').then((module) =>
-      toCapsule(module, 'MembershipClubKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  MembershipClubKimiPage3: (() =>
-    import('../capsules/membership-club-3.tsx').then((module) =>
-      toCapsule(module, 'MembershipClubKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   MembershipClubLogos: (() =>
     import('../registry/sections/membership-club/MembershipClubLogos.tsx').then(
@@ -3619,18 +3023,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/mental-health/MentalHealthHero.tsx').then(
       (module) => toCapsule(module, 'MentalHealthHero'),
     )) satisfies RuntimeComponentLoader,
-  MentalHealthKimiPage: (() =>
-    import('../capsules/mental-health.tsx').then((module) =>
-      toCapsule(module, 'MentalHealthKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  MentalHealthKimiPage2: (() =>
-    import('../capsules/mental-health-2.tsx').then((module) =>
-      toCapsule(module, 'MentalHealthKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  MentalHealthKimiPage3: (() =>
-    import('../capsules/mental-health-3.tsx').then((module) =>
-      toCapsule(module, 'MentalHealthKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   MentalHealthLogos: (() =>
     import('../registry/sections/mental-health/MentalHealthLogos.tsx').then(
       (module) => toCapsule(module, 'MentalHealthLogos'),
@@ -3667,26 +3059,6 @@ export const runtimeComponentLoaders = {
     import('../registry/primitives/menubar.tsx').then((module) =>
       toCapsule(module, 'Menubar'),
     )) satisfies RuntimeComponentLoader,
-  MenuKimiPage: (() =>
-    import('../capsules/menu.tsx').then((module) =>
-      toCapsule(module, 'MenuKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  MenuKimiPage2: (() =>
-    import('../capsules/menu-2.tsx').then((module) =>
-      toCapsule(module, 'MenuKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  MenuKimiPage3: (() =>
-    import('../capsules/menu-3.tsx').then((module) =>
-      toCapsule(module, 'MenuKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
-  MenuKimiPage4: (() =>
-    import('../capsules/menu-4.tsx').then((module) =>
-      toCapsule(module, 'MenuKimiPage4'),
-    )) satisfies RuntimeComponentLoader,
-  MenuKimiPage5: (() =>
-    import('../capsules/menu-5.tsx').then((module) =>
-      toCapsule(module, 'MenuKimiPage5'),
-    )) satisfies RuntimeComponentLoader,
   MobileAppDownloadCta: (() =>
     import('../registry/sections/mobile-app/MobileAppDownloadCta.tsx').then(
       (module) => toCapsule(module, 'MobileAppDownloadCta'),
@@ -3714,46 +3086,6 @@ export const runtimeComponentLoaders = {
   MobileAppHowItWorks: (() =>
     import('../registry/sections/mobile-app/MobileAppHowItWorks.tsx').then(
       (module) => toCapsule(module, 'MobileAppHowItWorks'),
-    )) satisfies RuntimeComponentLoader,
-  MobileAppKimiPage: (() =>
-    import('../capsules/mobile-app.tsx').then((module) =>
-      toCapsule(module, 'MobileAppKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  MobileAppKimiPage10: (() =>
-    import('../capsules/mobile-app-10.tsx').then((module) =>
-      toCapsule(module, 'MobileAppKimiPage10'),
-    )) satisfies RuntimeComponentLoader,
-  MobileAppKimiPage2: (() =>
-    import('../capsules/mobile-app-2.tsx').then((module) =>
-      toCapsule(module, 'MobileAppKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  MobileAppKimiPage3: (() =>
-    import('../capsules/mobile-app-3.tsx').then((module) =>
-      toCapsule(module, 'MobileAppKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
-  MobileAppKimiPage4: (() =>
-    import('../capsules/mobile-app-4.tsx').then((module) =>
-      toCapsule(module, 'MobileAppKimiPage4'),
-    )) satisfies RuntimeComponentLoader,
-  MobileAppKimiPage5: (() =>
-    import('../capsules/mobile-app-5.tsx').then((module) =>
-      toCapsule(module, 'MobileAppKimiPage5'),
-    )) satisfies RuntimeComponentLoader,
-  MobileAppKimiPage6: (() =>
-    import('../capsules/mobile-app-6.tsx').then((module) =>
-      toCapsule(module, 'MobileAppKimiPage6'),
-    )) satisfies RuntimeComponentLoader,
-  MobileAppKimiPage7: (() =>
-    import('../capsules/mobile-app-7.tsx').then((module) =>
-      toCapsule(module, 'MobileAppKimiPage7'),
-    )) satisfies RuntimeComponentLoader,
-  MobileAppKimiPage8: (() =>
-    import('../capsules/mobile-app-8.tsx').then((module) =>
-      toCapsule(module, 'MobileAppKimiPage8'),
-    )) satisfies RuntimeComponentLoader,
-  MobileAppKimiPage9: (() =>
-    import('../capsules/mobile-app-9.tsx').then((module) =>
-      toCapsule(module, 'MobileAppKimiPage9'),
     )) satisfies RuntimeComponentLoader,
   MobileAppLogos: (() =>
     import('../registry/sections/mobile-app/MobileAppLogos.tsx').then(
@@ -3790,18 +3122,6 @@ export const runtimeComponentLoaders = {
   MusicArtistHero: (() =>
     import('../registry/sections/music-artist/MusicArtistHero.tsx').then(
       (module) => toCapsule(module, 'MusicArtistHero'),
-    )) satisfies RuntimeComponentLoader,
-  MusicArtistKimiPage: (() =>
-    import('../capsules/music-artist.tsx').then((module) =>
-      toCapsule(module, 'MusicArtistKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  MusicArtistKimiPage2: (() =>
-    import('../capsules/music-artist-2.tsx').then((module) =>
-      toCapsule(module, 'MusicArtistKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  MusicArtistKimiPage3: (() =>
-    import('../capsules/music-artist-3.tsx').then((module) =>
-      toCapsule(module, 'MusicArtistKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   MusicArtistMailing: (() =>
     import('../registry/sections/music-artist/MusicArtistMailing.tsx').then(
@@ -3851,18 +3171,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/music-festival/MusicFestivalHero.tsx').then(
       (module) => toCapsule(module, 'MusicFestivalHero'),
     )) satisfies RuntimeComponentLoader,
-  MusicFestivalKimiPage: (() =>
-    import('../capsules/music-festival.tsx').then((module) =>
-      toCapsule(module, 'MusicFestivalKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  MusicFestivalKimiPage2: (() =>
-    import('../capsules/music-festival-2.tsx').then((module) =>
-      toCapsule(module, 'MusicFestivalKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  MusicFestivalKimiPage3: (() =>
-    import('../capsules/music-festival-3.tsx').then((module) =>
-      toCapsule(module, 'MusicFestivalKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   MusicFestivalLineup: (() =>
     import('../registry/sections/music-festival/MusicFestivalLineup.tsx').then(
       (module) => toCapsule(module, 'MusicFestivalLineup'),
@@ -3899,37 +3207,25 @@ export const runtimeComponentLoaders = {
     import('../registry/primitives/navigation-menu.tsx').then((module) =>
       toCapsule(module, 'NavigationMenu'),
     )) satisfies RuntimeComponentLoader,
-  NewsCategories: (() =>
-    import('../registry/sections/news/NewsCategories.tsx').then((module) =>
-      toCapsule(module, 'NewsCategories'),
+  NewsAuthors: (() =>
+    import('../registry/sections/news/NewsAuthors.tsx').then((module) =>
+      toCapsule(module, 'NewsAuthors'),
     )) satisfies RuntimeComponentLoader,
   NewsCta: (() =>
     import('../registry/sections/news/NewsCta.tsx').then((module) =>
       toCapsule(module, 'NewsCta'),
     )) satisfies RuntimeComponentLoader,
-  NewsFeatured: (() =>
-    import('../registry/sections/news/NewsFeatured.tsx').then((module) =>
-      toCapsule(module, 'NewsFeatured'),
+  NewsFeaturedStory: (() =>
+    import('../registry/sections/news/NewsFeaturedStory.tsx').then((module) =>
+      toCapsule(module, 'NewsFeaturedStory'),
     )) satisfies RuntimeComponentLoader,
   NewsFooter: (() =>
     import('../registry/sections/news/NewsFooter.tsx').then((module) =>
       toCapsule(module, 'NewsFooter'),
     )) satisfies RuntimeComponentLoader,
-  NewsKimiPage: (() =>
-    import('../capsules/news.tsx').then((module) =>
-      toCapsule(module, 'NewsKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  NewsKimiPage2: (() =>
-    import('../capsules/news-2.tsx').then((module) =>
-      toCapsule(module, 'NewsKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  NewsKimiPage3: (() =>
-    import('../capsules/news-3.tsx').then((module) =>
-      toCapsule(module, 'NewsKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
-  NewsLatest: (() =>
-    import('../registry/sections/news/NewsLatest.tsx').then((module) =>
-      toCapsule(module, 'NewsLatest'),
+  NewsHero: (() =>
+    import('../registry/sections/news/NewsHero.tsx').then((module) =>
+      toCapsule(module, 'NewsHero'),
     )) satisfies RuntimeComponentLoader,
   NewsletterCta: (() =>
     import('../registry/sections/newsletter/NewsletterCta.tsx').then((module) =>
@@ -3955,18 +3251,6 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/newsletter/NewsletterIssues.tsx').then(
       (module) => toCapsule(module, 'NewsletterIssues'),
     )) satisfies RuntimeComponentLoader,
-  NewsletterKimiPage: (() =>
-    import('../capsules/newsletter.tsx').then((module) =>
-      toCapsule(module, 'NewsletterKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  NewsletterKimiPage2: (() =>
-    import('../capsules/newsletter-2.tsx').then((module) =>
-      toCapsule(module, 'NewsletterKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  NewsletterKimiPage3: (() =>
-    import('../capsules/newsletter-3.tsx').then((module) =>
-      toCapsule(module, 'NewsletterKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   NewsletterNavbar: (() =>
     import('../registry/sections/newsletter/NewsletterNavbar.tsx').then(
       (module) => toCapsule(module, 'NewsletterNavbar'),
@@ -3987,13 +3271,49 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/news/NewsNavbar.tsx').then((module) =>
       toCapsule(module, 'NewsNavbar'),
     )) satisfies RuntimeComponentLoader,
-  NewsSidebar: (() =>
-    import('../registry/sections/news/NewsSidebar.tsx').then((module) =>
-      toCapsule(module, 'NewsSidebar'),
+  NewsroomAuthors: (() =>
+    import('../registry/sections/newsroom/NewsroomAuthors.tsx').then((module) =>
+      toCapsule(module, 'NewsroomAuthors'),
+    )) satisfies RuntimeComponentLoader,
+  NewsroomFeaturedStory: (() =>
+    import('../registry/sections/newsroom/NewsroomFeaturedStory.tsx').then(
+      (module) => toCapsule(module, 'NewsroomFeaturedStory'),
+    )) satisfies RuntimeComponentLoader,
+  NewsroomFooter: (() =>
+    import('../registry/sections/newsroom/NewsroomFooter.tsx').then((module) =>
+      toCapsule(module, 'NewsroomFooter'),
+    )) satisfies RuntimeComponentLoader,
+  NewsroomHero: (() =>
+    import('../registry/sections/newsroom/NewsroomHero.tsx').then((module) =>
+      toCapsule(module, 'NewsroomHero'),
+    )) satisfies RuntimeComponentLoader,
+  NewsroomNavbar: (() =>
+    import('../registry/sections/newsroom/NewsroomNavbar.tsx').then((module) =>
+      toCapsule(module, 'NewsroomNavbar'),
+    )) satisfies RuntimeComponentLoader,
+  NewsroomStoryGrid: (() =>
+    import('../registry/sections/newsroom/NewsroomStoryGrid.tsx').then(
+      (module) => toCapsule(module, 'NewsroomStoryGrid'),
+    )) satisfies RuntimeComponentLoader,
+  NewsroomSubscribe: (() =>
+    import('../registry/sections/newsroom/NewsroomSubscribe.tsx').then(
+      (module) => toCapsule(module, 'NewsroomSubscribe'),
+    )) satisfies RuntimeComponentLoader,
+  NewsroomTopics: (() =>
+    import('../registry/sections/newsroom/NewsroomTopics.tsx').then((module) =>
+      toCapsule(module, 'NewsroomTopics'),
+    )) satisfies RuntimeComponentLoader,
+  NewsStoryGrid: (() =>
+    import('../registry/sections/news/NewsStoryGrid.tsx').then((module) =>
+      toCapsule(module, 'NewsStoryGrid'),
     )) satisfies RuntimeComponentLoader,
   NewsTestimonials: (() =>
     import('../registry/sections/news/NewsTestimonials.tsx').then((module) =>
       toCapsule(module, 'NewsTestimonials'),
+    )) satisfies RuntimeComponentLoader,
+  NewsTopics: (() =>
+    import('../registry/sections/news/NewsTopics.tsx').then((module) =>
+      toCapsule(module, 'NewsTopics'),
     )) satisfies RuntimeComponentLoader,
   NoCodeCta: (() =>
     import('../registry/sections/no-code/NoCodeCta.tsx').then((module) =>
@@ -4014,18 +3334,6 @@ export const runtimeComponentLoaders = {
   NoCodeHero: (() =>
     import('../registry/sections/no-code/NoCodeHero.tsx').then((module) =>
       toCapsule(module, 'NoCodeHero'),
-    )) satisfies RuntimeComponentLoader,
-  NoCodeKimiPage: (() =>
-    import('../capsules/no-code.tsx').then((module) =>
-      toCapsule(module, 'NoCodeKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  NoCodeKimiPage2: (() =>
-    import('../capsules/no-code-2.tsx').then((module) =>
-      toCapsule(module, 'NoCodeKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  NoCodeKimiPage3: (() =>
-    import('../capsules/no-code-3.tsx').then((module) =>
-      toCapsule(module, 'NoCodeKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   NoCodeLogos: (() =>
     import('../registry/sections/no-code/NoCodeLogos.tsx').then((module) =>
@@ -4055,41 +3363,53 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/no-code/NoCodeTestimonials.tsx').then(
       (module) => toCapsule(module, 'NoCodeTestimonials'),
     )) satisfies RuntimeComponentLoader,
+  NonprofitCta: (() =>
+    import('../registry/sections/nonprofit/NonprofitCta.tsx').then((module) =>
+      toCapsule(module, 'NonprofitCta'),
+    )) satisfies RuntimeComponentLoader,
+  NonprofitFooter: (() =>
+    import('../registry/sections/nonprofit/NonprofitFooter.tsx').then(
+      (module) => toCapsule(module, 'NonprofitFooter'),
+    )) satisfies RuntimeComponentLoader,
   NonprofitHero: (() =>
     import('../registry/sections/nonprofit/NonprofitHero.tsx').then((module) =>
       toCapsule(module, 'NonprofitHero'),
     )) satisfies RuntimeComponentLoader,
-  NonprofitKimiPage: (() =>
-    import('../capsules/nonprofit.tsx').then((module) =>
-      toCapsule(module, 'NonprofitKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  NonprofitKimiPage2: (() =>
-    import('../capsules/nonprofit-2.tsx').then((module) =>
-      toCapsule(module, 'NonprofitKimiPage2'),
+  NonprofitLogos: (() =>
+    import('../registry/sections/nonprofit/NonprofitLogos.tsx').then((module) =>
+      toCapsule(module, 'NonprofitLogos'),
     )) satisfies RuntimeComponentLoader,
   NonprofitNavbar: (() =>
     import('../registry/sections/nonprofit/NonprofitNavbar.tsx').then(
       (module) => toCapsule(module, 'NonprofitNavbar'),
     )) satisfies RuntimeComponentLoader,
-  NonprofitPartners: (() =>
-    import('../registry/sections/nonprofit/NonprofitPartners.tsx').then(
-      (module) => toCapsule(module, 'NonprofitPartners'),
+  NonprofitServices: (() =>
+    import('../registry/sections/nonprofit/NonprofitServices.tsx').then(
+      (module) => toCapsule(module, 'NonprofitServices'),
+    )) satisfies RuntimeComponentLoader,
+  NonprofitStats: (() =>
+    import('../registry/sections/nonprofit/NonprofitStats.tsx').then((module) =>
+      toCapsule(module, 'NonprofitStats'),
+    )) satisfies RuntimeComponentLoader,
+  NonprofitSubscribe: (() =>
+    import('../registry/sections/nonprofit/NonprofitSubscribe.tsx').then(
+      (module) => toCapsule(module, 'NonprofitSubscribe'),
+    )) satisfies RuntimeComponentLoader,
+  NonprofitTestimonials: (() =>
+    import('../registry/sections/nonprofit/NonprofitTestimonials.tsx').then(
+      (module) => toCapsule(module, 'NonprofitTestimonials'),
+    )) satisfies RuntimeComponentLoader,
+  NutritionCta: (() =>
+    import('../registry/sections/nutrition/NutritionCta.tsx').then((module) =>
+      toCapsule(module, 'NutritionCta'),
+    )) satisfies RuntimeComponentLoader,
+  NutritionFooter: (() =>
+    import('../registry/sections/nutrition/NutritionFooter.tsx').then(
+      (module) => toCapsule(module, 'NutritionFooter'),
     )) satisfies RuntimeComponentLoader,
   NutritionHero: (() =>
     import('../registry/sections/nutrition/NutritionHero.tsx').then((module) =>
       toCapsule(module, 'NutritionHero'),
-    )) satisfies RuntimeComponentLoader,
-  NutritionKimiPage: (() =>
-    import('../capsules/nutrition.tsx').then((module) =>
-      toCapsule(module, 'NutritionKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  NutritionKimiPage2: (() =>
-    import('../capsules/nutrition-2.tsx').then((module) =>
-      toCapsule(module, 'NutritionKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  NutritionKimiPage3: (() =>
-    import('../capsules/nutrition-3.tsx').then((module) =>
-      toCapsule(module, 'NutritionKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   NutritionLogos: (() =>
     import('../registry/sections/nutrition/NutritionLogos.tsx').then((module) =>
@@ -4099,25 +3419,49 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/nutrition/NutritionNavbar.tsx').then(
       (module) => toCapsule(module, 'NutritionNavbar'),
     )) satisfies RuntimeComponentLoader,
+  NutritionPricing: (() =>
+    import('../registry/sections/nutrition/NutritionPricing.tsx').then(
+      (module) => toCapsule(module, 'NutritionPricing'),
+    )) satisfies RuntimeComponentLoader,
+  NutritionServices: (() =>
+    import('../registry/sections/nutrition/NutritionServices.tsx').then(
+      (module) => toCapsule(module, 'NutritionServices'),
+    )) satisfies RuntimeComponentLoader,
+  NutritionTestimonials: (() =>
+    import('../registry/sections/nutrition/NutritionTestimonials.tsx').then(
+      (module) => toCapsule(module, 'NutritionTestimonials'),
+    )) satisfies RuntimeComponentLoader,
+  OnlineCourseCta: (() =>
+    import('../registry/sections/online-course/OnlineCourseCta.tsx').then(
+      (module) => toCapsule(module, 'OnlineCourseCta'),
+    )) satisfies RuntimeComponentLoader,
+  OnlineCourseFeatures: (() =>
+    import('../registry/sections/online-course/OnlineCourseFeatures.tsx').then(
+      (module) => toCapsule(module, 'OnlineCourseFeatures'),
+    )) satisfies RuntimeComponentLoader,
+  OnlineCourseFooter: (() =>
+    import('../registry/sections/online-course/OnlineCourseFooter.tsx').then(
+      (module) => toCapsule(module, 'OnlineCourseFooter'),
+    )) satisfies RuntimeComponentLoader,
   OnlineCourseHero: (() =>
     import('../registry/sections/online-course/OnlineCourseHero.tsx').then(
       (module) => toCapsule(module, 'OnlineCourseHero'),
     )) satisfies RuntimeComponentLoader,
-  OnlineCourseKimiPage: (() =>
-    import('../capsules/online-course.tsx').then((module) =>
-      toCapsule(module, 'OnlineCourseKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  OnlineCourseKimiPage2: (() =>
-    import('../capsules/online-course-2.tsx').then((module) =>
-      toCapsule(module, 'OnlineCourseKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  OnlineCourseKimiPage3: (() =>
-    import('../capsules/online-course-3.tsx').then((module) =>
-      toCapsule(module, 'OnlineCourseKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
   OnlineCourseNavbar: (() =>
     import('../registry/sections/online-course/OnlineCourseNavbar.tsx').then(
       (module) => toCapsule(module, 'OnlineCourseNavbar'),
+    )) satisfies RuntimeComponentLoader,
+  OnlineCoursePricing: (() =>
+    import('../registry/sections/online-course/OnlineCoursePricing.tsx').then(
+      (module) => toCapsule(module, 'OnlineCoursePricing'),
+    )) satisfies RuntimeComponentLoader,
+  OnlineCoursePrograms: (() =>
+    import('../registry/sections/online-course/OnlineCoursePrograms.tsx').then(
+      (module) => toCapsule(module, 'OnlineCoursePrograms'),
+    )) satisfies RuntimeComponentLoader,
+  OnlineCourseTestimonials: (() =>
+    import('../registry/sections/online-course/OnlineCourseTestimonials.tsx').then(
+      (module) => toCapsule(module, 'OnlineCourseTestimonials'),
     )) satisfies RuntimeComponentLoader,
   PageSwitch: (() =>
     import('../registry/primitives/page-switch.tsx').then((module) =>
@@ -4127,41 +3471,53 @@ export const runtimeComponentLoaders = {
     import('../registry/primitives/pagination.tsx').then((module) =>
       toCapsule(module, 'Pagination'),
     )) satisfies RuntimeComponentLoader,
+  PetVeterinaryCta: (() =>
+    import('../registry/sections/pet-veterinary/PetVeterinaryCta.tsx').then(
+      (module) => toCapsule(module, 'PetVeterinaryCta'),
+    )) satisfies RuntimeComponentLoader,
+  PetVeterinaryFooter: (() =>
+    import('../registry/sections/pet-veterinary/PetVeterinaryFooter.tsx').then(
+      (module) => toCapsule(module, 'PetVeterinaryFooter'),
+    )) satisfies RuntimeComponentLoader,
   PetVeterinaryHero: (() =>
     import('../registry/sections/pet-veterinary/PetVeterinaryHero.tsx').then(
       (module) => toCapsule(module, 'PetVeterinaryHero'),
-    )) satisfies RuntimeComponentLoader,
-  PetVeterinaryKimiPage: (() =>
-    import('../capsules/pet-veterinary.tsx').then((module) =>
-      toCapsule(module, 'PetVeterinaryKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  PetVeterinaryKimiPage2: (() =>
-    import('../capsules/pet-veterinary-2.tsx').then((module) =>
-      toCapsule(module, 'PetVeterinaryKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  PetVeterinaryKimiPage3: (() =>
-    import('../capsules/pet-veterinary-3.tsx').then((module) =>
-      toCapsule(module, 'PetVeterinaryKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   PetVeterinaryNavbar: (() =>
     import('../registry/sections/pet-veterinary/PetVeterinaryNavbar.tsx').then(
       (module) => toCapsule(module, 'PetVeterinaryNavbar'),
     )) satisfies RuntimeComponentLoader,
+  PetVeterinaryPricing: (() =>
+    import('../registry/sections/pet-veterinary/PetVeterinaryPricing.tsx').then(
+      (module) => toCapsule(module, 'PetVeterinaryPricing'),
+    )) satisfies RuntimeComponentLoader,
+  PetVeterinaryServices: (() =>
+    import('../registry/sections/pet-veterinary/PetVeterinaryServices.tsx').then(
+      (module) => toCapsule(module, 'PetVeterinaryServices'),
+    )) satisfies RuntimeComponentLoader,
+  PetVeterinaryStats: (() =>
+    import('../registry/sections/pet-veterinary/PetVeterinaryStats.tsx').then(
+      (module) => toCapsule(module, 'PetVeterinaryStats'),
+    )) satisfies RuntimeComponentLoader,
+  PetVeterinaryTestimonials: (() =>
+    import('../registry/sections/pet-veterinary/PetVeterinaryTestimonials.tsx').then(
+      (module) => toCapsule(module, 'PetVeterinaryTestimonials'),
+    )) satisfies RuntimeComponentLoader,
+  PhotographyCta: (() =>
+    import('../registry/sections/photography/PhotographyCta.tsx').then(
+      (module) => toCapsule(module, 'PhotographyCta'),
+    )) satisfies RuntimeComponentLoader,
+  PhotographyFooter: (() =>
+    import('../registry/sections/photography/PhotographyFooter.tsx').then(
+      (module) => toCapsule(module, 'PhotographyFooter'),
+    )) satisfies RuntimeComponentLoader,
+  PhotographyGallery: (() =>
+    import('../registry/sections/photography/PhotographyGallery.tsx').then(
+      (module) => toCapsule(module, 'PhotographyGallery'),
+    )) satisfies RuntimeComponentLoader,
   PhotographyHero: (() =>
     import('../registry/sections/photography/PhotographyHero.tsx').then(
       (module) => toCapsule(module, 'PhotographyHero'),
-    )) satisfies RuntimeComponentLoader,
-  PhotographyKimiPage: (() =>
-    import('../capsules/photography.tsx').then((module) =>
-      toCapsule(module, 'PhotographyKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  PhotographyKimiPage2: (() =>
-    import('../capsules/photography-2.tsx').then((module) =>
-      toCapsule(module, 'PhotographyKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  PhotographyKimiPage3: (() =>
-    import('../capsules/photography-3.tsx').then((module) =>
-      toCapsule(module, 'PhotographyKimiPage3'),
     )) satisfies RuntimeComponentLoader,
   PhotographyLogos: (() =>
     import('../registry/sections/photography/PhotographyLogos.tsx').then(
@@ -4171,81 +3527,137 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/photography/PhotographyNavbar.tsx').then(
       (module) => toCapsule(module, 'PhotographyNavbar'),
     )) satisfies RuntimeComponentLoader,
-  PlumbingHvacKimiPage: (() =>
-    import('../capsules/plumbing-hvac.tsx').then((module) =>
-      toCapsule(module, 'PlumbingHvacKimiPage'),
+  PhotographyPricing: (() =>
+    import('../registry/sections/photography/PhotographyPricing.tsx').then(
+      (module) => toCapsule(module, 'PhotographyPricing'),
     )) satisfies RuntimeComponentLoader,
-  PlumbingHvacKimiPage2: (() =>
-    import('../capsules/plumbing-hvac-2.tsx').then((module) =>
-      toCapsule(module, 'PlumbingHvacKimiPage2'),
+  PhotographyTestimonials: (() =>
+    import('../registry/sections/photography/PhotographyTestimonials.tsx').then(
+      (module) => toCapsule(module, 'PhotographyTestimonials'),
+    )) satisfies RuntimeComponentLoader,
+  PlumbingHvacCta: (() =>
+    import('../registry/sections/plumbing-hvac/PlumbingHvacCta.tsx').then(
+      (module) => toCapsule(module, 'PlumbingHvacCta'),
+    )) satisfies RuntimeComponentLoader,
+  PlumbingHvacFooter: (() =>
+    import('../registry/sections/plumbing-hvac/PlumbingHvacFooter.tsx').then(
+      (module) => toCapsule(module, 'PlumbingHvacFooter'),
+    )) satisfies RuntimeComponentLoader,
+  PlumbingHvacHero: (() =>
+    import('../registry/sections/plumbing-hvac/PlumbingHvacHero.tsx').then(
+      (module) => toCapsule(module, 'PlumbingHvacHero'),
+    )) satisfies RuntimeComponentLoader,
+  PlumbingHvacNavbar: (() =>
+    import('../registry/sections/plumbing-hvac/PlumbingHvacNavbar.tsx').then(
+      (module) => toCapsule(module, 'PlumbingHvacNavbar'),
     )) satisfies RuntimeComponentLoader,
   PlumbingHvacOverview: (() =>
     import('../registry/sections/plumbing-hvac/PlumbingHvacOverview.tsx').then(
       (module) => toCapsule(module, 'PlumbingHvacOverview'),
     )) satisfies RuntimeComponentLoader,
-  PodcastKimiPage: (() =>
-    import('../capsules/podcast.tsx').then((module) =>
-      toCapsule(module, 'PodcastKimiPage'),
+  PlumbingHvacServices: (() =>
+    import('../registry/sections/plumbing-hvac/PlumbingHvacServices.tsx').then(
+      (module) => toCapsule(module, 'PlumbingHvacServices'),
     )) satisfies RuntimeComponentLoader,
-  PodcastKimiPage2: (() =>
-    import('../capsules/podcast-2.tsx').then((module) =>
-      toCapsule(module, 'PodcastKimiPage2'),
+  PlumbingHvacStats: (() =>
+    import('../registry/sections/plumbing-hvac/PlumbingHvacStats.tsx').then(
+      (module) => toCapsule(module, 'PlumbingHvacStats'),
     )) satisfies RuntimeComponentLoader,
-  PodcastKimiPage3: (() =>
-    import('../capsules/podcast-3.tsx').then((module) =>
-      toCapsule(module, 'PodcastKimiPage3'),
+  PlumbingHvacSteps: (() =>
+    import('../registry/sections/plumbing-hvac/PlumbingHvacSteps.tsx').then(
+      (module) => toCapsule(module, 'PlumbingHvacSteps'),
+    )) satisfies RuntimeComponentLoader,
+  PlumbingHvacTestimonials: (() =>
+    import('../registry/sections/plumbing-hvac/PlumbingHvacTestimonials.tsx').then(
+      (module) => toCapsule(module, 'PlumbingHvacTestimonials'),
+    )) satisfies RuntimeComponentLoader,
+  PodcastAuthors: (() =>
+    import('../registry/sections/podcast/PodcastAuthors.tsx').then((module) =>
+      toCapsule(module, 'PodcastAuthors'),
+    )) satisfies RuntimeComponentLoader,
+  PodcastFeaturedStory: (() =>
+    import('../registry/sections/podcast/PodcastFeaturedStory.tsx').then(
+      (module) => toCapsule(module, 'PodcastFeaturedStory'),
+    )) satisfies RuntimeComponentLoader,
+  PodcastFooter: (() =>
+    import('../registry/sections/podcast/PodcastFooter.tsx').then((module) =>
+      toCapsule(module, 'PodcastFooter'),
+    )) satisfies RuntimeComponentLoader,
+  PodcastHero: (() =>
+    import('../registry/sections/podcast/PodcastHero.tsx').then((module) =>
+      toCapsule(module, 'PodcastHero'),
+    )) satisfies RuntimeComponentLoader,
+  PodcastNavbar: (() =>
+    import('../registry/sections/podcast/PodcastNavbar.tsx').then((module) =>
+      toCapsule(module, 'PodcastNavbar'),
     )) satisfies RuntimeComponentLoader,
   PodcastOverview: (() =>
     import('../registry/sections/podcast/PodcastOverview.tsx').then((module) =>
       toCapsule(module, 'PodcastOverview'),
     )) satisfies RuntimeComponentLoader,
+  PodcastSubscribe: (() =>
+    import('../registry/sections/podcast/PodcastSubscribe.tsx').then((module) =>
+      toCapsule(module, 'PodcastSubscribe'),
+    )) satisfies RuntimeComponentLoader,
+  PodcastTestimonials: (() =>
+    import('../registry/sections/podcast/PodcastTestimonials.tsx').then(
+      (module) => toCapsule(module, 'PodcastTestimonials'),
+    )) satisfies RuntimeComponentLoader,
+  PodcastTopics: (() =>
+    import('../registry/sections/podcast/PodcastTopics.tsx').then((module) =>
+      toCapsule(module, 'PodcastTopics'),
+    )) satisfies RuntimeComponentLoader,
   Popover: (() =>
     import('../registry/primitives/popover.tsx').then((module) =>
       toCapsule(module, 'Popover'),
     )) satisfies RuntimeComponentLoader,
-  PortfolioDevKimiPage: (() =>
-    import('../capsules/portfolio-dev.tsx').then((module) =>
-      toCapsule(module, 'PortfolioDevKimiPage'),
+  PortfolioCta: (() =>
+    import('../registry/sections/portfolio/PortfolioCta.tsx').then((module) =>
+      toCapsule(module, 'PortfolioCta'),
     )) satisfies RuntimeComponentLoader,
-  PortfolioDevKimiPage2: (() =>
-    import('../capsules/portfolio-dev-2.tsx').then((module) =>
-      toCapsule(module, 'PortfolioDevKimiPage2'),
+  PortfolioDevCta: (() =>
+    import('../registry/sections/portfolio-dev/PortfolioDevCta.tsx').then(
+      (module) => toCapsule(module, 'PortfolioDevCta'),
     )) satisfies RuntimeComponentLoader,
-  PortfolioDevKimiPage3: (() =>
-    import('../capsules/portfolio-dev-3.tsx').then((module) =>
-      toCapsule(module, 'PortfolioDevKimiPage3'),
+  PortfolioDevFooter: (() =>
+    import('../registry/sections/portfolio-dev/PortfolioDevFooter.tsx').then(
+      (module) => toCapsule(module, 'PortfolioDevFooter'),
     )) satisfies RuntimeComponentLoader,
-  PortfolioDevKimiPage4: (() =>
-    import('../capsules/portfolio-dev-4.tsx').then((module) =>
-      toCapsule(module, 'PortfolioDevKimiPage4'),
+  PortfolioDevHero: (() =>
+    import('../registry/sections/portfolio-dev/PortfolioDevHero.tsx').then(
+      (module) => toCapsule(module, 'PortfolioDevHero'),
+    )) satisfies RuntimeComponentLoader,
+  PortfolioDevNavbar: (() =>
+    import('../registry/sections/portfolio-dev/PortfolioDevNavbar.tsx').then(
+      (module) => toCapsule(module, 'PortfolioDevNavbar'),
     )) satisfies RuntimeComponentLoader,
   PortfolioDevOverview: (() =>
     import('../registry/sections/portfolio-dev/PortfolioDevOverview.tsx').then(
       (module) => toCapsule(module, 'PortfolioDevOverview'),
     )) satisfies RuntimeComponentLoader,
+  PortfolioDevProjects: (() =>
+    import('../registry/sections/portfolio-dev/PortfolioDevProjects.tsx').then(
+      (module) => toCapsule(module, 'PortfolioDevProjects'),
+    )) satisfies RuntimeComponentLoader,
+  PortfolioDevServices: (() =>
+    import('../registry/sections/portfolio-dev/PortfolioDevServices.tsx').then(
+      (module) => toCapsule(module, 'PortfolioDevServices'),
+    )) satisfies RuntimeComponentLoader,
+  PortfolioDevStats: (() =>
+    import('../registry/sections/portfolio-dev/PortfolioDevStats.tsx').then(
+      (module) => toCapsule(module, 'PortfolioDevStats'),
+    )) satisfies RuntimeComponentLoader,
+  PortfolioDevTestimonials: (() =>
+    import('../registry/sections/portfolio-dev/PortfolioDevTestimonials.tsx').then(
+      (module) => toCapsule(module, 'PortfolioDevTestimonials'),
+    )) satisfies RuntimeComponentLoader,
+  PortfolioFooter: (() =>
+    import('../registry/sections/portfolio/PortfolioFooter.tsx').then(
+      (module) => toCapsule(module, 'PortfolioFooter'),
+    )) satisfies RuntimeComponentLoader,
   PortfolioHero: (() =>
     import('../registry/sections/portfolio/PortfolioHero.tsx').then((module) =>
       toCapsule(module, 'PortfolioHero'),
-    )) satisfies RuntimeComponentLoader,
-  PortfolioKimiPage: (() =>
-    import('../capsules/portfolio.tsx').then((module) =>
-      toCapsule(module, 'PortfolioKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  PortfolioKimiPage2: (() =>
-    import('../capsules/portfolio-2.tsx').then((module) =>
-      toCapsule(module, 'PortfolioKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  PortfolioKimiPage3: (() =>
-    import('../capsules/portfolio-3.tsx').then((module) =>
-      toCapsule(module, 'PortfolioKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
-  PortfolioKimiPage4: (() =>
-    import('../capsules/portfolio-4.tsx').then((module) =>
-      toCapsule(module, 'PortfolioKimiPage4'),
-    )) satisfies RuntimeComponentLoader,
-  PortfolioKimiPage5: (() =>
-    import('../capsules/portfolio-5.tsx').then((module) =>
-      toCapsule(module, 'PortfolioKimiPage5'),
     )) satisfies RuntimeComponentLoader,
   PortfolioLogos: (() =>
     import('../registry/sections/portfolio/PortfolioLogos.tsx').then((module) =>
@@ -4255,97 +3667,161 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/portfolio/PortfolioNavbar.tsx').then(
       (module) => toCapsule(module, 'PortfolioNavbar'),
     )) satisfies RuntimeComponentLoader,
+  PortfolioServices: (() =>
+    import('../registry/sections/portfolio/PortfolioServices.tsx').then(
+      (module) => toCapsule(module, 'PortfolioServices'),
+    )) satisfies RuntimeComponentLoader,
+  PortfolioTestimonials: (() =>
+    import('../registry/sections/portfolio/PortfolioTestimonials.tsx').then(
+      (module) => toCapsule(module, 'PortfolioTestimonials'),
+    )) satisfies RuntimeComponentLoader,
   PortfolioWork: (() =>
     import('../registry/sections/portfolio/PortfolioWork.tsx').then((module) =>
       toCapsule(module, 'PortfolioWork'),
-    )) satisfies RuntimeComponentLoader,
-  PricingKimiPage: (() =>
-    import('../capsules/pricing.tsx').then((module) =>
-      toCapsule(module, 'PricingKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  PricingKimiPage2: (() =>
-    import('../capsules/pricing-2.tsx').then((module) =>
-      toCapsule(module, 'PricingKimiPage2'),
     )) satisfies RuntimeComponentLoader,
   PricingOverview: (() =>
     import('../registry/sections/pricing/PricingOverview.tsx').then((module) =>
       toCapsule(module, 'PricingOverview'),
     )) satisfies RuntimeComponentLoader,
-  ProductDetailKimiPage: (() =>
-    import('../capsules/product-detail.tsx').then((module) =>
-      toCapsule(module, 'ProductDetailKimiPage'),
+  ProductDetailCta: (() =>
+    import('../registry/sections/product-detail/ProductDetailCta.tsx').then(
+      (module) => toCapsule(module, 'ProductDetailCta'),
     )) satisfies RuntimeComponentLoader,
-  ProductDetailKimiPage2: (() =>
-    import('../capsules/product-detail-2.tsx').then((module) =>
-      toCapsule(module, 'ProductDetailKimiPage2'),
+  ProductDetailFaq: (() =>
+    import('../registry/sections/product-detail/ProductDetailFaq.tsx').then(
+      (module) => toCapsule(module, 'ProductDetailFaq'),
     )) satisfies RuntimeComponentLoader,
-  ProductDetailKimiPage3: (() =>
-    import('../capsules/product-detail-3.tsx').then((module) =>
-      toCapsule(module, 'ProductDetailKimiPage3'),
+  ProductDetailFeatures: (() =>
+    import('../registry/sections/product-detail/ProductDetailFeatures.tsx').then(
+      (module) => toCapsule(module, 'ProductDetailFeatures'),
+    )) satisfies RuntimeComponentLoader,
+  ProductDetailFooter: (() =>
+    import('../registry/sections/product-detail/ProductDetailFooter.tsx').then(
+      (module) => toCapsule(module, 'ProductDetailFooter'),
+    )) satisfies RuntimeComponentLoader,
+  ProductDetailGallery: (() =>
+    import('../registry/sections/product-detail/ProductDetailGallery.tsx').then(
+      (module) => toCapsule(module, 'ProductDetailGallery'),
+    )) satisfies RuntimeComponentLoader,
+  ProductDetailHero: (() =>
+    import('../registry/sections/product-detail/ProductDetailHero.tsx').then(
+      (module) => toCapsule(module, 'ProductDetailHero'),
+    )) satisfies RuntimeComponentLoader,
+  ProductDetailNavbar: (() =>
+    import('../registry/sections/product-detail/ProductDetailNavbar.tsx').then(
+      (module) => toCapsule(module, 'ProductDetailNavbar'),
     )) satisfies RuntimeComponentLoader,
   ProductDetailOverview: (() =>
     import('../registry/sections/product-detail/ProductDetailOverview.tsx').then(
       (module) => toCapsule(module, 'ProductDetailOverview'),
     )) satisfies RuntimeComponentLoader,
+  ProductDetailTestimonials: (() =>
+    import('../registry/sections/product-detail/ProductDetailTestimonials.tsx').then(
+      (module) => toCapsule(module, 'ProductDetailTestimonials'),
+    )) satisfies RuntimeComponentLoader,
   Progress: (() =>
     import('../registry/primitives/progress.tsx').then((module) =>
       toCapsule(module, 'Progress'),
     )) satisfies RuntimeComponentLoader,
-  PropertyListingKimiPage: (() =>
-    import('../capsules/property-listing.tsx').then((module) =>
-      toCapsule(module, 'PropertyListingKimiPage'),
+  PropertyListingCta: (() =>
+    import('../registry/sections/property-listing/PropertyListingCta.tsx').then(
+      (module) => toCapsule(module, 'PropertyListingCta'),
     )) satisfies RuntimeComponentLoader,
-  PropertyListingKimiPage2: (() =>
-    import('../capsules/property-listing-2.tsx').then((module) =>
-      toCapsule(module, 'PropertyListingKimiPage2'),
+  PropertyListingFeatures: (() =>
+    import('../registry/sections/property-listing/PropertyListingFeatures.tsx').then(
+      (module) => toCapsule(module, 'PropertyListingFeatures'),
     )) satisfies RuntimeComponentLoader,
-  PropertyListingKimiPage3: (() =>
-    import('../capsules/property-listing-3.tsx').then((module) =>
-      toCapsule(module, 'PropertyListingKimiPage3'),
+  PropertyListingFooter: (() =>
+    import('../registry/sections/property-listing/PropertyListingFooter.tsx').then(
+      (module) => toCapsule(module, 'PropertyListingFooter'),
+    )) satisfies RuntimeComponentLoader,
+  PropertyListingGallery: (() =>
+    import('../registry/sections/property-listing/PropertyListingGallery.tsx').then(
+      (module) => toCapsule(module, 'PropertyListingGallery'),
+    )) satisfies RuntimeComponentLoader,
+  PropertyListingHero: (() =>
+    import('../registry/sections/property-listing/PropertyListingHero.tsx').then(
+      (module) => toCapsule(module, 'PropertyListingHero'),
+    )) satisfies RuntimeComponentLoader,
+  PropertyListingNavbar: (() =>
+    import('../registry/sections/property-listing/PropertyListingNavbar.tsx').then(
+      (module) => toCapsule(module, 'PropertyListingNavbar'),
     )) satisfies RuntimeComponentLoader,
   PropertyListingOverview: (() =>
     import('../registry/sections/property-listing/PropertyListingOverview.tsx').then(
       (module) => toCapsule(module, 'PropertyListingOverview'),
     )) satisfies RuntimeComponentLoader,
+  PropertyListingStats: (() =>
+    import('../registry/sections/property-listing/PropertyListingStats.tsx').then(
+      (module) => toCapsule(module, 'PropertyListingStats'),
+    )) satisfies RuntimeComponentLoader,
+  PropertyListingTestimonials: (() =>
+    import('../registry/sections/property-listing/PropertyListingTestimonials.tsx').then(
+      (module) => toCapsule(module, 'PropertyListingTestimonials'),
+    )) satisfies RuntimeComponentLoader,
   RadioGroup: (() =>
     import('../registry/primitives/radio-group.tsx').then((module) =>
       toCapsule(module, 'RadioGroup'),
     )) satisfies RuntimeComponentLoader,
-  RealEstateKimiPage: (() =>
-    import('../capsules/real-estate.tsx').then((module) =>
-      toCapsule(module, 'RealEstateKimiPage'),
+  RealEstateCta: (() =>
+    import('../registry/sections/real-estate/RealEstateCta.tsx').then(
+      (module) => toCapsule(module, 'RealEstateCta'),
     )) satisfies RuntimeComponentLoader,
-  RealEstateKimiPage2: (() =>
-    import('../capsules/real-estate-2.tsx').then((module) =>
-      toCapsule(module, 'RealEstateKimiPage2'),
+  RealEstateFooter: (() =>
+    import('../registry/sections/real-estate/RealEstateFooter.tsx').then(
+      (module) => toCapsule(module, 'RealEstateFooter'),
     )) satisfies RuntimeComponentLoader,
-  RealEstateKimiPage3: (() =>
-    import('../capsules/real-estate-3.tsx').then((module) =>
-      toCapsule(module, 'RealEstateKimiPage3'),
+  RealEstateGallery: (() =>
+    import('../registry/sections/real-estate/RealEstateGallery.tsx').then(
+      (module) => toCapsule(module, 'RealEstateGallery'),
+    )) satisfies RuntimeComponentLoader,
+  RealEstateHero: (() =>
+    import('../registry/sections/real-estate/RealEstateHero.tsx').then(
+      (module) => toCapsule(module, 'RealEstateHero'),
+    )) satisfies RuntimeComponentLoader,
+  RealEstateNavbar: (() =>
+    import('../registry/sections/real-estate/RealEstateNavbar.tsx').then(
+      (module) => toCapsule(module, 'RealEstateNavbar'),
     )) satisfies RuntimeComponentLoader,
   RealEstateOverview: (() =>
     import('../registry/sections/real-estate/RealEstateOverview.tsx').then(
       (module) => toCapsule(module, 'RealEstateOverview'),
     )) satisfies RuntimeComponentLoader,
+  RealEstateServices: (() =>
+    import('../registry/sections/real-estate/RealEstateServices.tsx').then(
+      (module) => toCapsule(module, 'RealEstateServices'),
+    )) satisfies RuntimeComponentLoader,
+  RealEstateStats: (() =>
+    import('../registry/sections/real-estate/RealEstateStats.tsx').then(
+      (module) => toCapsule(module, 'RealEstateStats'),
+    )) satisfies RuntimeComponentLoader,
+  RealEstateTestimonials: (() =>
+    import('../registry/sections/real-estate/RealEstateTestimonials.tsx').then(
+      (module) => toCapsule(module, 'RealEstateTestimonials'),
+    )) satisfies RuntimeComponentLoader,
   Resizable: (() =>
     import('../registry/primitives/resizable.tsx').then((module) =>
       toCapsule(module, 'Resizable'),
+    )) satisfies RuntimeComponentLoader,
+  RestaurantCta: (() =>
+    import('../registry/sections/restaurant/RestaurantCta.tsx').then((module) =>
+      toCapsule(module, 'RestaurantCta'),
+    )) satisfies RuntimeComponentLoader,
+  RestaurantFooter: (() =>
+    import('../registry/sections/restaurant/RestaurantFooter.tsx').then(
+      (module) => toCapsule(module, 'RestaurantFooter'),
+    )) satisfies RuntimeComponentLoader,
+  RestaurantGallery: (() =>
+    import('../registry/sections/restaurant/RestaurantGallery.tsx').then(
+      (module) => toCapsule(module, 'RestaurantGallery'),
     )) satisfies RuntimeComponentLoader,
   RestaurantHero: (() =>
     import('../registry/sections/restaurant/RestaurantHero.tsx').then(
       (module) => toCapsule(module, 'RestaurantHero'),
     )) satisfies RuntimeComponentLoader,
-  RestaurantKimiPage: (() =>
-    import('../capsules/restaurant.tsx').then((module) =>
-      toCapsule(module, 'RestaurantKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  RestaurantKimiPage2: (() =>
-    import('../capsules/restaurant-2.tsx').then((module) =>
-      toCapsule(module, 'RestaurantKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  RestaurantKimiPage3: (() =>
-    import('../capsules/restaurant-3.tsx').then((module) =>
-      toCapsule(module, 'RestaurantKimiPage3'),
+  RestaurantMenu: (() =>
+    import('../registry/sections/restaurant/RestaurantMenu.tsx').then(
+      (module) => toCapsule(module, 'RestaurantMenu'),
     )) satisfies RuntimeComponentLoader,
   RestaurantNavbar: (() =>
     import('../registry/sections/restaurant/RestaurantNavbar.tsx').then(
@@ -4355,65 +3831,69 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/restaurant/RestaurantStory.tsx').then(
       (module) => toCapsule(module, 'RestaurantStory'),
     )) satisfies RuntimeComponentLoader,
-  ResumeCvKimiPage: (() =>
-    import('../capsules/resume-cv.tsx').then((module) =>
-      toCapsule(module, 'ResumeCvKimiPage'),
+  RestaurantTestimonials: (() =>
+    import('../registry/sections/restaurant/RestaurantTestimonials.tsx').then(
+      (module) => toCapsule(module, 'RestaurantTestimonials'),
     )) satisfies RuntimeComponentLoader,
-  ResumeCvKimiPage2: (() =>
-    import('../capsules/resume-cv-2.tsx').then((module) =>
-      toCapsule(module, 'ResumeCvKimiPage2'),
+  ResumeCvAbout: (() =>
+    import('../registry/sections/resume-cv/ResumeCvAbout.tsx').then((module) =>
+      toCapsule(module, 'ResumeCvAbout'),
     )) satisfies RuntimeComponentLoader,
-  ResumeCvKimiPage3: (() =>
-    import('../capsules/resume-cv-3.tsx').then((module) =>
-      toCapsule(module, 'ResumeCvKimiPage3'),
+  ResumeCvCta: (() =>
+    import('../registry/sections/resume-cv/ResumeCvCta.tsx').then((module) =>
+      toCapsule(module, 'ResumeCvCta'),
+    )) satisfies RuntimeComponentLoader,
+  ResumeCvFooter: (() =>
+    import('../registry/sections/resume-cv/ResumeCvFooter.tsx').then((module) =>
+      toCapsule(module, 'ResumeCvFooter'),
+    )) satisfies RuntimeComponentLoader,
+  ResumeCvHero: (() =>
+    import('../registry/sections/resume-cv/ResumeCvHero.tsx').then((module) =>
+      toCapsule(module, 'ResumeCvHero'),
+    )) satisfies RuntimeComponentLoader,
+  ResumeCvNavbar: (() =>
+    import('../registry/sections/resume-cv/ResumeCvNavbar.tsx').then((module) =>
+      toCapsule(module, 'ResumeCvNavbar'),
     )) satisfies RuntimeComponentLoader,
   ResumeCvOverview: (() =>
     import('../registry/sections/resume-cv/ResumeCvOverview.tsx').then(
       (module) => toCapsule(module, 'ResumeCvOverview'),
     )) satisfies RuntimeComponentLoader,
+  ResumeCvProjects: (() =>
+    import('../registry/sections/resume-cv/ResumeCvProjects.tsx').then(
+      (module) => toCapsule(module, 'ResumeCvProjects'),
+    )) satisfies RuntimeComponentLoader,
+  ResumeCvServices: (() =>
+    import('../registry/sections/resume-cv/ResumeCvServices.tsx').then(
+      (module) => toCapsule(module, 'ResumeCvServices'),
+    )) satisfies RuntimeComponentLoader,
+  ResumeCvWork: (() =>
+    import('../registry/sections/resume-cv/ResumeCvWork.tsx').then((module) =>
+      toCapsule(module, 'ResumeCvWork'),
+    )) satisfies RuntimeComponentLoader,
+  SaasBento: (() =>
+    import('../registry/sections/saas/SaasBento.tsx').then((module) =>
+      toCapsule(module, 'SaasBento'),
+    )) satisfies RuntimeComponentLoader,
+  SaasCta: (() =>
+    import('../registry/sections/saas/SaasCta.tsx').then((module) =>
+      toCapsule(module, 'SaasCta'),
+    )) satisfies RuntimeComponentLoader,
+  SaasFaq: (() =>
+    import('../registry/sections/saas/SaasFaq.tsx').then((module) =>
+      toCapsule(module, 'SaasFaq'),
+    )) satisfies RuntimeComponentLoader,
+  SaasFeatures: (() =>
+    import('../registry/sections/saas/SaasFeatures.tsx').then((module) =>
+      toCapsule(module, 'SaasFeatures'),
+    )) satisfies RuntimeComponentLoader,
+  SaasFooter: (() =>
+    import('../registry/sections/saas/SaasFooter.tsx').then((module) =>
+      toCapsule(module, 'SaasFooter'),
+    )) satisfies RuntimeComponentLoader,
   SaasHero: (() =>
     import('../registry/sections/saas/SaasHero.tsx').then((module) =>
       toCapsule(module, 'SaasHero'),
-    )) satisfies RuntimeComponentLoader,
-  SaasKimiPage: (() =>
-    import('../capsules/saas.tsx').then((module) =>
-      toCapsule(module, 'SaasKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  SaasKimiPage10: (() =>
-    import('../capsules/saas-10.tsx').then((module) =>
-      toCapsule(module, 'SaasKimiPage10'),
-    )) satisfies RuntimeComponentLoader,
-  SaasKimiPage2: (() =>
-    import('../capsules/saas-2.tsx').then((module) =>
-      toCapsule(module, 'SaasKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
-  SaasKimiPage3: (() =>
-    import('../capsules/saas-3.tsx').then((module) =>
-      toCapsule(module, 'SaasKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
-  SaasKimiPage4: (() =>
-    import('../capsules/saas-4.tsx').then((module) =>
-      toCapsule(module, 'SaasKimiPage4'),
-    )) satisfies RuntimeComponentLoader,
-  SaasKimiPage5: (() =>
-    import('../capsules/saas-5.tsx').then((module) =>
-      toCapsule(module, 'SaasKimiPage5'),
-    )) satisfies RuntimeComponentLoader,
-  SaasKimiPage6: (() =>
-    import('../capsules/saas-6.tsx').then((module) =>
-      toCapsule(module, 'SaasKimiPage6'),
-    )) satisfies RuntimeComponentLoader,
-  SaasKimiPage7: (() =>
-    import('../capsules/saas-7.tsx').then((module) =>
-      toCapsule(module, 'SaasKimiPage7'),
-    )) satisfies RuntimeComponentLoader,
-  SaasKimiPage8: (() =>
-    import('../capsules/saas-8.tsx').then((module) =>
-      toCapsule(module, 'SaasKimiPage8'),
-    )) satisfies RuntimeComponentLoader,
-  SaasKimiPage9: (() =>
-    import('../capsules/saas-9.tsx').then((module) =>
-      toCapsule(module, 'SaasKimiPage9'),
     )) satisfies RuntimeComponentLoader,
   SaasLogos: (() =>
     import('../registry/sections/saas/SaasLogos.tsx').then((module) =>
@@ -4423,41 +3903,53 @@ export const runtimeComponentLoaders = {
     import('../registry/sections/saas/SaasNavbar.tsx').then((module) =>
       toCapsule(module, 'SaasNavbar'),
     )) satisfies RuntimeComponentLoader,
-  SalonBarberKimiPage: (() =>
-    import('../capsules/salon-barber.tsx').then((module) =>
-      toCapsule(module, 'SalonBarberKimiPage'),
+  SaasPricing: (() =>
+    import('../registry/sections/saas/SaasPricing.tsx').then((module) =>
+      toCapsule(module, 'SaasPricing'),
     )) satisfies RuntimeComponentLoader,
-  SalonBarberKimiPage2: (() =>
-    import('../capsules/salon-barber-2.tsx').then((module) =>
-      toCapsule(module, 'SalonBarberKimiPage2'),
+  SaasSteps: (() =>
+    import('../registry/sections/saas/SaasSteps.tsx').then((module) =>
+      toCapsule(module, 'SaasSteps'),
     )) satisfies RuntimeComponentLoader,
-  SalonBarberKimiPage3: (() =>
-    import('../capsules/salon-barber-3.tsx').then((module) =>
-      toCapsule(module, 'SalonBarberKimiPage3'),
+  SaasTestimonials: (() =>
+    import('../registry/sections/saas/SaasTestimonials.tsx').then((module) =>
+      toCapsule(module, 'SaasTestimonials'),
+    )) satisfies RuntimeComponentLoader,
+  SalonBarberCta: (() =>
+    import('../registry/sections/salon-barber/SalonBarberCta.tsx').then(
+      (module) => toCapsule(module, 'SalonBarberCta'),
+    )) satisfies RuntimeComponentLoader,
+  SalonBarberFooter: (() =>
+    import('../registry/sections/salon-barber/SalonBarberFooter.tsx').then(
+      (module) => toCapsule(module, 'SalonBarberFooter'),
+    )) satisfies RuntimeComponentLoader,
+  SalonBarberGallery: (() =>
+    import('../registry/sections/salon-barber/SalonBarberGallery.tsx').then(
+      (module) => toCapsule(module, 'SalonBarberGallery'),
+    )) satisfies RuntimeComponentLoader,
+  SalonBarberHero: (() =>
+    import('../registry/sections/salon-barber/SalonBarberHero.tsx').then(
+      (module) => toCapsule(module, 'SalonBarberHero'),
+    )) satisfies RuntimeComponentLoader,
+  SalonBarberNavbar: (() =>
+    import('../registry/sections/salon-barber/SalonBarberNavbar.tsx').then(
+      (module) => toCapsule(module, 'SalonBarberNavbar'),
     )) satisfies RuntimeComponentLoader,
   SalonBarberOverview: (() =>
     import('../registry/sections/salon-barber/SalonBarberOverview.tsx').then(
       (module) => toCapsule(module, 'SalonBarberOverview'),
     )) satisfies RuntimeComponentLoader,
-  ScheduleKimiPage: (() =>
-    import('../capsules/schedule.tsx').then((module) =>
-      toCapsule(module, 'ScheduleKimiPage'),
+  SalonBarberPricing: (() =>
+    import('../registry/sections/salon-barber/SalonBarberPricing.tsx').then(
+      (module) => toCapsule(module, 'SalonBarberPricing'),
     )) satisfies RuntimeComponentLoader,
-  ScheduleKimiPage2: (() =>
-    import('../capsules/schedule-2.tsx').then((module) =>
-      toCapsule(module, 'ScheduleKimiPage2'),
+  SalonBarberServices: (() =>
+    import('../registry/sections/salon-barber/SalonBarberServices.tsx').then(
+      (module) => toCapsule(module, 'SalonBarberServices'),
     )) satisfies RuntimeComponentLoader,
-  ScheduleKimiPage3: (() =>
-    import('../capsules/schedule-3.tsx').then((module) =>
-      toCapsule(module, 'ScheduleKimiPage3'),
-    )) satisfies RuntimeComponentLoader,
-  ScheduleKimiPage4: (() =>
-    import('../capsules/schedule-4.tsx').then((module) =>
-      toCapsule(module, 'ScheduleKimiPage4'),
-    )) satisfies RuntimeComponentLoader,
-  ScheduleKimiPage5: (() =>
-    import('../capsules/schedule-5.tsx').then((module) =>
-      toCapsule(module, 'ScheduleKimiPage5'),
+  SalonBarberTestimonials: (() =>
+    import('../registry/sections/salon-barber/SalonBarberTestimonials.tsx').then(
+      (module) => toCapsule(module, 'SalonBarberTestimonials'),
     )) satisfies RuntimeComponentLoader,
   ScrollArea: (() =>
     import('../registry/primitives/scroll-area.tsx').then((module) =>
@@ -4479,14 +3971,6 @@ export const runtimeComponentLoaders = {
     import('../registry/primitives/sheet.tsx').then((module) =>
       toCapsule(module, 'Sheet'),
     )) satisfies RuntimeComponentLoader,
-  ShopKimiPage: (() =>
-    import('../capsules/shop.tsx').then((module) =>
-      toCapsule(module, 'ShopKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  ShopKimiPage2: (() =>
-    import('../capsules/shop-2.tsx').then((module) =>
-      toCapsule(module, 'ShopKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
   ShopOverview: (() =>
     import('../registry/sections/shop/ShopOverview.tsx').then((module) =>
       toCapsule(module, 'ShopOverview'),
@@ -4503,21 +3987,41 @@ export const runtimeComponentLoaders = {
     import('../registry/primitives/layout.tsx').then((module) =>
       toCapsule(module, 'Spacer'),
     )) satisfies RuntimeComponentLoader,
-  SpaWellnessKimiPage: (() =>
-    import('../capsules/spa-wellness.tsx').then((module) =>
-      toCapsule(module, 'SpaWellnessKimiPage'),
+  SpaWellnessCta: (() =>
+    import('../registry/sections/spa-wellness/SpaWellnessCta.tsx').then(
+      (module) => toCapsule(module, 'SpaWellnessCta'),
     )) satisfies RuntimeComponentLoader,
-  SpaWellnessKimiPage2: (() =>
-    import('../capsules/spa-wellness-2.tsx').then((module) =>
-      toCapsule(module, 'SpaWellnessKimiPage2'),
+  SpaWellnessFooter: (() =>
+    import('../registry/sections/spa-wellness/SpaWellnessFooter.tsx').then(
+      (module) => toCapsule(module, 'SpaWellnessFooter'),
     )) satisfies RuntimeComponentLoader,
-  SpaWellnessKimiPage3: (() =>
-    import('../capsules/spa-wellness-3.tsx').then((module) =>
-      toCapsule(module, 'SpaWellnessKimiPage3'),
+  SpaWellnessGallery: (() =>
+    import('../registry/sections/spa-wellness/SpaWellnessGallery.tsx').then(
+      (module) => toCapsule(module, 'SpaWellnessGallery'),
+    )) satisfies RuntimeComponentLoader,
+  SpaWellnessHero: (() =>
+    import('../registry/sections/spa-wellness/SpaWellnessHero.tsx').then(
+      (module) => toCapsule(module, 'SpaWellnessHero'),
+    )) satisfies RuntimeComponentLoader,
+  SpaWellnessNavbar: (() =>
+    import('../registry/sections/spa-wellness/SpaWellnessNavbar.tsx').then(
+      (module) => toCapsule(module, 'SpaWellnessNavbar'),
     )) satisfies RuntimeComponentLoader,
   SpaWellnessOverview: (() =>
     import('../registry/sections/spa-wellness/SpaWellnessOverview.tsx').then(
       (module) => toCapsule(module, 'SpaWellnessOverview'),
+    )) satisfies RuntimeComponentLoader,
+  SpaWellnessPricing: (() =>
+    import('../registry/sections/spa-wellness/SpaWellnessPricing.tsx').then(
+      (module) => toCapsule(module, 'SpaWellnessPricing'),
+    )) satisfies RuntimeComponentLoader,
+  SpaWellnessServices: (() =>
+    import('../registry/sections/spa-wellness/SpaWellnessServices.tsx').then(
+      (module) => toCapsule(module, 'SpaWellnessServices'),
+    )) satisfies RuntimeComponentLoader,
+  SpaWellnessTestimonials: (() =>
+    import('../registry/sections/spa-wellness/SpaWellnessTestimonials.tsx').then(
+      (module) => toCapsule(module, 'SpaWellnessTestimonials'),
     )) satisfies RuntimeComponentLoader,
   Spinner: (() =>
     import('../registry/primitives/spinner.tsx').then((module) =>
@@ -4527,21 +4031,41 @@ export const runtimeComponentLoaders = {
     import('../registry/primitives/layout.tsx').then((module) =>
       toCapsule(module, 'Stack'),
     )) satisfies RuntimeComponentLoader,
-  SubscriptionBoxKimiPage: (() =>
-    import('../capsules/subscription-box.tsx').then((module) =>
-      toCapsule(module, 'SubscriptionBoxKimiPage'),
+  SubscriptionBoxCta: (() =>
+    import('../registry/sections/subscription-box/SubscriptionBoxCta.tsx').then(
+      (module) => toCapsule(module, 'SubscriptionBoxCta'),
     )) satisfies RuntimeComponentLoader,
-  SubscriptionBoxKimiPage2: (() =>
-    import('../capsules/subscription-box-2.tsx').then((module) =>
-      toCapsule(module, 'SubscriptionBoxKimiPage2'),
+  SubscriptionBoxFeatures: (() =>
+    import('../registry/sections/subscription-box/SubscriptionBoxFeatures.tsx').then(
+      (module) => toCapsule(module, 'SubscriptionBoxFeatures'),
     )) satisfies RuntimeComponentLoader,
-  SubscriptionBoxKimiPage3: (() =>
-    import('../capsules/subscription-box-3.tsx').then((module) =>
-      toCapsule(module, 'SubscriptionBoxKimiPage3'),
+  SubscriptionBoxFooter: (() =>
+    import('../registry/sections/subscription-box/SubscriptionBoxFooter.tsx').then(
+      (module) => toCapsule(module, 'SubscriptionBoxFooter'),
+    )) satisfies RuntimeComponentLoader,
+  SubscriptionBoxHero: (() =>
+    import('../registry/sections/subscription-box/SubscriptionBoxHero.tsx').then(
+      (module) => toCapsule(module, 'SubscriptionBoxHero'),
+    )) satisfies RuntimeComponentLoader,
+  SubscriptionBoxNavbar: (() =>
+    import('../registry/sections/subscription-box/SubscriptionBoxNavbar.tsx').then(
+      (module) => toCapsule(module, 'SubscriptionBoxNavbar'),
     )) satisfies RuntimeComponentLoader,
   SubscriptionBoxOverview: (() =>
     import('../registry/sections/subscription-box/SubscriptionBoxOverview.tsx').then(
       (module) => toCapsule(module, 'SubscriptionBoxOverview'),
+    )) satisfies RuntimeComponentLoader,
+  SubscriptionBoxPricing: (() =>
+    import('../registry/sections/subscription-box/SubscriptionBoxPricing.tsx').then(
+      (module) => toCapsule(module, 'SubscriptionBoxPricing'),
+    )) satisfies RuntimeComponentLoader,
+  SubscriptionBoxSteps: (() =>
+    import('../registry/sections/subscription-box/SubscriptionBoxSteps.tsx').then(
+      (module) => toCapsule(module, 'SubscriptionBoxSteps'),
+    )) satisfies RuntimeComponentLoader,
+  SubscriptionBoxTestimonials: (() =>
+    import('../registry/sections/subscription-box/SubscriptionBoxTestimonials.tsx').then(
+      (module) => toCapsule(module, 'SubscriptionBoxTestimonials'),
     )) satisfies RuntimeComponentLoader,
   Switch: (() =>
     import('../registry/primitives/switch.tsx').then((module) =>
@@ -4555,41 +4079,45 @@ export const runtimeComponentLoaders = {
     import('../registry/primitives/tabs.tsx').then((module) =>
       toCapsule(module, 'Tabs'),
     )) satisfies RuntimeComponentLoader,
-  TeamKimiPage: (() =>
-    import('../capsules/team.tsx').then((module) =>
-      toCapsule(module, 'TeamKimiPage'),
-    )) satisfies RuntimeComponentLoader,
-  TeamKimiPage2: (() =>
-    import('../capsules/team-2.tsx').then((module) =>
-      toCapsule(module, 'TeamKimiPage2'),
-    )) satisfies RuntimeComponentLoader,
   TeamOverview: (() =>
     import('../registry/sections/team/TeamOverview.tsx').then((module) =>
       toCapsule(module, 'TeamOverview'),
     )) satisfies RuntimeComponentLoader,
-  TelehealthKimiPage: (() =>
-    import('../capsules/telehealth.tsx').then((module) =>
-      toCapsule(module, 'TelehealthKimiPage'),
+  TelehealthCta: (() =>
+    import('../registry/sections/telehealth/TelehealthCta.tsx').then((module) =>
+      toCapsule(module, 'TelehealthCta'),
     )) satisfies RuntimeComponentLoader,
-  TelehealthKimiPage2: (() =>
-    import('../capsules/telehealth-2.tsx').then((module) =>
-      toCapsule(module, 'TelehealthKimiPage2'),
+  TelehealthFooter: (() =>
+    import('../registry/sections/telehealth/TelehealthFooter.tsx').then(
+      (module) => toCapsule(module, 'TelehealthFooter'),
     )) satisfies RuntimeComponentLoader,
-  TelehealthKimiPage3: (() =>
-    import('../capsules/telehealth-3.tsx').then((module) =>
-      toCapsule(module, 'TelehealthKimiPage3'),
+  TelehealthHero: (() =>
+    import('../registry/sections/telehealth/TelehealthHero.tsx').then(
+      (module) => toCapsule(module, 'TelehealthHero'),
+    )) satisfies RuntimeComponentLoader,
+  TelehealthNavbar: (() =>
+    import('../registry/sections/telehealth/TelehealthNavbar.tsx').then(
+      (module) => toCapsule(module, 'TelehealthNavbar'),
     )) satisfies RuntimeComponentLoader,
   TelehealthOverview: (() =>
     import('../registry/sections/telehealth/TelehealthOverview.tsx').then(
       (module) => toCapsule(module, 'TelehealthOverview'),
     )) satisfies RuntimeComponentLoader,
-  TestimonialsKimiPage: (() =>
-    import('../capsules/testimonials.tsx').then((module) =>
-      toCapsule(module, 'TestimonialsKimiPage'),
+  TelehealthServices: (() =>
+    import('../registry/sections/telehealth/TelehealthServices.tsx').then(
+      (module) => toCapsule(module, 'TelehealthServices'),
     )) satisfies RuntimeComponentLoader,
-  TestimonialsKimiPage2: (() =>
-    import('../capsules/testimonials-2.tsx').then((module) =>
-      toCapsule(module, 'TestimonialsKimiPage2'),
+  TelehealthStats: (() =>
+    import('../registry/sections/telehealth/TelehealthStats.tsx').then(
+      (module) => toCapsule(module, 'TelehealthStats'),
+    )) satisfies RuntimeComponentLoader,
+  TelehealthSteps: (() =>
+    import('../registry/sections/telehealth/TelehealthSteps.tsx').then(
+      (module) => toCapsule(module, 'TelehealthSteps'),
+    )) satisfies RuntimeComponentLoader,
+  TelehealthTestimonials: (() =>
+    import('../registry/sections/telehealth/TelehealthTestimonials.tsx').then(
+      (module) => toCapsule(module, 'TelehealthTestimonials'),
     )) satisfies RuntimeComponentLoader,
   TestimonialsOverview: (() =>
     import('../registry/sections/testimonials/TestimonialsOverview.tsx').then(
@@ -4615,176 +4143,400 @@ export const runtimeComponentLoaders = {
     import('../registry/primitives/tooltip.tsx').then((module) =>
       toCapsule(module, 'Tooltip'),
     )) satisfies RuntimeComponentLoader,
-  TourExperiencesKimiPage: (() =>
-    import('../capsules/tour-experiences.tsx').then((module) =>
-      toCapsule(module, 'TourExperiencesKimiPage'),
+  TourExperiencesCta: (() =>
+    import('../registry/sections/tour-experiences/TourExperiencesCta.tsx').then(
+      (module) => toCapsule(module, 'TourExperiencesCta'),
     )) satisfies RuntimeComponentLoader,
-  TourExperiencesKimiPage2: (() =>
-    import('../capsules/tour-experiences-2.tsx').then((module) =>
-      toCapsule(module, 'TourExperiencesKimiPage2'),
+  TourExperiencesFooter: (() =>
+    import('../registry/sections/tour-experiences/TourExperiencesFooter.tsx').then(
+      (module) => toCapsule(module, 'TourExperiencesFooter'),
     )) satisfies RuntimeComponentLoader,
-  TourExperiencesKimiPage3: (() =>
-    import('../capsules/tour-experiences-3.tsx').then((module) =>
-      toCapsule(module, 'TourExperiencesKimiPage3'),
+  TourExperiencesGallery: (() =>
+    import('../registry/sections/tour-experiences/TourExperiencesGallery.tsx').then(
+      (module) => toCapsule(module, 'TourExperiencesGallery'),
+    )) satisfies RuntimeComponentLoader,
+  TourExperiencesHero: (() =>
+    import('../registry/sections/tour-experiences/TourExperiencesHero.tsx').then(
+      (module) => toCapsule(module, 'TourExperiencesHero'),
+    )) satisfies RuntimeComponentLoader,
+  TourExperiencesNavbar: (() =>
+    import('../registry/sections/tour-experiences/TourExperiencesNavbar.tsx').then(
+      (module) => toCapsule(module, 'TourExperiencesNavbar'),
     )) satisfies RuntimeComponentLoader,
   TourExperiencesOverview: (() =>
     import('../registry/sections/tour-experiences/TourExperiencesOverview.tsx').then(
       (module) => toCapsule(module, 'TourExperiencesOverview'),
     )) satisfies RuntimeComponentLoader,
-  TravelAgencyKimiPage: (() =>
-    import('../capsules/travel-agency.tsx').then((module) =>
-      toCapsule(module, 'TravelAgencyKimiPage'),
+  TourExperiencesPricing: (() =>
+    import('../registry/sections/tour-experiences/TourExperiencesPricing.tsx').then(
+      (module) => toCapsule(module, 'TourExperiencesPricing'),
     )) satisfies RuntimeComponentLoader,
-  TravelAgencyKimiPage2: (() =>
-    import('../capsules/travel-agency-2.tsx').then((module) =>
-      toCapsule(module, 'TravelAgencyKimiPage2'),
+  TourExperiencesServices: (() =>
+    import('../registry/sections/tour-experiences/TourExperiencesServices.tsx').then(
+      (module) => toCapsule(module, 'TourExperiencesServices'),
+    )) satisfies RuntimeComponentLoader,
+  TourExperiencesTestimonials: (() =>
+    import('../registry/sections/tour-experiences/TourExperiencesTestimonials.tsx').then(
+      (module) => toCapsule(module, 'TourExperiencesTestimonials'),
+    )) satisfies RuntimeComponentLoader,
+  TravelAgencyCta: (() =>
+    import('../registry/sections/travel-agency/TravelAgencyCta.tsx').then(
+      (module) => toCapsule(module, 'TravelAgencyCta'),
+    )) satisfies RuntimeComponentLoader,
+  TravelAgencyFooter: (() =>
+    import('../registry/sections/travel-agency/TravelAgencyFooter.tsx').then(
+      (module) => toCapsule(module, 'TravelAgencyFooter'),
+    )) satisfies RuntimeComponentLoader,
+  TravelAgencyGallery: (() =>
+    import('../registry/sections/travel-agency/TravelAgencyGallery.tsx').then(
+      (module) => toCapsule(module, 'TravelAgencyGallery'),
+    )) satisfies RuntimeComponentLoader,
+  TravelAgencyHero: (() =>
+    import('../registry/sections/travel-agency/TravelAgencyHero.tsx').then(
+      (module) => toCapsule(module, 'TravelAgencyHero'),
+    )) satisfies RuntimeComponentLoader,
+  TravelAgencyNavbar: (() =>
+    import('../registry/sections/travel-agency/TravelAgencyNavbar.tsx').then(
+      (module) => toCapsule(module, 'TravelAgencyNavbar'),
     )) satisfies RuntimeComponentLoader,
   TravelAgencyOverview: (() =>
     import('../registry/sections/travel-agency/TravelAgencyOverview.tsx').then(
       (module) => toCapsule(module, 'TravelAgencyOverview'),
     )) satisfies RuntimeComponentLoader,
-  TutoringKimiPage: (() =>
-    import('../capsules/tutoring.tsx').then((module) =>
-      toCapsule(module, 'TutoringKimiPage'),
+  TravelAgencyServices: (() =>
+    import('../registry/sections/travel-agency/TravelAgencyServices.tsx').then(
+      (module) => toCapsule(module, 'TravelAgencyServices'),
     )) satisfies RuntimeComponentLoader,
-  TutoringKimiPage2: (() =>
-    import('../capsules/tutoring-2.tsx').then((module) =>
-      toCapsule(module, 'TutoringKimiPage2'),
+  TravelAgencyStats: (() =>
+    import('../registry/sections/travel-agency/TravelAgencyStats.tsx').then(
+      (module) => toCapsule(module, 'TravelAgencyStats'),
     )) satisfies RuntimeComponentLoader,
-  TutoringKimiPage3: (() =>
-    import('../capsules/tutoring-3.tsx').then((module) =>
-      toCapsule(module, 'TutoringKimiPage3'),
+  TravelAgencyTestimonials: (() =>
+    import('../registry/sections/travel-agency/TravelAgencyTestimonials.tsx').then(
+      (module) => toCapsule(module, 'TravelAgencyTestimonials'),
+    )) satisfies RuntimeComponentLoader,
+  TutoringCta: (() =>
+    import('../registry/sections/tutoring/TutoringCta.tsx').then((module) =>
+      toCapsule(module, 'TutoringCta'),
+    )) satisfies RuntimeComponentLoader,
+  TutoringFooter: (() =>
+    import('../registry/sections/tutoring/TutoringFooter.tsx').then((module) =>
+      toCapsule(module, 'TutoringFooter'),
+    )) satisfies RuntimeComponentLoader,
+  TutoringHero: (() =>
+    import('../registry/sections/tutoring/TutoringHero.tsx').then((module) =>
+      toCapsule(module, 'TutoringHero'),
+    )) satisfies RuntimeComponentLoader,
+  TutoringNavbar: (() =>
+    import('../registry/sections/tutoring/TutoringNavbar.tsx').then((module) =>
+      toCapsule(module, 'TutoringNavbar'),
     )) satisfies RuntimeComponentLoader,
   TutoringOverview: (() =>
     import('../registry/sections/tutoring/TutoringOverview.tsx').then(
       (module) => toCapsule(module, 'TutoringOverview'),
     )) satisfies RuntimeComponentLoader,
-  UniversityKimiPage: (() =>
-    import('../capsules/university.tsx').then((module) =>
-      toCapsule(module, 'UniversityKimiPage'),
+  TutoringPricing: (() =>
+    import('../registry/sections/tutoring/TutoringPricing.tsx').then((module) =>
+      toCapsule(module, 'TutoringPricing'),
     )) satisfies RuntimeComponentLoader,
-  UniversityKimiPage2: (() =>
-    import('../capsules/university-2.tsx').then((module) =>
-      toCapsule(module, 'UniversityKimiPage2'),
+  TutoringServices: (() =>
+    import('../registry/sections/tutoring/TutoringServices.tsx').then(
+      (module) => toCapsule(module, 'TutoringServices'),
     )) satisfies RuntimeComponentLoader,
-  UniversityKimiPage3: (() =>
-    import('../capsules/university-3.tsx').then((module) =>
-      toCapsule(module, 'UniversityKimiPage3'),
+  TutoringSteps: (() =>
+    import('../registry/sections/tutoring/TutoringSteps.tsx').then((module) =>
+      toCapsule(module, 'TutoringSteps'),
+    )) satisfies RuntimeComponentLoader,
+  TutoringTestimonials: (() =>
+    import('../registry/sections/tutoring/TutoringTestimonials.tsx').then(
+      (module) => toCapsule(module, 'TutoringTestimonials'),
+    )) satisfies RuntimeComponentLoader,
+  UniversityCta: (() =>
+    import('../registry/sections/university/UniversityCta.tsx').then((module) =>
+      toCapsule(module, 'UniversityCta'),
+    )) satisfies RuntimeComponentLoader,
+  UniversityFaq: (() =>
+    import('../registry/sections/university/UniversityFaq.tsx').then((module) =>
+      toCapsule(module, 'UniversityFaq'),
+    )) satisfies RuntimeComponentLoader,
+  UniversityFooter: (() =>
+    import('../registry/sections/university/UniversityFooter.tsx').then(
+      (module) => toCapsule(module, 'UniversityFooter'),
+    )) satisfies RuntimeComponentLoader,
+  UniversityHero: (() =>
+    import('../registry/sections/university/UniversityHero.tsx').then(
+      (module) => toCapsule(module, 'UniversityHero'),
+    )) satisfies RuntimeComponentLoader,
+  UniversityNavbar: (() =>
+    import('../registry/sections/university/UniversityNavbar.tsx').then(
+      (module) => toCapsule(module, 'UniversityNavbar'),
     )) satisfies RuntimeComponentLoader,
   UniversityOverview: (() =>
     import('../registry/sections/university/UniversityOverview.tsx').then(
       (module) => toCapsule(module, 'UniversityOverview'),
     )) satisfies RuntimeComponentLoader,
-  VacationRentalKimiPage: (() =>
-    import('../capsules/vacation-rental.tsx').then((module) =>
-      toCapsule(module, 'VacationRentalKimiPage'),
+  UniversityPrograms: (() =>
+    import('../registry/sections/university/UniversityPrograms.tsx').then(
+      (module) => toCapsule(module, 'UniversityPrograms'),
     )) satisfies RuntimeComponentLoader,
-  VacationRentalKimiPage2: (() =>
-    import('../capsules/vacation-rental-2.tsx').then((module) =>
-      toCapsule(module, 'VacationRentalKimiPage2'),
+  UniversityStats: (() =>
+    import('../registry/sections/university/UniversityStats.tsx').then(
+      (module) => toCapsule(module, 'UniversityStats'),
     )) satisfies RuntimeComponentLoader,
-  VacationRentalKimiPage3: (() =>
-    import('../capsules/vacation-rental-3.tsx').then((module) =>
-      toCapsule(module, 'VacationRentalKimiPage3'),
+  UniversityTestimonials: (() =>
+    import('../registry/sections/university/UniversityTestimonials.tsx').then(
+      (module) => toCapsule(module, 'UniversityTestimonials'),
+    )) satisfies RuntimeComponentLoader,
+  VacationRentalCta: (() =>
+    import('../registry/sections/vacation-rental/VacationRentalCta.tsx').then(
+      (module) => toCapsule(module, 'VacationRentalCta'),
+    )) satisfies RuntimeComponentLoader,
+  VacationRentalFeatures: (() =>
+    import('../registry/sections/vacation-rental/VacationRentalFeatures.tsx').then(
+      (module) => toCapsule(module, 'VacationRentalFeatures'),
+    )) satisfies RuntimeComponentLoader,
+  VacationRentalFooter: (() =>
+    import('../registry/sections/vacation-rental/VacationRentalFooter.tsx').then(
+      (module) => toCapsule(module, 'VacationRentalFooter'),
+    )) satisfies RuntimeComponentLoader,
+  VacationRentalGallery: (() =>
+    import('../registry/sections/vacation-rental/VacationRentalGallery.tsx').then(
+      (module) => toCapsule(module, 'VacationRentalGallery'),
+    )) satisfies RuntimeComponentLoader,
+  VacationRentalHero: (() =>
+    import('../registry/sections/vacation-rental/VacationRentalHero.tsx').then(
+      (module) => toCapsule(module, 'VacationRentalHero'),
+    )) satisfies RuntimeComponentLoader,
+  VacationRentalNavbar: (() =>
+    import('../registry/sections/vacation-rental/VacationRentalNavbar.tsx').then(
+      (module) => toCapsule(module, 'VacationRentalNavbar'),
     )) satisfies RuntimeComponentLoader,
   VacationRentalOverview: (() =>
     import('../registry/sections/vacation-rental/VacationRentalOverview.tsx').then(
       (module) => toCapsule(module, 'VacationRentalOverview'),
     )) satisfies RuntimeComponentLoader,
-  VideoStreamingKimiPage: (() =>
-    import('../capsules/video-streaming.tsx').then((module) =>
-      toCapsule(module, 'VideoStreamingKimiPage'),
+  VacationRentalPricing: (() =>
+    import('../registry/sections/vacation-rental/VacationRentalPricing.tsx').then(
+      (module) => toCapsule(module, 'VacationRentalPricing'),
     )) satisfies RuntimeComponentLoader,
-  VideoStreamingKimiPage2: (() =>
-    import('../capsules/video-streaming-2.tsx').then((module) =>
-      toCapsule(module, 'VideoStreamingKimiPage2'),
+  VacationRentalTestimonials: (() =>
+    import('../registry/sections/vacation-rental/VacationRentalTestimonials.tsx').then(
+      (module) => toCapsule(module, 'VacationRentalTestimonials'),
     )) satisfies RuntimeComponentLoader,
-  VideoStreamingKimiPage3: (() =>
-    import('../capsules/video-streaming-3.tsx').then((module) =>
-      toCapsule(module, 'VideoStreamingKimiPage3'),
+  VideoStreamingCta: (() =>
+    import('../registry/sections/video-streaming/VideoStreamingCta.tsx').then(
+      (module) => toCapsule(module, 'VideoStreamingCta'),
+    )) satisfies RuntimeComponentLoader,
+  VideoStreamingFeatures: (() =>
+    import('../registry/sections/video-streaming/VideoStreamingFeatures.tsx').then(
+      (module) => toCapsule(module, 'VideoStreamingFeatures'),
+    )) satisfies RuntimeComponentLoader,
+  VideoStreamingFooter: (() =>
+    import('../registry/sections/video-streaming/VideoStreamingFooter.tsx').then(
+      (module) => toCapsule(module, 'VideoStreamingFooter'),
+    )) satisfies RuntimeComponentLoader,
+  VideoStreamingGallery: (() =>
+    import('../registry/sections/video-streaming/VideoStreamingGallery.tsx').then(
+      (module) => toCapsule(module, 'VideoStreamingGallery'),
+    )) satisfies RuntimeComponentLoader,
+  VideoStreamingHero: (() =>
+    import('../registry/sections/video-streaming/VideoStreamingHero.tsx').then(
+      (module) => toCapsule(module, 'VideoStreamingHero'),
+    )) satisfies RuntimeComponentLoader,
+  VideoStreamingNavbar: (() =>
+    import('../registry/sections/video-streaming/VideoStreamingNavbar.tsx').then(
+      (module) => toCapsule(module, 'VideoStreamingNavbar'),
     )) satisfies RuntimeComponentLoader,
   VideoStreamingOverview: (() =>
     import('../registry/sections/video-streaming/VideoStreamingOverview.tsx').then(
       (module) => toCapsule(module, 'VideoStreamingOverview'),
     )) satisfies RuntimeComponentLoader,
-  WebinarKimiPage: (() =>
-    import('../capsules/webinar.tsx').then((module) =>
-      toCapsule(module, 'WebinarKimiPage'),
+  VideoStreamingPricing: (() =>
+    import('../registry/sections/video-streaming/VideoStreamingPricing.tsx').then(
+      (module) => toCapsule(module, 'VideoStreamingPricing'),
     )) satisfies RuntimeComponentLoader,
-  WebinarKimiPage2: (() =>
-    import('../capsules/webinar-2.tsx').then((module) =>
-      toCapsule(module, 'WebinarKimiPage2'),
+  VideoStreamingTestimonials: (() =>
+    import('../registry/sections/video-streaming/VideoStreamingTestimonials.tsx').then(
+      (module) => toCapsule(module, 'VideoStreamingTestimonials'),
     )) satisfies RuntimeComponentLoader,
-  WebinarKimiPage3: (() =>
-    import('../capsules/webinar-3.tsx').then((module) =>
-      toCapsule(module, 'WebinarKimiPage3'),
+  WebinarAuthors: (() =>
+    import('../registry/sections/webinar/WebinarAuthors.tsx').then((module) =>
+      toCapsule(module, 'WebinarAuthors'),
+    )) satisfies RuntimeComponentLoader,
+  WebinarCta: (() =>
+    import('../registry/sections/webinar/WebinarCta.tsx').then((module) =>
+      toCapsule(module, 'WebinarCta'),
+    )) satisfies RuntimeComponentLoader,
+  WebinarFaq: (() =>
+    import('../registry/sections/webinar/WebinarFaq.tsx').then((module) =>
+      toCapsule(module, 'WebinarFaq'),
+    )) satisfies RuntimeComponentLoader,
+  WebinarFeatures: (() =>
+    import('../registry/sections/webinar/WebinarFeatures.tsx').then((module) =>
+      toCapsule(module, 'WebinarFeatures'),
+    )) satisfies RuntimeComponentLoader,
+  WebinarFooter: (() =>
+    import('../registry/sections/webinar/WebinarFooter.tsx').then((module) =>
+      toCapsule(module, 'WebinarFooter'),
+    )) satisfies RuntimeComponentLoader,
+  WebinarHero: (() =>
+    import('../registry/sections/webinar/WebinarHero.tsx').then((module) =>
+      toCapsule(module, 'WebinarHero'),
+    )) satisfies RuntimeComponentLoader,
+  WebinarNavbar: (() =>
+    import('../registry/sections/webinar/WebinarNavbar.tsx').then((module) =>
+      toCapsule(module, 'WebinarNavbar'),
     )) satisfies RuntimeComponentLoader,
   WebinarOverview: (() =>
     import('../registry/sections/webinar/WebinarOverview.tsx').then((module) =>
       toCapsule(module, 'WebinarOverview'),
     )) satisfies RuntimeComponentLoader,
-  WeddingKimiPage: (() =>
-    import('../capsules/wedding.tsx').then((module) =>
-      toCapsule(module, 'WeddingKimiPage'),
+  WebinarSchedule: (() =>
+    import('../registry/sections/webinar/WebinarSchedule.tsx').then((module) =>
+      toCapsule(module, 'WebinarSchedule'),
     )) satisfies RuntimeComponentLoader,
-  WeddingKimiPage2: (() =>
-    import('../capsules/wedding-2.tsx').then((module) =>
-      toCapsule(module, 'WeddingKimiPage2'),
+  WeddingAbout: (() =>
+    import('../registry/sections/wedding/WeddingAbout.tsx').then((module) =>
+      toCapsule(module, 'WeddingAbout'),
     )) satisfies RuntimeComponentLoader,
-  WeddingKimiPage3: (() =>
-    import('../capsules/wedding-3.tsx').then((module) =>
-      toCapsule(module, 'WeddingKimiPage3'),
+  WeddingCta: (() =>
+    import('../registry/sections/wedding/WeddingCta.tsx').then((module) =>
+      toCapsule(module, 'WeddingCta'),
+    )) satisfies RuntimeComponentLoader,
+  WeddingFooter: (() =>
+    import('../registry/sections/wedding/WeddingFooter.tsx').then((module) =>
+      toCapsule(module, 'WeddingFooter'),
+    )) satisfies RuntimeComponentLoader,
+  WeddingGallery: (() =>
+    import('../registry/sections/wedding/WeddingGallery.tsx').then((module) =>
+      toCapsule(module, 'WeddingGallery'),
+    )) satisfies RuntimeComponentLoader,
+  WeddingHero: (() =>
+    import('../registry/sections/wedding/WeddingHero.tsx').then((module) =>
+      toCapsule(module, 'WeddingHero'),
+    )) satisfies RuntimeComponentLoader,
+  WeddingNavbar: (() =>
+    import('../registry/sections/wedding/WeddingNavbar.tsx').then((module) =>
+      toCapsule(module, 'WeddingNavbar'),
     )) satisfies RuntimeComponentLoader,
   WeddingOverview: (() =>
     import('../registry/sections/wedding/WeddingOverview.tsx').then((module) =>
       toCapsule(module, 'WeddingOverview'),
     )) satisfies RuntimeComponentLoader,
-  WineryBreweryKimiPage: (() =>
-    import('../capsules/winery-brewery.tsx').then((module) =>
-      toCapsule(module, 'WineryBreweryKimiPage'),
+  WeddingSchedule: (() =>
+    import('../registry/sections/wedding/WeddingSchedule.tsx').then((module) =>
+      toCapsule(module, 'WeddingSchedule'),
     )) satisfies RuntimeComponentLoader,
-  WineryBreweryKimiPage2: (() =>
-    import('../capsules/winery-brewery-2.tsx').then((module) =>
-      toCapsule(module, 'WineryBreweryKimiPage2'),
+  WeddingTestimonials: (() =>
+    import('../registry/sections/wedding/WeddingTestimonials.tsx').then(
+      (module) => toCapsule(module, 'WeddingTestimonials'),
     )) satisfies RuntimeComponentLoader,
-  WineryBreweryKimiPage3: (() =>
-    import('../capsules/winery-brewery-3.tsx').then((module) =>
-      toCapsule(module, 'WineryBreweryKimiPage3'),
+  WineryBreweryCta: (() =>
+    import('../registry/sections/winery-brewery/WineryBreweryCta.tsx').then(
+      (module) => toCapsule(module, 'WineryBreweryCta'),
+    )) satisfies RuntimeComponentLoader,
+  WineryBreweryEvents: (() =>
+    import('../registry/sections/winery-brewery/WineryBreweryEvents.tsx').then(
+      (module) => toCapsule(module, 'WineryBreweryEvents'),
+    )) satisfies RuntimeComponentLoader,
+  WineryBreweryFooter: (() =>
+    import('../registry/sections/winery-brewery/WineryBreweryFooter.tsx').then(
+      (module) => toCapsule(module, 'WineryBreweryFooter'),
+    )) satisfies RuntimeComponentLoader,
+  WineryBreweryGallery: (() =>
+    import('../registry/sections/winery-brewery/WineryBreweryGallery.tsx').then(
+      (module) => toCapsule(module, 'WineryBreweryGallery'),
+    )) satisfies RuntimeComponentLoader,
+  WineryBreweryHero: (() =>
+    import('../registry/sections/winery-brewery/WineryBreweryHero.tsx').then(
+      (module) => toCapsule(module, 'WineryBreweryHero'),
+    )) satisfies RuntimeComponentLoader,
+  WineryBreweryMenu: (() =>
+    import('../registry/sections/winery-brewery/WineryBreweryMenu.tsx').then(
+      (module) => toCapsule(module, 'WineryBreweryMenu'),
+    )) satisfies RuntimeComponentLoader,
+  WineryBreweryNavbar: (() =>
+    import('../registry/sections/winery-brewery/WineryBreweryNavbar.tsx').then(
+      (module) => toCapsule(module, 'WineryBreweryNavbar'),
     )) satisfies RuntimeComponentLoader,
   WineryBreweryOverview: (() =>
     import('../registry/sections/winery-brewery/WineryBreweryOverview.tsx').then(
       (module) => toCapsule(module, 'WineryBreweryOverview'),
     )) satisfies RuntimeComponentLoader,
-  WriterAuthorKimiPage: (() =>
-    import('../capsules/writer-author.tsx').then((module) =>
-      toCapsule(module, 'WriterAuthorKimiPage'),
+  WineryBreweryTestimonials: (() =>
+    import('../registry/sections/winery-brewery/WineryBreweryTestimonials.tsx').then(
+      (module) => toCapsule(module, 'WineryBreweryTestimonials'),
     )) satisfies RuntimeComponentLoader,
-  WriterAuthorKimiPage2: (() =>
-    import('../capsules/writer-author-2.tsx').then((module) =>
-      toCapsule(module, 'WriterAuthorKimiPage2'),
+  WriterAuthorAbout: (() =>
+    import('../registry/sections/writer-author/WriterAuthorAbout.tsx').then(
+      (module) => toCapsule(module, 'WriterAuthorAbout'),
     )) satisfies RuntimeComponentLoader,
-  WriterAuthorKimiPage3: (() =>
-    import('../capsules/writer-author-3.tsx').then((module) =>
-      toCapsule(module, 'WriterAuthorKimiPage3'),
+  WriterAuthorCta: (() =>
+    import('../registry/sections/writer-author/WriterAuthorCta.tsx').then(
+      (module) => toCapsule(module, 'WriterAuthorCta'),
+    )) satisfies RuntimeComponentLoader,
+  WriterAuthorFooter: (() =>
+    import('../registry/sections/writer-author/WriterAuthorFooter.tsx').then(
+      (module) => toCapsule(module, 'WriterAuthorFooter'),
+    )) satisfies RuntimeComponentLoader,
+  WriterAuthorHero: (() =>
+    import('../registry/sections/writer-author/WriterAuthorHero.tsx').then(
+      (module) => toCapsule(module, 'WriterAuthorHero'),
+    )) satisfies RuntimeComponentLoader,
+  WriterAuthorNavbar: (() =>
+    import('../registry/sections/writer-author/WriterAuthorNavbar.tsx').then(
+      (module) => toCapsule(module, 'WriterAuthorNavbar'),
     )) satisfies RuntimeComponentLoader,
   WriterAuthorOverview: (() =>
     import('../registry/sections/writer-author/WriterAuthorOverview.tsx').then(
       (module) => toCapsule(module, 'WriterAuthorOverview'),
     )) satisfies RuntimeComponentLoader,
-  YogaStudioKimiPage: (() =>
-    import('../capsules/yoga-studio.tsx').then((module) =>
-      toCapsule(module, 'YogaStudioKimiPage'),
+  WriterAuthorSubscribe: (() =>
+    import('../registry/sections/writer-author/WriterAuthorSubscribe.tsx').then(
+      (module) => toCapsule(module, 'WriterAuthorSubscribe'),
     )) satisfies RuntimeComponentLoader,
-  YogaStudioKimiPage2: (() =>
-    import('../capsules/yoga-studio-2.tsx').then((module) =>
-      toCapsule(module, 'YogaStudioKimiPage2'),
+  WriterAuthorTestimonials: (() =>
+    import('../registry/sections/writer-author/WriterAuthorTestimonials.tsx').then(
+      (module) => toCapsule(module, 'WriterAuthorTestimonials'),
     )) satisfies RuntimeComponentLoader,
-  YogaStudioKimiPage3: (() =>
-    import('../capsules/yoga-studio-3.tsx').then((module) =>
-      toCapsule(module, 'YogaStudioKimiPage3'),
+  WriterAuthorWork: (() =>
+    import('../registry/sections/writer-author/WriterAuthorWork.tsx').then(
+      (module) => toCapsule(module, 'WriterAuthorWork'),
+    )) satisfies RuntimeComponentLoader,
+  YogaStudioCta: (() =>
+    import('../registry/sections/yoga-studio/YogaStudioCta.tsx').then(
+      (module) => toCapsule(module, 'YogaStudioCta'),
+    )) satisfies RuntimeComponentLoader,
+  YogaStudioFooter: (() =>
+    import('../registry/sections/yoga-studio/YogaStudioFooter.tsx').then(
+      (module) => toCapsule(module, 'YogaStudioFooter'),
+    )) satisfies RuntimeComponentLoader,
+  YogaStudioHero: (() =>
+    import('../registry/sections/yoga-studio/YogaStudioHero.tsx').then(
+      (module) => toCapsule(module, 'YogaStudioHero'),
+    )) satisfies RuntimeComponentLoader,
+  YogaStudioNavbar: (() =>
+    import('../registry/sections/yoga-studio/YogaStudioNavbar.tsx').then(
+      (module) => toCapsule(module, 'YogaStudioNavbar'),
     )) satisfies RuntimeComponentLoader,
   YogaStudioOverview: (() =>
     import('../registry/sections/yoga-studio/YogaStudioOverview.tsx').then(
       (module) => toCapsule(module, 'YogaStudioOverview'),
+    )) satisfies RuntimeComponentLoader,
+  YogaStudioPricing: (() =>
+    import('../registry/sections/yoga-studio/YogaStudioPricing.tsx').then(
+      (module) => toCapsule(module, 'YogaStudioPricing'),
+    )) satisfies RuntimeComponentLoader,
+  YogaStudioPrograms: (() =>
+    import('../registry/sections/yoga-studio/YogaStudioPrograms.tsx').then(
+      (module) => toCapsule(module, 'YogaStudioPrograms'),
+    )) satisfies RuntimeComponentLoader,
+  YogaStudioSchedule: (() =>
+    import('../registry/sections/yoga-studio/YogaStudioSchedule.tsx').then(
+      (module) => toCapsule(module, 'YogaStudioSchedule'),
+    )) satisfies RuntimeComponentLoader,
+  YogaStudioTestimonials: (() =>
+    import('../registry/sections/yoga-studio/YogaStudioTestimonials.tsx').then(
+      (module) => toCapsule(module, 'YogaStudioTestimonials'),
     )) satisfies RuntimeComponentLoader,
 } as const

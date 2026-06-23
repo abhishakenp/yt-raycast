@@ -251,7 +251,7 @@ export const CafeMenu = defineComponent({
                   </h3>
                 </div>
                 <div className="space-y-6">
-                  {col.items.map((item, idx) => (
+                  {(col.items ?? []).map((item, idx) => (
                     <div key={item.name}>
                       <button
                         type="button"

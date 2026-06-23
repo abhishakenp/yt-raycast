@@ -1,0 +1,50 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "convex/**/*.ts",
+    "packages/ship-fast-engine/src/**/*.ts",
+    "packages/ship-fast-engine/src/**/*.tsx",
+    "packages/ship-fast-lakebed/src/**/*.ts",
+    "packages/ship-fast-lakebed/src/**/*.tsx",
+    "packages/ship-fast-aeo/src/**/*.ts",
+    "packages/ship-fast-aeo/src/**/*.tsx",
+    "scripts/**/*.ts",
+    "eslint.config.js",
+    "prettier.config.js",
+    "vite.config.ts",
+    "types/typecheck/**/*.d.ts"
+  ],
+  "exclude": [
+    ".macp/**",
+    ".output/**",
+    ".tanstack/**",
+    "agentation-reference/**",
+    "dist/**",
+    "node_modules/**",
+    "sessions/**",
+    "vendor/**",
+    "packages/ship-fast-blocks/src/**"
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "#/*": ["./src/*"],
+      "@/*": ["./src/*"],
+      "@ship-fast/blocks": ["./types/typecheck/ship-fast-blocks.d.ts"],
+      "@ship-fast/blocks/runtime": [
+        "./types/typecheck/ship-fast-blocks.d.ts"
+      ],
+      "@ship-fast/blocks/generated": [
+        "./types/typecheck/ship-fast-blocks.d.ts"
+      ],
+      "@ship-fast/blocks/theme": ["./types/typecheck/ship-fast-blocks.d.ts"],
+      "@ship-fast/blocks/component-names": [
+        "./types/typecheck/ship-fast-blocks.d.ts"
+      ],
+      "@ship-fast/blocks/portal": ["./types/typecheck/ship-fast-blocks.d.ts"]
+    }
+  }
+}

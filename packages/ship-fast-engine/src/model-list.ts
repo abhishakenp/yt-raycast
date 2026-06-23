@@ -33,3 +33,10 @@ export function isKnownModel(id: string): boolean {
 export function getProvider(id: string): ModelProvider | undefined {
   return SHIP_FAST_MODELS.find((m) => m.id === id)?.provider
 }
+
+// Only the gpt-oss reasoning models accept `reasoning_effort`; sending it to
+// others (e.g. llama-3.1-8b-instant) returns a 400. Gate it so fast models are
+// usable for latency-sensitive steps like classification.
+export function supportsReasoningEffort(id: string): boolean {
+  return /gpt-oss/i.test(id)
+}

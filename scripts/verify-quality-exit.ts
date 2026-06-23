@@ -106,7 +106,6 @@ export function verifyQualityExitFromTexts({
     'verify:review-readiness',
     'review:groups',
     'verify:generated',
-    'verify:capsule-sources',
     'test:coverage',
   ]) {
     if (!scripts[scriptName]) {

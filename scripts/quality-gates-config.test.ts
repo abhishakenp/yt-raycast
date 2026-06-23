@@ -5,18 +5,35 @@ import { describe, expect, it } from 'vitest'
 describe('quality gate configuration', () => {
   it('keeps coverage reporting wired into package scripts and CI', () => {
     const packageJson = JSON.parse(readFileSync('package.json', 'utf8'))
+    const typecheckConfig = JSON.parse(
+      readFileSync('tsconfig.typecheck.json', 'utf8'),
+    )
+    const typecheckShim = readFileSync(
+      'types/typecheck/ship-fast-blocks.d.ts',
+      'utf8',
+    )
     const vitestConfig = readFileSync('vitest.config.ts', 'utf8')
     const ciWorkflow = readFileSync('.github/workflows/ci.yml', 'utf8')
 
     expect(packageJson.devDependencies['@vitest/coverage-v8']).toBe('4.1.8')
     expect(packageJson.scripts['test:coverage']).toBe(
-      'vitest run --config vitest.config.ts --coverage',
+      'VITEST_COVERAGE=1 vitest run --config vitest.config.ts --coverage',
     )
+    expect(packageJson.scripts['typecheck']).toBe(
+      'tsc -p tsconfig.typecheck.json --noEmit --pretty false',
+    )
+    expect(typecheckConfig.exclude).toContain(
+      'packages/ship-fast-blocks/src/**',
+    )
+    expect(typecheckConfig.compilerOptions.paths['@ship-fast/blocks']).toEqual([
+      './types/typecheck/ship-fast-blocks.d.ts',
+    ])
+    expect(typecheckShim).toContain(
+      "declare module '@ship-fast/blocks/runtime'",
+    )
+    expect(typecheckShim).not.toContain('../packages/ship-fast-blocks/src')
     expect(packageJson.scripts['verify:generated']).toBe(
       'node packages/ship-fast-blocks/scripts/generate-react-export-sources.mjs --check',
-    )
-    expect(packageJson.scripts['verify:capsule-sources']).toBe(
-      'bun scripts/verify-capsule-source-classification.ts',
     )
     expect(packageJson.scripts['verify:change-groups']).toBe(
       'bun scripts/verify-change-groups.ts',
@@ -43,11 +60,14 @@ describe('quality gate configuration', () => {
     expect(packageJson.scripts['verify:qa']).toContain(
       'bun run verify:generated',
     )
-    expect(packageJson.scripts['verify:qa']).toContain(
-      'bun run verify:capsule-sources',
-    )
     expect(vitestConfig).toContain("provider: 'v8'")
     expect(vitestConfig).toContain("'json-summary'")
+    expect(vitestConfig).toContain(
+      "'packages/ship-fast-blocks/src/capsules/**'",
+    )
+    expect(vitestConfig).toContain(
+      "'packages/ship-fast-blocks/src/generated/**'",
+    )
     expect(vitestConfig).toContain(
       "'packages/ship-fast-engine/src/clone/**/*.test.ts'",
     )

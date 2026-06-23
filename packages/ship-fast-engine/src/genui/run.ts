@@ -1,169 +1,81 @@
-import { mergeStatements } from '@openuidev/lang-core'
-import { generateUI, type GenUIEvent } from './orchestrator.ts'
 import {
-  classifySiteCategory,
-  runV1PublicationGeneration,
-  type V1GeneratedArtifact,
-} from './v1-publication.ts'
+  runV2ComposedGeneration,
+  type V2Event,
+  type ComposedContent,
+} from './v2-compose.ts'
 import { DEFAULT_MODEL } from './model-list.ts'
 import { detectLanguage } from '../pipeline/detect-language.js'
-import { withLanguageEnforcementBlock } from '../pipeline/prompt-language.js'
+import type { GenUIEvent, GeneratedArtifact } from './events.ts'
+
+export type { ComposedContent } from './v2-compose.ts'
 
 export interface OrchestratorResult {
-  /** Final assembled openui-lang program (PageSwitch over AI-selected page blocks). */
+  /** Final assembled openui-lang program (PageSwitch over composed Stack pages). */
   source: string
-  /** AI-picked theme name (caffeine, elegant-luxury, …) — drives the preview palette. */
+  /** Seeded theme name (caffeine, elegant-luxury, …) — drives the preview palette. */
   theme: string | null
-  /** AI-detected locale (ISO 639-1 code) — drives translation provider. */
+  /** Detected locale (ISO 639-1 code) — drives translation provider. */
   locale: string
-  /** Brand string the model used for the page blocks. */
+  /** Brand string used across the composed pages. */
   brand: string
-  /** Normalized site category from the v1 classifier (only set on the v1 path). */
+  /** Vertical family the engine composed (Cafe, LawFirm, Newsroom, …). */
   category?: string
-  /** Fullstack/grammar/admin artifacts emitted by the v1 publication path. */
-  artifacts?: V1GeneratedArtifact[]
+  /** Fullstack/admin sidecar artifacts (manifest, …). */
+  artifacts?: GeneratedArtifact[]
 }
 
-const FIRST_QUOTED = /=\s*[A-Za-z][A-Za-z0-9_]*\(\s*"((?:\\.|[^"\\])*)"/
-/** Programs shorter than this are almost always block-default stubs, not real LLM output. */
-const STUB_PROGRAM_MAX_CHARS = 900
+/** Adapt the engine's V2 events to the frontend stream's GenUIEvent shape. */
+function toGenUIEvent(event: V2Event): GenUIEvent {
+  switch (event.type) {
+    case 'module':
+      return { type: 'module', id: event.id, text: event.text }
+    case 'done':
+      return { type: 'done', modules: 0, ms: 0 }
+    default:
+      return event
+  }
+}
 
 /**
- * Run the GenUI orchestrator (the ported original engine) and assemble its
- * streamed events into a single renderable program. The orchestrator makes ONE
- * AI plan call (brand + tagline + pages + a vibe-matched theme, all by AI
- * relevance — no keyword heuristics), then generates each page's content against
- * a rich full-page KimiPage block in parallel. Throws on hard failure.
+ * THE generation engine entry. A single composable path for every prompt: the
+ * homepage is authored in the first pass (vertical pick + props) and the other
+ * pages fan out in parallel. Output is valid OpenUI by construction — no
+ * fallback, no per-vertical engines.
  */
 export async function runHomepageOrchestrator(p: {
   prompt: string
   preferredLanguage?: string
   modelId?: string
+  sessionSeed?: string
+  ownerEmail?: string
   signal?: AbortSignal
+  /** Reuse cached AI content (per-prompt) — the seed still re-randomizes layout. */
+  cachedContent?: ComposedContent
+  /** Receives the (cache-augmented) content to persist for future sessions. */
+  onContent?: (content: ComposedContent) => void
   onEvent?: (event: GenUIEvent) => void
-  /**
-   * Live program callback. Fires with the FULL accumulated program every time a
-   * statement (skeleton, then each page) lands — so the preview can paint the
-   * skeleton immediately and pop each page in as it finishes, instead of waiting
-   * for the whole run. This is what makes the stream live rather than a replay.
-   */
   onSource?: (source: string) => void
 }): Promise<OrchestratorResult> {
   const languageMode = await detectLanguage(p.prompt, p.preferredLanguage)
-  const generationPrompt = withLanguageEnforcementBlock(p.prompt, languageMode)
-  const forcedLocale = languageMode.code === 'en' ? null : languageMode.code
   const modelId = p.modelId || DEFAULT_MODEL
-
-  // GATED v1 publication path. Only English prompts are eligible (non-en keeps
-  // generateUI's language enforcement), so the cheap locale check gates the
-  // classify round-trip — non-en generations never pay for it. classify + v1
-  // live inside one try: ANY failure (incl. hard LLM errors from classify, a v1
-  // throw, or a stub-sized v1 program) silently falls through to the generateUI
-  // safety net below — purely additive with a guaranteed fallback and no
-  // regression for existing prompts.
-  if (languageMode.code === 'en') {
-    try {
-      const category = await classifySiteCategory(p.prompt, modelId, p.signal)
-      if (category === 'publication') {
-        const v1 = await runV1PublicationGeneration({
-          prompt: p.prompt,
-          modelId,
-          preferredLanguage: languageMode.code,
-          category,
-          signal: p.signal,
-          onSource: p.onSource,
-          // Forward only the kinds GenUIEvent and V1PublicationEvent share with
-          // identical fields. v1-only kinds (status, plan, module_start,
-          // module_retry, source, done) are dropped — onSource already drives
-          // the live preview, so consumers see no synthetic events.
-          onEvent: p.onEvent
-            ? (event) => {
-                if (event.type === 'theme') p.onEvent?.(event)
-                else if (event.type === 'locale') p.onEvent?.(event)
-                else if (event.type === 'skeleton') p.onEvent?.(event)
-                else if (event.type === 'module') p.onEvent?.(event)
-                else if (event.type === 'error') p.onEvent?.(event)
-              }
-            : undefined,
-        })
-        if (v1.source.trim().length > STUB_PROGRAM_MAX_CHARS) {
-          return {
-            source: v1.source,
-            theme: v1.theme,
-            locale: forcedLocale ?? v1.locale,
-            brand: v1.brand,
-            category: v1.category,
-            artifacts: v1.artifacts,
-          }
-        }
-        // v1 produced a stub-sized program — fall through to generateUI.
-      }
-    } catch {
-      // hard or soft failure (classify or v1) → fall through to generateUI (the
-      // safety net emits the proper error if it also fails).
-    }
-  }
-
-  let theme: string | null = null
-  let locale = forcedLocale ?? 'en'
-  let source = ''
-  let brand = ''
-  let firstError = ''
-
-  // Merge each streamed statement into the running program and surface it live.
-  // The skeleton (PageSwitch) lands first, then each page module merges in as it
-  // completes — pages generate in parallel, so they arrive out of order and
-  // mergeStatements folds each into place. The auth single-page case has no
-  // skeleton and a `root = …` module, so the first statement seeds the program.
-  const mergeIn = (text: string) => {
-    const t = (text || '').trim()
-    if (!t) return
-    if (!source) {
-      source = t
-    } else {
-      try {
-        const merged = mergeStatements(source, t)
-        if (merged && merged.trim()) source = merged
-      } catch {
-        // skip an unmergeable fragment rather than wiping the program
-      }
-    }
-    if (!brand) {
-      const match = source.match(FIRST_QUOTED)
-      if (match) brand = match[1]
-    }
-    p.onSource?.(source)
-  }
-
-  for await (const event of generateUI(
-    generationPrompt,
+  const onEvent = p.onEvent
+  const result = await runV2ComposedGeneration({
+    prompt: p.prompt,
     modelId,
-    p.signal,
-    forcedLocale,
-    p.prompt,
-  )) {
-    p.onEvent?.(event)
-    if (event.type === 'theme') theme = event.name
-    else if (event.type === 'locale' && forcedLocale === null)
-      locale = event.code
-    else if (event.type === 'skeleton') mergeIn(event.text)
-    else if (event.type === 'module') mergeIn(event.text)
-    else if (event.type === 'error') firstError ||= event.message
+    sessionSeed: p.sessionSeed,
+    preferredLanguage: languageMode.code,
+    signal: p.signal,
+    cachedContent: p.cachedContent,
+    onContent: p.onContent,
+    onSource: p.onSource,
+    onEvent: onEvent ? (event) => onEvent(toGenUIEvent(event)) : undefined,
+  })
+  return {
+    source: result.source,
+    theme: result.theme,
+    locale: result.locale,
+    brand: result.brand,
+    category: result.category,
+    artifacts: result.artifacts,
   }
-
-  if (!source.trim()) {
-    throw new Error(firstError || 'orchestrator produced an empty program')
-  }
-
-  if (firstError) {
-    throw new Error(firstError)
-  }
-
-  if (source.length <= STUB_PROGRAM_MAX_CHARS) {
-    throw new Error(
-      'Generated site is too small — the AI model likely failed. Check GROQ_API_KEY and restart the dev server after updating .env.',
-    )
-  }
-
-  return { source, theme, locale, brand }
 }

@@ -152,7 +152,7 @@ export const FoodTruckLocations = defineComponent({
                   </div>
                 </div>
                 <div className="space-y-2 text-sm">
-                  {d.rows.map((row) => (
+                  {(d.rows ?? []).map((row) => (
                     <div key={row.label} className="flex justify-between gap-4">
                       <span className="text-muted-foreground">{row.label}</span>
                       <span className="text-right font-medium">{row.value}</span>

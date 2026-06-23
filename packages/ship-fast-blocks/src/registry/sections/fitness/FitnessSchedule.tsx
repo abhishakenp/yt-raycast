@@ -22,7 +22,7 @@ export const FitnessSchedule = defineComponent({
       .array(
         z.object({
           time: z.string(),
-          slots: z.array(z.string()),
+          slots: z.array(z.string()).optional(),
         }),
       )
       .optional(),
@@ -162,7 +162,7 @@ export const FitnessSchedule = defineComponent({
                     <td className="px-4 py-4 font-medium text-foreground">
                       {row.time}
                     </td>
-                    {row.slots.map((slot, i) => (
+                    {(row.slots ?? []).map((slot, i) => (
                       <td
                         key={`${row.time}-${i}`}
                         className={cn(

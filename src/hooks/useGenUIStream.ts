@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react"
 import { mergeStatements } from "@openuidev/lang-core"
-import type { GenUIEvent } from "@ship-fast/engine/genui/orchestrator.ts"
+import type { GenUIEvent } from "@ship-fast/engine/genui/events.ts"
 
 export type SectionStatus = "pending" | "building" | "done" | "error"
 

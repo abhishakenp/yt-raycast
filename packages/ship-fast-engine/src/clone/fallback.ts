@@ -1,7 +1,3 @@
-import {
-  pickBlock,
-  type BlockMeta,
-} from '../../../ship-fast-blocks/src/registry/taxonomy.ts'
 import type { SectionKind, ClonedSection, ExtractedTokens } from './types.ts'
 import { parseHTML } from 'linkedom'
 
@@ -12,77 +8,32 @@ import { parseHTML } from 'linkedom'
 // it always validates against `componentNames`, regardless of which registry
 // block matched.
 
-// Map section kinds to taxonomy tags for matching
-const SECTION_KIND_TO_TAGS: Record<SectionKind, string[]> = {
-  nav: ['nav', 'navigation', 'header'],
-  hero: ['home', 'landing', 'hero'],
-  features: ['features', 'saas', 'product'],
-  pricing: ['pricing', 'plans', 'subscription'],
-  testimonials: ['testimonials', 'reviews', 'social-proof'],
-  cta: ['cta', 'call-to-action', 'marketing'],
-  footer: ['footer'],
-  content: ['content', 'blog', 'article'],
-  sidebar: ['sidebar', 'docs'],
-  header: ['header', 'nav'],
-  about: ['about', 'company'],
-  contact: ['contact', 'support'],
-  blog: ['blog', 'articles', 'index'],
-  gallery: ['gallery', 'portfolio'],
-  unknown: ['home', 'landing'],
+// Nearest native section ROLE for a failed clone section, recorded as
+// provenance only. The emitted program is always a primitive composition
+// (Stack/Section/Heading/Text/Button) that validates against the spine
+// regardless of which role matched — so this is metadata for the fallback
+// hash, never a component that gets rendered.
+const KIND_TO_ROLE: Record<SectionKind, string> = {
+  nav: 'Navbar',
+  hero: 'Hero',
+  features: 'Features',
+  pricing: 'Pricing',
+  testimonials: 'Testimonials',
+  cta: 'Cta',
+  footer: 'Footer',
+  content: 'StoryGrid',
+  sidebar: 'Navbar',
+  header: 'Navbar',
+  about: 'About',
+  contact: 'Contact',
+  blog: 'StoryGrid',
+  gallery: 'Gallery',
+  unknown: 'Hero',
 }
 
-// Deterministic per-(kind,index) RNG so a given failed section always falls
-// back to the same block. pickBlock expects rng() -> float in [0, 1).
-function makeRng(seed: number): () => number {
-  let s = seed % 2147483647 || 1
-  return () => {
-    s = (s * 16807) % 2147483647
-    return (s - 1) / 2147483646
-  }
-}
-
-function hashSeed(kind: SectionKind, index: number): number {
-  let h = index + 1
-  for (let i = 0; i < kind.length; i++) {
-    h = (h * 31 + kind.charCodeAt(i)) >>> 0
-  }
-  return h
-}
-
-// Find the best matching native registry block for a failed section using the
-// EXPORTED pickBlock helper (tag overlap against BLOCK_TAXONOMY). Returns the
-// matched block name (metadata only) so callers can record provenance.
-export function findFallbackBlock(sectionKind: SectionKind, index = 0): string {
-  const targetTags = SECTION_KIND_TO_TAGS[sectionKind] || []
-  const rng = makeRng(hashSeed(sectionKind, index))
-
-  const matches = (meta: BlockMeta): boolean => {
-    const blockTags = meta.tags || []
-    return targetTags.some((target) =>
-      blockTags.some((tag) => tag.toLowerCase().includes(target.toLowerCase())),
-    )
-  }
-
-  // Per-kind defaults used when no taxonomy entry matches.
-  const defaults: Record<SectionKind, string> = {
-    nav: 'SaasKimiPage',
-    hero: 'MarketingKimiPage',
-    features: 'SaasKimiPage',
-    pricing: 'PricingKimiPage',
-    testimonials: 'SaasKimiPage',
-    cta: 'MarketingKimiPage',
-    footer: 'SaasKimiPage',
-    content: 'BlogKimiPage',
-    sidebar: 'DocsKimiPage',
-    header: 'SaasKimiPage',
-    about: 'AboutKimiPage',
-    contact: 'ContactKimiPage',
-    blog: 'BlogKimiPage',
-    gallery: 'PortfolioKimiPage',
-    unknown: 'MarketingKimiPage',
-  }
-
-  return pickBlock(rng, matches, defaults[sectionKind] || 'MarketingKimiPage')
+// Nearest native section role for a failed section (provenance only).
+export function findFallbackBlock(sectionKind: SectionKind, _index = 0): string {
+  return KIND_TO_ROLE[sectionKind] || 'Hero'
 }
 
 // Default heading/sub copy per section kind for the primitive composition.

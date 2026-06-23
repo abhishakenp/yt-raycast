@@ -5,20 +5,20 @@ import { preprocessOpenUIResponse } from '../lib/openui-preprocess.ts'
 describe('preprocessOpenUIResponse', () => {
   it('strips invalid top-level section labels from saved page block calls', () => {
     const source =
-      'home = TourExperiencesKimiPage("Kerala Tourism", ["Home"], {heading: "Kerala"},press: {label: "Featured In"},features: {heading: "Why Kerala", items: [{title: "Backwaters", description: "Houseboats"}]})'
+      'home = RestaurantHero("Kerala Tourism", ["Home"], {heading: "Kerala"},hours: {label: "Featured In"},location: {heading: "Why Kerala", items: [{title: "Backwaters", description: "Houseboats"}]})'
 
     const result = preprocessOpenUIResponse(source, { resolveRefs: false })
 
-    expect(result).toContain('TourExperiencesKimiPage("Kerala Tourism"')
-    expect(result).not.toContain(',press:')
-    expect(result).not.toContain(',features:')
+    expect(result).toContain('RestaurantHero("Kerala Tourism"')
+    expect(result).not.toContain(',hours:')
+    expect(result).not.toContain(',location:')
     expect(result).toContain('{label: "Featured In"}')
     expect(result).toContain('{heading: "Why Kerala"')
   })
 
   it('repairs malformed quoted object keys without changing valid JSON keys', () => {
     const source =
-      'root = SaasKimiPage("StrideFit", ["Home"], {items:[{"name":"Darius K.", tag:"Verified Buyer"},{"name:"Maya S.", tag:"Verified Buyer"}]})'
+      'root = SaasTestimonials("StrideFit", ["Home"], {items:[{"name":"Darius K.", tag:"Verified Buyer"},{"name:"Maya S.", tag:"Verified Buyer"}]})'
 
     const result = preprocessOpenUIResponse(source, { resolveRefs: false })
 
@@ -29,7 +29,7 @@ describe('preprocessOpenUIResponse', () => {
 
   it('repairs object boundaries before trailing null arguments', () => {
     const source =
-      'root = ProductDetailKimiPage("StrideFit", ["Home"], ["Home"], {}, {}, {}, {}, {footer:{note:"Done"}, null)'
+      'root = EcommerceOverview("StrideFit", ["Home"], ["Home"], {}, {}, {}, {}, {footer:{note:"Done"}, null)'
 
     const result = preprocessOpenUIResponse(source, { resolveRefs: false })
 
@@ -39,7 +39,7 @@ describe('preprocessOpenUIResponse', () => {
 
   it('repairs object boundaries accidentally closed by a parenthesis before the next argument', () => {
     const source =
-      'root = EcommerceKimiPage("ShopifyLite", ["Home"], {chip:"New", heading:"Launch", imageAlt:"Storefront"), "Trusted by Leading Brands", {heading:"Categories"})'
+      'root = EcommerceHero("ShopifyLite", ["Home"], {chip:"New", heading:"Launch", imageAlt:"Storefront"), "Trusted by Leading Brands", {heading:"Categories"})'
 
     const result = preprocessOpenUIResponse(source, { resolveRefs: false })
 

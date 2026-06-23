@@ -1,25 +1,32 @@
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { convexTest } from 'convex-test'
 import { describe, expect, it } from 'vitest'
+import { api } from './_generated/api'
+import schema from './schema'
 
 const here = dirname(fileURLToPath(import.meta.url))
 
-describe('convex generation action', () => {
-  it('passes the session preferred language to the homepage orchestrator', () => {
-    const source = readFileSync(join(here, 'generation.ts'), 'utf8')
-    const orchestratorSource = readFileSync(
-      join(here, '../packages/ship-fast-engine/src/genui/run.ts'),
-      'utf8',
-    )
+const modules = import.meta.glob('./**/*.ts')
 
-    expect(source).toContain('preferredLanguage: session.preferredLanguage')
-    expect(source).not.toContain('completeWhen')
-    expect(source).toContain('buildRenderedOpenUiPreviewHtml(')
-    expect(orchestratorSource).toContain('detectLanguage(p.prompt')
-    expect(orchestratorSource).toContain('withLanguageEnforcementBlock')
-    expect(orchestratorSource).toMatch(/generateUI\(\s*generationPrompt/)
-    expect(orchestratorSource).toContain('forcedLocale')
+describe('convex generation action', () => {
+  it('persists the requested preferred language on the created session', async () => {
+    const t = convexTest(schema, modules)
+
+    const { sessionId } = await t.mutation(api.sessions.create, {
+      prompt: 'Build a multilingual marketing homepage',
+      preferredLanguage: 'fr',
+      preferredExportTarget: 'html',
+      isPrivate: false,
+      workspace: 'workspace_preferred_language_fr',
+    })
+
+    const session = await t.query(api.sessions.getSessionApiResponse, {
+      lookup: sessionId,
+    })
+
+    expect(session?.preferredLanguage).toBe('fr')
   })
 
   it('threads design reference context into generation artifacts', () => {
@@ -32,6 +39,18 @@ describe('convex generation action', () => {
     expect(source).toContain(
       'designReferenceFingerprint: session.designReferenceFingerprint',
     )
+  })
+
+  it('threads v1 owner email, session seed, and generated artifacts into site metadata', () => {
+    const source = readFileSync(join(here, 'generation.ts'), 'utf8')
+
+    expect(source).toContain('ownerEmail: session.ownerEmail')
+    expect(source).toContain('sessionSeed: String(args.sessionId)')
+    expect(source).toContain('const artifactsByKey =')
+    expect(source).toContain('artifacts: generatedArtifacts ?? {}')
+    expect(source).toContain("generatedArtifacts?.['admin-policy']")
+    expect(source).toContain("generatedArtifacts?.['fullstack-manifest']")
+    expect(source).toContain("generatedArtifacts?.['openui-manifest']")
   })
 
   it('keeps the action entry lightweight and lazy-loads the generation runtime', () => {
@@ -87,7 +106,7 @@ describe('convex generation action', () => {
     )
   })
 
-  it('does not persist partial OpenUI source before final completion', () => {
+  it('persists partial OpenUI source as a running home module for instant preview', () => {
     const source = readFileSync(join(here, 'generation.ts'), 'utf8')
     const onSourceIndex = source.indexOf('onSource: (source) => {')
     const onEventIndex = source.indexOf('onEvent: (event)', onSourceIndex)
@@ -95,7 +114,11 @@ describe('convex generation action', () => {
 
     expect(onSourceIndex).toBeGreaterThan(-1)
     expect(onSourceBlock).toContain('latestOpenUiSource = source')
-    expect(onSourceBlock).not.toContain('upsertGeneratedModule')
+    expect(onSourceBlock).toContain(
+      'internalFunctions.sessions.upsertGeneratedModule',
+    )
+    expect(onSourceBlock).toContain("moduleKey: 'home'")
+    expect(onSourceBlock).toContain("status: 'running'")
   })
 
   it('does not use a separate refinement mutation for initial generation', () => {

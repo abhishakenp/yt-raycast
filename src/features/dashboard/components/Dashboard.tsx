@@ -26,6 +26,7 @@ import type { Id } from '../../../../convex/_generated/dataModel'
 import type { PreviewSelection } from '@/components/GenUI/DirectPreview'
 import { IntroLoader } from '@/components/GenUI/IntroLoader'
 import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'
+import { useClonePageNav } from '@/features/clone/hooks/useClonePageNav'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { extractGeneratedCommerceProducts } from '@/features/commerce/services/generated-commerce-products'
 import { takeGenerationLaunchHandoff } from '@/features/session/services/generation-launch-handoff'
@@ -349,12 +350,17 @@ export function Dashboard({
       ? fallbackGenerationView
       : liveGenerationView
   const resolvedSessionId = generationView?.session.sessionId
+  const clonePageNav = useClonePageNav(resolvedSessionId ?? sessionId)
   const isMissingSession = generationView === null
   const homeModule = generationView?.homeModule
   const isPreviewReady =
     !isMissingSession &&
     generationView?.session.status === 'preview_ready' &&
     Boolean(homeModule?.source)
+  const isPreviewRenderable =
+    !isMissingSession &&
+    Boolean(homeModule?.source) &&
+    (isPreviewReady || homeModule?.status === 'running')
   const sidePanelQueryArgs =
     resolvedSessionId === undefined || !isPreviewReady
       ? 'skip'
@@ -489,7 +495,7 @@ export function Dashboard({
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    if (reduce || isPreviewReady || isMissingSession) {
+    if (reduce || isPreviewRenderable || isMissingSession) {
       setIsDashboardActive(true)
       return
     }
@@ -504,7 +510,7 @@ export function Dashboard({
     return () => {
       window.clearTimeout(tDashboard)
     }
-  }, [isMissingSession, isPreviewReady, startedFromGenerationFlow])
+  }, [isMissingSession, isPreviewRenderable, startedFromGenerationFlow])
 
   useEffect(() => {
     if (typeof window === 'undefined' || !isPreviewReady || !generationView) {
@@ -972,7 +978,7 @@ export function Dashboard({
 
       <audio id="launch-sfx" preload="auto" src="/assets/launch.mp3"></audio>
 
-      {startedFromGenerationFlow && !isPreviewReady && !isAdminActive ? (
+      {startedFromGenerationFlow && !isPreviewRenderable && !isAdminActive ? (
         <IntroLoader
           progress={Math.min(0.94, progress / 100)}
           playSound={startedFromGenerationFlow}
@@ -989,7 +995,7 @@ export function Dashboard({
         <div
           className={cn(
             'mx-auto flex min-h-[calc(100vh-32px)] w-full max-w-[1680px] items-center justify-center',
-            (isPreviewReady || isAdminActive || isMissingSession) &&
+            (isPreviewRenderable || isAdminActive || isMissingSession) &&
               'items-stretch',
           )}
           id="right-panel"
@@ -998,7 +1004,7 @@ export function Dashboard({
             id="dashboard-cockpit"
             className={cn(
               'flex h-[calc(100vh-32px)] w-full flex-col overflow-hidden rounded-3xl rounded-bl-none border border-white/10 bg-[#0b0d14]/88 shadow-[0_24px_90px_rgba(0,0,0,0.48)] backdrop-blur-[22px]',
-              (isPreviewReady || isAdminActive || isMissingSession) &&
+              (isPreviewRenderable || isAdminActive || isMissingSession) &&
                 'bg-[#080a10]/92',
               isDashboardActive && 'cockpit-fade-up',
             )}
@@ -1299,7 +1305,9 @@ export function Dashboard({
                           height: '100%',
                         }}
                       >
-                        {isPreviewReady && homeModule?.source ? (
+                        {isPreviewRenderable &&
+                        homeModule?.source &&
+                        generationView ? (
                           <GeneratedModulePreview
                             // Key on the rendered source's updatedAt only — NOT previewVersion.
                             // previewVersion bumps on every edit (incl. image swaps, which don't
@@ -1307,7 +1315,11 @@ export function Dashboard({
                             // scrolls to top on every swap. homeModule.updatedAt changes only when
                             // the displayed source actually changes (text edit / restore / regen).
                             key={`${homeModule.updatedAt ?? generationView.session.previewVersion}`}
-                            source={homeModule.source}
+                            source={
+                              clonePageNav.isClone && clonePageNav.currentHtml
+                                ? clonePageNav.currentHtml
+                                : homeModule.source
+                            }
                             sessionId={sessionId}
                             siteSpecJson={generationView.siteSpec?.specJson}
                             locale={generationView.session.preferredLanguage}

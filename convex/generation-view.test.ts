@@ -1,6 +1,7 @@
 import { convexTest } from 'convex-test'
 import { expect, test } from 'vitest'
 import { register as registerDebouncer } from '@ikhrustalev/convex-debouncer/test'
+import type { DebouncerComponentApi } from '@ikhrustalev/convex-debouncer'
 import { api, components, internal } from './_generated/api'
 import type { Id } from './_generated/dataModel'
 import schema from './schema'
@@ -171,9 +172,6 @@ test('public prompt cache can replay a ready session without creating an owned c
     preferredExportTarget: 'html',
     isPrivate: false,
     workspace: 'workspace_replay_second',
-    anonymousClientId: 'anon-public-replay',
-    anonymousOwnerSecret: 'owner-public-replay',
-    reusePublicCache: true,
   })
 
   expect(replay).toMatchObject({
@@ -248,7 +246,7 @@ test('workspace idempotency rejects conflicting reuse of a workspace key', async
   ).rejects.toThrow()
 })
 
-test('v2 generation does not reuse a default-engine prompt cache entry', async () => {
+test('public prompt cache is reused across engine versions', async () => {
   const t = generationConvexTest()
   const prompt = 'Build a v2 isolated cache prompt site'
 
@@ -268,11 +266,12 @@ test('v2 generation does not reuse a default-engine prompt cache entry', async (
     isPrivate: false,
     workspace: 'workspace_v2_cache_request',
     engineVersion: 'v2',
-    reusePublicCache: true,
   })
 
-  expect(v2.cached).not.toBe(true)
-  expect(v2.sessionId).not.toBe(defaultEngine.sessionId)
+  expect(v2).toMatchObject({
+    sessionId: defaultEngine.sessionId,
+    cached: true,
+  })
 })
 
 test('public prompt cache skips newer incomplete duplicate sessions', async () => {
@@ -502,7 +501,10 @@ test('inline preview edits use one sliding debounce entry for export rebuild aut
     afterText: 'Final export debounce headline',
   })
 
-  const status = await t.query(components.debouncer.lib.status, {
+  const debouncerComponent =
+    components.debouncer as unknown as DebouncerComponentApi
+
+  const status = await t.query(debouncerComponent.lib.status, {
     namespace: 'edited-session-export-rebuild',
     key: sessionId,
   })

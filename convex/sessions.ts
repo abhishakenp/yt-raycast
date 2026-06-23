@@ -1,4 +1,7 @@
-import { Debouncer } from '@ikhrustalev/convex-debouncer'
+import {
+  Debouncer,
+  type DebouncerComponentApi,
+} from '@ikhrustalev/convex-debouncer'
 import { components, internal } from './_generated/api'
 import type { Id } from './_generated/dataModel'
 import {
@@ -49,6 +52,11 @@ import {
   upsertSessionCommerceConfig,
 } from './lib/session_commerce_helpers'
 import { sendSessionChatMessage } from './lib/session_chat_helpers'
+import {
+  finalizeSessionClonePreview,
+  listSessionClonePages,
+  writeSessionClonePage,
+} from './lib/session_clone_helpers'
 import {
   createGenerationSession,
   type CreateGenerationSessionResult,
@@ -176,10 +184,14 @@ import {
   upsertCmsContentEntryArgs,
   upsertCommerceConfigArgs,
   userUsageMetricsArgs,
+  writeClonePageArgs,
 } from './lib/session_validators'
 import { loadSessionWorkspace } from './lib/session_workspace_helpers'
 
-const editedSessionExportDebouncer = new Debouncer(components.debouncer, {
+const debouncerComponent =
+  components.debouncer as unknown as DebouncerComponentApi
+
+const editedSessionExportDebouncer = new Debouncer(debouncerComponent, {
   delay: 10_000,
   mode: 'sliding',
 })
@@ -605,6 +617,26 @@ export const listPreviewHistory = query({
 export const restorePreviewVersion = mutation({
   args: restorePreviewVersionArgs,
   handler: (ctx, args) => restoreOwnedPreviewVersion(ctx, args),
+})
+
+export const writeClonePageDoc = mutation({
+  args: writeClonePageArgs,
+  handler: (ctx, args) => writeSessionClonePage(ctx, args),
+})
+
+export const finalizeClonePreview = mutation({
+  args: ownedSessionArgs,
+  handler: (ctx, args) =>
+    finalizeSessionClonePreview(ctx, {
+      ...args,
+      sendOperationalNotification:
+        sessionInternalReferences.sendOperationalNotification,
+    }),
+})
+
+export const listClonePages = query({
+  args: sessionIdArgs,
+  handler: (ctx, args) => listSessionClonePages(ctx, args.sessionId),
 })
 
 export const sendChatMessage = mutation({

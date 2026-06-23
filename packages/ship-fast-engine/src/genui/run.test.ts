@@ -1,615 +1,98 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const mocks = vi.hoisted(() => ({
-  generateText: vi.fn(),
-  isHardLlmFailure: vi.fn(),
-  classifySiteCategory: vi.fn(),
-  runV1PublicationGeneration: vi.fn(),
-}))
+// Behavioral tests for the single composable orchestrator entry. The legacy
+// per-vertical/brittle source-string tests were removed with their engines;
+// these assert real, audit-backed behavior instead.
+const mocks = ((
+  globalThis as typeof globalThis & {
+    __runMocks?: { generateText: ReturnType<typeof vi.fn> }
+  }
+).__runMocks ??= { generateText: vi.fn() })
 
 vi.mock('../generate.ts', () => ({
-  formatLlmFailureMessage: (error: unknown) => String(error),
-  generateText: mocks.generateText,
-  isHardLlmFailure: mocks.isHardLlmFailure,
+  generateText: (...args: unknown[]) =>
+    (
+      (globalThis as typeof globalThis & { __runMocks: typeof mocks }).__runMocks
+        .generateText as unknown as (...a: unknown[]) => unknown
+    )(...args),
+  isHardLlmFailure: () => false,
+  formatLlmFailureMessage: (e: unknown) => String(e),
+}))
+vi.mock('../pipeline/detect-language.js', () => ({
+  detectLanguage: async (_prompt: string, preferred?: string) => ({
+    code: preferred || 'en',
+  }),
 }))
 
-// Mock the gated v1 publication path. classifySiteCategory defaults to a
-// NON-publication category so every existing test keeps exercising the original
-// generateUI path unchanged; the v1-specific tests below override per-case.
-vi.mock('./v1-publication.ts', () => ({
-  classifySiteCategory: mocks.classifySiteCategory,
-  runV1PublicationGeneration: mocks.runV1PublicationGeneration,
-}))
+import { auditOpenUIProgram } from './openui-program-audit.ts'
+import { runHomepageOrchestrator } from './run.ts'
 
-const delay = (ms: number) =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms)
-  })
-
-const longCopy =
-  'FastCo turns operational data into launch-ready growth systems for product teams. '.repeat(
-    18,
+// Fill the first-pass superagent (vertical + section props) and the per-page calls.
+const superagentReply = (user: string): string => {
+  const family = (user.match(/Vertical "([A-Za-z0-9]+)"/) ?? [])[1] ?? 'Marketing'
+  const keys = [...user.matchAll(/^\s+([a-z0-9]+):\s/gm)].map((m) => m[1])
+  const sections = Object.fromEntries(
+    [...new Set(keys)].map((k) => [
+      k,
+      { heading: `H ${k}`, subheading: 'S', items: [{ title: 'A' }, { title: 'B' }] },
+    ]),
   )
+  return JSON.stringify({ family, sections })
+}
+const richProps = (user: string): string =>
+  JSON.stringify(
+    Object.fromEntries(
+      [...user.matchAll(/"([a-z0-9_]+)":\s*[A-Z]/g)].map((m) => [
+        m[1],
+        { heading: `Heading ${m[1]}`, items: [{ title: 'A' }] },
+      ]),
+    ),
+  )
+const reply = (user: string) =>
+  /Candidate verticals/.test(user) ? superagentReply(user) : richProps(user)
 
-const homeModule = `home = SaasKimiPage("FastCo", ["Home", "Features"], { hero: { badge: "Fast preview", title: "${longCopy}", subtitle: "${longCopy}", cta: "Ship now" }, features: [{ title: "Instant direction", body: "${longCopy}" }, { title: "Polished defaults", body: "${longCopy}" }] })`
+describe('runHomepageOrchestrator (composable engine)', () => {
+  beforeEach(() => mocks.generateText.mockReset())
 
-const secondaryModule = `p1 = SaasKimiPage2("FastCo", ["Home", "Features"], { hero: { title: "${longCopy}", subtitle: "${longCopy}" } })`
-
-describe('runHomepageOrchestrator multi-page generation', () => {
-  beforeEach(() => {
-    vi.resetModules()
-    mocks.generateText.mockReset()
-    mocks.isHardLlmFailure.mockReset()
-    mocks.isHardLlmFailure.mockReturnValue(false)
-    mocks.classifySiteCategory.mockReset()
-    mocks.runV1PublicationGeneration.mockReset()
-    // Default: non-publication category, so the v1 gate stays closed and every
-    // existing test runs the original generateUI path.
-    mocks.classifySiteCategory.mockResolvedValue('software')
-    mocks.runV1PublicationGeneration.mockResolvedValue(undefined)
-  })
-
-  it('waits for secondary page modules so the final source is a complete site', async () => {
-    const { runHomepageOrchestrator } = await import('./run.ts')
-    const events: string[] = []
-
-    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
-      if (!String(user).includes('This page:')) {
-        return JSON.stringify({
-          brand: 'FastCo',
-          tagline: 'FastCo launches previews quickly.',
-          theme: 'bold-tech',
-          locale: 'en',
-          pages: [
-            {
-              label: 'Home',
-              brief: 'Primary landing page',
-              blocks: ['SaasKimiPage'],
-            },
-            {
-              label: 'Features',
-              brief: 'Secondary feature details',
-              blocks: ['SaasKimiPage2'],
-            },
-          ],
-        })
-      }
-
-      if (String(user).includes('This page: "Home"')) {
-        return homeModule
-      }
-
-      await delay(80)
-      return secondaryModule
-    })
-
-    const startedAt = Date.now()
+  it('composes a valid multi-page PageSwitch site with theme, brand and category', async () => {
+    mocks.generateText.mockImplementation(async (..._a: unknown[]) => reply(String(_a[2])))
+    const events: { type: string }[] = []
     const result = await runHomepageOrchestrator({
-      prompt: 'Build a SaaS landing page for FastCo',
-      onEvent: (event) => events.push(event.type),
+      prompt: 'a crm for small sales teams',
+      sessionSeed: 'seed-1',
+      onEvent: (e) => events.push(e),
     })
-    const elapsed = Date.now() - startedAt
-
-    expect(elapsed).toBeGreaterThanOrEqual(70)
-    expect(result.source).toContain('home = SaasKimiPage')
-    expect(result.source).toContain('p1 = SaasKimiPage2')
-    expect(events).toContain('done')
-  }, 10000)
-
-  it('carries the enforced preferred language into page content prompts', async () => {
-    const { runHomepageOrchestrator } = await import('./run.ts')
-    const pagePrompts: string[] = []
-
-    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
-      const userPrompt = String(user)
-      if (!userPrompt.includes('This page:')) {
-        return JSON.stringify({
-          brand: 'Kaveri Meals',
-          tagline: 'Fresh meals for local families.',
-          theme: 'bold-tech',
-          locale: 'ta-en',
-          pages: [
-            {
-              label: 'Home',
-              brief: 'Primary landing page',
-              blocks: ['SaasKimiPage'],
-            },
-          ],
-        })
-      }
-
-      pagePrompts.push(userPrompt)
-      return homeModule.replaceAll('FastCo', 'Kaveri Meals')
-    })
-
-    const result = await runHomepageOrchestrator({
-      prompt: 'Build a food delivery landing page',
-      preferredLanguage: 'ta-en',
-    })
-
-    expect(result.locale).toBe('ta-en')
-    expect(pagePrompts).toHaveLength(1)
-    expect(pagePrompts[0]).toContain('server language code `ta-en`')
-    expect(pagePrompts[0]).toContain('natural Tamil + English mix')
-  })
-
-  it('preserves planner locale variants for code-mixed languages', async () => {
-    const { runHomepageOrchestrator } = await import('./run.ts')
-
-    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
-      if (!String(user).includes('This page:')) {
-        return JSON.stringify({
-          brand: 'Kaveri Meals',
-          tagline: 'Fresh meals for local families.',
-          theme: 'bold-tech',
-          locale: 'ta-en',
-          pages: [
-            {
-              label: 'Home',
-              brief: 'Primary landing page',
-              blocks: ['SaasKimiPage'],
-            },
-          ],
-        })
-      }
-
-      return homeModule.replaceAll('FastCo', 'Kaveri Meals')
-    })
-
-    const result = await runHomepageOrchestrator({
-      prompt: 'Build a landing page for Kaveri Meals',
-    })
-
-    expect(result.locale).toBe('ta-en')
-  })
-
-  it('repairs top-level named section args before merging page modules', async () => {
-    const { runHomepageOrchestrator } = await import('./run.ts')
-    const malformedHome = `home = TourExperiencesKimiPage("Kerala Tourism", ["Home", "Destinations"], {badge: "1500+ experiences", heading: "Kerala journeys", subheading: "${longCopy}", searchPlaceholder: "Search Kerala", searchCta: "Search", destinations: [{name: "Alappuzha", count: "120 experiences", imageAlt: "Alappuzha backwater houseboat"}]},press: {label: "Featured In", logos: ["The Hindu", "Lonely Planet"]},features: {heading: "Why Kerala", description: "${longCopy}", items: [{title: "Backwaters", description: "${longCopy}"}]},experiences: {heading: "Popular Kerala experiences", description: "${longCopy}", viewAll: "View all", loadMore: "More", items: [{title: "Alappuzha backwater cruise", category: "Backwaters", location: "Alappuzha", rating: "4.9", reviews: "120 reviews", price: "₹2500", duration: "2 hours", imageAlt: "Kerala backwater cruise"}]},steps: {heading: "Book easily", description: "${longCopy}", items: [{title: "Discover", description: "${longCopy}"}]},stats: {items: [{value: "1500+", label: "Experiences"}]},reviews: {heading: "Traveler stories", description: "${longCopy}", items: [{quote: "Beautiful trip", name: "Anjali", meta: "Kochi", avatarAlt: "Anjali portrait"}]},faq: {heading: "Questions", description: "${longCopy}", items: [{question: "Can I cancel?", answer: "Yes"}]},cta: {heading: "Ready for Kerala?", description: "${longCopy}", primaryCta: "Book", secondaryCta: "Explore", note: "Local support"},footer: {description: "${longCopy}", columns: [{title: "Company", links: ["About"]}], copyright: "© 2026 Kerala Tourism", legal: ["Privacy"], socials: ["Instagram"]}})`
-
-    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
-      if (!String(user).includes('This page:')) {
-        return JSON.stringify({
-          brand: 'Kerala Tourism',
-          tagline: 'Kerala journeys for domestic travelers.',
-          theme: 'sunset-horizon',
-          locale: 'en',
-          pages: [
-            {
-              label: 'Home',
-              brief: 'Malayalam travel landing page',
-              blocks: ['TourExperiencesKimiPage'],
-            },
-          ],
-        })
-      }
-
-      return malformedHome
-    })
-
-    const result = await runHomepageOrchestrator({
-      prompt: 'Build a Kerala tourism site',
-    })
-
-    expect(result.source).toContain('home = TourExperiencesKimiPage')
-    expect(result.source).not.toContain(',press:')
-    expect(result.source).not.toContain(',features:')
-    expect(result.source).toContain('"Popular Kerala experiences"')
-  })
-
-  it('filters subpage blocks out of the home candidate shortlist', async () => {
-    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0)
-    const { runHomepageOrchestrator } = await import('./run.ts')
-    const pagePrompts: string[] = []
-
-    try {
-      mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
-        const userPrompt = String(user)
-        if (!userPrompt.includes('This page:')) {
-          return JSON.stringify({
-            brand: 'WaterWorks',
-            tagline: 'WaterWorks helps residents manage water services.',
-            theme: 'clean-slate',
-            locale: 'en',
-            pages: [
-              {
-                label: 'Home',
-                brief: 'Primary utility landing page',
-                blocks: ['TestimonialsKimiPage', 'CorporateKimiPage'],
-              },
-            ],
-          })
-        }
-
-        pagePrompts.push(userPrompt)
-        return `home = CorporateKimiPage("WaterWorks", ["Home"], {heading: "${longCopy}", subheading: "${longCopy}", primaryCta: "Pay bill", secondaryCta: "Report outage"})`
-      })
-
-      const result = await runHomepageOrchestrator({
-        prompt: 'Build a water utility homepage for WaterWorks',
-      })
-
-      expect(pagePrompts[0]).toContain('home = CorporateKimiPage')
-      expect(pagePrompts[0]).not.toContain('home = TestimonialsKimiPage')
-      expect(result.source).toContain('home = CorporateKimiPage')
-    } finally {
-      randomSpy.mockRestore()
-    }
-  })
-
-  it('keeps service-rental intent when selected block content fails validation', async () => {
-    const { runHomepageOrchestrator } = await import('./run.ts')
-
-    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
-      if (!String(user).includes('This page:')) {
-        return JSON.stringify({
-          brand: 'DriveNow',
-          tagline: 'Flexible rentals for city drivers.',
-          theme: 'clean-slate',
-          locale: 'en',
-          pages: [
-            {
-              label: 'Home',
-              brief: 'Car rental booking homepage for travelers and commuters',
-              blocks: ['AutoDealershipKimiPage'],
-            },
-            {
-              label: 'Pricing',
-              brief: 'Rental plans and daily vehicle rates',
-              blocks: ['PricingKimiPage'],
-            },
-          ],
-        })
-      }
-
-      if (String(user).includes('This page: "Pricing"')) {
-        return `p1 = PricingKimiPage("DriveNow", ["Home", "Pricing"], { hero: { title: "Rental plans for every trip", subtitle: "${longCopy}" } })`
-      }
-
-      return 'root = Text("invalid page module")'
-    })
-
-    const result = await runHomepageOrchestrator({
-      prompt: 'Create a UI for a car rental service app website',
-    })
-
-    expect(result.source).toContain('car rental service app website')
-    expect(result.source).toContain('Car rental booking homepage')
-    expect(result.source).not.toContain('AutoDealershipKimiPage')
-    expect(result.source.toLowerCase()).not.toContain('pre-owned')
-    expect(result.source.toLowerCase()).not.toContain('financing')
-    expect(result.source.toLowerCase()).not.toContain('test drive')
-  })
-
-  it('keeps localized ecommerce modules instead of replacing them with primitive fallback copy', async () => {
-    const { runHomepageOrchestrator } = await import('./run.ts')
-
-    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
-      if (!String(user).includes('This page:')) {
-        return JSON.stringify({
-          brand: 'Kerala Health Foods',
-          tagline: 'നാടൻ ആരോഗ്യ ഭക്ഷണ ഉൽപ്പന്നങ്ങൾ വീട്ടിലെത്തിക്കുന്നു.',
-          theme: 'clean-slate',
-          locale: 'en',
-          pages: [
-            {
-              label: 'ഹോം',
-              brief: 'മലയാളത്തിലുള്ള കേരള ആരോഗ്യ ഭക്ഷണ ഇ-കൊമേഴ്‌സ് ഹോംപേജ്',
-              blocks: ['EcommerceKimiPage'],
-            },
-            {
-              label: 'വില',
-              brief: 'ആരോഗ്യ ഭക്ഷണ പാക്കുകളും സബ്സ്ക്രിപ്ഷൻ വിലകളും',
-              blocks: ['PricingKimiPage'],
-            },
-          ],
-        })
-      }
-
-      if (String(user).includes('This page: "വില"')) {
-        return `p1 = PricingKimiPage("Kerala Health Foods", ["ഹോം","വില"], { hero: { title: "ആരോഗ്യ ഭക്ഷണ പാക്കുകൾ", subtitle: "${longCopy}" }, plans: [{ name: "മാസ പാക്ക്", price: "₹999", description: "${longCopy}", features: ["നാടൻ ധാന്യങ്ങൾ", "ആരോഗ്യ സ്നാക്കുകൾ"] }] })`
-      }
-
-      return `home = EcommerceKimiPage("Kerala Health Foods", ["ഹോം"], { heading: "കേരള ആരോഗ്യ ഭക്ഷണങ്ങൾ", subheading: "നാടൻ അരി, കഞ്ഞിപ്പൊടി, മസാലകൾ, ആരോഗ്യ സ്നാക്കുകൾ എന്നിവ വീട്ടിലെത്തിക്കുന്ന മലയാളം ഇ-കൊമേഴ്‌സ് പ്ലാറ്റ്ഫോം.", primaryCta: "ഇപ്പോൾ വാങ്ങുക" }, "വിശ്വസിക്കുന്ന നാട്ടു ബ്രാൻഡുകൾ", { heading: "വിഭാഗങ്ങൾ", items: [{ label: "കഞ്ഞിപ്പൊടി", alt: "കേരള കഞ്ഞിപ്പൊടി" }] }, { heading: "ജനപ്രിയ ഉൽപ്പന്നങ്ങൾ", items: [{ name: "നാടൻ കഞ്ഞിപ്പൊടി", alt: "കേരള കഞ്ഞിപ്പൊടി", price: "₹180" }] })`
-    })
-
-    const result = await runHomepageOrchestrator({
-      prompt:
-        'e commerce platform for healthy kerala food products in malayalam',
-      preferredLanguage: 'ml',
-    })
-
-    expect(result.source).toContain('home = EcommerceKimiPage')
-    expect(result.source).toContain('കേരള ആരോഗ്യ ഭക്ഷണങ്ങൾ')
-    expect(result.source).not.toContain('server language code')
-  })
-
-  it('uses only the original user prompt when localized generation falls back', async () => {
-    const { runHomepageOrchestrator } = await import('./run.ts')
-
-    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
-      if (!String(user).includes('This page:')) {
-        return JSON.stringify({
-          brand: 'KeralaSarees',
-          tagline: 'Kerala saree collections.',
-          theme: 'solar-dusk',
-          locale: 'en',
-          pages: [
-            {
-              label: 'Home',
-              brief: 'Kerala saree collections showcase',
-              blocks: ['EcommerceKimiPage'],
-            },
-            {
-              label: 'About',
-              brief: 'Brand story',
-              blocks: ['CorporateKimiPage'],
-            },
-          ],
-        })
-      }
-
-      if (String(user).includes('This page: "About"')) {
-        return `p1 = CorporateKimiPage("KeralaSarees", ["Home","About"], { heading: "Kerala saree craft", subheading: "${longCopy}", primaryCta: "Explore" })`
-      }
-
-      return 'root = Text("invalid page module")'
-    })
-
-    const result = await runHomepageOrchestrator({
-      prompt: 'build an ecommerce site for kerala sarees in manglish',
-    })
-
-    expect(result.source).toContain(
-      'build an ecommerce site for kerala sarees in manglish',
-    )
-    expect(result.source).not.toContain('server language code')
-    expect(result.source).not.toContain('All user-visible copy')
-  })
-
-  it('surfaces hard planner failures instead of falling back to placeholders', async () => {
-    const { runHomepageOrchestrator } = await import('./run.ts')
-    const events: string[] = []
-    const sources: string[] = []
-
-    mocks.isHardLlmFailure.mockReturnValue(true)
-    mocks.generateText.mockRejectedValue(new Error('provider quota exhausted'))
-
     await expect(
-      runHomepageOrchestrator({
-        onEvent: (event) => events.push(event.type),
-        onSource: (source) => sources.push(source),
-        prompt: 'Build a SaaS landing page for FastCo',
-      }),
-    ).rejects.toThrow('provider quota exhausted')
-
-    expect(events).toEqual(['status', 'error'])
-    expect(sources).toEqual([])
-    expect(mocks.generateText).toHaveBeenCalledTimes(1)
+      auditOpenUIProgram(result.source, { expectedRoot: 'PageSwitch' }),
+    ).resolves.toBeUndefined()
+    expect(result.source).toMatch(/root = PageSwitch\(/)
+    expect(result.source).toMatch(/\bhome = Stack\(\[/)
+    expect(result.theme).toBeTruthy()
+    expect(result.brand.length).toBeGreaterThan(0)
+    expect(result.category).toBeTruthy()
+    // GenUIEvents flow through to the frontend stream (mapped from V2 events).
+    expect(events.some((e) => e.type === 'source')).toBe(true)
+    expect(events.some((e) => e.type === 'done')).toBe(true)
   })
 
-  it('fails the run when fallback planning produces only failed modules', async () => {
-    const { runHomepageOrchestrator } = await import('./run.ts')
-    const events: Array<{ failed?: boolean; type: string }> = []
-    const sources: string[] = []
-
-    mocks.generateText.mockRejectedValue(new Error('transient model outage'))
-
+  it('still returns valid OpenUI when the model output is empty (no fallback, never broken)', async () => {
+    mocks.generateText.mockResolvedValue('not json')
+    const result = await runHomepageOrchestrator({
+      prompt: 'a developer tool',
+      sessionSeed: 'seed-2',
+    })
     await expect(
-      runHomepageOrchestrator({
-        onEvent: (event) => events.push(event),
-        onSource: (source) => sources.push(source),
-        prompt: 'Build a SaaS landing page for FastCo',
-      }),
-    ).rejects.toThrow('placeholder blocks')
-
-    expect(events.map((event) => event.type)).toContain('skeleton')
-    expect(events.filter((event) => event.type === 'module')).toHaveLength(5)
-    expect(events.filter((event) => event.type === 'module')).toEqual(
-      expect.arrayContaining([expect.objectContaining({ failed: true })]),
-    )
-    expect(events.at(-1)).toMatchObject({ type: 'error' })
-    expect(sources[0]).toContain('root = PageSwitch')
-    expect(sources.at(-1)).toContain('Build A')
-    expect(sources.at(-1)).toContain('Build a SaaS landing page for FastCo')
+      auditOpenUIProgram(result.source, { expectedRoot: 'PageSwitch' }),
+    ).resolves.toBeUndefined()
   })
 
-  it('does not expose a home-only completion option', async () => {
-    const source = await import('node:fs').then(({ readFileSync }) =>
-      readFileSync(new URL('./run.ts', import.meta.url), 'utf8'),
-    )
-
-    expect(source).not.toContain('completeWhen')
-  })
-
-  it('routes English publication prompts through the v1 generator', async () => {
-    const { runHomepageOrchestrator } = await import('./run.ts')
-    const v1Source = `root = PageSwitch(["Home"], [home])\n${'home = BlogKimiPage("Field Notes", ["Home"], {})'.repeat(
-      40,
-    )}`
-    const artifacts = [{ key: 'category-grammar', contentJson: '{}' }]
-
-    mocks.classifySiteCategory.mockResolvedValue('publication')
-    mocks.runV1PublicationGeneration.mockResolvedValue({
-      source: v1Source,
-      theme: 'elegant-luxury',
-      locale: 'en',
-      brand: 'Field Notes',
-      category: 'publication',
-      artifacts,
-    })
-
+  it('carries the detected locale through to the result', async () => {
+    mocks.generateText.mockImplementation(async (..._a: unknown[]) => reply(String(_a[2])))
     const result = await runHomepageOrchestrator({
-      prompt: 'Build a news magazine about climate journalism',
+      prompt: 'un cafe de quartier',
+      preferredLanguage: 'fr',
+      sessionSeed: 'seed-3',
     })
-
-    expect(mocks.runV1PublicationGeneration).toHaveBeenCalledTimes(1)
-    expect(mocks.generateText).not.toHaveBeenCalled()
-    expect(result.source).toBe(v1Source)
-    expect(result.category).toBe('publication')
-    expect(result.artifacts).toEqual(artifacts)
-    expect(result.theme).toBe('elegant-luxury')
-  })
-
-  it('falls back to generateUI when the v1 generator throws', async () => {
-    const { runHomepageOrchestrator } = await import('./run.ts')
-
-    mocks.classifySiteCategory.mockResolvedValue('publication')
-    mocks.runV1PublicationGeneration.mockRejectedValue(
-      new Error('v1 newsroom outage'),
-    )
-    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
-      if (!String(user).includes('This page:')) {
-        return JSON.stringify({
-          brand: 'FastCo',
-          tagline: 'FastCo launches previews quickly.',
-          theme: 'bold-tech',
-          locale: 'en',
-          pages: [
-            { label: 'Home', brief: 'Primary landing page', blocks: ['SaasKimiPage'] },
-          ],
-        })
-      }
-      return homeModule
-    })
-
-    const result = await runHomepageOrchestrator({
-      prompt: 'Build a news magazine about climate journalism',
-    })
-
-    expect(mocks.runV1PublicationGeneration).toHaveBeenCalledTimes(1)
-    expect(mocks.generateText).toHaveBeenCalled()
-    expect(result.source).toContain('home = SaasKimiPage')
-    expect(result.category).toBeUndefined()
-    expect(result.artifacts).toBeUndefined()
-  })
-
-  it('falls back to generateUI when classifySiteCategory throws (hard failure)', async () => {
-    const { runHomepageOrchestrator } = await import('./run.ts')
-
-    // Hard classify failure must NOT escape — the en gate runs classify inside
-    // the same try as v1, so any throw silently falls through to generateUI.
-    mocks.classifySiteCategory.mockRejectedValue(
-      new Error('classifier auth failure'),
-    )
-    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
-      if (!String(user).includes('This page:')) {
-        return JSON.stringify({
-          brand: 'FastCo',
-          tagline: 'FastCo launches previews quickly.',
-          theme: 'bold-tech',
-          locale: 'en',
-          pages: [
-            { label: 'Home', brief: 'Primary landing page', blocks: ['SaasKimiPage'] },
-          ],
-        })
-      }
-      return homeModule
-    })
-
-    const result = await runHomepageOrchestrator({
-      prompt: 'Build a news magazine about climate journalism',
-    })
-
-    expect(mocks.classifySiteCategory).toHaveBeenCalledTimes(1)
-    expect(mocks.runV1PublicationGeneration).not.toHaveBeenCalled()
-    expect(mocks.generateText).toHaveBeenCalled()
-    expect(result.source).toContain('home = SaasKimiPage')
-    expect(result.category).toBeUndefined()
-    expect(result.artifacts).toBeUndefined()
-  })
-
-  it('falls back to generateUI when the v1 generator returns a stub program', async () => {
-    const { runHomepageOrchestrator } = await import('./run.ts')
-
-    mocks.classifySiteCategory.mockResolvedValue('publication')
-    mocks.runV1PublicationGeneration.mockResolvedValue({
-      source: 'root = Text("tiny")',
-      theme: null,
-      locale: 'en',
-      brand: 'Field Notes',
-      category: 'publication',
-      artifacts: [],
-    })
-    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
-      if (!String(user).includes('This page:')) {
-        return JSON.stringify({
-          brand: 'FastCo',
-          tagline: 'FastCo launches previews quickly.',
-          theme: 'bold-tech',
-          locale: 'en',
-          pages: [
-            { label: 'Home', brief: 'Primary landing page', blocks: ['SaasKimiPage'] },
-          ],
-        })
-      }
-      return homeModule
-    })
-
-    const result = await runHomepageOrchestrator({
-      prompt: 'Build a news magazine about climate journalism',
-    })
-
-    expect(mocks.generateText).toHaveBeenCalled()
-    expect(result.source).toContain('home = SaasKimiPage')
-    expect(result.category).toBeUndefined()
-  })
-
-  it('does not invoke v1 for non-publication categories', async () => {
-    const { runHomepageOrchestrator } = await import('./run.ts')
-
-    mocks.classifySiteCategory.mockResolvedValue('software')
-    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
-      if (!String(user).includes('This page:')) {
-        return JSON.stringify({
-          brand: 'FastCo',
-          tagline: 'FastCo launches previews quickly.',
-          theme: 'bold-tech',
-          locale: 'en',
-          pages: [
-            { label: 'Home', brief: 'Primary landing page', blocks: ['SaasKimiPage'] },
-          ],
-        })
-      }
-      return homeModule
-    })
-
-    const result = await runHomepageOrchestrator({
-      prompt: 'Build a SaaS landing page for FastCo',
-    })
-
-    expect(mocks.runV1PublicationGeneration).not.toHaveBeenCalled()
-    expect(result.source).toContain('home = SaasKimiPage')
-  })
-
-  it('skips v1 for non-English publication prompts', async () => {
-    const { runHomepageOrchestrator } = await import('./run.ts')
-
-    // preferredLanguage forces a non-en locale, so the v1 gate stays closed even
-    // though the classifier returns publication.
-    mocks.classifySiteCategory.mockResolvedValue('publication')
-    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
-      if (!String(user).includes('This page:')) {
-        return JSON.stringify({
-          brand: 'Kaveri Press',
-          tagline: 'Local newsroom for Tamil readers.',
-          theme: 'bold-tech',
-          locale: 'ta-en',
-          pages: [
-            { label: 'Home', brief: 'Primary landing page', blocks: ['SaasKimiPage'] },
-          ],
-        })
-      }
-      return homeModule.replaceAll('FastCo', 'Kaveri Press')
-    })
-
-    const result = await runHomepageOrchestrator({
-      prompt: 'Build a Tamil news magazine',
-      preferredLanguage: 'ta-en',
-    })
-
-    expect(mocks.runV1PublicationGeneration).not.toHaveBeenCalled()
-    expect(result.locale).toBe('ta-en')
-    expect(result.source).toContain('SaasKimiPage')
+    expect(result.locale).toBe('fr')
   })
 })

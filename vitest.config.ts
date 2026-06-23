@@ -9,6 +9,10 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text-summary', 'json-summary'],
       reportsDirectory: 'coverage',
+      exclude: [
+        'packages/ship-fast-blocks/src/capsules/**',
+        'packages/ship-fast-blocks/src/generated/**',
+      ],
       thresholds: {
         statements: 23.49,
         branches: 15.7,

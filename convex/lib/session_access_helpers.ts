@@ -38,6 +38,14 @@ export const getUserId = async (ctx: AuthCtx) => {
   return identity?.tokenIdentifier ?? identity?.subject
 }
 
+export const getUserEmail = async (
+  ctx: AuthCtx,
+): Promise<string | undefined> => {
+  const identity = await ctx.auth.getUserIdentity()
+  const email = identity?.email?.trim().toLowerCase()
+  return email && email.includes('@') ? email : undefined
+}
+
 export const isSessionOwner = async (
   ctx: AuthCtx,
   session: { userId?: string; anonOwnerSecretHash?: string },

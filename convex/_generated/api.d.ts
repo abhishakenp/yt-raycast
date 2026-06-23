@@ -9,6 +9,7 @@
  */
 
 import type * as billing from "../billing.js";
+import type * as contentCache from "../contentCache.js";
 import type * as export_artifacts from "../export_artifacts.js";
 import type * as generation from "../generation.js";
 import type * as generationConfig from "../generationConfig.js";
@@ -27,6 +28,7 @@ import type * as lib_session_agentation_helpers from "../lib/session_agentation_
 import type * as lib_session_api_response_helpers from "../lib/session_api_response_helpers.js";
 import type * as lib_session_artifact_helpers from "../lib/session_artifact_helpers.js";
 import type * as lib_session_chat_helpers from "../lib/session_chat_helpers.js";
+import type * as lib_session_clone_helpers from "../lib/session_clone_helpers.js";
 import type * as lib_session_cms_binding_helpers from "../lib/session_cms_binding_helpers.js";
 import type * as lib_session_commerce_helpers from "../lib/session_commerce_helpers.js";
 import type * as lib_session_creation_helpers from "../lib/session_creation_helpers.js";
@@ -64,6 +66,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   billing: typeof billing;
+  contentCache: typeof contentCache;
   export_artifacts: typeof export_artifacts;
   generation: typeof generation;
   generationConfig: typeof generationConfig;
@@ -82,6 +85,7 @@ declare const fullApi: ApiFromModules<{
   "lib/session_api_response_helpers": typeof lib_session_api_response_helpers;
   "lib/session_artifact_helpers": typeof lib_session_artifact_helpers;
   "lib/session_chat_helpers": typeof lib_session_chat_helpers;
+  "lib/session_clone_helpers": typeof lib_session_clone_helpers;
   "lib/session_cms_binding_helpers": typeof lib_session_cms_binding_helpers;
   "lib/session_commerce_helpers": typeof lib_session_commerce_helpers;
   "lib/session_creation_helpers": typeof lib_session_creation_helpers;

@@ -12,7 +12,11 @@ import {
   RATE_WINDOW_MS,
   SHARE_BONUS_EXTRA,
 } from '../../src/billing/constants'
-import { getUserId, hashOwnerSecret } from './session_access_helpers'
+import {
+  getUserEmail,
+  getUserId,
+  hashOwnerSecret,
+} from './session_access_helpers'
 import { cloneCachedGeneratedArtifacts } from './session_artifact_helpers'
 import { reserveDefaultDeploymentSlug } from './session_deployment_helpers'
 import { recordOperationalGenerationEvent } from './session_operational_notifications'
@@ -216,7 +220,6 @@ export type CreateGenerationSessionInput = {
   designReferenceNotes?: string
   cloneUrl?: string
   engineVersion?: string
-  reusePublicCache?: boolean
 }
 
 export type CreateGenerationSessionReferences = {
@@ -241,6 +244,7 @@ export const createGenerationSession = async (
   const disableLimits = areGenerationLimitsDisabled()
   const prompt = args.prompt.trim()
   const userId = await getUserId(ctx)
+  const ownerEmail = userId === undefined ? undefined : await getUserEmail(ctx)
   const anonOwnerSecretHash =
     userId === undefined && args.anonymousOwnerSecret !== undefined
       ? await hashOwnerSecret(args.anonymousOwnerSecret)
@@ -288,16 +292,23 @@ export const createGenerationSession = async (
     }
   }
 
+  // Whole-session reuse (return/clone a finished public preview verbatim) is the
+  // default for any public, non-reference, anonymous prompt: we always reuse a
+  // ready public preview for the same prompt+language. The per-prompt content
+  // cache still makes fresh generations cheap; the per-session seed re-randomizes
+  // layout so unseen prompts still vary.
   const canUsePromptCache =
     designReferenceFingerprint === undefined &&
     args.isPrivate === false &&
-    userId === undefined &&
-    args.engineVersion !== 'v2'
+    userId === undefined
   const cachedSession = canUsePromptCache
     ? await findReusablePromptCacheSession(ctx, promptCacheKey)
     : null
 
-  if (cachedSession !== null && args.reusePublicCache === true) {
+  // No-ownership replay: an anonymous viewer (no owner secret) reuses the ready
+  // public preview as-is — no new session and no quota spend. A requester with an
+  // owner secret instead gets their own clone below (so they can edit/deploy it).
+  if (cachedSession !== null && args.anonymousOwnerSecret === undefined) {
     await recordOperationalGenerationEvent(
       ctx,
       {
@@ -321,27 +332,9 @@ export const createGenerationSession = async (
     disableLimits,
   })
 
-  if (cachedSession !== null) {
-    if (args.anonymousOwnerSecret === undefined) {
-      await recordOperationalGenerationEvent(
-        ctx,
-        {
-          sessionId: cachedSession._id,
-          eventType: 'cache_hit',
-          message: 'Duplicate prompt reused existing generated session',
-          cacheHit: true,
-          provider: 'prompt-cache',
-          userId,
-          anonymousClientIdHash,
-        },
-        references.sendOperationalNotification,
-      )
-      return { sessionId: cachedSession._id, cached: true }
-    }
-  }
-
   const sessionId = await ctx.db.insert('sessions', {
     userId,
+    ownerEmail,
     anonOwnerSecretHash,
     anonymousClientIdHash,
     workspace: args.workspace,

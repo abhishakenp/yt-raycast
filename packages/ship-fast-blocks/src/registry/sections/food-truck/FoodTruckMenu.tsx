@@ -210,7 +210,7 @@ export const FoodTruckMenu = defineComponent({
                     cat.wide ? "grid gap-4 sm:grid-cols-2" : "space-y-4",
                   )}
                 >
-                  {cat.items.map((item, i) => (
+                  {(cat.items ?? []).map((item, i) => (
                     <div
                       key={item.name}
                       className={cn(

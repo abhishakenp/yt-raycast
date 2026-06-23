@@ -170,6 +170,28 @@ describe('verifyBuildBundles', () => {
     )
   })
 
+  it('keeps server generated OpenUI catalogs budgeted', () => {
+    const root = createBuildRoot()
+    writePassingAssets(root)
+    writeAsset(
+      root,
+      '.output/server/_ssr/openui-capsule-index-test.mjs',
+      'x'.repeat(19 * 1024 * 1024),
+    )
+    writeAsset(
+      root,
+      '.output/server/_ssr/openui-generated-metadata-test.mjs',
+      'x'.repeat(6 * 1024 * 1024),
+    )
+
+    expect(() => verifyBuildBundles(root)).toThrow(
+      /openui-capsule-index-test\.mjs/,
+    )
+    expect(() => verifyBuildBundles(root)).toThrow(
+      /openui-generated-metadata-test\.mjs/,
+    )
+  })
+
   it('rejects a browser OpenUI eager capsule index chunk', () => {
     const root = createBuildRoot()
     writePassingAssets(root)

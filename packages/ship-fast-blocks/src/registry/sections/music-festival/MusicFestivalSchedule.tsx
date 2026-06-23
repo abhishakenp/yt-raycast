@@ -120,7 +120,7 @@ export const MusicFestivalSchedule = defineComponent({
                   <p className="mt-1 text-sm opacity-70">{day.date}</p>
                 </div>
                 <div className="space-y-4 p-6">
-                  {day.items.map((item) => (
+                  {(day.items ?? []).map((item) => (
                     <div
                       key={item.title}
                       className="flex items-start justify-between"

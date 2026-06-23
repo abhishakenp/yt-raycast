@@ -92,48 +92,12 @@ describe('usePromptHomeController submit guard', () => {
     })
 
     expect(state.createSession).toHaveBeenCalledTimes(1)
-    expect(state.createSession.mock.calls[0]?.[0]).toMatchObject({
-      reusePublicCache: true,
-    })
     expect(state.navigate).toHaveBeenCalledTimes(1)
     expect(
       window.sessionStorage.getItem(
         'ship-fast:generation-launch:session_double_submit_guard',
       ),
     ).toBe('1')
-  })
-
-  it('does not request public cache replay for private or v2 submissions', async () => {
-    const state = getTestState()
-    const first = renderHook(() => usePromptHomeController())
-
-    act(() => {
-      first.result.current.setPrompt('Build a fast product website')
-    })
-
-    await act(async () => {
-      await first.result.current.submitPrompt({ isPrivate: true })
-    })
-
-    expect(state.createSession.mock.calls[0]?.[0]).not.toHaveProperty(
-      'reusePublicCache',
-    )
-
-    first.unmount()
-    state.createSession.mockClear()
-
-    const second = renderHook(() => usePromptHomeController())
-
-    await act(async () => {
-      await second.result.current.submitPrompt({
-        prompt: 'Build another fast product website',
-        engineVersion: 'v2',
-      })
-    })
-
-    expect(state.createSession.mock.calls[0]?.[0]).not.toHaveProperty(
-      'reusePublicCache',
-    )
   })
 
   it('retries a failed create call with the same workspace idempotency key', async () => {

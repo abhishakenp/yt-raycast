@@ -1,0 +1,112 @@
+import { z } from "zod/v4"
+import { defineComponent } from "@openuidev/react-lang"
+import { cn } from "#/lib/utils.ts"
+import { useNavigate } from "#/lib/use-navigate.tsx"
+import { Image } from "#/lib/img.tsx"
+
+/**
+ * WriterAuthorHero — elegant two-column author hero for a literary author site.
+ * The left column composes a small uppercase serif eyebrow, a large serif
+ * headline, an author/book intro paragraph, and dual CTAs (filled "Buy Now" +
+ * outlined "Read Excerpt"). The right column overlaps two images — a large
+ * author headshot portrait with a smaller latest-book cover floating over its
+ * lower-left corner, separated with rounded corners, a token border, and a soft
+ * shadow. CTAs route through useNavigate. Use as the opening hero for novelists,
+ * poets, essayists, and literary author landing pages. Renders fully with no
+ * props via baked-in defaults.
+ */
+export const WriterAuthorHero = defineComponent({
+  name: "WriterAuthorHero",
+  description:
+    "Elegant two-column author hero for a literary author landing page. The left column composes a small uppercase serif eyebrow, a large serif headline, an author/book intro paragraph, and dual CTAs (filled 'Buy Now' + outlined 'Read Excerpt'). The right column overlaps two images — a large author headshot portrait with a smaller latest-book cover floating over its lower-left corner, separated with rounded corners, a token border, and a soft shadow. CTAs route through useNavigate. Use as the opening hero for novelists, poets, essayists, memoirists, and literary author sites where a serif, book-forward introduction is wanted.",
+  props: z.object({
+    /** Small uppercase serif eyebrow above the headline. */
+    eyebrow: z.string().optional(),
+    /** Large serif headline (often the book or author name). */
+    heading: z.string().optional(),
+    /** Author / book intro paragraph beneath the headline. */
+    intro: z.string().optional(),
+    /** Filled primary CTA label. */
+    primaryCta: z.string().optional(),
+    /** Route label the primary CTA navigates to. */
+    primaryTarget: z.string().optional(),
+    /** Outlined secondary CTA label. */
+    secondaryCta: z.string().optional(),
+    /** Route label the secondary CTA navigates to. */
+    secondaryTarget: z.string().optional(),
+    /** Alt text driving the author headshot portrait image. */
+    portraitAlt: z.string().optional(),
+    /** Alt text driving the latest book cover image. */
+    coverAlt: z.string().optional(),
+    className: z.string().optional(),
+  }),
+  component: ({ props }) => {
+    const go = useNavigate()
+    const heroEyebrow = props.eyebrow ?? "New Novel"
+    const heroHeading = props.heading ?? "The Lantern Keeper"
+    const heroIntro =
+      props.intro ??
+      "Eleanor Vance returns with a luminous tale of memory, exile, and the small lights we tend against the dark. Praised for her unhurried prose and unforgettable characters, her latest novel is her most haunting work yet."
+    const heroPrimary = props.primaryCta ?? "Buy Now"
+    const heroPrimaryTarget = props.primaryTarget ?? "Books"
+    const heroSecondary = props.secondaryCta ?? "Read Excerpt"
+    const heroSecondaryTarget = props.secondaryTarget ?? "Excerpt"
+    const heroPortraitAlt =
+      props.portraitAlt ?? "professional author headshot portrait"
+    const heroCoverAlt = props.coverAlt ?? "literary novel book cover"
+
+    return (
+      <section className={cn("bg-background py-24 sm:py-28 lg:py-32", props.className)}>
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 lg:grid-cols-2 lg:items-center lg:px-8">
+          <div>
+            <p className="font-serif text-sm font-medium tracking-[0.2em] text-accent uppercase">
+              {heroEyebrow}
+            </p>
+
+            <h1 className="mt-6 font-serif text-4xl font-semibold leading-tight text-foreground sm:text-5xl lg:text-6xl">
+              {heroHeading}
+            </h1>
+
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
+              {heroIntro}
+            </p>
+
+            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => go(heroPrimaryTarget)}
+                className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                {heroPrimary}
+              </button>
+              <button
+                type="button"
+                onClick={() => go(heroSecondaryTarget)}
+                className="inline-flex items-center justify-center rounded-full border border-border px-8 py-4 font-medium text-foreground transition-colors hover:bg-muted"
+              >
+                {heroSecondary}
+              </button>
+            </div>
+          </div>
+
+          <div className="relative mx-auto w-full max-w-md lg:mx-0">
+            <Image
+              alt={heroPortraitAlt}
+              w={640}
+              h={800}
+              loading="lazy"
+              className="aspect-[4/5] w-full rounded-3xl border border-border object-cover shadow-xl"
+            />
+            <Image
+              alt={heroCoverAlt}
+              w={300}
+              h={450}
+              loading="lazy"
+              className="absolute -bottom-6 -left-6 w-32 rounded-xl border border-border object-cover shadow-2xl ring-4 ring-background sm:w-40"
+            />
+          </div>
+        </div>
+      </section>
+    )
+  },
+})

@@ -1,47 +1,50 @@
 import { z } from "zod/v4"
 import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { SiteNav } from "#/section-kit/SiteNav.tsx"
 
 /**
- * NutritionNavbar — sticky translucent top navigation bar for a nutrition-coaching /
- * wellness site. A backdrop-blurred, border-bottomed header pinned to the top with a
- * decorative leaf brand mark + wordmark on the left, horizontal muted-to-primary nav
- * links centered (desktop), and a "Sign In" text link plus a filled primary pill CTA
- * on the right. Every link and CTA routes through useNavigate so PageSwitch can swap
- * pages. Use as the sticky site header for nutrition coaches, dietitians, meal-plan
- * subscriptions, diet / wellness programs, weight-loss or healthy-eating services.
+ * NutritionNavbar — sticky top navigation header for a nutrition-coaching /
+ * wellness site, built on the shared SiteNav kit composite. Renders a fresh
+ * leaf brand mark + wordmark on the left, prop-driven desktop nav links, and a
+ * filled primary pill CTA on the right, with a real mobile drawer (Sheet) on
+ * small screens. All links and the CTA route through SiteNav's useNavigate so
+ * PageSwitch can swap pages. Use as the site header for nutrition coaches,
+ * registered dietitians, meal-plan subscriptions, diet / wellness programs,
+ * weight-loss or healthy-eating services and fitness-nutrition apps.
  */
 export const NutritionNavbar = defineComponent({
   name: "NutritionNavbar",
   description:
-    "Sticky translucent top navigation bar for a nutrition-coaching / wellness site: a backdrop-blurred, border-bottomed header with a decorative leaf brand mark + wordmark on the left, horizontal muted-to-primary nav links (desktop), a 'Sign In' text link, and a filled primary pill CTA on the right. All links and CTAs route through useNavigate. Use as the sticky site header for nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs, weight-loss or healthy-eating services and fitness-nutrition apps.",
+    "Sticky top navigation header for a nutrition-coaching / wellness site, built on the shared SiteNav kit composite: a fresh leaf brand mark + wordmark on the left, prop-driven desktop nav links, and a filled primary pill CTA on the right, with a real mobile drawer on small screens. All links and the CTA route through useNavigate. Use as the sticky site header for nutrition coaches, registered dietitians, meal-plan subscriptions, diet / wellness programs, weight-loss or healthy-eating services and fitness-nutrition apps.",
   props: z.object({
     /** Brand name shown beside the leaf mark. */
     brand: z.string().optional(),
     /** Top-level navbar link labels (must match site routes for page switching). */
     nav: z.array(z.string()).optional(),
-    /** Secondary text link on the right (e.g. account sign-in). */
+    /** Accepted for backward compatibility; SiteNav has no sign-in slot, so it is not rendered. */
     signInLabel: z.string().optional(),
-    /** Filled primary pill CTA label (also its navigation target). */
+    /** Filled primary pill CTA label. */
     ctaLabel: z.string().optional(),
+    /** Navigation target for the CTA (defaults to the Pricing route). */
+    ctaTarget: z.string().optional(),
+    /** Navigation target for the brand / home click. */
+    homeTarget: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
     const brand = props.brand ?? "Nourish"
     const nav = props.nav?.length
       ? props.nav
-      : ["Approach", "Stories", "Plans", "FAQ"]
-    const signInLabel = props.signInLabel ?? "Sign In"
-    const ctaLabel = props.ctaLabel ?? "Start Free Trial"
+      : ["Approach", "Plans", "Stories", "FAQ"]
+    const ctaLabel = props.ctaLabel ?? "Start Now"
+    const ctaTarget = props.ctaTarget ?? "Pricing"
 
-    const LeafMark = ({ className }: { className?: string }) => (
+    const LeafMark = (
       <svg
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        className={className}
+        className="size-8 text-primary"
         aria-hidden="true"
       >
         <path
@@ -54,55 +57,14 @@ export const NutritionNavbar = defineComponent({
     )
 
     return (
-      <header
-        className={cn(
-          "sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md",
-          props.className,
-        )}
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between lg:h-20">
-            <button
-              type="button"
-              onClick={() => go(nav[0])}
-              className="flex items-center gap-2"
-            >
-              <LeafMark className="size-8 text-primary" />
-              <span className="text-xl font-semibold tracking-tight text-foreground">
-                {brand}
-              </span>
-            </button>
-            <nav className="hidden items-center gap-8 md:flex">
-              {nav.map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => go(label)}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-                >
-                  {label}
-                </button>
-              ))}
-            </nav>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => go(signInLabel)}
-                className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-primary sm:inline-flex"
-              >
-                {signInLabel}
-              </button>
-              <button
-                type="button"
-                onClick={() => go(ctaLabel)}
-                className="inline-flex items-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {ctaLabel}
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <SiteNav
+        brand={brand}
+        brandMark={LeafMark}
+        nav={nav}
+        cta={{ label: ctaLabel, target: ctaTarget }}
+        homeTarget={props.homeTarget}
+        className={props.className}
+      />
     )
   },
 })

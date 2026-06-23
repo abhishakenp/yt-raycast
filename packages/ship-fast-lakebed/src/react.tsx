@@ -48,6 +48,15 @@ export type {
   PkceBundle,
   SignInWithGoogleProps,
 } from './auth.tsx'
+export {
+  buildSectionSeedPatch,
+  mergeSectionProps,
+  withSectionRealtime,
+} from './section-realtime.tsx'
+export type {
+  SectionRenderProps,
+  SectionRenderer,
+} from './section-realtime.tsx'
 
 type LakebedSessionContextValue = {
   anonymousOwnerSecret?: string
@@ -215,6 +224,16 @@ export function useLakebedSession(): LakebedSessionContextValue {
     throw new Error('Lakebed hooks must be used inside LakebedSessionProvider')
   }
   return value
+}
+
+/**
+ * Like {@link useLakebedSession} but returns `null` instead of throwing when no
+ * {@link LakebedSessionProvider} is mounted. Used by the section realtime
+ * wrapper so static section capsules can render outside a session (SSR, static
+ * export, previews without a session) without crashing.
+ */
+export function useOptionalLakebedSession(): LakebedSessionContextValue | null {
+  return useContext(LakebedSessionContext)
 }
 
 const lakebedSessionArgs = ({

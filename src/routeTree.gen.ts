@@ -29,6 +29,7 @@ import { Route as ApiPexelsRouteImport } from './routes/api/pexels'
 import { Route as ApiMedusaCheckoutRouteImport } from './routes/api/medusa-checkout'
 import { Route as ApiGalleryRouteImport } from './routes/api/gallery'
 import { Route as ApiCreditsRouteImport } from './routes/api/credits'
+import { Route as ApiCloneRouteImport } from './routes/api/clone'
 import { Route as ApiBrandProfileRouteImport } from './routes/api/brand-profile'
 import { Route as ApiBillingOverviewRouteImport } from './routes/api/billing-overview'
 import { Route as PreviewSlugSitemapDotxmlRouteImport } from './routes/preview.$slug.sitemap[.]xml'
@@ -171,6 +172,11 @@ const ApiGalleryRoute = ApiGalleryRouteImport.update({
 const ApiCreditsRoute = ApiCreditsRouteImport.update({
   id: '/api/credits',
   path: '/api/credits',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCloneRoute = ApiCloneRouteImport.update({
+  id: '/api/clone',
+  path: '/api/clone',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiBrandProfileRoute = ApiBrandProfileRouteImport.update({
@@ -425,6 +431,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/api/billing-overview': typeof ApiBillingOverviewRoute
   '/api/brand-profile': typeof ApiBrandProfileRoute
+  '/api/clone': typeof ApiCloneRoute
   '/api/credits': typeof ApiCreditsRoute
   '/api/gallery': typeof ApiGalleryRoute
   '/api/medusa-checkout': typeof ApiMedusaCheckoutRoute
@@ -490,6 +497,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/api/billing-overview': typeof ApiBillingOverviewRoute
   '/api/brand-profile': typeof ApiBrandProfileRoute
+  '/api/clone': typeof ApiCloneRoute
   '/api/credits': typeof ApiCreditsRoute
   '/api/gallery': typeof ApiGalleryRoute
   '/api/medusa-checkout': typeof ApiMedusaCheckoutRoute
@@ -556,6 +564,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/api/billing-overview': typeof ApiBillingOverviewRoute
   '/api/brand-profile': typeof ApiBrandProfileRoute
+  '/api/clone': typeof ApiCloneRoute
   '/api/credits': typeof ApiCreditsRoute
   '/api/gallery': typeof ApiGalleryRoute
   '/api/medusa-checkout': typeof ApiMedusaCheckoutRoute
@@ -623,6 +632,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/billing-overview'
     | '/api/brand-profile'
+    | '/api/clone'
     | '/api/credits'
     | '/api/gallery'
     | '/api/medusa-checkout'
@@ -688,6 +698,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/billing-overview'
     | '/api/brand-profile'
+    | '/api/clone'
     | '/api/credits'
     | '/api/gallery'
     | '/api/medusa-checkout'
@@ -753,6 +764,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/billing-overview'
     | '/api/brand-profile'
+    | '/api/clone'
     | '/api/credits'
     | '/api/gallery'
     | '/api/medusa-checkout'
@@ -819,6 +831,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ApiBillingOverviewRoute: typeof ApiBillingOverviewRoute
   ApiBrandProfileRoute: typeof ApiBrandProfileRoute
+  ApiCloneRoute: typeof ApiCloneRoute
   ApiCreditsRoute: typeof ApiCreditsRoute
   ApiGalleryRoute: typeof ApiGalleryRoute
   ApiMedusaCheckoutRoute: typeof ApiMedusaCheckoutRoute
@@ -988,6 +1001,13 @@ declare module '@tanstack/react-router' {
       path: '/api/credits'
       fullPath: '/api/credits'
       preLoaderRoute: typeof ApiCreditsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/clone': {
+      id: '/api/clone'
+      path: '/api/clone'
+      fullPath: '/api/clone'
+      preLoaderRoute: typeof ApiCloneRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/brand-profile': {
@@ -1441,6 +1461,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ApiBillingOverviewRoute: ApiBillingOverviewRoute,
   ApiBrandProfileRoute: ApiBrandProfileRoute,
+  ApiCloneRoute: ApiCloneRoute,
   ApiCreditsRoute: ApiCreditsRoute,
   ApiGalleryRoute: ApiGalleryRoute,
   ApiMedusaCheckoutRoute: ApiMedusaCheckoutRoute,
@@ -1473,3 +1494,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

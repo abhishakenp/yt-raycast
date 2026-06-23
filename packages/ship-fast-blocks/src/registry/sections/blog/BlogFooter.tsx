@@ -1,75 +1,92 @@
 import { z } from "zod/v4"
 import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
 
 /**
- * BlogFooter — slim multi-link footer for an editorial blog / publication.
- * A single bordered-top row (stacks on mobile): the publication name on the left,
- * a set of utility/legal links in the center, and an auto-updating copyright line
- * on the right. Every link and the brand button route through useNavigate. Use as
- * the closing site footer for blogs, magazines, newsrooms, or content hubs.
+ * BlogFooter — a rich, multi-column closing footer for an editorial blog or
+ * publication. Thin configuration over the shared `SiteFooter` composite: a
+ * wordmark beside an inline glyph mark, an editorial tagline, a social row, and
+ * a responsive grid of link columns (Explore, Topics, More) folded alongside a
+ * bottom bar that carries an auto-updating copyright line plus a small legal
+ * link row. Use as the site-wide footer for blogs, magazines, newsrooms, or
+ * content hubs. Renders fully with no props via baked-in "Form & Function"
+ * defaults.
  */
+const PenMark = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.7"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+    aria-hidden="true"
+  >
+    <path d="M12 19l7-7 3 3-7 7-3-3z" />
+    <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
+    <path d="M2 2l7.586 7.586" />
+    <circle cx="11" cy="11" r="2" />
+  </svg>
+)
+
 export const BlogFooter = defineComponent({
   name: "BlogFooter",
   description:
-    "Slim multi-link footer for an editorial blog or publication: a single bordered-top row (stacks on mobile) with the publication name on the left, a set of utility/legal links in the center, and an auto-updating copyright line on the right. Every link and the brand button route through useNavigate. Use as the closing site footer for blogs, magazines, newsrooms, or content hubs.",
+    "Rich, multi-column closing footer for an editorial blog or publication: a responsive grid with a brand block (wordmark + inline glyph mark + editorial tagline + social row) and link columns (Explore, Topics, More), plus a bordered-top bottom bar holding an auto-updating copyright line and a small legal link row. Every brand, social, and column link routes through useNavigate. Use as the site-wide footer for blogs, magazines, newsrooms, or content hubs.",
   props: z.object({
-    /** Brand / publication name shown in the footer. */
+    /** Publication / brand name shown as the wordmark. */
     brand: z.string().optional(),
-    /** Legal / utility link labels. */
-    links: z.array(z.string()).optional(),
-    /** Copyright string; defaults to `© <year> <brand>`. */
-    copyright: z.string().optional(),
-    /** Navigation target for the brand name button. */
-    homeTarget: z.string().optional(),
+    /** Editorial tagline below the wordmark. */
+    tagline: z.string().optional(),
+    /** Social channels rendered as a link row under the brand. */
+    social: z
+      .array(z.object({ label: z.string(), href: z.string().optional() }))
+      .optional(),
+    /** Link columns (Explore, Topics, More, …), each a title + labels. */
+    columns: z
+      .array(z.object({ title: z.string(), links: z.array(z.string()) }))
+      .optional(),
+    /** Copyright note appended after the brand + year. */
+    note: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
-    const brand = props.brand ?? "Form & Function"
-    const links = props.links?.length
-      ? props.links
-      : ["Privacy", "Terms", "RSS", "Contact"]
-    const copyright =
-      props.copyright ?? `© ${new Date().getFullYear()} ${brand}`
-    const homeTarget = props.homeTarget ?? "Home"
+    const social = props.social?.length
+      ? props.social
+      : [{ label: "Twitter" }, { label: "GitHub" }, { label: "RSS" }]
+    const columns = props.columns?.length
+      ? props.columns
+      : [
+          {
+            title: "Explore",
+            links: ["Latest", "Topics", "Authors", "Archive"],
+          },
+          {
+            title: "Topics",
+            links: ["Design", "Engineering", "Product", "Culture"],
+          },
+          {
+            title: "More",
+            links: ["About", "Newsletter", "Contact"],
+          },
+        ]
 
     return (
-      <footer
-        className={cn(
-          "mt-auto border-t border-border py-10",
-          props.className,
-        )}
-      >
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6">
-          <button
-            type="button"
-            onClick={() => go(homeTarget)}
-            className="font-bold tracking-tight text-foreground"
-          >
-            {brand}
-          </button>
-          <nav
-            aria-label="Footer"
-            className="flex flex-wrap gap-x-[1.125rem] gap-y-2 text-[0.9rem] text-muted-foreground"
-          >
-            {links.map((link) => (
-              <button
-                key={link}
-                type="button"
-                onClick={() => go(link)}
-                className="transition-colors hover:text-foreground"
-              >
-                {link}
-              </button>
-            ))}
-          </nav>
-          <div className="text-[0.85rem] text-muted-foreground">
-            {copyright}
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={props.brand ?? "Form & Function"}
+        brandMark={<PenMark className="size-8 text-primary" />}
+        brandClassName="font-serif text-xl font-medium"
+        tagline={
+          props.tagline ??
+          "Essays on design, engineering, and the craft of building products."
+        }
+        social={social}
+        columns={columns}
+        legal={["Privacy", "Terms", "RSS"]}
+        note={props.note ?? "All rights reserved."}
+        className={props.className}
+      />
     )
   },
 })

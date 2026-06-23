@@ -26,8 +26,9 @@ describe('dashboard launch handoff', () => {
     expect(dashboardSource).toContain('takeGenerationLaunchHandoff')
     expect(dashboardSource).toContain('window.sessionStorage')
     expect(dashboardSource).toContain(
-      'startedFromGenerationFlow && !isPreviewReady',
+      'startedFromGenerationFlow && !isPreviewRenderable',
     )
+    expect(dashboardSource).toContain("homeModule?.status === 'running'")
     expect(dashboardSource).toContain('playSound={startedFromGenerationFlow}')
     expect(dashboardSource).toContain('cockpit-fade-up')
     expect(dashboardSource).toContain('id="dashboard-cockpit"')

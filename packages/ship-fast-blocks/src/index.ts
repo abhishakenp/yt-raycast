@@ -35,4 +35,3 @@ export * from './theme-apply.ts'
 
 export * as registry from './registry/all.ts'
 export * from './registry/all.ts'
-export * from './registry/taxonomy.ts'

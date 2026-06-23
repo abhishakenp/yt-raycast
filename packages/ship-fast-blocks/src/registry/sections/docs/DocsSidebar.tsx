@@ -125,7 +125,7 @@ export const DocsSidebar = defineComponent({
                   {group.title}
                 </h3>
                 <ul className="space-y-1">
-                  {group.items.map((item, ii) => {
+                  {(group.items ?? []).map((item, ii) => {
                     const active = gi === 0 && ii === 0
                     return (
                       <li key={item}>

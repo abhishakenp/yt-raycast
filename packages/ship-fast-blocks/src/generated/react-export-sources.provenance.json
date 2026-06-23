@@ -9,21 +9,15 @@
     "src/generated/vendor-source-files.compressed.ts",
     "src/generated/runtime-component-loaders.ts",
     "src/generated/runtime-component-names.ts",
+    "src/generated/runtime-section-component-names.ts",
     "src/generated/react-export-sources.provenance.json"
   ],
-  "componentCount": 1192,
+  "componentCount": 1130,
+  "sectionComponentCount": 1064,
   "components": [
     {
       "name": "AboutHero",
       "sourceFile": "src/registry/sections/about/AboutHero.tsx"
-    },
-    {
-      "name": "AboutKimiPage",
-      "sourceFile": "src/capsules/about.tsx"
-    },
-    {
-      "name": "AboutKimiPage2",
-      "sourceFile": "src/capsules/about-2.tsx"
     },
     {
       "name": "AboutNavbar",
@@ -46,18 +40,6 @@
       "sourceFile": "src/registry/sections/accounting-firm/AccountingFirmHero.tsx"
     },
     {
-      "name": "AccountingFirmKimiPage",
-      "sourceFile": "src/capsules/accounting-firm.tsx"
-    },
-    {
-      "name": "AccountingFirmKimiPage2",
-      "sourceFile": "src/capsules/accounting-firm-2.tsx"
-    },
-    {
-      "name": "AccountingFirmKimiPage3",
-      "sourceFile": "src/capsules/accounting-firm-3.tsx"
-    },
-    {
       "name": "AccountingFirmLogos",
       "sourceFile": "src/registry/sections/accounting-firm/AccountingFirmLogos.tsx"
     },
@@ -78,12 +60,52 @@
       "sourceFile": "src/registry/sections/accounting-firm/AccountingFirmTeam.tsx"
     },
     {
+      "name": "AeoCta",
+      "sourceFile": "src/registry/sections/aeo/AeoCta.tsx"
+    },
+    {
       "name": "AeoDirectAnswer",
       "sourceFile": "src/registry/sections/aeo/AeoDirectAnswer.tsx"
     },
     {
+      "name": "AeoFaq",
+      "sourceFile": "src/registry/sections/aeo/AeoFaq.tsx"
+    },
+    {
       "name": "AeoFaqSection",
       "sourceFile": "src/registry/sections/aeo/AeoFaqSection.tsx"
+    },
+    {
+      "name": "AeoFeatures",
+      "sourceFile": "src/registry/sections/aeo/AeoFeatures.tsx"
+    },
+    {
+      "name": "AeoFooter",
+      "sourceFile": "src/registry/sections/aeo/AeoFooter.tsx"
+    },
+    {
+      "name": "AeoHero",
+      "sourceFile": "src/registry/sections/aeo/AeoHero.tsx"
+    },
+    {
+      "name": "AeoNavbar",
+      "sourceFile": "src/registry/sections/aeo/AeoNavbar.tsx"
+    },
+    {
+      "name": "AeoPricing",
+      "sourceFile": "src/registry/sections/aeo/AeoPricing.tsx"
+    },
+    {
+      "name": "AeoStats",
+      "sourceFile": "src/registry/sections/aeo/AeoStats.tsx"
+    },
+    {
+      "name": "AeoSteps",
+      "sourceFile": "src/registry/sections/aeo/AeoSteps.tsx"
+    },
+    {
+      "name": "AeoTestimonials",
+      "sourceFile": "src/registry/sections/aeo/AeoTestimonials.tsx"
     },
     {
       "name": "AeoUseCases",
@@ -100,26 +122,6 @@
     {
       "name": "AgencyHero",
       "sourceFile": "src/registry/sections/agency/AgencyHero.tsx"
-    },
-    {
-      "name": "AgencyKimiPage",
-      "sourceFile": "src/capsules/agency.tsx"
-    },
-    {
-      "name": "AgencyKimiPage2",
-      "sourceFile": "src/capsules/agency-2.tsx"
-    },
-    {
-      "name": "AgencyKimiPage3",
-      "sourceFile": "src/capsules/agency-3.tsx"
-    },
-    {
-      "name": "AgencyKimiPage4",
-      "sourceFile": "src/capsules/agency-4.tsx"
-    },
-    {
-      "name": "AgencyKimiPage5",
-      "sourceFile": "src/capsules/agency-5.tsx"
     },
     {
       "name": "AgencyNavbar",
@@ -154,46 +156,6 @@
       "sourceFile": "src/registry/sections/ai-product/AiProductHero.tsx"
     },
     {
-      "name": "AiProductKimiPage",
-      "sourceFile": "src/capsules/ai-product.tsx"
-    },
-    {
-      "name": "AiProductKimiPage10",
-      "sourceFile": "src/capsules/ai-product-10.tsx"
-    },
-    {
-      "name": "AiProductKimiPage2",
-      "sourceFile": "src/capsules/ai-product-2.tsx"
-    },
-    {
-      "name": "AiProductKimiPage3",
-      "sourceFile": "src/capsules/ai-product-3.tsx"
-    },
-    {
-      "name": "AiProductKimiPage4",
-      "sourceFile": "src/capsules/ai-product-4.tsx"
-    },
-    {
-      "name": "AiProductKimiPage5",
-      "sourceFile": "src/capsules/ai-product-5.tsx"
-    },
-    {
-      "name": "AiProductKimiPage6",
-      "sourceFile": "src/capsules/ai-product-6.tsx"
-    },
-    {
-      "name": "AiProductKimiPage7",
-      "sourceFile": "src/capsules/ai-product-7.tsx"
-    },
-    {
-      "name": "AiProductKimiPage8",
-      "sourceFile": "src/capsules/ai-product-8.tsx"
-    },
-    {
-      "name": "AiProductKimiPage9",
-      "sourceFile": "src/capsules/ai-product-9.tsx"
-    },
-    {
       "name": "AiProductLogos",
       "sourceFile": "src/registry/sections/ai-product/AiProductLogos.tsx"
     },
@@ -214,44 +176,60 @@
       "sourceFile": "src/registry/primitives/alert-dialog.tsx"
     },
     {
+      "name": "AnalyticsBento",
+      "sourceFile": "src/registry/sections/analytics/AnalyticsBento.tsx"
+    },
+    {
+      "name": "AnalyticsCta",
+      "sourceFile": "src/registry/sections/analytics/AnalyticsCta.tsx"
+    },
+    {
+      "name": "AnalyticsFeatures",
+      "sourceFile": "src/registry/sections/analytics/AnalyticsFeatures.tsx"
+    },
+    {
+      "name": "AnalyticsFooter",
+      "sourceFile": "src/registry/sections/analytics/AnalyticsFooter.tsx"
+    },
+    {
       "name": "AnalyticsHeader",
       "sourceFile": "src/registry/sections/analytics/AnalyticsHeader.tsx"
     },
     {
-      "name": "AnalyticsKimiPage",
-      "sourceFile": "src/capsules/analytics.tsx"
-    },
-    {
-      "name": "AnalyticsKimiPage2",
-      "sourceFile": "src/capsules/analytics-2.tsx"
-    },
-    {
-      "name": "AnalyticsKimiPage3",
-      "sourceFile": "src/capsules/analytics-3.tsx"
+      "name": "AnalyticsHero",
+      "sourceFile": "src/registry/sections/analytics/AnalyticsHero.tsx"
     },
     {
       "name": "AnalyticsKpis",
       "sourceFile": "src/registry/sections/analytics/AnalyticsKpis.tsx"
     },
     {
+      "name": "AnalyticsLogos",
+      "sourceFile": "src/registry/sections/analytics/AnalyticsLogos.tsx"
+    },
+    {
+      "name": "AnalyticsNavbar",
+      "sourceFile": "src/registry/sections/analytics/AnalyticsNavbar.tsx"
+    },
+    {
+      "name": "AnalyticsPricing",
+      "sourceFile": "src/registry/sections/analytics/AnalyticsPricing.tsx"
+    },
+    {
       "name": "AnalyticsSidebar",
       "sourceFile": "src/registry/sections/analytics/AnalyticsSidebar.tsx"
     },
     {
+      "name": "AnalyticsStats",
+      "sourceFile": "src/registry/sections/analytics/AnalyticsStats.tsx"
+    },
+    {
+      "name": "AnalyticsTestimonials",
+      "sourceFile": "src/registry/sections/analytics/AnalyticsTestimonials.tsx"
+    },
+    {
       "name": "ArchitectureFirmHero",
       "sourceFile": "src/registry/sections/architecture-firm/ArchitectureFirmHero.tsx"
-    },
-    {
-      "name": "ArchitectureFirmKimiPage",
-      "sourceFile": "src/capsules/architecture-firm.tsx"
-    },
-    {
-      "name": "ArchitectureFirmKimiPage2",
-      "sourceFile": "src/capsules/architecture-firm-2.tsx"
-    },
-    {
-      "name": "ArchitectureFirmKimiPage3",
-      "sourceFile": "src/capsules/architecture-firm-3.tsx"
     },
     {
       "name": "ArchitectureFirmLogos",
@@ -286,24 +264,44 @@
       "sourceFile": "src/registry/primitives/aspect-ratio.tsx"
     },
     {
-      "name": "AuthKimiPage",
-      "sourceFile": "src/capsules/auth.tsx"
+      "name": "AuthCta",
+      "sourceFile": "src/registry/sections/auth/AuthCta.tsx"
     },
     {
-      "name": "AuthKimiPage2",
-      "sourceFile": "src/capsules/auth-2.tsx"
+      "name": "AuthFeatures",
+      "sourceFile": "src/registry/sections/auth/AuthFeatures.tsx"
     },
     {
-      "name": "AuthKimiPage3",
-      "sourceFile": "src/capsules/auth-3.tsx"
+      "name": "AuthFooter",
+      "sourceFile": "src/registry/sections/auth/AuthFooter.tsx"
     },
     {
-      "name": "AuthKimiPage4",
-      "sourceFile": "src/capsules/auth-4.tsx"
+      "name": "AuthHero",
+      "sourceFile": "src/registry/sections/auth/AuthHero.tsx"
     },
     {
-      "name": "AuthKimiPage5",
-      "sourceFile": "src/capsules/auth-5.tsx"
+      "name": "AuthLogos",
+      "sourceFile": "src/registry/sections/auth/AuthLogos.tsx"
+    },
+    {
+      "name": "AuthNavbar",
+      "sourceFile": "src/registry/sections/auth/AuthNavbar.tsx"
+    },
+    {
+      "name": "AuthPricing",
+      "sourceFile": "src/registry/sections/auth/AuthPricing.tsx"
+    },
+    {
+      "name": "AuthStats",
+      "sourceFile": "src/registry/sections/auth/AuthStats.tsx"
+    },
+    {
+      "name": "AuthSteps",
+      "sourceFile": "src/registry/sections/auth/AuthSteps.tsx"
+    },
+    {
+      "name": "AuthTestimonials",
+      "sourceFile": "src/registry/sections/auth/AuthTestimonials.tsx"
     },
     {
       "name": "AutoDealershipFeatures",
@@ -320,18 +318,6 @@
     {
       "name": "AutoDealershipInventory",
       "sourceFile": "src/registry/sections/auto-dealership/AutoDealershipInventory.tsx"
-    },
-    {
-      "name": "AutoDealershipKimiPage",
-      "sourceFile": "src/capsules/auto-dealership.tsx"
-    },
-    {
-      "name": "AutoDealershipKimiPage2",
-      "sourceFile": "src/capsules/auto-dealership-2.tsx"
-    },
-    {
-      "name": "AutoDealershipKimiPage3",
-      "sourceFile": "src/capsules/auto-dealership-3.tsx"
     },
     {
       "name": "AutoDealershipLogos",
@@ -370,18 +356,6 @@
       "sourceFile": "src/registry/sections/bakery/BakeryHero.tsx"
     },
     {
-      "name": "BakeryKimiPage",
-      "sourceFile": "src/capsules/bakery.tsx"
-    },
-    {
-      "name": "BakeryKimiPage2",
-      "sourceFile": "src/capsules/bakery-2.tsx"
-    },
-    {
-      "name": "BakeryKimiPage3",
-      "sourceFile": "src/capsules/bakery-3.tsx"
-    },
-    {
       "name": "BakeryLogos",
       "sourceFile": "src/registry/sections/bakery/BakeryLogos.tsx"
     },
@@ -414,18 +388,6 @@
       "sourceFile": "src/registry/sections/bar-nightclub/BarNightclubHero.tsx"
     },
     {
-      "name": "BarNightclubKimiPage",
-      "sourceFile": "src/capsules/bar-nightclub.tsx"
-    },
-    {
-      "name": "BarNightclubKimiPage2",
-      "sourceFile": "src/capsules/bar-nightclub-2.tsx"
-    },
-    {
-      "name": "BarNightclubKimiPage3",
-      "sourceFile": "src/capsules/bar-nightclub-3.tsx"
-    },
-    {
       "name": "BarNightclubMenu",
       "sourceFile": "src/registry/sections/bar-nightclub/BarNightclubMenu.tsx"
     },
@@ -454,18 +416,6 @@
       "sourceFile": "src/registry/sections/beauty-store/BeautyStoreHero.tsx"
     },
     {
-      "name": "BeautyStoreKimiPage",
-      "sourceFile": "src/capsules/beauty-store.tsx"
-    },
-    {
-      "name": "BeautyStoreKimiPage2",
-      "sourceFile": "src/capsules/beauty-store-2.tsx"
-    },
-    {
-      "name": "BeautyStoreKimiPage3",
-      "sourceFile": "src/capsules/beauty-store-3.tsx"
-    },
-    {
       "name": "BeautyStoreLogos",
       "sourceFile": "src/registry/sections/beauty-store/BeautyStoreLogos.tsx"
     },
@@ -486,76 +436,60 @@
       "sourceFile": "src/registry/sections/beauty-store/BeautyStoreTestimonials.tsx"
     },
     {
-      "name": "BlogFooter",
-      "sourceFile": "src/registry/sections/blog/BlogFooter.tsx"
+      "name": "BlogAuthors",
+      "sourceFile": "src/registry/sections/blog/BlogAuthors.tsx"
     },
     {
-      "name": "BlogHeader",
-      "sourceFile": "src/registry/sections/blog/BlogHeader.tsx"
+      "name": "BlogFooter",
+      "sourceFile": "src/registry/sections/blog/BlogFooter.tsx"
     },
     {
       "name": "BlogHero",
       "sourceFile": "src/registry/sections/blog/BlogHero.tsx"
     },
     {
-      "name": "BlogKimiPage",
-      "sourceFile": "src/capsules/blog.tsx"
+      "name": "BlogNavbar",
+      "sourceFile": "src/registry/sections/blog/BlogNavbar.tsx"
     },
     {
-      "name": "BlogKimiPage2",
-      "sourceFile": "src/capsules/blog-2.tsx"
+      "name": "BlogPostAbout",
+      "sourceFile": "src/registry/sections/blog-post/BlogPostAbout.tsx"
     },
     {
-      "name": "BlogKimiPage3",
-      "sourceFile": "src/capsules/blog-3.tsx"
-    },
-    {
-      "name": "BlogLatestStories",
-      "sourceFile": "src/registry/sections/blog/BlogLatestStories.tsx"
-    },
-    {
-      "name": "BlogPostBody",
-      "sourceFile": "src/registry/sections/blog-post/BlogPostBody.tsx"
-    },
-    {
-      "name": "BlogPostCoverImage",
-      "sourceFile": "src/registry/sections/blog-post/BlogPostCoverImage.tsx"
+      "name": "BlogPostAuthors",
+      "sourceFile": "src/registry/sections/blog-post/BlogPostAuthors.tsx"
     },
     {
       "name": "BlogPostFooter",
       "sourceFile": "src/registry/sections/blog-post/BlogPostFooter.tsx"
     },
     {
-      "name": "BlogPostHeader",
-      "sourceFile": "src/registry/sections/blog-post/BlogPostHeader.tsx"
-    },
-    {
-      "name": "BlogPostKimiPage",
-      "sourceFile": "src/capsules/blog-post.tsx"
-    },
-    {
-      "name": "BlogPostKimiPage2",
-      "sourceFile": "src/capsules/blog-post-2.tsx"
-    },
-    {
-      "name": "BlogPostKimiPage3",
-      "sourceFile": "src/capsules/blog-post-3.tsx"
-    },
-    {
-      "name": "BlogPostKimiPage4",
-      "sourceFile": "src/capsules/blog-post-4.tsx"
+      "name": "BlogPostHero",
+      "sourceFile": "src/registry/sections/blog-post/BlogPostHero.tsx"
     },
     {
       "name": "BlogPostNavbar",
       "sourceFile": "src/registry/sections/blog-post/BlogPostNavbar.tsx"
     },
     {
-      "name": "BlogPostNewsletter",
-      "sourceFile": "src/registry/sections/blog-post/BlogPostNewsletter.tsx"
+      "name": "BlogPostStoryGrid",
+      "sourceFile": "src/registry/sections/blog-post/BlogPostStoryGrid.tsx"
     },
     {
-      "name": "BlogPostRelated",
-      "sourceFile": "src/registry/sections/blog-post/BlogPostRelated.tsx"
+      "name": "BlogPostSubscribe",
+      "sourceFile": "src/registry/sections/blog-post/BlogPostSubscribe.tsx"
+    },
+    {
+      "name": "BlogStoryGrid",
+      "sourceFile": "src/registry/sections/blog/BlogStoryGrid.tsx"
+    },
+    {
+      "name": "BlogSubscribe",
+      "sourceFile": "src/registry/sections/blog/BlogSubscribe.tsx"
+    },
+    {
+      "name": "BlogTopics",
+      "sourceFile": "src/registry/sections/blog/BlogTopics.tsx"
     },
     {
       "name": "BootcampApplyCta",
@@ -576,18 +510,6 @@
     {
       "name": "BootcampHero",
       "sourceFile": "src/registry/sections/bootcamp/BootcampHero.tsx"
-    },
-    {
-      "name": "BootcampKimiPage",
-      "sourceFile": "src/capsules/bootcamp.tsx"
-    },
-    {
-      "name": "BootcampKimiPage2",
-      "sourceFile": "src/capsules/bootcamp-2.tsx"
-    },
-    {
-      "name": "BootcampKimiPage3",
-      "sourceFile": "src/capsules/bootcamp-3.tsx"
     },
     {
       "name": "BootcampLogos",
@@ -648,18 +570,6 @@
     {
       "name": "CafeHero",
       "sourceFile": "src/registry/sections/cafe/CafeHero.tsx"
-    },
-    {
-      "name": "CafeKimiPage",
-      "sourceFile": "src/capsules/cafe.tsx"
-    },
-    {
-      "name": "CafeKimiPage2",
-      "sourceFile": "src/capsules/cafe-2.tsx"
-    },
-    {
-      "name": "CafeKimiPage3",
-      "sourceFile": "src/capsules/cafe-3.tsx"
     },
     {
       "name": "CafeLocation",
@@ -734,18 +644,6 @@
       "sourceFile": "src/registry/sections/church/ChurchHero.tsx"
     },
     {
-      "name": "ChurchKimiPage",
-      "sourceFile": "src/capsules/church.tsx"
-    },
-    {
-      "name": "ChurchKimiPage2",
-      "sourceFile": "src/capsules/church-2.tsx"
-    },
-    {
-      "name": "ChurchKimiPage3",
-      "sourceFile": "src/capsules/church-3.tsx"
-    },
-    {
       "name": "ChurchNavbar",
       "sourceFile": "src/registry/sections/church/ChurchNavbar.tsx"
     },
@@ -788,18 +686,6 @@
     {
       "name": "CleaningServiceHero",
       "sourceFile": "src/registry/sections/cleaning-service/CleaningServiceHero.tsx"
-    },
-    {
-      "name": "CleaningServiceKimiPage",
-      "sourceFile": "src/capsules/cleaning-service.tsx"
-    },
-    {
-      "name": "CleaningServiceKimiPage2",
-      "sourceFile": "src/capsules/cleaning-service-2.tsx"
-    },
-    {
-      "name": "CleaningServiceKimiPage3",
-      "sourceFile": "src/capsules/cleaning-service-3.tsx"
     },
     {
       "name": "CleaningServiceLogos",
@@ -854,18 +740,6 @@
       "sourceFile": "src/registry/sections/cloud-infra/CloudInfraHero.tsx"
     },
     {
-      "name": "CloudInfraKimiPage",
-      "sourceFile": "src/capsules/cloud-infra.tsx"
-    },
-    {
-      "name": "CloudInfraKimiPage2",
-      "sourceFile": "src/capsules/cloud-infra-2.tsx"
-    },
-    {
-      "name": "CloudInfraKimiPage3",
-      "sourceFile": "src/capsules/cloud-infra-3.tsx"
-    },
-    {
       "name": "CloudInfraLogos",
       "sourceFile": "src/registry/sections/cloud-infra/CloudInfraLogos.tsx"
     },
@@ -918,18 +792,6 @@
       "sourceFile": "src/registry/sections/coming-soon/ComingSoonHero.tsx"
     },
     {
-      "name": "ComingSoonKimiPage",
-      "sourceFile": "src/capsules/coming-soon.tsx"
-    },
-    {
-      "name": "ComingSoonKimiPage2",
-      "sourceFile": "src/capsules/coming-soon-2.tsx"
-    },
-    {
-      "name": "ComingSoonKimiPage3",
-      "sourceFile": "src/capsules/coming-soon-3.tsx"
-    },
-    {
       "name": "ComingSoonLogos",
       "sourceFile": "src/registry/sections/coming-soon/ComingSoonLogos.tsx"
     },
@@ -970,18 +832,6 @@
       "sourceFile": "src/registry/sections/community-forum/CommunityForumHero.tsx"
     },
     {
-      "name": "CommunityForumKimiPage",
-      "sourceFile": "src/capsules/community-forum.tsx"
-    },
-    {
-      "name": "CommunityForumKimiPage2",
-      "sourceFile": "src/capsules/community-forum-2.tsx"
-    },
-    {
-      "name": "CommunityForumKimiPage3",
-      "sourceFile": "src/capsules/community-forum-3.tsx"
-    },
-    {
       "name": "CommunityForumLogos",
       "sourceFile": "src/registry/sections/community-forum/CommunityForumLogos.tsx"
     },
@@ -1020,18 +870,6 @@
     {
       "name": "ConstructionHero",
       "sourceFile": "src/registry/sections/construction/ConstructionHero.tsx"
-    },
-    {
-      "name": "ConstructionKimiPage",
-      "sourceFile": "src/capsules/construction.tsx"
-    },
-    {
-      "name": "ConstructionKimiPage2",
-      "sourceFile": "src/capsules/construction-2.tsx"
-    },
-    {
-      "name": "ConstructionKimiPage3",
-      "sourceFile": "src/capsules/construction-3.tsx"
     },
     {
       "name": "ConstructionLogos",
@@ -1078,22 +916,6 @@
       "sourceFile": "src/registry/sections/consulting/ConsultingHero.tsx"
     },
     {
-      "name": "ConsultingKimiPage",
-      "sourceFile": "src/capsules/consulting.tsx"
-    },
-    {
-      "name": "ConsultingKimiPage2",
-      "sourceFile": "src/capsules/consulting-2.tsx"
-    },
-    {
-      "name": "ConsultingKimiPage3",
-      "sourceFile": "src/capsules/consulting-3.tsx"
-    },
-    {
-      "name": "ConsultingKimiPage4",
-      "sourceFile": "src/capsules/consulting-4.tsx"
-    },
-    {
       "name": "ConsultingLogos",
       "sourceFile": "src/registry/sections/consulting/ConsultingLogos.tsx"
     },
@@ -1130,14 +952,6 @@
       "sourceFile": "src/registry/sections/contact/ContactHero.tsx"
     },
     {
-      "name": "ContactKimiPage",
-      "sourceFile": "src/capsules/contact.tsx"
-    },
-    {
-      "name": "ContactKimiPage2",
-      "sourceFile": "src/capsules/contact-2.tsx"
-    },
-    {
       "name": "ContactNavbar",
       "sourceFile": "src/registry/sections/contact/ContactNavbar.tsx"
     },
@@ -1170,18 +984,6 @@
       "sourceFile": "src/registry/sections/corporate/CorporateHero.tsx"
     },
     {
-      "name": "CorporateKimiPage",
-      "sourceFile": "src/capsules/corporate.tsx"
-    },
-    {
-      "name": "CorporateKimiPage2",
-      "sourceFile": "src/capsules/corporate-2.tsx"
-    },
-    {
-      "name": "CorporateKimiPage3",
-      "sourceFile": "src/capsules/corporate-3.tsx"
-    },
-    {
       "name": "CorporateLogos",
       "sourceFile": "src/registry/sections/corporate/CorporateLogos.tsx"
     },
@@ -1210,24 +1012,36 @@
       "sourceFile": "src/registry/sections/corporate/CorporateTestimonials.tsx"
     },
     {
+      "name": "CoworkingCta",
+      "sourceFile": "src/registry/sections/coworking/CoworkingCta.tsx"
+    },
+    {
+      "name": "CoworkingFeatures",
+      "sourceFile": "src/registry/sections/coworking/CoworkingFeatures.tsx"
+    },
+    {
+      "name": "CoworkingFooter",
+      "sourceFile": "src/registry/sections/coworking/CoworkingFooter.tsx"
+    },
+    {
+      "name": "CoworkingGallery",
+      "sourceFile": "src/registry/sections/coworking/CoworkingGallery.tsx"
+    },
+    {
       "name": "CoworkingHero",
       "sourceFile": "src/registry/sections/coworking/CoworkingHero.tsx"
     },
     {
-      "name": "CoworkingKimiPage",
-      "sourceFile": "src/capsules/coworking.tsx"
-    },
-    {
-      "name": "CoworkingKimiPage2",
-      "sourceFile": "src/capsules/coworking-2.tsx"
-    },
-    {
-      "name": "CoworkingKimiPage3",
-      "sourceFile": "src/capsules/coworking-3.tsx"
-    },
-    {
       "name": "CoworkingNavbar",
       "sourceFile": "src/registry/sections/coworking/CoworkingNavbar.tsx"
+    },
+    {
+      "name": "CoworkingPricing",
+      "sourceFile": "src/registry/sections/coworking/CoworkingPricing.tsx"
+    },
+    {
+      "name": "CoworkingTestimonials",
+      "sourceFile": "src/registry/sections/coworking/CoworkingTestimonials.tsx"
     },
     {
       "name": "CrmCta",
@@ -1252,18 +1066,6 @@
     {
       "name": "CrmIntegrations",
       "sourceFile": "src/registry/sections/crm/CrmIntegrations.tsx"
-    },
-    {
-      "name": "CrmKimiPage",
-      "sourceFile": "src/capsules/crm.tsx"
-    },
-    {
-      "name": "CrmKimiPage2",
-      "sourceFile": "src/capsules/crm-2.tsx"
-    },
-    {
-      "name": "CrmKimiPage3",
-      "sourceFile": "src/capsules/crm-3.tsx"
     },
     {
       "name": "CrmLogos",
@@ -1314,18 +1116,6 @@
       "sourceFile": "src/registry/sections/crowdfunding/CrowdfundingHero.tsx"
     },
     {
-      "name": "CrowdfundingKimiPage",
-      "sourceFile": "src/capsules/crowdfunding.tsx"
-    },
-    {
-      "name": "CrowdfundingKimiPage2",
-      "sourceFile": "src/capsules/crowdfunding-2.tsx"
-    },
-    {
-      "name": "CrowdfundingKimiPage3",
-      "sourceFile": "src/capsules/crowdfunding-3.tsx"
-    },
-    {
       "name": "CrowdfundingNavbar",
       "sourceFile": "src/registry/sections/crowdfunding/CrowdfundingNavbar.tsx"
     },
@@ -1364,18 +1154,6 @@
     {
       "name": "CryptoHero",
       "sourceFile": "src/registry/sections/crypto/CryptoHero.tsx"
-    },
-    {
-      "name": "CryptoKimiPage",
-      "sourceFile": "src/capsules/crypto.tsx"
-    },
-    {
-      "name": "CryptoKimiPage2",
-      "sourceFile": "src/capsules/crypto-2.tsx"
-    },
-    {
-      "name": "CryptoKimiPage3",
-      "sourceFile": "src/capsules/crypto-3.tsx"
     },
     {
       "name": "CryptoLogos",
@@ -1426,18 +1204,6 @@
       "sourceFile": "src/registry/sections/cybersecurity/CybersecurityHero.tsx"
     },
     {
-      "name": "CybersecurityKimiPage",
-      "sourceFile": "src/capsules/cybersecurity.tsx"
-    },
-    {
-      "name": "CybersecurityKimiPage2",
-      "sourceFile": "src/capsules/cybersecurity-2.tsx"
-    },
-    {
-      "name": "CybersecurityKimiPage3",
-      "sourceFile": "src/capsules/cybersecurity-3.tsx"
-    },
-    {
       "name": "CybersecurityLogos",
       "sourceFile": "src/registry/sections/cybersecurity/CybersecurityLogos.tsx"
     },
@@ -1468,10 +1234,6 @@
     {
       "name": "DashboardHeader",
       "sourceFile": "src/registry/sections/dashboard/DashboardHeader.tsx"
-    },
-    {
-      "name": "DashboardKimiPage",
-      "sourceFile": "src/capsules/dashboard.tsx"
     },
     {
       "name": "DashboardKpis",
@@ -1508,14 +1270,6 @@
     {
       "name": "DatingAppHero",
       "sourceFile": "src/registry/sections/dating-app/DatingAppHero.tsx"
-    },
-    {
-      "name": "DatingAppKimiPage",
-      "sourceFile": "src/capsules/dating-app.tsx"
-    },
-    {
-      "name": "DatingAppKimiPage2",
-      "sourceFile": "src/capsules/dating-app-2.tsx"
     },
     {
       "name": "DatingAppLogos",
@@ -1560,18 +1314,6 @@
     {
       "name": "DentalHero",
       "sourceFile": "src/registry/sections/dental/DentalHero.tsx"
-    },
-    {
-      "name": "DentalKimiPage",
-      "sourceFile": "src/capsules/dental.tsx"
-    },
-    {
-      "name": "DentalKimiPage2",
-      "sourceFile": "src/capsules/dental-2.tsx"
-    },
-    {
-      "name": "DentalKimiPage3",
-      "sourceFile": "src/capsules/dental-3.tsx"
     },
     {
       "name": "DentalLogos",
@@ -1630,46 +1372,6 @@
       "sourceFile": "src/registry/sections/dev-tool/DevToolHero.tsx"
     },
     {
-      "name": "DevToolKimiPage",
-      "sourceFile": "src/capsules/dev-tool.tsx"
-    },
-    {
-      "name": "DevToolKimiPage10",
-      "sourceFile": "src/capsules/dev-tool-10.tsx"
-    },
-    {
-      "name": "DevToolKimiPage2",
-      "sourceFile": "src/capsules/dev-tool-2.tsx"
-    },
-    {
-      "name": "DevToolKimiPage3",
-      "sourceFile": "src/capsules/dev-tool-3.tsx"
-    },
-    {
-      "name": "DevToolKimiPage4",
-      "sourceFile": "src/capsules/dev-tool-4.tsx"
-    },
-    {
-      "name": "DevToolKimiPage5",
-      "sourceFile": "src/capsules/dev-tool-5.tsx"
-    },
-    {
-      "name": "DevToolKimiPage6",
-      "sourceFile": "src/capsules/dev-tool-6.tsx"
-    },
-    {
-      "name": "DevToolKimiPage7",
-      "sourceFile": "src/capsules/dev-tool-7.tsx"
-    },
-    {
-      "name": "DevToolKimiPage8",
-      "sourceFile": "src/capsules/dev-tool-8.tsx"
-    },
-    {
-      "name": "DevToolKimiPage9",
-      "sourceFile": "src/capsules/dev-tool-9.tsx"
-    },
-    {
       "name": "DevToolLogos",
       "sourceFile": "src/registry/sections/dev-tool/DevToolLogos.tsx"
     },
@@ -1722,14 +1424,6 @@
       "sourceFile": "src/registry/sections/directory/DirectoryHero.tsx"
     },
     {
-      "name": "DirectoryKimiPage",
-      "sourceFile": "src/capsules/directory.tsx"
-    },
-    {
-      "name": "DirectoryKimiPage2",
-      "sourceFile": "src/capsules/directory-2.tsx"
-    },
-    {
       "name": "DirectoryNavbar",
       "sourceFile": "src/registry/sections/directory/DirectoryNavbar.tsx"
     },
@@ -1750,44 +1444,20 @@
       "sourceFile": "src/registry/sections/directory/DirectoryTestimonials.tsx"
     },
     {
-      "name": "DocsKimiPage",
-      "sourceFile": "src/capsules/docs.tsx"
+      "name": "DocsCta",
+      "sourceFile": "src/registry/sections/docs/DocsCta.tsx"
     },
     {
-      "name": "DocsKimiPage10",
-      "sourceFile": "src/capsules/docs-10.tsx"
+      "name": "DocsFaq",
+      "sourceFile": "src/registry/sections/docs/DocsFaq.tsx"
     },
     {
-      "name": "DocsKimiPage2",
-      "sourceFile": "src/capsules/docs-2.tsx"
+      "name": "DocsFooter",
+      "sourceFile": "src/registry/sections/docs/DocsFooter.tsx"
     },
     {
-      "name": "DocsKimiPage3",
-      "sourceFile": "src/capsules/docs-3.tsx"
-    },
-    {
-      "name": "DocsKimiPage4",
-      "sourceFile": "src/capsules/docs-4.tsx"
-    },
-    {
-      "name": "DocsKimiPage5",
-      "sourceFile": "src/capsules/docs-5.tsx"
-    },
-    {
-      "name": "DocsKimiPage6",
-      "sourceFile": "src/capsules/docs-6.tsx"
-    },
-    {
-      "name": "DocsKimiPage7",
-      "sourceFile": "src/capsules/docs-7.tsx"
-    },
-    {
-      "name": "DocsKimiPage8",
-      "sourceFile": "src/capsules/docs-8.tsx"
-    },
-    {
-      "name": "DocsKimiPage9",
-      "sourceFile": "src/capsules/docs-9.tsx"
+      "name": "DocsHero",
+      "sourceFile": "src/registry/sections/docs/DocsHero.tsx"
     },
     {
       "name": "DocsNavbar",
@@ -1798,6 +1468,14 @@
       "sourceFile": "src/registry/sections/docs/DocsSidebar.tsx"
     },
     {
+      "name": "DocsStoryGrid",
+      "sourceFile": "src/registry/sections/docs/DocsStoryGrid.tsx"
+    },
+    {
+      "name": "DocsTopics",
+      "sourceFile": "src/registry/sections/docs/DocsTopics.tsx"
+    },
+    {
       "name": "Drawer",
       "sourceFile": "src/registry/primitives/drawer.tsx"
     },
@@ -1806,48 +1484,40 @@
       "sourceFile": "src/registry/primitives/dropdown-menu.tsx"
     },
     {
-      "name": "EcommerceKimiPage",
-      "sourceFile": "src/capsules/ecommerce.tsx"
+      "name": "EcommerceCta",
+      "sourceFile": "src/registry/sections/ecommerce/EcommerceCta.tsx"
     },
     {
-      "name": "EcommerceKimiPage2",
-      "sourceFile": "src/capsules/ecommerce-2.tsx"
+      "name": "EcommerceFeatures",
+      "sourceFile": "src/registry/sections/ecommerce/EcommerceFeatures.tsx"
     },
     {
-      "name": "EcommerceKimiPage3",
-      "sourceFile": "src/capsules/ecommerce-3.tsx"
+      "name": "EcommerceFooter",
+      "sourceFile": "src/registry/sections/ecommerce/EcommerceFooter.tsx"
     },
     {
-      "name": "EcommerceKimiPage4",
-      "sourceFile": "src/capsules/ecommerce-4.tsx"
+      "name": "EcommerceGallery",
+      "sourceFile": "src/registry/sections/ecommerce/EcommerceGallery.tsx"
     },
     {
-      "name": "EcommerceKimiPage5",
-      "sourceFile": "src/capsules/ecommerce-5.tsx"
+      "name": "EcommerceHero",
+      "sourceFile": "src/registry/sections/ecommerce/EcommerceHero.tsx"
+    },
+    {
+      "name": "EcommerceLogos",
+      "sourceFile": "src/registry/sections/ecommerce/EcommerceLogos.tsx"
+    },
+    {
+      "name": "EcommerceNavbar",
+      "sourceFile": "src/registry/sections/ecommerce/EcommerceNavbar.tsx"
     },
     {
       "name": "EcommerceOverview",
       "sourceFile": "src/registry/sections/ecommerce/EcommerceOverview.tsx"
     },
     {
-      "name": "EducationKimiPage",
-      "sourceFile": "src/capsules/education.tsx"
-    },
-    {
-      "name": "EducationKimiPage2",
-      "sourceFile": "src/capsules/education-2.tsx"
-    },
-    {
-      "name": "EducationKimiPage3",
-      "sourceFile": "src/capsules/education-3.tsx"
-    },
-    {
-      "name": "EducationKimiPage4",
-      "sourceFile": "src/capsules/education-4.tsx"
-    },
-    {
-      "name": "EducationKimiPage5",
-      "sourceFile": "src/capsules/education-5.tsx"
+      "name": "EcommerceTestimonials",
+      "sourceFile": "src/registry/sections/ecommerce/EcommerceTestimonials.tsx"
     },
     {
       "name": "ElectronicsStoreCategories",
@@ -1876,18 +1546,6 @@
     {
       "name": "ElectronicsStoreHero",
       "sourceFile": "src/registry/sections/electronics-store/ElectronicsStoreHero.tsx"
-    },
-    {
-      "name": "ElectronicsStoreKimiPage",
-      "sourceFile": "src/capsules/electronics-store.tsx"
-    },
-    {
-      "name": "ElectronicsStoreKimiPage2",
-      "sourceFile": "src/capsules/electronics-store-2.tsx"
-    },
-    {
-      "name": "ElectronicsStoreKimiPage3",
-      "sourceFile": "src/capsules/electronics-store-3.tsx"
     },
     {
       "name": "ElectronicsStoreLogos",
@@ -1946,18 +1604,6 @@
       "sourceFile": "src/registry/sections/event/EventHero.tsx"
     },
     {
-      "name": "EventKimiPage",
-      "sourceFile": "src/capsules/event.tsx"
-    },
-    {
-      "name": "EventKimiPage2",
-      "sourceFile": "src/capsules/event-2.tsx"
-    },
-    {
-      "name": "EventKimiPage3",
-      "sourceFile": "src/capsules/event-3.tsx"
-    },
-    {
       "name": "EventLogos",
       "sourceFile": "src/registry/sections/event/EventLogos.tsx"
     },
@@ -1984,14 +1630,6 @@
     {
       "name": "EventPlannerHero",
       "sourceFile": "src/registry/sections/event-planner/EventPlannerHero.tsx"
-    },
-    {
-      "name": "EventPlannerKimiPage",
-      "sourceFile": "src/capsules/event-planner.tsx"
-    },
-    {
-      "name": "EventPlannerKimiPage2",
-      "sourceFile": "src/capsules/event-planner-2.tsx"
     },
     {
       "name": "EventPlannerLogos",
@@ -2054,14 +1692,6 @@
       "sourceFile": "src/registry/sections/faq/FaqHero.tsx"
     },
     {
-      "name": "FaqKimiPage",
-      "sourceFile": "src/capsules/faq.tsx"
-    },
-    {
-      "name": "FaqKimiPage2",
-      "sourceFile": "src/capsules/faq-2.tsx"
-    },
-    {
       "name": "FaqNavbar",
       "sourceFile": "src/registry/sections/faq/FaqNavbar.tsx"
     },
@@ -2088,18 +1718,6 @@
     {
       "name": "FashionStoreHero",
       "sourceFile": "src/registry/sections/fashion-store/FashionStoreHero.tsx"
-    },
-    {
-      "name": "FashionStoreKimiPage",
-      "sourceFile": "src/capsules/fashion-store.tsx"
-    },
-    {
-      "name": "FashionStoreKimiPage2",
-      "sourceFile": "src/capsules/fashion-store-2.tsx"
-    },
-    {
-      "name": "FashionStoreKimiPage3",
-      "sourceFile": "src/capsules/fashion-store-3.tsx"
     },
     {
       "name": "FashionStoreLogos",
@@ -2130,26 +1748,6 @@
       "sourceFile": "src/registry/sections/fashion-store/FashionStoreTestimonials.tsx"
     },
     {
-      "name": "FeaturesKimiPage",
-      "sourceFile": "src/capsules/features.tsx"
-    },
-    {
-      "name": "FeaturesKimiPage2",
-      "sourceFile": "src/capsules/features-2.tsx"
-    },
-    {
-      "name": "FeaturesKimiPage3",
-      "sourceFile": "src/capsules/features-3.tsx"
-    },
-    {
-      "name": "FeaturesKimiPage4",
-      "sourceFile": "src/capsules/features-4.tsx"
-    },
-    {
-      "name": "FeaturesKimiPage5",
-      "sourceFile": "src/capsules/features-5.tsx"
-    },
-    {
       "name": "Field",
       "sourceFile": "src/registry/primitives/field.tsx"
     },
@@ -2176,18 +1774,6 @@
     {
       "name": "FilmDirectorHero",
       "sourceFile": "src/registry/sections/film-director/FilmDirectorHero.tsx"
-    },
-    {
-      "name": "FilmDirectorKimiPage",
-      "sourceFile": "src/capsules/film-director.tsx"
-    },
-    {
-      "name": "FilmDirectorKimiPage2",
-      "sourceFile": "src/capsules/film-director-2.tsx"
-    },
-    {
-      "name": "FilmDirectorKimiPage3",
-      "sourceFile": "src/capsules/film-director-3.tsx"
     },
     {
       "name": "FilmDirectorLogos",
@@ -2222,20 +1808,20 @@
       "sourceFile": "src/registry/sections/film-director/FilmDirectorWork.tsx"
     },
     {
+      "name": "FintechCta",
+      "sourceFile": "src/registry/sections/fintech/FintechCta.tsx"
+    },
+    {
       "name": "FintechFeatures",
       "sourceFile": "src/registry/sections/fintech/FintechFeatures.tsx"
     },
     {
-      "name": "FintechKimiPage",
-      "sourceFile": "src/capsules/fintech.tsx"
+      "name": "FintechFooter",
+      "sourceFile": "src/registry/sections/fintech/FintechFooter.tsx"
     },
     {
-      "name": "FintechKimiPage2",
-      "sourceFile": "src/capsules/fintech-2.tsx"
-    },
-    {
-      "name": "FintechKimiPage3",
-      "sourceFile": "src/capsules/fintech-3.tsx"
+      "name": "FintechHero",
+      "sourceFile": "src/registry/sections/fintech/FintechHero.tsx"
     },
     {
       "name": "FintechLogos",
@@ -2244,6 +1830,18 @@
     {
       "name": "FintechNavbar",
       "sourceFile": "src/registry/sections/fintech/FintechNavbar.tsx"
+    },
+    {
+      "name": "FintechPricing",
+      "sourceFile": "src/registry/sections/fintech/FintechPricing.tsx"
+    },
+    {
+      "name": "FintechStats",
+      "sourceFile": "src/registry/sections/fintech/FintechStats.tsx"
+    },
+    {
+      "name": "FintechTestimonials",
+      "sourceFile": "src/registry/sections/fintech/FintechTestimonials.tsx"
     },
     {
       "name": "FitnessClasses",
@@ -2268,18 +1866,6 @@
     {
       "name": "FitnessHero",
       "sourceFile": "src/registry/sections/fitness/FitnessHero.tsx"
-    },
-    {
-      "name": "FitnessKimiPage",
-      "sourceFile": "src/capsules/fitness.tsx"
-    },
-    {
-      "name": "FitnessKimiPage2",
-      "sourceFile": "src/capsules/fitness-2.tsx"
-    },
-    {
-      "name": "FitnessKimiPage3",
-      "sourceFile": "src/capsules/fitness-3.tsx"
     },
     {
       "name": "FitnessLogos",
@@ -2310,8 +1896,36 @@
       "sourceFile": "src/registry/sections/fitness/FitnessTrainers.tsx"
     },
     {
-      "name": "FlightSimulatorKimiPage",
-      "sourceFile": "src/capsules/flight-simulator.tsx"
+      "name": "FlightSimulatorFeatures",
+      "sourceFile": "src/registry/sections/flight-simulator/FlightSimulatorFeatures.tsx"
+    },
+    {
+      "name": "FlightSimulatorFooter",
+      "sourceFile": "src/registry/sections/flight-simulator/FlightSimulatorFooter.tsx"
+    },
+    {
+      "name": "FlightSimulatorGallery",
+      "sourceFile": "src/registry/sections/flight-simulator/FlightSimulatorGallery.tsx"
+    },
+    {
+      "name": "FlightSimulatorHero",
+      "sourceFile": "src/registry/sections/flight-simulator/FlightSimulatorHero.tsx"
+    },
+    {
+      "name": "FlightSimulatorNavbar",
+      "sourceFile": "src/registry/sections/flight-simulator/FlightSimulatorNavbar.tsx"
+    },
+    {
+      "name": "FlightSimulatorPricing",
+      "sourceFile": "src/registry/sections/flight-simulator/FlightSimulatorPricing.tsx"
+    },
+    {
+      "name": "FlightSimulatorStats",
+      "sourceFile": "src/registry/sections/flight-simulator/FlightSimulatorStats.tsx"
+    },
+    {
+      "name": "FlightSimulatorTestimonials",
+      "sourceFile": "src/registry/sections/flight-simulator/FlightSimulatorTestimonials.tsx"
     },
     {
       "name": "FoodDeliveryCta",
@@ -2328,18 +1942,6 @@
     {
       "name": "FoodDeliveryHero",
       "sourceFile": "src/registry/sections/food-delivery/FoodDeliveryHero.tsx"
-    },
-    {
-      "name": "FoodDeliveryKimiPage",
-      "sourceFile": "src/capsules/food-delivery.tsx"
-    },
-    {
-      "name": "FoodDeliveryKimiPage2",
-      "sourceFile": "src/capsules/food-delivery-2.tsx"
-    },
-    {
-      "name": "FoodDeliveryKimiPage3",
-      "sourceFile": "src/capsules/food-delivery-3.tsx"
     },
     {
       "name": "FoodDeliveryLogos",
@@ -2394,18 +1996,6 @@
       "sourceFile": "src/registry/sections/food-truck/FoodTruckHero.tsx"
     },
     {
-      "name": "FoodTruckKimiPage",
-      "sourceFile": "src/capsules/food-truck.tsx"
-    },
-    {
-      "name": "FoodTruckKimiPage2",
-      "sourceFile": "src/capsules/food-truck-2.tsx"
-    },
-    {
-      "name": "FoodTruckKimiPage3",
-      "sourceFile": "src/capsules/food-truck-3.tsx"
-    },
-    {
       "name": "FoodTruckLocations",
       "sourceFile": "src/registry/sections/food-truck/FoodTruckLocations.tsx"
     },
@@ -2442,18 +2032,6 @@
       "sourceFile": "src/registry/sections/furniture-store/FurnitureStoreHero.tsx"
     },
     {
-      "name": "FurnitureStoreKimiPage",
-      "sourceFile": "src/capsules/furniture-store.tsx"
-    },
-    {
-      "name": "FurnitureStoreKimiPage2",
-      "sourceFile": "src/capsules/furniture-store-2.tsx"
-    },
-    {
-      "name": "FurnitureStoreKimiPage3",
-      "sourceFile": "src/capsules/furniture-store-3.tsx"
-    },
-    {
       "name": "FurnitureStoreNavbar",
       "sourceFile": "src/registry/sections/furniture-store/FurnitureStoreNavbar.tsx"
     },
@@ -2476,6 +2054,42 @@
     {
       "name": "FurnitureStoreTestimonials",
       "sourceFile": "src/registry/sections/furniture-store/FurnitureStoreTestimonials.tsx"
+    },
+    {
+      "name": "GovernmentPortalAbout",
+      "sourceFile": "src/registry/sections/government-portal/GovernmentPortalAbout.tsx"
+    },
+    {
+      "name": "GovernmentPortalContact",
+      "sourceFile": "src/registry/sections/government-portal/GovernmentPortalContact.tsx"
+    },
+    {
+      "name": "GovernmentPortalEvents",
+      "sourceFile": "src/registry/sections/government-portal/GovernmentPortalEvents.tsx"
+    },
+    {
+      "name": "GovernmentPortalFaq",
+      "sourceFile": "src/registry/sections/government-portal/GovernmentPortalFaq.tsx"
+    },
+    {
+      "name": "GovernmentPortalFooter",
+      "sourceFile": "src/registry/sections/government-portal/GovernmentPortalFooter.tsx"
+    },
+    {
+      "name": "GovernmentPortalHero",
+      "sourceFile": "src/registry/sections/government-portal/GovernmentPortalHero.tsx"
+    },
+    {
+      "name": "GovernmentPortalNavbar",
+      "sourceFile": "src/registry/sections/government-portal/GovernmentPortalNavbar.tsx"
+    },
+    {
+      "name": "GovernmentPortalServices",
+      "sourceFile": "src/registry/sections/government-portal/GovernmentPortalServices.tsx"
+    },
+    {
+      "name": "GovernmentPortalStats",
+      "sourceFile": "src/registry/sections/government-portal/GovernmentPortalStats.tsx"
     },
     {
       "name": "Grid",
@@ -2508,18 +2122,6 @@
     {
       "name": "HealthcareInsurers",
       "sourceFile": "src/registry/sections/healthcare/HealthcareInsurers.tsx"
-    },
-    {
-      "name": "HealthcareKimiPage",
-      "sourceFile": "src/capsules/healthcare.tsx"
-    },
-    {
-      "name": "HealthcareKimiPage2",
-      "sourceFile": "src/capsules/healthcare-2.tsx"
-    },
-    {
-      "name": "HealthcareKimiPage3",
-      "sourceFile": "src/capsules/healthcare-3.tsx"
     },
     {
       "name": "HealthcareNavbar",
@@ -2574,18 +2176,6 @@
       "sourceFile": "src/registry/sections/hotel-resort/HotelResortHero.tsx"
     },
     {
-      "name": "HotelResortKimiPage",
-      "sourceFile": "src/capsules/hotel-resort.tsx"
-    },
-    {
-      "name": "HotelResortKimiPage2",
-      "sourceFile": "src/capsules/hotel-resort-2.tsx"
-    },
-    {
-      "name": "HotelResortKimiPage3",
-      "sourceFile": "src/capsules/hotel-resort-3.tsx"
-    },
-    {
       "name": "HotelResortNavbar",
       "sourceFile": "src/registry/sections/hotel-resort/HotelResortNavbar.tsx"
     },
@@ -2624,18 +2214,6 @@
     {
       "name": "IllustratorHero",
       "sourceFile": "src/registry/sections/illustrator/IllustratorHero.tsx"
-    },
-    {
-      "name": "IllustratorKimiPage",
-      "sourceFile": "src/capsules/illustrator.tsx"
-    },
-    {
-      "name": "IllustratorKimiPage2",
-      "sourceFile": "src/capsules/illustrator-2.tsx"
-    },
-    {
-      "name": "IllustratorKimiPage3",
-      "sourceFile": "src/capsules/illustrator-3.tsx"
     },
     {
       "name": "IllustratorLogos",
@@ -2698,18 +2276,6 @@
       "sourceFile": "src/registry/sections/insurance/InsuranceHero.tsx"
     },
     {
-      "name": "InsuranceKimiPage",
-      "sourceFile": "src/capsules/insurance.tsx"
-    },
-    {
-      "name": "InsuranceKimiPage2",
-      "sourceFile": "src/capsules/insurance-2.tsx"
-    },
-    {
-      "name": "InsuranceKimiPage3",
-      "sourceFile": "src/capsules/insurance-3.tsx"
-    },
-    {
       "name": "InsuranceLogos",
       "sourceFile": "src/registry/sections/insurance/InsuranceLogos.tsx"
     },
@@ -2748,18 +2314,6 @@
     {
       "name": "InteriorDesignHero",
       "sourceFile": "src/registry/sections/interior-design/InteriorDesignHero.tsx"
-    },
-    {
-      "name": "InteriorDesignKimiPage",
-      "sourceFile": "src/capsules/interior-design.tsx"
-    },
-    {
-      "name": "InteriorDesignKimiPage2",
-      "sourceFile": "src/capsules/interior-design-2.tsx"
-    },
-    {
-      "name": "InteriorDesignKimiPage3",
-      "sourceFile": "src/capsules/interior-design-3.tsx"
     },
     {
       "name": "InteriorDesignLogos",
@@ -2816,18 +2370,6 @@
     {
       "name": "InvestingHero",
       "sourceFile": "src/registry/sections/investing/InvestingHero.tsx"
-    },
-    {
-      "name": "InvestingKimiPage",
-      "sourceFile": "src/capsules/investing.tsx"
-    },
-    {
-      "name": "InvestingKimiPage2",
-      "sourceFile": "src/capsules/investing-2.tsx"
-    },
-    {
-      "name": "InvestingKimiPage3",
-      "sourceFile": "src/capsules/investing-3.tsx"
     },
     {
       "name": "InvestingLogos",
@@ -2894,18 +2436,6 @@
       "sourceFile": "src/registry/sections/jewelry-store/JewelryStoreHero.tsx"
     },
     {
-      "name": "JewelryStoreKimiPage",
-      "sourceFile": "src/capsules/jewelry-store.tsx"
-    },
-    {
-      "name": "JewelryStoreKimiPage2",
-      "sourceFile": "src/capsules/jewelry-store-2.tsx"
-    },
-    {
-      "name": "JewelryStoreKimiPage3",
-      "sourceFile": "src/capsules/jewelry-store-3.tsx"
-    },
-    {
       "name": "JewelryStoreLogos",
       "sourceFile": "src/registry/sections/jewelry-store/JewelryStoreLogos.tsx"
     },
@@ -2948,18 +2478,6 @@
     {
       "name": "JobBoardJobs",
       "sourceFile": "src/registry/sections/job-board/JobBoardJobs.tsx"
-    },
-    {
-      "name": "JobBoardKimiPage",
-      "sourceFile": "src/capsules/job-board.tsx"
-    },
-    {
-      "name": "JobBoardKimiPage2",
-      "sourceFile": "src/capsules/job-board-2.tsx"
-    },
-    {
-      "name": "JobBoardKimiPage3",
-      "sourceFile": "src/capsules/job-board-3.tsx"
     },
     {
       "name": "JobBoardLogos",
@@ -3014,18 +2532,6 @@
       "sourceFile": "src/registry/sections/kids-education/KidsEducationHero.tsx"
     },
     {
-      "name": "KidsEducationKimiPage",
-      "sourceFile": "src/capsules/kids-education.tsx"
-    },
-    {
-      "name": "KidsEducationKimiPage2",
-      "sourceFile": "src/capsules/kids-education-2.tsx"
-    },
-    {
-      "name": "KidsEducationKimiPage3",
-      "sourceFile": "src/capsules/kids-education-3.tsx"
-    },
-    {
       "name": "KidsEducationLogos",
       "sourceFile": "src/registry/sections/kids-education/KidsEducationLogos.tsx"
     },
@@ -3070,18 +2576,6 @@
       "sourceFile": "src/registry/sections/knowledge-base/KnowledgeBaseHero.tsx"
     },
     {
-      "name": "KnowledgeBaseKimiPage",
-      "sourceFile": "src/capsules/knowledge-base.tsx"
-    },
-    {
-      "name": "KnowledgeBaseKimiPage2",
-      "sourceFile": "src/capsules/knowledge-base-2.tsx"
-    },
-    {
-      "name": "KnowledgeBaseKimiPage3",
-      "sourceFile": "src/capsules/knowledge-base-3.tsx"
-    },
-    {
       "name": "KnowledgeBaseNavbar",
       "sourceFile": "src/registry/sections/knowledge-base/KnowledgeBaseNavbar.tsx"
     },
@@ -3112,18 +2606,6 @@
     {
       "name": "LandscapingHero",
       "sourceFile": "src/registry/sections/landscaping/LandscapingHero.tsx"
-    },
-    {
-      "name": "LandscapingKimiPage",
-      "sourceFile": "src/capsules/landscaping.tsx"
-    },
-    {
-      "name": "LandscapingKimiPage2",
-      "sourceFile": "src/capsules/landscaping-2.tsx"
-    },
-    {
-      "name": "LandscapingKimiPage3",
-      "sourceFile": "src/capsules/landscaping-3.tsx"
     },
     {
       "name": "LandscapingLogos",
@@ -3164,18 +2646,6 @@
     {
       "name": "LawFirmHero",
       "sourceFile": "src/registry/sections/law-firm/LawFirmHero.tsx"
-    },
-    {
-      "name": "LawFirmKimiPage",
-      "sourceFile": "src/capsules/law-firm.tsx"
-    },
-    {
-      "name": "LawFirmKimiPage2",
-      "sourceFile": "src/capsules/law-firm-2.tsx"
-    },
-    {
-      "name": "LawFirmKimiPage3",
-      "sourceFile": "src/capsules/law-firm-3.tsx"
     },
     {
       "name": "LawFirmLogos",
@@ -3226,18 +2696,6 @@
       "sourceFile": "src/registry/sections/lending/LendingHero.tsx"
     },
     {
-      "name": "LendingKimiPage",
-      "sourceFile": "src/capsules/lending.tsx"
-    },
-    {
-      "name": "LendingKimiPage2",
-      "sourceFile": "src/capsules/lending-2.tsx"
-    },
-    {
-      "name": "LendingKimiPage3",
-      "sourceFile": "src/capsules/lending-3.tsx"
-    },
-    {
       "name": "LendingLogos",
       "sourceFile": "src/registry/sections/lending/LendingLogos.tsx"
     },
@@ -3262,24 +2720,28 @@
       "sourceFile": "src/registry/sections/lending/LendingTestimonials.tsx"
     },
     {
+      "name": "LinkInBioFeatures",
+      "sourceFile": "src/registry/sections/link-in-bio/LinkInBioFeatures.tsx"
+    },
+    {
       "name": "LinkInBioFooter",
       "sourceFile": "src/registry/sections/link-in-bio/LinkInBioFooter.tsx"
     },
     {
-      "name": "LinkInBioKimiPage",
-      "sourceFile": "src/capsules/link-in-bio.tsx"
+      "name": "LinkInBioGallery",
+      "sourceFile": "src/registry/sections/link-in-bio/LinkInBioGallery.tsx"
     },
     {
-      "name": "LinkInBioKimiPage2",
-      "sourceFile": "src/capsules/link-in-bio-2.tsx"
+      "name": "LinkInBioHero",
+      "sourceFile": "src/registry/sections/link-in-bio/LinkInBioHero.tsx"
     },
     {
-      "name": "LinkInBioKimiPage3",
-      "sourceFile": "src/capsules/link-in-bio-3.tsx"
+      "name": "LinkInBioNavbar",
+      "sourceFile": "src/registry/sections/link-in-bio/LinkInBioNavbar.tsx"
     },
     {
-      "name": "LinkInBioProfile",
-      "sourceFile": "src/registry/sections/link-in-bio/LinkInBioProfile.tsx"
+      "name": "LinkInBioSubscribe",
+      "sourceFile": "src/registry/sections/link-in-bio/LinkInBioSubscribe.tsx"
     },
     {
       "name": "LogisticsCta",
@@ -3300,18 +2762,6 @@
     {
       "name": "LogisticsHero",
       "sourceFile": "src/registry/sections/logistics/LogisticsHero.tsx"
-    },
-    {
-      "name": "LogisticsKimiPage",
-      "sourceFile": "src/capsules/logistics.tsx"
-    },
-    {
-      "name": "LogisticsKimiPage2",
-      "sourceFile": "src/capsules/logistics-2.tsx"
-    },
-    {
-      "name": "LogisticsKimiPage3",
-      "sourceFile": "src/capsules/logistics-3.tsx"
     },
     {
       "name": "LogisticsLogos",
@@ -3370,18 +2820,6 @@
       "sourceFile": "src/registry/sections/manufacturing/ManufacturingIndustries.tsx"
     },
     {
-      "name": "ManufacturingKimiPage",
-      "sourceFile": "src/capsules/manufacturing.tsx"
-    },
-    {
-      "name": "ManufacturingKimiPage2",
-      "sourceFile": "src/capsules/manufacturing-2.tsx"
-    },
-    {
-      "name": "ManufacturingKimiPage3",
-      "sourceFile": "src/capsules/manufacturing-3.tsx"
-    },
-    {
       "name": "ManufacturingLogos",
       "sourceFile": "src/registry/sections/manufacturing/ManufacturingLogos.tsx"
     },
@@ -3424,18 +2862,6 @@
     {
       "name": "MarketingAgencyHero",
       "sourceFile": "src/registry/sections/marketing-agency/MarketingAgencyHero.tsx"
-    },
-    {
-      "name": "MarketingAgencyKimiPage",
-      "sourceFile": "src/capsules/marketing-agency.tsx"
-    },
-    {
-      "name": "MarketingAgencyKimiPage2",
-      "sourceFile": "src/capsules/marketing-agency-2.tsx"
-    },
-    {
-      "name": "MarketingAgencyKimiPage3",
-      "sourceFile": "src/capsules/marketing-agency-3.tsx"
     },
     {
       "name": "MarketingAgencyLogos",
@@ -3482,14 +2908,6 @@
       "sourceFile": "src/registry/sections/marketing/MarketingHero.tsx"
     },
     {
-      "name": "MarketingKimiPage",
-      "sourceFile": "src/capsules/marketing.tsx"
-    },
-    {
-      "name": "MarketingKimiPage2",
-      "sourceFile": "src/capsules/marketing-2.tsx"
-    },
-    {
       "name": "MarketingLogos",
       "sourceFile": "src/registry/sections/marketing/MarketingLogos.tsx"
     },
@@ -3506,8 +2924,16 @@
       "sourceFile": "src/registry/sections/marketing/MarketingTestimonial.tsx"
     },
     {
-      "name": "MarketplaceCategories",
-      "sourceFile": "src/registry/sections/marketplace/MarketplaceCategories.tsx"
+      "name": "MarketplaceAuthors",
+      "sourceFile": "src/registry/sections/marketplace/MarketplaceAuthors.tsx"
+    },
+    {
+      "name": "MarketplaceCta",
+      "sourceFile": "src/registry/sections/marketplace/MarketplaceCta.tsx"
+    },
+    {
+      "name": "MarketplaceFeatures",
+      "sourceFile": "src/registry/sections/marketplace/MarketplaceFeatures.tsx"
     },
     {
       "name": "MarketplaceFooter",
@@ -3518,24 +2944,16 @@
       "sourceFile": "src/registry/sections/marketplace/MarketplaceHero.tsx"
     },
     {
-      "name": "MarketplaceKimiPage",
-      "sourceFile": "src/capsules/marketplace.tsx"
-    },
-    {
-      "name": "MarketplaceKimiPage2",
-      "sourceFile": "src/capsules/marketplace-2.tsx"
-    },
-    {
-      "name": "MarketplaceKimiPage3",
-      "sourceFile": "src/capsules/marketplace-3.tsx"
-    },
-    {
       "name": "MarketplaceNavbar",
       "sourceFile": "src/registry/sections/marketplace/MarketplaceNavbar.tsx"
     },
     {
-      "name": "MarketplaceSellers",
-      "sourceFile": "src/registry/sections/marketplace/MarketplaceSellers.tsx"
+      "name": "MarketplaceStats",
+      "sourceFile": "src/registry/sections/marketplace/MarketplaceStats.tsx"
+    },
+    {
+      "name": "MarketplaceTestimonials",
+      "sourceFile": "src/registry/sections/marketplace/MarketplaceTestimonials.tsx"
     },
     {
       "name": "MembershipClubBenefits",
@@ -3560,18 +2978,6 @@
     {
       "name": "MembershipClubHero",
       "sourceFile": "src/registry/sections/membership-club/MembershipClubHero.tsx"
-    },
-    {
-      "name": "MembershipClubKimiPage",
-      "sourceFile": "src/capsules/membership-club.tsx"
-    },
-    {
-      "name": "MembershipClubKimiPage2",
-      "sourceFile": "src/capsules/membership-club-2.tsx"
-    },
-    {
-      "name": "MembershipClubKimiPage3",
-      "sourceFile": "src/capsules/membership-club-3.tsx"
     },
     {
       "name": "MembershipClubLogos",
@@ -3614,18 +3020,6 @@
       "sourceFile": "src/registry/sections/mental-health/MentalHealthHero.tsx"
     },
     {
-      "name": "MentalHealthKimiPage",
-      "sourceFile": "src/capsules/mental-health.tsx"
-    },
-    {
-      "name": "MentalHealthKimiPage2",
-      "sourceFile": "src/capsules/mental-health-2.tsx"
-    },
-    {
-      "name": "MentalHealthKimiPage3",
-      "sourceFile": "src/capsules/mental-health-3.tsx"
-    },
-    {
       "name": "MentalHealthLogos",
       "sourceFile": "src/registry/sections/mental-health/MentalHealthLogos.tsx"
     },
@@ -3662,26 +3056,6 @@
       "sourceFile": "src/registry/primitives/menubar.tsx"
     },
     {
-      "name": "MenuKimiPage",
-      "sourceFile": "src/capsules/menu.tsx"
-    },
-    {
-      "name": "MenuKimiPage2",
-      "sourceFile": "src/capsules/menu-2.tsx"
-    },
-    {
-      "name": "MenuKimiPage3",
-      "sourceFile": "src/capsules/menu-3.tsx"
-    },
-    {
-      "name": "MenuKimiPage4",
-      "sourceFile": "src/capsules/menu-4.tsx"
-    },
-    {
-      "name": "MenuKimiPage5",
-      "sourceFile": "src/capsules/menu-5.tsx"
-    },
-    {
       "name": "MobileAppDownloadCta",
       "sourceFile": "src/registry/sections/mobile-app/MobileAppDownloadCta.tsx"
     },
@@ -3708,46 +3082,6 @@
     {
       "name": "MobileAppHowItWorks",
       "sourceFile": "src/registry/sections/mobile-app/MobileAppHowItWorks.tsx"
-    },
-    {
-      "name": "MobileAppKimiPage",
-      "sourceFile": "src/capsules/mobile-app.tsx"
-    },
-    {
-      "name": "MobileAppKimiPage10",
-      "sourceFile": "src/capsules/mobile-app-10.tsx"
-    },
-    {
-      "name": "MobileAppKimiPage2",
-      "sourceFile": "src/capsules/mobile-app-2.tsx"
-    },
-    {
-      "name": "MobileAppKimiPage3",
-      "sourceFile": "src/capsules/mobile-app-3.tsx"
-    },
-    {
-      "name": "MobileAppKimiPage4",
-      "sourceFile": "src/capsules/mobile-app-4.tsx"
-    },
-    {
-      "name": "MobileAppKimiPage5",
-      "sourceFile": "src/capsules/mobile-app-5.tsx"
-    },
-    {
-      "name": "MobileAppKimiPage6",
-      "sourceFile": "src/capsules/mobile-app-6.tsx"
-    },
-    {
-      "name": "MobileAppKimiPage7",
-      "sourceFile": "src/capsules/mobile-app-7.tsx"
-    },
-    {
-      "name": "MobileAppKimiPage8",
-      "sourceFile": "src/capsules/mobile-app-8.tsx"
-    },
-    {
-      "name": "MobileAppKimiPage9",
-      "sourceFile": "src/capsules/mobile-app-9.tsx"
     },
     {
       "name": "MobileAppLogos",
@@ -3784,18 +3118,6 @@
     {
       "name": "MusicArtistHero",
       "sourceFile": "src/registry/sections/music-artist/MusicArtistHero.tsx"
-    },
-    {
-      "name": "MusicArtistKimiPage",
-      "sourceFile": "src/capsules/music-artist.tsx"
-    },
-    {
-      "name": "MusicArtistKimiPage2",
-      "sourceFile": "src/capsules/music-artist-2.tsx"
-    },
-    {
-      "name": "MusicArtistKimiPage3",
-      "sourceFile": "src/capsules/music-artist-3.tsx"
     },
     {
       "name": "MusicArtistMailing",
@@ -3846,18 +3168,6 @@
       "sourceFile": "src/registry/sections/music-festival/MusicFestivalHero.tsx"
     },
     {
-      "name": "MusicFestivalKimiPage",
-      "sourceFile": "src/capsules/music-festival.tsx"
-    },
-    {
-      "name": "MusicFestivalKimiPage2",
-      "sourceFile": "src/capsules/music-festival-2.tsx"
-    },
-    {
-      "name": "MusicFestivalKimiPage3",
-      "sourceFile": "src/capsules/music-festival-3.tsx"
-    },
-    {
       "name": "MusicFestivalLineup",
       "sourceFile": "src/registry/sections/music-festival/MusicFestivalLineup.tsx"
     },
@@ -3894,36 +3204,24 @@
       "sourceFile": "src/registry/primitives/navigation-menu.tsx"
     },
     {
-      "name": "NewsCategories",
-      "sourceFile": "src/registry/sections/news/NewsCategories.tsx"
+      "name": "NewsAuthors",
+      "sourceFile": "src/registry/sections/news/NewsAuthors.tsx"
     },
     {
       "name": "NewsCta",
       "sourceFile": "src/registry/sections/news/NewsCta.tsx"
     },
     {
-      "name": "NewsFeatured",
-      "sourceFile": "src/registry/sections/news/NewsFeatured.tsx"
+      "name": "NewsFeaturedStory",
+      "sourceFile": "src/registry/sections/news/NewsFeaturedStory.tsx"
     },
     {
       "name": "NewsFooter",
       "sourceFile": "src/registry/sections/news/NewsFooter.tsx"
     },
     {
-      "name": "NewsKimiPage",
-      "sourceFile": "src/capsules/news.tsx"
-    },
-    {
-      "name": "NewsKimiPage2",
-      "sourceFile": "src/capsules/news-2.tsx"
-    },
-    {
-      "name": "NewsKimiPage3",
-      "sourceFile": "src/capsules/news-3.tsx"
-    },
-    {
-      "name": "NewsLatest",
-      "sourceFile": "src/registry/sections/news/NewsLatest.tsx"
+      "name": "NewsHero",
+      "sourceFile": "src/registry/sections/news/NewsHero.tsx"
     },
     {
       "name": "NewsletterCta",
@@ -3950,18 +3248,6 @@
       "sourceFile": "src/registry/sections/newsletter/NewsletterIssues.tsx"
     },
     {
-      "name": "NewsletterKimiPage",
-      "sourceFile": "src/capsules/newsletter.tsx"
-    },
-    {
-      "name": "NewsletterKimiPage2",
-      "sourceFile": "src/capsules/newsletter-2.tsx"
-    },
-    {
-      "name": "NewsletterKimiPage3",
-      "sourceFile": "src/capsules/newsletter-3.tsx"
-    },
-    {
       "name": "NewsletterNavbar",
       "sourceFile": "src/registry/sections/newsletter/NewsletterNavbar.tsx"
     },
@@ -3982,12 +3268,48 @@
       "sourceFile": "src/registry/sections/news/NewsNavbar.tsx"
     },
     {
-      "name": "NewsSidebar",
-      "sourceFile": "src/registry/sections/news/NewsSidebar.tsx"
+      "name": "NewsroomAuthors",
+      "sourceFile": "src/registry/sections/newsroom/NewsroomAuthors.tsx"
+    },
+    {
+      "name": "NewsroomFeaturedStory",
+      "sourceFile": "src/registry/sections/newsroom/NewsroomFeaturedStory.tsx"
+    },
+    {
+      "name": "NewsroomFooter",
+      "sourceFile": "src/registry/sections/newsroom/NewsroomFooter.tsx"
+    },
+    {
+      "name": "NewsroomHero",
+      "sourceFile": "src/registry/sections/newsroom/NewsroomHero.tsx"
+    },
+    {
+      "name": "NewsroomNavbar",
+      "sourceFile": "src/registry/sections/newsroom/NewsroomNavbar.tsx"
+    },
+    {
+      "name": "NewsroomStoryGrid",
+      "sourceFile": "src/registry/sections/newsroom/NewsroomStoryGrid.tsx"
+    },
+    {
+      "name": "NewsroomSubscribe",
+      "sourceFile": "src/registry/sections/newsroom/NewsroomSubscribe.tsx"
+    },
+    {
+      "name": "NewsroomTopics",
+      "sourceFile": "src/registry/sections/newsroom/NewsroomTopics.tsx"
+    },
+    {
+      "name": "NewsStoryGrid",
+      "sourceFile": "src/registry/sections/news/NewsStoryGrid.tsx"
     },
     {
       "name": "NewsTestimonials",
       "sourceFile": "src/registry/sections/news/NewsTestimonials.tsx"
+    },
+    {
+      "name": "NewsTopics",
+      "sourceFile": "src/registry/sections/news/NewsTopics.tsx"
     },
     {
       "name": "NoCodeCta",
@@ -4008,18 +3330,6 @@
     {
       "name": "NoCodeHero",
       "sourceFile": "src/registry/sections/no-code/NoCodeHero.tsx"
-    },
-    {
-      "name": "NoCodeKimiPage",
-      "sourceFile": "src/capsules/no-code.tsx"
-    },
-    {
-      "name": "NoCodeKimiPage2",
-      "sourceFile": "src/capsules/no-code-2.tsx"
-    },
-    {
-      "name": "NoCodeKimiPage3",
-      "sourceFile": "src/capsules/no-code-3.tsx"
     },
     {
       "name": "NoCodeLogos",
@@ -4050,40 +3360,52 @@
       "sourceFile": "src/registry/sections/no-code/NoCodeTestimonials.tsx"
     },
     {
+      "name": "NonprofitCta",
+      "sourceFile": "src/registry/sections/nonprofit/NonprofitCta.tsx"
+    },
+    {
+      "name": "NonprofitFooter",
+      "sourceFile": "src/registry/sections/nonprofit/NonprofitFooter.tsx"
+    },
+    {
       "name": "NonprofitHero",
       "sourceFile": "src/registry/sections/nonprofit/NonprofitHero.tsx"
     },
     {
-      "name": "NonprofitKimiPage",
-      "sourceFile": "src/capsules/nonprofit.tsx"
-    },
-    {
-      "name": "NonprofitKimiPage2",
-      "sourceFile": "src/capsules/nonprofit-2.tsx"
+      "name": "NonprofitLogos",
+      "sourceFile": "src/registry/sections/nonprofit/NonprofitLogos.tsx"
     },
     {
       "name": "NonprofitNavbar",
       "sourceFile": "src/registry/sections/nonprofit/NonprofitNavbar.tsx"
     },
     {
-      "name": "NonprofitPartners",
-      "sourceFile": "src/registry/sections/nonprofit/NonprofitPartners.tsx"
+      "name": "NonprofitServices",
+      "sourceFile": "src/registry/sections/nonprofit/NonprofitServices.tsx"
+    },
+    {
+      "name": "NonprofitStats",
+      "sourceFile": "src/registry/sections/nonprofit/NonprofitStats.tsx"
+    },
+    {
+      "name": "NonprofitSubscribe",
+      "sourceFile": "src/registry/sections/nonprofit/NonprofitSubscribe.tsx"
+    },
+    {
+      "name": "NonprofitTestimonials",
+      "sourceFile": "src/registry/sections/nonprofit/NonprofitTestimonials.tsx"
+    },
+    {
+      "name": "NutritionCta",
+      "sourceFile": "src/registry/sections/nutrition/NutritionCta.tsx"
+    },
+    {
+      "name": "NutritionFooter",
+      "sourceFile": "src/registry/sections/nutrition/NutritionFooter.tsx"
     },
     {
       "name": "NutritionHero",
       "sourceFile": "src/registry/sections/nutrition/NutritionHero.tsx"
-    },
-    {
-      "name": "NutritionKimiPage",
-      "sourceFile": "src/capsules/nutrition.tsx"
-    },
-    {
-      "name": "NutritionKimiPage2",
-      "sourceFile": "src/capsules/nutrition-2.tsx"
-    },
-    {
-      "name": "NutritionKimiPage3",
-      "sourceFile": "src/capsules/nutrition-3.tsx"
     },
     {
       "name": "NutritionLogos",
@@ -4094,24 +3416,48 @@
       "sourceFile": "src/registry/sections/nutrition/NutritionNavbar.tsx"
     },
     {
+      "name": "NutritionPricing",
+      "sourceFile": "src/registry/sections/nutrition/NutritionPricing.tsx"
+    },
+    {
+      "name": "NutritionServices",
+      "sourceFile": "src/registry/sections/nutrition/NutritionServices.tsx"
+    },
+    {
+      "name": "NutritionTestimonials",
+      "sourceFile": "src/registry/sections/nutrition/NutritionTestimonials.tsx"
+    },
+    {
+      "name": "OnlineCourseCta",
+      "sourceFile": "src/registry/sections/online-course/OnlineCourseCta.tsx"
+    },
+    {
+      "name": "OnlineCourseFeatures",
+      "sourceFile": "src/registry/sections/online-course/OnlineCourseFeatures.tsx"
+    },
+    {
+      "name": "OnlineCourseFooter",
+      "sourceFile": "src/registry/sections/online-course/OnlineCourseFooter.tsx"
+    },
+    {
       "name": "OnlineCourseHero",
       "sourceFile": "src/registry/sections/online-course/OnlineCourseHero.tsx"
     },
     {
-      "name": "OnlineCourseKimiPage",
-      "sourceFile": "src/capsules/online-course.tsx"
-    },
-    {
-      "name": "OnlineCourseKimiPage2",
-      "sourceFile": "src/capsules/online-course-2.tsx"
-    },
-    {
-      "name": "OnlineCourseKimiPage3",
-      "sourceFile": "src/capsules/online-course-3.tsx"
-    },
-    {
       "name": "OnlineCourseNavbar",
       "sourceFile": "src/registry/sections/online-course/OnlineCourseNavbar.tsx"
+    },
+    {
+      "name": "OnlineCoursePricing",
+      "sourceFile": "src/registry/sections/online-course/OnlineCoursePricing.tsx"
+    },
+    {
+      "name": "OnlineCoursePrograms",
+      "sourceFile": "src/registry/sections/online-course/OnlineCoursePrograms.tsx"
+    },
+    {
+      "name": "OnlineCourseTestimonials",
+      "sourceFile": "src/registry/sections/online-course/OnlineCourseTestimonials.tsx"
     },
     {
       "name": "PageSwitch",
@@ -4122,40 +3468,52 @@
       "sourceFile": "src/registry/primitives/pagination.tsx"
     },
     {
+      "name": "PetVeterinaryCta",
+      "sourceFile": "src/registry/sections/pet-veterinary/PetVeterinaryCta.tsx"
+    },
+    {
+      "name": "PetVeterinaryFooter",
+      "sourceFile": "src/registry/sections/pet-veterinary/PetVeterinaryFooter.tsx"
+    },
+    {
       "name": "PetVeterinaryHero",
       "sourceFile": "src/registry/sections/pet-veterinary/PetVeterinaryHero.tsx"
-    },
-    {
-      "name": "PetVeterinaryKimiPage",
-      "sourceFile": "src/capsules/pet-veterinary.tsx"
-    },
-    {
-      "name": "PetVeterinaryKimiPage2",
-      "sourceFile": "src/capsules/pet-veterinary-2.tsx"
-    },
-    {
-      "name": "PetVeterinaryKimiPage3",
-      "sourceFile": "src/capsules/pet-veterinary-3.tsx"
     },
     {
       "name": "PetVeterinaryNavbar",
       "sourceFile": "src/registry/sections/pet-veterinary/PetVeterinaryNavbar.tsx"
     },
     {
+      "name": "PetVeterinaryPricing",
+      "sourceFile": "src/registry/sections/pet-veterinary/PetVeterinaryPricing.tsx"
+    },
+    {
+      "name": "PetVeterinaryServices",
+      "sourceFile": "src/registry/sections/pet-veterinary/PetVeterinaryServices.tsx"
+    },
+    {
+      "name": "PetVeterinaryStats",
+      "sourceFile": "src/registry/sections/pet-veterinary/PetVeterinaryStats.tsx"
+    },
+    {
+      "name": "PetVeterinaryTestimonials",
+      "sourceFile": "src/registry/sections/pet-veterinary/PetVeterinaryTestimonials.tsx"
+    },
+    {
+      "name": "PhotographyCta",
+      "sourceFile": "src/registry/sections/photography/PhotographyCta.tsx"
+    },
+    {
+      "name": "PhotographyFooter",
+      "sourceFile": "src/registry/sections/photography/PhotographyFooter.tsx"
+    },
+    {
+      "name": "PhotographyGallery",
+      "sourceFile": "src/registry/sections/photography/PhotographyGallery.tsx"
+    },
+    {
       "name": "PhotographyHero",
       "sourceFile": "src/registry/sections/photography/PhotographyHero.tsx"
-    },
-    {
-      "name": "PhotographyKimiPage",
-      "sourceFile": "src/capsules/photography.tsx"
-    },
-    {
-      "name": "PhotographyKimiPage2",
-      "sourceFile": "src/capsules/photography-2.tsx"
-    },
-    {
-      "name": "PhotographyKimiPage3",
-      "sourceFile": "src/capsules/photography-3.tsx"
     },
     {
       "name": "PhotographyLogos",
@@ -4166,80 +3524,136 @@
       "sourceFile": "src/registry/sections/photography/PhotographyNavbar.tsx"
     },
     {
-      "name": "PlumbingHvacKimiPage",
-      "sourceFile": "src/capsules/plumbing-hvac.tsx"
+      "name": "PhotographyPricing",
+      "sourceFile": "src/registry/sections/photography/PhotographyPricing.tsx"
     },
     {
-      "name": "PlumbingHvacKimiPage2",
-      "sourceFile": "src/capsules/plumbing-hvac-2.tsx"
+      "name": "PhotographyTestimonials",
+      "sourceFile": "src/registry/sections/photography/PhotographyTestimonials.tsx"
+    },
+    {
+      "name": "PlumbingHvacCta",
+      "sourceFile": "src/registry/sections/plumbing-hvac/PlumbingHvacCta.tsx"
+    },
+    {
+      "name": "PlumbingHvacFooter",
+      "sourceFile": "src/registry/sections/plumbing-hvac/PlumbingHvacFooter.tsx"
+    },
+    {
+      "name": "PlumbingHvacHero",
+      "sourceFile": "src/registry/sections/plumbing-hvac/PlumbingHvacHero.tsx"
+    },
+    {
+      "name": "PlumbingHvacNavbar",
+      "sourceFile": "src/registry/sections/plumbing-hvac/PlumbingHvacNavbar.tsx"
     },
     {
       "name": "PlumbingHvacOverview",
       "sourceFile": "src/registry/sections/plumbing-hvac/PlumbingHvacOverview.tsx"
     },
     {
-      "name": "PodcastKimiPage",
-      "sourceFile": "src/capsules/podcast.tsx"
+      "name": "PlumbingHvacServices",
+      "sourceFile": "src/registry/sections/plumbing-hvac/PlumbingHvacServices.tsx"
     },
     {
-      "name": "PodcastKimiPage2",
-      "sourceFile": "src/capsules/podcast-2.tsx"
+      "name": "PlumbingHvacStats",
+      "sourceFile": "src/registry/sections/plumbing-hvac/PlumbingHvacStats.tsx"
     },
     {
-      "name": "PodcastKimiPage3",
-      "sourceFile": "src/capsules/podcast-3.tsx"
+      "name": "PlumbingHvacSteps",
+      "sourceFile": "src/registry/sections/plumbing-hvac/PlumbingHvacSteps.tsx"
+    },
+    {
+      "name": "PlumbingHvacTestimonials",
+      "sourceFile": "src/registry/sections/plumbing-hvac/PlumbingHvacTestimonials.tsx"
+    },
+    {
+      "name": "PodcastAuthors",
+      "sourceFile": "src/registry/sections/podcast/PodcastAuthors.tsx"
+    },
+    {
+      "name": "PodcastFeaturedStory",
+      "sourceFile": "src/registry/sections/podcast/PodcastFeaturedStory.tsx"
+    },
+    {
+      "name": "PodcastFooter",
+      "sourceFile": "src/registry/sections/podcast/PodcastFooter.tsx"
+    },
+    {
+      "name": "PodcastHero",
+      "sourceFile": "src/registry/sections/podcast/PodcastHero.tsx"
+    },
+    {
+      "name": "PodcastNavbar",
+      "sourceFile": "src/registry/sections/podcast/PodcastNavbar.tsx"
     },
     {
       "name": "PodcastOverview",
       "sourceFile": "src/registry/sections/podcast/PodcastOverview.tsx"
     },
     {
+      "name": "PodcastSubscribe",
+      "sourceFile": "src/registry/sections/podcast/PodcastSubscribe.tsx"
+    },
+    {
+      "name": "PodcastTestimonials",
+      "sourceFile": "src/registry/sections/podcast/PodcastTestimonials.tsx"
+    },
+    {
+      "name": "PodcastTopics",
+      "sourceFile": "src/registry/sections/podcast/PodcastTopics.tsx"
+    },
+    {
       "name": "Popover",
       "sourceFile": "src/registry/primitives/popover.tsx"
     },
     {
-      "name": "PortfolioDevKimiPage",
-      "sourceFile": "src/capsules/portfolio-dev.tsx"
+      "name": "PortfolioCta",
+      "sourceFile": "src/registry/sections/portfolio/PortfolioCta.tsx"
     },
     {
-      "name": "PortfolioDevKimiPage2",
-      "sourceFile": "src/capsules/portfolio-dev-2.tsx"
+      "name": "PortfolioDevCta",
+      "sourceFile": "src/registry/sections/portfolio-dev/PortfolioDevCta.tsx"
     },
     {
-      "name": "PortfolioDevKimiPage3",
-      "sourceFile": "src/capsules/portfolio-dev-3.tsx"
+      "name": "PortfolioDevFooter",
+      "sourceFile": "src/registry/sections/portfolio-dev/PortfolioDevFooter.tsx"
     },
     {
-      "name": "PortfolioDevKimiPage4",
-      "sourceFile": "src/capsules/portfolio-dev-4.tsx"
+      "name": "PortfolioDevHero",
+      "sourceFile": "src/registry/sections/portfolio-dev/PortfolioDevHero.tsx"
+    },
+    {
+      "name": "PortfolioDevNavbar",
+      "sourceFile": "src/registry/sections/portfolio-dev/PortfolioDevNavbar.tsx"
     },
     {
       "name": "PortfolioDevOverview",
       "sourceFile": "src/registry/sections/portfolio-dev/PortfolioDevOverview.tsx"
     },
     {
+      "name": "PortfolioDevProjects",
+      "sourceFile": "src/registry/sections/portfolio-dev/PortfolioDevProjects.tsx"
+    },
+    {
+      "name": "PortfolioDevServices",
+      "sourceFile": "src/registry/sections/portfolio-dev/PortfolioDevServices.tsx"
+    },
+    {
+      "name": "PortfolioDevStats",
+      "sourceFile": "src/registry/sections/portfolio-dev/PortfolioDevStats.tsx"
+    },
+    {
+      "name": "PortfolioDevTestimonials",
+      "sourceFile": "src/registry/sections/portfolio-dev/PortfolioDevTestimonials.tsx"
+    },
+    {
+      "name": "PortfolioFooter",
+      "sourceFile": "src/registry/sections/portfolio/PortfolioFooter.tsx"
+    },
+    {
       "name": "PortfolioHero",
       "sourceFile": "src/registry/sections/portfolio/PortfolioHero.tsx"
-    },
-    {
-      "name": "PortfolioKimiPage",
-      "sourceFile": "src/capsules/portfolio.tsx"
-    },
-    {
-      "name": "PortfolioKimiPage2",
-      "sourceFile": "src/capsules/portfolio-2.tsx"
-    },
-    {
-      "name": "PortfolioKimiPage3",
-      "sourceFile": "src/capsules/portfolio-3.tsx"
-    },
-    {
-      "name": "PortfolioKimiPage4",
-      "sourceFile": "src/capsules/portfolio-4.tsx"
-    },
-    {
-      "name": "PortfolioKimiPage5",
-      "sourceFile": "src/capsules/portfolio-5.tsx"
     },
     {
       "name": "PortfolioLogos",
@@ -4250,96 +3664,160 @@
       "sourceFile": "src/registry/sections/portfolio/PortfolioNavbar.tsx"
     },
     {
+      "name": "PortfolioServices",
+      "sourceFile": "src/registry/sections/portfolio/PortfolioServices.tsx"
+    },
+    {
+      "name": "PortfolioTestimonials",
+      "sourceFile": "src/registry/sections/portfolio/PortfolioTestimonials.tsx"
+    },
+    {
       "name": "PortfolioWork",
       "sourceFile": "src/registry/sections/portfolio/PortfolioWork.tsx"
-    },
-    {
-      "name": "PricingKimiPage",
-      "sourceFile": "src/capsules/pricing.tsx"
-    },
-    {
-      "name": "PricingKimiPage2",
-      "sourceFile": "src/capsules/pricing-2.tsx"
     },
     {
       "name": "PricingOverview",
       "sourceFile": "src/registry/sections/pricing/PricingOverview.tsx"
     },
     {
-      "name": "ProductDetailKimiPage",
-      "sourceFile": "src/capsules/product-detail.tsx"
+      "name": "ProductDetailCta",
+      "sourceFile": "src/registry/sections/product-detail/ProductDetailCta.tsx"
     },
     {
-      "name": "ProductDetailKimiPage2",
-      "sourceFile": "src/capsules/product-detail-2.tsx"
+      "name": "ProductDetailFaq",
+      "sourceFile": "src/registry/sections/product-detail/ProductDetailFaq.tsx"
     },
     {
-      "name": "ProductDetailKimiPage3",
-      "sourceFile": "src/capsules/product-detail-3.tsx"
+      "name": "ProductDetailFeatures",
+      "sourceFile": "src/registry/sections/product-detail/ProductDetailFeatures.tsx"
+    },
+    {
+      "name": "ProductDetailFooter",
+      "sourceFile": "src/registry/sections/product-detail/ProductDetailFooter.tsx"
+    },
+    {
+      "name": "ProductDetailGallery",
+      "sourceFile": "src/registry/sections/product-detail/ProductDetailGallery.tsx"
+    },
+    {
+      "name": "ProductDetailHero",
+      "sourceFile": "src/registry/sections/product-detail/ProductDetailHero.tsx"
+    },
+    {
+      "name": "ProductDetailNavbar",
+      "sourceFile": "src/registry/sections/product-detail/ProductDetailNavbar.tsx"
     },
     {
       "name": "ProductDetailOverview",
       "sourceFile": "src/registry/sections/product-detail/ProductDetailOverview.tsx"
     },
     {
+      "name": "ProductDetailTestimonials",
+      "sourceFile": "src/registry/sections/product-detail/ProductDetailTestimonials.tsx"
+    },
+    {
       "name": "Progress",
       "sourceFile": "src/registry/primitives/progress.tsx"
     },
     {
-      "name": "PropertyListingKimiPage",
-      "sourceFile": "src/capsules/property-listing.tsx"
+      "name": "PropertyListingCta",
+      "sourceFile": "src/registry/sections/property-listing/PropertyListingCta.tsx"
     },
     {
-      "name": "PropertyListingKimiPage2",
-      "sourceFile": "src/capsules/property-listing-2.tsx"
+      "name": "PropertyListingFeatures",
+      "sourceFile": "src/registry/sections/property-listing/PropertyListingFeatures.tsx"
     },
     {
-      "name": "PropertyListingKimiPage3",
-      "sourceFile": "src/capsules/property-listing-3.tsx"
+      "name": "PropertyListingFooter",
+      "sourceFile": "src/registry/sections/property-listing/PropertyListingFooter.tsx"
+    },
+    {
+      "name": "PropertyListingGallery",
+      "sourceFile": "src/registry/sections/property-listing/PropertyListingGallery.tsx"
+    },
+    {
+      "name": "PropertyListingHero",
+      "sourceFile": "src/registry/sections/property-listing/PropertyListingHero.tsx"
+    },
+    {
+      "name": "PropertyListingNavbar",
+      "sourceFile": "src/registry/sections/property-listing/PropertyListingNavbar.tsx"
     },
     {
       "name": "PropertyListingOverview",
       "sourceFile": "src/registry/sections/property-listing/PropertyListingOverview.tsx"
     },
     {
+      "name": "PropertyListingStats",
+      "sourceFile": "src/registry/sections/property-listing/PropertyListingStats.tsx"
+    },
+    {
+      "name": "PropertyListingTestimonials",
+      "sourceFile": "src/registry/sections/property-listing/PropertyListingTestimonials.tsx"
+    },
+    {
       "name": "RadioGroup",
       "sourceFile": "src/registry/primitives/radio-group.tsx"
     },
     {
-      "name": "RealEstateKimiPage",
-      "sourceFile": "src/capsules/real-estate.tsx"
+      "name": "RealEstateCta",
+      "sourceFile": "src/registry/sections/real-estate/RealEstateCta.tsx"
     },
     {
-      "name": "RealEstateKimiPage2",
-      "sourceFile": "src/capsules/real-estate-2.tsx"
+      "name": "RealEstateFooter",
+      "sourceFile": "src/registry/sections/real-estate/RealEstateFooter.tsx"
     },
     {
-      "name": "RealEstateKimiPage3",
-      "sourceFile": "src/capsules/real-estate-3.tsx"
+      "name": "RealEstateGallery",
+      "sourceFile": "src/registry/sections/real-estate/RealEstateGallery.tsx"
+    },
+    {
+      "name": "RealEstateHero",
+      "sourceFile": "src/registry/sections/real-estate/RealEstateHero.tsx"
+    },
+    {
+      "name": "RealEstateNavbar",
+      "sourceFile": "src/registry/sections/real-estate/RealEstateNavbar.tsx"
     },
     {
       "name": "RealEstateOverview",
       "sourceFile": "src/registry/sections/real-estate/RealEstateOverview.tsx"
     },
     {
+      "name": "RealEstateServices",
+      "sourceFile": "src/registry/sections/real-estate/RealEstateServices.tsx"
+    },
+    {
+      "name": "RealEstateStats",
+      "sourceFile": "src/registry/sections/real-estate/RealEstateStats.tsx"
+    },
+    {
+      "name": "RealEstateTestimonials",
+      "sourceFile": "src/registry/sections/real-estate/RealEstateTestimonials.tsx"
+    },
+    {
       "name": "Resizable",
       "sourceFile": "src/registry/primitives/resizable.tsx"
+    },
+    {
+      "name": "RestaurantCta",
+      "sourceFile": "src/registry/sections/restaurant/RestaurantCta.tsx"
+    },
+    {
+      "name": "RestaurantFooter",
+      "sourceFile": "src/registry/sections/restaurant/RestaurantFooter.tsx"
+    },
+    {
+      "name": "RestaurantGallery",
+      "sourceFile": "src/registry/sections/restaurant/RestaurantGallery.tsx"
     },
     {
       "name": "RestaurantHero",
       "sourceFile": "src/registry/sections/restaurant/RestaurantHero.tsx"
     },
     {
-      "name": "RestaurantKimiPage",
-      "sourceFile": "src/capsules/restaurant.tsx"
-    },
-    {
-      "name": "RestaurantKimiPage2",
-      "sourceFile": "src/capsules/restaurant-2.tsx"
-    },
-    {
-      "name": "RestaurantKimiPage3",
-      "sourceFile": "src/capsules/restaurant-3.tsx"
+      "name": "RestaurantMenu",
+      "sourceFile": "src/registry/sections/restaurant/RestaurantMenu.tsx"
     },
     {
       "name": "RestaurantNavbar",
@@ -4350,64 +3828,68 @@
       "sourceFile": "src/registry/sections/restaurant/RestaurantStory.tsx"
     },
     {
-      "name": "ResumeCvKimiPage",
-      "sourceFile": "src/capsules/resume-cv.tsx"
+      "name": "RestaurantTestimonials",
+      "sourceFile": "src/registry/sections/restaurant/RestaurantTestimonials.tsx"
     },
     {
-      "name": "ResumeCvKimiPage2",
-      "sourceFile": "src/capsules/resume-cv-2.tsx"
+      "name": "ResumeCvAbout",
+      "sourceFile": "src/registry/sections/resume-cv/ResumeCvAbout.tsx"
     },
     {
-      "name": "ResumeCvKimiPage3",
-      "sourceFile": "src/capsules/resume-cv-3.tsx"
+      "name": "ResumeCvCta",
+      "sourceFile": "src/registry/sections/resume-cv/ResumeCvCta.tsx"
+    },
+    {
+      "name": "ResumeCvFooter",
+      "sourceFile": "src/registry/sections/resume-cv/ResumeCvFooter.tsx"
+    },
+    {
+      "name": "ResumeCvHero",
+      "sourceFile": "src/registry/sections/resume-cv/ResumeCvHero.tsx"
+    },
+    {
+      "name": "ResumeCvNavbar",
+      "sourceFile": "src/registry/sections/resume-cv/ResumeCvNavbar.tsx"
     },
     {
       "name": "ResumeCvOverview",
       "sourceFile": "src/registry/sections/resume-cv/ResumeCvOverview.tsx"
     },
     {
+      "name": "ResumeCvProjects",
+      "sourceFile": "src/registry/sections/resume-cv/ResumeCvProjects.tsx"
+    },
+    {
+      "name": "ResumeCvServices",
+      "sourceFile": "src/registry/sections/resume-cv/ResumeCvServices.tsx"
+    },
+    {
+      "name": "ResumeCvWork",
+      "sourceFile": "src/registry/sections/resume-cv/ResumeCvWork.tsx"
+    },
+    {
+      "name": "SaasBento",
+      "sourceFile": "src/registry/sections/saas/SaasBento.tsx"
+    },
+    {
+      "name": "SaasCta",
+      "sourceFile": "src/registry/sections/saas/SaasCta.tsx"
+    },
+    {
+      "name": "SaasFaq",
+      "sourceFile": "src/registry/sections/saas/SaasFaq.tsx"
+    },
+    {
+      "name": "SaasFeatures",
+      "sourceFile": "src/registry/sections/saas/SaasFeatures.tsx"
+    },
+    {
+      "name": "SaasFooter",
+      "sourceFile": "src/registry/sections/saas/SaasFooter.tsx"
+    },
+    {
       "name": "SaasHero",
       "sourceFile": "src/registry/sections/saas/SaasHero.tsx"
-    },
-    {
-      "name": "SaasKimiPage",
-      "sourceFile": "src/capsules/saas.tsx"
-    },
-    {
-      "name": "SaasKimiPage10",
-      "sourceFile": "src/capsules/saas-10.tsx"
-    },
-    {
-      "name": "SaasKimiPage2",
-      "sourceFile": "src/capsules/saas-2.tsx"
-    },
-    {
-      "name": "SaasKimiPage3",
-      "sourceFile": "src/capsules/saas-3.tsx"
-    },
-    {
-      "name": "SaasKimiPage4",
-      "sourceFile": "src/capsules/saas-4.tsx"
-    },
-    {
-      "name": "SaasKimiPage5",
-      "sourceFile": "src/capsules/saas-5.tsx"
-    },
-    {
-      "name": "SaasKimiPage6",
-      "sourceFile": "src/capsules/saas-6.tsx"
-    },
-    {
-      "name": "SaasKimiPage7",
-      "sourceFile": "src/capsules/saas-7.tsx"
-    },
-    {
-      "name": "SaasKimiPage8",
-      "sourceFile": "src/capsules/saas-8.tsx"
-    },
-    {
-      "name": "SaasKimiPage9",
-      "sourceFile": "src/capsules/saas-9.tsx"
     },
     {
       "name": "SaasLogos",
@@ -4418,40 +3900,52 @@
       "sourceFile": "src/registry/sections/saas/SaasNavbar.tsx"
     },
     {
-      "name": "SalonBarberKimiPage",
-      "sourceFile": "src/capsules/salon-barber.tsx"
+      "name": "SaasPricing",
+      "sourceFile": "src/registry/sections/saas/SaasPricing.tsx"
     },
     {
-      "name": "SalonBarberKimiPage2",
-      "sourceFile": "src/capsules/salon-barber-2.tsx"
+      "name": "SaasSteps",
+      "sourceFile": "src/registry/sections/saas/SaasSteps.tsx"
     },
     {
-      "name": "SalonBarberKimiPage3",
-      "sourceFile": "src/capsules/salon-barber-3.tsx"
+      "name": "SaasTestimonials",
+      "sourceFile": "src/registry/sections/saas/SaasTestimonials.tsx"
+    },
+    {
+      "name": "SalonBarberCta",
+      "sourceFile": "src/registry/sections/salon-barber/SalonBarberCta.tsx"
+    },
+    {
+      "name": "SalonBarberFooter",
+      "sourceFile": "src/registry/sections/salon-barber/SalonBarberFooter.tsx"
+    },
+    {
+      "name": "SalonBarberGallery",
+      "sourceFile": "src/registry/sections/salon-barber/SalonBarberGallery.tsx"
+    },
+    {
+      "name": "SalonBarberHero",
+      "sourceFile": "src/registry/sections/salon-barber/SalonBarberHero.tsx"
+    },
+    {
+      "name": "SalonBarberNavbar",
+      "sourceFile": "src/registry/sections/salon-barber/SalonBarberNavbar.tsx"
     },
     {
       "name": "SalonBarberOverview",
       "sourceFile": "src/registry/sections/salon-barber/SalonBarberOverview.tsx"
     },
     {
-      "name": "ScheduleKimiPage",
-      "sourceFile": "src/capsules/schedule.tsx"
+      "name": "SalonBarberPricing",
+      "sourceFile": "src/registry/sections/salon-barber/SalonBarberPricing.tsx"
     },
     {
-      "name": "ScheduleKimiPage2",
-      "sourceFile": "src/capsules/schedule-2.tsx"
+      "name": "SalonBarberServices",
+      "sourceFile": "src/registry/sections/salon-barber/SalonBarberServices.tsx"
     },
     {
-      "name": "ScheduleKimiPage3",
-      "sourceFile": "src/capsules/schedule-3.tsx"
-    },
-    {
-      "name": "ScheduleKimiPage4",
-      "sourceFile": "src/capsules/schedule-4.tsx"
-    },
-    {
-      "name": "ScheduleKimiPage5",
-      "sourceFile": "src/capsules/schedule-5.tsx"
+      "name": "SalonBarberTestimonials",
+      "sourceFile": "src/registry/sections/salon-barber/SalonBarberTestimonials.tsx"
     },
     {
       "name": "ScrollArea",
@@ -4474,14 +3968,6 @@
       "sourceFile": "src/registry/primitives/sheet.tsx"
     },
     {
-      "name": "ShopKimiPage",
-      "sourceFile": "src/capsules/shop.tsx"
-    },
-    {
-      "name": "ShopKimiPage2",
-      "sourceFile": "src/capsules/shop-2.tsx"
-    },
-    {
       "name": "ShopOverview",
       "sourceFile": "src/registry/sections/shop/ShopOverview.tsx"
     },
@@ -4498,20 +3984,40 @@
       "sourceFile": "src/registry/primitives/layout.tsx"
     },
     {
-      "name": "SpaWellnessKimiPage",
-      "sourceFile": "src/capsules/spa-wellness.tsx"
+      "name": "SpaWellnessCta",
+      "sourceFile": "src/registry/sections/spa-wellness/SpaWellnessCta.tsx"
     },
     {
-      "name": "SpaWellnessKimiPage2",
-      "sourceFile": "src/capsules/spa-wellness-2.tsx"
+      "name": "SpaWellnessFooter",
+      "sourceFile": "src/registry/sections/spa-wellness/SpaWellnessFooter.tsx"
     },
     {
-      "name": "SpaWellnessKimiPage3",
-      "sourceFile": "src/capsules/spa-wellness-3.tsx"
+      "name": "SpaWellnessGallery",
+      "sourceFile": "src/registry/sections/spa-wellness/SpaWellnessGallery.tsx"
+    },
+    {
+      "name": "SpaWellnessHero",
+      "sourceFile": "src/registry/sections/spa-wellness/SpaWellnessHero.tsx"
+    },
+    {
+      "name": "SpaWellnessNavbar",
+      "sourceFile": "src/registry/sections/spa-wellness/SpaWellnessNavbar.tsx"
     },
     {
       "name": "SpaWellnessOverview",
       "sourceFile": "src/registry/sections/spa-wellness/SpaWellnessOverview.tsx"
+    },
+    {
+      "name": "SpaWellnessPricing",
+      "sourceFile": "src/registry/sections/spa-wellness/SpaWellnessPricing.tsx"
+    },
+    {
+      "name": "SpaWellnessServices",
+      "sourceFile": "src/registry/sections/spa-wellness/SpaWellnessServices.tsx"
+    },
+    {
+      "name": "SpaWellnessTestimonials",
+      "sourceFile": "src/registry/sections/spa-wellness/SpaWellnessTestimonials.tsx"
     },
     {
       "name": "Spinner",
@@ -4522,20 +4028,40 @@
       "sourceFile": "src/registry/primitives/layout.tsx"
     },
     {
-      "name": "SubscriptionBoxKimiPage",
-      "sourceFile": "src/capsules/subscription-box.tsx"
+      "name": "SubscriptionBoxCta",
+      "sourceFile": "src/registry/sections/subscription-box/SubscriptionBoxCta.tsx"
     },
     {
-      "name": "SubscriptionBoxKimiPage2",
-      "sourceFile": "src/capsules/subscription-box-2.tsx"
+      "name": "SubscriptionBoxFeatures",
+      "sourceFile": "src/registry/sections/subscription-box/SubscriptionBoxFeatures.tsx"
     },
     {
-      "name": "SubscriptionBoxKimiPage3",
-      "sourceFile": "src/capsules/subscription-box-3.tsx"
+      "name": "SubscriptionBoxFooter",
+      "sourceFile": "src/registry/sections/subscription-box/SubscriptionBoxFooter.tsx"
+    },
+    {
+      "name": "SubscriptionBoxHero",
+      "sourceFile": "src/registry/sections/subscription-box/SubscriptionBoxHero.tsx"
+    },
+    {
+      "name": "SubscriptionBoxNavbar",
+      "sourceFile": "src/registry/sections/subscription-box/SubscriptionBoxNavbar.tsx"
     },
     {
       "name": "SubscriptionBoxOverview",
       "sourceFile": "src/registry/sections/subscription-box/SubscriptionBoxOverview.tsx"
+    },
+    {
+      "name": "SubscriptionBoxPricing",
+      "sourceFile": "src/registry/sections/subscription-box/SubscriptionBoxPricing.tsx"
+    },
+    {
+      "name": "SubscriptionBoxSteps",
+      "sourceFile": "src/registry/sections/subscription-box/SubscriptionBoxSteps.tsx"
+    },
+    {
+      "name": "SubscriptionBoxTestimonials",
+      "sourceFile": "src/registry/sections/subscription-box/SubscriptionBoxTestimonials.tsx"
     },
     {
       "name": "Switch",
@@ -4550,40 +4076,44 @@
       "sourceFile": "src/registry/primitives/tabs.tsx"
     },
     {
-      "name": "TeamKimiPage",
-      "sourceFile": "src/capsules/team.tsx"
-    },
-    {
-      "name": "TeamKimiPage2",
-      "sourceFile": "src/capsules/team-2.tsx"
-    },
-    {
       "name": "TeamOverview",
       "sourceFile": "src/registry/sections/team/TeamOverview.tsx"
     },
     {
-      "name": "TelehealthKimiPage",
-      "sourceFile": "src/capsules/telehealth.tsx"
+      "name": "TelehealthCta",
+      "sourceFile": "src/registry/sections/telehealth/TelehealthCta.tsx"
     },
     {
-      "name": "TelehealthKimiPage2",
-      "sourceFile": "src/capsules/telehealth-2.tsx"
+      "name": "TelehealthFooter",
+      "sourceFile": "src/registry/sections/telehealth/TelehealthFooter.tsx"
     },
     {
-      "name": "TelehealthKimiPage3",
-      "sourceFile": "src/capsules/telehealth-3.tsx"
+      "name": "TelehealthHero",
+      "sourceFile": "src/registry/sections/telehealth/TelehealthHero.tsx"
+    },
+    {
+      "name": "TelehealthNavbar",
+      "sourceFile": "src/registry/sections/telehealth/TelehealthNavbar.tsx"
     },
     {
       "name": "TelehealthOverview",
       "sourceFile": "src/registry/sections/telehealth/TelehealthOverview.tsx"
     },
     {
-      "name": "TestimonialsKimiPage",
-      "sourceFile": "src/capsules/testimonials.tsx"
+      "name": "TelehealthServices",
+      "sourceFile": "src/registry/sections/telehealth/TelehealthServices.tsx"
     },
     {
-      "name": "TestimonialsKimiPage2",
-      "sourceFile": "src/capsules/testimonials-2.tsx"
+      "name": "TelehealthStats",
+      "sourceFile": "src/registry/sections/telehealth/TelehealthStats.tsx"
+    },
+    {
+      "name": "TelehealthSteps",
+      "sourceFile": "src/registry/sections/telehealth/TelehealthSteps.tsx"
+    },
+    {
+      "name": "TelehealthTestimonials",
+      "sourceFile": "src/registry/sections/telehealth/TelehealthTestimonials.tsx"
     },
     {
       "name": "TestimonialsOverview",
@@ -4610,176 +4140,400 @@
       "sourceFile": "src/registry/primitives/tooltip.tsx"
     },
     {
-      "name": "TourExperiencesKimiPage",
-      "sourceFile": "src/capsules/tour-experiences.tsx"
+      "name": "TourExperiencesCta",
+      "sourceFile": "src/registry/sections/tour-experiences/TourExperiencesCta.tsx"
     },
     {
-      "name": "TourExperiencesKimiPage2",
-      "sourceFile": "src/capsules/tour-experiences-2.tsx"
+      "name": "TourExperiencesFooter",
+      "sourceFile": "src/registry/sections/tour-experiences/TourExperiencesFooter.tsx"
     },
     {
-      "name": "TourExperiencesKimiPage3",
-      "sourceFile": "src/capsules/tour-experiences-3.tsx"
+      "name": "TourExperiencesGallery",
+      "sourceFile": "src/registry/sections/tour-experiences/TourExperiencesGallery.tsx"
+    },
+    {
+      "name": "TourExperiencesHero",
+      "sourceFile": "src/registry/sections/tour-experiences/TourExperiencesHero.tsx"
+    },
+    {
+      "name": "TourExperiencesNavbar",
+      "sourceFile": "src/registry/sections/tour-experiences/TourExperiencesNavbar.tsx"
     },
     {
       "name": "TourExperiencesOverview",
       "sourceFile": "src/registry/sections/tour-experiences/TourExperiencesOverview.tsx"
     },
     {
-      "name": "TravelAgencyKimiPage",
-      "sourceFile": "src/capsules/travel-agency.tsx"
+      "name": "TourExperiencesPricing",
+      "sourceFile": "src/registry/sections/tour-experiences/TourExperiencesPricing.tsx"
     },
     {
-      "name": "TravelAgencyKimiPage2",
-      "sourceFile": "src/capsules/travel-agency-2.tsx"
+      "name": "TourExperiencesServices",
+      "sourceFile": "src/registry/sections/tour-experiences/TourExperiencesServices.tsx"
+    },
+    {
+      "name": "TourExperiencesTestimonials",
+      "sourceFile": "src/registry/sections/tour-experiences/TourExperiencesTestimonials.tsx"
+    },
+    {
+      "name": "TravelAgencyCta",
+      "sourceFile": "src/registry/sections/travel-agency/TravelAgencyCta.tsx"
+    },
+    {
+      "name": "TravelAgencyFooter",
+      "sourceFile": "src/registry/sections/travel-agency/TravelAgencyFooter.tsx"
+    },
+    {
+      "name": "TravelAgencyGallery",
+      "sourceFile": "src/registry/sections/travel-agency/TravelAgencyGallery.tsx"
+    },
+    {
+      "name": "TravelAgencyHero",
+      "sourceFile": "src/registry/sections/travel-agency/TravelAgencyHero.tsx"
+    },
+    {
+      "name": "TravelAgencyNavbar",
+      "sourceFile": "src/registry/sections/travel-agency/TravelAgencyNavbar.tsx"
     },
     {
       "name": "TravelAgencyOverview",
       "sourceFile": "src/registry/sections/travel-agency/TravelAgencyOverview.tsx"
     },
     {
-      "name": "TutoringKimiPage",
-      "sourceFile": "src/capsules/tutoring.tsx"
+      "name": "TravelAgencyServices",
+      "sourceFile": "src/registry/sections/travel-agency/TravelAgencyServices.tsx"
     },
     {
-      "name": "TutoringKimiPage2",
-      "sourceFile": "src/capsules/tutoring-2.tsx"
+      "name": "TravelAgencyStats",
+      "sourceFile": "src/registry/sections/travel-agency/TravelAgencyStats.tsx"
     },
     {
-      "name": "TutoringKimiPage3",
-      "sourceFile": "src/capsules/tutoring-3.tsx"
+      "name": "TravelAgencyTestimonials",
+      "sourceFile": "src/registry/sections/travel-agency/TravelAgencyTestimonials.tsx"
+    },
+    {
+      "name": "TutoringCta",
+      "sourceFile": "src/registry/sections/tutoring/TutoringCta.tsx"
+    },
+    {
+      "name": "TutoringFooter",
+      "sourceFile": "src/registry/sections/tutoring/TutoringFooter.tsx"
+    },
+    {
+      "name": "TutoringHero",
+      "sourceFile": "src/registry/sections/tutoring/TutoringHero.tsx"
+    },
+    {
+      "name": "TutoringNavbar",
+      "sourceFile": "src/registry/sections/tutoring/TutoringNavbar.tsx"
     },
     {
       "name": "TutoringOverview",
       "sourceFile": "src/registry/sections/tutoring/TutoringOverview.tsx"
     },
     {
-      "name": "UniversityKimiPage",
-      "sourceFile": "src/capsules/university.tsx"
+      "name": "TutoringPricing",
+      "sourceFile": "src/registry/sections/tutoring/TutoringPricing.tsx"
     },
     {
-      "name": "UniversityKimiPage2",
-      "sourceFile": "src/capsules/university-2.tsx"
+      "name": "TutoringServices",
+      "sourceFile": "src/registry/sections/tutoring/TutoringServices.tsx"
     },
     {
-      "name": "UniversityKimiPage3",
-      "sourceFile": "src/capsules/university-3.tsx"
+      "name": "TutoringSteps",
+      "sourceFile": "src/registry/sections/tutoring/TutoringSteps.tsx"
+    },
+    {
+      "name": "TutoringTestimonials",
+      "sourceFile": "src/registry/sections/tutoring/TutoringTestimonials.tsx"
+    },
+    {
+      "name": "UniversityCta",
+      "sourceFile": "src/registry/sections/university/UniversityCta.tsx"
+    },
+    {
+      "name": "UniversityFaq",
+      "sourceFile": "src/registry/sections/university/UniversityFaq.tsx"
+    },
+    {
+      "name": "UniversityFooter",
+      "sourceFile": "src/registry/sections/university/UniversityFooter.tsx"
+    },
+    {
+      "name": "UniversityHero",
+      "sourceFile": "src/registry/sections/university/UniversityHero.tsx"
+    },
+    {
+      "name": "UniversityNavbar",
+      "sourceFile": "src/registry/sections/university/UniversityNavbar.tsx"
     },
     {
       "name": "UniversityOverview",
       "sourceFile": "src/registry/sections/university/UniversityOverview.tsx"
     },
     {
-      "name": "VacationRentalKimiPage",
-      "sourceFile": "src/capsules/vacation-rental.tsx"
+      "name": "UniversityPrograms",
+      "sourceFile": "src/registry/sections/university/UniversityPrograms.tsx"
     },
     {
-      "name": "VacationRentalKimiPage2",
-      "sourceFile": "src/capsules/vacation-rental-2.tsx"
+      "name": "UniversityStats",
+      "sourceFile": "src/registry/sections/university/UniversityStats.tsx"
     },
     {
-      "name": "VacationRentalKimiPage3",
-      "sourceFile": "src/capsules/vacation-rental-3.tsx"
+      "name": "UniversityTestimonials",
+      "sourceFile": "src/registry/sections/university/UniversityTestimonials.tsx"
+    },
+    {
+      "name": "VacationRentalCta",
+      "sourceFile": "src/registry/sections/vacation-rental/VacationRentalCta.tsx"
+    },
+    {
+      "name": "VacationRentalFeatures",
+      "sourceFile": "src/registry/sections/vacation-rental/VacationRentalFeatures.tsx"
+    },
+    {
+      "name": "VacationRentalFooter",
+      "sourceFile": "src/registry/sections/vacation-rental/VacationRentalFooter.tsx"
+    },
+    {
+      "name": "VacationRentalGallery",
+      "sourceFile": "src/registry/sections/vacation-rental/VacationRentalGallery.tsx"
+    },
+    {
+      "name": "VacationRentalHero",
+      "sourceFile": "src/registry/sections/vacation-rental/VacationRentalHero.tsx"
+    },
+    {
+      "name": "VacationRentalNavbar",
+      "sourceFile": "src/registry/sections/vacation-rental/VacationRentalNavbar.tsx"
     },
     {
       "name": "VacationRentalOverview",
       "sourceFile": "src/registry/sections/vacation-rental/VacationRentalOverview.tsx"
     },
     {
-      "name": "VideoStreamingKimiPage",
-      "sourceFile": "src/capsules/video-streaming.tsx"
+      "name": "VacationRentalPricing",
+      "sourceFile": "src/registry/sections/vacation-rental/VacationRentalPricing.tsx"
     },
     {
-      "name": "VideoStreamingKimiPage2",
-      "sourceFile": "src/capsules/video-streaming-2.tsx"
+      "name": "VacationRentalTestimonials",
+      "sourceFile": "src/registry/sections/vacation-rental/VacationRentalTestimonials.tsx"
     },
     {
-      "name": "VideoStreamingKimiPage3",
-      "sourceFile": "src/capsules/video-streaming-3.tsx"
+      "name": "VideoStreamingCta",
+      "sourceFile": "src/registry/sections/video-streaming/VideoStreamingCta.tsx"
+    },
+    {
+      "name": "VideoStreamingFeatures",
+      "sourceFile": "src/registry/sections/video-streaming/VideoStreamingFeatures.tsx"
+    },
+    {
+      "name": "VideoStreamingFooter",
+      "sourceFile": "src/registry/sections/video-streaming/VideoStreamingFooter.tsx"
+    },
+    {
+      "name": "VideoStreamingGallery",
+      "sourceFile": "src/registry/sections/video-streaming/VideoStreamingGallery.tsx"
+    },
+    {
+      "name": "VideoStreamingHero",
+      "sourceFile": "src/registry/sections/video-streaming/VideoStreamingHero.tsx"
+    },
+    {
+      "name": "VideoStreamingNavbar",
+      "sourceFile": "src/registry/sections/video-streaming/VideoStreamingNavbar.tsx"
     },
     {
       "name": "VideoStreamingOverview",
       "sourceFile": "src/registry/sections/video-streaming/VideoStreamingOverview.tsx"
     },
     {
-      "name": "WebinarKimiPage",
-      "sourceFile": "src/capsules/webinar.tsx"
+      "name": "VideoStreamingPricing",
+      "sourceFile": "src/registry/sections/video-streaming/VideoStreamingPricing.tsx"
     },
     {
-      "name": "WebinarKimiPage2",
-      "sourceFile": "src/capsules/webinar-2.tsx"
+      "name": "VideoStreamingTestimonials",
+      "sourceFile": "src/registry/sections/video-streaming/VideoStreamingTestimonials.tsx"
     },
     {
-      "name": "WebinarKimiPage3",
-      "sourceFile": "src/capsules/webinar-3.tsx"
+      "name": "WebinarAuthors",
+      "sourceFile": "src/registry/sections/webinar/WebinarAuthors.tsx"
+    },
+    {
+      "name": "WebinarCta",
+      "sourceFile": "src/registry/sections/webinar/WebinarCta.tsx"
+    },
+    {
+      "name": "WebinarFaq",
+      "sourceFile": "src/registry/sections/webinar/WebinarFaq.tsx"
+    },
+    {
+      "name": "WebinarFeatures",
+      "sourceFile": "src/registry/sections/webinar/WebinarFeatures.tsx"
+    },
+    {
+      "name": "WebinarFooter",
+      "sourceFile": "src/registry/sections/webinar/WebinarFooter.tsx"
+    },
+    {
+      "name": "WebinarHero",
+      "sourceFile": "src/registry/sections/webinar/WebinarHero.tsx"
+    },
+    {
+      "name": "WebinarNavbar",
+      "sourceFile": "src/registry/sections/webinar/WebinarNavbar.tsx"
     },
     {
       "name": "WebinarOverview",
       "sourceFile": "src/registry/sections/webinar/WebinarOverview.tsx"
     },
     {
-      "name": "WeddingKimiPage",
-      "sourceFile": "src/capsules/wedding.tsx"
+      "name": "WebinarSchedule",
+      "sourceFile": "src/registry/sections/webinar/WebinarSchedule.tsx"
     },
     {
-      "name": "WeddingKimiPage2",
-      "sourceFile": "src/capsules/wedding-2.tsx"
+      "name": "WeddingAbout",
+      "sourceFile": "src/registry/sections/wedding/WeddingAbout.tsx"
     },
     {
-      "name": "WeddingKimiPage3",
-      "sourceFile": "src/capsules/wedding-3.tsx"
+      "name": "WeddingCta",
+      "sourceFile": "src/registry/sections/wedding/WeddingCta.tsx"
+    },
+    {
+      "name": "WeddingFooter",
+      "sourceFile": "src/registry/sections/wedding/WeddingFooter.tsx"
+    },
+    {
+      "name": "WeddingGallery",
+      "sourceFile": "src/registry/sections/wedding/WeddingGallery.tsx"
+    },
+    {
+      "name": "WeddingHero",
+      "sourceFile": "src/registry/sections/wedding/WeddingHero.tsx"
+    },
+    {
+      "name": "WeddingNavbar",
+      "sourceFile": "src/registry/sections/wedding/WeddingNavbar.tsx"
     },
     {
       "name": "WeddingOverview",
       "sourceFile": "src/registry/sections/wedding/WeddingOverview.tsx"
     },
     {
-      "name": "WineryBreweryKimiPage",
-      "sourceFile": "src/capsules/winery-brewery.tsx"
+      "name": "WeddingSchedule",
+      "sourceFile": "src/registry/sections/wedding/WeddingSchedule.tsx"
     },
     {
-      "name": "WineryBreweryKimiPage2",
-      "sourceFile": "src/capsules/winery-brewery-2.tsx"
+      "name": "WeddingTestimonials",
+      "sourceFile": "src/registry/sections/wedding/WeddingTestimonials.tsx"
     },
     {
-      "name": "WineryBreweryKimiPage3",
-      "sourceFile": "src/capsules/winery-brewery-3.tsx"
+      "name": "WineryBreweryCta",
+      "sourceFile": "src/registry/sections/winery-brewery/WineryBreweryCta.tsx"
+    },
+    {
+      "name": "WineryBreweryEvents",
+      "sourceFile": "src/registry/sections/winery-brewery/WineryBreweryEvents.tsx"
+    },
+    {
+      "name": "WineryBreweryFooter",
+      "sourceFile": "src/registry/sections/winery-brewery/WineryBreweryFooter.tsx"
+    },
+    {
+      "name": "WineryBreweryGallery",
+      "sourceFile": "src/registry/sections/winery-brewery/WineryBreweryGallery.tsx"
+    },
+    {
+      "name": "WineryBreweryHero",
+      "sourceFile": "src/registry/sections/winery-brewery/WineryBreweryHero.tsx"
+    },
+    {
+      "name": "WineryBreweryMenu",
+      "sourceFile": "src/registry/sections/winery-brewery/WineryBreweryMenu.tsx"
+    },
+    {
+      "name": "WineryBreweryNavbar",
+      "sourceFile": "src/registry/sections/winery-brewery/WineryBreweryNavbar.tsx"
     },
     {
       "name": "WineryBreweryOverview",
       "sourceFile": "src/registry/sections/winery-brewery/WineryBreweryOverview.tsx"
     },
     {
-      "name": "WriterAuthorKimiPage",
-      "sourceFile": "src/capsules/writer-author.tsx"
+      "name": "WineryBreweryTestimonials",
+      "sourceFile": "src/registry/sections/winery-brewery/WineryBreweryTestimonials.tsx"
     },
     {
-      "name": "WriterAuthorKimiPage2",
-      "sourceFile": "src/capsules/writer-author-2.tsx"
+      "name": "WriterAuthorAbout",
+      "sourceFile": "src/registry/sections/writer-author/WriterAuthorAbout.tsx"
     },
     {
-      "name": "WriterAuthorKimiPage3",
-      "sourceFile": "src/capsules/writer-author-3.tsx"
+      "name": "WriterAuthorCta",
+      "sourceFile": "src/registry/sections/writer-author/WriterAuthorCta.tsx"
+    },
+    {
+      "name": "WriterAuthorFooter",
+      "sourceFile": "src/registry/sections/writer-author/WriterAuthorFooter.tsx"
+    },
+    {
+      "name": "WriterAuthorHero",
+      "sourceFile": "src/registry/sections/writer-author/WriterAuthorHero.tsx"
+    },
+    {
+      "name": "WriterAuthorNavbar",
+      "sourceFile": "src/registry/sections/writer-author/WriterAuthorNavbar.tsx"
     },
     {
       "name": "WriterAuthorOverview",
       "sourceFile": "src/registry/sections/writer-author/WriterAuthorOverview.tsx"
     },
     {
-      "name": "YogaStudioKimiPage",
-      "sourceFile": "src/capsules/yoga-studio.tsx"
+      "name": "WriterAuthorSubscribe",
+      "sourceFile": "src/registry/sections/writer-author/WriterAuthorSubscribe.tsx"
     },
     {
-      "name": "YogaStudioKimiPage2",
-      "sourceFile": "src/capsules/yoga-studio-2.tsx"
+      "name": "WriterAuthorTestimonials",
+      "sourceFile": "src/registry/sections/writer-author/WriterAuthorTestimonials.tsx"
     },
     {
-      "name": "YogaStudioKimiPage3",
-      "sourceFile": "src/capsules/yoga-studio-3.tsx"
+      "name": "WriterAuthorWork",
+      "sourceFile": "src/registry/sections/writer-author/WriterAuthorWork.tsx"
+    },
+    {
+      "name": "YogaStudioCta",
+      "sourceFile": "src/registry/sections/yoga-studio/YogaStudioCta.tsx"
+    },
+    {
+      "name": "YogaStudioFooter",
+      "sourceFile": "src/registry/sections/yoga-studio/YogaStudioFooter.tsx"
+    },
+    {
+      "name": "YogaStudioHero",
+      "sourceFile": "src/registry/sections/yoga-studio/YogaStudioHero.tsx"
+    },
+    {
+      "name": "YogaStudioNavbar",
+      "sourceFile": "src/registry/sections/yoga-studio/YogaStudioNavbar.tsx"
     },
     {
       "name": "YogaStudioOverview",
       "sourceFile": "src/registry/sections/yoga-studio/YogaStudioOverview.tsx"
+    },
+    {
+      "name": "YogaStudioPricing",
+      "sourceFile": "src/registry/sections/yoga-studio/YogaStudioPricing.tsx"
+    },
+    {
+      "name": "YogaStudioPrograms",
+      "sourceFile": "src/registry/sections/yoga-studio/YogaStudioPrograms.tsx"
+    },
+    {
+      "name": "YogaStudioSchedule",
+      "sourceFile": "src/registry/sections/yoga-studio/YogaStudioSchedule.tsx"
+    },
+    {
+      "name": "YogaStudioTestimonials",
+      "sourceFile": "src/registry/sections/yoga-studio/YogaStudioTestimonials.tsx"
     }
   ]
 }

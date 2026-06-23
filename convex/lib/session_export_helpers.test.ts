@@ -35,7 +35,7 @@ const sessionId = 'session_export_helpers' as Id<'sessions'>
 const userId = 'user_export_helpers'
 const otherUserId = 'user_export_helpers_other'
 const openUiSource =
-  'root = SaasKimiPage("Preview", ["Home"], {"heading":"Preview"})'
+  'root = SaasHero("Preview", ["Home"], {"heading":"Preview"})'
 const buildExportArtifactReference =
   'buildExportArtifact' as unknown as Parameters<
     MutationCtx['scheduler']['runAfter']
@@ -1230,7 +1230,7 @@ describe('prepareExportArtifactBuild', () => {
       themeName: 'noir',
       isDark: false,
       source:
-        'root = SaasKimiPage("Launch", ["Home"], {"heading":"Preview"})',
+        'root = SaasHero("Launch", ["Home"], {"heading":"Preview"})',
     })
   })
 })
@@ -1355,7 +1355,7 @@ describe('loadOwnedExportForGitHubPush', () => {
       target: 'html',
       previewVersion: 2,
       html: '<main>Preview</main>',
-      source: 'root = SaasKimiPage("Launch", ["Home"], {"heading":"Preview"})',
+      source: 'root = SaasHero("Launch", ["Home"], {"heading":"Preview"})',
       siteSpecJson: '{"title":"Preview"}',
       previewHtml: '<main>Preview</main>',
       themeName: 'noir',

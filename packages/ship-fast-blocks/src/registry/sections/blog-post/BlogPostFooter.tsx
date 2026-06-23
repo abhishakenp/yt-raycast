@@ -1,124 +1,87 @@
 import { z } from "zod/v4"
 import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { SiteFooter } from "#/section-kit/SiteFooter.tsx"
 
 /**
- * BlogPostFooter — multi-column publication footer for an editorial blog post
- * detail page. A bordered-top block with a brand name + description on the left
- * (spanning two columns), followed by labeled link columns, then a bottom row
- * with an auto-updating copyright line and legal links. The brand button and
- * every link route through useNavigate. Use as the closing site footer for
- * blogs, magazines, journals, or editorial publications.
+ * BlogPostFooter — a rich, multi-column closing footer for an editorial blog
+ * post / article detail page. Thin configuration over the shared `SiteFooter`
+ * composite: a feather / pen wordmark beside a tagline, a social row, a
+ * responsive grid of link columns (Explore, Company, Legal, …), and a
+ * bordered-top bottom bar with an auto-updating copyright line. Clean editorial
+ * voice. Use as the site-wide footer for a blog, magazine, journal, or any
+ * editorial publication. Renders fully with no props via baked-in defaults.
  */
+const FeatherMark = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.7"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+    aria-hidden="true"
+  >
+    <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" />
+    <path d="M16 8 2 22" />
+    <path d="M17.5 15H9" />
+  </svg>
+)
+
 export const BlogPostFooter = defineComponent({
   name: "BlogPostFooter",
   description:
-    "Multi-column publication footer for an editorial blog post detail page: a bordered-top block with a brand name + description on the left (spanning two columns), followed by labeled link columns, then a bottom row with an auto-updating copyright line and legal links. The brand button and every link route through useNavigate. Use as the closing site footer for blogs, magazines, journals, or editorial publications.",
+    "Rich, multi-column closing footer for an editorial blog post / article detail page built on the shared SiteFooter composite: a feather/pen wordmark beside a tagline, a social row, a responsive grid of link columns (Explore, Company, Legal, …), and a bordered-top bottom bar with an auto-updating copyright line. Clean editorial voice. Use as the site-wide footer for a blog, magazine, journal, or any editorial publication.",
   props: z.object({
-    /** Publication / brand name shown in the footer. */
+    /** Publication / brand name shown as the wordmark. */
     brand: z.string().optional(),
-    /** Brand description / blurb on the left. */
-    blurb: z.string().optional(),
-    /** Labelled link columns. */
+    /** Short tagline below the wordmark. */
+    tagline: z.string().optional(),
+    /** Link columns (Explore, Company, Legal, …), each a title + labels. */
     columns: z
-      .array(
-        z.object({
-          heading: z.string(),
-          links: z.array(z.string()),
-        }),
-      )
+      .array(z.object({ title: z.string(), links: z.array(z.string()) }))
       .optional(),
+    /** Social channels rendered as a link row under the brand. */
+    social: z
+      .array(z.object({ label: z.string(), href: z.string().optional() }))
+      .optional(),
+    /** Legal / utility link labels on the bottom bar. */
+    legal: z.array(z.string()).optional(),
     /** Copyright note appended after the brand + year. */
     note: z.string().optional(),
-    /** Legal / utility link labels on the bottom right. */
-    legal: z.array(z.string()).optional(),
-    /** Navigation target for the brand button. */
-    homeTarget: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
-    const go = useNavigate()
-    const brand = props.brand ?? "Studio Journal"
-    const blurb =
-      props.blurb ??
-      "A publication for designers who care about craft. Exploring the intersection of aesthetics, strategy, and human-centered product development."
     const columns = props.columns?.length
       ? props.columns
       : [
+          { title: "Explore", links: ["Latest", "Topics", "Archive", "Authors"] },
           {
-            heading: "Explore",
-            links: ["All Articles", "Topics", "Authors", "Podcast"],
+            title: "Company",
+            links: ["About", "Newsletter", "Contact", "RSS"],
           },
-          {
-            heading: "Connect",
-            links: ["Twitter", "LinkedIn", "YouTube", "RSS Feed"],
-          },
+          { title: "Legal", links: ["Privacy", "Terms", "Cookies"] },
         ]
-    const note = props.note ?? "All rights reserved."
-    const legal = props.legal?.length
-      ? props.legal
-      : ["Privacy Policy", "Terms of Service"]
-    const homeTarget = props.homeTarget ?? brand
+    const social = props.social?.length
+      ? props.social
+      : [{ label: "Twitter" }, { label: "GitHub" }, { label: "RSS" }]
+    const legal = props.legal?.length ? props.legal : ["Privacy", "Terms"]
 
     return (
-      <footer
-        className={cn("border-t border-border py-12 lg:py-16", props.className)}
-      >
-        <div className="mx-auto max-w-5xl px-6 lg:px-8">
-          <div className="mb-12 grid gap-8 md:grid-cols-4">
-            <div className="md:col-span-2">
-              <button
-                type="button"
-                onClick={() => go(homeTarget)}
-                className="mb-4 block text-xl font-semibold tracking-tight text-foreground"
-              >
-                {brand}
-              </button>
-              <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
-                {blurb}
-              </p>
-            </div>
-            {columns.map((col) => (
-              <div key={col.heading}>
-                <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-foreground">
-                  {col.heading}
-                </h4>
-                <ul className="space-y-2 text-sm">
-                  {col.links.map((link) => (
-                    <li key={link}>
-                      <button
-                        type="button"
-                        onClick={() => go(link)}
-                        className="text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {link}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} {brand}. {note}
-            </p>
-            <div className="flex gap-6 text-sm">
-              {legal.map((link) => (
-                <button
-                  key={link}
-                  type="button"
-                  onClick={() => go(link)}
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {link}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        brand={props.brand ?? "The Editorial"}
+        brandMark={<FeatherMark className="size-7 text-primary" />}
+        brandClassName="text-xl font-semibold"
+        tagline={
+          props.tagline ??
+          "Thoughtful writing on design, code, and the craft of building."
+        }
+        columns={columns}
+        social={social}
+        legal={legal}
+        note={props.note ?? "All rights reserved."}
+        className={props.className}
+      />
     )
   },
 })

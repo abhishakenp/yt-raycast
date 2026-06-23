@@ -27,6 +27,8 @@ import {
   verifyReadySession,
 } from '@/features/session/services/ready-session-cache'
 import { rememberGenerationLaunchHandoff } from '@/features/session/services/generation-launch-handoff'
+import { parseClonePrompt } from '@/features/clone/services/parse-clone-url'
+import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 
 const CREATE_SESSION_TIMEOUT_MS = 12_000
 const CREATE_SESSION_RETRY_DELAY_MS = 450
@@ -81,6 +83,7 @@ const createSessionWithRetry = async <Payload, Result>(
 export const usePromptHomeController = () => {
   const navigate = useNavigate()
   const createSession = useMutation(api.sessions.create)
+  const { getToken, isSignedIn } = useOptionalAuth()
   const [prompt, setPrompt] = useState('')
   const [errorMessage, setErrorMessage] = useState<string>()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -143,6 +146,8 @@ export const usePromptHomeController = () => {
     setErrorMessage(undefined)
     setIsSubmitting(true)
 
+    const { isClone, seedUrls, brief } = parseClonePrompt(runtimePrompt)
+
     try {
       const canUseVerifiedReadyCache =
         !isPrivate &&
@@ -150,6 +155,7 @@ export const usePromptHomeController = () => {
           0 &&
         !(opts?.designReferenceNotes ?? '').trim() &&
         !(opts?.cloneUrl ?? '').trim() &&
+        !isClone &&
         opts?.engineVersion !== 'v2'
       if (canUseVerifiedReadyCache) {
         const cached = readReadySessionCache(window.localStorage, {
@@ -197,9 +203,8 @@ export const usePromptHomeController = () => {
           workspace,
           designReferenceUrls: opts?.designReferenceUrls,
           designReferenceNotes: opts?.designReferenceNotes,
-          cloneUrl: opts?.cloneUrl,
+          cloneUrl: isClone ? seedUrls[0] : opts?.cloneUrl,
           engineVersion: opts?.engineVersion,
-          reusePublicCache: canUseVerifiedReadyCache,
         }),
       )
       const sessionId = result.sessionId
@@ -223,6 +228,26 @@ export const usePromptHomeController = () => {
           prompt: runtimePrompt,
           preferredLanguage,
         })
+      }
+
+      if (isClone && seedUrls.length > 0) {
+        const headers: Record<string, string> = {
+          'content-type': 'application/json',
+        }
+        if (isSignedIn) {
+          const token = await getToken({ template: 'convex' })
+          if (token) headers.Authorization = `Bearer ${token}`
+        }
+        void fetch('/api/clone', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            sessionId,
+            anonymousOwnerSecret,
+            seedUrl: seedUrls[0],
+            brief,
+          }),
+        }).catch(() => {})
       }
 
       await navigate({
