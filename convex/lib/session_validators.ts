@@ -245,11 +245,19 @@ export const upsertGeneratedModuleArgs = {
   status: v.optional(taskStatus),
 }
 
+export const applyCloneBriefArgs = {
+  ...ownedSessionArgs,
+  cloneBrief: v.string(),
+  themeOverride: v.optional(v.any()),
+}
+
 export const writeClonePageArgs = {
   ...ownedSessionArgs,
   pathname: v.string(),
   title: v.optional(v.string()),
-  html: v.string(),
+  // Provide html (inline, small docs) OR storageId (file storage, large docs).
+  html: v.optional(v.string()),
+  storageId: v.optional(v.id('_storage')),
   isHome: v.boolean(),
   failed: v.boolean(),
   order: v.number(),

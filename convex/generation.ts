@@ -51,8 +51,9 @@ const artifactsByKey = (
 }
 
 const loadGenerationRuntime = async () => {
-  const { runHomepageOrchestrator } =
-    await import('../packages/ship-fast-engine/src/genui/run.ts')
+  const { runHomepageOrchestrator } = await import(
+    '../packages/ship-fast-engine/src/genui/run.ts'
+  )
 
   return { runHomepageOrchestrator }
 }
@@ -147,6 +148,10 @@ const engineAdapterEventMessage = (event: {
 }
 
 const buildGenerationPrompt = (session: Doc<'sessions'>): string => {
+  if (session.cloneBrief && session.cloneBrief.trim().length > 0) {
+    return session.cloneBrief
+  }
+
   const contextLines: string[] = []
   const designReferenceUrls = session.designReferenceUrls ?? []
   const designReferenceNotes = session.designReferenceNotes?.trim()

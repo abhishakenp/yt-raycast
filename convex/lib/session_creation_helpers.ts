@@ -345,6 +345,10 @@ export const createGenerationSession = async (
     designReferenceUrls,
     designReferenceNotes,
     cloneUrl,
+    // A clone request is a verbatim scrape — mark it immediately so the AI
+    // generation path (startGeneration) is skipped from the start; the clone
+    // job owns the preview. (Without this, AI gen races the scrape.)
+    cloneMode: cloneUrl !== undefined ? true : undefined,
     designReferenceFingerprint,
     promptCacheKey,
     engineVersion: args.engineVersion,

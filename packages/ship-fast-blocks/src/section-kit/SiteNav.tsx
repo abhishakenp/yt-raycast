@@ -13,6 +13,15 @@ import {
 
 import type { KitAction } from "./types.ts"
 import { kitActionClasses } from "./types.ts"
+import { SignInButton } from "#/section-kit/SignInButton.tsx"
+
+/**
+ * Matches CTA labels that express an auth intent (sign in / log in / sign up /
+ * sign out / account / profile). Used to auto-wire a nav CTA to the real
+ * Shoo/lakebed auth instead of the dead `go(label)` page-switch.
+ */
+const AUTH_INTENT =
+  /\b(sign\s?-?\s?in|log\s?-?\s?in|login|signin|sign\s?-?\s?up|signup|sign\s?-?\s?out|log\s?-?\s?out|logout|my\s?account|account|my\s?profile)\b/i
 
 /**
  * Generic, prop-driven site navigation header with a real mobile drawer.
@@ -26,6 +35,7 @@ export function SiteNav(props: {
   nav?: string[]
   phone?: string
   cta?: KitAction
+  signIn?: boolean
   homeTarget?: string
   sticky?: boolean
   brandClassName?: string
@@ -34,6 +44,9 @@ export function SiteNav(props: {
   const go = useNavigate()
   const [open, setOpen] = useState(false)
   const sticky = props.sticky ?? true
+  const ctaIsAuth = Boolean(
+    props.signIn || (props.cta && AUTH_INTENT.test(props.cta.label)),
+  )
 
   const headerClasses = sticky
     ? "fixed inset-x-0 top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border"
@@ -81,7 +94,13 @@ export function SiteNav(props: {
             </a>
           ) : null}
 
-          {props.cta ? (
+          {props.cta && ctaIsAuth ? (
+            <SignInButton
+              label={props.cta.label}
+              variant={props.cta.variant}
+              className="hidden sm:inline-flex"
+            />
+          ) : props.cta ? (
             <button
               type="button"
               onClick={() => go(props.cta!.target ?? props.cta!.label)}
@@ -134,7 +153,12 @@ export function SiteNav(props: {
                     {label}
                   </button>
                 ))}
-                {props.cta ? (
+                {props.cta && ctaIsAuth ? (
+                  <SignInButton
+                    label={props.cta.label}
+                    variant={props.cta.variant}
+                  />
+                ) : props.cta ? (
                   <button
                     type="button"
                     onClick={() => {

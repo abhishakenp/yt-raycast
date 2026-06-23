@@ -48,16 +48,22 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'AccountingFirmLogos'),
     )) satisfies RuntimeComponentLoader,
   AccountingFirmNavbar: (() =>
-    import('../registry/sections/accounting-firm/AccountingFirmNavbar.tsx').then(
-      (module) => toCapsule(module, 'AccountingFirmNavbar'),
+    import(
+      '../registry/sections/accounting-firm/AccountingFirmNavbar.tsx'
+    ).then((module) =>
+      toCapsule(module, 'AccountingFirmNavbar'),
     )) satisfies RuntimeComponentLoader,
   AccountingFirmProcess: (() =>
-    import('../registry/sections/accounting-firm/AccountingFirmProcess.tsx').then(
-      (module) => toCapsule(module, 'AccountingFirmProcess'),
+    import(
+      '../registry/sections/accounting-firm/AccountingFirmProcess.tsx'
+    ).then((module) =>
+      toCapsule(module, 'AccountingFirmProcess'),
     )) satisfies RuntimeComponentLoader,
   AccountingFirmServices: (() =>
-    import('../registry/sections/accounting-firm/AccountingFirmServices.tsx').then(
-      (module) => toCapsule(module, 'AccountingFirmServices'),
+    import(
+      '../registry/sections/accounting-firm/AccountingFirmServices.tsx'
+    ).then((module) =>
+      toCapsule(module, 'AccountingFirmServices'),
     )) satisfies RuntimeComponentLoader,
   AccountingFirmTeam: (() =>
     import('../registry/sections/accounting-firm/AccountingFirmTeam.tsx').then(
@@ -232,36 +238,52 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'AnalyticsTestimonials'),
     )) satisfies RuntimeComponentLoader,
   ArchitectureFirmHero: (() =>
-    import('../registry/sections/architecture-firm/ArchitectureFirmHero.tsx').then(
-      (module) => toCapsule(module, 'ArchitectureFirmHero'),
+    import(
+      '../registry/sections/architecture-firm/ArchitectureFirmHero.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ArchitectureFirmHero'),
     )) satisfies RuntimeComponentLoader,
   ArchitectureFirmLogos: (() =>
-    import('../registry/sections/architecture-firm/ArchitectureFirmLogos.tsx').then(
-      (module) => toCapsule(module, 'ArchitectureFirmLogos'),
+    import(
+      '../registry/sections/architecture-firm/ArchitectureFirmLogos.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ArchitectureFirmLogos'),
     )) satisfies RuntimeComponentLoader,
   ArchitectureFirmNavbar: (() =>
-    import('../registry/sections/architecture-firm/ArchitectureFirmNavbar.tsx').then(
-      (module) => toCapsule(module, 'ArchitectureFirmNavbar'),
+    import(
+      '../registry/sections/architecture-firm/ArchitectureFirmNavbar.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ArchitectureFirmNavbar'),
     )) satisfies RuntimeComponentLoader,
   ArchitectureFirmPhilosophy: (() =>
-    import('../registry/sections/architecture-firm/ArchitectureFirmPhilosophy.tsx').then(
-      (module) => toCapsule(module, 'ArchitectureFirmPhilosophy'),
+    import(
+      '../registry/sections/architecture-firm/ArchitectureFirmPhilosophy.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ArchitectureFirmPhilosophy'),
     )) satisfies RuntimeComponentLoader,
   ArchitectureFirmProcess: (() =>
-    import('../registry/sections/architecture-firm/ArchitectureFirmProcess.tsx').then(
-      (module) => toCapsule(module, 'ArchitectureFirmProcess'),
+    import(
+      '../registry/sections/architecture-firm/ArchitectureFirmProcess.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ArchitectureFirmProcess'),
     )) satisfies RuntimeComponentLoader,
   ArchitectureFirmStats: (() =>
-    import('../registry/sections/architecture-firm/ArchitectureFirmStats.tsx').then(
-      (module) => toCapsule(module, 'ArchitectureFirmStats'),
+    import(
+      '../registry/sections/architecture-firm/ArchitectureFirmStats.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ArchitectureFirmStats'),
     )) satisfies RuntimeComponentLoader,
   ArchitectureFirmTestimonials: (() =>
-    import('../registry/sections/architecture-firm/ArchitectureFirmTestimonials.tsx').then(
-      (module) => toCapsule(module, 'ArchitectureFirmTestimonials'),
+    import(
+      '../registry/sections/architecture-firm/ArchitectureFirmTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ArchitectureFirmTestimonials'),
     )) satisfies RuntimeComponentLoader,
   ArchitectureFirmWork: (() =>
-    import('../registry/sections/architecture-firm/ArchitectureFirmWork.tsx').then(
-      (module) => toCapsule(module, 'ArchitectureFirmWork'),
+    import(
+      '../registry/sections/architecture-firm/ArchitectureFirmWork.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ArchitectureFirmWork'),
     )) satisfies RuntimeComponentLoader,
   AspectRatio: (() =>
     import('../registry/primitives/aspect-ratio.tsx').then((module) =>
@@ -308,28 +330,36 @@ export const runtimeComponentLoaders = {
       toCapsule(module, 'AuthTestimonials'),
     )) satisfies RuntimeComponentLoader,
   AutoDealershipFeatures: (() =>
-    import('../registry/sections/auto-dealership/AutoDealershipFeatures.tsx').then(
-      (module) => toCapsule(module, 'AutoDealershipFeatures'),
+    import(
+      '../registry/sections/auto-dealership/AutoDealershipFeatures.tsx'
+    ).then((module) =>
+      toCapsule(module, 'AutoDealershipFeatures'),
     )) satisfies RuntimeComponentLoader,
   AutoDealershipFinancing: (() =>
-    import('../registry/sections/auto-dealership/AutoDealershipFinancing.tsx').then(
-      (module) => toCapsule(module, 'AutoDealershipFinancing'),
+    import(
+      '../registry/sections/auto-dealership/AutoDealershipFinancing.tsx'
+    ).then((module) =>
+      toCapsule(module, 'AutoDealershipFinancing'),
     )) satisfies RuntimeComponentLoader,
   AutoDealershipHero: (() =>
     import('../registry/sections/auto-dealership/AutoDealershipHero.tsx').then(
       (module) => toCapsule(module, 'AutoDealershipHero'),
     )) satisfies RuntimeComponentLoader,
   AutoDealershipInventory: (() =>
-    import('../registry/sections/auto-dealership/AutoDealershipInventory.tsx').then(
-      (module) => toCapsule(module, 'AutoDealershipInventory'),
+    import(
+      '../registry/sections/auto-dealership/AutoDealershipInventory.tsx'
+    ).then((module) =>
+      toCapsule(module, 'AutoDealershipInventory'),
     )) satisfies RuntimeComponentLoader,
   AutoDealershipLogos: (() =>
     import('../registry/sections/auto-dealership/AutoDealershipLogos.tsx').then(
       (module) => toCapsule(module, 'AutoDealershipLogos'),
     )) satisfies RuntimeComponentLoader,
   AutoDealershipNavbar: (() =>
-    import('../registry/sections/auto-dealership/AutoDealershipNavbar.tsx').then(
-      (module) => toCapsule(module, 'AutoDealershipNavbar'),
+    import(
+      '../registry/sections/auto-dealership/AutoDealershipNavbar.tsx'
+    ).then((module) =>
+      toCapsule(module, 'AutoDealershipNavbar'),
     )) satisfies RuntimeComponentLoader,
   AutoDealershipStats: (() =>
     import('../registry/sections/auto-dealership/AutoDealershipStats.tsx').then(
@@ -436,8 +466,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'BeautyStoreProducts'),
     )) satisfies RuntimeComponentLoader,
   BeautyStoreTestimonials: (() =>
-    import('../registry/sections/beauty-store/BeautyStoreTestimonials.tsx').then(
-      (module) => toCapsule(module, 'BeautyStoreTestimonials'),
+    import(
+      '../registry/sections/beauty-store/BeautyStoreTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'BeautyStoreTestimonials'),
     )) satisfies RuntimeComponentLoader,
   BlogAuthors: (() =>
     import('../registry/sections/blog/BlogAuthors.tsx').then((module) =>
@@ -672,52 +704,74 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'ChurchTestimonials'),
     )) satisfies RuntimeComponentLoader,
   CleaningServiceContactCta: (() =>
-    import('../registry/sections/cleaning-service/CleaningServiceContactCta.tsx').then(
-      (module) => toCapsule(module, 'CleaningServiceContactCta'),
+    import(
+      '../registry/sections/cleaning-service/CleaningServiceContactCta.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CleaningServiceContactCta'),
     )) satisfies RuntimeComponentLoader,
   CleaningServiceFaq: (() =>
     import('../registry/sections/cleaning-service/CleaningServiceFaq.tsx').then(
       (module) => toCapsule(module, 'CleaningServiceFaq'),
     )) satisfies RuntimeComponentLoader,
   CleaningServiceFooter: (() =>
-    import('../registry/sections/cleaning-service/CleaningServiceFooter.tsx').then(
-      (module) => toCapsule(module, 'CleaningServiceFooter'),
+    import(
+      '../registry/sections/cleaning-service/CleaningServiceFooter.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CleaningServiceFooter'),
     )) satisfies RuntimeComponentLoader,
   CleaningServiceGallery: (() =>
-    import('../registry/sections/cleaning-service/CleaningServiceGallery.tsx').then(
-      (module) => toCapsule(module, 'CleaningServiceGallery'),
+    import(
+      '../registry/sections/cleaning-service/CleaningServiceGallery.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CleaningServiceGallery'),
     )) satisfies RuntimeComponentLoader,
   CleaningServiceHero: (() =>
-    import('../registry/sections/cleaning-service/CleaningServiceHero.tsx').then(
-      (module) => toCapsule(module, 'CleaningServiceHero'),
+    import(
+      '../registry/sections/cleaning-service/CleaningServiceHero.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CleaningServiceHero'),
     )) satisfies RuntimeComponentLoader,
   CleaningServiceLogos: (() =>
-    import('../registry/sections/cleaning-service/CleaningServiceLogos.tsx').then(
-      (module) => toCapsule(module, 'CleaningServiceLogos'),
+    import(
+      '../registry/sections/cleaning-service/CleaningServiceLogos.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CleaningServiceLogos'),
     )) satisfies RuntimeComponentLoader,
   CleaningServiceNavbar: (() =>
-    import('../registry/sections/cleaning-service/CleaningServiceNavbar.tsx').then(
-      (module) => toCapsule(module, 'CleaningServiceNavbar'),
+    import(
+      '../registry/sections/cleaning-service/CleaningServiceNavbar.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CleaningServiceNavbar'),
     )) satisfies RuntimeComponentLoader,
   CleaningServicePricing: (() =>
-    import('../registry/sections/cleaning-service/CleaningServicePricing.tsx').then(
-      (module) => toCapsule(module, 'CleaningServicePricing'),
+    import(
+      '../registry/sections/cleaning-service/CleaningServicePricing.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CleaningServicePricing'),
     )) satisfies RuntimeComponentLoader,
   CleaningServiceReviews: (() =>
-    import('../registry/sections/cleaning-service/CleaningServiceReviews.tsx').then(
-      (module) => toCapsule(module, 'CleaningServiceReviews'),
+    import(
+      '../registry/sections/cleaning-service/CleaningServiceReviews.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CleaningServiceReviews'),
     )) satisfies RuntimeComponentLoader,
   CleaningServiceServices: (() =>
-    import('../registry/sections/cleaning-service/CleaningServiceServices.tsx').then(
-      (module) => toCapsule(module, 'CleaningServiceServices'),
+    import(
+      '../registry/sections/cleaning-service/CleaningServiceServices.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CleaningServiceServices'),
     )) satisfies RuntimeComponentLoader,
   CleaningServiceStats: (() =>
-    import('../registry/sections/cleaning-service/CleaningServiceStats.tsx').then(
-      (module) => toCapsule(module, 'CleaningServiceStats'),
+    import(
+      '../registry/sections/cleaning-service/CleaningServiceStats.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CleaningServiceStats'),
     )) satisfies RuntimeComponentLoader,
   CleaningServiceSteps: (() =>
-    import('../registry/sections/cleaning-service/CleaningServiceSteps.tsx').then(
-      (module) => toCapsule(module, 'CleaningServiceSteps'),
+    import(
+      '../registry/sections/cleaning-service/CleaningServiceSteps.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CleaningServiceSteps'),
     )) satisfies RuntimeComponentLoader,
   CloudInfraFaq: (() =>
     import('../registry/sections/cloud-infra/CloudInfraFaq.tsx').then(
@@ -816,20 +870,26 @@ export const runtimeComponentLoaders = {
       toCapsule(module, 'Command'),
     )) satisfies RuntimeComponentLoader,
   CommunityForumContactCta: (() =>
-    import('../registry/sections/community-forum/CommunityForumContactCta.tsx').then(
-      (module) => toCapsule(module, 'CommunityForumContactCta'),
+    import(
+      '../registry/sections/community-forum/CommunityForumContactCta.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CommunityForumContactCta'),
     )) satisfies RuntimeComponentLoader,
   CommunityForumFaq: (() =>
     import('../registry/sections/community-forum/CommunityForumFaq.tsx').then(
       (module) => toCapsule(module, 'CommunityForumFaq'),
     )) satisfies RuntimeComponentLoader,
   CommunityForumFeatures: (() =>
-    import('../registry/sections/community-forum/CommunityForumFeatures.tsx').then(
-      (module) => toCapsule(module, 'CommunityForumFeatures'),
+    import(
+      '../registry/sections/community-forum/CommunityForumFeatures.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CommunityForumFeatures'),
     )) satisfies RuntimeComponentLoader,
   CommunityForumFooter: (() =>
-    import('../registry/sections/community-forum/CommunityForumFooter.tsx').then(
-      (module) => toCapsule(module, 'CommunityForumFooter'),
+    import(
+      '../registry/sections/community-forum/CommunityForumFooter.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CommunityForumFooter'),
     )) satisfies RuntimeComponentLoader,
   CommunityForumHero: (() =>
     import('../registry/sections/community-forum/CommunityForumHero.tsx').then(
@@ -840,12 +900,16 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'CommunityForumLogos'),
     )) satisfies RuntimeComponentLoader,
   CommunityForumNavbar: (() =>
-    import('../registry/sections/community-forum/CommunityForumNavbar.tsx').then(
-      (module) => toCapsule(module, 'CommunityForumNavbar'),
+    import(
+      '../registry/sections/community-forum/CommunityForumNavbar.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CommunityForumNavbar'),
     )) satisfies RuntimeComponentLoader,
   CommunityForumPricing: (() =>
-    import('../registry/sections/community-forum/CommunityForumPricing.tsx').then(
-      (module) => toCapsule(module, 'CommunityForumPricing'),
+    import(
+      '../registry/sections/community-forum/CommunityForumPricing.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CommunityForumPricing'),
     )) satisfies RuntimeComponentLoader,
   CommunityForumStats: (() =>
     import('../registry/sections/community-forum/CommunityForumStats.tsx').then(
@@ -856,12 +920,16 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'CommunityForumSteps'),
     )) satisfies RuntimeComponentLoader,
   CommunityForumTestimonials: (() =>
-    import('../registry/sections/community-forum/CommunityForumTestimonials.tsx').then(
-      (module) => toCapsule(module, 'CommunityForumTestimonials'),
+    import(
+      '../registry/sections/community-forum/CommunityForumTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CommunityForumTestimonials'),
     )) satisfies RuntimeComponentLoader,
   CommunityForumTopics: (() =>
-    import('../registry/sections/community-forum/CommunityForumTopics.tsx').then(
-      (module) => toCapsule(module, 'CommunityForumTopics'),
+    import(
+      '../registry/sections/community-forum/CommunityForumTopics.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CommunityForumTopics'),
     )) satisfies RuntimeComponentLoader,
   ConstructionFaq: (() =>
     import('../registry/sections/construction/ConstructionFaq.tsx').then(
@@ -908,8 +976,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'ConstructionStats'),
     )) satisfies RuntimeComponentLoader,
   ConstructionTestimonials: (() =>
-    import('../registry/sections/construction/ConstructionTestimonials.tsx').then(
-      (module) => toCapsule(module, 'ConstructionTestimonials'),
+    import(
+      '../registry/sections/construction/ConstructionTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ConstructionTestimonials'),
     )) satisfies RuntimeComponentLoader,
   ConsultingCaseStudies: (() =>
     import('../registry/sections/consulting/ConsultingCaseStudies.tsx').then(
@@ -1136,8 +1206,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'CrowdfundingStory'),
     )) satisfies RuntimeComponentLoader,
   CrowdfundingTestimonials: (() =>
-    import('../registry/sections/crowdfunding/CrowdfundingTestimonials.tsx').then(
-      (module) => toCapsule(module, 'CrowdfundingTestimonials'),
+    import(
+      '../registry/sections/crowdfunding/CrowdfundingTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CrowdfundingTestimonials'),
     )) satisfies RuntimeComponentLoader,
   CryptoContactCta: (() =>
     import('../registry/sections/crypto/CryptoContactCta.tsx').then((module) =>
@@ -1184,8 +1256,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'CryptoTestimonials'),
     )) satisfies RuntimeComponentLoader,
   CybersecurityContactCta: (() =>
-    import('../registry/sections/cybersecurity/CybersecurityContactCta.tsx').then(
-      (module) => toCapsule(module, 'CybersecurityContactCta'),
+    import(
+      '../registry/sections/cybersecurity/CybersecurityContactCta.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CybersecurityContactCta'),
     )) satisfies RuntimeComponentLoader,
   CybersecurityFaq: (() =>
     import('../registry/sections/cybersecurity/CybersecurityFaq.tsx').then(
@@ -1228,8 +1302,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'CybersecuritySteps'),
     )) satisfies RuntimeComponentLoader,
   CybersecurityTestimonials: (() =>
-    import('../registry/sections/cybersecurity/CybersecurityTestimonials.tsx').then(
-      (module) => toCapsule(module, 'CybersecurityTestimonials'),
+    import(
+      '../registry/sections/cybersecurity/CybersecurityTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'CybersecurityTestimonials'),
     )) satisfies RuntimeComponentLoader,
   DashboardChartActivity: (() =>
     import('../registry/sections/dashboard/DashboardChartActivity.tsx').then(
@@ -1524,56 +1600,82 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'EcommerceTestimonials'),
     )) satisfies RuntimeComponentLoader,
   ElectronicsStoreCategories: (() =>
-    import('../registry/sections/electronics-store/ElectronicsStoreCategories.tsx').then(
-      (module) => toCapsule(module, 'ElectronicsStoreCategories'),
+    import(
+      '../registry/sections/electronics-store/ElectronicsStoreCategories.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ElectronicsStoreCategories'),
     )) satisfies RuntimeComponentLoader,
   ElectronicsStoreDeals: (() =>
-    import('../registry/sections/electronics-store/ElectronicsStoreDeals.tsx').then(
-      (module) => toCapsule(module, 'ElectronicsStoreDeals'),
+    import(
+      '../registry/sections/electronics-store/ElectronicsStoreDeals.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ElectronicsStoreDeals'),
     )) satisfies RuntimeComponentLoader,
   ElectronicsStoreFaq: (() =>
-    import('../registry/sections/electronics-store/ElectronicsStoreFaq.tsx').then(
-      (module) => toCapsule(module, 'ElectronicsStoreFaq'),
+    import(
+      '../registry/sections/electronics-store/ElectronicsStoreFaq.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ElectronicsStoreFaq'),
     )) satisfies RuntimeComponentLoader,
   ElectronicsStoreFeatures: (() =>
-    import('../registry/sections/electronics-store/ElectronicsStoreFeatures.tsx').then(
-      (module) => toCapsule(module, 'ElectronicsStoreFeatures'),
+    import(
+      '../registry/sections/electronics-store/ElectronicsStoreFeatures.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ElectronicsStoreFeatures'),
     )) satisfies RuntimeComponentLoader,
   ElectronicsStoreFooter: (() =>
-    import('../registry/sections/electronics-store/ElectronicsStoreFooter.tsx').then(
-      (module) => toCapsule(module, 'ElectronicsStoreFooter'),
+    import(
+      '../registry/sections/electronics-store/ElectronicsStoreFooter.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ElectronicsStoreFooter'),
     )) satisfies RuntimeComponentLoader,
   ElectronicsStoreGallery: (() =>
-    import('../registry/sections/electronics-store/ElectronicsStoreGallery.tsx').then(
-      (module) => toCapsule(module, 'ElectronicsStoreGallery'),
+    import(
+      '../registry/sections/electronics-store/ElectronicsStoreGallery.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ElectronicsStoreGallery'),
     )) satisfies RuntimeComponentLoader,
   ElectronicsStoreHero: (() =>
-    import('../registry/sections/electronics-store/ElectronicsStoreHero.tsx').then(
-      (module) => toCapsule(module, 'ElectronicsStoreHero'),
+    import(
+      '../registry/sections/electronics-store/ElectronicsStoreHero.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ElectronicsStoreHero'),
     )) satisfies RuntimeComponentLoader,
   ElectronicsStoreLogos: (() =>
-    import('../registry/sections/electronics-store/ElectronicsStoreLogos.tsx').then(
-      (module) => toCapsule(module, 'ElectronicsStoreLogos'),
+    import(
+      '../registry/sections/electronics-store/ElectronicsStoreLogos.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ElectronicsStoreLogos'),
     )) satisfies RuntimeComponentLoader,
   ElectronicsStoreNavbar: (() =>
-    import('../registry/sections/electronics-store/ElectronicsStoreNavbar.tsx').then(
-      (module) => toCapsule(module, 'ElectronicsStoreNavbar'),
+    import(
+      '../registry/sections/electronics-store/ElectronicsStoreNavbar.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ElectronicsStoreNavbar'),
     )) satisfies RuntimeComponentLoader,
   ElectronicsStoreNewsletter: (() =>
-    import('../registry/sections/electronics-store/ElectronicsStoreNewsletter.tsx').then(
-      (module) => toCapsule(module, 'ElectronicsStoreNewsletter'),
+    import(
+      '../registry/sections/electronics-store/ElectronicsStoreNewsletter.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ElectronicsStoreNewsletter'),
     )) satisfies RuntimeComponentLoader,
   ElectronicsStoreProducts: (() =>
-    import('../registry/sections/electronics-store/ElectronicsStoreProducts.tsx').then(
-      (module) => toCapsule(module, 'ElectronicsStoreProducts'),
+    import(
+      '../registry/sections/electronics-store/ElectronicsStoreProducts.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ElectronicsStoreProducts'),
     )) satisfies RuntimeComponentLoader,
   ElectronicsStoreStats: (() =>
-    import('../registry/sections/electronics-store/ElectronicsStoreStats.tsx').then(
-      (module) => toCapsule(module, 'ElectronicsStoreStats'),
+    import(
+      '../registry/sections/electronics-store/ElectronicsStoreStats.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ElectronicsStoreStats'),
     )) satisfies RuntimeComponentLoader,
   ElectronicsStoreTestimonials: (() =>
-    import('../registry/sections/electronics-store/ElectronicsStoreTestimonials.tsx').then(
-      (module) => toCapsule(module, 'ElectronicsStoreTestimonials'),
+    import(
+      '../registry/sections/electronics-store/ElectronicsStoreTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ElectronicsStoreTestimonials'),
     )) satisfies RuntimeComponentLoader,
   Empty: (() =>
     import('../registry/primitives/empty.tsx').then((module) =>
@@ -1660,8 +1762,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'EventPlannerStats'),
     )) satisfies RuntimeComponentLoader,
   EventPlannerTestimonials: (() =>
-    import('../registry/sections/event-planner/EventPlannerTestimonials.tsx').then(
-      (module) => toCapsule(module, 'EventPlannerTestimonials'),
+    import(
+      '../registry/sections/event-planner/EventPlannerTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'EventPlannerTestimonials'),
     )) satisfies RuntimeComponentLoader,
   EventSpeakers: (() =>
     import('../registry/sections/event/EventSpeakers.tsx').then((module) =>
@@ -1708,8 +1812,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'FashionStoreAbout'),
     )) satisfies RuntimeComponentLoader,
   FashionStoreCollections: (() =>
-    import('../registry/sections/fashion-store/FashionStoreCollections.tsx').then(
-      (module) => toCapsule(module, 'FashionStoreCollections'),
+    import(
+      '../registry/sections/fashion-store/FashionStoreCollections.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FashionStoreCollections'),
     )) satisfies RuntimeComponentLoader,
   FashionStoreFaq: (() =>
     import('../registry/sections/fashion-store/FashionStoreFaq.tsx').then(
@@ -1736,8 +1842,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'FashionStoreNavbar'),
     )) satisfies RuntimeComponentLoader,
   FashionStoreNewsletter: (() =>
-    import('../registry/sections/fashion-store/FashionStoreNewsletter.tsx').then(
-      (module) => toCapsule(module, 'FashionStoreNewsletter'),
+    import(
+      '../registry/sections/fashion-store/FashionStoreNewsletter.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FashionStoreNewsletter'),
     )) satisfies RuntimeComponentLoader,
   FashionStoreProducts: (() =>
     import('../registry/sections/fashion-store/FashionStoreProducts.tsx').then(
@@ -1748,8 +1856,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'FashionStoreStats'),
     )) satisfies RuntimeComponentLoader,
   FashionStoreTestimonials: (() =>
-    import('../registry/sections/fashion-store/FashionStoreTestimonials.tsx').then(
-      (module) => toCapsule(module, 'FashionStoreTestimonials'),
+    import(
+      '../registry/sections/fashion-store/FashionStoreTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FashionStoreTestimonials'),
     )) satisfies RuntimeComponentLoader,
   Field: (() =>
     import('../registry/primitives/field.tsx').then((module) =>
@@ -1764,8 +1874,10 @@ export const runtimeComponentLoaders = {
       toCapsule(module, 'FieldSetGroup'),
     )) satisfies RuntimeComponentLoader,
   FilmDirectorContactCta: (() =>
-    import('../registry/sections/film-director/FilmDirectorContactCta.tsx').then(
-      (module) => toCapsule(module, 'FilmDirectorContactCta'),
+    import(
+      '../registry/sections/film-director/FilmDirectorContactCta.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FilmDirectorContactCta'),
     )) satisfies RuntimeComponentLoader,
   FilmDirectorFaq: (() =>
     import('../registry/sections/film-director/FilmDirectorFaq.tsx').then(
@@ -1804,8 +1916,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'FilmDirectorStats'),
     )) satisfies RuntimeComponentLoader,
   FilmDirectorTestimonials: (() =>
-    import('../registry/sections/film-director/FilmDirectorTestimonials.tsx').then(
-      (module) => toCapsule(module, 'FilmDirectorTestimonials'),
+    import(
+      '../registry/sections/film-director/FilmDirectorTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FilmDirectorTestimonials'),
     )) satisfies RuntimeComponentLoader,
   FilmDirectorWork: (() =>
     import('../registry/sections/film-director/FilmDirectorWork.tsx').then(
@@ -1900,36 +2014,52 @@ export const runtimeComponentLoaders = {
       toCapsule(module, 'FitnessTrainers'),
     )) satisfies RuntimeComponentLoader,
   FlightSimulatorFeatures: (() =>
-    import('../registry/sections/flight-simulator/FlightSimulatorFeatures.tsx').then(
-      (module) => toCapsule(module, 'FlightSimulatorFeatures'),
+    import(
+      '../registry/sections/flight-simulator/FlightSimulatorFeatures.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FlightSimulatorFeatures'),
     )) satisfies RuntimeComponentLoader,
   FlightSimulatorFooter: (() =>
-    import('../registry/sections/flight-simulator/FlightSimulatorFooter.tsx').then(
-      (module) => toCapsule(module, 'FlightSimulatorFooter'),
+    import(
+      '../registry/sections/flight-simulator/FlightSimulatorFooter.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FlightSimulatorFooter'),
     )) satisfies RuntimeComponentLoader,
   FlightSimulatorGallery: (() =>
-    import('../registry/sections/flight-simulator/FlightSimulatorGallery.tsx').then(
-      (module) => toCapsule(module, 'FlightSimulatorGallery'),
+    import(
+      '../registry/sections/flight-simulator/FlightSimulatorGallery.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FlightSimulatorGallery'),
     )) satisfies RuntimeComponentLoader,
   FlightSimulatorHero: (() =>
-    import('../registry/sections/flight-simulator/FlightSimulatorHero.tsx').then(
-      (module) => toCapsule(module, 'FlightSimulatorHero'),
+    import(
+      '../registry/sections/flight-simulator/FlightSimulatorHero.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FlightSimulatorHero'),
     )) satisfies RuntimeComponentLoader,
   FlightSimulatorNavbar: (() =>
-    import('../registry/sections/flight-simulator/FlightSimulatorNavbar.tsx').then(
-      (module) => toCapsule(module, 'FlightSimulatorNavbar'),
+    import(
+      '../registry/sections/flight-simulator/FlightSimulatorNavbar.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FlightSimulatorNavbar'),
     )) satisfies RuntimeComponentLoader,
   FlightSimulatorPricing: (() =>
-    import('../registry/sections/flight-simulator/FlightSimulatorPricing.tsx').then(
-      (module) => toCapsule(module, 'FlightSimulatorPricing'),
+    import(
+      '../registry/sections/flight-simulator/FlightSimulatorPricing.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FlightSimulatorPricing'),
     )) satisfies RuntimeComponentLoader,
   FlightSimulatorStats: (() =>
-    import('../registry/sections/flight-simulator/FlightSimulatorStats.tsx').then(
-      (module) => toCapsule(module, 'FlightSimulatorStats'),
+    import(
+      '../registry/sections/flight-simulator/FlightSimulatorStats.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FlightSimulatorStats'),
     )) satisfies RuntimeComponentLoader,
   FlightSimulatorTestimonials: (() =>
-    import('../registry/sections/flight-simulator/FlightSimulatorTestimonials.tsx').then(
-      (module) => toCapsule(module, 'FlightSimulatorTestimonials'),
+    import(
+      '../registry/sections/flight-simulator/FlightSimulatorTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FlightSimulatorTestimonials'),
     )) satisfies RuntimeComponentLoader,
   FoodDeliveryCta: (() =>
     import('../registry/sections/food-delivery/FoodDeliveryCta.tsx').then(
@@ -1956,8 +2086,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'FoodDeliveryNavbar'),
     )) satisfies RuntimeComponentLoader,
   FoodDeliveryRestaurants: (() =>
-    import('../registry/sections/food-delivery/FoodDeliveryRestaurants.tsx').then(
-      (module) => toCapsule(module, 'FoodDeliveryRestaurants'),
+    import(
+      '../registry/sections/food-delivery/FoodDeliveryRestaurants.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FoodDeliveryRestaurants'),
     )) satisfies RuntimeComponentLoader,
   FoodDeliveryStats: (() =>
     import('../registry/sections/food-delivery/FoodDeliveryStats.tsx').then(
@@ -1968,8 +2100,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'FoodDeliverySteps'),
     )) satisfies RuntimeComponentLoader,
   FoodDeliveryTestimonials: (() =>
-    import('../registry/sections/food-delivery/FoodDeliveryTestimonials.tsx').then(
-      (module) => toCapsule(module, 'FoodDeliveryTestimonials'),
+    import(
+      '../registry/sections/food-delivery/FoodDeliveryTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FoodDeliveryTestimonials'),
     )) satisfies RuntimeComponentLoader,
   FoodTruckCatering: (() =>
     import('../registry/sections/food-truck/FoodTruckCatering.tsx').then(
@@ -2020,80 +2154,112 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'FoodTruckTestimonials'),
     )) satisfies RuntimeComponentLoader,
   FurnitureStoreDesign: (() =>
-    import('../registry/sections/furniture-store/FurnitureStoreDesign.tsx').then(
-      (module) => toCapsule(module, 'FurnitureStoreDesign'),
+    import(
+      '../registry/sections/furniture-store/FurnitureStoreDesign.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FurnitureStoreDesign'),
     )) satisfies RuntimeComponentLoader,
   FurnitureStoreFeatures: (() =>
-    import('../registry/sections/furniture-store/FurnitureStoreFeatures.tsx').then(
-      (module) => toCapsule(module, 'FurnitureStoreFeatures'),
+    import(
+      '../registry/sections/furniture-store/FurnitureStoreFeatures.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FurnitureStoreFeatures'),
     )) satisfies RuntimeComponentLoader,
   FurnitureStoreFooter: (() =>
-    import('../registry/sections/furniture-store/FurnitureStoreFooter.tsx').then(
-      (module) => toCapsule(module, 'FurnitureStoreFooter'),
+    import(
+      '../registry/sections/furniture-store/FurnitureStoreFooter.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FurnitureStoreFooter'),
     )) satisfies RuntimeComponentLoader,
   FurnitureStoreHero: (() =>
     import('../registry/sections/furniture-store/FurnitureStoreHero.tsx').then(
       (module) => toCapsule(module, 'FurnitureStoreHero'),
     )) satisfies RuntimeComponentLoader,
   FurnitureStoreNavbar: (() =>
-    import('../registry/sections/furniture-store/FurnitureStoreNavbar.tsx').then(
-      (module) => toCapsule(module, 'FurnitureStoreNavbar'),
+    import(
+      '../registry/sections/furniture-store/FurnitureStoreNavbar.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FurnitureStoreNavbar'),
     )) satisfies RuntimeComponentLoader,
   FurnitureStoreNewsletter: (() =>
-    import('../registry/sections/furniture-store/FurnitureStoreNewsletter.tsx').then(
-      (module) => toCapsule(module, 'FurnitureStoreNewsletter'),
+    import(
+      '../registry/sections/furniture-store/FurnitureStoreNewsletter.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FurnitureStoreNewsletter'),
     )) satisfies RuntimeComponentLoader,
   FurnitureStorePress: (() =>
     import('../registry/sections/furniture-store/FurnitureStorePress.tsx').then(
       (module) => toCapsule(module, 'FurnitureStorePress'),
     )) satisfies RuntimeComponentLoader,
   FurnitureStoreProducts: (() =>
-    import('../registry/sections/furniture-store/FurnitureStoreProducts.tsx').then(
-      (module) => toCapsule(module, 'FurnitureStoreProducts'),
+    import(
+      '../registry/sections/furniture-store/FurnitureStoreProducts.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FurnitureStoreProducts'),
     )) satisfies RuntimeComponentLoader,
   FurnitureStoreRooms: (() =>
     import('../registry/sections/furniture-store/FurnitureStoreRooms.tsx').then(
       (module) => toCapsule(module, 'FurnitureStoreRooms'),
     )) satisfies RuntimeComponentLoader,
   FurnitureStoreTestimonials: (() =>
-    import('../registry/sections/furniture-store/FurnitureStoreTestimonials.tsx').then(
-      (module) => toCapsule(module, 'FurnitureStoreTestimonials'),
+    import(
+      '../registry/sections/furniture-store/FurnitureStoreTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'FurnitureStoreTestimonials'),
     )) satisfies RuntimeComponentLoader,
   GovernmentPortalAbout: (() =>
-    import('../registry/sections/government-portal/GovernmentPortalAbout.tsx').then(
-      (module) => toCapsule(module, 'GovernmentPortalAbout'),
+    import(
+      '../registry/sections/government-portal/GovernmentPortalAbout.tsx'
+    ).then((module) =>
+      toCapsule(module, 'GovernmentPortalAbout'),
     )) satisfies RuntimeComponentLoader,
   GovernmentPortalContact: (() =>
-    import('../registry/sections/government-portal/GovernmentPortalContact.tsx').then(
-      (module) => toCapsule(module, 'GovernmentPortalContact'),
+    import(
+      '../registry/sections/government-portal/GovernmentPortalContact.tsx'
+    ).then((module) =>
+      toCapsule(module, 'GovernmentPortalContact'),
     )) satisfies RuntimeComponentLoader,
   GovernmentPortalEvents: (() =>
-    import('../registry/sections/government-portal/GovernmentPortalEvents.tsx').then(
-      (module) => toCapsule(module, 'GovernmentPortalEvents'),
+    import(
+      '../registry/sections/government-portal/GovernmentPortalEvents.tsx'
+    ).then((module) =>
+      toCapsule(module, 'GovernmentPortalEvents'),
     )) satisfies RuntimeComponentLoader,
   GovernmentPortalFaq: (() =>
-    import('../registry/sections/government-portal/GovernmentPortalFaq.tsx').then(
-      (module) => toCapsule(module, 'GovernmentPortalFaq'),
+    import(
+      '../registry/sections/government-portal/GovernmentPortalFaq.tsx'
+    ).then((module) =>
+      toCapsule(module, 'GovernmentPortalFaq'),
     )) satisfies RuntimeComponentLoader,
   GovernmentPortalFooter: (() =>
-    import('../registry/sections/government-portal/GovernmentPortalFooter.tsx').then(
-      (module) => toCapsule(module, 'GovernmentPortalFooter'),
+    import(
+      '../registry/sections/government-portal/GovernmentPortalFooter.tsx'
+    ).then((module) =>
+      toCapsule(module, 'GovernmentPortalFooter'),
     )) satisfies RuntimeComponentLoader,
   GovernmentPortalHero: (() =>
-    import('../registry/sections/government-portal/GovernmentPortalHero.tsx').then(
-      (module) => toCapsule(module, 'GovernmentPortalHero'),
+    import(
+      '../registry/sections/government-portal/GovernmentPortalHero.tsx'
+    ).then((module) =>
+      toCapsule(module, 'GovernmentPortalHero'),
     )) satisfies RuntimeComponentLoader,
   GovernmentPortalNavbar: (() =>
-    import('../registry/sections/government-portal/GovernmentPortalNavbar.tsx').then(
-      (module) => toCapsule(module, 'GovernmentPortalNavbar'),
+    import(
+      '../registry/sections/government-portal/GovernmentPortalNavbar.tsx'
+    ).then((module) =>
+      toCapsule(module, 'GovernmentPortalNavbar'),
     )) satisfies RuntimeComponentLoader,
   GovernmentPortalServices: (() =>
-    import('../registry/sections/government-portal/GovernmentPortalServices.tsx').then(
-      (module) => toCapsule(module, 'GovernmentPortalServices'),
+    import(
+      '../registry/sections/government-portal/GovernmentPortalServices.tsx'
+    ).then((module) =>
+      toCapsule(module, 'GovernmentPortalServices'),
     )) satisfies RuntimeComponentLoader,
   GovernmentPortalStats: (() =>
-    import('../registry/sections/government-portal/GovernmentPortalStats.tsx').then(
-      (module) => toCapsule(module, 'GovernmentPortalStats'),
+    import(
+      '../registry/sections/government-portal/GovernmentPortalStats.tsx'
+    ).then((module) =>
+      toCapsule(module, 'GovernmentPortalStats'),
     )) satisfies RuntimeComponentLoader,
   Grid: (() =>
     import('../registry/primitives/layout.tsx').then((module) =>
@@ -2192,8 +2358,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'HotelResortStats'),
     )) satisfies RuntimeComponentLoader,
   HotelResortTestimonials: (() =>
-    import('../registry/sections/hotel-resort/HotelResortTestimonials.tsx').then(
-      (module) => toCapsule(module, 'HotelResortTestimonials'),
+    import(
+      '../registry/sections/hotel-resort/HotelResortTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'HotelResortTestimonials'),
     )) satisfies RuntimeComponentLoader,
   HoverCard: (() =>
     import('../registry/primitives/hover-card.tsx').then((module) =>
@@ -2304,16 +2472,20 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'InsuranceTestimonials'),
     )) satisfies RuntimeComponentLoader,
   InteriorDesignContactCta: (() =>
-    import('../registry/sections/interior-design/InteriorDesignContactCta.tsx').then(
-      (module) => toCapsule(module, 'InteriorDesignContactCta'),
+    import(
+      '../registry/sections/interior-design/InteriorDesignContactCta.tsx'
+    ).then((module) =>
+      toCapsule(module, 'InteriorDesignContactCta'),
     )) satisfies RuntimeComponentLoader,
   InteriorDesignFaq: (() =>
     import('../registry/sections/interior-design/InteriorDesignFaq.tsx').then(
       (module) => toCapsule(module, 'InteriorDesignFaq'),
     )) satisfies RuntimeComponentLoader,
   InteriorDesignFooter: (() =>
-    import('../registry/sections/interior-design/InteriorDesignFooter.tsx').then(
-      (module) => toCapsule(module, 'InteriorDesignFooter'),
+    import(
+      '../registry/sections/interior-design/InteriorDesignFooter.tsx'
+    ).then((module) =>
+      toCapsule(module, 'InteriorDesignFooter'),
     )) satisfies RuntimeComponentLoader,
   InteriorDesignHero: (() =>
     import('../registry/sections/interior-design/InteriorDesignHero.tsx').then(
@@ -2324,32 +2496,44 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'InteriorDesignLogos'),
     )) satisfies RuntimeComponentLoader,
   InteriorDesignNavbar: (() =>
-    import('../registry/sections/interior-design/InteriorDesignNavbar.tsx').then(
-      (module) => toCapsule(module, 'InteriorDesignNavbar'),
+    import(
+      '../registry/sections/interior-design/InteriorDesignNavbar.tsx'
+    ).then((module) =>
+      toCapsule(module, 'InteriorDesignNavbar'),
     )) satisfies RuntimeComponentLoader,
   InteriorDesignPricing: (() =>
-    import('../registry/sections/interior-design/InteriorDesignPricing.tsx').then(
-      (module) => toCapsule(module, 'InteriorDesignPricing'),
+    import(
+      '../registry/sections/interior-design/InteriorDesignPricing.tsx'
+    ).then((module) =>
+      toCapsule(module, 'InteriorDesignPricing'),
     )) satisfies RuntimeComponentLoader,
   InteriorDesignProcess: (() =>
-    import('../registry/sections/interior-design/InteriorDesignProcess.tsx').then(
-      (module) => toCapsule(module, 'InteriorDesignProcess'),
+    import(
+      '../registry/sections/interior-design/InteriorDesignProcess.tsx'
+    ).then((module) =>
+      toCapsule(module, 'InteriorDesignProcess'),
     )) satisfies RuntimeComponentLoader,
   InteriorDesignProjects: (() =>
-    import('../registry/sections/interior-design/InteriorDesignProjects.tsx').then(
-      (module) => toCapsule(module, 'InteriorDesignProjects'),
+    import(
+      '../registry/sections/interior-design/InteriorDesignProjects.tsx'
+    ).then((module) =>
+      toCapsule(module, 'InteriorDesignProjects'),
     )) satisfies RuntimeComponentLoader,
   InteriorDesignServices: (() =>
-    import('../registry/sections/interior-design/InteriorDesignServices.tsx').then(
-      (module) => toCapsule(module, 'InteriorDesignServices'),
+    import(
+      '../registry/sections/interior-design/InteriorDesignServices.tsx'
+    ).then((module) =>
+      toCapsule(module, 'InteriorDesignServices'),
     )) satisfies RuntimeComponentLoader,
   InteriorDesignStats: (() =>
     import('../registry/sections/interior-design/InteriorDesignStats.tsx').then(
       (module) => toCapsule(module, 'InteriorDesignStats'),
     )) satisfies RuntimeComponentLoader,
   InteriorDesignTestimonials: (() =>
-    import('../registry/sections/interior-design/InteriorDesignTestimonials.tsx').then(
-      (module) => toCapsule(module, 'InteriorDesignTestimonials'),
+    import(
+      '../registry/sections/interior-design/InteriorDesignTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'InteriorDesignTestimonials'),
     )) satisfies RuntimeComponentLoader,
   InvestingCta: (() =>
     import('../registry/sections/investing/InvestingCta.tsx').then((module) =>
@@ -2412,16 +2596,22 @@ export const runtimeComponentLoaders = {
       toCapsule(module, 'ItemList'),
     )) satisfies RuntimeComponentLoader,
   JewelryStoreAppointmentCta: (() =>
-    import('../registry/sections/jewelry-store/JewelryStoreAppointmentCta.tsx').then(
-      (module) => toCapsule(module, 'JewelryStoreAppointmentCta'),
+    import(
+      '../registry/sections/jewelry-store/JewelryStoreAppointmentCta.tsx'
+    ).then((module) =>
+      toCapsule(module, 'JewelryStoreAppointmentCta'),
     )) satisfies RuntimeComponentLoader,
   JewelryStoreCollections: (() =>
-    import('../registry/sections/jewelry-store/JewelryStoreCollections.tsx').then(
-      (module) => toCapsule(module, 'JewelryStoreCollections'),
+    import(
+      '../registry/sections/jewelry-store/JewelryStoreCollections.tsx'
+    ).then((module) =>
+      toCapsule(module, 'JewelryStoreCollections'),
     )) satisfies RuntimeComponentLoader,
   JewelryStoreCraftsmanship: (() =>
-    import('../registry/sections/jewelry-store/JewelryStoreCraftsmanship.tsx').then(
-      (module) => toCapsule(module, 'JewelryStoreCraftsmanship'),
+    import(
+      '../registry/sections/jewelry-store/JewelryStoreCraftsmanship.tsx'
+    ).then((module) =>
+      toCapsule(module, 'JewelryStoreCraftsmanship'),
     )) satisfies RuntimeComponentLoader,
   JewelryStoreFaq: (() =>
     import('../registry/sections/jewelry-store/JewelryStoreFaq.tsx').then(
@@ -2456,8 +2646,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'JewelryStoreStats'),
     )) satisfies RuntimeComponentLoader,
   JewelryStoreTestimonials: (() =>
-    import('../registry/sections/jewelry-store/JewelryStoreTestimonials.tsx').then(
-      (module) => toCapsule(module, 'JewelryStoreTestimonials'),
+    import(
+      '../registry/sections/jewelry-store/JewelryStoreTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'JewelryStoreTestimonials'),
     )) satisfies RuntimeComponentLoader,
   JobBoardCategories: (() =>
     import('../registry/sections/job-board/JobBoardCategories.tsx').then(
@@ -2512,8 +2704,10 @@ export const runtimeComponentLoaders = {
       toCapsule(module, 'KbdCombo'),
     )) satisfies RuntimeComponentLoader,
   KidsEducationActivities: (() =>
-    import('../registry/sections/kids-education/KidsEducationActivities.tsx').then(
-      (module) => toCapsule(module, 'KidsEducationActivities'),
+    import(
+      '../registry/sections/kids-education/KidsEducationActivities.tsx'
+    ).then((module) =>
+      toCapsule(module, 'KidsEducationActivities'),
     )) satisfies RuntimeComponentLoader,
   KidsEducationCta: (() =>
     import('../registry/sections/kids-education/KidsEducationCta.tsx').then(
@@ -2556,12 +2750,16 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'KidsEducationSteps'),
     )) satisfies RuntimeComponentLoader,
   KidsEducationTestimonials: (() =>
-    import('../registry/sections/kids-education/KidsEducationTestimonials.tsx').then(
-      (module) => toCapsule(module, 'KidsEducationTestimonials'),
+    import(
+      '../registry/sections/kids-education/KidsEducationTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'KidsEducationTestimonials'),
     )) satisfies RuntimeComponentLoader,
   KnowledgeBaseCategories: (() =>
-    import('../registry/sections/knowledge-base/KnowledgeBaseCategories.tsx').then(
-      (module) => toCapsule(module, 'KnowledgeBaseCategories'),
+    import(
+      '../registry/sections/knowledge-base/KnowledgeBaseCategories.tsx'
+    ).then((module) =>
+      toCapsule(module, 'KnowledgeBaseCategories'),
     )) satisfies RuntimeComponentLoader,
   KnowledgeBaseFaq: (() =>
     import('../registry/sections/knowledge-base/KnowledgeBaseFaq.tsx').then(
@@ -2592,8 +2790,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'KnowledgeBaseStats'),
     )) satisfies RuntimeComponentLoader,
   KnowledgeBaseSupportCta: (() =>
-    import('../registry/sections/knowledge-base/KnowledgeBaseSupportCta.tsx').then(
-      (module) => toCapsule(module, 'KnowledgeBaseSupportCta'),
+    import(
+      '../registry/sections/knowledge-base/KnowledgeBaseSupportCta.tsx'
+    ).then((module) =>
+      toCapsule(module, 'KnowledgeBaseSupportCta'),
     )) satisfies RuntimeComponentLoader,
   Label: (() =>
     import('../registry/primitives/label.tsx').then((module) =>
@@ -2796,8 +2996,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'LogisticsTestimonials'),
     )) satisfies RuntimeComponentLoader,
   ManufacturingCapabilities: (() =>
-    import('../registry/sections/manufacturing/ManufacturingCapabilities.tsx').then(
-      (module) => toCapsule(module, 'ManufacturingCapabilities'),
+    import(
+      '../registry/sections/manufacturing/ManufacturingCapabilities.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ManufacturingCapabilities'),
     )) satisfies RuntimeComponentLoader,
   ManufacturingCta: (() =>
     import('../registry/sections/manufacturing/ManufacturingCta.tsx').then(
@@ -2820,8 +3022,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'ManufacturingHero'),
     )) satisfies RuntimeComponentLoader,
   ManufacturingIndustries: (() =>
-    import('../registry/sections/manufacturing/ManufacturingIndustries.tsx').then(
-      (module) => toCapsule(module, 'ManufacturingIndustries'),
+    import(
+      '../registry/sections/manufacturing/ManufacturingIndustries.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ManufacturingIndustries'),
     )) satisfies RuntimeComponentLoader,
   ManufacturingLogos: (() =>
     import('../registry/sections/manufacturing/ManufacturingLogos.tsx').then(
@@ -2844,56 +3048,80 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'ManufacturingStats'),
     )) satisfies RuntimeComponentLoader,
   ManufacturingTestimonials: (() =>
-    import('../registry/sections/manufacturing/ManufacturingTestimonials.tsx').then(
-      (module) => toCapsule(module, 'ManufacturingTestimonials'),
+    import(
+      '../registry/sections/manufacturing/ManufacturingTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ManufacturingTestimonials'),
     )) satisfies RuntimeComponentLoader,
   MarketingAgencyCases: (() =>
-    import('../registry/sections/marketing-agency/MarketingAgencyCases.tsx').then(
-      (module) => toCapsule(module, 'MarketingAgencyCases'),
+    import(
+      '../registry/sections/marketing-agency/MarketingAgencyCases.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MarketingAgencyCases'),
     )) satisfies RuntimeComponentLoader,
   MarketingAgencyContactCta: (() =>
-    import('../registry/sections/marketing-agency/MarketingAgencyContactCta.tsx').then(
-      (module) => toCapsule(module, 'MarketingAgencyContactCta'),
+    import(
+      '../registry/sections/marketing-agency/MarketingAgencyContactCta.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MarketingAgencyContactCta'),
     )) satisfies RuntimeComponentLoader,
   MarketingAgencyFaq: (() =>
     import('../registry/sections/marketing-agency/MarketingAgencyFaq.tsx').then(
       (module) => toCapsule(module, 'MarketingAgencyFaq'),
     )) satisfies RuntimeComponentLoader,
   MarketingAgencyFooter: (() =>
-    import('../registry/sections/marketing-agency/MarketingAgencyFooter.tsx').then(
-      (module) => toCapsule(module, 'MarketingAgencyFooter'),
+    import(
+      '../registry/sections/marketing-agency/MarketingAgencyFooter.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MarketingAgencyFooter'),
     )) satisfies RuntimeComponentLoader,
   MarketingAgencyHero: (() =>
-    import('../registry/sections/marketing-agency/MarketingAgencyHero.tsx').then(
-      (module) => toCapsule(module, 'MarketingAgencyHero'),
+    import(
+      '../registry/sections/marketing-agency/MarketingAgencyHero.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MarketingAgencyHero'),
     )) satisfies RuntimeComponentLoader,
   MarketingAgencyLogos: (() =>
-    import('../registry/sections/marketing-agency/MarketingAgencyLogos.tsx').then(
-      (module) => toCapsule(module, 'MarketingAgencyLogos'),
+    import(
+      '../registry/sections/marketing-agency/MarketingAgencyLogos.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MarketingAgencyLogos'),
     )) satisfies RuntimeComponentLoader,
   MarketingAgencyNavbar: (() =>
-    import('../registry/sections/marketing-agency/MarketingAgencyNavbar.tsx').then(
-      (module) => toCapsule(module, 'MarketingAgencyNavbar'),
+    import(
+      '../registry/sections/marketing-agency/MarketingAgencyNavbar.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MarketingAgencyNavbar'),
     )) satisfies RuntimeComponentLoader,
   MarketingAgencyPricing: (() =>
-    import('../registry/sections/marketing-agency/MarketingAgencyPricing.tsx').then(
-      (module) => toCapsule(module, 'MarketingAgencyPricing'),
+    import(
+      '../registry/sections/marketing-agency/MarketingAgencyPricing.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MarketingAgencyPricing'),
     )) satisfies RuntimeComponentLoader,
   MarketingAgencyProcess: (() =>
-    import('../registry/sections/marketing-agency/MarketingAgencyProcess.tsx').then(
-      (module) => toCapsule(module, 'MarketingAgencyProcess'),
+    import(
+      '../registry/sections/marketing-agency/MarketingAgencyProcess.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MarketingAgencyProcess'),
     )) satisfies RuntimeComponentLoader,
   MarketingAgencyServices: (() =>
-    import('../registry/sections/marketing-agency/MarketingAgencyServices.tsx').then(
-      (module) => toCapsule(module, 'MarketingAgencyServices'),
+    import(
+      '../registry/sections/marketing-agency/MarketingAgencyServices.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MarketingAgencyServices'),
     )) satisfies RuntimeComponentLoader,
   MarketingAgencyStats: (() =>
-    import('../registry/sections/marketing-agency/MarketingAgencyStats.tsx').then(
-      (module) => toCapsule(module, 'MarketingAgencyStats'),
+    import(
+      '../registry/sections/marketing-agency/MarketingAgencyStats.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MarketingAgencyStats'),
     )) satisfies RuntimeComponentLoader,
   MarketingAgencyTestimonials: (() =>
-    import('../registry/sections/marketing-agency/MarketingAgencyTestimonials.tsx').then(
-      (module) => toCapsule(module, 'MarketingAgencyTestimonials'),
+    import(
+      '../registry/sections/marketing-agency/MarketingAgencyTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MarketingAgencyTestimonials'),
     )) satisfies RuntimeComponentLoader,
   MarketingCta: (() =>
     import('../registry/sections/marketing/MarketingCta.tsx').then((module) =>
@@ -2960,8 +3188,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'MarketplaceTestimonials'),
     )) satisfies RuntimeComponentLoader,
   MembershipClubBenefits: (() =>
-    import('../registry/sections/membership-club/MembershipClubBenefits.tsx').then(
-      (module) => toCapsule(module, 'MembershipClubBenefits'),
+    import(
+      '../registry/sections/membership-club/MembershipClubBenefits.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MembershipClubBenefits'),
     )) satisfies RuntimeComponentLoader,
   MembershipClubCta: (() =>
     import('../registry/sections/membership-club/MembershipClubCta.tsx').then(
@@ -2972,12 +3202,16 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'MembershipClubFaq'),
     )) satisfies RuntimeComponentLoader,
   MembershipClubFooter: (() =>
-    import('../registry/sections/membership-club/MembershipClubFooter.tsx').then(
-      (module) => toCapsule(module, 'MembershipClubFooter'),
+    import(
+      '../registry/sections/membership-club/MembershipClubFooter.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MembershipClubFooter'),
     )) satisfies RuntimeComponentLoader,
   MembershipClubGallery: (() =>
-    import('../registry/sections/membership-club/MembershipClubGallery.tsx').then(
-      (module) => toCapsule(module, 'MembershipClubGallery'),
+    import(
+      '../registry/sections/membership-club/MembershipClubGallery.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MembershipClubGallery'),
     )) satisfies RuntimeComponentLoader,
   MembershipClubHero: (() =>
     import('../registry/sections/membership-club/MembershipClubHero.tsx').then(
@@ -2988,12 +3222,16 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'MembershipClubLogos'),
     )) satisfies RuntimeComponentLoader,
   MembershipClubNavbar: (() =>
-    import('../registry/sections/membership-club/MembershipClubNavbar.tsx').then(
-      (module) => toCapsule(module, 'MembershipClubNavbar'),
+    import(
+      '../registry/sections/membership-club/MembershipClubNavbar.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MembershipClubNavbar'),
     )) satisfies RuntimeComponentLoader,
   MembershipClubPricing: (() =>
-    import('../registry/sections/membership-club/MembershipClubPricing.tsx').then(
-      (module) => toCapsule(module, 'MembershipClubPricing'),
+    import(
+      '../registry/sections/membership-club/MembershipClubPricing.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MembershipClubPricing'),
     )) satisfies RuntimeComponentLoader,
   MembershipClubStats: (() =>
     import('../registry/sections/membership-club/MembershipClubStats.tsx').then(
@@ -3004,12 +3242,16 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'MembershipClubSteps'),
     )) satisfies RuntimeComponentLoader,
   MembershipClubTestimonials: (() =>
-    import('../registry/sections/membership-club/MembershipClubTestimonials.tsx').then(
-      (module) => toCapsule(module, 'MembershipClubTestimonials'),
+    import(
+      '../registry/sections/membership-club/MembershipClubTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MembershipClubTestimonials'),
     )) satisfies RuntimeComponentLoader,
   MentalHealthContactCta: (() =>
-    import('../registry/sections/mental-health/MentalHealthContactCta.tsx').then(
-      (module) => toCapsule(module, 'MentalHealthContactCta'),
+    import(
+      '../registry/sections/mental-health/MentalHealthContactCta.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MentalHealthContactCta'),
     )) satisfies RuntimeComponentLoader,
   MentalHealthFaq: (() =>
     import('../registry/sections/mental-health/MentalHealthFaq.tsx').then(
@@ -3052,8 +3294,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'MentalHealthTeam'),
     )) satisfies RuntimeComponentLoader,
   MentalHealthTestimonials: (() =>
-    import('../registry/sections/mental-health/MentalHealthTestimonials.tsx').then(
-      (module) => toCapsule(module, 'MentalHealthTestimonials'),
+    import(
+      '../registry/sections/mental-health/MentalHealthTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MentalHealthTestimonials'),
     )) satisfies RuntimeComponentLoader,
   Menubar: (() =>
     import('../registry/primitives/menubar.tsx').then((module) =>
@@ -3152,8 +3396,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'MusicFestivalCta'),
     )) satisfies RuntimeComponentLoader,
   MusicFestivalExperience: (() =>
-    import('../registry/sections/music-festival/MusicFestivalExperience.tsx').then(
-      (module) => toCapsule(module, 'MusicFestivalExperience'),
+    import(
+      '../registry/sections/music-festival/MusicFestivalExperience.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MusicFestivalExperience'),
     )) satisfies RuntimeComponentLoader,
   MusicFestivalFaq: (() =>
     import('../registry/sections/music-festival/MusicFestivalFaq.tsx').then(
@@ -3184,16 +3430,20 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'MusicFestivalNavbar'),
     )) satisfies RuntimeComponentLoader,
   MusicFestivalSchedule: (() =>
-    import('../registry/sections/music-festival/MusicFestivalSchedule.tsx').then(
-      (module) => toCapsule(module, 'MusicFestivalSchedule'),
+    import(
+      '../registry/sections/music-festival/MusicFestivalSchedule.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MusicFestivalSchedule'),
     )) satisfies RuntimeComponentLoader,
   MusicFestivalStats: (() =>
     import('../registry/sections/music-festival/MusicFestivalStats.tsx').then(
       (module) => toCapsule(module, 'MusicFestivalStats'),
     )) satisfies RuntimeComponentLoader,
   MusicFestivalTestimonials: (() =>
-    import('../registry/sections/music-festival/MusicFestivalTestimonials.tsx').then(
-      (module) => toCapsule(module, 'MusicFestivalTestimonials'),
+    import(
+      '../registry/sections/music-festival/MusicFestivalTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'MusicFestivalTestimonials'),
     )) satisfies RuntimeComponentLoader,
   MusicFestivalTickets: (() =>
     import('../registry/sections/music-festival/MusicFestivalTickets.tsx').then(
@@ -3460,8 +3710,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'OnlineCoursePrograms'),
     )) satisfies RuntimeComponentLoader,
   OnlineCourseTestimonials: (() =>
-    import('../registry/sections/online-course/OnlineCourseTestimonials.tsx').then(
-      (module) => toCapsule(module, 'OnlineCourseTestimonials'),
+    import(
+      '../registry/sections/online-course/OnlineCourseTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'OnlineCourseTestimonials'),
     )) satisfies RuntimeComponentLoader,
   PageSwitch: (() =>
     import('../registry/primitives/page-switch.tsx').then((module) =>
@@ -3492,16 +3744,20 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'PetVeterinaryPricing'),
     )) satisfies RuntimeComponentLoader,
   PetVeterinaryServices: (() =>
-    import('../registry/sections/pet-veterinary/PetVeterinaryServices.tsx').then(
-      (module) => toCapsule(module, 'PetVeterinaryServices'),
+    import(
+      '../registry/sections/pet-veterinary/PetVeterinaryServices.tsx'
+    ).then((module) =>
+      toCapsule(module, 'PetVeterinaryServices'),
     )) satisfies RuntimeComponentLoader,
   PetVeterinaryStats: (() =>
     import('../registry/sections/pet-veterinary/PetVeterinaryStats.tsx').then(
       (module) => toCapsule(module, 'PetVeterinaryStats'),
     )) satisfies RuntimeComponentLoader,
   PetVeterinaryTestimonials: (() =>
-    import('../registry/sections/pet-veterinary/PetVeterinaryTestimonials.tsx').then(
-      (module) => toCapsule(module, 'PetVeterinaryTestimonials'),
+    import(
+      '../registry/sections/pet-veterinary/PetVeterinaryTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'PetVeterinaryTestimonials'),
     )) satisfies RuntimeComponentLoader,
   PhotographyCta: (() =>
     import('../registry/sections/photography/PhotographyCta.tsx').then(
@@ -3568,8 +3824,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'PlumbingHvacSteps'),
     )) satisfies RuntimeComponentLoader,
   PlumbingHvacTestimonials: (() =>
-    import('../registry/sections/plumbing-hvac/PlumbingHvacTestimonials.tsx').then(
-      (module) => toCapsule(module, 'PlumbingHvacTestimonials'),
+    import(
+      '../registry/sections/plumbing-hvac/PlumbingHvacTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'PlumbingHvacTestimonials'),
     )) satisfies RuntimeComponentLoader,
   PodcastAuthors: (() =>
     import('../registry/sections/podcast/PodcastAuthors.tsx').then((module) =>
@@ -3648,8 +3906,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'PortfolioDevStats'),
     )) satisfies RuntimeComponentLoader,
   PortfolioDevTestimonials: (() =>
-    import('../registry/sections/portfolio-dev/PortfolioDevTestimonials.tsx').then(
-      (module) => toCapsule(module, 'PortfolioDevTestimonials'),
+    import(
+      '../registry/sections/portfolio-dev/PortfolioDevTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'PortfolioDevTestimonials'),
     )) satisfies RuntimeComponentLoader,
   PortfolioFooter: (() =>
     import('../registry/sections/portfolio/PortfolioFooter.tsx').then(
@@ -3692,8 +3952,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'ProductDetailFaq'),
     )) satisfies RuntimeComponentLoader,
   ProductDetailFeatures: (() =>
-    import('../registry/sections/product-detail/ProductDetailFeatures.tsx').then(
-      (module) => toCapsule(module, 'ProductDetailFeatures'),
+    import(
+      '../registry/sections/product-detail/ProductDetailFeatures.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ProductDetailFeatures'),
     )) satisfies RuntimeComponentLoader,
   ProductDetailFooter: (() =>
     import('../registry/sections/product-detail/ProductDetailFooter.tsx').then(
@@ -3712,12 +3974,16 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'ProductDetailNavbar'),
     )) satisfies RuntimeComponentLoader,
   ProductDetailOverview: (() =>
-    import('../registry/sections/product-detail/ProductDetailOverview.tsx').then(
-      (module) => toCapsule(module, 'ProductDetailOverview'),
+    import(
+      '../registry/sections/product-detail/ProductDetailOverview.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ProductDetailOverview'),
     )) satisfies RuntimeComponentLoader,
   ProductDetailTestimonials: (() =>
-    import('../registry/sections/product-detail/ProductDetailTestimonials.tsx').then(
-      (module) => toCapsule(module, 'ProductDetailTestimonials'),
+    import(
+      '../registry/sections/product-detail/ProductDetailTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'ProductDetailTestimonials'),
     )) satisfies RuntimeComponentLoader,
   Progress: (() =>
     import('../registry/primitives/progress.tsx').then((module) =>
@@ -3728,36 +3994,52 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'PropertyListingCta'),
     )) satisfies RuntimeComponentLoader,
   PropertyListingFeatures: (() =>
-    import('../registry/sections/property-listing/PropertyListingFeatures.tsx').then(
-      (module) => toCapsule(module, 'PropertyListingFeatures'),
+    import(
+      '../registry/sections/property-listing/PropertyListingFeatures.tsx'
+    ).then((module) =>
+      toCapsule(module, 'PropertyListingFeatures'),
     )) satisfies RuntimeComponentLoader,
   PropertyListingFooter: (() =>
-    import('../registry/sections/property-listing/PropertyListingFooter.tsx').then(
-      (module) => toCapsule(module, 'PropertyListingFooter'),
+    import(
+      '../registry/sections/property-listing/PropertyListingFooter.tsx'
+    ).then((module) =>
+      toCapsule(module, 'PropertyListingFooter'),
     )) satisfies RuntimeComponentLoader,
   PropertyListingGallery: (() =>
-    import('../registry/sections/property-listing/PropertyListingGallery.tsx').then(
-      (module) => toCapsule(module, 'PropertyListingGallery'),
+    import(
+      '../registry/sections/property-listing/PropertyListingGallery.tsx'
+    ).then((module) =>
+      toCapsule(module, 'PropertyListingGallery'),
     )) satisfies RuntimeComponentLoader,
   PropertyListingHero: (() =>
-    import('../registry/sections/property-listing/PropertyListingHero.tsx').then(
-      (module) => toCapsule(module, 'PropertyListingHero'),
+    import(
+      '../registry/sections/property-listing/PropertyListingHero.tsx'
+    ).then((module) =>
+      toCapsule(module, 'PropertyListingHero'),
     )) satisfies RuntimeComponentLoader,
   PropertyListingNavbar: (() =>
-    import('../registry/sections/property-listing/PropertyListingNavbar.tsx').then(
-      (module) => toCapsule(module, 'PropertyListingNavbar'),
+    import(
+      '../registry/sections/property-listing/PropertyListingNavbar.tsx'
+    ).then((module) =>
+      toCapsule(module, 'PropertyListingNavbar'),
     )) satisfies RuntimeComponentLoader,
   PropertyListingOverview: (() =>
-    import('../registry/sections/property-listing/PropertyListingOverview.tsx').then(
-      (module) => toCapsule(module, 'PropertyListingOverview'),
+    import(
+      '../registry/sections/property-listing/PropertyListingOverview.tsx'
+    ).then((module) =>
+      toCapsule(module, 'PropertyListingOverview'),
     )) satisfies RuntimeComponentLoader,
   PropertyListingStats: (() =>
-    import('../registry/sections/property-listing/PropertyListingStats.tsx').then(
-      (module) => toCapsule(module, 'PropertyListingStats'),
+    import(
+      '../registry/sections/property-listing/PropertyListingStats.tsx'
+    ).then((module) =>
+      toCapsule(module, 'PropertyListingStats'),
     )) satisfies RuntimeComponentLoader,
   PropertyListingTestimonials: (() =>
-    import('../registry/sections/property-listing/PropertyListingTestimonials.tsx').then(
-      (module) => toCapsule(module, 'PropertyListingTestimonials'),
+    import(
+      '../registry/sections/property-listing/PropertyListingTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'PropertyListingTestimonials'),
     )) satisfies RuntimeComponentLoader,
   RadioGroup: (() =>
     import('../registry/primitives/radio-group.tsx').then((module) =>
@@ -3948,8 +4230,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'SalonBarberServices'),
     )) satisfies RuntimeComponentLoader,
   SalonBarberTestimonials: (() =>
-    import('../registry/sections/salon-barber/SalonBarberTestimonials.tsx').then(
-      (module) => toCapsule(module, 'SalonBarberTestimonials'),
+    import(
+      '../registry/sections/salon-barber/SalonBarberTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'SalonBarberTestimonials'),
     )) satisfies RuntimeComponentLoader,
   ScrollArea: (() =>
     import('../registry/primitives/scroll-area.tsx').then((module) =>
@@ -3974,6 +4258,10 @@ export const runtimeComponentLoaders = {
   ShopOverview: (() =>
     import('../registry/sections/shop/ShopOverview.tsx').then((module) =>
       toCapsule(module, 'ShopOverview'),
+    )) satisfies RuntimeComponentLoader,
+  SignIn: (() =>
+    import('../registry/primitives/sign-in.tsx').then((module) =>
+      toCapsule(module, 'SignIn'),
     )) satisfies RuntimeComponentLoader,
   Skeleton: (() =>
     import('../registry/primitives/skeleton.tsx').then((module) =>
@@ -4020,8 +4308,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'SpaWellnessServices'),
     )) satisfies RuntimeComponentLoader,
   SpaWellnessTestimonials: (() =>
-    import('../registry/sections/spa-wellness/SpaWellnessTestimonials.tsx').then(
-      (module) => toCapsule(module, 'SpaWellnessTestimonials'),
+    import(
+      '../registry/sections/spa-wellness/SpaWellnessTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'SpaWellnessTestimonials'),
     )) satisfies RuntimeComponentLoader,
   Spinner: (() =>
     import('../registry/primitives/spinner.tsx').then((module) =>
@@ -4031,41 +4321,69 @@ export const runtimeComponentLoaders = {
     import('../registry/primitives/layout.tsx').then((module) =>
       toCapsule(module, 'Stack'),
     )) satisfies RuntimeComponentLoader,
+  StateButton: (() =>
+    import('../registry/primitives/reactive.tsx').then((module) =>
+      toCapsule(module, 'StateButton'),
+    )) satisfies RuntimeComponentLoader,
+  StateInput: (() =>
+    import('../registry/primitives/reactive.tsx').then((module) =>
+      toCapsule(module, 'StateInput'),
+    )) satisfies RuntimeComponentLoader,
+  StateText: (() =>
+    import('../registry/primitives/reactive.tsx').then((module) =>
+      toCapsule(module, 'StateText'),
+    )) satisfies RuntimeComponentLoader,
   SubscriptionBoxCta: (() =>
     import('../registry/sections/subscription-box/SubscriptionBoxCta.tsx').then(
       (module) => toCapsule(module, 'SubscriptionBoxCta'),
     )) satisfies RuntimeComponentLoader,
   SubscriptionBoxFeatures: (() =>
-    import('../registry/sections/subscription-box/SubscriptionBoxFeatures.tsx').then(
-      (module) => toCapsule(module, 'SubscriptionBoxFeatures'),
+    import(
+      '../registry/sections/subscription-box/SubscriptionBoxFeatures.tsx'
+    ).then((module) =>
+      toCapsule(module, 'SubscriptionBoxFeatures'),
     )) satisfies RuntimeComponentLoader,
   SubscriptionBoxFooter: (() =>
-    import('../registry/sections/subscription-box/SubscriptionBoxFooter.tsx').then(
-      (module) => toCapsule(module, 'SubscriptionBoxFooter'),
+    import(
+      '../registry/sections/subscription-box/SubscriptionBoxFooter.tsx'
+    ).then((module) =>
+      toCapsule(module, 'SubscriptionBoxFooter'),
     )) satisfies RuntimeComponentLoader,
   SubscriptionBoxHero: (() =>
-    import('../registry/sections/subscription-box/SubscriptionBoxHero.tsx').then(
-      (module) => toCapsule(module, 'SubscriptionBoxHero'),
+    import(
+      '../registry/sections/subscription-box/SubscriptionBoxHero.tsx'
+    ).then((module) =>
+      toCapsule(module, 'SubscriptionBoxHero'),
     )) satisfies RuntimeComponentLoader,
   SubscriptionBoxNavbar: (() =>
-    import('../registry/sections/subscription-box/SubscriptionBoxNavbar.tsx').then(
-      (module) => toCapsule(module, 'SubscriptionBoxNavbar'),
+    import(
+      '../registry/sections/subscription-box/SubscriptionBoxNavbar.tsx'
+    ).then((module) =>
+      toCapsule(module, 'SubscriptionBoxNavbar'),
     )) satisfies RuntimeComponentLoader,
   SubscriptionBoxOverview: (() =>
-    import('../registry/sections/subscription-box/SubscriptionBoxOverview.tsx').then(
-      (module) => toCapsule(module, 'SubscriptionBoxOverview'),
+    import(
+      '../registry/sections/subscription-box/SubscriptionBoxOverview.tsx'
+    ).then((module) =>
+      toCapsule(module, 'SubscriptionBoxOverview'),
     )) satisfies RuntimeComponentLoader,
   SubscriptionBoxPricing: (() =>
-    import('../registry/sections/subscription-box/SubscriptionBoxPricing.tsx').then(
-      (module) => toCapsule(module, 'SubscriptionBoxPricing'),
+    import(
+      '../registry/sections/subscription-box/SubscriptionBoxPricing.tsx'
+    ).then((module) =>
+      toCapsule(module, 'SubscriptionBoxPricing'),
     )) satisfies RuntimeComponentLoader,
   SubscriptionBoxSteps: (() =>
-    import('../registry/sections/subscription-box/SubscriptionBoxSteps.tsx').then(
-      (module) => toCapsule(module, 'SubscriptionBoxSteps'),
+    import(
+      '../registry/sections/subscription-box/SubscriptionBoxSteps.tsx'
+    ).then((module) =>
+      toCapsule(module, 'SubscriptionBoxSteps'),
     )) satisfies RuntimeComponentLoader,
   SubscriptionBoxTestimonials: (() =>
-    import('../registry/sections/subscription-box/SubscriptionBoxTestimonials.tsx').then(
-      (module) => toCapsule(module, 'SubscriptionBoxTestimonials'),
+    import(
+      '../registry/sections/subscription-box/SubscriptionBoxTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'SubscriptionBoxTestimonials'),
     )) satisfies RuntimeComponentLoader,
   Switch: (() =>
     import('../registry/primitives/switch.tsx').then((module) =>
@@ -4148,36 +4466,52 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'TourExperiencesCta'),
     )) satisfies RuntimeComponentLoader,
   TourExperiencesFooter: (() =>
-    import('../registry/sections/tour-experiences/TourExperiencesFooter.tsx').then(
-      (module) => toCapsule(module, 'TourExperiencesFooter'),
+    import(
+      '../registry/sections/tour-experiences/TourExperiencesFooter.tsx'
+    ).then((module) =>
+      toCapsule(module, 'TourExperiencesFooter'),
     )) satisfies RuntimeComponentLoader,
   TourExperiencesGallery: (() =>
-    import('../registry/sections/tour-experiences/TourExperiencesGallery.tsx').then(
-      (module) => toCapsule(module, 'TourExperiencesGallery'),
+    import(
+      '../registry/sections/tour-experiences/TourExperiencesGallery.tsx'
+    ).then((module) =>
+      toCapsule(module, 'TourExperiencesGallery'),
     )) satisfies RuntimeComponentLoader,
   TourExperiencesHero: (() =>
-    import('../registry/sections/tour-experiences/TourExperiencesHero.tsx').then(
-      (module) => toCapsule(module, 'TourExperiencesHero'),
+    import(
+      '../registry/sections/tour-experiences/TourExperiencesHero.tsx'
+    ).then((module) =>
+      toCapsule(module, 'TourExperiencesHero'),
     )) satisfies RuntimeComponentLoader,
   TourExperiencesNavbar: (() =>
-    import('../registry/sections/tour-experiences/TourExperiencesNavbar.tsx').then(
-      (module) => toCapsule(module, 'TourExperiencesNavbar'),
+    import(
+      '../registry/sections/tour-experiences/TourExperiencesNavbar.tsx'
+    ).then((module) =>
+      toCapsule(module, 'TourExperiencesNavbar'),
     )) satisfies RuntimeComponentLoader,
   TourExperiencesOverview: (() =>
-    import('../registry/sections/tour-experiences/TourExperiencesOverview.tsx').then(
-      (module) => toCapsule(module, 'TourExperiencesOverview'),
+    import(
+      '../registry/sections/tour-experiences/TourExperiencesOverview.tsx'
+    ).then((module) =>
+      toCapsule(module, 'TourExperiencesOverview'),
     )) satisfies RuntimeComponentLoader,
   TourExperiencesPricing: (() =>
-    import('../registry/sections/tour-experiences/TourExperiencesPricing.tsx').then(
-      (module) => toCapsule(module, 'TourExperiencesPricing'),
+    import(
+      '../registry/sections/tour-experiences/TourExperiencesPricing.tsx'
+    ).then((module) =>
+      toCapsule(module, 'TourExperiencesPricing'),
     )) satisfies RuntimeComponentLoader,
   TourExperiencesServices: (() =>
-    import('../registry/sections/tour-experiences/TourExperiencesServices.tsx').then(
-      (module) => toCapsule(module, 'TourExperiencesServices'),
+    import(
+      '../registry/sections/tour-experiences/TourExperiencesServices.tsx'
+    ).then((module) =>
+      toCapsule(module, 'TourExperiencesServices'),
     )) satisfies RuntimeComponentLoader,
   TourExperiencesTestimonials: (() =>
-    import('../registry/sections/tour-experiences/TourExperiencesTestimonials.tsx').then(
-      (module) => toCapsule(module, 'TourExperiencesTestimonials'),
+    import(
+      '../registry/sections/tour-experiences/TourExperiencesTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'TourExperiencesTestimonials'),
     )) satisfies RuntimeComponentLoader,
   TravelAgencyCta: (() =>
     import('../registry/sections/travel-agency/TravelAgencyCta.tsx').then(
@@ -4212,8 +4546,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'TravelAgencyStats'),
     )) satisfies RuntimeComponentLoader,
   TravelAgencyTestimonials: (() =>
-    import('../registry/sections/travel-agency/TravelAgencyTestimonials.tsx').then(
-      (module) => toCapsule(module, 'TravelAgencyTestimonials'),
+    import(
+      '../registry/sections/travel-agency/TravelAgencyTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'TravelAgencyTestimonials'),
     )) satisfies RuntimeComponentLoader,
   TutoringCta: (() =>
     import('../registry/sections/tutoring/TutoringCta.tsx').then((module) =>
@@ -4292,72 +4628,100 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'VacationRentalCta'),
     )) satisfies RuntimeComponentLoader,
   VacationRentalFeatures: (() =>
-    import('../registry/sections/vacation-rental/VacationRentalFeatures.tsx').then(
-      (module) => toCapsule(module, 'VacationRentalFeatures'),
+    import(
+      '../registry/sections/vacation-rental/VacationRentalFeatures.tsx'
+    ).then((module) =>
+      toCapsule(module, 'VacationRentalFeatures'),
     )) satisfies RuntimeComponentLoader,
   VacationRentalFooter: (() =>
-    import('../registry/sections/vacation-rental/VacationRentalFooter.tsx').then(
-      (module) => toCapsule(module, 'VacationRentalFooter'),
+    import(
+      '../registry/sections/vacation-rental/VacationRentalFooter.tsx'
+    ).then((module) =>
+      toCapsule(module, 'VacationRentalFooter'),
     )) satisfies RuntimeComponentLoader,
   VacationRentalGallery: (() =>
-    import('../registry/sections/vacation-rental/VacationRentalGallery.tsx').then(
-      (module) => toCapsule(module, 'VacationRentalGallery'),
+    import(
+      '../registry/sections/vacation-rental/VacationRentalGallery.tsx'
+    ).then((module) =>
+      toCapsule(module, 'VacationRentalGallery'),
     )) satisfies RuntimeComponentLoader,
   VacationRentalHero: (() =>
     import('../registry/sections/vacation-rental/VacationRentalHero.tsx').then(
       (module) => toCapsule(module, 'VacationRentalHero'),
     )) satisfies RuntimeComponentLoader,
   VacationRentalNavbar: (() =>
-    import('../registry/sections/vacation-rental/VacationRentalNavbar.tsx').then(
-      (module) => toCapsule(module, 'VacationRentalNavbar'),
+    import(
+      '../registry/sections/vacation-rental/VacationRentalNavbar.tsx'
+    ).then((module) =>
+      toCapsule(module, 'VacationRentalNavbar'),
     )) satisfies RuntimeComponentLoader,
   VacationRentalOverview: (() =>
-    import('../registry/sections/vacation-rental/VacationRentalOverview.tsx').then(
-      (module) => toCapsule(module, 'VacationRentalOverview'),
+    import(
+      '../registry/sections/vacation-rental/VacationRentalOverview.tsx'
+    ).then((module) =>
+      toCapsule(module, 'VacationRentalOverview'),
     )) satisfies RuntimeComponentLoader,
   VacationRentalPricing: (() =>
-    import('../registry/sections/vacation-rental/VacationRentalPricing.tsx').then(
-      (module) => toCapsule(module, 'VacationRentalPricing'),
+    import(
+      '../registry/sections/vacation-rental/VacationRentalPricing.tsx'
+    ).then((module) =>
+      toCapsule(module, 'VacationRentalPricing'),
     )) satisfies RuntimeComponentLoader,
   VacationRentalTestimonials: (() =>
-    import('../registry/sections/vacation-rental/VacationRentalTestimonials.tsx').then(
-      (module) => toCapsule(module, 'VacationRentalTestimonials'),
+    import(
+      '../registry/sections/vacation-rental/VacationRentalTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'VacationRentalTestimonials'),
     )) satisfies RuntimeComponentLoader,
   VideoStreamingCta: (() =>
     import('../registry/sections/video-streaming/VideoStreamingCta.tsx').then(
       (module) => toCapsule(module, 'VideoStreamingCta'),
     )) satisfies RuntimeComponentLoader,
   VideoStreamingFeatures: (() =>
-    import('../registry/sections/video-streaming/VideoStreamingFeatures.tsx').then(
-      (module) => toCapsule(module, 'VideoStreamingFeatures'),
+    import(
+      '../registry/sections/video-streaming/VideoStreamingFeatures.tsx'
+    ).then((module) =>
+      toCapsule(module, 'VideoStreamingFeatures'),
     )) satisfies RuntimeComponentLoader,
   VideoStreamingFooter: (() =>
-    import('../registry/sections/video-streaming/VideoStreamingFooter.tsx').then(
-      (module) => toCapsule(module, 'VideoStreamingFooter'),
+    import(
+      '../registry/sections/video-streaming/VideoStreamingFooter.tsx'
+    ).then((module) =>
+      toCapsule(module, 'VideoStreamingFooter'),
     )) satisfies RuntimeComponentLoader,
   VideoStreamingGallery: (() =>
-    import('../registry/sections/video-streaming/VideoStreamingGallery.tsx').then(
-      (module) => toCapsule(module, 'VideoStreamingGallery'),
+    import(
+      '../registry/sections/video-streaming/VideoStreamingGallery.tsx'
+    ).then((module) =>
+      toCapsule(module, 'VideoStreamingGallery'),
     )) satisfies RuntimeComponentLoader,
   VideoStreamingHero: (() =>
     import('../registry/sections/video-streaming/VideoStreamingHero.tsx').then(
       (module) => toCapsule(module, 'VideoStreamingHero'),
     )) satisfies RuntimeComponentLoader,
   VideoStreamingNavbar: (() =>
-    import('../registry/sections/video-streaming/VideoStreamingNavbar.tsx').then(
-      (module) => toCapsule(module, 'VideoStreamingNavbar'),
+    import(
+      '../registry/sections/video-streaming/VideoStreamingNavbar.tsx'
+    ).then((module) =>
+      toCapsule(module, 'VideoStreamingNavbar'),
     )) satisfies RuntimeComponentLoader,
   VideoStreamingOverview: (() =>
-    import('../registry/sections/video-streaming/VideoStreamingOverview.tsx').then(
-      (module) => toCapsule(module, 'VideoStreamingOverview'),
+    import(
+      '../registry/sections/video-streaming/VideoStreamingOverview.tsx'
+    ).then((module) =>
+      toCapsule(module, 'VideoStreamingOverview'),
     )) satisfies RuntimeComponentLoader,
   VideoStreamingPricing: (() =>
-    import('../registry/sections/video-streaming/VideoStreamingPricing.tsx').then(
-      (module) => toCapsule(module, 'VideoStreamingPricing'),
+    import(
+      '../registry/sections/video-streaming/VideoStreamingPricing.tsx'
+    ).then((module) =>
+      toCapsule(module, 'VideoStreamingPricing'),
     )) satisfies RuntimeComponentLoader,
   VideoStreamingTestimonials: (() =>
-    import('../registry/sections/video-streaming/VideoStreamingTestimonials.tsx').then(
-      (module) => toCapsule(module, 'VideoStreamingTestimonials'),
+    import(
+      '../registry/sections/video-streaming/VideoStreamingTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'VideoStreamingTestimonials'),
     )) satisfies RuntimeComponentLoader,
   WebinarAuthors: (() =>
     import('../registry/sections/webinar/WebinarAuthors.tsx').then((module) =>
@@ -4460,12 +4824,16 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'WineryBreweryNavbar'),
     )) satisfies RuntimeComponentLoader,
   WineryBreweryOverview: (() =>
-    import('../registry/sections/winery-brewery/WineryBreweryOverview.tsx').then(
-      (module) => toCapsule(module, 'WineryBreweryOverview'),
+    import(
+      '../registry/sections/winery-brewery/WineryBreweryOverview.tsx'
+    ).then((module) =>
+      toCapsule(module, 'WineryBreweryOverview'),
     )) satisfies RuntimeComponentLoader,
   WineryBreweryTestimonials: (() =>
-    import('../registry/sections/winery-brewery/WineryBreweryTestimonials.tsx').then(
-      (module) => toCapsule(module, 'WineryBreweryTestimonials'),
+    import(
+      '../registry/sections/winery-brewery/WineryBreweryTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'WineryBreweryTestimonials'),
     )) satisfies RuntimeComponentLoader,
   WriterAuthorAbout: (() =>
     import('../registry/sections/writer-author/WriterAuthorAbout.tsx').then(
@@ -4496,8 +4864,10 @@ export const runtimeComponentLoaders = {
       (module) => toCapsule(module, 'WriterAuthorSubscribe'),
     )) satisfies RuntimeComponentLoader,
   WriterAuthorTestimonials: (() =>
-    import('../registry/sections/writer-author/WriterAuthorTestimonials.tsx').then(
-      (module) => toCapsule(module, 'WriterAuthorTestimonials'),
+    import(
+      '../registry/sections/writer-author/WriterAuthorTestimonials.tsx'
+    ).then((module) =>
+      toCapsule(module, 'WriterAuthorTestimonials'),
     )) satisfies RuntimeComponentLoader,
   WriterAuthorWork: (() =>
     import('../registry/sections/writer-author/WriterAuthorWork.tsx').then(

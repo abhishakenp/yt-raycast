@@ -159,8 +159,12 @@ const newBadgeClass =
 const stateBadgeClass =
   'shrink-0 rounded-md border border-white/12 bg-black/30 px-1.5 py-[3px] font-mono text-[9px] font-bold leading-none tracking-[0.04em] text-white/60'
 
-const formatThemeName = (name: string | null | undefined): string => {
+const formatThemeName = (
+  name: string | { styles?: unknown } | null | undefined,
+): string => {
   if (!name) return 'Default'
+  // An on-the-fly cloned theme is a preset OBJECT (not a catalog name string).
+  if (typeof name !== 'string') return 'Cloned Theme'
 
   return name
     .split(/[-_\s]+/)

@@ -738,6 +738,99 @@ export type ComposedContent = {
   pageProps: Record<string, Record<string, Record<string, unknown>>>
 }
 
+// ---- free-form app generation (no vertical family) ----
+// Generic building blocks for arbitrary interactive UIs — layout, text, inputs,
+// display + the interactivity primitives. Deliberately EXCLUDES vertical
+// marketing sections so an "app" prompt yields a focused tool, not a site.
+// Nothing here knows about any specific app (no counter/todo/etc. hardcoding).
+const APP_PRIMITIVES = [
+  'Stack', 'Section', 'Heading', 'Text', 'Button',
+  'StateText', 'StateButton', 'StateInput',
+  'Input', 'Textarea', 'Card', 'Badge', 'Separator', 'Image',
+  'Switch', 'Slider', 'Progress', 'Avatar', 'SignIn',
+] as const
+
+function appPrimitiveCatalog(): string {
+  return APP_PRIMITIVES.map((n) => {
+    const sig = COMPONENTS[n]?.signature
+    return sig ? `${n}${sig.startsWith('(') ? '' : ' '}${sig}` : null
+  })
+    .filter((x): x is string => Boolean(x))
+    .join('\n')
+}
+
+/** Light structural check: root is a Stack and every component call is known. */
+function isValidFreeForm(source: string): boolean {
+  if (!/(^|\n)\s*root\s*=\s*Stack\s*\(/.test(source)) return false
+  const names = [...source.matchAll(/\b([A-Z][A-Za-z0-9]+)\s*\(/g)].map((m) => m[1])
+  return names.length > 0 && names.every((n) => n in COMPONENTS)
+}
+
+/**
+ * Route a build request between a vertical WEBSITE (curated family composition)
+ * and a free-form interactive APP. One cheap call; the model generalizes — there
+ * is no per-app logic. Defaults to 'website' on any ambiguity (safe path).
+ */
+export async function classifyGenerationMode(
+  prompt: string,
+  modelId: string,
+  signal: AbortSignal,
+): Promise<'website' | 'app'> {
+  const system = `Classify the build request as exactly ONE word.
+WEBSITE — a marketing, content, or business website for a real-world organization, product, brand, or person (it informs or sells, with pages like home/about/services).
+APP — a self-contained interactive tool, utility, widget, tracker, calculator, or game that a person OPERATES with controls and live state, and is NOT a marketing website.
+Output only the single word WEBSITE or APP.`
+  const raw = await generateText(modelId, system, `Request: ${prompt}`, signal, 0)
+  const first = stripFences(raw).trim().split(/[^A-Za-z]/)[0]?.toUpperCase()
+  return first === 'APP' ? 'app' : 'website'
+}
+
+/**
+ * Author a complete, self-contained interactive program (root = Stack) from the
+ * generic primitive set for any app/tool/widget. Validates + retries once.
+ */
+export async function composeFreeForm(input: {
+  prompt: string
+  brand: string
+  modelId: string
+  locale: string
+  signal: AbortSignal
+}): Promise<string> {
+  const system = `You build a SELF-CONTAINED interactive UI as an OpenUI-Lang program for the user's request — a tool / app / widget / game. NO navbar, hero, or footer unless explicitly asked; render only what the request needs, centered and well-spaced.
+
+Components (name + signature):
+${appPrimitiveCatalog()}
+
+INTERACTIVITY — state lives in NAMED SHARED FIELDS:
+- StateText shows the live value of a field (prefix/suffix are labels).
+- StateButton mutates a field on click — op: increment | decrement | set | toggle | reset (amount = step; value = target for set).
+- StateInput is a two-way-bound input.
+Any components that reference the SAME field string share one value. Compose these to build whatever the request needs.
+
+SYNTAX — each line is "varName = Component(positional, args)"; reference earlier vars by name inside arrays; the LAST line MUST be "root = Stack([...])". Example (a toggle):
+status = StateText("on", false, "Status: ")
+toggle = StateButton("Toggle", "on", "toggle")
+root = Stack([status, toggle])
+
+RULES: output ONLY the program lines (no prose, no markdown, no comments). Reference ONLY the components listed above. Style with theme TOKEN classes (text-foreground, text-muted-foreground, bg-card, bg-primary, border-border, …) — NEVER hex.${localeDirective(input.locale)}`
+  const user = `Build: ${input.prompt}\nTitle/brand if relevant: ${input.brand}`
+  let source = stripFences(
+    await generateText(input.modelId, system, user, input.signal, 0.4),
+  ).trim()
+  if (!isValidFreeForm(source)) {
+    source = stripFences(
+      await generateText(
+        input.modelId,
+        `${system}\n\nYour previous output was INVALID. Output ONLY valid program lines using ONLY the listed components, ending with root = Stack([...]).`,
+        user,
+        input.signal,
+        0.2,
+      ),
+    ).trim()
+  }
+  return source
+}
+
 /**
  * Generate a full composable site. CONTENT (vertical + section props) is authored
  * by the model (homepage first, paints immediately; other pages fan out) OR taken
@@ -766,6 +859,42 @@ export async function runV2ComposedGeneration(input: {
   const locale = input.preferredLanguage || 'en'
   const theme = pick(rng, THEME_CATALOG).name
   const emit = (e: V2Event) => input.onEvent?.(e)
+
+  // ROUTE — a self-contained interactive app/tool/widget (not a marketing
+  // website) is generated FREE-FORM from the generic primitives, so the engine
+  // is not limited to the curated vertical families. The classifier generalizes
+  // from a principle (operated tool vs marketing site); no per-app logic here.
+  if (!input.cachedContent && !input.familyOverride) {
+    const mode = await classifyGenerationMode(
+      input.prompt,
+      input.modelId,
+      abort.signal,
+    )
+    if (mode === 'app') {
+      emit({ type: 'status', message: 'Building your app' })
+      emit({ type: 'theme', name: theme })
+      emit({ type: 'locale', code: locale })
+      const source = await composeFreeForm({
+        prompt: input.prompt,
+        brand,
+        modelId: input.modelId,
+        locale,
+        signal: abort.signal,
+      })
+      input.onSource?.(source)
+      emit({ type: 'source', text: source })
+      emit({ type: 'done' })
+      return {
+        source,
+        theme,
+        locale,
+        brand,
+        category: 'app',
+        family: 'Freeform',
+        artifacts: [],
+      }
+    }
+  }
 
   // CONTENT — reuse cached props, else author the homepage in the first pass.
   const cached =

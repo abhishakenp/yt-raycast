@@ -269,6 +269,7 @@ const allowedRuntimeBareImports = new Set([
   'preact/jsx-dev-runtime',
   'lakebed/client',
   'lakebed/server',
+  '@ship-fast/lakebed/react',
 ])
 const ignoredSourceBareImports = new Set([
   ...allowedRuntimeBareImports,

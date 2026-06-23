@@ -1,18 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const dnsMocks = vi.hoisted(() => ({
-  lookup: vi.fn(),
-}))
+const dnsLookupMock = vi.fn()
 
 vi.mock('dns/promises', () => ({
-  lookup: dnsMocks.lookup,
+  lookup: dnsLookupMock,
 }))
 
 import { assertPublicUrl, isAllowedScheme } from './security.ts'
 
 describe('clone SSRF security guard', () => {
   beforeEach(() => {
-    dnsMocks.lookup.mockReset()
+    dnsLookupMock.mockReset()
   })
 
   it('only allows http and https URL schemes', () => {
@@ -29,7 +27,7 @@ describe('clone SSRF security guard', () => {
     await expect(assertPublicUrl('file:///etc/passwd')).rejects.toThrow(
       'Blocked URL (scheme not allowed): file:///etc/passwd',
     )
-    expect(dnsMocks.lookup).not.toHaveBeenCalled()
+    expect(dnsLookupMock).not.toHaveBeenCalled()
   })
 
   it('blocks localhost, metadata, and unspecified host literals before DNS lookup', async () => {
@@ -44,7 +42,7 @@ describe('clone SSRF security guard', () => {
       )
     }
 
-    expect(dnsMocks.lookup).not.toHaveBeenCalled()
+    expect(dnsLookupMock).not.toHaveBeenCalled()
   })
 
   it('blocks private, loopback, link-local, and reserved IP literals without DNS lookup', async () => {
@@ -65,7 +63,7 @@ describe('clone SSRF security guard', () => {
       await expect(assertPublicUrl(url)).rejects.toThrow('Blocked URL')
     }
 
-    expect(dnsMocks.lookup).not.toHaveBeenCalled()
+    expect(dnsLookupMock).not.toHaveBeenCalled()
   })
 
   it('allows public IP literals without DNS lookup', async () => {
@@ -76,23 +74,23 @@ describe('clone SSRF security guard', () => {
       assertPublicUrl('https://[2001:4860:4860::8888]/dns-query'),
     ).resolves.toBeUndefined()
 
-    expect(dnsMocks.lookup).not.toHaveBeenCalled()
+    expect(dnsLookupMock).not.toHaveBeenCalled()
   })
 
   it('rejects hostnames that fail DNS resolution or resolve to no addresses', async () => {
-    dnsMocks.lookup.mockRejectedValueOnce(new Error('ENOTFOUND'))
+    dnsLookupMock.mockRejectedValueOnce(new Error('ENOTFOUND'))
     await expect(assertPublicUrl('https://missing.example')).rejects.toThrow(
       'Blocked URL (DNS resolution failed): https://missing.example',
     )
 
-    dnsMocks.lookup.mockResolvedValueOnce([])
+    dnsLookupMock.mockResolvedValueOnce([])
     await expect(assertPublicUrl('https://empty.example')).rejects.toThrow(
       'Blocked URL (no DNS records): https://empty.example',
     )
   })
 
   it('rejects a hostname when any DNS answer is private', async () => {
-    dnsMocks.lookup.mockResolvedValueOnce([
+    dnsLookupMock.mockResolvedValueOnce([
       { address: '93.184.216.34', family: 4 },
       { address: '10.0.0.5', family: 4 },
     ])
@@ -103,7 +101,7 @@ describe('clone SSRF security guard', () => {
   })
 
   it('allows hostnames when every DNS answer is public', async () => {
-    dnsMocks.lookup.mockResolvedValueOnce([
+    dnsLookupMock.mockResolvedValueOnce([
       { address: '93.184.216.34', family: 4 },
       { address: '2606:2800:220:1:248:1893:25c8:1946', family: 6 },
     ])
@@ -111,6 +109,6 @@ describe('clone SSRF security guard', () => {
     await expect(
       assertPublicUrl('https://example.com'),
     ).resolves.toBeUndefined()
-    expect(dnsMocks.lookup).toHaveBeenCalledWith('example.com', { all: true })
+    expect(dnsLookupMock).toHaveBeenCalledWith('example.com', { all: true })
   })
 })

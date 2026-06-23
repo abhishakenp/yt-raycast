@@ -28,9 +28,7 @@ export default defineConfig({
           environment: 'node',
           include: [
             'src/**/*.test.ts',
-            'src/**/*.test.tsx',
             'packages/ship-fast-blocks/src/**/*.test.ts',
-            'packages/ship-fast-blocks/src/**/*.test.tsx',
             'packages/ship-fast-engine/src/*.test.js',
             'packages/ship-fast-engine/src/clone/**/*.test.ts',
             'packages/ship-fast-engine/src/genui/**/*.test.ts',
@@ -40,8 +38,19 @@ export default defineConfig({
             'packages/ship-fast-engine/src/renderers/**/*.test.js',
             'packages/ship-fast-engine/src/spec/**/*.test.js',
             'packages/ship-fast-lakebed/src/**/*.test.ts',
-            'packages/ship-fast-lakebed/src/**/*.test.tsx',
             'scripts/**/*.test.ts',
+          ],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'jsdom',
+          environment: 'jsdom',
+          include: [
+            'src/**/*.test.tsx',
+            'packages/ship-fast-blocks/src/**/*.test.tsx',
+            'packages/ship-fast-lakebed/src/**/*.test.tsx',
           ],
         },
       },

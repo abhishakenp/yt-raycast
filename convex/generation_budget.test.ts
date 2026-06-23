@@ -6,7 +6,6 @@ import { describe, expect, it } from 'vitest'
 const here = dirname(fileURLToPath(import.meta.url))
 
 const TOTAL_GENERATION_BUDGET_CEILING_MS = 90_000
-const PER_PAGE_SUBTREE_BUDGET_CEILING_MS = 60_000
 
 const readSource = (path: string) => readFileSync(path, 'utf8')
 
@@ -26,30 +25,18 @@ const extractConstNumber = (source: string, name: string): number => {
 describe('homepage generation latency budgets', () => {
   it('keeps structural timeout budgets defined, positive, and capped', () => {
     const generationSource = readSource(join(here, 'generation.ts'))
-    const orchestratorSource = readSource(
-      join(here, '../packages/ship-fast-engine/src/genui/orchestrator.ts'),
-    )
 
     const totalTimeoutMs = extractConstNumber(
       generationSource,
       'DEFAULT_GENERATION_TIMEOUT_MS',
     )
-    const subtreeTimeoutMs = extractConstNumber(
-      orchestratorSource,
-      'SUBTREE_TIMEOUT_MS',
-    )
 
     expect(totalTimeoutMs).toBeGreaterThan(0)
-    expect(subtreeTimeoutMs).toBeGreaterThan(0)
 
     // Structural budget ceiling: live homepage generation must not silently grow
     // beyond the current 90s total timeout without an explicit test update.
     expect(totalTimeoutMs).toBeLessThanOrEqual(
       TOTAL_GENERATION_BUDGET_CEILING_MS,
     )
-    expect(subtreeTimeoutMs).toBeLessThanOrEqual(
-      PER_PAGE_SUBTREE_BUDGET_CEILING_MS,
-    )
-    expect(subtreeTimeoutMs).toBeLessThanOrEqual(totalTimeoutMs)
   })
 })

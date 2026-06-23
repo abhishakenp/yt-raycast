@@ -12,7 +12,7 @@
     "src/generated/runtime-section-component-names.ts",
     "src/generated/react-export-sources.provenance.json"
   ],
-  "componentCount": 1130,
+  "componentCount": 1134,
   "sectionComponentCount": 1064,
   "components": [
     {
@@ -3972,6 +3972,10 @@
       "sourceFile": "src/registry/sections/shop/ShopOverview.tsx"
     },
     {
+      "name": "SignIn",
+      "sourceFile": "src/registry/primitives/sign-in.tsx"
+    },
+    {
       "name": "Skeleton",
       "sourceFile": "src/registry/primitives/skeleton.tsx"
     },
@@ -4026,6 +4030,18 @@
     {
       "name": "Stack",
       "sourceFile": "src/registry/primitives/layout.tsx"
+    },
+    {
+      "name": "StateButton",
+      "sourceFile": "src/registry/primitives/reactive.tsx"
+    },
+    {
+      "name": "StateInput",
+      "sourceFile": "src/registry/primitives/reactive.tsx"
+    },
+    {
+      "name": "StateText",
+      "sourceFile": "src/registry/primitives/reactive.tsx"
     },
     {
       "name": "SubscriptionBoxCta",

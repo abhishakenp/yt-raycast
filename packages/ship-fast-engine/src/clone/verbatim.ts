@@ -15,7 +15,9 @@ import { assertPublicUrl } from "./security.ts"
 // Generic by design: NO per-site/slug logic. Network access goes through opts.fetchImpl
 // (default global fetch) + assertPublicUrl + a per-fetch AbortController timeout.
 
-const MAX_DOC_BYTES = 900_000
+// Large docs now go to Convex file storage (no 1 MiB doc cap), so this trim cap
+// only guards against truly pathological sizes; keep full fidelity well past 1 MiB.
+const MAX_DOC_BYTES = 8_000_000
 const FETCH_TIMEOUT_MS = 8000
 
 // Font extension -> mime for data: URI embedding of SAME-ORIGIN @font-face sources.
@@ -316,9 +318,14 @@ export async function selfContainPage(
     })
   }
 
-  // 6. Strip scripts, on* handlers, script preloads.
+  // 6. KEEP the site's scripts (absolutize their src) so JS-driven UI — image
+  // sliders, carousels, tabs, accordions — renders pixel-faithfully. The preview
+  // iframe sandbox is `allow-scripts` WITHOUT allow-top-navigation/allow-same-origin,
+  // so these scripts run and manipulate the DOM but CANNOT redirect to the source
+  // site or read cookies. (Stripping them is why JS-built sections rendered blank.)
   for (const script of Array.from(document.querySelectorAll("script"))) {
-    script.remove()
+    const src = script.getAttribute("src")
+    if (src) script.setAttribute("src", toAbsolute(src, finalUrl))
   }
   for (const link of Array.from(document.querySelectorAll("link"))) {
     const rel = (link.getAttribute("rel") || "").toLowerCase().split(/\s+/)
