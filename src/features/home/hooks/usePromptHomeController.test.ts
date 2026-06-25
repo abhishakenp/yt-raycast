@@ -1,10 +1,20 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import {
+  type Mock,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
 
 type PromptHomeControllerTestState = {
-  createSession: ReturnType<typeof vi.fn>
-  navigate: ReturnType<typeof vi.fn>
+  createSession: Mock<(...args: any[]) => Promise<unknown>>
+  navigate: Mock<(...args: any[]) => unknown>
 }
 
 let originalFetch: typeof globalThis.fetch
@@ -29,21 +39,23 @@ vi.mock('@tanstack/react-router', () => ({
     ).__shipFastPromptHomeControllerState?.navigate,
 }))
 
-vi.mock('convex/react', () => ({
-  useMutation: () =>
-    (
-      globalThis as typeof globalThis & {
-        __shipFastPromptHomeControllerState?: PromptHomeControllerTestState
-      }
-    ).__shipFastPromptHomeControllerState?.createSession,
-}))
-
 vi.mock('../../../../convex/_generated/api', () => ({
   api: {
     sessions: {
       create: 'sessions.create',
     },
   },
+}))
+
+vi.mock('@/shared/convex/http-client', () => ({
+  createRuntimeConvexHttpClient: () => ({
+    mutation: async (_ref: unknown, payload: unknown) =>
+      await (
+        globalThis as typeof globalThis & {
+          __shipFastPromptHomeControllerState?: PromptHomeControllerTestState
+        }
+      ).__shipFastPromptHomeControllerState?.createSession(payload),
+  }),
 }))
 
 import { usePromptHomeController } from './usePromptHomeController'
@@ -90,12 +102,48 @@ describe('usePromptHomeController submit guard', () => {
     })
 
     expect(state.createSession).toHaveBeenCalledTimes(1)
+    expect(state.createSession.mock.calls[0]?.[0]).toMatchObject({
+      reusePublicCache: true,
+    })
     expect(state.navigate).toHaveBeenCalledTimes(1)
     expect(
       window.sessionStorage.getItem(
         'ship-fast:generation-launch:session_double_submit_guard',
       ),
     ).toBe('1')
+  })
+
+  it('does not request public cache replay for private or v2 submissions', async () => {
+    const state = getTestState()
+    const first = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      first.result.current.setPrompt('Build a fast product website')
+    })
+
+    await act(async () => {
+      await first.result.current.submitPrompt({ isPrivate: true })
+    })
+
+    expect(state.createSession.mock.calls[0]?.[0]).not.toHaveProperty(
+      'reusePublicCache',
+    )
+
+    first.unmount()
+    state.createSession.mockClear()
+
+    const second = renderHook(() => usePromptHomeController())
+
+    await act(async () => {
+      await second.result.current.submitPrompt({
+        prompt: 'Build another fast product website',
+        engineVersion: 'v2',
+      })
+    })
+
+    expect(state.createSession.mock.calls[0]?.[0]).not.toHaveProperty(
+      'reusePublicCache',
+    )
   })
 
   it('retries a failed create call with the same workspace idempotency key', async () => {
@@ -126,83 +174,42 @@ describe('usePromptHomeController submit guard', () => {
     })
   })
 
-  it('starts a v1 clone job when the prompt contains a reference URL', async () => {
+  it('keeps launch feedback visible briefly when session creation fails immediately', async () => {
+    vi.useFakeTimers()
     const state = getTestState()
-    state.createSession.mockResolvedValueOnce({
-      sessionId: 'session_prompt_clone',
-      cached: false,
-    })
+    state.createSession.mockRejectedValue(new Error('network unavailable'))
     const { result } = renderHook(() => usePromptHomeController())
 
     act(() => {
-      result.current.setPrompt('Clone https://tvnl.in/ exactly')
+      result.current.setPrompt('Build a launch feedback landing page')
     })
+
+    let submitPromise: Promise<void> | undefined
+    await act(async () => {
+      submitPromise = result.current.submitPrompt()
+      await Promise.resolve()
+    })
+
+    expect(result.current.isSubmitting).toBe(true)
+    expect(result.current.errorMessage).toBeUndefined()
 
     await act(async () => {
-      await result.current.submitPrompt({ engineVersion: 'v2' })
+      await vi.advanceTimersByTimeAsync(1199)
     })
 
-    expect(state.createSession).toHaveBeenCalledWith(
-      expect.objectContaining({
-        prompt: 'Clone https://tvnl.in/ exactly',
-        cloneUrl: 'https://tvnl.in/',
-      }),
-    )
-    expect(state.createSession.mock.calls[0]?.[0]).not.toHaveProperty(
-      'engineVersion',
-    )
-    const cloneCall = vi
-      .mocked(fetch)
-      .mock.calls.find((call) => call[0] === '/api/clone')
-    expect(cloneCall?.[1]).toMatchObject({ method: 'POST' })
-    expect(JSON.parse(String(cloneCall?.[1]?.body))).toMatchObject({
-      sessionId: 'session_prompt_clone',
-      anonymousOwnerSecret: expect.any(String),
-      seedUrl: 'https://tvnl.in/',
-      brief: 'Clone exactly',
-    })
-  })
-
-  it('starts a v1 clone job when the reference URL field supplies cloneUrl', async () => {
-    const state = getTestState()
-    state.createSession.mockResolvedValueOnce({
-      sessionId: 'session_reference_clone',
-      cached: false,
-    })
-    const { result } = renderHook(() => usePromptHomeController())
-
-    act(() => {
-      result.current.setPrompt('Create an identical public utility portal')
-    })
+    expect(state.createSession).toHaveBeenCalledTimes(2)
+    expect(result.current.isSubmitting).toBe(true)
+    expect(result.current.errorMessage).toBeUndefined()
 
     await act(async () => {
-      await result.current.submitPrompt({
-        cloneUrl: 'https://tvnl.in/',
-        designReferenceUrls: ['https://tvnl.in/'],
-        engineVersion: 'v2',
-      })
+      await vi.advanceTimersByTimeAsync(1)
+      await submitPromise
     })
 
-    expect(state.createSession).toHaveBeenCalledWith(
-      expect.objectContaining({
-        prompt: 'Create an identical public utility portal',
-        cloneUrl: 'https://tvnl.in/',
-        designReferenceUrls: ['https://tvnl.in/'],
-      }),
+    expect(result.current.isSubmitting).toBe(false)
+    expect(result.current.errorMessage).toBe(
+      'Generation could not start. Try again.',
     )
-    expect(state.createSession.mock.calls[0]?.[0]).not.toHaveProperty(
-      'engineVersion',
-    )
-    const cloneCall = vi
-      .mocked(fetch)
-      .mock.calls.find((call) => call[0] === '/api/clone')
-    expect(cloneCall?.[1]).toMatchObject({ method: 'POST' })
-    expect(JSON.parse(String(cloneCall?.[1]?.body))).toMatchObject({
-      sessionId: 'session_reference_clone',
-      anonymousOwnerSecret: expect.any(String),
-      seedUrl: 'https://tvnl.in/',
-      brief: 'Create an identical public utility portal',
-    })
   })
 
   it('navigates immediately from a ready prompt cache entry', async () => {
@@ -346,5 +353,31 @@ describe('usePromptHomeController submit guard', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith('/api/share-bonus')
     expect(result.current.shareBonusClaimed).toBe(true)
+  })
+
+  it('keeps generation deletion out of the prompt form controller', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/features/home/hooks/usePromptHomeController.ts'),
+      'utf8',
+    )
+
+    expect(source).not.toContain('sessions.deleteMine')
+    expect(source).not.toContain('ship-fast:generations-deleted')
+  })
+
+  it('keeps Convex React off the homepage render path and loads mutation client at submit time', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/features/home/hooks/usePromptHomeController.ts'),
+      'utf8',
+    )
+
+    expect(source).not.toContain("from 'convex/react'")
+    expect(source).not.toContain('useMutation(')
+    expect(source).not.toContain(
+      "import { api } from '../../../../convex/_generated/api'",
+    )
+    expect(source).toContain("import('../../../../convex/_generated/api')")
+    expect(source).toContain("import('@/shared/convex/http-client')")
+    expect(source).toContain('createSessionFromHttp')
   })
 })

@@ -102,7 +102,7 @@ describe('Gallery API Response', () => {
       expect(response.status).toBe(200)
     })
 
-    it('should return a JSON error response when the gallery query fails', async () => {
+    it('should return an empty gallery response when the gallery query fails', async () => {
       const mockClient = {
         query: async () => {
           throw new Error('Convex error')
@@ -113,9 +113,20 @@ describe('Gallery API Response', () => {
       const response = await createGalleryApiResponse(request, mockClient)
       const data = await response.json()
 
-      expect(response.status).toBe(500)
-      expect(data).toHaveProperty('error')
-      expect(data.error).toBe('Convex error')
+      expect(response.status).toBe(200)
+      expect(response.headers.get('cache-control')).toContain(
+        'stale-while-revalidate',
+      )
+      expect(data).toEqual({
+        items: [],
+        page: 1,
+        limit: 12,
+        total: 0,
+        totalPages: 1,
+        hasNext: false,
+        hasPrev: false,
+        availableCategories: [],
+      })
     })
 
     it('should handle page parameter', async () => {

@@ -1,3 +1,5 @@
+import { Link } from '@tanstack/react-router'
+
 import { MarketingShell } from '../pricing/-MarketingShell'
 
 const SITE_NAME = 'Ship Fast'
@@ -150,7 +152,7 @@ export const TermsPage = () => {
           <h2 id="h-privacy">8. Privacy</h2>
           <p>
             Personal data is handled under the{' '}
-            <a href="/privacy">Privacy policy</a>. That policy explains
+            <Link to="/privacy">Privacy policy</Link>. That policy explains
             processing of prompts, generated projects, authentication data,
             billing metadata, analytics, and operational logs.
           </p>

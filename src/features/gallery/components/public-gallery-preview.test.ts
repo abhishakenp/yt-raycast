@@ -1,83 +1,43 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { getGalleryImageUrl, type GallerySession } from './PublicGallery'
-import {
-  createGalleryThumbnailResponse,
-  generateDeterministicThumbnailSvg,
-  getGalleryCategories,
-} from '../server/gallery-thumbnail-response'
+const readProjectFile = (path: string): string =>
+  readFileSync(join(process.cwd(), path), 'utf8')
 
 describe('public gallery preview cards', () => {
-  it('builds the gallery thumbnail URL from the session id and preview version', () => {
-    const session: GallerySession = {
-      sessionId: 'abc-123',
-      previewVersion: 4,
-    }
-
-    expect(getGalleryImageUrl(session)).toBe(
-      '/api/sessions/abc-123/gallery-thumb?v=4',
+  it('uses stored HTML or generated thumbnails without loading the live preview runtime', () => {
+    const gallerySource = readProjectFile(
+      'src/features/gallery/components/PublicGallery.tsx',
     )
-  })
-
-  it('falls back to version 0 when previewVersion is missing', () => {
-    expect(getGalleryImageUrl({ sessionId: 'xyz' })).toBe(
-      '/api/sessions/xyz/gallery-thumb?v=0',
+    const responseSource = readProjectFile(
+      'src/features/gallery/server/gallery-thumbnail-response.ts',
     )
-  })
-
-  it('prefers a stored imageUrl when present', () => {
-    expect(
-      getGalleryImageUrl({
-        sessionId: 'abc-123',
-        previewVersion: 4,
-        imageUrl: 'https://cdn.example.com/thumb.png',
-      }),
-    ).toBe('https://cdn.example.com/thumb.png')
-  })
-
-  it('returns a deterministic SVG thumbnail when no cached capture exists and capture is skipped', async () => {
-    const clientOverride = {
-      query: async () => ({
-        prompt: 'A cozy coffee shop landing page',
-        status: 'done',
-        categories: ['commerce'],
-        previewVersion: 0,
-      }),
-    }
-
-    const request = new Request(
-      'https://example.test/api/sessions/sess-1/gallery-thumb?fallback=1',
+    const captureSource = readProjectFile(
+      'src/features/gallery/server/gallery-thumbnail-capture.ts',
     )
-
-    const response = await createGalleryThumbnailResponse(
-      'sess-1',
-      request,
-      clientOverride as never,
+    expect(gallerySource).toContain('getGalleryThumbnailUrl(session)')
+    expect(gallerySource).toContain('resolveGalleryThumbnail')
+    expect(gallerySource).not.toContain(
+      'const LazyGeneratedModulePreview = lazy(',
     )
-
-    expect(response.status).toBe(200)
-    expect(response.headers.get('Content-Type')).toContain('image/svg+xml')
-    const body = await response.text()
-    expect(body).toContain('<svg')
-    expect(body).toContain('A cozy coffee shop')
-  })
-
-  it('derives gallery categories from the prompt', () => {
-    expect(getGalleryCategories('a cozy coffee shop')).toEqual(['commerce'])
-    expect(getGalleryCategories('a saas analytics dashboard')).toContain('saas')
-    expect(getGalleryCategories('a personal portfolio site')).toContain(
-      'portfolio',
+    expect(gallerySource).not.toContain(
+      "import('@/features/generation/components/GeneratedModulePreview')",
     )
-  })
-
-  it('generates a deterministic thumbnail SVG with prompt and status', () => {
-    const svg = generateDeterministicThumbnailSvg(
-      'blog about dogs',
-      ['blog'],
-      'done',
+    expect(gallerySource).not.toContain(
+      "import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'",
     )
-    expect(svg).toContain('<svg')
-    expect(svg).toContain('Ready')
-    expect(svg).toContain('Blog')
+    expect(gallerySource).toContain('previewDocument !== undefined ?')
+    expect(gallerySource).toContain(
+      'previewDocument === undefined ? getGalleryImageUrl(session) :',
+    )
+    expect(gallerySource).not.toContain('getModuleSource(')
+    expect(gallerySource).not.toContain('moduleSource !== undefined')
+    expect(gallerySource).not.toContain('/preview-raw')
+    expect(gallerySource).not.toContain('fallback=1')
+    expect(gallerySource).not.toContain('<iframe')
+    expect(gallerySource).not.toContain('gallery-preview-frame')
+    expect(responseSource).toContain("searchParams.get('fallback') !== '1'")
+    expect(captureSource).not.toContain(`agent-${'browser'}`)
   })
 })

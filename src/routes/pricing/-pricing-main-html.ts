@@ -1,6 +1,6 @@
 import { glassPillButtonHtml } from '@/lib/glass-pill-html'
 
-const goHome = ' onclick="location.href=\'/\'"'
+const startCheckout = ' data-pricing-checkout-cta="true"'
 
 const lockIcon15 = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`
 
@@ -39,7 +39,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="page">
             </ul>
             ${glassPillButtonHtml({
               className: 'plan-btn primary',
-              extraAttrs: goHome,
+              extraAttrs: startCheckout,
               html: `${lockIcon15}
               Start Pro`,
             })}
@@ -78,45 +78,45 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="page">
         </div>
         <div class="faq-list">
 
-          <details class="faq-item">
-            <summary>
+          <div class="faq-item" data-faq-item>
+            <button type="button" class="faq-question" aria-expanded="false" aria-controls="pricing-faq-pro" data-faq-trigger>
               What is included in Pro?
               <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-            </summary>
-            <p>Pro includes website generation, ZIP export, the full template library, AI iteration, community access, and monthly template drops.</p>
-          </details>
+            </button>
+            <p id="pricing-faq-pro" hidden>Pro includes website generation, ZIP export, the full template library, AI iteration, community access, and monthly template drops.</p>
+          </div>
 
-          <details class="faq-item">
-            <summary>
+          <div class="faq-item" data-faq-item>
+            <button type="button" class="faq-question" aria-expanded="false" aria-controls="pricing-faq-referrals" data-faq-trigger>
               How does the bring-2-people discount work?
               <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-            </summary>
-            <p>Refer 2 active users and your future subscription payments are discounted by 50%. The benefit is tied to active accounts: if you cancel, or if the active referral count drops below 2, the discount no longer applies until the requirement is met again.</p>
-          </details>
+            </button>
+            <p id="pricing-faq-referrals" hidden>Refer 2 active users and your future subscription payments are discounted by 50%. The benefit is tied to active accounts: if you cancel, or if the active referral count drops below 2, the discount no longer applies until the requirement is met again.</p>
+          </div>
 
-          <details class="faq-item">
-            <summary>
+          <div class="faq-item" data-faq-item>
+            <button type="button" class="faq-question" aria-expanded="false" aria-controls="pricing-faq-payments" data-faq-trigger>
               What payment methods are accepted?
               <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-            </summary>
-            <p>Pay via UPI (including UPI Autopay for subscriptions), cards, and net banking through Razorpay.</p>
-          </details>
+            </button>
+            <p id="pricing-faq-payments" hidden>Pay via UPI (including UPI Autopay for subscriptions), cards, and net banking through Razorpay.</p>
+          </div>
 
-          <details class="faq-item">
-            <summary>
+          <div class="faq-item" data-faq-item>
+            <button type="button" class="faq-question" aria-expanded="false" aria-controls="pricing-faq-cancel" data-faq-trigger>
               Can I cancel my subscription anytime?
               <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-            </summary>
-            <p>Yes, cancel anytime from your account settings. No cancellation fees. Cancelling ends active pricing benefits, including any referral discount. If you resubscribe later, you'll pay the then-current price.</p>
-          </details>
+            </button>
+            <p id="pricing-faq-cancel" hidden>Yes, cancel anytime from your account settings. No cancellation fees. Cancelling ends active pricing benefits, including any referral discount. If you resubscribe later, you'll pay the then-current price.</p>
+          </div>
 
-          <details class="faq-item">
-            <summary>
+          <div class="faq-item" data-faq-item>
+            <button type="button" class="faq-question" aria-expanded="false" aria-controls="pricing-faq-frameworks" data-faq-trigger>
               What frameworks does the generator support?
               <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-            </summary>
-            <p>Ship Fast generates clean HTML/CSS/JS by default. Pro users gain access to React, Next.js, and additional framework renderers as they are added. Each new framework ships as part of the monthly drops.</p>
-          </details>
+            </button>
+            <p id="pricing-faq-frameworks" hidden>Ship Fast generates clean HTML/CSS/JS by default. Pro users gain access to React, Next.js, and additional framework renderers as they are added. Each new framework ships as part of the monthly drops.</p>
+          </div>
 
         </div>
       </section>
@@ -127,7 +127,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="page">
         <p>One plan, full access, and a referral discount when two active users join through you.</p>
         ${glassPillButtonHtml({
           className: 'cta-btn',
-          extraAttrs: goHome,
+          extraAttrs: startCheckout,
           html: `${lockIcon16}
           Start Pro`,
         })}

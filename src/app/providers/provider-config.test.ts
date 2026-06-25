@@ -4,6 +4,7 @@ import { clerkFrostedGlassAppearance } from '@/app/providers/clerk-appearance'
 import {
   resolveProviderMode,
   shouldUseAuthenticatedProviders,
+  shouldUseConvexProviders,
 } from '@/app/providers/provider-config'
 
 describe('provider config', () => {
@@ -26,11 +27,20 @@ describe('provider config', () => {
     ).toBe('clerk_convex')
   })
 
-  it('loads authenticated providers on routes that can show auth-gated UI', () => {
-    expect(shouldUseAuthenticatedProviders('/')).toBe(true)
+  it('keeps authenticated providers off anonymous routes', () => {
+    expect(shouldUseAuthenticatedProviders('/')).toBe(false)
     expect(shouldUseAuthenticatedProviders('/gallery')).toBe(false)
-    expect(shouldUseAuthenticatedProviders('/pricing')).toBe(true)
-    expect(shouldUseAuthenticatedProviders('/generate/session_123')).toBe(true)
+    expect(shouldUseAuthenticatedProviders('/pricing')).toBe(false)
+    expect(shouldUseAuthenticatedProviders('/generate/session_123')).toBe(false)
+  })
+
+  it('loads Convex only on routes that call Convex hooks directly', () => {
+    expect(shouldUseConvexProviders('/')).toBe(false)
+    expect(shouldUseConvexProviders('/generate/session_123')).toBe(true)
+    expect(shouldUseConvexProviders('/generate/missing-session')).toBe(true)
+    expect(shouldUseConvexProviders('/gallery')).toBe(false)
+    expect(shouldUseConvexProviders('/pricing')).toBe(false)
+    expect(shouldUseConvexProviders('/referrals')).toBe(false)
   })
 
   it('provides a frosted glass Clerk appearance theme', () => {

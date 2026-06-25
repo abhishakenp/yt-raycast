@@ -1,11 +1,13 @@
 // @vitest-environment jsdom
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const galleryMocks = vi.hoisted(() => ({
+const galleryMocks = {
   deleteMine: vi.fn(),
-}))
+}
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({
@@ -27,16 +29,8 @@ vi.mock('@tanstack/react-router', () => ({
   },
 }))
 
-vi.mock('convex/react', () => ({
-  useMutation: () => galleryMocks.deleteMine,
-}))
-
-vi.mock('../../../../convex/_generated/api', () => ({
-  api: {
-    sessions: {
-      deleteMine: 'sessions.deleteMine',
-    },
-  },
+vi.mock('@/features/gallery/services/delete-gallery-session', () => ({
+  deleteGallerySession: galleryMocks.deleteMine,
 }))
 
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
@@ -46,6 +40,7 @@ vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
 }))
 
 import { GalleryGrid, type GalleryPayload } from './PublicGallery'
+import { useGalleryController } from '@/features/gallery/hooks/useGalleryController'
 
 let originalFetch: typeof globalThis.fetch
 
@@ -60,8 +55,38 @@ const emptyGallery: GalleryPayload = {
   totalPages: 1,
 }
 
+const createMemoryStorage = (): Storage => {
+  const entries = new Map<string, string>()
+
+  return {
+    get length() {
+      return entries.size
+    },
+    clear: () => entries.clear(),
+    getItem: (key) => entries.get(key) ?? null,
+    key: (index) => Array.from(entries.keys())[index] ?? null,
+    removeItem: (key) => entries.delete(key),
+    setItem: (key, value) => entries.set(key, value),
+  }
+}
+
+const ensureLocalStorage = () => {
+  if (window.localStorage !== undefined) return
+
+  Object.defineProperty(window, 'localStorage', {
+    configurable: true,
+    value: createMemoryStorage(),
+  })
+}
+
+const GalleryControllerProbe = ({ search }: { search: string }) => {
+  const { gallery } = useGalleryController({ search })
+  return <span data-testid="gallery-total">{gallery?.total ?? 'loading'}</span>
+}
+
 describe('GalleryGrid', () => {
   beforeEach(() => {
+    ensureLocalStorage()
     originalFetch = globalThis.fetch
     globalThis.fetch = vi
       .fn()
@@ -85,17 +110,120 @@ describe('GalleryGrid', () => {
     )
   })
 
-  it('renders an empty grid without skeleton cards after an empty gallery response', () => {
-    const { container } = render(
+  it('keeps Convex out of the initial public gallery component bundle', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/features/gallery/components/PublicGallery.tsx'),
+      'utf8',
+    )
+
+    expect(source).not.toContain("from 'convex/react'")
+    expect(source).not.toContain('useMutation(')
+    expect(source).not.toContain('api.sessions.deleteMine')
+    expect(source).toContain(
+      "import('@/features/gallery/services/delete-gallery-session')",
+    )
+  })
+
+  it('does not preload dashboard routes from public gallery card links', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/features/gallery/components/PublicGallery.tsx'),
+      'utf8',
+    )
+    const cardLinkStart = source.indexOf('data-gallery-session-id')
+    const cardLinkBlock = source.slice(
+      source.lastIndexOf('<Link', cardLinkStart),
+      source.indexOf('</Link>', cardLinkStart),
+    )
+
+    expect(cardLinkBlock).toContain('to="/generate/$sessionId"')
+    expect(cardLinkBlock).toContain('preload={false}')
+  })
+
+  it('coalesces identical public gallery requests across duplicate consumers', async () => {
+    const gallery: GalleryPayload = {
+      ...emptyGallery,
+      total: 2,
+    }
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => gallery,
+    })
+
+    const { getAllByTestId } = render(
+      <>
+        <GalleryControllerProbe search="coalesced-public-gallery" />
+        <GalleryControllerProbe search="coalesced-public-gallery" />
+      </>,
+    )
+
+    await waitFor(() => {
+      expect(
+        getAllByTestId('gallery-total').map((node) => node.textContent),
+      ).toEqual(['2', '2'])
+    })
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1)
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      '/api/sessions/recent?limit=12&page=1&search=coalesced-public-gallery',
+      { headers: { accept: 'application/json' } },
+    )
+  })
+
+  it('renders a helpful empty state after an empty gallery response', () => {
+    const { container, getByText } = render(
       <GalleryGrid gallery={emptyGallery} skeletonCount={3} />,
     )
 
     expect(container.querySelector('.sf-gallery-grid')?.children).toHaveLength(
-      0,
+      1,
     )
+    expect(container.querySelector('.sf-gallery-empty')).not.toBeNull()
+    expect(getByText('No previews yet')).toBeTruthy()
+    expect(getByText('Generate a site to fill this wall')).toBeTruthy()
+    expect(getByText('Start from home')).toBeTruthy()
   })
 
-  it('uses generated gallery thumbnails only when no preview content is available', () => {
+  it('uses homepage-specific empty copy without linking back to the current page', () => {
+    const { container, getByText, queryByText } = render(
+      <GalleryGrid
+        emptyStateVariant="home"
+        gallery={emptyGallery}
+        skeletonCount={3}
+      />,
+    )
+
+    expect(container.querySelector('.sf-gallery-grid')?.children).toHaveLength(
+      1,
+    )
+    expect(container.querySelector('.sf-gallery-empty')).not.toBeNull()
+    expect(getByText('No previews yet')).toBeTruthy()
+    expect(getByText('Fresh launches will appear here')).toBeTruthy()
+    expect(queryByText('Start from home')).toBeNull()
+  })
+
+  it('uses filter-specific empty copy when search or category filters have no results', () => {
+    const { container, getByText, queryByText } = render(
+      <GalleryGrid
+        emptyStateVariant="filtered"
+        gallery={emptyGallery}
+        skeletonCount={3}
+      />,
+    )
+
+    expect(container.querySelector('.sf-gallery-grid')?.children).toHaveLength(
+      1,
+    )
+    expect(container.querySelector('.sf-gallery-empty')).not.toBeNull()
+    expect(getByText('No previews yet')).toBeTruthy()
+    expect(getByText('No matching previews')).toBeTruthy()
+    expect(
+      getByText(
+        'Try a different search or category, or start a fresh generation from the homepage.',
+      ),
+    ).toBeTruthy()
+    expect(queryByText('Generate a site to fill this wall')).toBeNull()
+  })
+
+  it('prefers stored HTML over generated module source and thumbnail fetches', async () => {
     const gallery: GalleryPayload = {
       ...emptyGallery,
       items: [
@@ -103,25 +231,56 @@ describe('GalleryGrid', () => {
           sessionId: 'thumbnail-session',
           prompt: 'AI image studio',
           imageUrl: 'https://cdn.example.test/generated-theme.png',
+          html: '<main><h1>Rendered product preview</h1></main>',
+          moduleSource: '$page = "Home"\nroot = Hero("LumenAI Studio")',
           previewVersion: 1,
         },
       ],
       total: 1,
     }
 
-    const { container, queryByTestId } = render(
-      <GalleryGrid gallery={gallery} />,
-    )
+    const { container } = render(<GalleryGrid gallery={gallery} />)
 
-    expect(container.querySelector('img')?.getAttribute('src')).toBe(
-      'https://cdn.example.test/generated-theme.png',
-    )
-    expect(queryByTestId('generated-module-preview')).toBeNull()
-    expect(container.querySelector('h1')).toBeNull()
+    await waitFor(() => {
+      expect(container.querySelector('h1')?.textContent).toBe(
+        'Rendered product preview',
+      )
+    })
+    expect(globalThis.fetch).not.toHaveBeenCalled()
+    expect(container.querySelector('img')).toBeNull()
+    expect(
+      container.querySelector('[data-testid="generated-module-preview"]'),
+    ).toBeNull()
   })
 
-  it('renders stored generated HTML without waiting for thumbnail failure', () => {
-    globalThis.fetch = vi.fn().mockResolvedValue(new Response('svg'))
+  it('keeps visual preview content out of the gallery card accessible name', async () => {
+    const gallery: GalleryPayload = {
+      ...emptyGallery,
+      items: [
+        {
+          sessionId: 'accessible-session',
+          prompt: 'AI image studio',
+          html: '<main><h1>AI image studio</h1></main>',
+          elapsed: 1200,
+          previewVersion: 1,
+        },
+      ],
+      total: 1,
+    }
+
+    const { container, getByRole } = render(<GalleryGrid gallery={gallery} />)
+
+    await waitFor(() => {
+      expect(
+        getByRole('link', { name: 'AI image studio, generated in 1.2s' }),
+      ).toBeTruthy()
+    })
+    expect(
+      container.querySelector('[aria-hidden="true"] h1')?.textContent,
+    ).toBe('AI image studio')
+  })
+
+  it('falls back to stored generated HTML when the thumbnail is unavailable', async () => {
     const gallery: GalleryPayload = {
       ...emptyGallery,
       items: [
@@ -140,39 +299,15 @@ describe('GalleryGrid', () => {
     expect(container.querySelector('.sf-gallery-grid')?.children).toHaveLength(
       1,
     )
-    expect(container.querySelector('h1')?.textContent).toBe(
-      'Rendered product preview',
-    )
+    await waitFor(() => {
+      expect(container.querySelector('h1')?.textContent).toBe(
+        'Rendered product preview',
+      )
+    })
     expect(container.querySelector('img')).toBeNull()
-    expect(globalThis.fetch).not.toHaveBeenCalled()
   })
 
-  it('prefers stored generated HTML over a gallery image URL', () => {
-    const gallery: GalleryPayload = {
-      ...emptyGallery,
-      items: [
-        {
-          sessionId: 'preview-with-image-session',
-          prompt: 'AI image studio',
-          imageUrl: 'https://cdn.example.test/generated-theme.png',
-          html: '<main><h1>Rendered stock HTML preview</h1></main>',
-          previewVersion: 1,
-        },
-      ],
-      total: 1,
-    }
-
-    const { container } = render(<GalleryGrid gallery={gallery} />)
-
-    expect(container.querySelector('h1')?.textContent).toBe(
-      'Rendered stock HTML preview',
-    )
-    expect(container.querySelector('img')).toBeNull()
-    expect(globalThis.fetch).not.toHaveBeenCalled()
-  })
-
-  it('renders generated module source over stored placeholder HTML without thumbnail fallback', async () => {
-    globalThis.fetch = vi.fn().mockResolvedValue(new Response('svg'))
+  it('falls back to the generated thumbnail instead of rendering placeholder HTML or live modules', async () => {
     const gallery: GalleryPayload = {
       ...emptyGallery,
       items: [
@@ -187,18 +322,18 @@ describe('GalleryGrid', () => {
       total: 1,
     }
 
-    const { container, getByTestId } = render(<GalleryGrid gallery={gallery} />)
+    const { container } = render(<GalleryGrid gallery={gallery} />)
 
     await waitFor(() => {
-      expect(getByTestId('generated-module-preview').textContent).toContain(
-        'LumenAI Studio',
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        '/api/sessions/module-session/gallery-thumb?v=1',
       )
     })
-    expect(container.querySelector('h1')?.textContent).not.toBe(
-      'Generated OpenUI source is ready.',
-    )
+    expect(container.querySelector('h1')).toBeNull()
     expect(container.querySelector('img')).toBeNull()
-    expect(globalThis.fetch).not.toHaveBeenCalled()
+    expect(
+      container.querySelector('[data-testid="generated-module-preview"]'),
+    ).toBeNull()
   })
 
   it('deletes the hovered gallery session when the physical D key is pressed', async () => {

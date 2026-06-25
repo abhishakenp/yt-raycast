@@ -1,3 +1,5 @@
+import { Link } from '@tanstack/react-router'
+
 import { cn } from '@/lib/utils'
 
 export const PrivateGenerationModal = ({
@@ -62,12 +64,12 @@ export const PrivateGenerationModal = ({
       <p className="m-0 text-sm leading-relaxed text-white/65">
         This is a <strong>Pro plan</strong> feature.
       </p>
-      <a
-        href="/pricing"
+      <Link
+        to="/pricing"
         className="mx-auto inline-flex min-h-11 items-center justify-center rounded-full bg-cyan-300 px-5 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px"
       >
         Upgrade to Pro
-      </a>
+      </Link>
     </div>
   </div>
 )

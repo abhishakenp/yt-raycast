@@ -1,4 +1,4 @@
-import { useAuth, useClerk } from '@clerk/tanstack-react-start'
+import { useEffect, useMemo, useState } from 'react'
 
 /**
  * Build-time constant: whether a Clerk publishable key was baked into this
@@ -16,21 +16,47 @@ const isClerkConfigured =
   typeof clerkPublishableKey === 'string' &&
   clerkPublishableKey.trim().length > 0
 
-type OptionalAuth = Pick<
-  ReturnType<typeof useAuth>,
-  'getToken' | 'isSignedIn'
-> & {
-  isLoaded: boolean
+type ClerkTokenOptions = {
+  template?: string
+  [key: string]: unknown
 }
-type OptionalClerk = Pick<
-  ReturnType<typeof useClerk>,
-  'openSignIn' | 'openUserProfile' | 'session' | 'user'
->
+
+type ClerkSession = {
+  getToken?: (options?: ClerkTokenOptions) => Promise<string | null>
+}
+
+type ClerkGlobal = {
+  addListener?: (
+    listener: (state: {
+      session?: ClerkSession | null
+      user?: unknown | null
+    }) => void,
+  ) => void | (() => void)
+  openSignIn?: () => unknown
+  openUserProfile?: () => unknown
+  session?: ClerkSession | null
+  user?: unknown | null
+}
+
+type ClerkWindow = Window & {
+  Clerk?: ClerkGlobal
+}
+
+type OptionalAuth = {
+  getToken: (options?: ClerkTokenOptions) => Promise<string | null>
+  isSignedIn: boolean
+}
+
+type OptionalClerk = {
+  openSignIn: () => void
+  openUserProfile: () => void
+  session: ClerkSession | null
+  user: unknown | null
+}
 
 const anonymousAuth: OptionalAuth = {
   getToken: async () => null,
   isSignedIn: false,
-  isLoaded: true,
 }
 const anonymousClerk: OptionalClerk = {
   openSignIn: () => undefined,
@@ -39,44 +65,136 @@ const anonymousClerk: OptionalClerk = {
   user: null,
 }
 
+export const openSignInEventName = 'ship-fast:open-sign-in'
+
+const getClerk = (): ClerkGlobal | undefined =>
+  typeof window === 'undefined' ? undefined : (window as ClerkWindow).Clerk
+
+const readClerkSnapshot = () => {
+  const clerk = getClerk()
+  return {
+    isSignedIn: Boolean(clerk?.user || clerk?.session),
+    session: clerk?.session ?? null,
+    user: clerk?.user ?? null,
+  }
+}
+
 const isMissingJwtTemplateError = (error: unknown): boolean => {
   const message = error instanceof Error ? error.message : String(error)
   return /No JWT template exists with name/i.test(message)
 }
 
-/**
- * Clerk's `useAuth` throws if called outside a `<ClerkProvider>`. Anonymous
- * routes can intentionally avoid that provider even when a Clerk key exists, so
- * this wrapper returns signed-out defaults instead of crashing the page.
- */
-export const useOptionalAuth = (): OptionalAuth => {
-  if (!isClerkConfigured) return anonymousAuth
+const getOptionalToken = async (
+  options?: ClerkTokenOptions,
+): Promise<string | null> => {
+  const session = getClerk()?.session
+  if (typeof session?.getToken !== 'function') return null
 
   try {
-    const auth = useAuth()
-    return {
-      ...auth,
-      isLoaded: auth.isLoaded,
-      getToken: async (...args) => {
-        try {
-          return await auth.getToken(...args)
-        } catch (error) {
-          if (!isMissingJwtTemplateError(error)) throw error
-          return await auth.getToken()
-        }
-      },
-    }
-  } catch {
-    return anonymousAuth
+    return await session.getToken(options)
+  } catch (error) {
+    if (!isMissingJwtTemplateError(error)) throw error
+    return await session.getToken()
   }
 }
 
-export const useOptionalClerk = (): OptionalClerk => {
-  if (!isClerkConfigured) return anonymousClerk
+export const requestClerkSignIn = (): void => {
+  if (!isClerkConfigured || typeof window === 'undefined') return
 
-  try {
-    return useClerk()
-  } catch {
-    return anonymousClerk
+  const clerk = getClerk()
+  if (typeof clerk?.openSignIn === 'function') {
+    void clerk.openSignIn()
+    return
   }
+
+  window.dispatchEvent(new CustomEvent(openSignInEventName))
+}
+
+const requestClerkUserProfile = (): void => {
+  if (!isClerkConfigured) return
+
+  const clerk = getClerk()
+  if (typeof clerk?.openUserProfile === 'function') {
+    void clerk.openUserProfile()
+    return
+  }
+
+  requestClerkSignIn()
+}
+
+const useClerkSnapshot = () => {
+  const [snapshot, setSnapshot] = useState(readClerkSnapshot)
+
+  useEffect(() => {
+    if (!isClerkConfigured || typeof window === 'undefined') return
+
+    let cancelled = false
+    const scheduledSyncs: number[] = []
+    const syncSnapshot = () => {
+      if (cancelled) return
+      const nextSnapshot = readClerkSnapshot()
+      setSnapshot((current) =>
+        current.isSignedIn === nextSnapshot.isSignedIn &&
+        current.session === nextSnapshot.session &&
+        current.user === nextSnapshot.user
+          ? current
+          : nextSnapshot,
+      )
+    }
+    const scheduleSyncWindow = () => {
+      syncSnapshot()
+      for (const delay of [50, 250, 750, 1500, 3000, 6000, 10000]) {
+        scheduledSyncs.push(window.setTimeout(syncSnapshot, delay))
+      }
+    }
+    const clerk = getClerk()
+    const unsubscribe = clerk?.addListener?.(syncSnapshot)
+
+    scheduleSyncWindow()
+    window.addEventListener('focus', syncSnapshot)
+    window.addEventListener(openSignInEventName, scheduleSyncWindow)
+
+    return () => {
+      cancelled = true
+      if (typeof unsubscribe === 'function') unsubscribe()
+      for (const handle of scheduledSyncs) window.clearTimeout(handle)
+      window.removeEventListener('focus', syncSnapshot)
+      window.removeEventListener(openSignInEventName, scheduleSyncWindow)
+    }
+  }, [])
+
+  return snapshot
+}
+
+/** Anonymous routes must not import Clerk React hooks until sign-in is explicit. */
+export const useOptionalAuth = (): OptionalAuth => {
+  const snapshot = useClerkSnapshot()
+
+  return useMemo(
+    () =>
+      isClerkConfigured
+        ? {
+            getToken: getOptionalToken,
+            isSignedIn: snapshot.isSignedIn,
+          }
+        : anonymousAuth,
+    [snapshot.isSignedIn],
+  )
+}
+
+export const useOptionalClerk = (): OptionalClerk => {
+  const snapshot = useClerkSnapshot()
+
+  return useMemo(
+    () =>
+      isClerkConfigured
+        ? {
+            openSignIn: requestClerkSignIn,
+            openUserProfile: requestClerkUserProfile,
+            session: snapshot.session,
+            user: snapshot.user,
+          }
+        : anonymousClerk,
+    [snapshot.session, snapshot.user],
+  )
 }

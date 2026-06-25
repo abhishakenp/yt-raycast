@@ -14,7 +14,8 @@ export const resolveProviderMode = (config: ProviderConfig): ProviderMode =>
       : 'convex_anonymous'
     : 'anonymous'
 
-export const shouldUseAuthenticatedProviders = (pathname: string): boolean =>
-  pathname === '/' ||
-  pathname === '/pricing' ||
+export const shouldUseAuthenticatedProviders = (_pathname: string): boolean =>
+  false
+
+export const shouldUseConvexProviders = (pathname: string): boolean =>
   pathname.startsWith('/generate/')

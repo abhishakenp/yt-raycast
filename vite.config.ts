@@ -298,6 +298,8 @@ const config = defineConfig({
   envPrefix: [
     'VITE_',
     'NEXT_PUBLIC_',
+    'CONVEX_URL',
+    'CONVEX_SELF_HOSTED_URL',
     'MEDUSA_BACKEND_',
     'MEDUSA_ADMIN_URL',
     'MEDUSA_STOREFRONT_',
