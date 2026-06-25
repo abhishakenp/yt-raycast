@@ -13,9 +13,9 @@
 | --------- | ------ |
 | Critical  | 0      |
 | High      | 7      |
-| Medium    | 45     |
+| Medium    | 47     |
 | Low       | 0      |
-| **Total** | **52** |
+| **Total** | **54** |
 
 ## Issues
 
@@ -1601,5 +1601,79 @@ Fixed in this pass. Public gallery card links now set `preload={false}`, so rend
 
 3. **Observe:** Home opens and the request log includes `src/routes/generate.$sessionId.tsx?tsr-split=component` even though no gallery card was clicked.
    ![After Home](screenshots/legal-home-thumbnails-prewarmed-after-click.png)
+
+---
+
+## Follow-up pass (2026-06-25)
+
+### Verified: generate optimistic transition
+
+| Check                                 | Result                                           |
+| ------------------------------------- | ------------------------------------------------ |
+| URL changes to `/generate/$sessionId` | ✅ immediate (84–196 ms)                         |
+| Loader appears                        | ✅ within ~400–500 ms                            |
+| Loader stays visible                  | ❌ replaced by rendered site after a few seconds |
+| Final output                          | ✅ full generated site rendered in dashboard     |
+
+This was verified on the mobile viewport (390×844) for both the example-prompt path and the typed-prompt path. The backend (`https://convex-backend.ship-fast.io`) was reachable during this run, so the original "unreachable backend → error after 1.2 s" path was not reproduced.
+
+### Verified: mobile homepage → pricing / gallery / home navigation
+
+| Step              | Result             | Notes                                               |
+| ----------------- | ------------------ | --------------------------------------------------- |
+| Home → Pricing    | ✅ SPA navigation  | no document reload, route transitions to `/pricing` |
+| Pricing → Home    | ✅ SPA navigation  | footer Home link navigates back to `/`              |
+| Home → Gallery    | ✅ SPA navigation  | View all link navigates to `/gallery`               |
+| Direct `/gallery` | ✅ renders cleanly | no error boundary, gallery grid visible             |
+
+### New findings
+
+#### ISSUE-053: Residual `[Server] HTTPError: fetch failed` console errors during generation
+
+| Field           | Value                                             |
+| --------------- | ------------------------------------------------- |
+| **Severity**    | medium                                            |
+| **Category**    | console / reliability                             |
+| **URL**         | `http://localhost:3000/` → `/generate/$sessionId` |
+| **Repro Video** | `dogfood-output/videos/generate-transition.webm`  |
+
+**Description:**
+
+After the optimistic transition, the console repeatedly logs a server-side error: `%c[Server]%c HTTPError: fetch failed`. The main generation flow still succeeds and the rendered site appears, but the noise indicates a secondary server fetch is failing. It was not captured by `agent-browser network requests`.
+
+**Status:** Investigated, not yet fixed.
+
+**Repro Steps:**
+
+1. Navigate to `http://localhost:3000/` on a mobile viewport.
+2. Click the example prompt "SaaS dashboard".
+3. Click Generate.
+4. Wait for the dashboard to render.
+5. **Observe:** the console shows three `[Server] HTTPError: fetch failed` entries.
+
+---
+
+#### ISSUE-054: Mobile click paths still fetch `/assets/rocket-transparent.png` and `/api/sessions/recent` more than once
+
+| Field           | Value                                   |
+| --------------- | --------------------------------------- |
+| **Severity**    | medium                                  |
+| **Category**    | performance / network                   |
+| **URL**         | `http://localhost:3000/` and `/pricing` |
+| **Repro Video** | N/A                                     |
+
+**Description:**
+
+During the mobile navigation test, the HAR captured two separate network requests for the homepage background asset `/assets/rocket-transparent.png`, and three requests for `/api/sessions/recent` (one recorded as status `0` / cancelled). The duplicate rocket request likely comes from the `MarketingShell` prewarm plus the `HomePage` `<img>` tag; the extra `/api/sessions/recent` request appears to be a cancelled or duplicated prefetch from the prewarm path.
+
+**Status:** Investigated, not yet fixed.
+
+**Repro Steps:**
+
+1. Navigate to `http://localhost:3000/` on a mobile viewport and wait for the home gallery to mount.
+2. Click Pricing, wait for the page to settle.
+3. Click Home from the pricing footer.
+4. Click **View all** and wait for the gallery.
+5. **Observe:** in the network log, `/assets/rocket-transparent.png` appears twice and `/api/sessions/recent` appears three times.
 
 ---
