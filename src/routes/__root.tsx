@@ -1,29 +1,19 @@
 import {
   HeadContent,
   Outlet,
+  Link,
   Scripts,
   createRootRoute,
 } from '@tanstack/react-router'
-import { ClerkProvider } from '@clerk/tanstack-react-start'
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 import { Toaster } from 'sonner'
 
 import { AppProviders } from '@/app/providers/AppProviders'
-import { clerkFrostedGlassAppearance } from '@/app/providers/clerk-appearance'
 import { useReferralCapture } from '@/features/referrals/hooks/useReferralCapture'
 import { installDynamicImportRecovery } from '@/lib/chunk-load-recovery'
 
 import appCss from '../styles.css?url'
-
-const clerkPublishableKey =
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ??
-  import.meta.env.CLERK_PUBLISHABLE_KEY
-const configuredClerkPublishableKey =
-  typeof clerkPublishableKey === 'string' &&
-  clerkPublishableKey.trim().length > 0
-    ? clerkPublishableKey
-    : null
 
 const RootDocument = ({ children }: { children: ReactNode }) => {
   useReferralCapture()
@@ -52,26 +42,11 @@ const RootDocument = ({ children }: { children: ReactNode }) => {
   )
 }
 
-const RootClerkProvider = ({ children }: { children: ReactNode }) =>
-  configuredClerkPublishableKey ? (
-    <ClerkProvider
-      publishableKey={configuredClerkPublishableKey}
-      afterSignOutUrl="/"
-      appearance={clerkFrostedGlassAppearance}
-    >
-      {children}
-    </ClerkProvider>
-  ) : (
-    children
-  )
-
 const RootComponent = () => (
   <RootDocument>
-    <RootClerkProvider>
-      <AppProviders>
-        <Outlet />
-      </AppProviders>
-    </RootClerkProvider>
+    <AppProviders>
+      <Outlet />
+    </AppProviders>
   </RootDocument>
 )
 
@@ -89,12 +64,12 @@ const NotFoundComponent = () => (
       <p className="text-muted-foreground">
         The page you are looking for does not exist.
       </p>
-      <a
+      <Link
+        to="/"
         className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
-        href="/"
       >
         Go home
-      </a>
+      </Link>
     </div>
   </main>
 )

@@ -26,6 +26,8 @@ export interface ThemePickerProps {
   isDark: boolean
   onSelect: (name: string) => void
   onToggleMode: () => void
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
   trigger?: ReactElement
 }
 
@@ -43,12 +45,14 @@ export default function ThemePicker({
   isDark,
   onSelect,
   onToggleMode,
+  open,
+  onOpenChange,
   trigger,
 }: ThemePickerProps) {
   const mode = isDark ? 'dark' : 'light'
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         {trigger ? (
           trigger

@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from 'convex/react'
+import { useNavigate } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
@@ -6,6 +7,7 @@ import type { Id } from '../../../../convex/_generated/dataModel'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 
 export const useEditController = (sessionId: string) => {
+  const navigate = useNavigate()
   const createEdit = useMutation(api.sessions['createEdit'])
   const forkSession = useMutation(api.sessions['forkSession'])
   const restorePreviewVersion = useMutation(api.sessions.restorePreviewVersion)
@@ -128,8 +130,11 @@ export const useEditController = (sessionId: string) => {
       // Wait a moment to ensure all server-side operations complete
       await new Promise((resolve) => setTimeout(resolve, 500))
 
-      if (typeof window !== 'undefined' && result.sessionId) {
-        window.location.href = `/generate/${result.sessionId}`
+      if (result.sessionId) {
+        void navigate({
+          to: '/generate/$sessionId',
+          params: { sessionId: result.sessionId },
+        })
       }
 
       return result
