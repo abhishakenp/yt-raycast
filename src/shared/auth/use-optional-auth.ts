@@ -16,7 +16,12 @@ const isClerkConfigured =
   typeof clerkPublishableKey === 'string' &&
   clerkPublishableKey.trim().length > 0
 
-type OptionalAuth = Pick<ReturnType<typeof useAuth>, 'getToken' | 'isSignedIn'>
+type OptionalAuth = Pick<
+  ReturnType<typeof useAuth>,
+  'getToken' | 'isSignedIn'
+> & {
+  isLoaded: boolean
+}
 type OptionalClerk = Pick<
   ReturnType<typeof useClerk>,
   'openSignIn' | 'openUserProfile' | 'session' | 'user'
@@ -25,6 +30,7 @@ type OptionalClerk = Pick<
 const anonymousAuth: OptionalAuth = {
   getToken: async () => null,
   isSignedIn: false,
+  isLoaded: true,
 }
 const anonymousClerk: OptionalClerk = {
   openSignIn: () => undefined,
@@ -50,6 +56,7 @@ export const useOptionalAuth = (): OptionalAuth => {
     const auth = useAuth()
     return {
       ...auth,
+      isLoaded: auth.isLoaded,
       getToken: async (...args) => {
         try {
           return await auth.getToken(...args)
