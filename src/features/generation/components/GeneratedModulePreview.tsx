@@ -8,6 +8,7 @@ import type { ThemeStyles } from '@/genui/theme-presets'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { lazy, Suspense } from 'react'
+import type { CmsPreviewBlogPost } from '@/island/openui/cms-preview-sync'
 
 type GeneratedModulePreviewProps = {
   source: string
@@ -31,6 +32,8 @@ type GeneratedModulePreviewProps = {
     afterText: string
     occurrenceIndex?: number
   }>
+  /** CMS-authored blog posts to overlay into OpenUI publication previews. */
+  cmsBlogPosts?: Array<CmsPreviewBlogPost>
   isDark?: boolean
   themeStyles?: ThemeStyles | null
   deviceMode?: 'desktop' | 'tablet' | 'mobile'
@@ -122,11 +125,7 @@ export function HtmlModuleRenderer({
   )
 }
 
-export function HtmlModuleUrlRenderer({
-  sourceUrl,
-}: {
-  sourceUrl: string
-}) {
+export function HtmlModuleUrlRenderer({ sourceUrl }: { sourceUrl: string }) {
   return (
     <iframe
       title="Generated website preview"
@@ -144,6 +143,7 @@ export function OpenUIModuleRenderer({
   locale,
   prompt,
   imageOverrides,
+  cmsBlogPosts,
 }: GeneratedModulePreviewProps) {
   const brandContext = parseSiteSpecBrand(siteSpecJson)
   const hasOverrides =
@@ -163,6 +163,7 @@ export function OpenUIModuleRenderer({
         embed
         sessionId={sessionId}
         imageContext={imageContext}
+        cmsBlogPosts={cmsBlogPosts}
       />
     </Suspense>
   )
@@ -178,6 +179,7 @@ export function GeneratedModulePreview({
   imageOverrides,
   styleOverrides,
   textOverrides,
+  cmsBlogPosts,
   isDark = true,
   themeStyles = null,
   deviceMode = 'desktop',
@@ -224,6 +226,7 @@ export function GeneratedModulePreview({
             locale={locale}
             prompt={prompt}
             imageOverrides={imageOverrides}
+            cmsBlogPosts={cmsBlogPosts}
           />
         )}
         <AgentationSessionBridge

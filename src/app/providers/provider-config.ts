@@ -15,4 +15,4 @@ export const resolveProviderMode = (config: ProviderConfig): ProviderMode =>
     : 'anonymous'
 
 export const shouldUseAuthenticatedProviders = (pathname: string): boolean =>
-  pathname === '/pricing'
+  pathname === '/' || pathname === '/pricing'

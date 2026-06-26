@@ -1,6 +1,7 @@
 import { Waitlist } from '@clerk/tanstack-react-start'
 import type { ReactNode } from 'react'
 
+import { isClerkClientEnabled } from '@/shared/auth/clerk-runtime'
 import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 
 type WaitlistGateProps = {
@@ -27,8 +28,10 @@ const WaitlistLoading = () => (
  * of the waitlist form for signed-in users.
  */
 export const WaitlistGate = ({ children }: WaitlistGateProps) => {
+  const isWaitlistEnabled = isClerkClientEnabled()
   const { isLoaded, isSignedIn } = useOptionalAuth()
 
+  if (!isWaitlistEnabled) return <>{children}</>
   if (!isLoaded) return <WaitlistLoading />
   if (!isSignedIn) return <Waitlist afterJoinWaitlistUrl="/" />
 

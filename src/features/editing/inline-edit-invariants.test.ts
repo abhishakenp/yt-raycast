@@ -51,11 +51,15 @@ describe('inline text edit — structure-preserving, no double-submit', () => {
 describe('inline edit — preview does not remount per edit (Dashboard key)', () => {
   const src = read('src/features/dashboard/components/Dashboard.tsx')
 
-  it('keys GeneratedModulePreview on homeModule.updatedAt, not previewVersion', () => {
+  it('keys normal GeneratedModulePreview renders on homeModule.updatedAt', () => {
     expect(src).not.toContain(
       'key={`${generationView.session.previewVersion}:${homeModule.updatedAt}`}',
     )
-    expect(src).toContain('key={`${homeModule?.updatedAt')
+    expect(src).toContain('const renderedPreviewKey = cmsPreviewSource')
+    expect(src).toContain(
+      ': `${homeModule?.updatedAt ?? generationView?.session.previewVersion}`',
+    )
+    expect(src).toContain('key={renderedPreviewKey}')
   })
 
   it('builds image, style, and text override maps from recorded edits', () => {

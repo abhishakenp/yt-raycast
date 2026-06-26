@@ -26,8 +26,8 @@ describe('provider config', () => {
     ).toBe('clerk_convex')
   })
 
-  it('keeps authenticated providers off anonymous routes', () => {
-    expect(shouldUseAuthenticatedProviders('/')).toBe(false)
+  it('loads authenticated providers on routes that can show auth-gated UI', () => {
+    expect(shouldUseAuthenticatedProviders('/')).toBe(true)
     expect(shouldUseAuthenticatedProviders('/gallery')).toBe(false)
     expect(shouldUseAuthenticatedProviders('/pricing')).toBe(true)
     expect(shouldUseAuthenticatedProviders('/generate/session_123')).toBe(false)

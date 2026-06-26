@@ -44,6 +44,24 @@ export const cmsContentType = v.union(
   v.literal('link'),
 )
 
+export const cmsCollectionKey = v.union(v.literal('blogPosts'))
+
+export const cmsCollectionItemStatus = v.union(
+  v.literal('draft'),
+  v.literal('published'),
+)
+
+export const cmsBlogPostFields = v.object({
+  title: v.string(),
+  slug: v.string(),
+  excerpt: v.string(),
+  author: v.string(),
+  category: v.string(),
+  coverImageUrl: v.string(),
+  body: v.string(),
+  status: cmsCollectionItemStatus,
+})
+
 export const medusaProduct = v.object({
   id: v.string(),
   title: v.string(),
@@ -439,6 +457,23 @@ export const upsertCmsContentEntryArgs = {
 export const restoreCmsContentRevisionArgs = {
   ...ownedSessionArgs,
   revisionId: v.id('cmsRevisions'),
+}
+
+export const cmsCollectionItemsArgs = {
+  sessionId: v.id('sessions'),
+  collectionKey: cmsCollectionKey,
+}
+
+export const upsertCmsCollectionItemArgs = {
+  ...ownedSessionArgs,
+  collectionKey: cmsCollectionKey,
+  itemId: v.optional(v.id('cmsCollectionItems')),
+  fields: cmsBlogPostFields,
+}
+
+export const deleteCmsCollectionItemArgs = {
+  ...ownedSessionArgs,
+  itemId: v.id('cmsCollectionItems'),
 }
 
 export const insertCmsBindingArgs = {

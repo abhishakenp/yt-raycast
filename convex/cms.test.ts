@@ -247,3 +247,161 @@ test('CMS seeding extracts generated content collections from site spec without 
     contentType: 'text/markdown',
   })
 }, 15_000)
+
+test('CMS blog post collection publishes into the generated preview', async () => {
+  const t = convexTest(schema, modules)
+  const ownerSecret = 'cms-blog-owner'
+
+  const { sessionId } = await t.mutation(api.sessions.create, {
+    prompt: 'Build a CMS-ready editorial blog',
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    isPrivate: false,
+    workspace: 'workspace_cms_blog_test',
+    anonymousClientId: 'anon-cms-blog-test',
+    anonymousOwnerSecret: ownerSecret,
+  })
+
+  await t.mutation(internal.sessions.completeGenerationInternal, {
+    sessionId,
+    html: '<html><body><main><h1>Editorial Blog</h1><section><h2>Latest posts</h2></section></main></body></html>',
+    openUiSource: '$page = "Home"\nroot = Text("Editorial Blog")',
+    siteSpecJson: JSON.stringify({
+      projectName: 'Editorial Blog',
+      blog: { posts: [] },
+    }),
+    tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
+  })
+
+  const result = await t.mutation(api.sessions.upsertCmsCollectionItem, {
+    sessionId,
+    anonymousOwnerSecret: ownerSecret,
+    collectionKey: 'blogPosts',
+    fields: {
+      title: 'Launch lessons',
+      slug: 'launch-lessons',
+      excerpt: 'A practical guide to publishing faster.',
+      author: 'Maya Chen',
+      category: 'Growth',
+      coverImageUrl: 'https://cdn.example.com/launch.jpg',
+      body: '## Ship faster\n\nUse a small editorial checklist.',
+      status: 'published',
+    },
+  })
+
+  expect(result.collectionKey).toBe('blogPosts')
+  expect(result.slug).toBe('launch-lessons')
+  expect(result.previewVersion).toBe(2)
+
+  const collections = await t.query(api.sessions.listCmsCollections, {
+    sessionId,
+  })
+  expect(collections).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        key: 'blogPosts',
+        label: 'Blog posts',
+        itemCount: 1,
+      }),
+    ]),
+  )
+
+  const items = await t.query(api.sessions.listCmsCollectionItems, {
+    sessionId,
+    collectionKey: 'blogPosts',
+  })
+  expect(items).toHaveLength(1)
+  expect(items[0]).toMatchObject({
+    title: 'Launch lessons',
+    slug: 'launch-lessons',
+    status: 'published',
+  })
+
+  const view = await t.query(api.sessions.getGenerationView, { sessionId })
+  expect(view?.latestPreview?.html).toContain('data-cms-collection="blogPosts"')
+  expect(view?.latestPreview?.html).toContain('Launch lessons')
+  expect(view?.latestPreview?.html).toContain(
+    'data-cms-route="/blog/launch-lessons"',
+  )
+  expect(view?.latestPreview?.html).toContain(
+    'Use a small editorial checklist.',
+  )
+})
+
+test('CMS blog post collection keeps drafts out of the generated preview and removes published posts', async () => {
+  const t = convexTest(schema, modules)
+  const ownerSecret = 'cms-blog-draft-owner'
+
+  const { sessionId } = await t.mutation(api.sessions.create, {
+    prompt: 'Build a publication blog',
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    isPrivate: false,
+    workspace: 'workspace_cms_blog_draft_test',
+    anonymousClientId: 'anon-cms-blog-draft-test',
+    anonymousOwnerSecret: ownerSecret,
+  })
+
+  await t.mutation(internal.sessions.completeGenerationInternal, {
+    sessionId,
+    html: '<html><body><main><h1>Publication Blog</h1><section>Stories</section></main></body></html>',
+    openUiSource: '$page = "Home"\nroot = Text("Publication Blog")',
+    siteSpecJson: JSON.stringify({ projectName: 'Publication Blog', blog: {} }),
+    tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
+  })
+
+  const draft = await t.mutation(api.sessions.upsertCmsCollectionItem, {
+    sessionId,
+    anonymousOwnerSecret: ownerSecret,
+    collectionKey: 'blogPosts',
+    fields: {
+      title: 'Private notes',
+      slug: 'private-notes',
+      excerpt: 'Internal editorial notes.',
+      author: 'Editor',
+      category: 'Drafts',
+      coverImageUrl: '',
+      body: 'This should not be public.',
+      status: 'draft',
+    },
+  })
+
+  const draftView = await t.query(api.sessions.getGenerationView, { sessionId })
+  expect(draft.previewVersion).toBe(1)
+  expect(draftView?.latestPreview?.html).not.toContain('Private notes')
+
+  const published = await t.mutation(api.sessions.upsertCmsCollectionItem, {
+    sessionId,
+    anonymousOwnerSecret: ownerSecret,
+    itemId: draft.itemId,
+    collectionKey: 'blogPosts',
+    fields: {
+      title: 'Public notes',
+      slug: 'public-notes',
+      excerpt: 'Published editorial notes.',
+      author: 'Editor',
+      category: 'News',
+      coverImageUrl: '',
+      body: 'This should be public.',
+      status: 'published',
+    },
+  })
+
+  expect(published.previewVersion).toBe(2)
+  const publishedView = await t.query(api.sessions.getGenerationView, {
+    sessionId,
+  })
+  expect(publishedView?.latestPreview?.html).toContain('Public notes')
+
+  const deleted = await t.mutation(api.sessions.deleteCmsCollectionItem, {
+    sessionId,
+    anonymousOwnerSecret: ownerSecret,
+    itemId: draft.itemId,
+  })
+
+  expect(deleted.previewVersion).toBe(3)
+  const deletedView = await t.query(api.sessions.getGenerationView, {
+    sessionId,
+  })
+  expect(deletedView?.latestPreview?.html).not.toContain('Public notes')
+})

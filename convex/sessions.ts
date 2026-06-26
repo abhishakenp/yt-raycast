@@ -46,6 +46,12 @@ import {
   upsertSessionCmsContentEntry,
 } from './lib/session_cms_binding_helpers'
 import {
+  deleteSessionCmsCollectionItem,
+  listSessionCmsCollectionItems,
+  listSessionCmsCollections,
+  upsertSessionCmsCollectionItem,
+} from './lib/session_cms_collection_helpers'
+import {
   loadSessionCommerceConfig,
   provisionSessionMedusaTenant,
   syncSessionMedusaProducts,
@@ -136,9 +142,11 @@ import {
   completeGenerationArgs,
   createGenerationSessionArgs,
   createEditArgs,
+  deleteCmsCollectionItemArgs,
   deleteOwnedAnnotationArgs,
   deleteOwnedAnnotationByAgentationIdArgs,
   deleteMineArgs,
+  cmsCollectionItemsArgs,
   cmsEntryRevisionsArgs,
   deploymentSlugArgs,
   editedSessionExportRebuildArgs,
@@ -183,6 +191,7 @@ import {
   telegramNotificationArgs,
   updateCmsEntryArgs,
   updateAgentationSyncAnnotationArgs,
+  upsertCmsCollectionItemArgs,
   upsertGeneratedModuleArgs,
   upsertGenerationTaskArgs,
   upsertCmsConfigArgs,
@@ -641,8 +650,7 @@ export const generateCloneUploadUrl = mutation({
 // large, else `html` (inline iframe srcDoc). The client chooses url-over-html.
 export const getCloneHomePreview = query({
   args: clonePageLookupArgs,
-  handler: (ctx, args) =>
-    loadClonePagePreview(ctx, args.lookup, args.pathname),
+  handler: (ctx, args) => loadClonePagePreview(ctx, args.lookup, args.pathname),
 })
 
 export const applyCloneBriefAndGenerate = mutation({
@@ -873,6 +881,26 @@ export const upsertCmsContentEntry = mutation({
 export const restoreCmsContentRevision = mutation({
   args: restoreCmsContentRevisionArgs,
   handler: (ctx, args) => restoreSessionCmsContentRevision(ctx, args),
+})
+
+export const listCmsCollections = query({
+  args: sessionIdArgs,
+  handler: (ctx, args) => listSessionCmsCollections(ctx, args.sessionId),
+})
+
+export const listCmsCollectionItems = query({
+  args: cmsCollectionItemsArgs,
+  handler: (ctx, args) => listSessionCmsCollectionItems(ctx, args),
+})
+
+export const upsertCmsCollectionItem = mutation({
+  args: upsertCmsCollectionItemArgs,
+  handler: (ctx, args) => upsertSessionCmsCollectionItem(ctx, args),
+})
+
+export const deleteCmsCollectionItem = mutation({
+  args: deleteCmsCollectionItemArgs,
+  handler: (ctx, args) => deleteSessionCmsCollectionItem(ctx, args),
 })
 
 export const insertCmsBinding = internalMutation({

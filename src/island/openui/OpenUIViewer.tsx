@@ -24,6 +24,10 @@ import {
   applyMedusaProductsToPreviewDom,
   type MedusaPreviewProduct,
 } from './medusa-preview-sync'
+import {
+  applyCmsBlogPostsToPreviewDom,
+  type CmsPreviewBlogPost,
+} from './cms-preview-sync'
 import { extractGeneratedCommerceProducts } from '@/features/commerce/services/generated-commerce-products'
 
 // NOTE: We use a plain QueryClientProvider here (not PersistQueryClientProvider).
@@ -219,6 +223,7 @@ export default function OpenUIViewer({
   sessionId,
   integrations,
   imageContext,
+  cmsBlogPosts,
   onFirstPaint,
 }: {
   response: string
@@ -229,6 +234,8 @@ export default function OpenUIViewer({
   locale?: string
   /** Page-level prompt/brand context so generated <Image>s pick relevant stock photos. */
   imageContext?: ImageContext | null
+  /** Published CMS blog posts to sync into generated publication sections. */
+  cmsBlogPosts?: Array<CmsPreviewBlogPost>
   /** Full-bleed session iframe: no rounded corners, no streaming border/dot overlay */
   embed?: boolean
   /** Session id used by integration providers (for storefront and CMS scope). */
@@ -295,6 +302,40 @@ export default function OpenUIViewer({
     runtimeLibraryState.key === runtimeLibraryKey
       ? runtimeLibraryState.library
       : null
+  const cmsBlogPostSignature = useMemo(
+    () =>
+      (cmsBlogPosts ?? [])
+        .map((post) => `${post.itemId ?? post.slug}:${post.updatedAt ?? ''}`)
+        .join('|'),
+    [cmsBlogPosts],
+  )
+
+  useEffect(() => {
+    if (!runtimeLibrary || !renderHostRef.current) return
+
+    const root = renderHostRef.current
+    const posts = cmsBlogPosts ?? []
+    let cancelled = false
+    let frame: number | null = null
+    const apply = () => {
+      if (frame !== null) return
+      frame = window.requestAnimationFrame(() => {
+        frame = null
+        if (cancelled) return
+        applyCmsBlogPostsToPreviewDom(root, posts)
+      })
+    }
+
+    apply()
+    const observer = new MutationObserver(apply)
+    observer.observe(root, { childList: true, subtree: true })
+
+    return () => {
+      cancelled = true
+      if (frame !== null) window.cancelAnimationFrame(frame)
+      observer.disconnect()
+    }
+  }, [cmsBlogPosts, cmsBlogPostSignature, preparedResponse, runtimeLibrary])
 
   useEffect(() => {
     if (!sessionId || !runtimeLibrary || !renderHostRef.current) return
