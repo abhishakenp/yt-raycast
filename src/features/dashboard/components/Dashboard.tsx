@@ -79,6 +79,11 @@ const CommercePanel = lazy(() =>
     default: module.CommercePanel,
   })),
 )
+const CmsPanel = lazy(() =>
+  import('@/features/cms/components/CmsPanel').then((module) => ({
+    default: module.CmsPanel,
+  })),
+)
 interface DashboardProps {
   sessionId: string
   initialAdminView?: boolean
@@ -221,6 +226,9 @@ const readSiteThemeName = (specJson: string | undefined): string | null => {
   }
 }
 
+const isOpenUIHandoffHtml = (html: string | undefined): boolean =>
+  typeof html === 'string' && html.includes('ship-fast-openui-source')
+
 const ToolPopoverFallback = () => (
   <div className="grid gap-3" aria-hidden="true">
     <div className="h-7 w-1/2 rounded-lg bg-white/[0.08]" />
@@ -357,11 +365,19 @@ export function Dashboard({
   const clonePageNav = useClonePageNav(resolvedSessionId ?? sessionId)
   const isMissingSession = generationView === null
   const homeModule = generationView?.homeModule
+  const cmsPreviewHtml = generationView?.latestPreview?.html
+  const cmsPreviewSource =
+    cmsPreviewHtml?.includes('ship-fast-cms:') &&
+    !isOpenUIHandoffHtml(cmsPreviewHtml)
+      ? cmsPreviewHtml
+      : undefined
   const hasRenderableClonePage = Boolean(
     clonePageNav.currentHtml || clonePageNav.currentUrl,
   )
   const hasRenderableHomeSource =
-    Boolean(homeModule?.source) || hasRenderableClonePage
+    Boolean(homeModule?.source) ||
+    Boolean(cmsPreviewSource) ||
+    hasRenderableClonePage
   const isPreviewReady =
     !isMissingSession &&
     generationView?.session.status === 'preview_ready' &&
@@ -381,6 +397,12 @@ export function Dashboard({
   const deploymentStatus = useQuery(
     api.sessions.getDeploymentStatus,
     sidePanelQueryArgs,
+  )
+  const cmsBlogPosts = useQuery(
+    api.sessions.listCmsCollectionItems,
+    resolvedSessionId === undefined || !isPreviewReady
+      ? 'skip'
+      : { sessionId: resolvedSessionId, collectionKey: 'blogPosts' },
   )
   const publishPreview = useMutation(api.sessions.publishPreview)
   const setThemeOverrideMutation = useMutation(api.sessions.setThemeOverride)
@@ -718,6 +740,13 @@ export function Dashboard({
   const currentUrl = isAdminActive
     ? `${basePreviewUrl.replace(/\/+$/, '')}/admin`
     : basePreviewUrl
+  const renderedPreviewSource =
+    clonePageNav.isClone && clonePageNav.currentHtml
+      ? clonePageNav.currentHtml
+      : (cmsPreviewSource ?? homeModule?.source ?? '')
+  const renderedPreviewKey = cmsPreviewSource
+    ? `cms:${generationView?.latestPreview?.version ?? generationView?.session.previewVersion ?? homeModule?.updatedAt ?? 'latest'}`
+    : `${homeModule?.updatedAt ?? generationView?.session.previewVersion}`
 
   const handlePublish = async () => {
     if (resolvedSessionId === undefined) return
@@ -1318,17 +1347,11 @@ export function Dashboard({
                         (homeModule?.source || clonePageNav.currentUrl) &&
                         generationView ? (
                           <GeneratedModulePreview
-                            // Key on the rendered source's updatedAt only — NOT previewVersion.
-                            // previewVersion bumps on every edit (incl. image swaps, which don't
-                            // touch homeModule), so keying on it remounts the whole preview and
-                            // scrolls to top on every swap. homeModule.updatedAt changes only when
-                            // the displayed source actually changes (text edit / restore / regen).
-                            key={`${homeModule?.updatedAt ?? generationView.session.previewVersion}`}
-                            source={
-                              clonePageNav.isClone && clonePageNav.currentHtml
-                                ? clonePageNav.currentHtml
-                                : (homeModule?.source ?? '')
-                            }
+                            // Use homeModule.updatedAt for normal previews to avoid remounting on
+                            // unrelated previewVersion bumps. CMS-promoted HTML is versioned by the
+                            // latest preview because that HTML is now the displayed source.
+                            key={renderedPreviewKey}
+                            source={renderedPreviewSource}
                             sourceUrl={
                               clonePageNav.isClone
                                 ? clonePageNav.currentUrl
@@ -1341,6 +1364,7 @@ export function Dashboard({
                             imageOverrides={imageOverrides}
                             styleOverrides={styleOverrides}
                             textOverrides={textOverrides}
+                            cmsBlogPosts={cmsBlogPosts ?? []}
                             isDark={isDark}
                             themeStyles={themeStyles}
                             deviceMode={currentDevice}
@@ -1370,44 +1394,62 @@ export function Dashboard({
                     <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">
                       Manage content
                     </div>
-                    <button
-                      type="button"
-                      className={cn(
-                        railRowClass,
-                        'border-white/20 bg-[linear-gradient(135deg,#ff7a68_0%,#ef3e2d_55%,#b9251a_100%)] text-white shadow-[0_8px_20px_-10px_rgba(239,62,45,0.55)] hover:border-white/30 hover:bg-[linear-gradient(135deg,#ff8876_0%,#f04d3c_55%,#c62b20_100%)]',
-                      )}
-                      data-rail-action="cms-studio"
-                    >
-                      <span
-                        className="grid size-7 shrink-0 place-items-center text-white transition-transform duration-150 group-hover:-translate-y-px"
-                        aria-hidden="true"
-                      >
-                        <svg
-                          viewBox="0 -10 28 32"
-                          width="30"
-                          height="32"
-                          xmlns="http://www.w3.org/2000/svg"
-                          style={{ overflow: 'visible' }}
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className={cn(
+                            railRowClass,
+                            'border-white/20 bg-[linear-gradient(135deg,#ff7a68_0%,#ef3e2d_55%,#b9251a_100%)] text-white shadow-[0_8px_20px_-10px_rgba(239,62,45,0.55)] hover:border-white/30 hover:bg-[linear-gradient(135deg,#ff8876_0%,#f04d3c_55%,#c62b20_100%)]',
+                          )}
+                          data-rail-action="cms-studio"
+                          aria-haspopup="dialog"
                         >
-                          <path
-                            d="M21.5 6.5c0-1.9-1.55-2.95-3.65-2.95h-4.2c-2.55 0-4.25 1.45-4.25 3.65 0 1.9 1.35 2.95 3.65 3.4l4.2 0.9c2.3 0.45 3.6 1.5 3.6 3.4 0 2.15-1.7 3.5-4.25 3.5H11.9"
-                            fill="none"
-                            stroke="#ffffff"
-                            strokeWidth="2.2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+                          <span
+                            className="grid size-7 shrink-0 place-items-center text-white transition-transform duration-150 group-hover:-translate-y-px"
+                            aria-hidden="true"
+                          >
+                            <svg
+                              viewBox="0 -10 28 32"
+                              width="30"
+                              height="32"
+                              xmlns="http://www.w3.org/2000/svg"
+                              style={{ overflow: 'visible' }}
+                            >
+                              <path
+                                d="M21.5 6.5c0-1.9-1.55-2.95-3.65-2.95h-4.2c-2.55 0-4.25 1.45-4.25 3.65 0 1.9 1.35 2.95 3.65 3.4l4.2 0.9c2.3 0.45 3.6 1.5 3.6 3.4 0 2.15-1.7 3.5-4.25 3.5H11.9"
+                                fill="none"
+                                stroke="#ffffff"
+                                strokeWidth="2.2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <path
+                                d="M20.4 5.2 C 20.9 -0.6 21.6 -3 23.3 -6 C 23.7 -2 23.2 1 22.3 5.2 Z"
+                                fill="#ffffff"
+                              />
+                            </svg>
+                          </span>
+                          <span className="min-w-0 flex-1 truncate">
+                            Edit content
+                          </span>
+                          <span className={newBadgeClass}>NEW</span>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        align="start"
+                        side="left"
+                        sideOffset={12}
+                        className="z-[140] max-h-[min(720px,calc(100vh-32px))] w-[min(420px,calc(100vw-24px))] overflow-y-auto border-white/10 bg-[#0d111b]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+                      >
+                        <Suspense fallback={<ToolPopoverFallback />}>
+                          <CmsPanel
+                            sessionId={activeSessionId}
+                            prompt={generationView?.session.prompt ?? ''}
                           />
-                          <path
-                            d="M20.4 5.2 C 20.9 -0.6 21.6 -3 23.3 -6 C 23.7 -2 23.2 1 22.3 5.2 Z"
-                            fill="#ffffff"
-                          />
-                        </svg>
-                      </span>
-                      <span className="min-w-0 flex-1 truncate">
-                        Edit content
-                      </span>
-                      <span className={newBadgeClass}>NEW</span>
-                    </button>
+                        </Suspense>
+                      </PopoverContent>
+                    </Popover>
                     <button
                       type="button"
                       className={railRowClass}

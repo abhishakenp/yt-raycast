@@ -43,6 +43,13 @@ const integrationStatus = v.union(
   v.literal('failed'),
 )
 
+const cmsCollectionKey = v.union(v.literal('blogPosts'))
+
+const cmsCollectionItemStatus = v.union(
+  v.literal('draft'),
+  v.literal('published'),
+)
+
 export default defineSchema({
   sessions: defineTable({
     userId: v.optional(v.string()),
@@ -388,6 +395,47 @@ export default defineSchema({
   })
     .index('by_entryId', ['entryId'])
     .index('by_entryId_createdAt', ['entryId', 'createdAt']),
+
+  cmsCollections: defineTable({
+    sessionId: v.id('sessions'),
+    key: cmsCollectionKey,
+    label: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_sessionId', ['sessionId'])
+    .index('by_sessionId_key', ['sessionId', 'key']),
+
+  cmsCollectionItems: defineTable({
+    sessionId: v.id('sessions'),
+    collectionId: v.id('cmsCollections'),
+    collectionKey: cmsCollectionKey,
+    slug: v.string(),
+    title: v.string(),
+    excerpt: v.string(),
+    author: v.string(),
+    category: v.string(),
+    coverImageUrl: v.optional(v.string()),
+    body: v.string(),
+    status: cmsCollectionItemStatus,
+    publishedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    updatedBy: v.optional(v.string()),
+  })
+    .index('by_sessionId', ['sessionId'])
+    .index('by_collectionId', ['collectionId'])
+    .index('by_sessionId_collectionKey', ['sessionId', 'collectionKey'])
+    .index('by_sessionId_collectionKey_slug', [
+      'sessionId',
+      'collectionKey',
+      'slug',
+    ])
+    .index('by_sessionId_collectionKey_status', [
+      'sessionId',
+      'collectionKey',
+      'status',
+    ]),
 
   commerceConfigs: defineTable({
     sessionId: v.id('sessions'),

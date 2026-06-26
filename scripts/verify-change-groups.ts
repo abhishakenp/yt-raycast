@@ -65,6 +65,8 @@ export const changeGroups: ChangeGroup[] = [
       /^eslint\.config\.js$/,
       /^package\.json$/,
       /^scripts\/(?:export-review-groups\.ts|export-review-groups\.test\.ts|git-hook-quality-gate\.mjs|git-hook-quality-gate\.test\.ts|quality-gates-config\.test\.ts|verify-build-bundles\.ts|verify-build-bundles\.test\.ts|verify-change-groups\.ts|verify-change-groups\.test\.ts|verify-quality-exit\.ts|verify-quality-exit\.test\.ts|verify-review-readiness\.ts|verify-review-readiness\.test\.ts)$/,
+      /^src\/lib\/vite-config\.test\.ts$/,
+      /^src\/routes\/api\/-?(?:payments-webhook-alias|route-test-files)\.test\.ts$/,
       /^tsconfig\.json$/,
       /^tsconfig\.typecheck\.json$/,
       /^types\/typecheck\//,
@@ -107,7 +109,7 @@ export const changeGroups: ChangeGroup[] = [
       /^scripts\/verify-(?:browser-helpers|generation-agent-browser)\.mjs$/,
       /^src\/app\/providers\//,
       /^src\/components\//,
-      /^src\/features\/(?:admin|agentation|brand|chat|dashboard|editing|exports\/server|gallery|home|session)\//,
+      /^src\/features\/(?:admin|agentation|brand|chat|cms|dashboard|editing|exports\/server|gallery|home|session)\//,
       /^src\/features\/deployments\//,
       /^src\/features\/session\/services\/generation-launch-handoff\.(?:test\.)?ts$/,
       /^src\/hooks\//,
@@ -257,9 +259,12 @@ export function renderChangeGroupReport(paths: string[]) {
       .filter((assignment) => assignment.group.id === group.id)
       .map((assignment) => assignment.path)
 
-    if (groupPaths.length === 0) continue
-
     lines.push(`## ${group.title} (${groupPaths.length})`, '')
+    if (groupPaths.length === 0) {
+      lines.push('_No changed paths._', '')
+      continue
+    }
+
     for (const path of groupPaths) {
       lines.push(`- \`${path}\``)
     }

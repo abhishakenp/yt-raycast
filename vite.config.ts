@@ -307,6 +307,9 @@ const config = defineConfig({
   server: {
     allowedHosts: ['.ship-fast.io'],
   },
+  optimizeDeps: {
+    exclude: ['playwright', 'playwright-core', 'fsevents'],
+  },
   build: {
     rolldownOptions: {
       output: {

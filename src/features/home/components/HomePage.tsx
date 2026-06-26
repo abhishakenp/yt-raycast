@@ -34,6 +34,7 @@ import {
   normalizeLanguageCode,
 } from '@/lib/home/prompt-language-labels'
 import { cn } from '@/lib/utils'
+import { isClerkClientEnabled } from '@/shared/auth/clerk-runtime'
 import { GlassDefs, GlassPillAnchor, GlassPillButton } from './GlassPill'
 import { CloseIcon, LogoMark, SearchIcon, ZapIcon } from './HomeIcons'
 import { PrivateGenerationModal } from './PrivateGenerationModal'
@@ -85,12 +86,7 @@ const SAMPLE_PLACEHOLDERS = [
   'A bold ecommerce homepage for handcrafted coffee gear with bundles and subscriptions.',
 ] as const
 
-const clerkPublishableKey =
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ??
-  import.meta.env.CLERK_PUBLISHABLE_KEY
-const isClerkConfigured =
-  typeof clerkPublishableKey === 'string' &&
-  clerkPublishableKey.trim().length > 0
+const isClerkConfigured = isClerkClientEnabled()
 const HOME_GALLERY_IDLE_DELAY_MS = 1800
 const HOME_GALLERY_IDLE_TIMEOUT_MS = 2500
 

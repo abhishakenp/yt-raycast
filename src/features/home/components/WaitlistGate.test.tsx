@@ -5,13 +5,18 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { clerkFrostedGlassAppearance } from '@/app/providers/clerk-appearance'
 import { WaitlistGate } from './WaitlistGate'
 
-const { mockAuth, capturedWaitlistProps } = vi.hoisted(() => ({
-  mockAuth: {
-    isLoaded: true,
-    isSignedIn: false,
-  },
-  capturedWaitlistProps: {} as Record<string, unknown>,
-}))
+const { mockAuth, capturedWaitlistProps, mockClerkClientEnabled } = vi.hoisted(
+  () => ({
+    mockAuth: {
+      isLoaded: true,
+      isSignedIn: false,
+    },
+    capturedWaitlistProps: {} as Record<string, unknown>,
+    mockClerkClientEnabled: {
+      value: true,
+    },
+  }),
+)
 
 vi.mock('@clerk/tanstack-react-start', () => ({
   Waitlist: (props: Record<string, unknown>) => {
@@ -28,11 +33,20 @@ vi.mock('@/shared/auth/use-optional-auth', () => ({
   }),
 }))
 
+vi.mock('@/shared/auth/clerk-runtime', () => ({
+  isClerkClientEnabled: () => mockClerkClientEnabled.value,
+}))
+
 const TestChildren = () => <div data-testid="prompt-form">Prompt form</div>
 
-const setAuth = (isLoaded: boolean, isSignedIn: boolean) => {
+const setAuth = (
+  isLoaded: boolean,
+  isSignedIn: boolean,
+  clerkClientEnabled = true,
+) => {
   mockAuth.isLoaded = isLoaded
   mockAuth.isSignedIn = isSignedIn
+  mockClerkClientEnabled.value = clerkClientEnabled
 }
 
 describe('WaitlistGate', () => {
@@ -83,6 +97,17 @@ describe('WaitlistGate', () => {
         </WaitlistGate>,
       )
       expect(capturedWaitlistProps).not.toHaveProperty('appearance')
+    })
+
+    it('renders children when client-side Clerk is disabled', () => {
+      setAuth(true, false, false)
+      render(
+        <WaitlistGate>
+          <TestChildren />
+        </WaitlistGate>,
+      )
+      expect(screen.getByTestId('prompt-form')).toBeTruthy()
+      expect(screen.queryByTestId('clerk-waitlist')).toBeNull()
     })
   })
 

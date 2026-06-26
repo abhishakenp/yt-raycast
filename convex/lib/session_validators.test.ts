@@ -56,6 +56,9 @@ describe('session validators boundary', () => {
     expect(sessionsSource).toContain('args: cmsEntryRevisionsArgs')
     expect(sessionsSource).toContain('args: upsertCmsContentEntryArgs')
     expect(sessionsSource).toContain('args: restoreCmsContentRevisionArgs')
+    expect(sessionsSource).toContain('args: cmsCollectionItemsArgs')
+    expect(sessionsSource).toContain('args: upsertCmsCollectionItemArgs')
+    expect(sessionsSource).toContain('args: deleteCmsCollectionItemArgs')
     expect(sessionsSource).toContain('args: insertCmsBindingArgs')
     expect(sessionsSource).toContain('args: listCmsRevisionsArgs')
     expect(sessionsSource).not.toContain('const exportTarget = v.union')
@@ -156,6 +159,13 @@ describe('session validators boundary', () => {
     )
     expect(validatorsSource).toContain(
       'export const restoreCmsContentRevisionArgs =',
+    )
+    expect(validatorsSource).toContain('export const cmsCollectionItemsArgs =')
+    expect(validatorsSource).toContain(
+      'export const upsertCmsCollectionItemArgs =',
+    )
+    expect(validatorsSource).toContain(
+      'export const deleteCmsCollectionItemArgs =',
     )
     expect(validatorsSource).toContain('export const insertCmsBindingArgs =')
     expect(validatorsSource).toContain('export const listCmsRevisionsArgs =')

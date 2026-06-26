@@ -7,6 +7,7 @@ import {
   resolveProviderMode,
   shouldUseAuthenticatedProviders,
 } from '@/app/providers/provider-config'
+import { getClerkPublishableKey } from '@/shared/auth/clerk-runtime'
 
 const LazyClerkConvexProvider = lazy(() =>
   import('@/app/providers/ClerkConvexProvider').then((module) => ({
@@ -18,9 +19,7 @@ type AppProvidersProps = {
   children: ReactNode
 }
 
-const clerkPublishableKey =
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ??
-  import.meta.env.CLERK_PUBLISHABLE_KEY
+const clerkPublishableKey = getClerkPublishableKey()
 const convexUrl =
   import.meta.env.VITE_CONVEX_SELF_HOSTED_URL ??
   import.meta.env.VITE_CONVEX_URL ??
