@@ -60,11 +60,7 @@ const serverRules: AssetRule[] = [
     ],
   },
   { pattern: /^openui-export-builder-.+\.mjs$/, maxBytes: mib(4) },
-  { pattern: /^openui-runtime-core-.+\.mjs$/, maxBytes: mib(7.5) },
-  // Server-only OpenUI generated catalogs scale with the current capsule set.
-  // Keep these budgeted, but do not fail a healthy split merely because the
-  // catalog grew while route/export-builder chunks remain isolated.
-  { pattern: /^openui-capsule-index-.+\.mjs$/, maxBytes: mib(18) },
+  { pattern: /^openui-runtime-core-.+\.mjs$/, maxBytes: mib(8) },
 ]
 
 const anonymousChunkRules: AssetRule[] = [
@@ -77,6 +73,9 @@ const optionalNamedChunkRules: AssetRule[] = [
   { pattern: /^openui-primitive-.+\.(?:js|mjs)$/, maxBytes: mib(0.2) },
   { pattern: /^openui-section-.+\.(?:js|mjs)$/, maxBytes: mib(0.25) },
   { pattern: /^openui-capsule-(?!index-).+\.(?:js|mjs)$/, maxBytes: mib(0.25) },
+  // The section-composable migration removed the monolithic capsule index;
+  // the chunk may or may not be emitted depending on the module graph.
+  { pattern: /^openui-capsule-index-.+\.(?:js|mjs)$/, maxBytes: mib(18) },
 ]
 
 const forbiddenPublicAssetRules: ForbiddenAssetRule[] = [
